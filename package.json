@@ -60,6 +60,7 @@
         "barrel:check": "bun run barrel && git diff --exit-code -- src/index.ts",
         "docs": "typedoc src/index.ts --tsconfig tsconfig.typedoc.json",
         "release": "bun scripts/release.ts",
+        "release:publish": "git push --follow-tags && npm publish --access public",
         "prepublishOnly": "vp run build"
     },
     "devDependencies": {
