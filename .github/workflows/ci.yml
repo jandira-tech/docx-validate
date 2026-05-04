@@ -30,10 +30,10 @@ jobs:
               run: bunx tsc --noEmit
 
             - name: Lint
-              run: bun run lint
+              run: bun run lint:fix
 
             - name: Format check
-              run: bun run fmt
+              run: bun run fmt:fix
 
             - name: Test
               # libxmljs2 is a native Node addon and crashes under Bun's runtime,
