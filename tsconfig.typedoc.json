@@ -1,0 +1,19 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "allowSyntheticDefaultImports": true,
+        "module": "esnext",
+        "moduleResolution": "bundler"
+    },
+    "include": ["src"],
+    "exclude": ["tests", "dist", "node_modules", "docx", "docx-templates"],
+    "typedocOptions": {
+        "out": "docs/api",
+        "exclude": ["tests", "dist"],
+        "excludePrivate": true,
+        "excludeProtected": true,
+        "excludeExternals": false,
+        "highlightLanguages": ["typescript", "javascript", "json", "xml", "bash"],
+        "intentionallyNotExported": []
+    }
+}

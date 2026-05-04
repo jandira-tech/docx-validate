@@ -1,0 +1,84 @@
+{
+  "name": "docx-validate",
+  "version": "0.0.0",
+  "description": "OOXML validators and redline/comment helpers for .docx and .pptx files. XSD-backed, TypeScript, ESM. for the neurotic developer",
+  "homepage": "https://github.com/jandira-tech/docx-validate#readme",
+  "bugs": {
+    "url": "https://github.com/jandira-tech/docx-validate/issues"
+  },
+  "license": "Apache-2.0",
+  "author": "Arthur Souza Rodrigues <arthur@jandira.tech>",
+  "keywords": [
+    "docx",
+    "pptx",
+    "ooxml",
+    "openxml",
+    "office",
+    "word",
+    "powerpoint",
+    "validate",
+    "validator",
+    "validation",
+    "xsd",
+    "schema",
+    "redline",
+    "comments",
+    "typescript"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jandira-tech/docx-validate.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "test": "vitest",
+    "vp": "vitest",
+    "check": "vp check",
+    "lint": "oxlint --type-aware --type-check",
+    "lint:fix": "oxlint --type-aware --type-check --fix",
+    "fmt": "oxfmt --check",
+    "fmt:fix": "oxfmt",
+    "cspell": "cspell \"{src,tests}/**/*.{ts,md}\" && cspell \"./*.*\"",
+    "docs": "typedoc src/index.ts --tsconfig tsconfig.typedoc.json",
+    "prepublishOnly": "vp run build"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "@types/tmp": "^0.2.6",
+    "@typescript/native-preview": "7.0.0-dev.20260328.1",
+    "bumpp": "^11.0.1",
+    "eslint-plugin-functional": "^9.0.4",
+    "eslint-plugin-jsdoc": "^62.9.0",
+    "eslint-plugin-prefer-arrow": "^1.2.3",
+    "oxfmt": "^0.47.0",
+    "oxlint": "^1.62.0",
+    "typedoc": "^0.28.19",
+    "typescript": "^6.0.2",
+    "vite-plus": "^0.1.14",
+    "vitest": "^4.1.5"
+  },
+  "packageManager": "bun@1.3.13",
+  "dependencies": {
+    "@xmldom/xmldom": "^0.9.10",
+    "commander": "^14.0.3",
+    "jszip": "^3.10.1",
+    "libxmljs2": "^0.37.0",
+    "tmp": "^0.2.5",
+    "xpath": "^0.0.34"
+  }
+}

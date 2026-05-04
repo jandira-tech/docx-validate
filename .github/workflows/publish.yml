@@ -1,0 +1,64 @@
+name: Publish to npm
+
+# Triggers on a GitHub Release being published. Recommended flow:
+#   1. Bump version: `bunx bumpp` (updates package.json + creates git tag)
+#   2. Push the tag: `git push --follow-tags`
+#   3. Create a GitHub Release for that tag → this workflow runs.
+#
+# Manual dispatch is also wired up so you can re-run a publish without a new tag.
+#
+# Auth: npm Trusted Publishing (OIDC). No NPM_TOKEN secret involved — npm's
+# registry verifies a short-lived OIDC token minted by GitHub for this exact
+# repo + workflow + environment. Configured at:
+#   https://www.npmjs.com/package/docx-validate/access
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  # Required for npm Trusted Publishing — lets the workflow request an OIDC
+  # token from GitHub that npm will accept.
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # Trusted Publishing requires npm CLI ≥ 11.5.1. Node 20 ships with an
+      # older npm; pin a recent one explicitly.
+      - name: Use modern npm
+        run: npm install -g npm@latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Type-check
+        run: bunx tsc --noEmit
+
+      - name: Test
+        # libxmljs2 is a native Node addon; tests must run under Node, not Bun.
+        run: npx vitest run
+
+      - name: Build
+        run: bun run build
+
+      - name: Publish to npm
+        # No NODE_AUTH_TOKEN: npm CLI auto-detects the GitHub OIDC token via
+        # ACTIONS_ID_TOKEN_REQUEST_URL/TOKEN env vars and exchanges it for a
+        # short-lived publish token. `--provenance` is implicit under OIDC but
+        # left explicit for clarity.
+        run: npm publish --provenance --access public
