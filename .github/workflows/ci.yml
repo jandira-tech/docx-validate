@@ -38,7 +38,15 @@ jobs:
             - name: Test
               # libxmljs2 is a native Node addon and crashes under Bun's runtime,
               # so the test runner has to be Node. See CLAUDE.md "Verification".
-              run: npx vitest run
+              run: npx vitest run --coverage
+
+            - name: Upload coverage to Codecov
+              uses: codecov/codecov-action@v5
+              with:
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  files: ./coverage/lcov.info
+                  fail_ci_if_error: false
+                  verbose: true
 
             - name: Build
               run: bun run build

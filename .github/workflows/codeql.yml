@@ -1,0 +1,65 @@
+name: CodeQL
+
+on:
+    push:
+        branches: [main]
+        paths:
+            - "**.ts"
+            - "**.tsx"
+            - "**.js"
+            - "**.mjs"
+            - "**.cjs"
+            - "package.json"
+            - "bun.lock"
+            - ".github/workflows/codeql.yml"
+    pull_request:
+        branches: [main]
+        paths:
+            - "**.ts"
+            - "**.tsx"
+            - "**.js"
+            - "**.mjs"
+            - "**.cjs"
+            - "package.json"
+            - "bun.lock"
+            - ".github/workflows/codeql.yml"
+
+permissions:
+    actions: read
+    contents: read
+    security-events: write
+
+jobs:
+    analyze:
+        name: Analyze (${{ matrix.language }})
+        runs-on: ubuntu-latest
+
+        strategy:
+            fail-fast: false
+            matrix:
+                language: [javascript-typescript]
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v5
+
+            - name: Initialize CodeQL
+              uses: github/codeql-action/init@v3
+              with:
+                  languages: ${{ matrix.language }}
+                  build-mode: none
+                  # Skip vendored snapshots, build output, fixtures, and the
+                  # docs portage tree — none of them are first-party source.
+                  paths-ignore: |
+                      tests/fixtures/**
+                      dotgithubtoport/**
+                      dist/**
+                      coverage/**
+                      docs/**
+                      docx/**
+                      docx-templates/**
+
+            - name: Perform CodeQL Analysis
+              uses: github/codeql-action/analyze@v3
+              with:
+                  category: "/language:${{ matrix.language }}"

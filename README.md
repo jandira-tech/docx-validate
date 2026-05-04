@@ -1,5 +1,20 @@
 # docx-validate
 
+[![CI](https://github.com/jandira-tech/docx-validate/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jandira-tech/docx-validate/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/jandira-tech/docx-validate/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/jandira-tech/docx-validate/actions/workflows/codeql.yml)
+[![codecov](https://codecov.io/gh/jandira-tech/docx-validate/branch/main/graph/badge.svg)](https://codecov.io/gh/jandira-tech/docx-validate)
+[![Known Vulnerabilities](https://snyk.io/test/npm/docx-validate/badge.svg)](https://snyk.io/test/npm/docx-validate)
+[![npm](https://badgen.net/npm/v/docx-validate?icon=npm)](https://www.npmjs.com/package/docx-validate)
+[![downloads](https://badgen.net/npm/dm/docx-validate)](https://www.npmjs.com/package/docx-validate)
+[![types](https://badgen.net/npm/types/docx-validate)](https://www.npmjs.com/package/docx-validate)
+[![bundle min](https://badgen.net/bundlephobia/min/docx-validate)](https://bundlephobia.com/package/docx-validate)
+[![bundle gzip](https://badgen.net/bundlephobia/minzip/docx-validate)](https://bundlephobia.com/package/docx-validate)
+[![tree-shakeable](https://badgen.net/bundlephobia/tree-shaking/docx-validate)](https://bundlephobia.com/package/docx-validate)
+[![dependencies](https://badgen.net/bundlephobia/dependency-count/docx-validate)](https://bundlephobia.com/package/docx-validate)
+[![license](https://badgen.net/badge/license/Apache-2.0/blue)](./LICENSE)
+[![node](https://badgen.net/badge/node/%3E%3D20/green)](./package.json)
+[![github](https://badgen.net/badge/icon/jandira-tech%2Fdocx-validate?icon=github&label)](https://github.com/jandira-tech/docx-validate)
+
 OOXML validators and redline/comment helpers for `.docx` and `.pptx` files. XSD-backed, TypeScript, ESM, runs under Node and Bun for the neurotic developer.
 
 - Repo: [jandira-tech/docx-validate](https://github.com/jandira-tech/docx-validate)
@@ -145,11 +160,9 @@ list.
 import {
     pack, // repack an unpacked dir into .docx/.pptx/.xlsx
     unpack, // unzip + pretty-print + optional run-merging
-    acceptChanges, // LibreOffice macro: accept tracked changes
     addComment, // append a w:comment to an unpacked DOCX
     mergeRuns, // collapse adjacent w:r runs with identical formatting
     simplifyRedlines, // collapse adjacent same-author tracked changes
-    runSoffice, // typed wrapper around `soffice` CLI invocation
 } from "docx-validate";
 
 // e.g. unpack → mutate → repack:
@@ -172,8 +185,23 @@ process.exit(exit);
 
 Each script ships its own `build*Command` / `run*FromArgv` pair:
 `runValidateFromArgv`, `runPackFromArgv`, `runUnpackFromArgv`,
-`runAcceptChangesFromArgv`, `runCommentFromArgv` (and corresponding
-`build*Command` factories that return the underlying commander `Command`).
+`runCommentFromArgv` (and corresponding `build*Command` factories that
+return the underlying commander `Command`).
+
+### Not in the package surface: LibreOffice helpers
+
+`acceptChanges()` (LibreOffice macro for accepting tracked changes) and the
+underlying `runSoffice()` / `getSofficeEnv()` / `ensureShim()` helpers live
+in `src/scripts/accept-changes.ts` and `src/scripts/office/soffice.ts` but
+are intentionally **not** re-exported from the package barrel. They use an
+`LD_PRELOAD` shim to make `soffice` boot in sandboxed Linux VMs, and that
+pattern triggers supply-chain malware heuristics in automated scanners (it
+genuinely matches the shape, even though the use is benign — see
+[SECURITY.md](./SECURITY.md)).
+
+To use those helpers, run the scripts directly from a checkout
+(`bunx tsx src/scripts/accept-changes.ts <input> <output>`) rather than
+importing from the published package.
 
 ### Result shape — `ValidationResult`
 

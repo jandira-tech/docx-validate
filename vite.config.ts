@@ -31,5 +31,13 @@ export default defineConfig({
         // their own deps and must not be picked up by vitest here.
         include: ["tests/**/*.test.ts"],
         exclude: ["node_modules/**", "dist/**", "docx/**", "docx-templates/**", "dotgithubtoport/**"],
+        coverage: {
+            provider: "v8",
+            // lcov is required for codecov upload in ci.yml; text/html keep
+            // the local `bun run test --coverage` workflow human-readable.
+            reporter: ["text", "html", "lcov"],
+            include: ["src/**/*.ts"],
+            exclude: ["src/**/*.d.ts", "tests/**", "dist/**", "docx/**", "docx-templates/**", "dotgithubtoport/**"],
+        },
     },
 });

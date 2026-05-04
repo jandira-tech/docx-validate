@@ -1,0 +1,45 @@
+# docx-validate
+
+> OOXML validators and redline/comment helpers for `.docx` and `.pptx` files. XSD-backed, TypeScript, ESM, runs under Node and Bun. Built for the neurotic developer who wants to validate Word/PowerPoint documents at the OOXML level rather than trusting renderer round-trips.
+
+The library exposes both a programmatic `validate()` entry point that returns a structured `ValidateRunResult` (`{ valid, issues[] }`) and per-format validator classes (`DOCXSchemaValidator`, `PPTXSchemaValidator`, `BaseSchemaValidator`, `RedliningValidator`) for callers that want to compose individual checks. Side helpers (`pack`, `unpack`, `addComment`, `mergeRuns`, `simplifyRedlines`) are also exported. CLI shims under `src/scripts/office/` cover one-off shell invocations and each script also exports a `build<Name>Command` / `run<Name>FromArgv` pair (e.g. `buildPackCommand`, `runValidateFromArgv`) so a consumer can drive any CLI programmatically without spawning a shell. The LibreOffice-backed `acceptChanges()` / `runSoffice()` helpers live at `src/scripts/accept-changes.ts` and `src/scripts/office/soffice.ts` but are intentionally **not** in the package barrel — they use an `LD_PRELOAD` shim for sandbox compatibility (see [SECURITY.md](https://github.com/jandira-tech/docx-validate/blob/main/SECURITY.md)) and the bundler tree-shakes them out of `dist/index.mjs`.
+
+XSD validation is backed by `libxmljs2` against the bundled ISO/IEC 29500-4 (Transitional), ECMA OPC, MCE, and Microsoft schemas under `src/scripts/office/schemas/`. DOM work goes through `@xmldom/xmldom` + `xpath` via `src/lib/xml-helpers.ts` so the implementation stays swappable. ISO OOXML Strict documents are detected at the namespace level and skip XSD validation with a single info-severity `xsd-strict-skipped` issue rather than emitting ~30 false-positive `xsd-*` errors.
+
+## Docs
+
+- [README](https://github.com/jandira-tech/docx-validate#readme): install, layout, conventions, runtime/dev dependencies, CLI usage, development workflow, and the "Validators (etc.) for the neurotic developer" FAQ
+- [CLAUDE.md](https://github.com/jandira-tech/docx-validate/blob/main/CLAUDE.md): project conventions and intentional behaviours documented at the call sites
+- [LICENSE](https://github.com/jandira-tech/docx-validate/blob/main/LICENSE): Apache-2.0
+- [npm package](https://www.npmjs.com/package/docx-validate): published releases
+- [Bundlephobia](https://bundlephobia.com/package/docx-validate): bundle size analysis
+
+## API
+
+- [`src/index.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/index.ts): public barrel; re-exports the validate entry point, validator classes, side helpers, CLI builders, and shared types
+- [`src/lib/types.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/lib/types.ts): `ValidationResult`, `ValidationIssue`, `Profile`, `NS` (runtime namespace lookup table), `XPATH_NS`
+- [`src/lib/xml-helpers.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/lib/xml-helpers.ts): `parseXml`, `serializeXml`, `prettyXml`, `getElementsByTagNameNSAll`, `makeSelect`, `getLineNumber`, `getLocalName`
+- [`src/lib/run-cli.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/lib/run-cli.ts): `runCli`, `withTempDir`
+- [`src/scripts/office/validate.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/scripts/office/validate.ts): top-level `validate()` and CLI
+- [`src/scripts/office/validators/base.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/scripts/office/validators/base.ts): `BaseSchemaValidator`, `defaultSchemasDir`, `XsdValidationOutcome`
+- [`src/scripts/office/validators/docx.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/scripts/office/validators/docx.ts): `DOCXSchemaValidator`, `WORD_2006_NAMESPACE`, `WORD_STRICT_NAMESPACE`, `WORD_PARAGRAPH_NAMESPACES`, `ParagraphCounts`
+- [`src/scripts/office/validators/pptx.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/scripts/office/validators/pptx.ts): `PPTXSchemaValidator`, `PRESENTATIONML_NAMESPACE`
+- [`src/scripts/office/validators/redlining.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/scripts/office/validators/redlining.ts): `RedliningValidator`, `validateRedlining`, `RedliningOptions`
+- [`src/scripts/office/pack.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/scripts/office/pack.ts): `pack`, `PackOptions`, `PackResult`
+- [`src/scripts/office/unpack.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/scripts/office/unpack.ts): `unpack`, `UnpackOptions`, `UnpackResult`
+- [`src/scripts/office/soffice.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/scripts/office/soffice.ts): `runSoffice`, `RunSofficeOptions`, `RunSofficeResult`, `ensureShim`, `getSofficeEnv`, `needsShim`
+- [`src/scripts/office/helpers/merge-runs.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/scripts/office/helpers/merge-runs.ts): `mergeRuns`, `MergeRunsResult`
+- [`src/scripts/office/helpers/simplify-redlines.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/scripts/office/helpers/simplify-redlines.ts): `simplifyRedlines`, `inferAuthor`, `getTrackedChangeAuthorsFromPath`, `SimplifyRedlinesResult`
+- [`src/scripts/accept-changes.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/scripts/accept-changes.ts): `acceptChanges`, `acceptChangesResult`, `AcceptChangesResult`, `setupLibreofficeMacro`
+- [`src/scripts/comment.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/scripts/comment.ts): `addComment`, `AddCommentOptions`, `AddCommentResult`
+
+## Tests
+
+- [tests/](https://github.com/jandira-tech/docx-validate/tree/main/tests): vitest specs, one file per module, fixtures under `tests/fixtures/`
+- [tests/fixtures/external/](https://github.com/jandira-tech/docx-validate/tree/main/tests/fixtures/external): fixtures borrowed from `apache/poi`, `dotnet/Open-XML-SDK`, `plutext/docx4j`, `guigrpa/docx-templates`, `mwilliamson/mammoth.js`
+
+## Optional
+
+- [Maintainer — jandira.tech](https://www.jandira.tech): Jandira Technologies, the studio behind Cicero (legal workbench), PT-BR PII redaction models, and AI/contract-drafting benchmarks
+- [Cicero](https://www.cicero.im): legal workbench that turns messy inputs into redlines, issue lists, and memos
+- [GitHub Issues](https://github.com/jandira-tech/docx-validate/issues): bugs and feature requests

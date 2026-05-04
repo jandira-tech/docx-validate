@@ -1,5 +1,6 @@
 node_modules
 dist
+coverage
 *.log
 .DS_Store
 # Anchor third-party vendored snapshots to the repo root only — without the
