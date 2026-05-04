@@ -44,22 +44,25 @@ jobs:
               uses: actions/checkout@v5
 
             - name: Initialize CodeQL
-              uses: github/codeql-action/init@v3
+              uses: github/codeql-action/init@v4
               with:
                   languages: ${{ matrix.language }}
                   build-mode: none
                   # Skip vendored snapshots, build output, fixtures, and the
                   # docs portage tree — none of them are first-party source.
-                  paths-ignore: |
-                      tests/fixtures/**
-                      dotgithubtoport/**
-                      dist/**
-                      coverage/**
-                      docs/**
-                      docx/**
-                      docx-templates/**
+                  # `paths-ignore` is a CodeQL config field, not an action
+                  # input, so it goes inside `config:` (inline YAML).
+                  config: |
+                      paths-ignore:
+                          - tests/fixtures/**
+                          - dotgithubtoport/**
+                          - dist/**
+                          - coverage/**
+                          - docs/**
+                          - docx/**
+                          - docx-templates/**
 
             - name: Perform CodeQL Analysis
-              uses: github/codeql-action/analyze@v3
+              uses: github/codeql-action/analyze@v4
               with:
                   category: "/language:${{ matrix.language }}"
