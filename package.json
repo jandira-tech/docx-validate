@@ -59,7 +59,7 @@
         "barrel": "rm -f src/index.ts && barrelsby -d ./src -n index -l top --exclude '\\.test\\.ts$' --exclude 'scripts/office/soffice\\.ts$' --exclude 'scripts/accept-changes\\.ts$'",
         "barrel:check": "bun run barrel && git diff --exit-code -- src/index.ts",
         "docs": "typedoc src/index.ts --tsconfig tsconfig.typedoc.json",
-        "release": "bumpp",
+        "release": "bun scripts/release.ts",
         "prepublishOnly": "vp run build"
     },
     "devDependencies": {
