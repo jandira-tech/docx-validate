@@ -23,6 +23,18 @@ const copySchemasPlugin = {
 
 export default defineConfig({
     pack: {
+        // Emit dist/index.d.mts so consumers get the full TypeScript surface
+        // (every public re-export from src/index.ts is fully typed). The
+        // package.json `exports.types` condition points at this file.
+        dts: true,
+        // Build-time gates against publish-mistakes:
+        //   publint  — verifies package.json conforms to npm's publish rules
+        //              (exports map shape, file references, types ordering).
+        //   attw     — Are The Types Wrong: cross-checks that the published
+        //              types load correctly under every resolution mode
+        //              (node10, node16, bundler, ESM, CJS).
+        publint: true,
+        attw: true,
         plugins: [copySchemasPlugin],
     },
     test: {
