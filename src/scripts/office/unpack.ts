@@ -33,10 +33,10 @@ import path from "node:path";
 import { Command } from "commander";
 import JSZip from "jszip";
 
-import { commanderExitCode, runCli } from "../../lib/run-cli.ts";
-import { parseXml, prettyXml } from "../../lib/xml-helpers.ts";
-import { mergeRuns } from "./helpers/merge-runs.ts";
-import { simplifyRedlines } from "./helpers/simplify-redlines.ts";
+import { commanderExitCode, runCli } from "../../lib/run-cli";
+import { parseXml, prettyXml } from "../../lib/xml-helpers";
+import { mergeRuns } from "./helpers/merge-runs";
+import { simplifyRedlines } from "./helpers/simplify-redlines";
 
 const SMART_QUOTE_REPLACEMENTS: ReadonlyArray<readonly [string, string]> = [
     ["“", "&#x201C;"],
@@ -205,7 +205,7 @@ function parseBoolFlag(value: string): boolean {
     return value.toLowerCase() === "true";
 }
 
-export function buildCommand(): Command {
+export function buildUnpackCommand(): Command {
     const cmd = new Command();
     cmd.name("unpack")
         .description("Unpack an Office file (DOCX, PPTX, XLSX) for editing")
@@ -231,8 +231,8 @@ interface CliOptions {
     simplifyRedlines: boolean;
 }
 
-export async function runFromArgv(argv: readonly string[]): Promise<number> {
-    const cmd = buildCommand();
+export async function runUnpackFromArgv(argv: readonly string[]): Promise<number> {
+    const cmd = buildUnpackCommand();
     cmd.exitOverride();
     // Commander throws CommanderError under exitOverride() for missing args,
     // invalid options, and --help. Catch here so the CLI returns a clean exit
@@ -253,4 +253,4 @@ export async function runFromArgv(argv: readonly string[]): Promise<number> {
     return result.ok ? 0 : 1;
 }
 
-runCli(import.meta.url, () => runFromArgv(process.argv.slice(2)));
+runCli(import.meta.url, () => runUnpackFromArgv(process.argv.slice(2)));

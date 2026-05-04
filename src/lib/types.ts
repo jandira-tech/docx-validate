@@ -43,13 +43,13 @@ export type ValidationIssue = {
     line?: number;
     column?: number;
     code?: string;
-}
+};
 
 /** Aggregate result returned by every validator. `valid` is false iff there is at least one `error` issue. */
 export type ValidationResult = {
     valid: boolean;
     issues: ValidationIssue[];
-}
+};
 
 /** Empty success result (zero issues, valid). */
 export const OK_RESULT: ValidationResult = Object.freeze({

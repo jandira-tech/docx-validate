@@ -25,7 +25,7 @@
 import { DOMParser, XMLSerializer, type Node as XmldomNode } from "@xmldom/xmldom";
 import * as xpath from "xpath";
 
-import { XPATH_NS } from "./types.ts";
+import { XPATH_NS } from "./types";
 
 /**
  * Parse an XML string into a DOM `Document`. Mirrors the Python
@@ -71,7 +71,7 @@ export const serializeXml = (node: Node, encoding?: string): string => {
     const xml = new XMLSerializer().serializeToString(node as unknown as XmldomNode);
     if (encoding) {
         const decl = `<?xml version="1.0" encoding="${encoding}" standalone="yes"?>`;
-        return xml.startsWith('<?xml') ? xml : `${decl}\n${xml}`;
+        return xml.startsWith("<?xml") ? xml : `${decl}\n${xml}`;
     }
     return xml;
 };
@@ -163,7 +163,8 @@ export const getElementsByTagNameNSAll = (root: Document | Element, namespaceURI
  *   const $$ = makeSelect();
  *   const paragraphs = $$("//w:p", doc) as Element[];
  */
-export const makeSelect = (extraNamespaces: Record<string, string> = {}): xpath.XPathSelect => xpath.useNamespaces({ ...XPATH_NS, ...extraNamespaces });
+export const makeSelect = (extraNamespaces: Record<string, string> = {}): xpath.XPathSelect =>
+    xpath.useNamespaces({ ...XPATH_NS, ...extraNamespaces });
 
 /**
  * 1-based source line number for a parsed node, or `0` if the parser did not

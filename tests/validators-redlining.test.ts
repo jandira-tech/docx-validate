@@ -20,16 +20,16 @@ import path from "node:path";
 import JSZip from "jszip";
 import { describe, expect, it } from "vitest";
 
-import { withTempDir } from "../src/lib/run-cli.ts";
-import { NS } from "../src/lib/types.ts";
-import { parseXml, serializeXml } from "../src/lib/xml-helpers.ts";
+import { withTempDir } from "../src/lib/run-cli";
+import { NS } from "../src/lib/types";
+import { parseXml, serializeXml } from "../src/lib/xml-helpers";
 import {
-    RedliningValidator,
     extractTextContent,
     getGitWordDiff,
+    RedliningValidator,
     removeAuthorTrackedChanges,
     validateRedlining,
-} from "../src/scripts/office/validators/redlining.ts";
+} from "../src/scripts/office/validators/redlining";
 
 const W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
 
@@ -61,7 +61,7 @@ describe("validateRedlining", () => {
             const result = await validateRedlining({
                 unpackedDir: unpacked,
                 originalDocx: docx,
-                author: "Claude",
+                author: "Ritapolis",
             });
             expect(result.valid).toBe(false);
             expect(result.issues[0].message).toMatch(/Modified document\.xml not found/);
@@ -78,7 +78,7 @@ describe("validateRedlining", () => {
             const result = await validateRedlining({
                 unpackedDir: unpacked,
                 originalDocx: docx,
-                author: "Claude",
+                author: "Ritapolis",
             });
             expect(result.valid).toBe(true);
             expect(result.issues).toHaveLength(0);
@@ -92,10 +92,10 @@ describe("validateRedlining", () => {
             const modified =
                 "<w:body><w:p>" +
                 '<w:r><w:t xml:space="preserve">The </w:t></w:r>' +
-                '<w:del w:id="1" w:author="Claude" w:date="2024-01-01T00:00:00Z">' +
+                '<w:del w:id="1" w:author="Ritapolis" w:date="2024-01-01T00:00:00Z">' +
                 '<w:r><w:delText xml:space="preserve">quick </w:delText></w:r>' +
                 "</w:del>" +
-                '<w:ins w:id="2" w:author="Claude" w:date="2024-01-01T00:00:00Z">' +
+                '<w:ins w:id="2" w:author="Ritapolis" w:date="2024-01-01T00:00:00Z">' +
                 '<w:r><w:t xml:space="preserve">slow </w:t></w:r>' +
                 "</w:ins>" +
                 "<w:r><w:t>brown fox</w:t></w:r>" +
@@ -108,7 +108,7 @@ describe("validateRedlining", () => {
             const result = await validateRedlining({
                 unpackedDir: unpacked,
                 originalDocx: docx,
-                author: "Claude",
+                author: "Ritapolis",
             });
             expect(result.valid).toBe(true);
             expect(result.issues).toHaveLength(0);
@@ -121,7 +121,7 @@ describe("validateRedlining", () => {
             const modified =
                 "<w:body><w:p>" +
                 '<w:r><w:t xml:space="preserve">The </w:t></w:r>' +
-                '<w:ins w:id="1" w:author="Claude"><w:r><w:t xml:space="preserve">very </w:t></w:r></w:ins>' +
+                '<w:ins w:id="1" w:author="Ritapolis"><w:r><w:t xml:space="preserve">very </w:t></w:r></w:ins>' +
                 "<w:r><w:t>quick red fox</w:t></w:r>" +
                 "</w:p></w:body>";
 
@@ -132,7 +132,7 @@ describe("validateRedlining", () => {
             const result = await validateRedlining({
                 unpackedDir: unpacked,
                 originalDocx: docx,
-                author: "Claude",
+                author: "Ritapolis",
             });
             expect(result.valid).toBe(false);
             expect(result.issues[0].code).toBe("redlining/mismatch");
@@ -158,7 +158,7 @@ describe("validateRedlining", () => {
             const result = await validateRedlining({
                 unpackedDir: unpacked,
                 originalDocx: docx,
-                author: "Claude",
+                author: "Ritapolis",
             });
             expect(result.valid).toBe(true);
         });
@@ -170,12 +170,14 @@ describe("removeAuthorTrackedChanges", () => {
         const xml = wrapDoc(
             "<w:body><w:p>" +
                 "<w:r><w:t>keep </w:t></w:r>" +
-                '<w:ins w:author="Claude"><w:r><w:t>drop-ins</w:t></w:r></w:ins>' +
-                '<w:del w:author="Claude"><w:r><w:delText>restored</w:delText></w:r></w:del>' +
+                '<w:ins w:author="Ritapolis"><w:r><w:t>drop-ins</w:t></w:r></w:ins>' +
+                '<w:del w:author="Ritapolis"><w:r><w:delText>restored</w:delText></w:r></w:del>' +
                 "</w:p></w:body>",
         );
         const doc = parseXml(xml);
-        removeAuthorTrackedChanges(doc.documentElement!, "Claude");
+        const root = doc.documentElement;
+        if (!root) throw new Error("parseXml returned no root");
+        removeAuthorTrackedChanges(root, "Ritapolis");
         const after = serializeXml(doc);
         expect(after).not.toMatch(/<w:ins/);
         expect(after).not.toMatch(/<w:del[^a-zA-Z]/);
@@ -192,7 +194,9 @@ describe("removeAuthorTrackedChanges", () => {
                 "</w:p></w:body>",
         );
         const doc = parseXml(xml);
-        removeAuthorTrackedChanges(doc.documentElement!, "Claude");
+        const root = doc.documentElement;
+        if (!root) throw new Error("parseXml returned no root");
+        removeAuthorTrackedChanges(root, "Ritapolis");
         const after = serializeXml(doc);
         expect(after).toMatch(/w:author="Alice"/);
         expect(after).toContain("alice-ins");
@@ -210,7 +214,9 @@ describe("extractTextContent", () => {
                 "</w:body>",
         );
         const doc = parseXml(xml);
-        expect(extractTextContent(doc.documentElement!)).toBe("first line\nsecond");
+        const root = doc.documentElement;
+        if (!root) throw new Error("parseXml returned no root");
+        expect(extractTextContent(root)).toBe("first line\nsecond");
     });
 
     it("traverses nested w:t elements within tracked-change wrappers", () => {
@@ -221,7 +227,9 @@ describe("extractTextContent", () => {
                 "</w:p></w:body>",
         );
         const doc = parseXml(xml);
-        expect(extractTextContent(doc.documentElement!)).toBe("hi there");
+        const root = doc.documentElement;
+        if (!root) throw new Error("parseXml returned no root");
+        expect(extractTextContent(root)).toBe("hi there");
     });
 });
 
@@ -234,8 +242,9 @@ describe("getGitWordDiff", () => {
     it("returns diff content when the two strings differ", async () => {
         const result = await getGitWordDiff("the quick brown fox\n", "the quick red fox\n");
         expect(result).not.toBeNull();
-        expect(result!).toMatch(/\[-.+-\]/);
-        expect(result!).toMatch(/\{\+.+\+\}/);
+        if (result === null) throw new Error("expected diff content");
+        expect(result).toMatch(/\[-.+-\]/);
+        expect(result).toMatch(/\{\+.+\+\}/);
     });
 });
 
@@ -256,7 +265,7 @@ describe("RedliningValidator class (parity with Python class-based API)", () => 
             const validator = new RedliningValidator({
                 unpackedDir: unpacked,
                 originalDocx: docx,
-                author: "Claude",
+                author: "Ritapolis",
             });
             const result = await validator.validate();
             expect(result.valid).toBe(true);
@@ -270,7 +279,7 @@ describe("RedliningValidator class (parity with Python class-based API)", () => 
             const modified =
                 "<w:body><w:p>" +
                 '<w:r><w:t xml:space="preserve">The </w:t></w:r>' +
-                '<w:ins w:id="1" w:author="Claude"><w:r><w:t>slow </w:t></w:r></w:ins>' +
+                '<w:ins w:id="1" w:author="Ritapolis"><w:r><w:t>slow </w:t></w:r></w:ins>' +
                 "<w:r><w:t>red fox</w:t></w:r>" +
                 "</w:p></w:body>";
 
@@ -281,7 +290,7 @@ describe("RedliningValidator class (parity with Python class-based API)", () => 
             const validator = new RedliningValidator({
                 unpackedDir: unpacked,
                 originalDocx: docx,
-                author: "Claude",
+                author: "Ritapolis",
             });
             const result = await validator.validate();
             expect(result.valid).toBe(false);
@@ -293,7 +302,7 @@ describe("RedliningValidator class (parity with Python class-based API)", () => 
         const validator = new RedliningValidator({
             unpackedDir: "/tmp/unused",
             originalDocx: "/tmp/unused.docx",
-            author: "Claude",
+            author: "Ritapolis",
         });
         const repairs = await validator.repair();
         expect(repairs).toBe(0);

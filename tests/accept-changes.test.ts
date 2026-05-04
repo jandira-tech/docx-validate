@@ -22,13 +22,13 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import {
     ACCEPT_CHANGES_MACRO,
-    LIBREOFFICE_PROFILE,
-    MACRO_DIR,
     acceptChanges,
     acceptChangesResult,
-    buildCommand,
+    buildAcceptChangesCommand,
+    LIBREOFFICE_PROFILE,
+    MACRO_DIR,
     setupLibreofficeMacro,
-} from "../src/scripts/accept-changes.ts";
+} from "../src/scripts/accept-changes";
 
 const hasSoffice = Boolean(process.env.SOFFICE_AVAILABLE);
 
@@ -81,9 +81,9 @@ describe("acceptChanges (throwing wrapper)", () => {
     });
 });
 
-describe("buildCommand", () => {
+describe("buildAcceptChangesCommand", () => {
     it("declares two positional args (input + output)", () => {
-        const cmd = buildCommand();
+        const cmd = buildAcceptChangesCommand();
         expect(cmd.name()).toBe("accept-changes");
         // commander stores positional definitions on `_args`; fall back
         // through `args` if internals change.

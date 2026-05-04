@@ -20,8 +20,8 @@ import path from "node:path";
 import JSZip from "jszip";
 import { describe, expect, it } from "vitest";
 
-import { withTempDir } from "../src/lib/run-cli.ts";
-import { inferAuthor, simplifyRedlines } from "../src/scripts/office/helpers/simplify-redlines.ts";
+import { withTempDir } from "../src/lib/run-cli";
+import { inferAuthor, simplifyRedlines } from "../src/scripts/office/helpers/simplify-redlines";
 
 const W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
 
@@ -130,8 +130,8 @@ describe("inferAuthor", () => {
             await buildDocx(docxPath, "<w:body><w:p><w:r><w:t>none</w:t></w:r></w:p></w:body>");
             await writeDoc(dir, "<w:body><w:p><w:r><w:t>none</w:t></w:r></w:p></w:body>");
 
-            const author = await inferAuthor(dir, docxPath, "Claude");
-            expect(author).toBe("Claude");
+            const author = await inferAuthor(dir, docxPath, "Ritapolis");
+            expect(author).toBe("Ritapolis");
         });
     });
 
@@ -147,7 +147,7 @@ describe("inferAuthor", () => {
                 "</w:p></w:body>";
             await writeDoc(dir, body);
 
-            const author = await inferAuthor(dir, docxPath, "Claude");
+            const author = await inferAuthor(dir, docxPath, "Ritapolis");
             expect(author).toBe("Mallory");
         });
     });
@@ -161,8 +161,8 @@ describe("inferAuthor", () => {
             const body = "<w:body><w:p>" + '<w:ins w:id="1" w:author="Alice"><w:r><w:t>old</w:t></w:r></w:ins>' + "</w:p></w:body>";
             await writeDoc(dir, body);
 
-            const author = await inferAuthor(dir, docxPath, "Claude");
-            expect(author).toBe("Claude");
+            const author = await inferAuthor(dir, docxPath, "Ritapolis");
+            expect(author).toBe("Ritapolis");
         });
     });
 
@@ -178,7 +178,7 @@ describe("inferAuthor", () => {
                 "</w:p></w:body>";
             await writeDoc(dir, body);
 
-            await expect(inferAuthor(dir, docxPath, "Claude")).rejects.toThrow(/Multiple authors/);
+            await expect(inferAuthor(dir, docxPath, "Ritapolis")).rejects.toThrow(/Multiple authors/);
         });
     });
 });

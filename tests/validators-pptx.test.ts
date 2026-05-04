@@ -19,8 +19,8 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { withTempDir } from "../src/lib/run-cli.ts";
-import { PPTXSchemaValidator, PRESENTATIONML_NAMESPACE } from "../src/scripts/office/validators/pptx.ts";
+import { withTempDir } from "../src/lib/run-cli";
+import { PPTXSchemaValidator, PRESENTATIONML_NAMESPACE } from "../src/scripts/office/validators/pptx";
 
 const PR_NS = "http://schemas.openxmlformats.org/package/2006/relationships";
 const R_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
@@ -239,7 +239,9 @@ describe("PPTXSchemaValidator.validate", () => {
     it("subclasses BaseSchemaValidator and exposes the PPTX element relationship table", () => {
         const validator = makeValidator(".");
         // protected accessor — assert via behavior of _getExpectedRelationshipType (inherited)
-        const exp = validator as unknown as { _getExpectedRelationshipType(n: string): string | null };
+        const exp = validator as unknown as {
+            _getExpectedRelationshipType(n: string): string | null;
+        };
         expect(exp._getExpectedRelationshipType("sldId")).toBe("slide");
         expect(exp._getExpectedRelationshipType("themeId")).toBe("theme");
         expect(exp._getExpectedRelationshipType("sldLayoutId")).toBe("slidelayout");

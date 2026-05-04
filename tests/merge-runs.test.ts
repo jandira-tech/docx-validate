@@ -19,8 +19,8 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { withTempDir } from "../src/lib/run-cli.ts";
-import { mergeRuns } from "../src/scripts/office/helpers/merge-runs.ts";
+import { withTempDir } from "../src/lib/run-cli";
+import { mergeRuns } from "../src/scripts/office/helpers/merge-runs";
 
 const W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
 

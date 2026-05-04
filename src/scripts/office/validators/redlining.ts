@@ -32,10 +32,10 @@ import path from "node:path";
 
 import JSZip from "jszip";
 
-import { withTempDir } from "../../../lib/run-cli.ts";
-import { NS } from "../../../lib/types.ts";
-import type { ValidationResult } from "../../../lib/types.ts";
-import { getElementsByTagNameNSAll, parseXml, serializeXml } from "../../../lib/xml-helpers.ts";
+import { withTempDir } from "../../../lib/run-cli";
+import type { ValidationResult } from "../../../lib/types";
+import { NS } from "../../../lib/types";
+import { getElementsByTagNameNSAll, parseXml } from "../../../lib/xml-helpers";
 
 const ELEMENT_NODE = 1;
 
@@ -395,6 +395,3 @@ export class RedliningValidator {
         return 0;
     }
 }
-
-/** Re-export `serializeXml` so callers needing the post-strip XML can get it without re-importing helpers. */
-export { serializeXml };

@@ -31,9 +31,9 @@ import { existsSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
-import { withTempDir } from "../src/lib/run-cli.ts";
-import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx.ts";
-import { TEXTBOX_FIXTURE, makeEmptyPlaceholder, unpackDocxFixture } from "./_fixtures.ts";
+import { withTempDir } from "../src/lib/run-cli";
+import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
+import { makeEmptyPlaceholder, TEXTBOX_FIXTURE, unpackDocxFixture } from "./_fixtures";
 
 const FIXTURE_PRESENT = existsSync(TEXTBOX_FIXTURE);
 

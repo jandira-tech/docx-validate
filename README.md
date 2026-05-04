@@ -1,9 +1,10 @@
 # docx-validate
 
-OOXML validators and redline/comment helpers for `.docx` and `.pptx` files. XSD-backed, TypeScript, ESM, runs under Node and Bun.
+OOXML validators and redline/comment helpers for `.docx` and `.pptx` files. XSD-backed, TypeScript, ESM, runs under Node and Bun for the neurotic developer.
 
 - Repo: [jandira-tech/docx-validate](https://github.com/jandira-tech/docx-validate)
 - npm: `docx-validate`
+- Maintainer: [jandira.tech](https://www.jandira.tech) — We are building legal tech. Jandira Technologies is the studio behind tools like [Cicero](https://www.cicero.im) (a legal workbench that turns messy inputs into redlines, issue lists, and memos), PII redaction models for Brazilian Portuguese, and AI/contract-drafting benchmarks. `docx-validate` falls out of that work — when redlines have to round-trip through Word, validating the OOXML directly beats trusting the renderer.
 
 ## Install
 
@@ -79,6 +80,120 @@ bunx tsx src/scripts/accept-changes.ts <path>
 bunx tsx src/scripts/comment.ts <path>
 ```
 
+## Programmatic use
+
+Everything the CLIs do is also available as plain function/class imports — no
+shell required. The package's barrel (`src/index.ts`) is auto-generated from
+the source tree, so anything exported by a `src/**` file is reachable from
+the package root.
+
+### Validate a `.docx` / `.pptx`
+
+```ts
+import { validate } from "docx-validate";
+
+const result = await validate("./contract.docx");
+//                ^? Promise<ValidateRunResult>
+//                   { valid: boolean; issues: ValidationIssue[]; suffix: ".docx"; repairs: number }
+
+if (!result.valid) {
+    for (const issue of result.issues) {
+        console.error(`${issue.severity}${issue.path ? ` [${issue.path}]` : ""}: ${issue.message}`);
+    }
+}
+```
+
+Strict profile (flags BOM-prefixed parts and other tolerated-but-non-canonical
+constructs):
+
+```ts
+const result = await validate("./contract.docx", { profile: "strict" });
+```
+
+Cross-check tracked changes against an original (the `--original` CLI flag):
+
+```ts
+const result = await validate("./redlined.docx", {
+    original: "./baseline.docx",
+    author: "Alice",
+});
+```
+
+### Compose individual checks with the validator classes
+
+```ts
+import { DOCXSchemaValidator, defaultSchemasDir } from "docx-validate";
+
+const v = new DOCXSchemaValidator({
+    unpackedDir: "./unpacked",
+    schemasDir: defaultSchemasDir(), // override if you bundle your own XSDs
+    profile: "lenient",
+});
+
+const xsdResult = await v.validateAgainstXsd();
+const idResult = await v.validateUniqueIds();
+const relResult = await v.validateAllRelationshipIds();
+```
+
+`PPTXSchemaValidator`, `BaseSchemaValidator`, and `RedliningValidator` follow
+the same shape — see `src/scripts/office/validators/` for the full method
+list.
+
+### Side helpers
+
+```ts
+import {
+    pack, // repack an unpacked dir into .docx/.pptx/.xlsx
+    unpack, // unzip + pretty-print + optional run-merging
+    acceptChanges, // LibreOffice macro: accept tracked changes
+    addComment, // append a w:comment to an unpacked DOCX
+    mergeRuns, // collapse adjacent w:r runs with identical formatting
+    simplifyRedlines, // collapse adjacent same-author tracked changes
+    runSoffice, // typed wrapper around `soffice` CLI invocation
+} from "docx-validate";
+
+// e.g. unpack → mutate → repack:
+await unpack("./contract.docx", "./unpacked");
+// (your edits go here)
+await pack("./unpacked", "./contract.modified.docx");
+```
+
+### Drive the CLIs programmatically
+
+If you want the CLI behaviour (commander parsing, exit codes, the same status
+messages) without spawning a subprocess:
+
+```ts
+import { runValidateFromArgv, buildValidateCommand } from "docx-validate";
+
+const exit = await runValidateFromArgv(["./contract.docx", "--profile", "strict"]);
+process.exit(exit);
+```
+
+Each script ships its own `build*Command` / `run*FromArgv` pair:
+`runValidateFromArgv`, `runPackFromArgv`, `runUnpackFromArgv`,
+`runAcceptChangesFromArgv`, `runCommentFromArgv` (and corresponding
+`build*Command` factories that return the underlying commander `Command`).
+
+### Result shape — `ValidationResult`
+
+```ts
+interface ValidationIssue {
+    severity: "error" | "warning" | "info";
+    message: string;
+    path?: string; // file path inside the unpacked dir, when applicable
+    code?: string; // stable string ID; safe to switch on
+}
+
+interface ValidationResult {
+    valid: boolean; // true when every issue is severity !== "error"
+    issues: ValidationIssue[];
+}
+```
+
+`ValidateRunResult` extends this with `suffix` (e.g. `".docx"`) and `repairs`
+(number of issues auto-repaired when `autoRepair: true`).
+
 ## Development
 
 ```bash
@@ -128,9 +243,9 @@ what gets validated.
 When a future validator needs `c:chart` (DrawingML chart) or `v:shape`
 (VML), add the constant to `NS` next to the validator that uses it —
 don't pre-populate speculatively. The schemas under
-`src/scripts/office/schemas/` remain the source of truth for *element
-definitions*; `NS` is the source of truth for *namespace URIs the TS
-code references at runtime*.
+`src/scripts/office/schemas/` remain the source of truth for _element
+definitions_; `NS` is the source of truth for _namespace URIs the TS
+code references at runtime_.
 
 ## License
 

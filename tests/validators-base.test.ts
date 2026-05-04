@@ -18,9 +18,8 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 
 import { describe, expect, it } from "vitest";
-
-import { BaseSchemaValidator } from "../src/scripts/office/validators/base.ts";
-import { withTempDir } from "../src/lib/run-cli.ts";
+import { withTempDir } from "../src/lib/run-cli";
+import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
 
 class HarnessValidator extends BaseSchemaValidator {
     // Subclass concrete-only so we can instantiate.

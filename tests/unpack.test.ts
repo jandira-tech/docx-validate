@@ -20,8 +20,8 @@ import path from "node:path";
 import JSZip from "jszip";
 import { describe, expect, it } from "vitest";
 
-import { withTempDir } from "../src/lib/run-cli.ts";
-import { unpack } from "../src/scripts/office/unpack.ts";
+import { withTempDir } from "../src/lib/run-cli";
+import { unpack } from "../src/scripts/office/unpack";
 
 const W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
 

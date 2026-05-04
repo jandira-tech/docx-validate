@@ -19,14 +19,13 @@ import path from "node:path";
 import JSZip from "jszip";
 
 import { describe, expect, it } from "vitest";
-
+import { withTempDir } from "../src/lib/run-cli";
 import {
     DOCXSchemaValidator,
-    WORD_PARAGRAPH_NAMESPACES,
     WORD_2006_NAMESPACE,
+    WORD_PARAGRAPH_NAMESPACES,
     WORD_STRICT_NAMESPACE,
-} from "../src/scripts/office/validators/docx.ts";
-import { withTempDir } from "../src/lib/run-cli.ts";
+} from "../src/scripts/office/validators/docx";
 
 const W_NS = `xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"`;
 const W14_NS = `xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"`;
@@ -366,7 +365,10 @@ describe("DOCXSchemaValidator", () => {
             try {
                 await withTempDir(async (dir) => {
                     await writeFile(path.join(dir, "word", "document.xml"), wrapDocument(`<w:p/><w:p/>`));
-                    const v = new DOCXSchemaValidator({ unpackedDir: dir, verbose: true });
+                    const v = new DOCXSchemaValidator({
+                        unpackedDir: dir,
+                        verbose: true,
+                    });
                     await v.compareParagraphCounts();
                 });
             } finally {

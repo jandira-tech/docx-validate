@@ -30,7 +30,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-import { parseXml, serializeXml } from "../../../lib/xml-helpers.ts";
+import { parseXml, serializeXml } from "../../../lib/xml-helpers";
 
 export interface MergeRunsResult {
     count: number;

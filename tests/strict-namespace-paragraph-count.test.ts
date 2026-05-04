@@ -29,9 +29,9 @@
 
 import { describe, expect, it } from "vitest";
 
-import { withTempDir } from "../src/lib/run-cli.ts";
-import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx.ts";
-import { STRICT_FIXTURE, makeEmptyPlaceholder, unpackDocxFixture } from "./_fixtures.ts";
+import { withTempDir } from "../src/lib/run-cli";
+import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
+import { makeEmptyPlaceholder, STRICT_FIXTURE, unpackDocxFixture } from "./_fixtures";
 
 describe("DOCXSchemaValidator strict-namespace paragraph counts", () => {
     it("counts one body paragraph in the unpacked strict-format fixture", async () => {

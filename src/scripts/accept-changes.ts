@@ -24,13 +24,13 @@
  *   bunx tsx scripts/accept-changes.ts <input.docx> <output.docx>
  */
 
-import { promises as fs, existsSync } from "node:fs";
+import { existsSync, promises as fs } from "node:fs";
 import path from "node:path";
 
 import { Command } from "commander";
 
-import { commanderExitCode, runCli } from "../lib/run-cli.ts";
-import { getSofficeEnv, runSoffice } from "./office/soffice.ts";
+import { commanderExitCode, runCli } from "../lib/run-cli";
+import { runSoffice } from "./office/soffice";
 
 export const LIBREOFFICE_PROFILE = "/tmp/libreoffice_docx_profile";
 export const MACRO_DIR = `${LIBREOFFICE_PROFILE}/user/basic/Standard`;
@@ -214,7 +214,7 @@ export async function setupLibreofficeMacro(): Promise<boolean> {
     }
 }
 
-export function buildCommand(): Command {
+export function buildAcceptChangesCommand(): Command {
     const cmd = new Command();
     cmd.name("accept-changes")
         .description("Accept all tracked changes in a DOCX file")
@@ -223,8 +223,8 @@ export function buildCommand(): Command {
     return cmd;
 }
 
-export async function runFromArgv(argv: readonly string[]): Promise<number> {
-    const cmd = buildCommand();
+export async function runAcceptChangesFromArgv(argv: readonly string[]): Promise<number> {
+    const cmd = buildAcceptChangesCommand();
     cmd.exitOverride();
     // Catch CommanderError (missing args, invalid options, --help) so the CLI
     // returns a clean exit code instead of bubbling to runCli().
@@ -240,11 +240,4 @@ export async function runFromArgv(argv: readonly string[]): Promise<number> {
     return result.message.includes("Error") ? 1 : 0;
 }
 
-// Internal exports for tests.
-export const __test = {
-    getSofficeEnv,
-    runSofficeWithTimeout,
-    TimeoutError,
-};
-
-runCli(import.meta.url, () => runFromArgv(process.argv.slice(2)));
+runCli(import.meta.url, () => runAcceptChangesFromArgv(process.argv.slice(2)));

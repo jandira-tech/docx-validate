@@ -19,7 +19,7 @@ import { existsSync, unlinkSync } from "node:fs";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { __test, ensureShim, getSofficeEnv, needsShim, runSoffice } from "../src/scripts/office/soffice.ts";
+import { __test, ensureShim, getSofficeEnv, needsShim, runSoffice } from "../src/scripts/office/soffice";
 
 const isLinux = process.platform === "linux";
 const hasGcc = isLinux && spawnSync("gcc", ["--version"], { stdio: "ignore" }).status === 0;

@@ -18,10 +18,9 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 
 import { describe, expect, it } from "vitest";
-
-import { addComment } from "../src/scripts/comment.ts";
-import { withTempDir } from "../src/lib/run-cli.ts";
-import { parseXml } from "../src/lib/xml-helpers.ts";
+import { withTempDir } from "../src/lib/run-cli";
+import { parseXml } from "../src/lib/xml-helpers";
+import { addComment } from "../src/scripts/comment";
 
 const RELS_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
@@ -49,7 +48,7 @@ describe("addComment", () => {
                 unpackedDir: dir,
                 commentId: 0,
                 text: "Hello world",
-                author: "Claude",
+                author: "Test",
                 initials: "C",
                 date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
             });
@@ -66,7 +65,7 @@ describe("addComment", () => {
             expect(comments.length).toBe(1);
             const c0 = comments.item(0)!;
             expect(c0.getAttribute("w:id")).toBe("0");
-            expect(c0.getAttribute("w:author")).toBe("Claude");
+            expect(c0.getAttribute("w:author")).toBe("Test");
             expect(c0.getAttribute("w:initials")).toBe("C");
             expect(c0.getAttribute("w:date")).toBe("2026-05-03T12:00:00Z");
             expect(commentsXml).toContain("Hello world");

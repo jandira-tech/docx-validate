@@ -19,7 +19,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { validate } from "../src/scripts/office/validate.ts";
+import { validate } from "../src/scripts/office/validate";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const EXT_DIR = path.join(HERE, "fixtures", "external");

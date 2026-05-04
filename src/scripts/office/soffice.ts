@@ -30,7 +30,7 @@ import { existsSync, unlinkSync, writeFileSync } from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 
-import { runCli } from "../../lib/run-cli.ts";
+import { runCli } from "../../lib/run-cli";
 
 export interface RunSofficeOptions {
     env?: NodeJS.ProcessEnv;

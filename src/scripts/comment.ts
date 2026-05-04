@@ -47,9 +47,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { Command } from "commander";
-
-import { parseXml, serializeXml } from "../lib/xml-helpers.ts";
-import { runCli } from "../lib/run-cli.ts";
+import { runCli } from "../lib/run-cli";
+import { parseXml, serializeXml } from "../lib/xml-helpers";
 
 const TEMPLATE_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "templates");
 
@@ -433,7 +432,7 @@ function formatUtcTimestamp(d: Date): string {
     );
 }
 
-export function buildCommand(): Command {
+export function buildCommentCommand(): Command {
     const cmd = new Command();
     cmd.name("comment")
         .description("Add comments to DOCX documents")
@@ -452,8 +451,8 @@ interface CliOptions {
     parent?: string;
 }
 
-export async function runFromArgv(argv: readonly string[]): Promise<number> {
-    const cmd = buildCommand();
+export async function runCommentFromArgv(argv: readonly string[]): Promise<number> {
+    const cmd = buildCommentCommand();
     cmd.exitOverride();
     cmd.parse(argv as string[], { from: "user" });
     const opts = cmd.opts<CliOptions>();
@@ -490,4 +489,4 @@ export async function runFromArgv(argv: readonly string[]): Promise<number> {
     return 0;
 }
 
-runCli(import.meta.url, () => runFromArgv(process.argv.slice(2)));
+runCli(import.meta.url, () => runCommentFromArgv(process.argv.slice(2)));

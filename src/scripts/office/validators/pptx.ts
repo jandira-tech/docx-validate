@@ -28,10 +28,11 @@
 import { existsSync, promises as fs } from "node:fs";
 import path from "node:path";
 
-import { mergeResults } from "../../../lib/types.ts";
-import { parseXml } from "../../../lib/xml-helpers.ts";
-import { BaseSchemaValidator, OFFICE_RELATIONSHIPS_NAMESPACE, PACKAGE_RELATIONSHIPS_NAMESPACE, walkFiles } from "./base.ts";
-import type { BaseSchemaValidatorOptions, ValidationIssue, ValidationResult } from "./base.ts";
+import type { ValidationIssue, ValidationResult } from "../../../lib/types";
+import { mergeResults } from "../../../lib/types";
+import { parseXml } from "../../../lib/xml-helpers";
+import type { BaseSchemaValidatorOptions } from "./base";
+import { BaseSchemaValidator, OFFICE_RELATIONSHIPS_NAMESPACE, PACKAGE_RELATIONSHIPS_NAMESPACE, walkFiles } from "./base";
 
 export const PRESENTATIONML_NAMESPACE = "http://schemas.openxmlformats.org/presentationml/2006/main";
 

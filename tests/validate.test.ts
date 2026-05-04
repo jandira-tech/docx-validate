@@ -21,9 +21,9 @@ import { fileURLToPath } from "node:url";
 import JSZip from "jszip";
 import { describe, expect, it } from "vitest";
 
-import { withTempDir } from "../src/lib/run-cli.ts";
-import { runFromArgv, validate } from "../src/scripts/office/validate.ts";
-import { BaseSchemaValidator } from "../src/scripts/office/validators/base.ts";
+import { withTempDir } from "../src/lib/run-cli";
+import { runValidateFromArgv, validate } from "../src/scripts/office/validate";
+import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const BROKEN_DIR = path.join(HERE, "fixtures", "broken");
@@ -164,7 +164,10 @@ describe("validate", () => {
             );
             await fs.writeFile(originalDocx, await zip.generateAsync({ type: "nodebuffer" }));
 
-            const result = await validate(unpacked, { original: originalDocx, author: "Test Author" });
+            const result = await validate(unpacked, {
+                original: originalDocx,
+                author: "Test Author",
+            });
             expect(result.suffix).toBe(".docx");
             // Body of the test isn't asserting validity (there's no schemas dir
             // alignment to guarantee that here); the contract under test is that
@@ -192,14 +195,14 @@ describe("xlsx unsupported file type", () => {
         });
     });
 
-    it("runFromArgv exits 1 for xlsx without throwing", async () => {
+    it("runValidateFromArgv exits 1 for xlsx without throwing", async () => {
         await withTempDir(async (tmp) => {
             const xlsxPath = path.join(tmp, "workbook.xlsx");
             const zip = new JSZip();
             zip.file("xl/workbook.xml", '<?xml version="1.0" encoding="UTF-8"?><workbook/>');
             await fs.writeFile(xlsxPath, await zip.generateAsync({ type: "nodebuffer" }));
 
-            const exitCode = await runFromArgv([xlsxPath]);
+            const exitCode = await runValidateFromArgv([xlsxPath]);
             expect(exitCode).toBe(1);
         });
     });
@@ -207,14 +210,14 @@ describe("xlsx unsupported file type", () => {
 
 describe("validate startup probe", () => {
     it("BaseSchemaValidator.assertLibxmljsAvailable() does not throw on this host", () => {
-        // The CLI calls this at the top of `runFromArgv` so a broken libxmljs2
+        // The CLI calls this at the top of `runValidateFromArgv` so a broken libxmljs2
         // binding fails loudly instead of degrading into per-file XSD errors.
         expect(() => BaseSchemaValidator.assertLibxmljsAvailable()).not.toThrow();
     });
 
-    it("CLI runFromArgv exits non-zero on a missing target (after passing the probe)", async () => {
+    it("CLI runValidateFromArgv exits non-zero on a missing target (after passing the probe)", async () => {
         await withTempDir(async (tmp) => {
-            const exitCode = await runFromArgv([path.join(tmp, "missing.docx")]);
+            const exitCode = await runValidateFromArgv([path.join(tmp, "missing.docx")]);
             expect(exitCode).toBe(1);
         });
     });

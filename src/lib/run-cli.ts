@@ -20,7 +20,7 @@
  *
  * Each script does:
  *
- *     import { runCli } from "../../lib/run-cli.ts";
+ *     import { runCli } from "../../lib/run-cli";
  *     import { Command } from "commander";
  *
  *     export function buildCommand(): Command { ... }
@@ -79,7 +79,12 @@ export const runCli = (metaUrl: string, fn: () => number | Promise<number>): voi
  * so callers should NOT re-emit the message themselves.
  */
 export const commanderExitCode = (err: unknown): number => {
-    if (typeof err === "object" && err !== null && "exitCode" in err && typeof (err as { readonly exitCode?: unknown }).exitCode === "number") {
+    if (
+        typeof err === "object" &&
+        err !== null &&
+        "exitCode" in err &&
+        typeof (err as { readonly exitCode?: unknown }).exitCode === "number"
+    ) {
         return (err as { readonly exitCode: number }).exitCode;
     }
     return 1;

@@ -43,11 +43,10 @@
 
 import { promises as fs, readFileSync } from "node:fs";
 import { default as JSZip } from "jszip";
-
-import { parseXml, serializeXml, makeSelect } from "../../../lib/xml-helpers.ts";
-import { mergeResults } from "../../../lib/types.ts";
-import type { ValidationIssue, ValidationResult } from "../../../lib/types.ts";
-import { BaseSchemaValidator, XML_NAMESPACE } from "./base.ts";
+import type { ValidationIssue, ValidationResult } from "../../../lib/types";
+import { mergeResults } from "../../../lib/types";
+import { makeSelect, parseXml, serializeXml } from "../../../lib/xml-helpers";
+import { BaseSchemaValidator, XML_NAMESPACE } from "./base";
 
 export const WORD_2006_NAMESPACE = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 export const WORD_STRICT_NAMESPACE = "http://purl.oclc.org/ooxml/wordprocessingml/main";
@@ -68,7 +67,7 @@ const MAX_PARA_ID = 0x80000000;
 const MAX_DURABLE_ID = 0x7fffffff;
 const MAX_RANDOM_DURABLE = 0x7ffffffe;
 
-interface ParagraphCounts {
+export interface ParagraphCounts {
     original: number;
     modified: number;
     delta: number;

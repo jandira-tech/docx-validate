@@ -42,16 +42,16 @@ import { fileURLToPath } from "node:url";
 
 import * as libxmljs from "libxmljs2";
 
-import { withTempDir } from "../../../lib/run-cli.ts";
-import { parseXml, serializeXml } from "../../../lib/xml-helpers.ts";
-import { DEFAULT_PROFILE, mergeResults, OK_RESULT } from "../../../lib/types.ts";
-import type { Profile, ValidationIssue, ValidationResult } from "../../../lib/types.ts";
+import { withTempDir } from "../../../lib/run-cli";
+import type { Profile, ValidationIssue, ValidationResult } from "../../../lib/types";
+import { DEFAULT_PROFILE, OK_RESULT } from "../../../lib/types";
+import { parseXml, serializeXml } from "../../../lib/xml-helpers";
 
 /**
  * Schema mapping table — file basename / suffix → relative path inside the
  * `schemas/` directory. Mirrors `BaseSchemaValidator.SCHEMA_MAPPINGS`.
  */
-export const SCHEMA_MAPPINGS: Record<string, string> = {
+const SCHEMA_MAPPINGS: Record<string, string> = {
     word: "ISO-IEC29500-4_2016/wml.xsd",
     ppt: "ISO-IEC29500-4_2016/pml.xsd",
     xl: "ISO-IEC29500-4_2016/sml.xsd",
@@ -73,7 +73,7 @@ export const SCHEMA_MAPPINGS: Record<string, string> = {
     sig: "ecma/fouth-edition/opc-digSig.xsd",
 };
 
-export const IGNORED_VALIDATION_ERRORS: readonly string[] = [
+const IGNORED_VALIDATION_ERRORS: readonly string[] = [
     "hyphenationZone",
     "purl.org/dc/terms",
     // libxmljs2 swallows the underlying schema-load failure (e.g. unresolved
@@ -84,7 +84,7 @@ export const IGNORED_VALIDATION_ERRORS: readonly string[] = [
     "Invalid XSD schema",
 ];
 
-export const UNIQUE_ID_REQUIREMENTS: Record<string, [attr: string, scope: "file" | "global"]> = {
+const UNIQUE_ID_REQUIREMENTS: Record<string, [attr: string, scope: "file" | "global"]> = {
     comment: ["id", "file"],
     commentrangestart: ["id", "file"],
     commentrangeend: ["id", "file"],
@@ -102,17 +102,17 @@ export const UNIQUE_ID_REQUIREMENTS: Record<string, [attr: string, scope: "file"
     grpsp: ["id", "file"],
 };
 
-export const EXCLUDED_ID_CONTAINERS = new Set<string>(["sectionlst"]);
+const EXCLUDED_ID_CONTAINERS = new Set<string>(["sectionlst"]);
 
-export const MC_NAMESPACE = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+const MC_NAMESPACE = "http://schemas.openxmlformats.org/markup-compatibility/2006";
 export const XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace";
 export const PACKAGE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/relationships";
 export const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
-export const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types";
+const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types";
 
-export const MAIN_CONTENT_FOLDERS = new Set(["word", "ppt", "xl"]);
+const MAIN_CONTENT_FOLDERS = new Set(["word", "ppt", "xl"]);
 
-export const OOXML_NAMESPACES = new Set<string>([
+const OOXML_NAMESPACES = new Set<string>([
     "http://schemas.openxmlformats.org/officeDocument/2006/math",
     "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
     "http://schemas.openxmlformats.org/schemaLibrary/2006/main",
@@ -144,7 +144,7 @@ export const OOXML_NAMESPACES = new Set<string>([
  * See PORT_NOTES.md § "ISO OOXML Strict XSD validation" for rationale.
  * Adding full Strict schema support is tracked as a future improvement.
  */
-export const STRICT_OOXML_NS_PREFIX = "http://purl.oclc.org/ooxml/";
+const STRICT_OOXML_NS_PREFIX = "http://purl.oclc.org/ooxml/";
 
 // Use a non-`g` regex for the predicate (`.test()` against a stateful `g`
 // pattern advances `lastIndex` between calls and silently mis-skips matches),
@@ -201,7 +201,7 @@ interface IdHit {
     tag: string;
 }
 
-interface XsdValidationOutcome {
+export interface XsdValidationOutcome {
     /** `null` mirrors Python's `(None, None)` skip — no schema configured. */
     valid: boolean | null;
     errors: Set<string>;
@@ -845,9 +845,7 @@ export class BaseSchemaValidator {
                         code: "ct-undeclared-part",
                     });
                 }
-            } catch {
-                continue;
-            }
+            } catch {}
         }
 
         for (const filePath of allFiles) {
@@ -1178,7 +1176,8 @@ export function walkFiles(dir: string, extensions?: ReadonlyArray<string>): stri
     const results: string[] = [];
     const stack: string[] = [dir];
     while (stack.length > 0) {
-        const current = stack.pop()!;
+        const current = stack.pop();
+        if (current === undefined) break;
         let entries: string[];
         try {
             entries = readdirSync(current);
@@ -1217,7 +1216,8 @@ function* iterElements(root: Element | null): IterableIterator<Element> {
     yield root;
     const stack: Element[] = [root];
     while (stack.length > 0) {
-        const node = stack.pop()!;
+        const node = stack.pop();
+        if (node === undefined) break;
         const children = node.childNodes;
         for (let i = children.length - 1; i >= 0; i -= 1) {
             const child = children.item(i);
@@ -1236,7 +1236,8 @@ function collectDeclaredPrefixes(root: Element): Set<string> {
     const declared = new Set<string>();
     const stack: Element[] = [root];
     while (stack.length > 0) {
-        const elem = stack.pop()!;
+        const elem = stack.pop();
+        if (elem === undefined) break;
         const attrs = elem.attributes;
         for (let i = 0; i < attrs.length; i += 1) {
             const attr = attrs.item(i);
@@ -1311,7 +1312,8 @@ function removeNonOoxmlElements(root: Element): void {
     // DFS, removing element children whose namespace is outside OOXML_NAMESPACES.
     const stack: Element[] = [root];
     while (stack.length > 0) {
-        const node = stack.pop()!;
+        const node = stack.pop();
+        if (node === undefined) break;
         const children = node.childNodes;
         const toRemove: Element[] = [];
         for (let i = 0; i < children.length; i += 1) {
@@ -1332,7 +1334,3 @@ function removeNonOoxmlElements(root: Element): void {
 function finalize(issues: ValidationIssue[]): ValidationResult {
     return { valid: issues.every((i) => i.severity !== "error"), issues };
 }
-
-// Re-export merge so subclasses don't have to import from two places.
-export { mergeResults };
-export type { ValidationIssue, ValidationResult };

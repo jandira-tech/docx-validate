@@ -32,13 +32,13 @@ import path from "node:path";
 import { Command } from "commander";
 import JSZip from "jszip";
 
-import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli.ts";
-import { type ValidationResult } from "../../lib/types.ts";
-import { parseXml, serializeXml } from "../../lib/xml-helpers.ts";
-import { inferAuthor } from "./helpers/simplify-redlines.ts";
-import { DOCXSchemaValidator } from "./validators/docx.ts";
-import { PPTXSchemaValidator } from "./validators/pptx.ts";
-import { validateRedlining } from "./validators/redlining.ts";
+import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
+import type { ValidationResult } from "../../lib/types";
+import { parseXml, serializeXml } from "../../lib/xml-helpers";
+import { inferAuthor } from "./helpers/simplify-redlines";
+import { DOCXSchemaValidator } from "./validators/docx";
+import { PPTXSchemaValidator } from "./validators/pptx";
+import { validateRedlining } from "./validators/redlining";
 
 const SUPPORTED_SUFFIXES = new Set([".docx", ".pptx", ".xlsx"]);
 const TEXT_NODE = 3;
@@ -334,7 +334,7 @@ function parseBoolFlag(value: string): boolean {
     return value.toLowerCase() === "true";
 }
 
-export function buildCommand(): Command {
+export function buildPackCommand(): Command {
     const cmd = new Command();
     cmd.name("pack")
         .description("Pack a directory into a DOCX, PPTX, or XLSX file")
@@ -342,7 +342,10 @@ export function buildCommand(): Command {
         .argument("<output_file>", "Output Office file (.docx/.pptx/.xlsx)")
         .option("--original <file>", "Original file for validation comparison")
         .option("--validate <true|false>", "Run validation with auto-repair (default: true)", parseBoolFlag, true)
-        .option("--author <name>", "Author whose tracked changes to validate (used as inferAuthor fallback). Required when --original is provided.");
+        .option(
+            "--author <name>",
+            "Author whose tracked changes to validate (used as inferAuthor fallback). Required when --original is provided.",
+        );
     return cmd;
 }
 
@@ -352,8 +355,8 @@ interface CliOptions {
     author?: string;
 }
 
-export async function runFromArgv(argv: readonly string[]): Promise<number> {
-    const cmd = buildCommand();
+export async function runPackFromArgv(argv: readonly string[]): Promise<number> {
+    const cmd = buildPackCommand();
     cmd.exitOverride();
     // Catch CommanderError (missing args, invalid options, --help) so the CLI
     // returns a clean exit code instead of bubbling to runCli().
@@ -377,4 +380,4 @@ export async function runFromArgv(argv: readonly string[]): Promise<number> {
     return result.ok ? 0 : 1;
 }
 
-runCli(import.meta.url, () => runFromArgv(process.argv.slice(2)));
+runCli(import.meta.url, () => runPackFromArgv(process.argv.slice(2)));

@@ -34,8 +34,8 @@ import path from "node:path";
 
 import JSZip from "jszip";
 
-import { NS } from "../../../lib/types.ts";
-import { getElementsByTagNameNSAll, parseXml, serializeXml } from "../../../lib/xml-helpers.ts";
+import { NS } from "../../../lib/types";
+import { getElementsByTagNameNSAll, parseXml, serializeXml } from "../../../lib/xml-helpers";
 
 const ELEMENT_NODE = 1;
 const TEXT_NODE = 3;

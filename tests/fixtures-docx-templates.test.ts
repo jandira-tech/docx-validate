@@ -48,7 +48,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { validate } from "../src/scripts/office/validate.ts";
+import { validate } from "../src/scripts/office/validate";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE_DIR = path.resolve(HERE, "fixtures", "external", "docx-templates");
@@ -117,7 +117,9 @@ describe("docx-templates corpus — strict profile flags BOM and other quirks", 
     it.each(Object.keys(KNOWN_FAILURES_STRICT).sort())("%s under strict profile is rejected with the expected codes", async (name) => {
         const expected = KNOWN_FAILURES_STRICT[name];
         if (!expected) throw new Error(`missing expectation for ${name}`);
-        const result = await validate(path.join(FIXTURE_DIR, name), { profile: "strict" });
+        const result = await validate(path.join(FIXTURE_DIR, name), {
+            profile: "strict",
+        });
         expect(result.valid).toBe(false);
         for (const code of expected.codes) {
             expect(result.issues.some((i) => i.code === code)).toBe(true);
