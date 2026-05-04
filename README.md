@@ -20,6 +20,7 @@ OOXML validators and redline/comment helpers for `.docx` and `.pptx` files. XSD-
 - Repo: [jandira-tech/docx-validate](https://github.com/jandira-tech/docx-validate)
 - npm: `docx-validate`
 - Maintainer: [jandira.tech](https://www.jandira.tech) — We are building legal tech. Jandira Technologies is the studio behind tools like [Cicero](https://www.cicero.im) (a legal workbench that turns messy inputs into redlines, issue lists, and memos), PII redaction models for Brazilian Portuguese, and AI/contract-drafting benchmarks. `docx-validate` falls out of that work — when redlines have to round-trip through Word, validating the OOXML directly beats trusting the renderer.
+- docs: https://jandira-tech.github.io/docx-validate/
 
 ## Install
 
