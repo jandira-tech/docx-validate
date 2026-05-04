@@ -1,7 +1,7 @@
 {
     "name": "docx-validate",
-    "version": "0.1.0",
-    "description": "OOXML validators and redline/comment helpers for .docx and .pptx files. XSD-backed, TypeScript, ESM. for the neurotic developer",
+    "version": "0.1.1",
+    "description": "OOXML validators and redline/comment helpers for .docx and .pptx files. XSD-backed, TypeScript, ESM, for the neurotic developer.",
     "homepage": "https://github.com/jandira-tech/docx-validate#readme",
     "bugs": {
         "url": "https://github.com/jandira-tech/docx-validate/issues"
