@@ -194,7 +194,11 @@ async function runValidators(unpackedDir: string, opts: RunValidatorsOptions): P
         });
         validators.push(pptx);
     } else {
-        process.stderr.write(`Unsupported file type: ${opts.suffix}\n`);
+        // Library code is silent (CLAUDE.md: "Validator results are
+        // structured, not printed"). The CLI shim renders this issue via
+        // its general issue-printing path at the bottom of
+        // runValidateFromArgv, so callers driving validate() directly get
+        // the structured error without stderr noise.
         return {
             valid: false,
             issues: [

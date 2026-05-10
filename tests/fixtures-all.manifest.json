@@ -1,0 +1,4277 @@
+{
+  "generatedAt": "2026-05-10T00:52:55.030Z",
+  "totalFixtures": 342,
+  "entries": [
+    {
+      "relativePath": "broken/comments.unmatched-comment-marker.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "comment-marker-missing",
+          "comment-orphan-start",
+          "comment-thread-count-mismatch"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "comment-marker-missing",
+          "comment-orphan-start",
+          "comment-thread-count-mismatch"
+        ]
+      }
+    },
+    {
+      "relativePath": "broken/empty.missing-content-type.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "broken/endnotes.paraid-overflow.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "id-paraid-overflow"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "id-paraid-overflow"
+        ]
+      }
+    },
+    {
+      "relativePath": "broken/footnotes.duplicate-paraid.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "id-paraid-overflow"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "id-paraid-overflow"
+        ]
+      }
+    },
+    {
+      "relativePath": "broken/header-with-rid-no-sidecar.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "rels-missing-sidecar",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "rels-missing-sidecar",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "broken/sample-document.empty-rels.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "rels-empty-part"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "broken/sample-document.id-overflow.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "id-durable-overflow",
+          "id-paraid-overflow",
+          "ignorable-undeclared",
+          "rels-empty-part"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "id-durable-overflow",
+          "id-paraid-overflow",
+          "ignorable-undeclared"
+        ]
+      }
+    },
+    {
+      "relativePath": "broken/single-paragraph.malformed-xml.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xml-syntax"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xml-syntax"
+        ]
+      }
+    },
+    {
+      "relativePath": "broken/tables.missing-namespace.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xml-syntax"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xml-syntax"
+        ]
+      }
+    },
+    {
+      "relativePath": "broken/text-box.orphan-part.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "rels-unreferenced",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "rels-unreferenced",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "broken/tiny-picture.broken-rels.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "rels-broken"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "rels-broken"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/apache-poi/51921-Word-Crash067.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/apache-poi/MultipleBodyBug.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xml-bom-leading",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/apache-poi/bug56075-changeTracking_on.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/apache-poi/bug59378.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/apache-poi/crash-517626e815e0afa9decd0ebb6d1dee63fb9907dd.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Corrupted zip: can't find end of central directory"
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Corrupted zip: can't find end of central directory"
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/anchor-empty.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/commandExecutionError.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/confusingCommandNames.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/dynamic-columns-with-dynamic-rows.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/dynamic-columns.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/exec.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/execAndIns.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/execPromise.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/execShorthand.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/execWithContext.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/existingUppercaseJPEGExtension.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/falsy-block.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/fixSmartQuotes.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/for-row1.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/for1.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/for1alias.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/for1customDelimiter.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/for1inline.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/for1inlineWithSpaces.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/for1js.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/for1scalars.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/for2.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/for3.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/forLoopWithTextBox.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/forOverObject.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/forOverObjectKeys.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/forWithIdx.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/htmls.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/if-row1.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/if.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/if2.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/ifInline.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/ifStatementsOnSameLine.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/ifStatementsOnSameRow1.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/ifStatementsOnSameRow2.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/imageBase64.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/imageCaption.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/imageExisting.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/imageExistingMultiple.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/imageHeader.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/imageInShapeInFooter.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/imageMultiDelimiter.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/imageRotation.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/imageSimple.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/imagesSVG.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/insJsComplex.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/insJsSimple.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/insJsWithLoops.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/insOmitted.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/insShorthand.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/insertArray.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/insertInHeaderAndFooter.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/invalidCommand.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/invalidFor.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/invalidForCmd.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/invalidIf.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/invalidMultipleErrors.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/link-regression-issue-133.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/link-regression-issue-83.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/links.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/literalXml.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/longText.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/missingEndFor.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/missingEndIf.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/nestedInlineForLoopWithSurroundingText.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/newlineInVariableIssue143.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/noQuery.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/noQueryBrackets.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/noQuerySimpleInserts.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/nonAlphaCommandNames1.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/nonAlphaCommandNames2.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/objectCommandResultError.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/office365.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xml-bom-leading",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/quickTest.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/referenceError.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/rejectNullishIMAGE.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/rejectNullishINS.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/replaceOneImage.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/replaceTwoImages.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/simpleQuery.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/simpleQuerySimpleInserts.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/splitDelimiters.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/tableWithHTML.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/unmatchedEndFor.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/unmatchedEndIf.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/wbs.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx-templates/zipGeneration.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "ct-undeclared-ext"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "ct-undeclared-ext"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/docx4j/NumberingImplicitNumId.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "rels-broken",
+          "xml-bom-leading"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "rels-broken"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/docx4j/header-no-rels.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/docx4j/hyperlink_dupe.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xml-bom-leading"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/mammoth-js/strict-format.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/mammoth-js/text-box.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/open-xml-sdk/5Errors.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "comment-marker-missing",
+          "xml-bom-leading",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "comment-marker-missing",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/open-xml-sdk/EmptyRelationshipElement.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "rels-empty-element"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "rels-empty-element"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/open-xml-sdk/InvalidDocProps.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "ct-undeclared-part",
+          "rels-broken",
+          "xml-bom-leading"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "ct-undeclared-part",
+          "rels-broken"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/open-xml-sdk/InvalidDocPropsct.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "ct-undeclared-part",
+          "xml-bom-leading"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "ct-undeclared-part"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/open-xml-sdk/Strict01.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/open-xml-sdk/UnknownElement.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xml-bom-leading",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/open-xml-sdk/mcdoc.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xml-bom-leading",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/math-all-objects.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/math-delimiter-tests.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/math-eqarr-tests.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xml-bom-leading",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/math-func-tests.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xml-bom-leading"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/math-groupchr-tests.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/math-limit-tests.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/math-matrix-tests.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/math-nary-tests.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/math-phantom-tests.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/math-radical-tests.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/math-spre-tests.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/multi-image-types.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/pageref-standalone-h.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/pageref-standalone-uppercase-h.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/rtl-header-footer.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/rtl-mixed-bidi.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/rtl-page-numpages.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/sd-1960-word-replacement-no-comments.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/sd-2323-image-resize-test.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/sd-2343-table-border-widths.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/sd-2447-toc-tab-alignment.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/sd-2517-localized-heading-styles.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "id-paraid-overflow",
+          "rels-broken"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "id-paraid-overflow",
+          "rels-broken"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/sd-2672-gridbefore-vmerge.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/sd-2672-merged-table.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/sd-2672-multipara-cell.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/sd-2672-nested-table.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/sd-2672-plain-3x3.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/sd-2672-rtl-table.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/sd-2672-sdt-table.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/sd-2750-borderbox.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/sd-2888-hyperlink-with-ampersand.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/tiff-image.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/two-column-simple.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/word-native-bullet-circle.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/word-native-bullet-disc.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/behavior/word-native-bullet-square.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/cli-legacy/replace-test.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/cli-legacy/sample.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/doc-api-stories/diff-doc1.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/doc-api-stories/diff-doc2.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/doc-api-stories/numwords.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/doc-api-stories/sd-2086-header-row-shading-api.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/doc-api-stories/table-style-options-roundtrip.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/encryption/encrypted-advanced-text.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howt"
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howt"
+      }
+    },
+    {
+      "relativePath": "external/superdoc/encryption/encrypted-hello.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howt"
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howt"
+      }
+    },
+    {
+      "relativePath": "external/superdoc/evals/basic-list.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/evals/blank.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/evals/comments-doc.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/evals/document.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "rels-unreferenced",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "rels-unreferenced",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/evals/employment-offer.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/evals/lease-agreement.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/evals/memorandum.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/evals/nda.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/evals/report-with-formatting.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/evals/table-doc.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/layout-engine/shapes/basic-vector-shapes.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/layout-engine/shapes/vectors.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "rels-broken"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "rels-broken"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/Google Docs Originated comments & TCs.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/Hello docx world.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/SD-978-remove-table-borders.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/WordOriginatedComments.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/advanced-text.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/alternateContent_valid.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/anchor_images.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/annot2.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/annotations_import.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "rels-empty-element",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "rels-empty-element",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/annotations_import_2.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xml-syntax"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xml-syntax"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/base-custom.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/base-ordered.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/basic-comment.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/basic-footnotes.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/basic-list.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/basic-page-nums.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/basic-paragraph.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/basic-resolved-comment.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/basic-table-shading.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/basic-tracked-change.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/blank-doc.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/bookmark_use_cases.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/broken-complex-list.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/broken-list-missing-items.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/broken-list.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/comment.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/complex-list-def-issue.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/complex-list-def-short-export.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/complex-list-def-short.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/complex2.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/complexexport1.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/contract-acc.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/custom-list-numbering1.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/custom-list1.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_after.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_after10.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_after11.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_after16.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_after19.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_after2.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_after3.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_after4.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_after5.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_after6.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_after7.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_after8.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_after9.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_before.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_before10.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_before11.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_before16.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_before19.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_before2.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_before3.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_before4.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_before5.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_before6.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_before7.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_before8.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/diffing/diff_before9.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/doc-with-graphs-diagrams-rotated.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/doc_with_spaces_from_styles.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/doc_with_spacing.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/dropcaps.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/exported-list-font.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/exporttest.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/features-redlines-comments-annotations-and-more.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "comment-thread-count-mismatch",
+          "rels-unreferenced",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "comment-thread-count-mismatch",
+          "rels-unreferenced",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/fields-test.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/fields_attrs1.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/fields_attrs2_fonts.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/font-formatting-runs.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/gdocs-comments-export.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/gdocs-single-comment.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/gdocs-tracked-changes.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/h_f-normal-odd-even-firstpg.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/h_f-normal-odd-even-unchecked-first-pg-unchecked.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/h_f-normal-odd-even.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/h_f-normal.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/header-alternating-odd-even.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/heading-font.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/hummingbird.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/hyperlink-exported.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "rels-unreferenced",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "rels-unreferenced",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/hyperlink_multiple_runs.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "ws-missing-preserve",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "ws-missing-preserve",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/hyperlink_node.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/hyperlink_node_internal.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/image-inline-and-block.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/image-out-of-folder.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "ct-undeclared-part",
+          "xml-bom-leading",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "ct-undeclared-part",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/image_doc.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/image_p_spacing.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/instrtext-angled-brackets-bug.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/invalid-list-def-fallback.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/invalid-underline.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "rels-unreferenced",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "rels-unreferenced",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/line-break.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/line_space_table.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/list-def-mix.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/list-numbering-reimport.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/list-spacer1.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/list-with-break-exported-broken.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/list-with-break-from-word.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/list-with-table-break.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/listWithSpacerNodes.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/list_with_indents.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/lists-sub-paragraph.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/longer-header-sign-area.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/missing-sectpr.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/missing-separator.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/msword-tracked-changes.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/multi_section_doc.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/multiple-nodes-in-list.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/nested-comments-gdocs.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/nested-comments.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "ws-missing-preserve"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "ws-missing-preserve"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/numwords.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/ooxml-bold-rstyle-linked-combos-demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/ooxml-bold-vals-demo.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/ooxml-color-rstyle-linked-combos-demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "rels-broken",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "rels-broken",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/ooxml-highlight-rstyle-linked-combos-demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/ooxml-italic-rstyle-combos-demo.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/ooxml-rFonts-rstyle-linked-combos-demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/ooxml-size-rstyle-linked-combos-demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/ooxml-strike-rstyle-linked-combos-demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/ooxml-underline-rstyle-linked-combos-demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/orderedlist_interrupted1.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/page-numbering-examples.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/pagination-blank.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/pagination-with-hard-break.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xml-bom-leading"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/paragraph-sectpr-breaks.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "ct-undeclared-ext",
+          "rels-unreferenced",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "ct-undeclared-ext",
+          "rels-unreferenced",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/paragraph_indent_normal_styles.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/paragraph_pPr_variations.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/paragraph_spacing_missing.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/pci-table.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/pre-separated-list.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "rels-unreferenced",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "rels-unreferenced",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/python_docx_comment_test.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/restart-numbering-sub-list.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/sd-1480-two-col-index.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/sd-1480-two-col-tab-positions.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/sd-1494-table-left-indent.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/sd-1495-auto-page-break-2.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/sd-1495-auto-page-break.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/sd-1707-list-enter-track-changes-with-br.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/sd-1919-word-mixed.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/sd-1919-word-simple.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/sd-1919-word-table.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/sd-2534-collab-export.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "rels-broken"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "rels-broken"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/sd-2766-pirates-tracked-changes.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/sd_1494_table_left_indent.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/sdpr-titleonly.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/sdpr.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/sdt-node-comment.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/sdt_test.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/sdts-basic.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/shape_group.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/simple-ordered-list.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/sublist-issue.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/super-basic-table.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/superdoc-hyperlink-cases.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "rels-unreferenced",
+          "ws-missing-preserve",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "rels-unreferenced",
+          "ws-missing-preserve",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/superdoc_table_tester.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/tab-alignment-test.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "rels-empty-part"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/tab_test.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/table-autofit-colspan.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/table-merged-cells.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/table-width-issue.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/table-widths-SD-732.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/table.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/text-color-highlight.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/threaded-comment.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/two_column_two_page-arial.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/two_column_two_page.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/vrect-node.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "rels-unreferenced",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "rels-unreferenced",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      }
+    },
+    {
+      "relativePath": "external/superdoc/super-editor/wmf-emf.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "vfdsdfcACawesd.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    }
+  ]
+}

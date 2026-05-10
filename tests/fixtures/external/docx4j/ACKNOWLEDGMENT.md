@@ -8,7 +8,7 @@ instead of only synthetic ones.
 - Upstream repo: <https://github.com/plutext/docx4j>
 - Upstream source path: `docx4j-core-tests/src/test/resources/`
 - License: Apache-2.0 — see `NOTICE` in this directory and the upstream
-  [LICENSE](https://github.com/plutext/docx4j/blob/master/LICENSE)
+  [LICENSE](https://github.com/plutext/docx4j/blob/VERSION_11_5_12/legals/LICENSE)
 
 Thanks to Plutext and the docx4j contributors for keeping their fixtures
 public.

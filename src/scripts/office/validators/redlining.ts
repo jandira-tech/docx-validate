@@ -92,7 +92,7 @@ export async function validateRedlining(options: RedliningOptions): Promise<Vali
 
         if (authorDel.length === 0 && authorIns.length === 0) {
             if (verbose) {
-                console.log(`PASSED - No tracked changes by ${author} found.`);
+                process.stdout.write(`PASSED - No tracked changes by ${author} found.\n`);
             }
             return { valid: true, issues: [] };
         }
@@ -150,7 +150,9 @@ export async function validateRedlining(options: RedliningOptions): Promise<Vali
 
         if (modifiedTxt !== originalTxt) {
             const message = await generateDetailedDiff(originalTxt, modifiedTxt, author);
-            console.log(message);
+            if (verbose) {
+                process.stdout.write(`${message}\n`);
+            }
             return {
                 valid: false,
                 issues: [{ severity: "error", message, code: "redlining/mismatch" }],
@@ -158,15 +160,17 @@ export async function validateRedlining(options: RedliningOptions): Promise<Vali
         }
 
         if (verbose) {
-            console.log(`PASSED - All changes by ${author} are properly tracked`);
+            process.stdout.write(`PASSED - All changes by ${author} are properly tracked\n`);
         }
         return { valid: true, issues: [] };
     });
-}
 
-function failure(message: string): ValidationResult {
-    console.log(message);
-    return { valid: false, issues: [{ severity: "error", message }] };
+    function failure(message: string): ValidationResult {
+        if (verbose) {
+            process.stdout.write(`${message}\n`);
+        }
+        return { valid: false, issues: [{ severity: "error", message }] };
+    }
 }
 
 /**
