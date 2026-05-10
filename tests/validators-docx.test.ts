@@ -425,6 +425,198 @@ describe("DOCXSchemaValidator", () => {
         });
     });
 
+    describe("validateStyleDefaults (ECMA-376 §17.7.4.4 implied defaults)", () => {
+        it("flags every missing default style", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "styles.xml"),
+                    `<?xml version="1.0"?><w:styles ${W_NS}><w:style w:styleId="Heading1" w:type="paragraph"/></w:styles>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateStyleDefaults();
+                expect(result.valid).toBe(false);
+                const codes = result.issues.filter((i) => i.code === "style-default-missing");
+                // All four implied defaults missing.
+                expect(codes).toHaveLength(4);
+                const ids = codes.map((i) => /'([^']+)'/.exec(i.message)?.[1]).sort();
+                expect(ids).toEqual(["DefaultParagraphFont", "NoList", "Normal", "TableNormal"]);
+            });
+        });
+
+        it("passes when every implied-default style is defined", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "styles.xml"),
+                    `<?xml version="1.0"?><w:styles ${W_NS}>` +
+                        `<w:style w:styleId="Normal" w:type="paragraph" w:default="1"/>` +
+                        `<w:style w:styleId="DefaultParagraphFont" w:type="character" w:default="1"/>` +
+                        `<w:style w:styleId="TableNormal" w:type="table" w:default="1"/>` +
+                        `<w:style w:styleId="NoList" w:type="numbering" w:default="1"/>` +
+                        `</w:styles>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateStyleDefaults();
+                expect(result.valid).toBe(true);
+                expect(result.issues).toEqual([]);
+            });
+        });
+
+        it("repairMissingStyleDefinitions injects the four defaults even when nothing references them", async () => {
+            await withTempDir(async (dir) => {
+                const stylesPath = path.join(dir, "word", "styles.xml");
+                await writeFile(stylesPath, `<?xml version="1.0"?><w:styles ${W_NS}/>`);
+                // No document.xml needed — the four defaults must be injected
+                // regardless of whether anything references them.
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const repairs = await v.repairMissingStyleDefinitions();
+                expect(repairs).toBe(4);
+                const after = await fs.readFile(stylesPath, "utf-8");
+                expect(after).toContain('w:styleId="Normal"');
+                expect(after).toContain('w:styleId="DefaultParagraphFont"');
+                expect(after).toContain('w:styleId="TableNormal"');
+                expect(after).toContain('w:styleId="NoList"');
+                // Must mark them as default="1" so Word picks them up.
+                expect(after).toMatch(/w:default="1"\s+w:styleId="Normal"|w:styleId="Normal"\s+w:[^>]*default="1"/);
+                // Validate clean now.
+                const post = await v.validateStyleDefaults();
+                expect(post.valid).toBe(true);
+            });
+        });
+    });
+
+    describe("validateStyleReferences / repairMissingStyleDefinitions", () => {
+        it("flags <w:rStyle w:val='X'/> when X is not defined in styles.xml", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:t>x</w:t></w:r></w:p>`,
+                    ),
+                );
+                await writeFile(
+                    path.join(dir, "word", "styles.xml"),
+                    `<?xml version="1.0"?><w:styles ${W_NS}><w:style w:styleId="Heading1" w:type="paragraph"/></w:styles>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateStyleReferences();
+                expect(result.valid).toBe(false);
+                const issue = result.issues.find((i) => i.code === "style-reference-undefined" && i.message.includes("CommentReference"));
+                expect(issue).toBeDefined();
+                expect(issue?.severity).toBe("error");
+            });
+        });
+
+        it("passes when every referenced style is defined", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(`<w:p><w:r><w:rPr><w:rStyle w:val="Heading1"/></w:rPr><w:t>x</w:t></w:r></w:p>`),
+                );
+                await writeFile(
+                    path.join(dir, "word", "styles.xml"),
+                    `<?xml version="1.0"?><w:styles ${W_NS}><w:style w:styleId="Heading1" w:type="paragraph"/></w:styles>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateStyleReferences();
+                expect(result.valid).toBe(true);
+                expect(result.issues).toEqual([]);
+            });
+        });
+
+        it("scans comments.xml and headers, not just document.xml", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "document.xml"), wrapDocument(`<w:p/>`));
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                        `<w:p><w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:t>x</w:t></w:r></w:p>` +
+                        `</w:comment></w:comments>`,
+                );
+                await writeFile(
+                    path.join(dir, "word", "styles.xml"),
+                    `<?xml version="1.0"?><w:styles ${W_NS}/>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateStyleReferences();
+                expect(result.valid).toBe(false);
+                const issue = result.issues.find((i) => i.code === "style-reference-undefined");
+                expect(issue?.path).toContain("comments.xml");
+            });
+        });
+
+        it("repairMissingStyleDefinitions injects canonical CommentReference into styles.xml (plus the four ECMA defaults)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(`<w:p><w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:t>x</w:t></w:r></w:p>`),
+                );
+                const stylesPath = path.join(dir, "word", "styles.xml");
+                await writeFile(stylesPath, `<?xml version="1.0"?><w:styles ${W_NS}><w:style w:styleId="Heading1" w:type="paragraph"/></w:styles>`);
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const repairs = await v.repairMissingStyleDefinitions();
+                // 1 (CommentReference, referenced) + 4 (Normal, DefaultParagraphFont,
+                // TableNormal, NoList — implied defaults always injected if missing).
+                expect(repairs).toBe(5);
+                const after = await fs.readFile(stylesPath, "utf-8");
+                expect(after).toContain('w:styleId="CommentReference"');
+                expect(after).toContain('annotation reference');
+                expect(after).toContain('w:styleId="Normal"');
+                expect(after).toContain('w:styleId="TableNormal"');
+                // Validate again — both checks must now be clean.
+                const refs = await v.validateStyleReferences();
+                expect(refs.valid).toBe(true);
+                const defaults = await v.validateStyleDefaults();
+                expect(defaults.valid).toBe(true);
+            });
+        });
+
+        it("repairMissingStyleDefinitions silently skips unknown style IDs (only the four implied defaults are auto-injected)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(`<w:p><w:r><w:rPr><w:rStyle w:val="MyCustomStyle"/></w:rPr><w:t>x</w:t></w:r></w:p>`),
+                );
+                const stylesPath = path.join(dir, "word", "styles.xml");
+                await writeFile(stylesPath, `<?xml version="1.0"?><w:styles ${W_NS}/>`);
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const repairs = await v.repairMissingStyleDefinitions();
+                // Only the 4 implied defaults are auto-injected; the unknown
+                // 'MyCustomStyle' is left for the caller to handle.
+                expect(repairs).toBe(4);
+                const after = await fs.readFile(stylesPath, "utf-8");
+                expect(after).not.toContain('w:styleId="MyCustomStyle"');
+                // Still flagged because MyCustomStyle is still dangling.
+                const post = await v.validateStyleReferences();
+                expect(post.valid).toBe(false);
+            });
+        });
+
+        it("repairs sample-document.broken-tables fixture: injects CommentReference, validation passes", async () => {
+            const fixturePath = path.join(__dirname, "fixtures/broken/sample-document.broken-tables.docx");
+            await withTempDir(async (dir) => {
+                const buf = await fs.readFile(fixturePath);
+                const zip = await JSZip.loadAsync(buf);
+                for (const [entryName, entry] of Object.entries(zip.files)) {
+                    if (entry.dir) continue;
+                    const dest = path.join(dir, entryName);
+                    await fs.mkdir(path.dirname(dest), { recursive: true });
+                    await fs.writeFile(dest, await entry.async("nodebuffer"));
+                }
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const before = await v.validateStyleReferences();
+                expect(before.valid).toBe(false);
+                expect(before.issues.some((i) => i.message.includes("CommentReference"))).toBe(true);
+
+                const repairs = await v.repairMissingStyleDefinitions();
+                expect(repairs).toBeGreaterThan(0);
+
+                const after = await v.validateStyleReferences();
+                expect(after.valid).toBe(true);
+            });
+        });
+    });
+
     describe("validateAllParagraphsHaveParaId / repairMissingParaIds", () => {
         const TBL_NS = `xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"`;
 

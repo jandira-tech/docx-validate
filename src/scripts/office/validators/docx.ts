@@ -100,6 +100,108 @@ const KNOWN_OOXML_PREFIX_URIS: Readonly<Record<string, string>> = {
 };
 
 /**
+ * Canonical `<w:style>` definitions for well-known styleIds that writers
+ * routinely *reference* via `<w:rStyle w:val="…"/>` or `<w:pStyle …/>`
+ * without ever *defining*. Drawn from a clean Word save's `styles.xml`
+ * for each style. Used by `repairMissingStyleDefinitions` — unknown
+ * styleIds are NOT auto-defined (we'd be guessing intent).
+ *
+ * The fragments are appended verbatim into the `<w:styles>` root, so they
+ * must be self-contained and ordered such that any inter-style
+ * `basedOn`/`link` references they contain also resolve to either an
+ * already-present style OR another fragment we'll append in the same pass.
+ */
+const WELL_KNOWN_STYLE_DEFINITIONS: Readonly<Record<string, string>> = {
+    CommentReference:
+        `<w:style w:type="character" w:styleId="CommentReference">` +
+        `<w:name w:val="annotation reference"/>` +
+        `<w:uiPriority w:val="99"/>` +
+        `<w:semiHidden/>` +
+        `<w:unhideWhenUsed/>` +
+        `<w:rPr><w:sz w:val="16"/><w:szCs w:val="16"/></w:rPr>` +
+        `</w:style>`,
+    CommentText:
+        `<w:style w:type="paragraph" w:styleId="CommentText">` +
+        `<w:name w:val="annotation text"/>` +
+        `<w:uiPriority w:val="99"/>` +
+        `<w:semiHidden/>` +
+        `<w:unhideWhenUsed/>` +
+        `<w:rPr><w:sz w:val="20"/><w:szCs w:val="20"/></w:rPr>` +
+        `</w:style>`,
+    CommentSubject:
+        `<w:style w:type="paragraph" w:styleId="CommentSubject">` +
+        `<w:name w:val="annotation subject"/>` +
+        `<w:basedOn w:val="CommentText"/>` +
+        `<w:next w:val="CommentText"/>` +
+        `<w:uiPriority w:val="99"/>` +
+        `<w:semiHidden/>` +
+        `<w:unhideWhenUsed/>` +
+        `<w:rPr><w:b/><w:bCs/></w:rPr>` +
+        `</w:style>`,
+    Header:
+        `<w:style w:type="paragraph" w:styleId="Header">` +
+        `<w:name w:val="header"/>` +
+        `<w:uiPriority w:val="99"/>` +
+        `<w:unhideWhenUsed/>` +
+        `</w:style>`,
+    Footer:
+        `<w:style w:type="paragraph" w:styleId="Footer">` +
+        `<w:name w:val="footer"/>` +
+        `<w:uiPriority w:val="99"/>` +
+        `<w:unhideWhenUsed/>` +
+        `</w:style>`,
+    DefaultParagraphFont:
+        `<w:style w:type="character" w:default="1" w:styleId="DefaultParagraphFont">` +
+        `<w:name w:val="Default Paragraph Font"/>` +
+        `<w:uiPriority w:val="1"/>` +
+        `<w:semiHidden/>` +
+        `<w:unhideWhenUsed/>` +
+        `</w:style>`,
+    // The four "implied default" styleIds per ECMA-376 §17.7.4.4. Every
+    // WordprocessingML document must define a default for each of the four
+    // style types (paragraph, character, table, numbering) — Word silently
+    // looks these up by name when an element omits an explicit style and
+    // pops "this document needs to be repaired" with a "Table Properties"
+    // category if the lookup misses.
+    Normal:
+        `<w:style w:type="paragraph" w:default="1" w:styleId="Normal">` +
+        `<w:name w:val="Normal"/>` +
+        `<w:qFormat/>` +
+        `</w:style>`,
+    TableNormal:
+        `<w:style w:type="table" w:default="1" w:styleId="TableNormal">` +
+        `<w:name w:val="Normal Table"/>` +
+        `<w:uiPriority w:val="99"/>` +
+        `<w:semiHidden/>` +
+        `<w:unhideWhenUsed/>` +
+        `<w:tblPr><w:tblInd w:w="0" w:type="dxa"/>` +
+        `<w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="108" w:type="dxa"/>` +
+        `<w:bottom w:w="0" w:type="dxa"/><w:right w:w="108" w:type="dxa"/></w:tblCellMar></w:tblPr>` +
+        `</w:style>`,
+    NoList:
+        `<w:style w:type="numbering" w:default="1" w:styleId="NoList">` +
+        `<w:name w:val="No List"/>` +
+        `<w:uiPriority w:val="99"/>` +
+        `<w:semiHidden/>` +
+        `<w:unhideWhenUsed/>` +
+        `</w:style>`,
+};
+
+/**
+ * The four "implied default" styleIds per ECMA-376 §17.7.4.4 — one for
+ * each of the four `<w:style>` types. Word looks these up by name when
+ * an element omits an explicit style; missing defaults trip the
+ * "Document Recovery" dialog with a "Table Properties" complaint
+ * (because the implicit table-style lookup is the most visible failure).
+ */
+const REQUIRED_DEFAULT_STYLES: ReadonlyArray<{ styleId: string; type: "paragraph" | "character" | "table" | "numbering" }> = [
+    { styleId: "Normal", type: "paragraph" },
+    { styleId: "DefaultParagraphFont", type: "character" },
+    { styleId: "TableNormal", type: "table" },
+    { styleId: "NoList", type: "numbering" },
+];
+
+/**
  * Wire-format token prefixes used by HTML-to-DOCX pipelines (e.g. jubarte,
  * Plate's tracked-changes plugin) to round-trip insertions, deletions, and
  * comments through HTML. They MUST be expanded into proper OOXML before the
@@ -175,6 +277,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             this.validateCommentThreading(),
             this.validateNoTrackingTokens(),
             this.validateAllParagraphsHaveParaId(),
+            this.validateStyleReferences(),
+            this.validateStyleDefaults(),
             this.validateNoBom(),
             this.validateNoEmptyRelsParts(),
         ]);
@@ -404,6 +508,148 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
         }
 
+        return finalize(issues);
+    }
+
+    // ----- style reference integrity ------------------------------------------
+
+    /**
+     * Every `w:val` on a style-reference element (`w:pStyle`, `w:rStyle`,
+     * `w:tblStyle`, `w:numStyle`, `w:tblpPr/w:tblStyle`, `w:linkedStyle`)
+     * in document/header/footer/footnote/comment XML must resolve to a
+     * `<w:style w:styleId="...">` defined in `word/styles.xml`. Word
+     * silently substitutes the default style for missing references but
+     * pops a "this document needs to be repaired" dialog when opening
+     * unfamiliar dangling references.
+     *
+     * Always reported as `error` (real spec violation under both
+     * profiles — there's no "lenient" interpretation of a dangling style).
+     *
+     * Surfaced by the comparison against Word's own save output for the
+     * sample-document fixture: jubarte's writer emits
+     * `<w:rStyle w:val="CommentReference"/>` around comment anchors but
+     * never adds a `CommentReference` style definition to `styles.xml`.
+     * Word's repaired version injects the canonical definition.
+     */
+    /**
+     * Verify `word/styles.xml` defines the four "implied default" styles
+     * required by ECMA-376 §17.7.4.4 — `Normal` (paragraph), `DefaultParagraphFont`
+     * (character), `TableNormal` (table), `NoList` (numbering). Word
+     * looks these up by name when an element omits an explicit style and
+     * pops "Document Recovery" with a "Table Properties" complaint if
+     * `TableNormal` (the most visible default) is missing — even when no
+     * `<w:tblStyle>` references it.
+     *
+     * Always reported as `error` in both profiles. The repair pass
+     * `repairMissingStyleDefinitions` injects canonical definitions for
+     * any missing default, so `--auto-repair` resolves this without
+     * manual fixes.
+     */
+    async validateStyleDefaults(): Promise<ValidationResult> {
+        const issues: ValidationIssue[] = [];
+        let stylesPath: string | null = null;
+        for (const xmlFile of this.xmlFiles) {
+            if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
+        }
+        if (!stylesPath) return { valid: true, issues: [] };
+
+        let dom: Document;
+        try {
+            dom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+        } catch {
+            return { valid: true, issues: [] };
+        }
+        const defined = new Set<string>();
+        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+            const list = dom.getElementsByTagNameNS(ns, "style");
+            for (let i = 0; i < list.length; i += 1) {
+                const elem = list.item(i);
+                if (!elem) continue;
+                const id = elem.getAttributeNS(ns, "styleId");
+                if (id) defined.add(id);
+            }
+        }
+        for (const required of REQUIRED_DEFAULT_STYLES) {
+            if (!defined.has(required.styleId)) {
+                issues.push({
+                    severity: "error",
+                    message:
+                        `word/styles.xml is missing the implied-default style '${required.styleId}' ` +
+                        `(type='${required.type}'). ECMA-376 §17.7.4.4 requires a default for each of the ` +
+                        `four style types; missing 'TableNormal' in particular triggers Word's ` +
+                        `"Document Recovery — Table Properties" dialog on open.`,
+                    path: this.relPath(stylesPath),
+                    code: "style-default-missing",
+                });
+            }
+        }
+        return finalize(issues);
+    }
+
+    async validateStyleReferences(): Promise<ValidationResult> {
+        const issues: ValidationIssue[] = [];
+
+        // Find styles.xml; if absent, every reference is dangling — but
+        // most documents lacking styles.xml are abnormal in other ways
+        // already detected.
+        let stylesPath: string | null = null;
+        for (const xmlFile of this.xmlFiles) {
+            if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
+        }
+        const defined = new Set<string>();
+        if (stylesPath) {
+            try {
+                const dom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+                for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                    const list = dom.getElementsByTagNameNS(ns, "style");
+                    for (let i = 0; i < list.length; i += 1) {
+                        const elem = list.item(i);
+                        if (!elem) continue;
+                        const id = elem.getAttributeNS(ns, "styleId");
+                        if (id) defined.add(id);
+                    }
+                }
+            } catch {
+                // styles.xml malformed — covered by xml-syntax check.
+                return finalize(issues);
+            }
+        }
+
+        const refTags = ["pStyle", "rStyle", "tblStyle", "numStyle", "linkedStyle"] as const;
+        // Track each (file, styleId) pair so we don't spam multiple
+        // issues for the same dangling reference repeated 100 times.
+        const reported = new Set<string>();
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            for (const tag of refTags) {
+                for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                    const list = dom.getElementsByTagNameNS(ns, tag);
+                    for (let i = 0; i < list.length; i += 1) {
+                        const elem = list.item(i);
+                        if (!elem) continue;
+                        const val = elem.getAttributeNS(ns, "val");
+                        if (!val) continue;
+                        if (defined.has(val)) continue;
+                        const key = `${xmlFile}|${tag}|${val}`;
+                        if (reported.has(key)) continue;
+                        reported.add(key);
+                        issues.push({
+                            severity: "error",
+                            message:
+                                `<w:${tag} w:val='${val}'/> references a style not defined in word/styles.xml. ` +
+                                `Word substitutes the default style and triggers a repair dialog.`,
+                            path: this.relPath(xmlFile),
+                            code: "style-reference-undefined",
+                        });
+                    }
+                }
+            }
+        }
         return finalize(issues);
     }
 
@@ -908,7 +1154,94 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const paraIdRepairs = await this.repairParaId();
         const ignorableRepairs = await this.repairIgnorable();
         const stampRepairs = await this.repairMissingParaIds();
-        return baseRepairs + durableRepairs + paraIdRepairs + ignorableRepairs + stampRepairs;
+        const styleRepairs = await this.repairMissingStyleDefinitions();
+        return baseRepairs + durableRepairs + paraIdRepairs + ignorableRepairs + stampRepairs + styleRepairs;
+    }
+
+    /**
+     * Inject canonical definitions into `word/styles.xml` for every
+     * well-known style ID referenced by document XML but not defined.
+     * Only handles the small set of styles writers commonly leak —
+     * unknown style IDs are NOT auto-defined (we don't know what they
+     * mean). Pairs with `validateStyleReferences`.
+     */
+    async repairMissingStyleDefinitions(): Promise<number> {
+        let stylesPath: string | null = null;
+        for (const xmlFile of this.xmlFiles) {
+            if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
+        }
+        if (!stylesPath) return 0;
+
+        let stylesDom: Document;
+        try {
+            stylesDom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+        } catch {
+            return 0;
+        }
+        const stylesRoot = stylesDom.documentElement;
+        if (!stylesRoot) return 0;
+
+        const defined = new Set<string>();
+        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+            const list = stylesDom.getElementsByTagNameNS(ns, "style");
+            for (let i = 0; i < list.length; i += 1) {
+                const elem = list.item(i);
+                if (!elem) continue;
+                const id = elem.getAttributeNS(ns, "styleId");
+                if (id) defined.add(id);
+            }
+        }
+
+        // Collect all referenced IDs across all user-text XML files.
+        const referenced = new Set<string>();
+        const refTags = ["pStyle", "rStyle", "tblStyle", "numStyle", "linkedStyle"] as const;
+        for (const xmlFile of this.userTextXmlFiles()) {
+            try {
+                const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                for (const tag of refTags) {
+                    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                        const list = dom.getElementsByTagNameNS(ns, tag);
+                        for (let i = 0; i < list.length; i += 1) {
+                            const elem = list.item(i);
+                            if (!elem) continue;
+                            const val = elem.getAttributeNS(ns, "val");
+                            if (val) referenced.add(val);
+                        }
+                    }
+                }
+            } catch {
+                // pass
+            }
+        }
+
+        // Two sources of "needs to be defined": styles referenced by
+        // document XML, and the four ECMA-376 implied-defaults — Word
+        // looks these up implicitly so they must always be present.
+        const needed = new Set<string>([...referenced]);
+        for (const def of REQUIRED_DEFAULT_STYLES) needed.add(def.styleId);
+
+        const missing = [...needed].filter((id) => !defined.has(id));
+        if (missing.length === 0) return 0;
+
+        let repairs = 0;
+        for (const id of missing) {
+            const fragment = WELL_KNOWN_STYLE_DEFINITIONS[id];
+            if (!fragment) continue;
+            // Append the fragment as a child of <w:styles>.
+            const tmp = parseXml(`<w:styles xmlns:w="${WORD_2006_NAMESPACE}">${fragment}</w:styles>`);
+            const tmpRoot = tmp.documentElement;
+            if (!tmpRoot) continue;
+            const child = tmpRoot.firstChild;
+            if (!child) continue;
+            const imported = stylesDom.importNode(child, true);
+            stylesRoot.appendChild(imported);
+            repairs += 1;
+        }
+
+        if (repairs > 0) {
+            await fs.writeFile(stylesPath, serializeXml(stylesDom, "UTF-8"), "utf-8");
+        }
+        return repairs;
     }
 
     /**

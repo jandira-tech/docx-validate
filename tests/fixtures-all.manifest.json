@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-05-10T00:52:55.030Z",
-  "totalFixtures": 342,
+  "generatedAt": "2026-05-10T03:17:59.822Z",
+  "totalFixtures": 347,
   "entries": [
     {
       "relativePath": "broken/comments.unmatched-comment-marker.docx",
@@ -9,7 +9,8 @@
         "errorCodes": [
           "comment-marker-missing",
           "comment-orphan-start",
-          "comment-thread-count-mismatch"
+          "comment-thread-count-mismatch",
+          "paraid-missing-element"
         ]
       },
       "lenient": {
@@ -24,12 +25,17 @@
     {
       "relativePath": "broken/empty.missing-content-type.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
@@ -37,13 +43,15 @@
       "strict": {
         "valid": false,
         "errorCodes": [
-          "id-paraid-overflow"
+          "id-paraid-overflow",
+          "style-default-missing"
         ]
       },
       "lenient": {
         "valid": false,
         "errorCodes": [
-          "id-paraid-overflow"
+          "id-paraid-overflow",
+          "style-default-missing"
         ]
       }
     },
@@ -67,6 +75,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "rels-missing-sidecar",
           "xsd-error",
           "xsd-summary"
@@ -82,16 +91,39 @@
       }
     },
     {
+      "relativePath": "broken/sample-document.broken-tables.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing",
+          "style-reference-undefined"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing",
+          "style-reference-undefined"
+        ]
+      }
+    },
+    {
       "relativePath": "broken/sample-document.empty-rels.docx",
       "strict": {
         "valid": false,
         "errorCodes": [
-          "rels-empty-part"
+          "paraid-missing-element",
+          "rels-empty-part",
+          "style-default-missing",
+          "style-reference-undefined"
         ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing",
+          "style-reference-undefined"
+        ]
       }
     },
     {
@@ -102,7 +134,10 @@
           "id-durable-overflow",
           "id-paraid-overflow",
           "ignorable-undeclared",
-          "rels-empty-part"
+          "paraid-missing-element",
+          "rels-empty-part",
+          "style-default-missing",
+          "style-reference-undefined"
         ]
       },
       "lenient": {
@@ -110,7 +145,27 @@
         "errorCodes": [
           "id-durable-overflow",
           "id-paraid-overflow",
-          "ignorable-undeclared"
+          "ignorable-undeclared",
+          "style-default-missing",
+          "style-reference-undefined"
+        ]
+      }
+    },
+    {
+      "relativePath": "broken/sample-document.missing-paraids.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing",
+          "style-reference-undefined"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing",
+          "style-reference-undefined"
         ]
       }
     },
@@ -149,6 +204,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "rels-unreferenced",
           "xsd-error",
           "xsd-summary"
@@ -168,6 +224,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "rels-broken"
         ]
       },
@@ -183,6 +240,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -200,6 +258,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xml-bom-leading",
           "xsd-error",
           "xsd-summary"
@@ -216,19 +275,26 @@
     {
       "relativePath": "external/apache-poi/bug56075-changeTracking_on.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
       "relativePath": "external/apache-poi/bug59378.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element"
+        ]
       },
       "lenient": {
         "valid": true,
@@ -251,12 +317,16 @@
     {
       "relativePath": "external/docx-templates/anchor-empty.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
@@ -284,8 +354,10 @@
     {
       "relativePath": "external/docx-templates/dynamic-columns-with-dynamic-rows.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element"
+        ]
       },
       "lenient": {
         "valid": true,
@@ -295,8 +367,10 @@
     {
       "relativePath": "external/docx-templates/dynamic-columns.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element"
+        ]
       },
       "lenient": {
         "valid": true,
@@ -383,8 +457,10 @@
     {
       "relativePath": "external/docx-templates/fixSmartQuotes.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element"
+        ]
       },
       "lenient": {
         "valid": true,
@@ -394,23 +470,33 @@
     {
       "relativePath": "external/docx-templates/for-row1.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
       "relativePath": "external/docx-templates/for1.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
@@ -427,34 +513,49 @@
     {
       "relativePath": "external/docx-templates/for1customDelimiter.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
       "relativePath": "external/docx-templates/for1inline.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
       "relativePath": "external/docx-templates/for1inlineWithSpaces.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
@@ -471,34 +572,49 @@
     {
       "relativePath": "external/docx-templates/for1scalars.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
       "relativePath": "external/docx-templates/for2.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
       "relativePath": "external/docx-templates/for3.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
@@ -537,8 +653,10 @@
     {
       "relativePath": "external/docx-templates/forWithIdx.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element"
+        ]
       },
       "lenient": {
         "valid": true,
@@ -548,56 +666,80 @@
     {
       "relativePath": "external/docx-templates/htmls.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
       "relativePath": "external/docx-templates/if-row1.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
       "relativePath": "external/docx-templates/if.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
       "relativePath": "external/docx-templates/if2.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
       "relativePath": "external/docx-templates/ifInline.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
@@ -823,12 +965,17 @@
     {
       "relativePath": "external/docx-templates/invalidCommand.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
@@ -856,12 +1003,17 @@
     {
       "relativePath": "external/docx-templates/invalidIf.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
@@ -889,8 +1041,10 @@
     {
       "relativePath": "external/docx-templates/link-regression-issue-83.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element"
+        ]
       },
       "lenient": {
         "valid": true,
@@ -911,23 +1065,33 @@
     {
       "relativePath": "external/docx-templates/literalXml.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
       "relativePath": "external/docx-templates/longText.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
@@ -944,19 +1108,25 @@
     {
       "relativePath": "external/docx-templates/missingEndIf.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
       "relativePath": "external/docx-templates/nestedInlineForLoopWithSurroundingText.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element"
+        ]
       },
       "lenient": {
         "valid": true,
@@ -977,12 +1147,16 @@
     {
       "relativePath": "external/docx-templates/noQuery.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
@@ -999,12 +1173,16 @@
     {
       "relativePath": "external/docx-templates/noQuerySimpleInserts.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
@@ -1116,45 +1294,63 @@
     {
       "relativePath": "external/docx-templates/replaceTwoImages.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
       "relativePath": "external/docx-templates/simpleQuery.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
       "relativePath": "external/docx-templates/simpleQuerySimpleInserts.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
       "relativePath": "external/docx-templates/splitDelimiters.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
@@ -1206,13 +1402,16 @@
       "strict": {
         "valid": false,
         "errorCodes": [
-          "ct-undeclared-ext"
+          "ct-undeclared-ext",
+          "paraid-missing-element",
+          "style-default-missing"
         ]
       },
       "lenient": {
         "valid": false,
         "errorCodes": [
-          "ct-undeclared-ext"
+          "ct-undeclared-ext",
+          "style-default-missing"
         ]
       }
     },
@@ -1221,6 +1420,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "rels-broken",
           "xml-bom-leading"
         ]
@@ -1235,8 +1435,10 @@
     {
       "relativePath": "external/docx4j/header-no-rels.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element"
+        ]
       },
       "lenient": {
         "valid": true,
@@ -1248,6 +1450,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xml-bom-leading"
         ]
       },
@@ -1259,8 +1462,10 @@
     {
       "relativePath": "external/mammoth-js/strict-format.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element"
+        ]
       },
       "lenient": {
         "valid": true,
@@ -1270,8 +1475,10 @@
     {
       "relativePath": "external/mammoth-js/text-box.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element"
+        ]
       },
       "lenient": {
         "valid": true,
@@ -1284,6 +1491,7 @@
         "valid": false,
         "errorCodes": [
           "comment-marker-missing",
+          "paraid-missing-element",
           "xml-bom-leading",
           "xsd-error",
           "xsd-summary"
@@ -1303,6 +1511,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "rels-empty-element"
         ]
       },
@@ -1319,6 +1528,7 @@
         "valid": false,
         "errorCodes": [
           "ct-undeclared-part",
+          "paraid-missing-element",
           "rels-broken",
           "xml-bom-leading"
         ]
@@ -1337,6 +1547,7 @@
         "valid": false,
         "errorCodes": [
           "ct-undeclared-part",
+          "paraid-missing-element",
           "xml-bom-leading"
         ]
       },
@@ -1381,6 +1592,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xml-bom-leading",
           "xsd-error",
           "xsd-summary"
@@ -1397,8 +1609,10 @@
     {
       "relativePath": "external/superdoc/behavior/math-all-objects.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element"
+        ]
       },
       "lenient": {
         "valid": true,
@@ -1410,6 +1624,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -1427,6 +1642,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xml-bom-leading",
           "xsd-error",
           "xsd-summary"
@@ -1445,6 +1661,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xml-bom-leading"
         ]
       },
@@ -1458,6 +1675,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -1484,8 +1702,10 @@
     {
       "relativePath": "external/superdoc/behavior/math-matrix-tests.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element"
+        ]
       },
       "lenient": {
         "valid": true,
@@ -1497,6 +1717,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -1670,14 +1891,17 @@
         "valid": false,
         "errorCodes": [
           "id-paraid-overflow",
-          "rels-broken"
+          "paraid-missing-element",
+          "rels-broken",
+          "style-default-missing"
         ]
       },
       "lenient": {
         "valid": false,
         "errorCodes": [
           "id-paraid-overflow",
-          "rels-broken"
+          "rels-broken",
+          "style-default-missing"
         ]
       }
     },
@@ -1712,8 +1936,10 @@
     {
       "relativePath": "external/superdoc/behavior/sd-2672-multipara-cell.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element"
+        ]
       },
       "lenient": {
         "valid": true,
@@ -1723,12 +1949,17 @@
     {
       "relativePath": "external/superdoc/behavior/sd-2672-nested-table.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-reference-undefined"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-reference-undefined"
+        ]
       }
     },
     {
@@ -1775,6 +2006,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -1801,8 +2033,10 @@
     {
       "relativePath": "external/superdoc/behavior/tiff-image.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element"
+        ]
       },
       "lenient": {
         "valid": true,
@@ -1922,12 +2156,17 @@
     {
       "relativePath": "external/superdoc/doc-api-stories/table-style-options-roundtrip.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
@@ -1983,6 +2222,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -1990,6 +2230,7 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -2000,6 +2241,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "rels-unreferenced",
           "xsd-error",
           "xsd-summary"
@@ -2019,6 +2261,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -2036,6 +2279,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -2075,6 +2319,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -2129,6 +2374,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -2136,6 +2382,7 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -2190,6 +2437,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -2229,6 +2477,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "rels-empty-element",
           "xsd-error",
           "xsd-summary"
@@ -2384,6 +2633,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -2456,6 +2706,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -2484,6 +2735,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -2501,6 +2753,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -2835,8 +3088,10 @@
     {
       "relativePath": "external/superdoc/super-editor/doc-with-graphs-diagrams-rotated.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element"
+        ]
       },
       "lenient": {
         "valid": true,
@@ -2892,6 +3147,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -2910,6 +3166,7 @@
         "valid": false,
         "errorCodes": [
           "comment-thread-count-mismatch",
+          "paraid-missing-element",
           "rels-unreferenced",
           "xsd-error",
           "xsd-summary"
@@ -2941,6 +3198,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -2958,6 +3216,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -2986,6 +3245,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -2993,6 +3253,7 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3003,6 +3264,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3010,6 +3272,7 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3020,6 +3283,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3027,6 +3291,7 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3114,6 +3379,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "rels-unreferenced",
           "xsd-error",
           "xsd-summary"
@@ -3133,6 +3399,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "ws-missing-preserve",
           "xsd-error",
           "xsd-summary"
@@ -3186,6 +3453,7 @@
         "valid": false,
         "errorCodes": [
           "ct-undeclared-part",
+          "paraid-missing-element",
           "xml-bom-leading",
           "xsd-error",
           "xsd-summary"
@@ -3249,6 +3517,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "rels-unreferenced",
           "xsd-error",
           "xsd-summary"
@@ -3301,6 +3570,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3329,6 +3599,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3410,12 +3681,17 @@
     {
       "relativePath": "external/superdoc/super-editor/missing-sectpr.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
@@ -3467,6 +3743,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3474,6 +3751,7 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3484,12 +3762,14 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "style-default-missing",
           "ws-missing-preserve"
         ]
       },
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "style-default-missing",
           "ws-missing-preserve"
         ]
       }
@@ -3510,6 +3790,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3538,6 +3819,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "rels-broken",
           "xsd-error",
           "xsd-summary"
@@ -3557,6 +3839,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3585,6 +3868,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3602,6 +3886,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3619,6 +3904,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3636,6 +3922,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3664,6 +3951,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3681,6 +3969,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3688,6 +3977,7 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3712,6 +4002,7 @@
         "valid": false,
         "errorCodes": [
           "ct-undeclared-ext",
+          "paraid-missing-element",
           "rels-unreferenced",
           "xsd-error",
           "xsd-summary"
@@ -3749,6 +4040,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3807,6 +4099,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3890,6 +4183,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3897,6 +4191,7 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -4030,12 +4325,17 @@
     {
       "relativePath": "external/superdoc/super-editor/shape_group.docx",
       "strict": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
       },
       "lenient": {
-        "valid": true,
-        "errorCodes": []
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing"
+        ]
       }
     },
     {
@@ -4076,7 +4376,9 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "rels-unreferenced",
+          "style-default-missing",
           "ws-missing-preserve",
           "xsd-error",
           "xsd-summary"
@@ -4086,6 +4388,7 @@
         "valid": false,
         "errorCodes": [
           "rels-unreferenced",
+          "style-default-missing",
           "ws-missing-preserve",
           "xsd-error",
           "xsd-summary"
@@ -4108,6 +4411,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "rels-empty-part"
         ]
       },
@@ -4121,6 +4425,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -4237,6 +4542,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "paraid-missing-element",
           "rels-unreferenced",
           "xsd-error",
           "xsd-summary"
@@ -4264,6 +4570,39 @@
     },
     {
       "relativePath": "vfdsdfcACawesd.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "working/sample-document.afterword-repaired.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "working/sample-document.our-repaired.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "working/sample-document.really-repaired.docx",
       "strict": {
         "valid": true,
         "errorCodes": []
