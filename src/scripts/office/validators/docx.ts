@@ -540,13 +540,17 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * `TableNormal` (the most visible default) is missing — even when no
      * `<w:tblStyle>` references it.
      *
-     * Always reported as `error` in both profiles. The repair pass
-     * `repairMissingStyleDefinitions` injects canonical definitions for
-     * any missing default, so `--auto-repair` resolves this without
-     * manual fixes.
+     * Profile-aware: strict reports `error`, lenient downgrades to
+     * `warning` (many real-world templates omit one or more of the
+     * implied defaults and Word still opens them — the dialog only
+     * fires for `TableNormal`-on-tables, not for absence in general).
+     * The repair pass `repairMissingStyleDefinitions` injects canonical
+     * definitions for any missing default, so `--auto-repair` resolves
+     * this without manual fixes regardless of profile.
      */
     async validateStyleDefaults(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
+        const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
         let stylesPath: string | null = null;
         for (const xmlFile of this.xmlFiles) {
             if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
@@ -572,7 +576,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const required of REQUIRED_DEFAULT_STYLES) {
             if (!defined.has(required.styleId)) {
                 issues.push({
-                    severity: "error",
+                    severity,
                     message:
                         `word/styles.xml is missing the implied-default style '${required.styleId}' ` +
                         `(type='${required.type}'). ECMA-376 §17.7.4.4 requires a default for each of the ` +
@@ -588,6 +592,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     async validateStyleReferences(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
+        const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
 
         // Find styles.xml; if absent, every reference is dangling — but
         // most documents lacking styles.xml are abnormal in other ways
@@ -639,7 +644,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         if (reported.has(key)) continue;
                         reported.add(key);
                         issues.push({
-                            severity: "error",
+                            severity,
                             message:
                                 `<w:${tag} w:val='${val}'/> references a style not defined in word/styles.xml. ` +
                                 `Word substitutes the default style and triggers a repair dialog.`,
@@ -657,11 +662,16 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     /**
      * Profile-aware: every `<w:p>` AND every `<w:tr>` should carry a
-     * `w14:paraId` attribute. The OOXML schema makes these optional, but
-     * Word stamps one on every paragraph and table row to use as the
-     * anchor for tracked-changes infrastructure (e.g. a deleted row's
-     * revision recorded by paraId, or a comment range that spans an
-     * inserted paragraph).
+     * `w14:paraId` attribute, AND any element that has paraId must
+     * also have a `w14:textId`. The OOXML schema makes both optional,
+     * but Word's tracked-changes machinery treats them as a pair —
+     * empirically, across 226 real-world SuperDoc fixtures, ZERO
+     * `<w:tr>` elements were observed with paraId present and textId
+     * absent. Elements with NEITHER attribute are common and Word
+     * handles them silently. The asymmetric "paraId without textId"
+     * shape is what trips Word's "Document Recovery — Table
+     * Properties" dialog on open, because the row's paraId cannot be
+     * linked to any text-content fingerprint for change tracking.
      *
      * Severity:
      *   - `strict`  → `error` (spec-purist + Word-parity).
@@ -671,7 +681,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      *
      * Surfaced by the comparison against Word's `reallyrepaired.docx`
      * for the sample-document fixture: jubarte's writer leaves table
-     * rows without a paraId; Word stamps all 13 of them.
+     * rows without paraId/textId; Word stamps both on all 13 of them.
      */
     async validateAllParagraphsHaveParaId(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
@@ -684,25 +694,40 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 continue;
             }
             for (const local of ["p", "tr"] as const) {
-                let missing = 0;
+                let missingParaId = 0;
+                let asymmetric = 0;
                 for (const ns of WORD_PARAGRAPH_NAMESPACES) {
                     const list = dom.getElementsByTagNameNS(ns, local);
                     for (let i = 0; i < list.length; i += 1) {
                         const elem = list.item(i);
                         if (!elem) continue;
                         const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId");
-                        if (!paraId) missing += 1;
+                        const textId = elem.getAttributeNS(W14_NAMESPACE, "textId");
+                        if (!paraId) missingParaId += 1;
+                        else if (!textId) asymmetric += 1;
                     }
                 }
-                if (missing > 0) {
+                if (missingParaId > 0) {
                     issues.push({
                         severity,
                         message:
-                            `${missing} <w:${local}> element(s) lack a w14:paraId. ` +
+                            `${missingParaId} <w:${local}> element(s) lack a w14:paraId. ` +
                             `Word stamps one on every paragraph and table row as the anchor for ` +
                             `tracked-changes / comment-range infrastructure.`,
                         path: this.relPath(xmlFile),
                         code: "paraid-missing-element",
+                    });
+                }
+                if (asymmetric > 0) {
+                    issues.push({
+                        severity,
+                        message:
+                            `${asymmetric} <w:${local}> element(s) carry a w14:paraId but no ` +
+                            `w14:textId. The pair is what Word's tracked-changes machinery uses ` +
+                            `to anchor revisions; an asymmetric paraId-without-textId row is ` +
+                            `what triggers Word's "Document Recovery — Table Properties" dialog.`,
+                        path: this.relPath(xmlFile),
+                        code: "textid-missing-element",
                     });
                 }
             }
@@ -1034,6 +1059,26 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     }
                 }
 
+                // textId shares the ST_LongHexNumber type with paraId and is
+                // bound by the same < 0x80000000 cap. Word's parser silently
+                // recovers any over-cap textId on a <w:p>/<w:tr>; the recovery
+                // cascades through the row's table-properties machinery and
+                // surfaces as a "Document Recovery — Table Properties" dialog
+                // on open. Empirically: across 226 SuperDoc real-world fixtures
+                // the cap is never exceeded; a Plate-pipeline export had 51
+                // textIds over the cap (every paragraph in the body).
+                const textId = elem.getAttributeNS(W14_NAMESPACE, "textId");
+                if (textId) {
+                    if (parseIdValue(textId, 16) >= MAX_PARA_ID) {
+                        issues.push({
+                            severity: "error",
+                            message: `${base}: textId=${textId} >= 0x80000000`,
+                            path: this.relPath(xmlFile),
+                            code: "id-textid-overflow",
+                        });
+                    }
+                }
+
                 const durableId = elem.getAttributeNS(W16CID_NAMESPACE, "durableId");
                 if (durableId) {
                     if (base === "numbering.xml") {
@@ -1245,21 +1290,33 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     }
 
     /**
-     * Stamp a fresh in-range `w14:paraId` on every `<w:p>` and `<w:tr>`
-     * that lacks one. The new IDs are random and avoid colliding with any
-     * paraId already present on either side (incl. the renumbered ones
-     * from `repairParaId`).
+     * Stamp a fresh in-range `w14:paraId` (and the matching
+     * `w14:textId`) on every `<w:p>` and `<w:tr>` that needs one. The
+     * new paraIds are random and avoid colliding with any paraId
+     * already present on either side (incl. the renumbered ones from
+     * `repairParaId`); textIds are sampled from the same space and
+     * likewise deduped within their own pool (paraId and textId
+     * namespaces are independent in Word's model — Word's saves often
+     * emit the placeholder `77777777` for textId, but the spec only
+     * requires it be a hex digit string).
      *
-     * Without this pass, Word tolerates the file but its tracked-changes
-     * infrastructure has no anchor on the affected elements — a comment
-     * spanning an inserted row may not survive a save round-trip.
+     * Three cases:
+     *   1. Element has neither → stamp both (Word's tracked-changes
+     *      infrastructure expects them paired).
+     *   2. Element has paraId but no textId → stamp textId. This is
+     *      the asymmetric shape that triggers Word's "Document
+     *      Recovery — Table Properties" dialog on open.
+     *   3. Element has both, or has textId but no paraId → leave alone.
+     *      ("textId without paraId" is unusual but tolerated by Word
+     *      and is not a Word-parity issue we're chasing.)
      */
     async repairMissingParaIds(): Promise<number> {
         let repairs = 0;
-        const usedIds = new Set<string>();
+        const usedParaIds = new Set<string>();
+        const usedTextIds = new Set<string>();
 
-        // First pass: collect every existing paraId across all document
-        // XML parts so the new ones we generate can't collide.
+        // First pass: collect every existing paraId/textId across all
+        // document XML parts so the new ones we generate can't collide.
         for (const xmlFile of this.documentXmlFiles()) {
             try {
                 const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
@@ -1267,20 +1324,22 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 for (let i = 0; i < all.length; i += 1) {
                     const elem = all.item(i);
                     if (!elem) continue;
-                    const id = elem.getAttributeNS(W14_NAMESPACE, "paraId");
-                    if (id) usedIds.add(id.toUpperCase());
+                    const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId");
+                    if (paraId) usedParaIds.add(paraId.toUpperCase());
+                    const textId = elem.getAttributeNS(W14_NAMESPACE, "textId");
+                    if (textId) usedTextIds.add(textId.toUpperCase());
                 }
             } catch {
                 // pass
             }
         }
 
-        const allocate = (): string => {
+        const allocate = (pool: Set<string>): string => {
             for (;;) {
                 const value = 1 + Math.floor(Math.random() * (MAX_PARA_ID - 1));
                 const newId = value.toString(16).toUpperCase().padStart(8, "0");
-                if (!usedIds.has(newId)) {
-                    usedIds.add(newId);
+                if (!pool.has(newId)) {
+                    pool.add(newId);
                     return newId;
                 }
             }
@@ -1298,10 +1357,20 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                             const elem = list.item(i);
                             if (!elem) continue;
                             const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId");
-                            if (paraId) continue;
-                            elem.setAttributeNS(W14_NAMESPACE, "w14:paraId", allocate());
-                            repairs += 1;
-                            modified = true;
+                            const textId = elem.getAttributeNS(W14_NAMESPACE, "textId");
+                            if (!paraId) {
+                                // Case 1: stamp both as a pair.
+                                elem.setAttributeNS(W14_NAMESPACE, "w14:paraId", allocate(usedParaIds));
+                                elem.setAttributeNS(W14_NAMESPACE, "w14:textId", allocate(usedTextIds));
+                                repairs += 2;
+                                modified = true;
+                            } else if (!textId) {
+                                // Case 2: asymmetric — stamp textId.
+                                elem.setAttributeNS(W14_NAMESPACE, "w14:textId", allocate(usedTextIds));
+                                repairs += 1;
+                                modified = true;
+                            }
+                            // Case 3: nothing to do.
                         }
                     }
                 }
@@ -1465,6 +1534,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     async repairParaId(): Promise<number> {
         let repairs = 0;
         const remap = new Map<string, string>();
+        // textId is not cross-referenced (unlike paraId, which appears in
+        // w15:paraId / w15:paraIdParent in commentsExtended.xml), so it gets
+        // its own remap to keep the value pools cleanly separated.
+        const textIdRemap = new Map<string, string>();
         const usedNewIds = new Set<string>();
 
         const allocateNewId = (): string => {
@@ -1481,7 +1554,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
         };
 
-        // Pass 1: discover every over-cap w14:paraId and pick its replacement.
+        // Pass 1: discover every over-cap w14:paraId / w14:textId and pick
+        // replacements. Both share the < 0x80000000 cap (ST_LongHexNumber).
         const parsedDoms = new Map<string, Document>();
         for (const xmlFile of this.xmlFiles) {
             try {
@@ -1492,11 +1566,18 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     const elem = all.item(i);
                     if (!elem) continue;
                     const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId");
-                    if (!paraId) continue;
-                    if (remap.has(paraId)) continue;
-                    const v = parseIdValue(paraId, 16);
-                    if (Number.isNaN(v) || v >= MAX_PARA_ID) {
-                        remap.set(paraId, allocateNewId());
+                    if (paraId && !remap.has(paraId)) {
+                        const v = parseIdValue(paraId, 16);
+                        if (Number.isNaN(v) || v >= MAX_PARA_ID) {
+                            remap.set(paraId, allocateNewId());
+                        }
+                    }
+                    const textId = elem.getAttributeNS(W14_NAMESPACE, "textId");
+                    if (textId && !textIdRemap.has(textId)) {
+                        const v = parseIdValue(textId, 16);
+                        if (Number.isNaN(v) || v >= MAX_PARA_ID) {
+                            textIdRemap.set(textId, allocateNewId());
+                        }
                     }
                 }
             } catch {
@@ -1527,7 +1608,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
         }
 
-        if (remap.size === 0) return 0;
+        if (remap.size === 0 && textIdRemap.size === 0) return 0;
 
         // Pass 2: rewrite all references.
         for (const [xmlFile, dom] of parsedDoms) {
@@ -1540,6 +1621,12 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     const w14Para = elem.getAttributeNS(W14_NAMESPACE, "paraId");
                     if (w14Para && remap.has(w14Para)) {
                         elem.setAttributeNS(W14_NAMESPACE, "w14:paraId", remap.get(w14Para)!);
+                        repairs += 1;
+                        modified = true;
+                    }
+                    const w14Text = elem.getAttributeNS(W14_NAMESPACE, "textId");
+                    if (w14Text && textIdRemap.has(w14Text)) {
+                        elem.setAttributeNS(W14_NAMESPACE, "w14:textId", textIdRemap.get(w14Text)!);
                         repairs += 1;
                         modified = true;
                     }

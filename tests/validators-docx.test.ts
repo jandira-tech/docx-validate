@@ -426,20 +426,25 @@ describe("DOCXSchemaValidator", () => {
     });
 
     describe("validateStyleDefaults (ECMA-376 §17.7.4.4 implied defaults)", () => {
-        it("flags every missing default style", async () => {
+        it("flags every missing default style as ERROR under strict, WARNING under lenient", async () => {
             await withTempDir(async (dir) => {
                 await writeFile(
                     path.join(dir, "word", "styles.xml"),
                     `<?xml version="1.0"?><w:styles ${W_NS}><w:style w:styleId="Heading1" w:type="paragraph"/></w:styles>`,
                 );
-                const v = new DOCXSchemaValidator({ unpackedDir: dir });
-                const result = await v.validateStyleDefaults();
-                expect(result.valid).toBe(false);
-                const codes = result.issues.filter((i) => i.code === "style-default-missing");
-                // All four implied defaults missing.
+                const strict = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
+                const r1 = await strict.validateStyleDefaults();
+                expect(r1.valid).toBe(false);
+                const codes = r1.issues.filter((i) => i.code === "style-default-missing");
                 expect(codes).toHaveLength(4);
                 const ids = codes.map((i) => /'([^']+)'/.exec(i.message)?.[1]).sort();
                 expect(ids).toEqual(["DefaultParagraphFont", "NoList", "Normal", "TableNormal"]);
+                expect(codes[0]?.severity).toBe("error");
+
+                const lenient = new DOCXSchemaValidator({ unpackedDir: dir, profile: "lenient" });
+                const r2 = await lenient.validateStyleDefaults();
+                expect(r2.valid).toBe(true);
+                expect(r2.issues.find((i) => i.code === "style-default-missing")?.severity).toBe("warning");
             });
         });
 
@@ -485,7 +490,7 @@ describe("DOCXSchemaValidator", () => {
     });
 
     describe("validateStyleReferences / repairMissingStyleDefinitions", () => {
-        it("flags <w:rStyle w:val='X'/> when X is not defined in styles.xml", async () => {
+        it("flags <w:rStyle w:val='X'/> when X is not defined in styles.xml as ERROR under strict, WARNING under lenient", async () => {
             await withTempDir(async (dir) => {
                 await writeFile(
                     path.join(dir, "word", "document.xml"),
@@ -497,12 +502,17 @@ describe("DOCXSchemaValidator", () => {
                     path.join(dir, "word", "styles.xml"),
                     `<?xml version="1.0"?><w:styles ${W_NS}><w:style w:styleId="Heading1" w:type="paragraph"/></w:styles>`,
                 );
-                const v = new DOCXSchemaValidator({ unpackedDir: dir });
-                const result = await v.validateStyleReferences();
-                expect(result.valid).toBe(false);
-                const issue = result.issues.find((i) => i.code === "style-reference-undefined" && i.message.includes("CommentReference"));
+                const strict = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
+                const r1 = await strict.validateStyleReferences();
+                expect(r1.valid).toBe(false);
+                const issue = r1.issues.find((i) => i.code === "style-reference-undefined" && i.message.includes("CommentReference"));
                 expect(issue).toBeDefined();
                 expect(issue?.severity).toBe("error");
+
+                const lenient = new DOCXSchemaValidator({ unpackedDir: dir, profile: "lenient" });
+                const r2 = await lenient.validateStyleReferences();
+                expect(r2.valid).toBe(true);
+                expect(r2.issues.find((i) => i.code === "style-reference-undefined")?.severity).toBe("warning");
             });
         });
 
@@ -537,7 +547,7 @@ describe("DOCXSchemaValidator", () => {
                     path.join(dir, "word", "styles.xml"),
                     `<?xml version="1.0"?><w:styles ${W_NS}/>`,
                 );
-                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
                 const result = await v.validateStyleReferences();
                 expect(result.valid).toBe(false);
                 const issue = result.issues.find((i) => i.code === "style-reference-undefined");
@@ -579,14 +589,14 @@ describe("DOCXSchemaValidator", () => {
                 );
                 const stylesPath = path.join(dir, "word", "styles.xml");
                 await writeFile(stylesPath, `<?xml version="1.0"?><w:styles ${W_NS}/>`);
-                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
                 const repairs = await v.repairMissingStyleDefinitions();
                 // Only the 4 implied defaults are auto-injected; the unknown
                 // 'MyCustomStyle' is left for the caller to handle.
                 expect(repairs).toBe(4);
                 const after = await fs.readFile(stylesPath, "utf-8");
                 expect(after).not.toContain('w:styleId="MyCustomStyle"');
-                // Still flagged because MyCustomStyle is still dangling.
+                // Still flagged because MyCustomStyle is still dangling (strict-mode error).
                 const post = await v.validateStyleReferences();
                 expect(post.valid).toBe(false);
             });
@@ -603,7 +613,7 @@ describe("DOCXSchemaValidator", () => {
                     await fs.mkdir(path.dirname(dest), { recursive: true });
                     await fs.writeFile(dest, await entry.async("nodebuffer"));
                 }
-                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
                 const before = await v.validateStyleReferences();
                 expect(before.valid).toBe(false);
                 expect(before.issues.some((i) => i.message.includes("CommentReference"))).toBe(true);
@@ -641,33 +651,67 @@ describe("DOCXSchemaValidator", () => {
             });
         });
 
-        it("repairMissingParaIds stamps a w14:paraId on every <w:p> and <w:tr> that lacks one", async () => {
+        it("repairMissingParaIds stamps both w14:paraId and w14:textId on every <w:p> and <w:tr> that lacks one", async () => {
             await withTempDir(async (dir) => {
                 const filePath = path.join(dir, "word", "document.xml");
                 await writeFile(
                     filePath,
                     `<?xml version="1.0"?><w:document ${TBL_NS} ${W14_NS}><w:body>` +
-                        // First paragraph already has a paraId — should be left alone.
+                        // First paragraph already has a paraId but not a textId — paraId left alone, textId stamped.
                         `<w:p w14:paraId="11111111"/>` +
-                        // Second paragraph has none — should get one.
+                        // Second paragraph has neither — both stamped.
                         `<w:p/>` +
-                        // Table with two rows, neither stamped.
+                        // Table with two rows, neither stamped on tr or inner p.
                         `<w:tbl><w:tr><w:tc><w:p/></w:tc></w:tr><w:tr><w:tc><w:p/></w:tc></w:tr></w:tbl>` +
                         `</w:body></w:document>`,
                 );
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const repairs = await v.repairMissingParaIds();
-                // 1 missing paragraph + 2 missing rows + 2 missing inner-cell paragraphs = 5
-                expect(repairs).toBe(5);
+                // First <w:p>: paraId present, textId missing = 1 stamp
+                // Second <w:p>: both missing = 2 stamps
+                // 2 <w:tr>: both missing on each = 4 stamps
+                // 2 inner-cell <w:p>: both missing on each = 4 stamps
+                // Total: 1 + 2 + 4 + 4 = 11
+                expect(repairs).toBe(11);
 
                 const after = await fs.readFile(filePath, "utf-8");
                 // Original paraId preserved.
                 expect(after).toContain('w14:paraId="11111111"');
-                // Every <w:p> and <w:tr> now has a paraId.
+                // Every <w:p> and <w:tr> now has both paraId AND textId.
                 const v2 = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
                 const post = await v2.validateAllParagraphsHaveParaId();
                 expect(post.valid).toBe(true);
                 expect(post.issues).toEqual([]);
+            });
+        });
+
+        it("validateAllParagraphsHaveParaId flags missing w14:textId separately from missing paraId", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    `<?xml version="1.0"?><w:document ${TBL_NS} ${W14_NS}><w:body>` +
+                        // Paragraph with paraId but no textId — should trigger textid-missing-element only.
+                        `<w:p w14:paraId="11111111"/>` +
+                        // Row with paraId but no textId — should trigger textid-missing-element only.
+                        `<w:tbl><w:tr w14:paraId="22222222"><w:tc><w:p w14:paraId="33333333" w14:textId="44444444"/></w:tc></w:tr></w:tbl>` +
+                        `</w:body></w:document>`,
+                );
+                const strict = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
+                const r = await strict.validateAllParagraphsHaveParaId();
+                expect(r.valid).toBe(false);
+                // No paraId-missing issues since every element has paraId.
+                expect(r.issues.find((i) => i.code === "paraid-missing-element")).toBeUndefined();
+                // textId-missing on <w:p> (1) and on <w:tr> (1) — separate issues.
+                const tIssues = r.issues.filter((i) => i.code === "textid-missing-element");
+                expect(tIssues).toHaveLength(2);
+                expect(tIssues.find((i) => i.message.includes("<w:p>"))).toBeDefined();
+                expect(tIssues.find((i) => i.message.includes("<w:tr>"))).toBeDefined();
+                expect(tIssues[0]?.severity).toBe("error");
+
+                const lenient = new DOCXSchemaValidator({ unpackedDir: dir, profile: "lenient" });
+                const r2 = await lenient.validateAllParagraphsHaveParaId();
+                expect(r2.valid).toBe(true);
+                expect(r2.issues.find((i) => i.code === "textid-missing-element")?.severity).toBe("warning");
             });
         });
 
