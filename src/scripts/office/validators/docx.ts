@@ -1358,13 +1358,13 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                             if (!elem) continue;
                             const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId");
                             const textId = elem.getAttributeNS(W14_NAMESPACE, "textId");
-                            if (!paraId) {
+                            if (!paraId && !textId) {
                                 // Case 1: stamp both as a pair.
                                 elem.setAttributeNS(W14_NAMESPACE, "w14:paraId", allocate(usedParaIds));
                                 elem.setAttributeNS(W14_NAMESPACE, "w14:textId", allocate(usedTextIds));
                                 repairs += 2;
                                 modified = true;
-                            } else if (!textId) {
+                            } else if (paraId && !textId) {
                                 // Case 2: asymmetric — stamp textId.
                                 elem.setAttributeNS(W14_NAMESPACE, "w14:textId", allocate(usedTextIds));
                                 repairs += 1;
