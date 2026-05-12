@@ -857,7 +857,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                             `commentRangeStart count (${startCount}) does not match ` +
                             `comment count in comments.xml (${expected})`,
                         path: "document.xml",
-                        code: "comment-thread-count-mismatch",
+                        path: this.relPath(documentXml),
                     });
                 }
                 if (endCount !== expected) {
