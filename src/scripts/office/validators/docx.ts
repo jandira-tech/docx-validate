@@ -1317,7 +1317,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         // First pass: collect every existing paraId/textId across all
         // document XML parts so the new ones we generate can't collide.
-        for (const xmlFile of this.documentXmlFiles()) {
+        for (const xmlFile of this.userTextXmlFiles()) {
             try {
                 const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
                 const all = dom.getElementsByTagName("*");
