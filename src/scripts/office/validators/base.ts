@@ -313,14 +313,7 @@ export class BaseSchemaValidator {
                 // in the wrong namespace will return zero from getElementsByTagNameNS
                 // but should NOT be classified as empty parts (they have element
                 // children, just in the wrong namespace).
-                let hasElementChildren = false;
-                for (let i = 0; i < root.childNodes.length; i += 1) {
-                    const child = root.childNodes.item(i);
-                    if (child && child.nodeType === 1 /* ELEMENT_NODE */) {
-                        hasElementChildren = true;
-                        break;
-                    }
-                }
+                const hasElementChildren = hasAnyElementChild(root);
                 if (!hasElementChildren) {
                     issues.push({
                         severity,
@@ -380,14 +373,7 @@ export class BaseSchemaValidator {
                         // Additional check: only mark as empty if the root also has no
                         // element children. Malformed rels files with Relationship elements
                         // in the wrong namespace should not be deleted.
-                        let hasElementChildren = false;
-                        for (let i = 0; i < root.childNodes.length; i += 1) {
-                            const child = root.childNodes.item(i);
-                            if (child && child.nodeType === 1 /* ELEMENT_NODE */) {
-                                hasElementChildren = true;
-                                break;
-                            }
-                        }
+                        const hasElementChildren = hasAnyElementChild(root);
                         isEmpty = !hasElementChildren;
                     }
                 }

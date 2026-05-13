@@ -271,6 +271,29 @@ describe("DOCXSchemaValidator", () => {
                 expect(after.issues.filter((i) => i.code === "id-paraid-overflow")).toHaveLength(0);
             });
         });
+
+        it("replacement values never collide with existing valid paraIds that are not being remapped", async () => {
+            await withTempDir(async (dir) => {
+                const filePath = path.join(dir, "word", "document.xml");
+                await writeFile(
+                    filePath,
+                    `<?xml version="1.0"?><w:document ${W_NS} ${W14_NS}><w:body>` +
+                        // Existing valid in-range paraId.
+                        `<w:p w14:paraId="00000001"/>` +
+                        // Over-cap paraId that needs a replacement.
+                        `<w:p w14:paraId="FFFFFFFF"/>` +
+                        `</w:body></w:document>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                await v.repairParaId();
+                const after = await fs.readFile(filePath, "utf-8");
+                const paraIds = Array.from(after.matchAll(/w14:paraId="([0-9A-F]{8})"/g)).map((m) => m[1]);
+                expect(paraIds).toHaveLength(2);
+                expect(new Set(paraIds).size).toBe(2);
+                expect(paraIds).toContain("00000001");
+                expect(paraIds).not.toContain("FFFFFFFF");
+            });
+        });
     });
 
     describe("repairDurableId", () => {
