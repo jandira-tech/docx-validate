@@ -856,7 +856,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         message:
                             `commentRangeStart count (${startCount}) does not match ` +
                             `comment count in comments.xml (${expected})`,
-                        path: "document.xml",
+                        code: "comment-thread-count-mismatch",
                         path: this.relPath(documentXml),
                     });
                 }
@@ -866,7 +866,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         message:
                             `commentRangeEnd count (${endCount}) does not match ` +
                             `comment count in comments.xml (${expected})`,
-                        path: "document.xml",
+                        path: this.relPath(documentXml),
                         code: "comment-thread-count-mismatch",
                     });
                 }
@@ -876,7 +876,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         message:
                             `commentReference count (${refCount}) does not match ` +
                             `comment count in comments.xml (${expected})`,
-                        path: "document.xml",
+                        path: this.relPath(documentXml),
                         code: "comment-thread-count-mismatch",
                     });
                 }
@@ -1011,10 +1011,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             // Cheap pre-filter — if no `[[DOCX_` substring, skip the regex.
             if (!TRACKING_TOKEN_PREFIXES.some((p) => raw.includes(p))) continue;
 
-            const tokenRegex = new RegExp(TRACKING_TOKEN_REGEX);
+            TRACKING_TOKEN_REGEX.lastIndex = 0;
             let match: RegExpExecArray | null;
             const seen = new Set<string>();
-            while ((match = tokenRegex.exec(raw)) !== null) {
+            while ((match = TRACKING_TOKEN_REGEX.exec(raw)) !== null) {
                 const token = match[0];
                 if (seen.has(token)) continue;
                 seen.add(token);

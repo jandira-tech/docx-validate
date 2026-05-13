@@ -950,6 +950,29 @@ describe("DOCXSchemaValidator", () => {
                 expect(result.issues.some((i) => i.path?.endsWith("header1.xml"))).toBe(true);
             });
         });
+
+        it("detects tokens across multiple XML files without regex state leakage", async () => {
+            await withTempDir(async (dir) => {
+                // Two separate XML files, each with tracking tokens.
+                // If the regex lastIndex leaks between scans, tokens in the
+                // second file would be missed.
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(`<w:p><w:r><w:t>[[DOCX_INS_START:aaa]]first</w:t></w:r></w:p>`),
+                );
+                await writeFile(
+                    path.join(dir, "word", "header1.xml"),
+                    `<?xml version="1.0"?><w:hdr ${W_NS}><w:p><w:r><w:t>[[DOCX_DEL_START:bbb]]second</w:t></w:r></w:p></w:hdr>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateNoTrackingTokens();
+                expect(result.valid).toBe(false);
+                // One token per file.
+                expect(result.issues).toHaveLength(2);
+                expect(result.issues.some((i) => i.path?.endsWith("document.xml"))).toBe(true);
+                expect(result.issues.some((i) => i.path?.endsWith("header1.xml"))).toBe(true);
+            });
+        });
     });
 
     describe("superdoc README", () => {
@@ -1186,6 +1209,41 @@ describe("DOCXSchemaValidator", () => {
                         (i) => i.code === "comment-thread-count-mismatch" && i.message.includes("commentRangeStart"),
                     ),
                 ).toBe(true);
+            });
+        });
+
+        it("issues have correct relative paths (not hardcoded document.xml) for count mismatches", async () => {
+            await withTempDir(async (dir) => {
+                // 2 starts, 1 end → triggers endCount mismatch with hardcoded path bug
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p>` +
+                            `<w:commentRangeStart w:id="0"/><w:commentRangeStart w:id="1"/>x` +
+                            `<w:commentRangeEnd w:id="0"/>` +
+                            `<w:r><w:commentReference w:id="0"/></w:r>` +
+                            `<w:r><w:commentReference w:id="1"/></w:r>` +
+                            `</w:p>`,
+                    ),
+                );
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                        `<w:p w14:paraId="AAAAAAAA"/></w:comment>` +
+                        `<w:comment w:id="1" w:author="B" w:date="2026-01-01T00:00:00Z" w:initials="B">` +
+                        `<w:p w14:paraId="BBBBBBBB"/></w:comment></w:comments>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateCommentThreading();
+                expect(result.valid).toBe(false);
+                const endIssue = result.issues.find(
+                    (i) => i.code === "comment-thread-count-mismatch" && i.message.includes("commentRangeEnd"),
+                );
+                expect(endIssue).toBeDefined();
+                expect(endIssue!.path).not.toBe("document.xml");
+                expect(endIssue!.path).toContain("word");
+                expect(endIssue!.path).toContain("document.xml");
             });
         });
 
