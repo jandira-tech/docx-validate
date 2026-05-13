@@ -1476,3 +1476,12 @@ function removeNonOoxmlElements(root: Element): void {
 function finalize(issues: ValidationIssue[]): ValidationResult {
     return { valid: issues.every((i) => i.severity !== "error"), issues };
 }
+
+/** Return true if `node` has at least one Element-type child node. */
+export function hasAnyElementChild(node: Node): boolean {
+    for (let i = 0; i < node.childNodes.length; i += 1) {
+        const child = node.childNodes.item(i);
+        if (child && child.nodeType === 1 /* ELEMENT_NODE */) return true;
+    }
+    return false;
+}

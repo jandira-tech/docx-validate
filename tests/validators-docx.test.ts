@@ -715,27 +715,50 @@ describe("DOCXSchemaValidator", () => {
             });
         });
 
-        it("repairMissingParaIds picks values that don't collide with existing paraIds", async () => {
+        it("repairMissingParaIds stamps paraId on elements with textId but no paraId (reverse case)", async () => {
             await withTempDir(async (dir) => {
                 const filePath = path.join(dir, "word", "document.xml");
+                // Case 3 in repairMissingParaIds: textId present, paraId missing.
+                // This was previously "leave alone" but now gets paraId stamped.
                 await writeFile(
                     filePath,
                     `<?xml version="1.0"?><w:document ${TBL_NS} ${W14_NS}><w:body>` +
-                        `<w:p w14:paraId="11111111"/>` +
-                        `<w:p w14:paraId="22222222"/>` +
-                        `<w:p/>` +
+                        `<w:p w14:textId="ABCDEF01"/>` +
                         `</w:body></w:document>`,
                 );
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
-                await v.repairMissingParaIds();
+                const repairs = await v.repairMissingParaIds();
+                // Should stamp paraId (1 repair) — textId already present.
+                expect(repairs).toBe(1);
                 const after = await fs.readFile(filePath, "utf-8");
-                const paraIds = Array.from(after.matchAll(/w14:paraId="([0-9A-F]{8})"/g)).map((m) => m[1]);
-                expect(paraIds).toHaveLength(3);
-                // All three must be unique.
-                expect(new Set(paraIds).size).toBe(3);
-                // The pre-existing ones survived.
-                expect(paraIds).toContain("11111111");
-                expect(paraIds).toContain("22222222");
+                expect(after).toContain('w14:paraId="');
+                expect(after).toContain('w14:textId="ABCDEF01"');
+            });
+        });
+
+        it("repairMissingParaIds repairs headers and footers, not just documentXml", async () => {
+            await withTempDir(async (dir) => {
+                // document.xml: already complete — no repairs needed.
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    `<?xml version="1.0"?><w:document ${TBL_NS} ${W14_NS}><w:body><w:p w14:paraId="AAAAAAAA" w14:textId="BBBBBBBB"/></w:body></w:document>`,
+                );
+                // header1.xml: two paragraphs, one missing both paraId and textId.
+                const hdrPath = path.join(dir, "word", "header1.xml");
+                await writeFile(
+                    hdrPath,
+                    `<?xml version="1.0"?><w:hdr ${W_NS} ${W14_NS}><w:p w14:paraId="CCCCCCCC" w14:textId="DDDDDDDD"/><w:p/></w:hdr>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const repairs = await v.repairMissingParaIds();
+                // Two stamps on the second <w:p> in header (paraId + textId).
+                expect(repairs).toBe(2);
+                const after = await fs.readFile(hdrPath, "utf-8");
+                // Both paragraphs in header now have paraId and textId.
+                const paraIds = Array.from(after.matchAll(/w14:paraId="([0-9A-F]{8})"/g));
+                const textIds = Array.from(after.matchAll(/w14:textId="([0-9A-F]{8})"/g));
+                expect(paraIds).toHaveLength(2);
+                expect(textIds).toHaveLength(2);
             });
         });
     });

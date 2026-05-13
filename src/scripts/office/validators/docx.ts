@@ -686,7 +686,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     async validateAllParagraphsHaveParaId(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
         const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
-        for (const xmlFile of this.documentXmlFiles()) {
+        for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
                 dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
@@ -1300,26 +1300,29 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * emit the placeholder `77777777` for textId, but the spec only
      * requires it be a hex digit string).
      *
-     * Three cases:
+     * Four cases:
      *   1. Element has neither → stamp both (Word's tracked-changes
      *      infrastructure expects them paired).
      *   2. Element has paraId but no textId → stamp textId. This is
      *      the asymmetric shape that triggers Word's "Document
      *      Recovery — Table Properties" dialog on open.
-     *   3. Element has both, or has textId but no paraId → leave alone.
-     *      ("textId without paraId" is unusual but tolerated by Word
-     *      and is not a Word-parity issue we're chasing.)
+     *   3. Element has textId but no paraId → stamp paraId (the
+     *      inverse asymmetric shape — unusual but handled for
+     *      completeness so Word doesn't see a dangling textId).
+     *   4. Element has both → leave alone.
      */
     async repairMissingParaIds(): Promise<number> {
         let repairs = 0;
         const usedParaIds = new Set<string>();
         const usedTextIds = new Set<string>();
 
-        // First pass: collect every existing paraId/textId across all
-        // document XML parts so the new ones we generate can't collide.
+        // Parse every user-text XML file once; collect existing IDs and
+        // store parsed DOMs for the stamp pass so we avoid a re-parse.
+        const domByFile = new Map<string, Document>();
         for (const xmlFile of this.userTextXmlFiles()) {
             try {
                 const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                domByFile.set(xmlFile, dom);
                 const all = dom.getElementsByTagName("*");
                 for (let i = 0; i < all.length; i += 1) {
                     const elem = all.item(i);
@@ -1345,10 +1348,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
         };
 
-        // Second pass: stamp.
-        for (const xmlFile of this.documentXmlFiles()) {
+        // Stamp pass: reuse the DOMs we already parsed.
+        for (const [xmlFile, dom] of domByFile) {
             try {
-                const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
                 let modified = false;
                 for (const local of ["p", "tr"] as const) {
                     for (const ns of WORD_PARAGRAPH_NAMESPACES) {
@@ -1369,8 +1371,13 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                                 elem.setAttributeNS(W14_NAMESPACE, "w14:textId", allocate(usedTextIds));
                                 repairs += 1;
                                 modified = true;
+                            } else if (!paraId && textId) {
+                                // Case 3: has textId but no paraId — stamp paraId.
+                                elem.setAttributeNS(W14_NAMESPACE, "w14:paraId", allocate(usedParaIds));
+                                repairs += 1;
+                                modified = true;
                             }
-                            // Case 3: nothing to do.
+                            // Case 4: both present — nothing to do.
                         }
                     }
                 }
@@ -1538,17 +1545,30 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // w15:paraId / w15:paraIdParent in commentsExtended.xml), so it gets
         // its own remap to keep the value pools cleanly separated.
         const textIdRemap = new Map<string, string>();
-        const usedNewIds = new Set<string>();
+        // Separate pools for paraId and textId so that the two value
+        // namespaces remain independent (Word's model tolerates, and
+        // routinely produces, the same hex value appearing as both a
+        // paraId on one element and a textId on another).
+        const usedNewParaIds = new Set<string>();
+        const usedNewTextIds = new Set<string>();
 
-        const allocateNewId = (): string => {
-            // Match Python's random.randint(1, 0x7FFFFFFE) range and
-            // retry on the (astronomically rare) collision against an
-            // already-allocated repair value.
+        const allocateNewParaId = (): string => {
             for (;;) {
                 const value = 1 + Math.floor(Math.random() * (MAX_PARA_ID - 1));
                 const newId = value.toString(16).toUpperCase().padStart(8, "0");
-                if (!usedNewIds.has(newId)) {
-                    usedNewIds.add(newId);
+                if (!usedNewParaIds.has(newId)) {
+                    usedNewParaIds.add(newId);
+                    return newId;
+                }
+            }
+        };
+
+        const allocateNewTextId = (): string => {
+            for (;;) {
+                const value = 1 + Math.floor(Math.random() * (MAX_PARA_ID - 1));
+                const newId = value.toString(16).toUpperCase().padStart(8, "0");
+                if (!usedNewTextIds.has(newId)) {
+                    usedNewTextIds.add(newId);
                     return newId;
                 }
             }
@@ -1556,6 +1576,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         // Pass 1: discover every over-cap w14:paraId / w14:textId and pick
         // replacements. Both share the < 0x80000000 cap (ST_LongHexNumber).
+        // Existing in-range IDs are collected into the per-type pools so
+        // that replacements can't collide with values already in use.
         const parsedDoms = new Map<string, Document>();
         for (const xmlFile of this.xmlFiles) {
             try {
@@ -1569,14 +1591,18 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     if (paraId && !remap.has(paraId)) {
                         const v = parseIdValue(paraId, 16);
                         if (Number.isNaN(v) || v >= MAX_PARA_ID) {
-                            remap.set(paraId, allocateNewId());
+                            remap.set(paraId, allocateNewParaId());
+                        } else {
+                            usedNewParaIds.add(paraId.toUpperCase());
                         }
                     }
                     const textId = elem.getAttributeNS(W14_NAMESPACE, "textId");
                     if (textId && !textIdRemap.has(textId)) {
                         const v = parseIdValue(textId, 16);
                         if (Number.isNaN(v) || v >= MAX_PARA_ID) {
-                            textIdRemap.set(textId, allocateNewId());
+                            textIdRemap.set(textId, allocateNewTextId());
+                        } else {
+                            usedNewTextIds.add(textId.toUpperCase());
                         }
                     }
                 }
@@ -1602,7 +1628,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     if (remap.has(val)) continue;
                     const v = parseIdValue(val, 16);
                     if (Number.isNaN(v) || v >= MAX_PARA_ID) {
-                        remap.set(val, allocateNewId());
+                        remap.set(val, allocateNewParaId());
                     }
                 }
             }
