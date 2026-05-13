@@ -28,5 +28,6 @@ which ones pass / fail XSD + redlining checks.
 These are real-world documents (and a couple of *intentionally* malformed
 ones — see `broken-list.docx`, `broken-complex-list.docx`, etc.). It is normal
 for some to fail validation. The CI assertion is on the *shape* of the failure
-set, not blanket success — see `tests/fixtures-superdoc.test.ts` for the
-manifest of expected failures and the rationale for each.
+set, not blanket success — see `tests/fixtures-all-strict.test.ts` and
+`tests/fixtures-all-lenient.test.ts` for the manifest of expected
+failures and the rationale for each.

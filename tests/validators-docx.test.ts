@@ -952,6 +952,16 @@ describe("DOCXSchemaValidator", () => {
         });
     });
 
+    describe("superdoc README", () => {
+        it("references the correct fixture test files (not stale fixtures-superdoc.test.ts)", async () => {
+            const readmePath = path.join(__dirname, "fixtures/external/superdoc/README.md");
+            const content = await fs.readFile(readmePath, "utf-8");
+            expect(content).not.toContain("fixtures-superdoc.test.ts");
+            expect(content).toContain("fixtures-all-strict.test.ts");
+            expect(content).toContain("fixtures-all-lenient.test.ts");
+        });
+    });
+
     describe("validateCommentThreading", () => {
         const W15_NS = `xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml"`;
 
