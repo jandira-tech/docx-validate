@@ -1337,10 +1337,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
         }
 
+        let allocCounter = 1;
         const allocate = (pool: Set<string>): string => {
             for (;;) {
-                const value = 1 + Math.floor(Math.random() * (MAX_PARA_ID - 1));
-                const newId = value.toString(16).toUpperCase().padStart(8, "0");
+                const newId = allocCounter.toString(16).toUpperCase().padStart(8, "0");
+                allocCounter += 1;
                 if (!pool.has(newId)) {
                     pool.add(newId);
                     return newId;
@@ -1552,10 +1553,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const usedNewParaIds = new Set<string>();
         const usedNewTextIds = new Set<string>();
 
+        let paraIdCounter = 1;
         const allocateNewParaId = (): string => {
             for (;;) {
-                const value = 1 + Math.floor(Math.random() * (MAX_PARA_ID - 1));
-                const newId = value.toString(16).toUpperCase().padStart(8, "0");
+                const newId = paraIdCounter.toString(16).toUpperCase().padStart(8, "0");
+                paraIdCounter += 1;
                 if (!usedNewParaIds.has(newId)) {
                     usedNewParaIds.add(newId);
                     return newId;
@@ -1563,10 +1565,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
         };
 
+        let textIdCounter = 1;
         const allocateNewTextId = (): string => {
             for (;;) {
-                const value = 1 + Math.floor(Math.random() * (MAX_PARA_ID - 1));
-                const newId = value.toString(16).toUpperCase().padStart(8, "0");
+                const newId = textIdCounter.toString(16).toUpperCase().padStart(8, "0");
+                textIdCounter += 1;
                 if (!usedNewTextIds.has(newId)) {
                     usedNewTextIds.add(newId);
                     return newId;
