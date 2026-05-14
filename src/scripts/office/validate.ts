@@ -288,7 +288,7 @@ export function buildValidateCommand(): Command {
         .option("--author <name>", "Author name for redlining validation (required when --original is provided)")
         .option(
             "--profile <profile>",
-            "Validation profile: 'lenient' (default; tolerates real-world Office output) or 'strict' (spec-purist; flags BOMs and similar)",
+            "Validation profile: 'lenient' (default), 'strict' (spec-purist), or 'word-valid' (Microsoft Word openability)",
             DEFAULT_PROFILE,
         );
     return cmd;
@@ -319,9 +319,9 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
     const opts = cmd.opts<CliOptions>();
     const [target] = cmd.args;
 
-    if (opts.profile !== "lenient" && opts.profile !== "strict") {
+    if (opts.profile !== "lenient" && opts.profile !== "strict" && opts.profile !== "word-valid") {
         const bad = String(opts.profile);
-        process.stderr.write(`Invalid --profile: ${bad}. Must be 'lenient' or 'strict'.\n`);
+        process.stderr.write(`Invalid --profile: ${bad}. Must be 'lenient', 'strict', or 'word-valid'.\n`);
         return 1;
     }
 

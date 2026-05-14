@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-11T21:55:05.399Z",
+  "generatedAt": "2026-05-14T02:06:18.722Z",
   "totalFixtures": 350,
   "entries": [
     {
@@ -96,6 +96,8 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "comment-thread-commentid-paraid-orphan",
+          "comment-thread-durableid-orphan",
           "id-textid-overflow",
           "paraid-missing-element",
           "style-default-missing",
@@ -106,6 +108,8 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "comment-thread-commentid-paraid-orphan",
+          "comment-thread-durableid-orphan",
           "id-textid-overflow"
         ]
       }
@@ -115,6 +119,8 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "comment-thread-commentid-paraid-orphan",
+          "comment-thread-durableid-orphan",
           "id-textid-overflow",
           "paraid-missing-element",
           "rels-empty-part",
@@ -126,6 +132,8 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "comment-thread-commentid-paraid-orphan",
+          "comment-thread-durableid-orphan",
           "id-textid-overflow"
         ]
       }
@@ -161,6 +169,8 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "comment-thread-commentid-paraid-orphan",
+          "comment-thread-durableid-orphan",
           "id-textid-overflow",
           "paraid-missing-element",
           "style-default-missing",
@@ -171,6 +181,8 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "comment-thread-commentid-paraid-orphan",
+          "comment-thread-durableid-orphan",
           "id-textid-overflow"
         ]
       }
@@ -180,6 +192,8 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "comment-thread-commentid-paraid-orphan",
+          "comment-thread-durableid-orphan",
           "id-textid-overflow",
           "paraid-missing-element",
           "textid-missing-element"
@@ -188,6 +202,8 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "comment-thread-commentid-paraid-orphan",
+          "comment-thread-durableid-orphan",
           "id-textid-overflow"
         ]
       }
@@ -4557,6 +4573,8 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "comment-thread-commentid-paraid-orphan",
+          "comment-thread-durableid-orphan",
           "id-textid-overflow",
           "paraid-missing-element",
           "textid-missing-element"
@@ -4565,6 +4583,8 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "comment-thread-commentid-paraid-orphan",
+          "comment-thread-durableid-orphan",
           "id-textid-overflow"
         ]
       }

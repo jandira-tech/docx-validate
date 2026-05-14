@@ -437,8 +437,10 @@ describe("DOCXSchemaValidator", () => {
                 const extXml = await fs.readFile(extPath, "utf-8");
 
                 // The new in-range value the parent got rewritten to.
-                const newParent = /w14:paraId="([0-9A-F]{8})"\s*[^>]*\/>\s*<\/w:comment>\s*<w:comment[^>]*>\s*<w:p w14:paraId="BBBBBBBB"/.exec(commentsXml)?.[1] ??
-                    /<w:comment w:id="0"[^>]*>\s*<w:p w14:paraId="([0-9A-F]{8})"/.exec(commentsXml)?.[1];
+                const newParent =
+                    /w14:paraId="([0-9A-F]{8})"\s*[^>]*\/>\s*<\/w:comment>\s*<w:comment[^>]*>\s*<w:p w14:paraId="BBBBBBBB"/.exec(
+                        commentsXml,
+                    )?.[1] ?? /<w:comment w:id="0"[^>]*>\s*<w:p w14:paraId="([0-9A-F]{8})"/.exec(commentsXml)?.[1];
                 expect(newParent).toBeDefined();
                 if (!newParent) return;
                 expect(parseInt(newParent, 16)).toBeLessThan(0x80000000);
@@ -489,9 +491,7 @@ describe("DOCXSchemaValidator", () => {
                 const docXml = await fs.readFile(docPath, "utf-8");
                 // The new paraId for "FFFFFFFF" must NOT collide with
                 // "00000002" (the in-range w15:paraId from commentsExtended.xml).
-                const replacement = /w14:paraId="([0-9A-F]{8})"/.exec(
-                    docXml.replace(/00000002/g, ""),
-                );
+                const replacement = /w14:paraId="([0-9A-F]{8})"/.exec(docXml.replace(/00000002/g, ""));
                 expect(replacement?.[1]).toBeDefined();
                 if (replacement?.[1]) {
                     expect(replacement[1]).not.toBe("00000002");
@@ -596,9 +596,7 @@ describe("DOCXSchemaValidator", () => {
             await withTempDir(async (dir) => {
                 await writeFile(
                     path.join(dir, "word", "document.xml"),
-                    wrapDocument(
-                        `<w:p><w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:t>x</w:t></w:r></w:p>`,
-                    ),
+                    wrapDocument(`<w:p><w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:t>x</w:t></w:r></w:p>`),
                 );
                 await writeFile(
                     path.join(dir, "word", "styles.xml"),
@@ -645,10 +643,7 @@ describe("DOCXSchemaValidator", () => {
                         `<w:p><w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:t>x</w:t></w:r></w:p>` +
                         `</w:comment></w:comments>`,
                 );
-                await writeFile(
-                    path.join(dir, "word", "styles.xml"),
-                    `<?xml version="1.0"?><w:styles ${W_NS}/>`,
-                );
+                await writeFile(path.join(dir, "word", "styles.xml"), `<?xml version="1.0"?><w:styles ${W_NS}/>`);
                 const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
                 const result = await v.validateStyleReferences();
                 expect(result.valid).toBe(false);
@@ -664,7 +659,10 @@ describe("DOCXSchemaValidator", () => {
                     wrapDocument(`<w:p><w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:t>x</w:t></w:r></w:p>`),
                 );
                 const stylesPath = path.join(dir, "word", "styles.xml");
-                await writeFile(stylesPath, `<?xml version="1.0"?><w:styles ${W_NS}><w:style w:styleId="Heading1" w:type="paragraph"/></w:styles>`);
+                await writeFile(
+                    stylesPath,
+                    `<?xml version="1.0"?><w:styles ${W_NS}><w:style w:styleId="Heading1" w:type="paragraph"/></w:styles>`,
+                );
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const repairs = await v.repairMissingStyleDefinitions();
                 // 1 (CommentReference, referenced) + 4 (Normal, DefaultParagraphFont,
@@ -672,7 +670,7 @@ describe("DOCXSchemaValidator", () => {
                 expect(repairs).toBe(5);
                 const after = await fs.readFile(stylesPath, "utf-8");
                 expect(after).toContain('w:styleId="CommentReference"');
-                expect(after).toContain('annotation reference');
+                expect(after).toContain("annotation reference");
                 expect(after).toContain('w:styleId="Normal"');
                 expect(after).toContain('w:styleId="TableNormal"');
                 // Validate again — both checks must now be clean.
@@ -877,10 +875,7 @@ describe("DOCXSchemaValidator", () => {
                     `<?xml version="1.0"?><w:hdr ${W_NS} ${W14_NS}><w:p w14:paraId="CCCCCCCC" w14:textId="DDDDDDDD"/><w:p/></w:hdr>`,
                 );
                 // footer1.xml: one paragraph missing both IDs.
-                await writeFile(
-                    path.join(dir, "word", "footer1.xml"),
-                    `<?xml version="1.0"?><w:ftr ${W_NS} ${W14_NS}><w:p/></w:ftr>`,
-                );
+                await writeFile(path.join(dir, "word", "footer1.xml"), `<?xml version="1.0"?><w:ftr ${W_NS} ${W14_NS}><w:p/></w:ftr>`);
                 const strict = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
                 const r = await strict.validateAllParagraphsHaveParaId();
                 // Should catch missing IDs on header's second <w:p> and footer's <w:p>.
@@ -944,8 +939,7 @@ describe("DOCXSchemaValidator", () => {
                 const filePath = path.join(dir, "word", "document.xml");
                 const w15Ns = `xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml"`;
                 const mcNs = `xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"`;
-                const before =
-                    `<?xml version="1.0"?><w:document ${W_NS} ${w15Ns} ${mcNs} mc:Ignorable="w15"><w:body/></w:document>`;
+                const before = `<?xml version="1.0"?><w:document ${W_NS} ${w15Ns} ${mcNs} mc:Ignorable="w15"><w:body/></w:document>`;
                 await writeFile(filePath, before);
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const repairs = await v.repairIgnorable();
@@ -1063,10 +1057,7 @@ describe("DOCXSchemaValidator", () => {
                     "[[DOCX_DEL_START:bar]]b[[DOCX_DEL_END:bar]]" +
                     "[[DOCX_CMT_START:baz]]c[[DOCX_CMT_END:baz]]" +
                     "[[DOCX_PMARK_INS:p1]][[DOCX_PMARK_DEL:p2]]";
-                await writeFile(
-                    path.join(dir, "word", "document.xml"),
-                    wrapDocument(`<w:p><w:r><w:t>${tokens}</w:t></w:r></w:p>`),
-                );
+                await writeFile(path.join(dir, "word", "document.xml"), wrapDocument(`<w:p><w:r><w:t>${tokens}</w:t></w:r></w:p>`));
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const result = await v.validateNoTrackingTokens();
                 expect(result.valid).toBe(false);
@@ -1195,10 +1186,90 @@ describe("DOCXSchemaValidator", () => {
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const result = await v.validateCommentThreading();
                 expect(result.valid).toBe(false);
-                expect(
-                    result.issues.some((i) => i.code === "comment-thread-paraid-orphan" && i.message.includes("DEADBEEF")),
-                ).toBe(true);
+                expect(result.issues.some((i) => i.code === "comment-thread-paraid-orphan" && i.message.includes("DEADBEEF"))).toBe(true);
             });
+        });
+
+        it("flags commentsIds.xml paraIds that do not resolve to comments.xml", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:commentRangeStart w:id="0"/>x<w:commentRangeEnd w:id="0"/>` +
+                            `<w:r><w:commentReference w:id="0"/></w:r></w:p>`,
+                    ),
+                );
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                        `<w:p w14:paraId="11111111"/></w:comment></w:comments>`,
+                );
+                await writeFile(
+                    path.join(dir, "word", "commentsIds.xml"),
+                    `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                        `<w16cid:commentId w16cid:paraId="DEADBEEF" w16cid:durableId="22222222"/>` +
+                        `</w16cid:commentsIds>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateCommentThreading();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "comment-thread-commentid-paraid-orphan")).toBe(true);
+            });
+        });
+
+        it("flags commentsExtensible.xml durableIds that do not resolve to commentsIds.xml", async () => {
+            const W16CEX_NS = `xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex"`;
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:commentRangeStart w:id="0"/>x<w:commentRangeEnd w:id="0"/>` +
+                            `<w:r><w:commentReference w:id="0"/></w:r></w:p>`,
+                    ),
+                );
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                        `<w:p w14:paraId="11111111"/></w:comment></w:comments>`,
+                );
+                await writeFile(
+                    path.join(dir, "word", "commentsIds.xml"),
+                    `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                        `<w16cid:commentId w16cid:paraId="11111111" w16cid:durableId="22222222"/>` +
+                        `</w16cid:commentsIds>`,
+                );
+                await writeFile(
+                    path.join(dir, "word", "commentsExtensible.xml"),
+                    `<?xml version="1.0"?><w16cex:commentsExtensible ${W16CEX_NS}>` +
+                        `<w16cex:commentExtensible w16cex:durableId="DEADBEEF"/>` +
+                        `</w16cex:commentsExtensible>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateCommentThreading();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "comment-thread-durableid-orphan")).toBe(true);
+            });
+        });
+
+        it("rejects the second-pass Word-warning sample while accepting the Word-repaired counterpart", async () => {
+            const secondPass = path.join(__dirname, "fixtures/word-strict/second-pass");
+            const broken = new DOCXSchemaValidator({
+                unpackedDir: path.join(secondPass, "unpacked-broken"),
+                profile: "strict",
+            });
+            const brokenResult = await broken.validateCommentThreading();
+            expect(brokenResult.valid).toBe(false);
+            expect(brokenResult.issues.some((i) => i.code === "comment-thread-commentid-paraid-orphan")).toBe(true);
+            expect(brokenResult.issues.some((i) => i.code === "comment-thread-durableid-orphan")).toBe(true);
+
+            const repaired = new DOCXSchemaValidator({
+                unpackedDir: path.join(secondPass, "unpacked-working"),
+                profile: "strict",
+            });
+            const repairedResult = await repaired.validateCommentThreading();
+            expect(repairedResult.valid).toBe(true);
         });
 
         it("flags missing <w15:commentEx> as ERROR in strict profile", async () => {
@@ -1231,9 +1302,7 @@ describe("DOCXSchemaValidator", () => {
                 const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
                 const result = await v.validateCommentThreading();
                 expect(result.valid).toBe(false);
-                const missing = result.issues.find(
-                    (i) => i.code === "comment-thread-paraid-missing" && i.message.includes("22222222"),
-                );
+                const missing = result.issues.find((i) => i.code === "comment-thread-paraid-missing" && i.message.includes("22222222"));
                 expect(missing).toBeDefined();
                 expect(missing?.severity).toBe("error");
             });
@@ -1271,9 +1340,7 @@ describe("DOCXSchemaValidator", () => {
                 // Lenient profile: still reports the issue, but as a warning,
                 // so the document remains "valid" overall.
                 expect(result.valid).toBe(true);
-                const missing = result.issues.find(
-                    (i) => i.code === "comment-thread-paraid-missing" && i.message.includes("22222222"),
-                );
+                const missing = result.issues.find((i) => i.code === "comment-thread-paraid-missing" && i.message.includes("22222222"));
                 expect(missing).toBeDefined();
                 expect(missing?.severity).toBe("warning");
             });
@@ -1357,9 +1424,7 @@ describe("DOCXSchemaValidator", () => {
                 const result = await v.validateCommentThreading();
                 expect(result.valid).toBe(false);
                 expect(
-                    result.issues.some(
-                        (i) => i.code === "comment-thread-count-mismatch" && i.message.includes("commentRangeStart"),
-                    ),
+                    result.issues.some((i) => i.code === "comment-thread-count-mismatch" && i.message.includes("commentRangeStart")),
                 ).toBe(true);
             });
         });

@@ -58,6 +58,7 @@
         "test:strict": "vitest run tests/fixtures-all-strict.test.ts",
         "test:lenient": "vitest run tests/fixtures-all-lenient.test.ts",
         "test:fixtures:refresh": "bunx tsx scripts/probe-all-fixtures.ts",
+        "test:fixtures:word": "bunx tsx scripts/probe-word-fixtures.ts",
         "vp": "vitest",
         "check": "vp check",
         "check:tsgo": "tsgo --noEmit",

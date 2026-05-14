@@ -42,6 +42,7 @@
  */
 
 import { promises as fs, readFileSync } from "node:fs";
+import path from "node:path";
 import { default as JSZip } from "jszip";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
@@ -54,7 +55,10 @@ export const WORD_STRICT_NAMESPACE = "http://purl.oclc.org/ooxml/wordprocessingm
 export const WORD_PARAGRAPH_NAMESPACES: readonly [string, string] = [WORD_2006_NAMESPACE, WORD_STRICT_NAMESPACE];
 const W14_NAMESPACE = "http://schemas.microsoft.com/office/word/2010/wordml";
 const W15_NAMESPACE = "http://schemas.microsoft.com/office/word/2012/wordml";
+const W16CEX_NAMESPACE = "http://schemas.microsoft.com/office/word/2018/wordml/cex";
 const W16CID_NAMESPACE = "http://schemas.microsoft.com/office/word/2016/wordml/cid";
+const MATH_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/math";
+const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types";
 const VML_NAMESPACE = "urn:schemas-microsoft-com:vml";
 
 /**
@@ -163,11 +167,7 @@ const WELL_KNOWN_STYLE_DEFINITIONS: Readonly<Record<string, string>> = {
     // looks these up by name when an element omits an explicit style and
     // pops "this document needs to be repaired" with a "Table Properties"
     // category if the lookup misses.
-    Normal:
-        `<w:style w:type="paragraph" w:default="1" w:styleId="Normal">` +
-        `<w:name w:val="Normal"/>` +
-        `<w:qFormat/>` +
-        `</w:style>`,
+    Normal: `<w:style w:type="paragraph" w:default="1" w:styleId="Normal">` + `<w:name w:val="Normal"/>` + `<w:qFormat/>` + `</w:style>`,
     TableNormal:
         `<w:style w:type="table" w:default="1" w:styleId="TableNormal">` +
         `<w:name w:val="Normal Table"/>` +
@@ -219,8 +219,7 @@ const TRACKING_TOKEN_PREFIXES: readonly string[] = [
     "[[DOCX_PMARK_DEL:",
     "[[DOCX_PMARK_INS:",
 ];
-const TRACKING_TOKEN_REGEX =
-    /\[\[DOCX_(?:INS|DEL|CMT)_(?:START|END):[^\]]*?\]\]|\[\[DOCX_PMARK_(?:DEL|INS):[^\]]*?\]\]/g;
+const TRACKING_TOKEN_REGEX = /\[\[DOCX_(?:INS|DEL|CMT)_(?:START|END):[^\]]*?\]\]|\[\[DOCX_PMARK_(?:DEL|INS):[^\]]*?\]\]/g;
 
 // XPath excluding `<w:p>` inside DML/VML text-box overlays. Matches the
 // Python BODY_PARAGRAPH_XPATH.
@@ -259,9 +258,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      */
     async validate(): Promise<ValidationResult> {
         const xmlOk = await this.validateXml();
-        if (!xmlOk.valid) return xmlOk;
+        if (!xmlOk.valid && this.profile !== "word-valid") return xmlOk;
 
-        const results = await Promise.all([
+        const checks: Array<Promise<ValidationResult>> = [
             this.validateNamespaces(),
             this.validateUniqueIds(),
             this.validateFileReferences(),
@@ -281,9 +280,123 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             this.validateStyleDefaults(),
             this.validateNoBom(),
             this.validateNoEmptyRelsParts(),
-        ]);
+        ];
+        if (this.profile === "word-valid") {
+            checks.push(this.validateWordOpenCompatibility());
+        }
 
-        return mergeResults(xmlOk, ...results);
+        const merged = mergeResults(xmlOk, ...(await Promise.all(checks)));
+        return this.profile === "word-valid" ? this.applyWordValidProfile(merged) : merged;
+    }
+
+    private applyWordValidProfile(result: ValidationResult): ValidationResult {
+        const issues = result.issues.map((issue): ValidationIssue => {
+            if (issue.severity !== "error" || this.isWordBlockingIssue(issue)) return issue;
+            return { ...issue, severity: "warning" };
+        });
+        return finalize(issues);
+    }
+
+    private isWordBlockingIssue(issue: ValidationIssue): boolean {
+        switch (issue.code) {
+            case "comment-thread-commentid-paraid-orphan":
+            case "comment-thread-commentid-missing-paraid":
+            case "comment-thread-commentid-missing-durableid":
+            case "comment-thread-commentid-duplicate-paraid":
+            case "comment-thread-commentid-duplicate-durableid":
+            case "comment-thread-durableid-orphan":
+            case "comment-thread-durableid-missing":
+            case "comment-thread-durableid-duplicate":
+            case "rels-missing-sidecar":
+            case "id-durable-overflow":
+            case "word-math-spre-body":
+            case "word-content-type-invalid":
+                return true;
+            case "xml-syntax":
+                return issue.path?.startsWith("word/") ?? false;
+            case "rels-broken":
+                return issue.message.includes("../customXml/");
+            case "rels-empty-element":
+                return issue.message.includes("missing required attribute");
+            case "xsd-error":
+                return isWordBlockingXsdIssue(issue);
+            default:
+                return false;
+        }
+    }
+
+    private async validateWordOpenCompatibility(): Promise<ValidationResult> {
+        const issues: ValidationIssue[] = [];
+        await this.validateWordContentTypes(issues);
+        const documentXml = this.xmlFiles.find(
+            (xmlFile) => baseName(xmlFile) === "document.xml" && this.relPath(xmlFile).startsWith("word/"),
+        );
+        if (!documentXml) return finalize(issues);
+
+        let dom: Document;
+        try {
+            dom = parseXml(await fs.readFile(documentXml, "utf-8"));
+        } catch (err) {
+            issues.push({
+                severity: "error",
+                message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
+                path: this.relPath(documentXml),
+                code: "word-math-parse",
+            });
+            return finalize(issues);
+        }
+
+        const body = dom.getElementsByTagNameNS(WORD_2006_NAMESPACE, "body").item(0);
+        if (!body) return finalize(issues);
+        for (let i = 0; i < body.childNodes.length; i += 1) {
+            const node = body.childNodes.item(i);
+            if (!node || node.nodeType !== 1) continue;
+            const elem = node as Element;
+            const tagName = elem.localName || elem.tagName.split(":").pop() || elem.tagName;
+            if (elem.namespaceURI !== MATH_NAMESPACE || tagName !== "oMathPara") continue;
+            if (elem.getElementsByTagNameNS(MATH_NAMESPACE, "sPre").length === 0) continue;
+            issues.push({
+                severity: "error",
+                message:
+                    "Microsoft Word refuses to open documents with a body-level <m:oMathPara> " +
+                    "that contains <m:sPre>; wrap it in a paragraph or avoid m:sPre in display math.",
+                path: this.relPath(documentXml),
+                code: "word-math-spre-body",
+            });
+        }
+        return finalize(issues);
+    }
+
+    private async validateWordContentTypes(issues: ValidationIssue[]): Promise<void> {
+        const contentTypesFile = path.join(this.unpackedDir, "[Content_Types].xml");
+        let dom: Document;
+        try {
+            dom = parseXml(await fs.readFile(contentTypesFile, "utf-8"));
+        } catch {
+            return;
+        }
+        const check = (elem: Element, attrName: "PartName" | "Extension"): void => {
+            const contentType = elem.getAttribute("ContentType");
+            if (!contentType || !contentType.startsWith("invalid-")) return;
+            const target = elem.getAttribute(attrName) ?? "";
+            issues.push({
+                severity: "error",
+                message: `Microsoft Word refuses content type '${contentType}' for ${target}`,
+                path: "[Content_Types].xml",
+                code: "word-content-type-invalid",
+            });
+        };
+
+        const overrides = dom.getElementsByTagNameNS(CONTENT_TYPES_NAMESPACE, "Override");
+        for (let i = 0; i < overrides.length; i += 1) {
+            const elem = overrides.item(i);
+            if (elem) check(elem, "PartName");
+        }
+        const defaults = dom.getElementsByTagNameNS(CONTENT_TYPES_NAMESPACE, "Default");
+        for (let i = 0; i < defaults.length; i += 1) {
+            const elem = defaults.item(i);
+            if (elem) check(elem, "Extension");
+        }
     }
 
     // ----- whitespace ---------------------------------------------------------
@@ -762,6 +875,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      *   5. The number of `w:commentRangeStart`, `w:commentRangeEnd`, and
      *      `w:commentReference` elements in document.xml must each equal
      *      the number of comments in comments.xml.
+     *   6. Every `w16cid:commentId/@paraId` in commentsIds.xml must resolve
+     *      to a paragraph in comments.xml.
+     *   7. Every `w16cex:commentExtensible/@durableId` in
+     *      commentsExtensible.xml must resolve to a durableId in
+     *      commentsIds.xml.
      *
      * `validateCommentMarkers` already covers orphan range start/end and
      * missing-comment references — this validator is strictly about the
@@ -773,6 +891,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         let documentXml: string | null = null;
         let commentsXml: string | null = null;
         let commentsExtendedXml: string | null = null;
+        let commentsIdsXml: string | null = null;
+        let commentsExtensibleXml: string | null = null;
         for (const xmlFile of this.xmlFiles) {
             const base = baseName(xmlFile);
             if (base === "document.xml" && xmlFile.includes("word")) {
@@ -781,6 +901,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 commentsXml = xmlFile;
             } else if (base === "commentsExtended.xml") {
                 commentsExtendedXml = xmlFile;
+            } else if (base === "commentsIds.xml") {
+                commentsIdsXml = xmlFile;
+            } else if (base === "commentsExtensible.xml") {
+                commentsExtensibleXml = xmlFile;
             }
         }
 
@@ -834,6 +958,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 if (!commentParaIds.has(id)) commentParaIds.set(id, paraIds);
             }
         }
+        const allCommentParaIds = new Set<string>();
+        for (const v of commentParaIds.values()) {
+            for (const p of v) allCommentParaIds.add(p);
+        }
 
         // ----- rule 4: marker counts ---------------------------------------
         if (documentXml) {
@@ -853,9 +981,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 if (startCount !== expected) {
                     issues.push({
                         severity: "error",
-                        message:
-                            `commentRangeStart count (${startCount}) does not match ` +
-                            `comment count in comments.xml (${expected})`,
+                        message: `commentRangeStart count (${startCount}) does not match ` + `comment count in comments.xml (${expected})`,
                         code: "comment-thread-count-mismatch",
                         path: this.relPath(documentXml),
                     });
@@ -863,9 +989,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 if (endCount !== expected) {
                     issues.push({
                         severity: "error",
-                        message:
-                            `commentRangeEnd count (${endCount}) does not match ` +
-                            `comment count in comments.xml (${expected})`,
+                        message: `commentRangeEnd count (${endCount}) does not match ` + `comment count in comments.xml (${expected})`,
                         path: this.relPath(documentXml),
                         code: "comment-thread-count-mismatch",
                     });
@@ -873,15 +997,145 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 if (refCount !== expected) {
                     issues.push({
                         severity: "error",
-                        message:
-                            `commentReference count (${refCount}) does not match ` +
-                            `comment count in comments.xml (${expected})`,
+                        message: `commentReference count (${refCount}) does not match ` + `comment count in comments.xml (${expected})`,
                         path: this.relPath(documentXml),
                         code: "comment-thread-count-mismatch",
                     });
                 }
             } catch {
                 // document.xml parse failures are reported elsewhere.
+            }
+        }
+
+        const commentIdDurableIds = new Set<string>();
+        if (commentsIdsXml) {
+            let idsDom: Document;
+            try {
+                idsDom = parseXml(await fs.readFile(commentsIdsXml, "utf-8"));
+            } catch (err) {
+                issues.push({
+                    severity: "error",
+                    message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
+                    path: this.relPath(commentsIdsXml),
+                    code: "comment-thread-parse",
+                });
+                return finalize(issues);
+            }
+
+            const commentIds = idsDom.getElementsByTagNameNS(W16CID_NAMESPACE, "commentId");
+            const paraIdCounts = new Map<string, number>();
+            const durableIdCounts = new Map<string, number>();
+            for (let i = 0; i < commentIds.length; i += 1) {
+                const elem = commentIds.item(i);
+                if (!elem) continue;
+                const paraId = elem.getAttributeNS(W16CID_NAMESPACE, "paraId");
+                const durableId = elem.getAttributeNS(W16CID_NAMESPACE, "durableId");
+                if (paraId) {
+                    paraIdCounts.set(paraId, (paraIdCounts.get(paraId) ?? 0) + 1);
+                    if (!allCommentParaIds.has(paraId)) {
+                        issues.push({
+                            severity: "error",
+                            message:
+                                `<w16cid:commentId w16cid:paraId='${paraId}'> does not match any paragraph paraId ` +
+                                `in any <w:comment> in comments.xml`,
+                            path: this.relPath(commentsIdsXml),
+                            code: "comment-thread-commentid-paraid-orphan",
+                        });
+                    }
+                } else {
+                    issues.push({
+                        severity: "error",
+                        message: `<w16cid:commentId> is missing required w16cid:paraId`,
+                        path: this.relPath(commentsIdsXml),
+                        code: "comment-thread-commentid-missing-paraid",
+                    });
+                }
+
+                if (durableId) {
+                    durableIdCounts.set(durableId, (durableIdCounts.get(durableId) ?? 0) + 1);
+                    commentIdDurableIds.add(durableId);
+                } else {
+                    issues.push({
+                        severity: "error",
+                        message: `<w16cid:commentId> is missing required w16cid:durableId`,
+                        path: this.relPath(commentsIdsXml),
+                        code: "comment-thread-commentid-missing-durableid",
+                    });
+                }
+            }
+
+            for (const [paraId, count] of paraIdCounts) {
+                if (count > 1) {
+                    issues.push({
+                        severity: "error",
+                        message: `commentsIds.xml has ${count} entries with duplicate paraId='${paraId}'`,
+                        path: this.relPath(commentsIdsXml),
+                        code: "comment-thread-commentid-duplicate-paraid",
+                    });
+                }
+            }
+            for (const [durableId, count] of durableIdCounts) {
+                if (count > 1) {
+                    issues.push({
+                        severity: "error",
+                        message: `commentsIds.xml has ${count} entries with duplicate durableId='${durableId}'`,
+                        path: this.relPath(commentsIdsXml),
+                        code: "comment-thread-commentid-duplicate-durableid",
+                    });
+                }
+            }
+        }
+
+        if (commentsExtensibleXml) {
+            let cexDom: Document;
+            try {
+                cexDom = parseXml(await fs.readFile(commentsExtensibleXml, "utf-8"));
+            } catch (err) {
+                issues.push({
+                    severity: "error",
+                    message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
+                    path: this.relPath(commentsExtensibleXml),
+                    code: "comment-thread-parse",
+                });
+                return finalize(issues);
+            }
+
+            const extensibleEntries = cexDom.getElementsByTagNameNS(W16CEX_NAMESPACE, "commentExtensible");
+            const durableIdCounts = new Map<string, number>();
+            for (let i = 0; i < extensibleEntries.length; i += 1) {
+                const elem = extensibleEntries.item(i);
+                if (!elem) continue;
+                const durableId = elem.getAttributeNS(W16CEX_NAMESPACE, "durableId");
+                if (!durableId) {
+                    issues.push({
+                        severity: "error",
+                        message: `<w16cex:commentExtensible> is missing required w16cex:durableId`,
+                        path: this.relPath(commentsExtensibleXml),
+                        code: "comment-thread-durableid-missing",
+                    });
+                    continue;
+                }
+                durableIdCounts.set(durableId, (durableIdCounts.get(durableId) ?? 0) + 1);
+                if (!commentIdDurableIds.has(durableId)) {
+                    issues.push({
+                        severity: "error",
+                        message:
+                            `<w16cex:commentExtensible w16cex:durableId='${durableId}'> does not match any ` +
+                            `w16cid:durableId in commentsIds.xml`,
+                        path: this.relPath(commentsExtensibleXml),
+                        code: "comment-thread-durableid-orphan",
+                    });
+                }
+            }
+            for (const [durableId, count] of durableIdCounts) {
+                if (count > 1) {
+                    issues.push({
+                        severity: "error",
+                        message: `commentsExtensible.xml has ${count} entries with duplicate durableId='${durableId}'`,
+                        path: this.relPath(commentsExtensibleXml),
+                        code: "comment-thread-durableid-duplicate",
+                    });
+                }
             }
         }
 
@@ -950,10 +1204,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         }
 
         // ----- rule 2: every commentEx points at a real comment paragraph --
-        const allCommentParaIds = new Set<string>();
-        for (const v of commentParaIds.values()) {
-            for (const p of v) allCommentParaIds.add(p);
-        }
         for (const paraId of extByParaId.keys()) {
             if (!allCommentParaIds.has(paraId)) {
                 issues.push({
@@ -973,8 +1223,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 issues.push({
                     severity: "error",
                     message:
-                        `<w15:commentEx w15:paraIdParent='${parent}'> does not resolve to any ` +
-                        `paraId declared in commentsExtended.xml`,
+                        `<w15:commentEx w15:paraIdParent='${parent}'> does not resolve to any ` + `paraId declared in commentsExtended.xml`,
                     path: this.relPath(commentsExtendedXml),
                     code: "comment-thread-orphan-parent",
                 });
@@ -1715,6 +1964,19 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
 function finalize(issues: ValidationIssue[]): ValidationResult {
     return { valid: issues.every((i) => i.severity !== "error"), issues };
+}
+
+function isWordBlockingXsdIssue(issue: ValidationIssue): boolean {
+    if (issue.path && !issue.path.startsWith("word/") && issue.path !== "docProps/custom.xml") return false;
+    const msg = issue.message;
+    return (
+        msg.includes("}p2': This element is not expected") ||
+        (msg.includes("}pPr': This element is not expected") && msg.includes("Expected is one of")) ||
+        msg.includes("}rPr': This element is not expected.") ||
+        msg.includes("Element 'link': This element is not expected") ||
+        msg.includes("}u': This element is not expected") ||
+        msg.includes("}filetime': '' is not a valid value")
+    );
 }
 
 function baseName(p: string): string {

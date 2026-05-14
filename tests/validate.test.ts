@@ -26,6 +26,7 @@ import { runValidateFromArgv, validate } from "../src/scripts/office/validate";
 import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
+const FIXTURES = path.join(HERE, "fixtures");
 const BROKEN_DIR = path.join(HERE, "fixtures", "broken");
 
 const W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
@@ -93,6 +94,40 @@ describe("validate", () => {
         const result = await validate(docxPath);
         expect(result.valid).toBe(false);
         expect(result.issues.some((i) => i.severity === "error" && i.code === "id-paraid-overflow")).toBe(true);
+    });
+
+    it("word-valid profile downgrades Word-tolerated paraId overflow", async () => {
+        const docxPath = path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx");
+        const result = await validate(docxPath, { profile: "word-valid" });
+        expect(result.valid).toBe(true);
+        expect(result.issues.some((i) => i.severity === "warning" && i.code === "id-paraid-overflow")).toBe(true);
+    });
+
+    it("word-valid profile keeps commentsIds/commentsExtensible mismatches fatal", async () => {
+        const docxPath = path.join(BROKEN_DIR, "sample-document.broken-tables.docx");
+        const result = await validate(docxPath, { profile: "word-valid" });
+        expect(result.valid).toBe(false);
+        expect(result.issues.some((i) => i.severity === "error" && i.code === "comment-thread-commentid-paraid-orphan")).toBe(true);
+        expect(result.issues.some((i) => i.severity === "error" && i.code === "comment-thread-durableid-orphan")).toBe(true);
+    });
+
+    it("word-valid profile flags body-level m:oMathPara with m:sPre", async () => {
+        const docxPath = path.join(FIXTURES, "external", "superdoc", "behavior", "math-spre-tests.docx");
+        const lenient = await validate(docxPath, { profile: "lenient" });
+        const wordValid = await validate(docxPath, { profile: "word-valid" });
+        expect(lenient.valid).toBe(true);
+        expect(wordValid.valid).toBe(false);
+        expect(wordValid.issues.some((i) => i.severity === "error" && i.code === "word-math-spre-body")).toBe(true);
+    });
+
+    it("word-valid profile flags invalid content types that Word refuses", async () => {
+        const bad = path.join(FIXTURES, "external", "open-xml-sdk", "InvalidDocPropsct.docx");
+        const tolerated = path.join(FIXTURES, "external", "open-xml-sdk", "InvalidDocProps.docx");
+        const badResult = await validate(bad, { profile: "word-valid" });
+        const toleratedResult = await validate(tolerated, { profile: "word-valid" });
+        expect(badResult.valid).toBe(false);
+        expect(badResult.issues.some((i) => i.severity === "error" && i.code === "word-content-type-invalid")).toBe(true);
+        expect(toleratedResult.valid).toBe(true);
     });
 
     it("auto-repairs missing xml:space='preserve' when --auto-repair is set", async () => {
@@ -234,5 +269,4 @@ describe("validate startup probe", () => {
         // binding fails loudly instead of degrading into per-file XSD errors.
         expect(() => BaseSchemaValidator.assertLibxmljsAvailable()).not.toThrow();
     });
-
 });
