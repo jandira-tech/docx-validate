@@ -166,6 +166,37 @@ describe("DOCXSchemaValidator", () => {
                 expect(result.valid).toBe(true);
             });
         });
+
+        it("issues have correct relative paths (not hardcoded document.xml)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:commentRangeStart w:id="0"/><w:r><w:t>x</w:t></w:r>` +
+                            `<w:commentRangeEnd w:id="1"/>` +
+                            `<w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:commentReference w:id="0"/></w:r>` +
+                            `<w:r><w:commentReference w:id="1"/></w:r></w:p>`,
+                    ),
+                );
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A"/>` +
+                        `<w:comment w:id="1" w:author="B" w:date="2026-01-01T00:00:00Z" w:initials="B"/>` +
+                        `<w:comment w:id="2" w:author="C" w:date="2026-01-01T00:00:00Z" w:initials="C"/>` +
+                        `</w:comments>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateCommentMarkers();
+                expect(result.valid).toBe(false);
+                // Orphaned commentRangeEnd (id=1) and missing comment (id=2)
+                for (const issue of result.issues) {
+                    expect(issue.path).not.toBe("document.xml");
+                    expect(issue.path).toContain("word");
+                    expect(issue.path).toContain("document.xml");
+                }
+            });
+        });
     });
 
     describe("validateIdConstraints", () => {
@@ -417,6 +448,54 @@ describe("DOCXSchemaValidator", () => {
                 expect(extXml).toContain(`w15:paraId="${newParent}"`);
                 expect(extXml).toContain(`w15:paraIdParent="${newParent}"`);
                 expect(extXml).not.toContain("E0000000");
+            });
+        });
+
+        it("w15:paraId / paraIdParent under-cap values are added to the collision pool", async () => {
+            await withTempDir(async (dir) => {
+                const docPath = path.join(dir, "word", "document.xml");
+                const extPath = path.join(dir, "word", "commentsExtended.xml");
+                const commentsPath = path.join(dir, "word", "comments.xml");
+                // A w15:paraId under the cap in commentsExtended.xml (not in
+                // w14:paraId form anywhere) that happens to have the value
+                // "00000002" — the sequential allocator would naturally try
+                // this value second if it weren't in the collision pool.
+                await writeFile(
+                    docPath,
+                    `<?xml version="1.0"?><w:document ${W_NS} ${W14_NS}><w:body>` +
+                        `<w:p w14:paraId="FFFFFFFF"/>` + // over-cap → gets replacement 00000001
+                        `<w:p w14:paraId="FFFFFFFF"/>` + // same over-cap → same replacement
+                        `</w:body></w:document>`,
+                );
+                await writeFile(
+                    commentsPath,
+                    `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                        `<w:p w14:paraId="FFFFFFFF"/></w:comment>` +
+                        `<w:comment w:id="1" w:author="B" w:date="2026-01-01T00:00:00Z" w:initials="B">` +
+                        `<w:p w14:paraId="00000002"/></w:comment></w:comments>`,
+                );
+                await writeFile(
+                    extPath,
+                    `<?xml version="1.0"?><w15:commentsEx ${W15_NS}>` +
+                        `<w15:commentEx w15:paraId="FFFFFFFF" w15:done="0"/>` +
+                        `<w15:commentEx w15:paraId="00000002" w15:done="0"/>` +
+                        `</w15:commentsEx>`,
+                );
+
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                await v.repairParaId();
+
+                const docXml = await fs.readFile(docPath, "utf-8");
+                // The new paraId for "FFFFFFFF" must NOT collide with
+                // "00000002" (the in-range w15:paraId from commentsExtended.xml).
+                const replacement = /w14:paraId="([0-9A-F]{8})"/.exec(
+                    docXml.replace(/00000002/g, ""),
+                );
+                expect(replacement?.[1]).toBeDefined();
+                if (replacement?.[1]) {
+                    expect(replacement[1]).not.toBe("00000002");
+                }
             });
         });
 

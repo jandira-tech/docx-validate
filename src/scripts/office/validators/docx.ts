@@ -458,7 +458,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             issues.push({
                 severity: "error",
                 message: `commentRangeEnd id="${id}" has no matching commentRangeStart`,
-                path: "document.xml",
+                path: this.relPath(documentXml),
                 code: "comment-orphan-end",
             });
         }
@@ -468,7 +468,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             issues.push({
                 severity: "error",
                 message: `commentRangeStart id="${id}" has no matching commentRangeEnd`,
-                path: "document.xml",
+                path: this.relPath(documentXml),
                 code: "comment-orphan-start",
             });
         }
@@ -502,7 +502,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 issues.push({
                     severity: "error",
                     message: `marker id="${id}" references non-existent comment`,
-                    path: "document.xml",
+                    path: this.relPath(documentXml),
                     code: "comment-marker-missing",
                 });
             }
@@ -1632,6 +1632,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     const v = parseIdValue(val, 16);
                     if (Number.isNaN(v) || v >= MAX_PARA_ID) {
                         remap.set(val, allocateNewParaId());
+                    } else {
+                        usedNewParaIds.add(val.toUpperCase());
                     }
                 }
             }
