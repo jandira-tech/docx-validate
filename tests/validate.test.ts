@@ -170,6 +170,12 @@ describe("validate", () => {
             expect(after.repairs).toBeGreaterThanOrEqual(1);
             const wsAfter = after.issues.filter((i) => i.code === "ws-missing-preserve");
             expect(wsAfter.length).toBe(0);
+            expect(
+                after.issues.some(
+                    (i) => i.code === "repair-plan" && i.path === "word/document.xml" && i.message.includes("add xml:space='preserve'"),
+                ),
+            ).toBe(true);
+            expect(after.issues.some((i) => i.code === "repair-content-preserved")).toBe(true);
 
             // Sanity-check the on-disk file actually got the attribute added.
             const docXml = await fs.readFile(path.join(unpacked, "word", "document.xml"), "utf8");
