@@ -9,6 +9,7 @@ The broken document (`sample-document.broken-tables.docx`) is a snapshot of juba
 ## (1) What Was ADDED by the Writer (in broken, not in working)
 
 ### A1. Files and content types added
+
 | Addition | Location | Effect |
 |----------|----------|--------|
 | `docProps/custom.xml` | Package root | Custom document properties part |
@@ -35,7 +36,7 @@ The writer added `wpg`, `wpi`, `wps`, `wne` namespace declarations to root eleme
 
 ---
 
-## (2) What Was REMOVED by the Writer (in broken, missing from working)
+## (2) What Was REMOVED by the Writer (in working, missing from broken)
 
 ### R1. Table structural properties (CRITICAL — P0)
 The writer stripped the following from ALL tables in `document.xml`:

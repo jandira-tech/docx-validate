@@ -86,8 +86,23 @@ async function main() {
             type: "nodebuffer",
             compression: "DEFLATE",
         });
-        await fs.writeFile(resolved, output);
-        console.log(`Overwritten: ${resolved}`);
+
+        // Atomic write: write to temp file, then rename
+        const tempFile = `${resolved}.tmp.${Date.now()}`;
+        try {
+            await fs.writeFile(tempFile, output);
+            // Ensure data is flushed to disk (Note: Node.js fs.writeFile includes flush)
+            await fs.rename(tempFile, resolved);
+            console.log(`Overwritten: ${resolved}`);
+        } catch (err) {
+            // Clean up temp file on error
+            try {
+                await fs.unlink(tempFile);
+            } catch {
+                // Ignore cleanup errors
+            }
+            throw err;
+        }
     });
 }
 

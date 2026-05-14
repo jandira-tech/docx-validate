@@ -1,7 +1,7 @@
 # Diff Report: working vs broken (word-strict)
 
-**Generated**: 2026-05-13  
-**Working file**: `tests:fixtures:broken:sample-document.broken-tables.docx-repaired.docx` (repaired by repair pipeline)  
+**Generated**: 2026-05-13
+**Working file**: `tests/fixtures/broken/sample-document.broken-tables.docx-repaired.docx` (repaired by repair pipeline)  
 **Broken file**: `sample-document.broken-tables.docx` (pre-repair snapshot from jubarte/docx-js-editor writer)  
 **Total common files**: 16 — ALL differ  
 **Files only in broken**: 2  
