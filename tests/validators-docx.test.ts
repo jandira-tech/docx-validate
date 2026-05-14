@@ -949,6 +949,37 @@ describe("DOCXSchemaValidator", () => {
         });
     });
 
+    describe("repairExtendedPropertiesWhitespace", () => {
+        it("trims simple docProps/app.xml text nodes that Word treats as unreadable metadata", async () => {
+            await withTempDir(async (dir) => {
+                const appXml = path.join(dir, "docProps", "app.xml");
+                await writeFile(
+                    appXml,
+                    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+                        `<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"` +
+                        ` xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">` +
+                        `<TotalTime>3\n  </TotalTime>` +
+                        `<Pages>1\n  </Pages>` +
+                        `<HeadingPairs><vt:vector size="2" baseType="variant">` +
+                        `<vt:variant><vt:lpstr>Title\n        </vt:lpstr></vt:variant>` +
+                        `<vt:variant><vt:i4>1\n        </vt:i4></vt:variant>` +
+                        `</vt:vector></HeadingPairs>` +
+                        `</Properties>`,
+                );
+
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const repairs = await v.repairExtendedPropertiesWhitespace();
+                expect(repairs).toBe(4);
+
+                const after = await fs.readFile(appXml, "utf-8");
+                expect(after).toContain("<TotalTime>3</TotalTime>");
+                expect(after).toContain("<Pages>1</Pages>");
+                expect(after).toContain("<vt:lpstr>Title</vt:lpstr>");
+                expect(after).toContain("<vt:i4>1</vt:i4>");
+            });
+        });
+    });
+
     describe("WORD_PARAGRAPH_NAMESPACES", () => {
         it("exports the two expected namespace URIs", () => {
             expect(WORD_PARAGRAPH_NAMESPACES).toHaveLength(2);

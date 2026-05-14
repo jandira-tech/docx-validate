@@ -1450,6 +1450,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const stampRepairs = await this.repairMissingParaIds();
         const styleRepairs = await this.repairMissingStyleDefinitions();
         const commentThreadingRepairs = await this.repairCommentThreading();
+        const extendedPropertyRepairs = await this.repairExtendedPropertiesWhitespace();
         const corePropertyRepairs = await this.repairCorePropertiesWhitespace();
         return (
             baseRepairs +
@@ -1459,8 +1460,38 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             stampRepairs +
             styleRepairs +
             commentThreadingRepairs +
+            extendedPropertyRepairs +
             corePropertyRepairs
         );
+    }
+
+    async repairExtendedPropertiesWhitespace(): Promise<number> {
+        const appXml = path.join(this.unpackedDir, "docProps", "app.xml");
+        let dom: Document;
+        try {
+            dom = parseXml(await fs.readFile(appXml, "utf-8"));
+        } catch {
+            return 0;
+        }
+
+        let repairs = 0;
+        const all = dom.getElementsByTagName("*");
+        for (let i = 0; i < all.length; i += 1) {
+            const elem = all.item(i);
+            if (!elem) continue;
+            for (let child = elem.firstChild; child; child = child.nextSibling) {
+                if (child.nodeType !== 3) continue;
+                const text = child as Text;
+                const trimmed = text.data.trim();
+                if (trimmed === text.data) continue;
+                text.data = trimmed;
+                repairs += 1;
+            }
+        }
+        if (repairs > 0) {
+            await fs.writeFile(appXml, serializeXml(dom, "UTF-8"), "utf-8");
+        }
+        return repairs;
     }
 
     async repairCorePropertiesWhitespace(): Promise<number> {
