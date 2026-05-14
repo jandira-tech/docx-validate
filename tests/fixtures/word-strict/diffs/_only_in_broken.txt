@@ -1,0 +1,3 @@
+Files only in BROKEN (not in working):
+docProps/custom.xml
+word/commentsExtensible.xml
