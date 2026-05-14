@@ -145,15 +145,24 @@ function parseOptions(argv: readonly string[]): CliOptions {
     return opts;
 }
 
-function readCompleted(outFile: string): Set<string> {
+function readCompleted(outFile: string, currentProfile: Profile): Set<string> {
     if (!existsSync(outFile)) return new Set();
     const done = new Set<string>();
     for (const line of readFileSync(outFile, "utf-8").split(/\r?\n/)) {
         if (!line.trim()) continue;
         try {
             const parsed = JSON.parse(line) as Partial<ProbeRecord>;
-            if (parsed.relativePath) done.add(parsed.relativePath);
-        } catch {
+            const lineProfile = parsed.validator?.profile;
+            if (lineProfile && lineProfile !== currentProfile) {
+                throw new Error(
+                    `Profile mismatch in JSONL output: found record with profile "${lineProfile}" ` +
+                    `but current profile is "${currentProfile}". ` +
+                    `Resume with the same profile (--profile ${lineProfile}) or delete the output file to start fresh: ${outFile}`,
+                );
+            }
+            if (parsed.relativePath) done.add(`${currentProfile}::${parsed.relativePath}`);
+        } catch (err) {
+            if (err instanceof Error && err.message.startsWith("Profile mismatch")) throw err;
             // Ignore partial/truncated JSONL lines so an interrupted run can resume.
         }
     }
@@ -438,7 +447,7 @@ async function run(argv: readonly string[]): Promise<number> {
     walkDocx(root, files);
     files.sort();
     const filtered = opts.match ? files.filter((f) => path.relative(root, f).includes(opts.match ?? "")) : files;
-    const completed = opts.resume ? readCompleted(out) : new Set<string>();
+    const completed = opts.resume ? readCompleted(out, opts.profile) : new Set<string>();
 
     mkdirSync(path.dirname(out), { recursive: true });
     if (!opts.resume) writeFileSync(out, "");
@@ -453,6 +462,20 @@ async function run(argv: readonly string[]): Promise<number> {
             }
             await quitWord();
             await sleep(1500);
+            const postQuitWindows = await wordWindowCount();
+            if (postQuitWindows > 0) {
+                process.stderr.write(
+                    `    Word still has ${postQuitWindows} window(s) after graceful quit; force-killing...\n`,
+                );
+                await forceQuitWord();
+                await sleep(1500);
+                const postForceWindows = await wordWindowCount();
+                if (postForceWindows > 0) {
+                    throw new Error(
+                        `Microsoft Word still has ${postForceWindows} window(s) after force quit. Aborting probe.`,
+                    );
+                }
+            }
         }
     }
 
@@ -461,7 +484,7 @@ async function run(argv: readonly string[]): Promise<number> {
     let seen = 0;
     for (const file of filtered) {
         const relativePath = path.relative(root, file);
-        if (completed.has(relativePath)) {
+        if (completed.has(`${opts.profile}::${relativePath}`)) {
             summary.skippedByResume += 1;
             continue;
         }

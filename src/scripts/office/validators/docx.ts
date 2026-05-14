@@ -361,7 +361,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             return finalize(issues);
         }
 
-        const body = dom.getElementsByTagNameNS(WORD_2006_NAMESPACE, "body").item(0);
+        let body: Element | null = null;
+        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+            const node = dom.getElementsByTagNameNS(ns, "body").item(0);
+            if (node) { body = node; break; }
+        }
         if (!body) return finalize(issues);
         for (let i = 0; i < body.childNodes.length; i += 1) {
             const node = body.childNodes.item(i);

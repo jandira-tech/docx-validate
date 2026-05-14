@@ -139,6 +139,7 @@ async function textSignature(docxPath: string): Promise<TextSignature> {
         } catch (err) {
             return { ok: false, text: "", error: `${part}: ${err instanceof Error ? err.message : String(err)}` };
         }
+        chunks.push(`\x00${part}\x00`);
         try {
             const dom = parseXml(xml);
             collectTextBearingContent(dom.documentElement, chunks);
