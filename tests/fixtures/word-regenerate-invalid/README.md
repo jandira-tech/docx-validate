@@ -17,6 +17,6 @@ regenerated file cleanly and the text-bearing Word content is preserved.
 Current checkpoint:
 
 - Regenerated DOCX files probed in Word: 21
-- Word clean opens: 10
+- Word clean opens: 12
 - Validator false positives: 0
-- Validator false negatives: 1
+- Validator false negatives: 0

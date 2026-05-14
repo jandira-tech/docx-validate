@@ -62,6 +62,9 @@ const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/
 const VML_NAMESPACE = "urn:schemas-microsoft-com:vml";
 const WP_NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
 const WP14_DRAWING_NAMESPACE = "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing";
+const DRAWINGML_NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/main";
+const PICTURE_NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/picture";
+const DEFAULT_PICTURE_EXTENT_EMU = "95250";
 
 const WORD_DRAWING_SCALAR_TEXT_ELEMENTS: ReadonlyArray<{ namespace: string; localName: string }> = [
     { namespace: WP_NAMESPACE, localName: "align" },
@@ -316,12 +319,13 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "comment-thread-durableid-orphan":
             case "comment-thread-durableid-missing":
             case "comment-thread-durableid-duplicate":
-            case "rels-missing-sidecar":
             case "id-durable-overflow":
             case "word-math-spre-body":
             case "word-content-type-invalid":
             case "word-drawing-scalar-whitespace":
                 return true;
+            case "rels-missing-sidecar":
+                return !/^word\/(?:header|footer)\d*\.xml$/i.test(issue.path ?? "");
             case "xml-syntax":
                 return issue.path?.startsWith("word/") ?? false;
             case "rels-broken":
@@ -1494,6 +1498,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const styleRepairs = await this.repairMissingStyleDefinitions();
         const commentThreadingRepairs = await this.repairCommentThreading();
         const drawingScalarRepairs = await this.repairDrawingScalarTextWhitespace();
+        const inlinePictureRepairs = await this.repairInlinePictureScaffolds();
         const extendedPropertyRepairs = await this.repairExtendedPropertiesWhitespace();
         const corePropertyRepairs = await this.repairCorePropertiesWhitespace();
         return (
@@ -1505,6 +1510,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             styleRepairs +
             commentThreadingRepairs +
             drawingScalarRepairs +
+            inlinePictureRepairs +
             extendedPropertyRepairs +
             corePropertyRepairs
         );
@@ -1532,6 +1538,107 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         const trimmed = text.data.trim();
                         if (trimmed === text.data) continue;
                         text.data = trimmed;
+                        repairs += 1;
+                        modified = true;
+                    }
+                }
+            }
+
+            if (modified) {
+                await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+            }
+        }
+        return repairs;
+    }
+
+    async repairInlinePictureScaffolds(): Promise<number> {
+        let repairs = 0;
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+
+            let modified = false;
+            const usedDocPrIds = collectNumericAttributeValues(dom, WP_NAMESPACE, "docPr", "id");
+            const allocateDocPrId = (): string => {
+                let candidate = 1;
+                while (usedDocPrIds.has(candidate)) candidate += 1;
+                usedDocPrIds.add(candidate);
+                return String(candidate);
+            };
+
+            const inlines = dom.getElementsByTagNameNS(WP_NAMESPACE, "inline");
+            for (let i = 0; i < inlines.length; i += 1) {
+                const inline = inlines.item(i);
+                if (!inline) continue;
+                const graphic = directChild(inline, DRAWINGML_NAMESPACE, "graphic");
+                if (!graphic) continue;
+
+                if (!directChild(inline, WP_NAMESPACE, "extent")) {
+                    const extent = dom.createElementNS(WP_NAMESPACE, "wp:extent");
+                    extent.setAttribute("cx", DEFAULT_PICTURE_EXTENT_EMU);
+                    extent.setAttribute("cy", DEFAULT_PICTURE_EXTENT_EMU);
+                    inline.insertBefore(extent, graphic);
+                    repairs += 1;
+                    modified = true;
+                }
+
+                if (!directChild(inline, WP_NAMESPACE, "docPr")) {
+                    const docPr = dom.createElementNS(WP_NAMESPACE, "wp:docPr");
+                    docPr.setAttribute("id", allocateDocPrId());
+                    docPr.setAttribute("name", "Picture 1");
+                    inline.insertBefore(docPr, graphic);
+                    repairs += 1;
+                    modified = true;
+                }
+
+                const pictures = inline.getElementsByTagNameNS(PICTURE_NAMESPACE, "pic");
+                for (let j = 0; j < pictures.length; j += 1) {
+                    const pic = pictures.item(j);
+                    if (!pic) continue;
+                    const blipFill = directChild(pic, PICTURE_NAMESPACE, "blipFill");
+
+                    if (!directChild(pic, PICTURE_NAMESPACE, "nvPicPr")) {
+                        const nvPicPr = dom.createElementNS(PICTURE_NAMESPACE, "pic:nvPicPr");
+                        const cNvPr = dom.createElementNS(PICTURE_NAMESPACE, "pic:cNvPr");
+                        cNvPr.setAttribute("id", "0");
+                        cNvPr.setAttribute("name", "image1.png");
+                        const cNvPicPr = dom.createElementNS(PICTURE_NAMESPACE, "pic:cNvPicPr");
+                        nvPicPr.appendChild(cNvPr);
+                        nvPicPr.appendChild(cNvPicPr);
+                        pic.insertBefore(nvPicPr, blipFill ?? pic.firstChild);
+                        repairs += 1;
+                        modified = true;
+                    }
+
+                    if (blipFill && !directChild(blipFill, DRAWINGML_NAMESPACE, "stretch") && !directChild(blipFill, DRAWINGML_NAMESPACE, "tile")) {
+                        const stretch = dom.createElementNS(DRAWINGML_NAMESPACE, "a:stretch");
+                        stretch.appendChild(dom.createElementNS(DRAWINGML_NAMESPACE, "a:fillRect"));
+                        blipFill.appendChild(stretch);
+                        repairs += 1;
+                        modified = true;
+                    }
+
+                    if (!directChild(pic, PICTURE_NAMESPACE, "spPr")) {
+                        const spPr = dom.createElementNS(PICTURE_NAMESPACE, "pic:spPr");
+                        const xfrm = dom.createElementNS(DRAWINGML_NAMESPACE, "a:xfrm");
+                        const off = dom.createElementNS(DRAWINGML_NAMESPACE, "a:off");
+                        off.setAttribute("x", "0");
+                        off.setAttribute("y", "0");
+                        const ext = dom.createElementNS(DRAWINGML_NAMESPACE, "a:ext");
+                        ext.setAttribute("cx", DEFAULT_PICTURE_EXTENT_EMU);
+                        ext.setAttribute("cy", DEFAULT_PICTURE_EXTENT_EMU);
+                        xfrm.appendChild(off);
+                        xfrm.appendChild(ext);
+                        const prstGeom = dom.createElementNS(DRAWINGML_NAMESPACE, "a:prstGeom");
+                        prstGeom.setAttribute("prst", "rect");
+                        prstGeom.appendChild(dom.createElementNS(DRAWINGML_NAMESPACE, "a:avLst"));
+                        spPr.appendChild(xfrm);
+                        spPr.appendChild(prstGeom);
+                        pic.appendChild(spPr);
                         repairs += 1;
                         modified = true;
                     }
@@ -2217,10 +2324,38 @@ function isWordBlockingXsdIssue(issue: ValidationIssue): boolean {
         msg.includes("}p2': This element is not expected") ||
         (msg.includes("}pPr': This element is not expected") && msg.includes("Expected is one of")) ||
         msg.includes("}rPr': This element is not expected.") ||
+        msg.includes(
+            "}graphic': This element is not expected. Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}extent",
+        ) ||
+        msg.includes(
+            "}blipFill': This element is not expected. Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/picture}nvPicPr",
+        ) ||
+        msg.includes("Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/picture}spPr") ||
         msg.includes("Element 'link': This element is not expected") ||
         msg.includes("}u': This element is not expected") ||
         msg.includes("}filetime': '' is not a valid value")
     );
+}
+
+function directChild(parent: Element, namespaceURI: string, local: string): Element | null {
+    for (let child = parent.firstChild; child; child = child.nextSibling) {
+        if (child.nodeType !== 1) continue;
+        const elem = child as Element;
+        if (elem.namespaceURI === namespaceURI && (elem.localName || elem.tagName.split(":").pop()) === local) return elem;
+    }
+    return null;
+}
+
+function collectNumericAttributeValues(dom: Document, namespaceURI: string, local: string, attr: string): Set<number> {
+    const out = new Set<number>();
+    const elems = dom.getElementsByTagNameNS(namespaceURI, local);
+    for (let i = 0; i < elems.length; i += 1) {
+        const elem = elems.item(i);
+        if (!elem) continue;
+        const value = Number.parseInt(elem.getAttribute(attr) ?? "", 10);
+        if (Number.isFinite(value)) out.add(value);
+    }
+    return out;
 }
 
 function baseName(p: string): string {

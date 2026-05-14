@@ -1023,6 +1023,78 @@ describe("DOCXSchemaValidator", () => {
         });
     });
 
+    describe("inline picture scaffolds", () => {
+        const inlinePicture =
+            `<w:hdr ${W_NS} xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">` +
+            `<w:p><w:r><w:drawing><wp:inline ${WP_NS}>` +
+            `<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">` +
+            `<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+            `<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+            `<pic:blipFill><a:blip r:embed="rId1"/></pic:blipFill>` +
+            `</pic:pic></a:graphicData></a:graphic>` +
+            `</wp:inline></w:drawing></w:r></w:p></w:hdr>`;
+        const completeInlinePicture =
+            `<w:hdr ${W_NS} xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">` +
+            `<w:p><w:r><w:drawing><wp:inline ${WP_NS}>` +
+            `<wp:extent cx="95250" cy="95250"/><wp:docPr id="1" name="Picture 1"/>` +
+            `<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">` +
+            `<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+            `<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+            `<pic:nvPicPr><pic:cNvPr id="0" name="image1.png"/><pic:cNvPicPr/></pic:nvPicPr>` +
+            `<pic:blipFill><a:blip r:embed="rId1"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>` +
+            `<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="95250" cy="95250"/></a:xfrm>` +
+            `<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>` +
+            `</pic:pic></a:graphicData></a:graphic>` +
+            `</wp:inline></w:drawing></w:r></w:p></w:hdr>`;
+
+        it("treats an inline picture missing required scaffold children as word-blocking", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "header1.xml"), `<?xml version="1.0"?>${inlinePicture}`);
+
+                const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" });
+                const result = await v.validate();
+                const issue = result.issues.find((i) => i.code === "xsd-error" && i.path === "word/header1.xml");
+                expect(issue?.severity).toBe("error");
+                expect(issue?.message).toContain("graphic");
+                expect(result.valid).toBe(false);
+            });
+        });
+
+        it("repairs minimal inline pictures without changing the image relationship", async () => {
+            await withTempDir(async (dir) => {
+                const headerXml = path.join(dir, "word", "header1.xml");
+                await writeFile(headerXml, `<?xml version="1.0"?>${inlinePicture}`);
+
+                const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" });
+                const repairs = await v.repairInlinePictureScaffolds();
+                expect(repairs).toBe(5);
+
+                const after = await fs.readFile(headerXml, "utf-8");
+                expect(after).toContain('<wp:extent cx="95250" cy="95250"/>');
+                expect(after).toContain("<wp:docPr");
+                expect(after).toContain("<pic:nvPicPr>");
+                expect(after).toContain('<a:blip r:embed="rId1"/>');
+                expect(after).toContain("<a:stretch><a:fillRect/></a:stretch>");
+                expect(after).toContain("<pic:spPr>");
+
+                const xsd = await v.validateAgainstXsd();
+                expect(xsd.issues.filter((i) => i.path === "word/header1.xml" && i.code === "xsd-error")).toHaveLength(0);
+            });
+        });
+
+        it("downgrades missing header image sidecars under word-valid because Word opens cleanly", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "header1.xml"), `<?xml version="1.0"?>${completeInlinePicture}`);
+
+                const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" });
+                const result = await v.validate();
+                const issue = result.issues.find((i) => i.code === "rels-missing-sidecar" && i.path === "word/header1.xml");
+                expect(issue?.severity).toBe("warning");
+                expect(result.valid).toBe(true);
+            });
+        });
+    });
+
     describe("WORD_PARAGRAPH_NAMESPACES", () => {
         it("exports the two expected namespace URIs", () => {
             expect(WORD_PARAGRAPH_NAMESPACES).toHaveLength(2);
