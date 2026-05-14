@@ -153,16 +153,25 @@ function readCompleted(outFile: string, currentProfile: Profile): Set<string> {
         try {
             const parsed = JSON.parse(line) as Partial<ProbeRecord>;
             const lineProfile = parsed.validator?.profile;
-            if (lineProfile && lineProfile !== currentProfile) {
+            if (lineProfile !== undefined && lineProfile !== currentProfile) {
                 throw new Error(
                     `Profile mismatch in JSONL output: found record with profile "${lineProfile}" ` +
                     `but current profile is "${currentProfile}". ` +
                     `Resume with the same profile (--profile ${lineProfile}) or delete the output file to start fresh: ${outFile}`,
                 );
             }
-            if (parsed.relativePath) done.add(`${currentProfile}::${parsed.relativePath}`);
+            if (parsed.relativePath) {
+                if (lineProfile === undefined) {
+                    throw new Error(
+                        `Legacy JSONL record detected without profile field for completed fixture: ${parsed.relativePath}. ` +
+                        `This indicates a mixed/legacy resume state. ` +
+                        `Delete the output file to start fresh: ${outFile}`,
+                    );
+                }
+                done.add(`${currentProfile}::${parsed.relativePath}`);
+            }
         } catch (err) {
-            if (err instanceof Error && err.message.startsWith("Profile mismatch")) throw err;
+            if (err instanceof Error && (err.message.startsWith("Profile mismatch") || err.message.startsWith("Legacy JSONL"))) throw err;
             // Ignore partial/truncated JSONL lines so an interrupted run can resume.
         }
     }

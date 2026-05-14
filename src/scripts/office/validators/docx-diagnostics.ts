@@ -529,7 +529,10 @@ async function walk(dir: string, out: string[]): Promise<void> {
     }
     for (const name of entries.sort((a, b) => a.localeCompare(b))) {
         const full = path.join(dir, name);
-        const stat = await fs.stat(full);
+        const stat = await fs.lstat(full);
+        if (stat.isSymbolicLink()) {
+            continue;
+        }
         if (stat.isDirectory()) {
             await walk(full, out);
         } else if (stat.isFile()) {
