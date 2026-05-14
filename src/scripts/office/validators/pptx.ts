@@ -78,6 +78,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
             await this.validateAllRelationshipIds(),
             await this.validateNoDuplicateSlideLayouts(),
             await this.validateNoBom(),
+            await this.validateNoEmptyRelsParts(),
         ];
         return mergeResults(...checks);
     }

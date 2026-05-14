@@ -586,4 +586,110 @@ describe("BaseSchemaValidator", () => {
             });
         });
     });
+
+    describe("validateNoEmptyRelsParts (profile-aware)", () => {
+        const PR_NS = `xmlns="http://schemas.openxmlformats.org/package/2006/relationships"`;
+
+        it("flags an empty <Relationships/> as ERROR under strict", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "_rels", "fontTable.xml.rels"),
+                    `${RELS_HEADER}\n<Relationships ${PR_NS}/>`,
+                );
+                const v = new HarnessValidator({ unpackedDir: dir, profile: "strict" });
+                const result = await v.validateNoEmptyRelsParts();
+                expect(result.valid).toBe(false);
+                const issue = result.issues.find((i) => i.code === "rels-empty-part");
+                expect(issue).toBeDefined();
+                expect(issue?.severity).toBe("error");
+                expect(issue?.path).toContain("fontTable.xml.rels");
+            });
+        });
+
+        it("downgrades to WARNING under lenient (still surfaced, doesn't fail validation)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "_rels", "fontTable.xml.rels"),
+                    `${RELS_HEADER}\n<Relationships ${PR_NS}/>`,
+                );
+                const v = new HarnessValidator({ unpackedDir: dir, profile: "lenient" });
+                const result = await v.validateNoEmptyRelsParts();
+                expect(result.valid).toBe(true);
+                const issue = result.issues.find((i) => i.code === "rels-empty-part");
+                expect(issue).toBeDefined();
+                expect(issue?.severity).toBe("warning");
+            });
+        });
+
+        it("passes when the rels part has at least one <Relationship> child", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "_rels", "document.xml.rels"),
+                    `${RELS_HEADER}\n<Relationships ${PR_NS}>` +
+                        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>` +
+                        `</Relationships>`,
+                );
+                const v = new HarnessValidator({ unpackedDir: dir, profile: "strict" });
+                const result = await v.validateNoEmptyRelsParts();
+                expect(result.valid).toBe(true);
+                expect(result.issues).toEqual([]);
+            });
+        });
+
+        it("ignores non-rels files entirely", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?><doc/>`);
+                const v = new HarnessValidator({ unpackedDir: dir, profile: "strict" });
+                const result = await v.validateNoEmptyRelsParts();
+                expect(result.valid).toBe(true);
+                expect(result.issues).toEqual([]);
+            });
+        });
+    });
+
+    describe("repairEmptyRelsParts", () => {
+        const PR_NS = `xmlns="http://schemas.openxmlformats.org/package/2006/relationships"`;
+
+        it("deletes the file when <Relationships/> is empty", async () => {
+            await withTempDir(async (dir) => {
+                const relsFile = path.join(dir, "word", "_rels", "fontTable.xml.rels");
+                await writeFile(relsFile, `${RELS_HEADER}\n<Relationships ${PR_NS}/>`);
+                const v = new HarnessValidator({ unpackedDir: dir, profile: "strict" });
+                const repairs = await v.repairEmptyRelsParts();
+                expect(repairs).toBe(1);
+                await expect(fs.access(relsFile)).rejects.toThrow();
+                // Subsequent validation pass must not crash trying to read it.
+                const after = await v.validateNoEmptyRelsParts();
+                expect(after.valid).toBe(true);
+                expect(after.issues).toEqual([]);
+            });
+        });
+
+        it("leaves a non-empty rels part intact", async () => {
+            await withTempDir(async (dir) => {
+                const relsFile = path.join(dir, "word", "_rels", "document.xml.rels");
+                const content =
+                    `${RELS_HEADER}\n<Relationships ${PR_NS}>` +
+                    `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>` +
+                    `</Relationships>`;
+                await writeFile(relsFile, content);
+                const v = new HarnessValidator({ unpackedDir: dir, profile: "strict" });
+                const repairs = await v.repairEmptyRelsParts();
+                expect(repairs).toBe(0);
+                expect(await fs.readFile(relsFile, "utf-8")).toBe(content);
+            });
+        });
+
+        it("removes deleted files from xmlFiles so validateNoEmptyRelsParts does not re-read them", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "_rels", "a.xml.rels"), `${RELS_HEADER}\n<Relationships ${PR_NS}/>`);
+                await writeFile(path.join(dir, "word", "_rels", "b.xml.rels"), `${RELS_HEADER}\n<Relationships ${PR_NS}/>`);
+                const v = new HarnessValidator({ unpackedDir: dir, profile: "strict" });
+                expect(v.xmlFiles.filter((f) => f.endsWith(".rels"))).toHaveLength(2);
+                const repairs = await v.repairEmptyRelsParts();
+                expect(repairs).toBe(2);
+                expect(v.xmlFiles.filter((f) => f.endsWith(".rels"))).toHaveLength(0);
+            });
+        });
+    });
 });

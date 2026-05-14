@@ -237,11 +237,17 @@ export class BaseSchemaValidator {
      * and Microsoft Office routinely emits it; the lenient profile silently
      * strips it before parsing. Strict callers want to know it's there.
      *
-     * No-op when `this.profile === "lenient"`.
+     * Severity is profile-aware:
+     *   - `strict`  → reported as `error` (fails the document).
+     *   - `lenient` → reported as `warning` (visible to anyone inspecting
+     *     `result.issues` but does NOT flip `valid` to false).
+     *
+     * The check NEVER becomes a silent no-op — even in lenient mode the
+     * gap is surfaced as a warning so callers can audit it later.
      */
     async validateNoBom(): Promise<ValidationResult> {
-        if (this.profile !== "strict") return OK_RESULT;
         const issues: ValidationIssue[] = [];
+        const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
         for (const xmlFile of this.xmlFiles) {
             let bytes: Buffer;
             try {
@@ -251,11 +257,74 @@ export class BaseSchemaValidator {
             }
             if (bytes.length >= 3 && bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf) {
                 issues.push({
-                    severity: "error",
-                    message: "XML part begins with a UTF-8 BOM (U+FEFF). Permitted by the XML spec but flagged under the strict profile.",
+                    severity,
+                    message:
+                        "XML part begins with a UTF-8 BOM (U+FEFF). Permitted by the XML spec but " +
+                        "non-canonical for OOXML; reported as error under strict, warning under lenient.",
                     path: this.relPath(xmlFile),
                     code: "xml-bom-leading",
                 });
+            }
+        }
+        return finalize(issues);
+    }
+
+    /**
+     * Profile-aware check: every `_rels/*.rels` part must contain at
+     * least one `<Relationship>` child. Per OPC §9.3 / ISO 29500-2, a
+     * relationship part exists *because* its source part has outgoing
+     * relationships — an empty `<Relationships/>` is non-canonical and
+     * Word strips them on save.
+     *
+     * Severity:
+     *   - `strict`  → `error` (spec-purist: flag the non-canonical state).
+     *   - `lenient` → `warning` (real-world unpack→pack pipelines and
+     *     third-party writers routinely emit empty rels parts; visible
+     *     but doesn't fail validation).
+     *
+     * This is the canonical example of a "strict-only" gap surfaced by
+     * the comparison against Word's own save output: jubarte / our pack
+     * helper preserves empty rels sidecars from the input, while Word
+     * strips them. The repaired-file regression of the
+     * `sample-document.id-overflow.docx` fixture surfaces here.
+     */
+    async validateNoEmptyRelsParts(): Promise<ValidationResult> {
+        const issues: ValidationIssue[] = [];
+        const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
+        for (const xmlFile of this.xmlFiles) {
+            if (!xmlFile.endsWith(".rels")) continue;
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                // Malformed rels files surface elsewhere via xml-syntax /
+                // rels-broken codes; don't double-report here.
+                continue;
+            }
+            const root = dom.documentElement;
+            if (!root) continue;
+            const rels = root.getElementsByTagNameNS(
+                "http://schemas.openxmlformats.org/package/2006/relationships",
+                "Relationship",
+            );
+            if (rels.length === 0) {
+                // Additional check: only report as empty if the root also has no
+                // element children. Malformed rels files with Relationship elements
+                // in the wrong namespace will return zero from getElementsByTagNameNS
+                // but should NOT be classified as empty parts (they have element
+                // children, just in the wrong namespace).
+                const hasElementChildren = hasAnyElementChild(root);
+                if (!hasElementChildren) {
+                    issues.push({
+                        severity,
+                        message:
+                            `Relationships part has zero <Relationship> children. ` +
+                            `OPC §9.3 says a rels part should exist only when its source part has outgoing relationships; ` +
+                            `Word strips empty rels sidecars on save.`,
+                        path: this.relPath(xmlFile),
+                        code: "rels-empty-part",
+                    });
+                }
             }
         }
         return finalize(issues);
@@ -269,7 +338,66 @@ export class BaseSchemaValidator {
     // ----- repair --------------------------------------------------------------
 
     async repair(): Promise<number> {
-        return this.repairWhitespacePreservation();
+        const wsRepairs = await this.repairWhitespacePreservation();
+        const relsRepairs = await this.repairEmptyRelsParts();
+        return wsRepairs + relsRepairs;
+    }
+
+    /**
+     * Delete `_rels/*.rels` parts whose `<Relationships>` element has zero
+     * children. Mirrors what Word does on save — see
+     * `validateNoEmptyRelsParts` for the spec citation.
+     *
+     * Returns the count of files deleted. The deleted files are also
+     * removed from `this.xmlFiles` so subsequent passes (and validation
+     * re-runs in the same instance) don't see them.
+     */
+    async repairEmptyRelsParts(): Promise<number> {
+        let repairs = 0;
+        const surviving: string[] = [];
+        for (const xmlFile of this.xmlFiles) {
+            if (!xmlFile.endsWith(".rels")) {
+                surviving.push(xmlFile);
+                continue;
+            }
+            let isEmpty = false;
+            try {
+                const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                const root = dom.documentElement;
+                if (root) {
+                    const rels = root.getElementsByTagNameNS(
+                        "http://schemas.openxmlformats.org/package/2006/relationships",
+                        "Relationship",
+                    );
+                    if (rels.length === 0) {
+                        // Additional check: only mark as empty if the root also has no
+                        // element children. Malformed rels files with Relationship elements
+                        // in the wrong namespace should not be deleted.
+                        const hasElementChildren = hasAnyElementChild(root);
+                        isEmpty = !hasElementChildren;
+                    }
+                }
+            } catch {
+                // malformed — leave it alone, surfaced elsewhere
+            }
+            if (isEmpty) {
+                try {
+                    await fs.rm(xmlFile);
+                    repairs += 1;
+                    // intentionally not added to `surviving`
+                } catch {
+                    // best-effort
+                    surviving.push(xmlFile);
+                }
+            } else {
+                surviving.push(xmlFile);
+            }
+        }
+        // Mutate the cached list in place so subsequent passes within
+        // the same validator instance don't try to read the deleted files.
+        this.xmlFiles.length = 0;
+        for (const f of surviving) this.xmlFiles.push(f);
+        return repairs;
     }
 
     async repairWhitespacePreservation(): Promise<number> {
@@ -1229,7 +1357,7 @@ function* iterElements(root: Element | null): IterableIterator<Element> {
     }
 }
 
-function collectDeclaredPrefixes(root: Element): Set<string> {
+export function collectDeclaredPrefixes(root: Element): Set<string> {
     // lxml's nsmap propagates xmlns:* declarations from *all* descendants, not
     // just the root element. Walk every element and collect xmlns:prefix attrs to
     // match `set(root.nsmap.keys()) - {None}` from the Python source.
@@ -1333,4 +1461,13 @@ function removeNonOoxmlElements(root: Element): void {
 
 function finalize(issues: ValidationIssue[]): ValidationResult {
     return { valid: issues.every((i) => i.severity !== "error"), issues };
+}
+
+/** Return true if `node` has at least one Element-type child node. */
+export function hasAnyElementChild(node: Node): boolean {
+    for (let i = 0; i < node.childNodes.length; i += 1) {
+        const child = node.childNodes.item(i);
+        if (child && child.nodeType === 1 /* ELEMENT_NODE */) return true;
+    }
+    return false;
 }

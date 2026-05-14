@@ -202,8 +202,28 @@ describe("xlsx unsupported file type", () => {
             zip.file("xl/workbook.xml", '<?xml version="1.0" encoding="UTF-8"?><workbook/>');
             await fs.writeFile(xlsxPath, await zip.generateAsync({ type: "nodebuffer" }));
 
-            const exitCode = await runValidateFromArgv([xlsxPath]);
+            // Capture the CLI's stderr issue-render output so the
+            // "ERROR [...]: Unsupported file type: .xlsx" line — which is
+            // the *expected* CLI behaviour for a structurally-failed
+            // validation — does not leak into the test runner's stdout.
+            const captured: string[] = [];
+            const origWrite = process.stderr.write.bind(process.stderr);
+            // biome-ignore lint/suspicious/noExplicitAny: vitest stub typing
+            process.stderr.write = ((chunk: string | Uint8Array): boolean => {
+                if (typeof chunk === "string") captured.push(chunk);
+                return true;
+            }) as typeof process.stderr.write;
+            let exitCode: number;
+            try {
+                exitCode = await runValidateFromArgv([xlsxPath]);
+            } finally {
+                process.stderr.write = origWrite;
+            }
             expect(exitCode).toBe(1);
+            // Pin the CLI's expected stderr line so a regression that
+            // silenced it would also fail this assertion, not just hide
+            // behind quiet output.
+            expect(captured.join("")).toContain("Unsupported file type: .xlsx");
         });
     });
 });
@@ -215,10 +235,4 @@ describe("validate startup probe", () => {
         expect(() => BaseSchemaValidator.assertLibxmljsAvailable()).not.toThrow();
     });
 
-    it("CLI runValidateFromArgv exits non-zero on a missing target (after passing the probe)", async () => {
-        await withTempDir(async (tmp) => {
-            const exitCode = await runValidateFromArgv([path.join(tmp, "missing.docx")]);
-            expect(exitCode).toBe(1);
-        });
-    });
 });

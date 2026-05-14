@@ -126,13 +126,18 @@ describe("docx-templates corpus — strict profile flags BOM and other quirks", 
         }
     });
 
-    it("office365.docx: lenient strips BOM, so no xml-syntax error appears", async () => {
-        // Pin the BOM-strip behaviour: under lenient, no xml-syntax issue is
-        // raised even though the file has UTF-8 BOMs on every part. The XSD
-        // sequence-order issue is a separate concern (see KNOWN_FAILURES_LENIENT).
+    it("office365.docx: lenient strips BOM and surfaces it as a WARNING (not an error)", async () => {
+        // Pin the BOM behaviour under lenient: parseXml still strips the BOM
+        // so no xml-syntax error appears, but `validateNoBom` now records
+        // each BOM as severity:warning rather than going silent. That keeps
+        // the gap visible in `result.issues` for callers who audit them,
+        // without flipping `valid` to false. The XSD sequence-order issue
+        // is a separate concern (see KNOWN_FAILURES_LENIENT).
         const result = await validate(path.join(FIXTURE_DIR, "office365.docx"));
         expect(result.issues.some((i) => i.code === "xml-syntax")).toBe(false);
-        expect(result.issues.some((i) => i.code === "xml-bom-leading")).toBe(false);
+        const bomIssues = result.issues.filter((i) => i.code === "xml-bom-leading");
+        expect(bomIssues.length).toBeGreaterThan(0);
+        expect(bomIssues.every((i) => i.severity === "warning")).toBe(true);
     });
 });
 
