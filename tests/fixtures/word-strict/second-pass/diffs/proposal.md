@@ -32,7 +32,6 @@
 
 ### Styles changes
 - `CommentReference` character style present (needed by comment anchor runs)
-- `FootnoteText` paragraph style gains `<w:spacing w:after="0" w:line="240" w:lineRule="auto"/>`
 
 ### Numbering changes
 - `w:multiLevelType w:val="hybridMultilevel"` added to first abstractNum
@@ -45,9 +44,9 @@
 - `<w:rPr>` with `FootnoteReference` style on footnote reference runs
 
 ### Main document additions
-- `w:rFonts w:ascii="Inter" w:hAnsi="Inter" w:cs="Inter"` on approximately 77 runs
+- `w:rFonts w:ascii="Inter" w:hAnsi="Inter" w:cs="Inter"` on ~77 runs
 - `w:sz w:val="22"` / `w:szCs w:val="22"` on body text runs
-- `w:spacing w:before="0"` on approximately 56 paragraphs
+- `w:spacing w:before="0"` on ~56 paragraphs
 - `<w:tcBorders>` on 78 table cells (with per-edge border specifications)
 - `<w:tblBorders>` with `w:val="none" w:sz="0"` on sign-off table
 - `<w:ind w:left="640" w:hanging="320"/>` on 4 list paragraphs
@@ -71,18 +70,18 @@
 - `standalone="yes"` removed from XML declarations in 12 files
 
 ### Namespace removals
-- Namespace declarations removed from root elements across 8 XML parts: `cx`, `cx1` through `cx8` (chartex variants), `aink`, `am3d`, `w16du`, `w16sdtdh`, `w16sdtfl`, `w16se`, and others
+- Namespace declarations removed from root elements across 8 XML parts: `cx`, `cx1`-`cx8` (chartex), `aink`, `am3d`, `w16du`, `w16sdtdh`, `w16sdtfl`, `w16se`, and others
 
 ### Document properties emptied
-- `docProps/app.xml`: all child elements removed (Template, TotalTime, Pages, Words, Characters, Application, DocSecurity, Lines, Paragraphs, ScaleCrop, Company, LinksUpToDate, CharactersWithSpaces, SharedDoc, HyperlinksChanged, AppVersion)
-- `docProps/core.xml`: metadata fields reformatted inline→block; `lastModifiedBy` changed from "Arthur Souza Rodrigues" to "Un-named"; timestamps differ (created: 2026-05-14→2026-03-05; modified: 2026-05-14→2026-05-10)
+- `docProps/app.xml`: all child elements removed (Template, TotalTime, Pages, Words, Characters, Application, etc.)
+- `docProps/core.xml`: metadata fields reformatted inline→block; `lastModifiedBy` changed from "Arthur Souza Rodrigues" to "Un-named"; timestamps differ
 
 ### Settings removals
 - `w:zoom w:percent="150"`
 - `w:defaultTabStop w:val="720"`
 - `w:characterSpacingControl w:val="doNotCompress"`
 - `w:footnotePr`, `w:endnotePr`
-- Multiple compatSettings beyond `compatibilityMode`: `overrideTableStyleFontSizeAndJustification`, `enableOpenTypeFeatures`, `doNotFlipMirrorIndents`, `differentiateMultirowTableHeaders`, `useWord2013TrackBottomHyphenation`
+- Multiple compatSettings beyond `compatibilityMode`
 - `w:rsids` (rsidRoot + 4 rsid values)
 - `m:mathPr`
 - `w:themeFontLang`, `w:clrSchemeMapping`, `w:decimalSymbol`, `w:listSeparator`
@@ -93,9 +92,9 @@
 - `CommentText` paragraph style
 - `CommentTextChar` character style
 - `CommentReference` character style
-- `Strong1` custom paragraph style (replaced by built-in `Strong`)
+- `Strong1` custom paragraph style (replaced by `Strong` built-in style)
 - `w:uiPriority`, `w:semiHidden`, `w:unhideWhenUsed`, `w:outlineLvl` from heading styles
-- Style name lowercasing (`"heading 1"` format → `"Heading 1"` format)
+- Style name lowercasing (`"heading 1"` → `"Heading 1"`)
 
 ### Font table
 - All 5 font definitions removed (Inter, Times New Roman, Courier New, Aptos Display, Aptos)
@@ -105,13 +104,13 @@
 - `w:tmpl` from both abstractNums
 - `w:tplc` from list levels
 - `w16cid:durableId` from num elements
-- Levels 1 through 8 from second abstractNum
+- Levels 1-8 from second abstractNum
 
 ### Main document removals
 - `w:rsidR`, `w:rsidRDefault` attributes from all paragraphs and table rows
 - `w:tblLook` from all 6 tables
 - `w:tblStyle w:val="Normal"` from first table
-- `w:space="0"` from approximately 30 border edge elements
+- `w:space="0"` from ~30 border edge elements
 - `w:color="auto"` from all `<w:shd>` elements
 - `<w:lastRenderedPageBreak/>` from 2 locations
 - `w:rsidR="0008393D"` from `<w:sectPr>`
@@ -122,74 +121,66 @@
 
 ## 3. Proposed Solutions
 
-### Issue 3a: Whole-file additions and removals (`word/endnotes.xml`, `word/theme/theme1.xml`, `word/webSettings.xml` vs `docProps/custom.xml`, `word/commentsExtensible.xml`)
+### Issue 3a: Whole-file additions/removals (`word/endnotes.xml`, `word/theme/theme1.xml`, `word/webSettings.xml` vs `docProps/custom.xml`, `word/commentsExtensible.xml`)
 
-**Observation:** The repairer adds `docProps/custom.xml` and `word/commentsExtensible.xml` but strips `word/endnotes.xml`, `word/theme/theme1.xml`, and `word/webSettings.xml`. These three files existed in the original broken document (confirmed in the first-pass unpacked-broken directory) and were retained by Word's repair. The repairer removes them entirely.
+**Observation:** The repairer adds `docProps/custom.xml` and `word/commentsExtensible.xml` but strips `word/endnotes.xml`, `word/theme/theme1.xml`, and `word/webSettings.xml`. These three files existed in the original broken document (found in the first-pass `unpacked-broken` directory) and were retained by Word's repair. The repairer removes them entirely.
 
-**Possible cause:** The repair path in `DOCXSchemaValidator.repair()` may regenerate parts from a minimal template rather than passing through all parts present in the input. Parts not explicitly accounted for in the repair logic are dropped.
+**Possible cause:** The repairer may not preserve parts that pass through a filter or regeneration step where only a subset of known part types are retained.
 
-**Proposed fix:** The repair path should preserve all parts present in the input document that are structurally valid. Only parts explicitly detected as corrupt or unrecoverable should be removed. If the repairer maintains an allowlist of part types, it should be expanded to include all standard OOXML part types.
+**Proposed fix:** The repair path (in `DOCXSchemaValidator.repair()`) should preserve all parts present in the input document that are valid OOXML, even if they are not currently "needed" for the repair logic. Only parts explicitly detected as corrupt should be removed.
 
 ### Issue 3b: Font table emptied
 
-**Observation:** The repairer outputs an empty `<w:fonts>` element with zero font definitions. Word's repair retains 5 font definitions including the primary font "Inter". The repairer later adds `w:rFonts w:ascii="Inter"` to runs in the document body — referencing a font that is not defined in the font table.
+**Observation:** The repairer outputs an empty `<w:fonts>` element with zero font definitions. Working has 5 font definitions including the primary font "Inter".
 
-**Possible cause:** The font table may be regenerated from scratch rather than preserved from input. The regeneration produces an empty table because no font-reconstruction logic exists.
+**Possible cause:** During repair, font definitions may be correctly identified by validation but the rewrite step may fail to serialize them back. The validator may detect missing fonts but the repair step produces an empty font table rather than one populated from the original input.
 
-**Proposed fix:** The font table from the input document should be preserved as-is during repair. If the repairer needs to add font entries (e.g., for fonts referenced in styles or runs but missing from the table), it should append to the existing table rather than replacing it entirely.
+**Proposed fix:** Investigate the font reconstruction logic in the repair path. If the original document has font definitions in `word/fontTable.xml`, the repair should carry them forward. If fonts need to be added for styles referenced in the document, they should be appended rather than replacing the entire table.
 
-### Issue 3c: Styles stripped — latentStyles, CommentText, CommentTextChar, and CommentReference removed
+### Issue 3c: Styles stripped — latentStyles and custom styles removed
 
-**Observation:** 376 `lsdException` entries from `<w:latentStyles>` are removed. `CommentText`, `CommentTextChar`, and `CommentReference` style definitions are removed. `Strong1` custom style is replaced by built-in `Strong`.
+**Observation:** 376 `lsdException` entries from `<w:latentStyles>` are removed, along with `CommentText`, `CommentTextChar`, and `CommentReference` style definitions. `Strong1` is replaced by built-in `Strong`.
 
-**Possible cause:** The repairer may regenerate styles from a built-in default set rather than preserving the original style definitions. The default set includes only basic styles (Normal, headings, Title, TableNormal, NoList, ListParagraph) and drops all custom, comment, and latent style entries.
+**Possible cause:** The repairer may regenerate the style definitions from a minimal template rather than preserving and augmenting the original styles. This minimal template includes only the styles the repairer "knows about" (Title, Headings, Normal, TableNormal, NoList, etc.) and drops all others.
 
-**Proposed fix:** The style repair should preserve existing style definitions from the input document. Only styles that are truly corrupt or missing should be added. If full regeneration is unavoidable, it should start from a copy of the original styles and supplement rather than replace.
+**Proposed fix:** The style repair should preserve existing style definitions from the input and only add missing ones. If style regeneration is necessary, it should start from a copy of the original styles and supplement, not replace.
 
 ### Issue 3d: Comment IDs regenerated
 
-**Observation:** Comment IDs in `word/comments.xml` and `word/document.xml` change from `"4"` to `"100"`. Paragraph IDs and durable IDs in `word/commentsIds.xml` also change.
+**Observation:** Comment IDs in `word/comments.xml` and `word/document.xml` change from `"4"` to `"100"`. Comment paragraph/durable IDs also change.
 
-**Possible cause:** The repairer may be renumbering comments from a base offset rather than preserving original identifiers.
+**Possible cause:** The repairer may renumber comments during repair, starting from a base offset (100) rather than preserving original IDs.
 
-**Proposed fix:** Original comment IDs should be preserved where structurally valid. If ID conflicts or gaps exist that require renumbering, this should be treated as a specific fix rather than a blanket renumbering.
+**Proposed fix:** Preserve original comment IDs where they are valid. If comments must be renumbered (e.g., due to conflicts), document the rationale.
 
 ### Issue 3e: Table structural properties stripped
 
-**Observation:** The repairer removes `w:tblLook`, `w:tblStyle`, and `w:space="0"` from tables. `w:color="auto"` is removed from cell shading attributes.
+**Observation:** `w:tblLook`, `w:tblStyle`, and `w:space="0"` are removed from tables. `w:color="auto"` is removed from cell shading.
 
-**Possible cause:** Some of these are default values (`w:space="0"`, `w:color="auto"`) and their removal is structurally harmless. However, `w:tblLook` with `w:val="04A0"` and `firstRow/firstColumn/noVBand` flags controls conditional table formatting and should not be removed.
+**Possible cause:** The repairer may strip attributes that it considers redundant with default values. `w:space="0"` is the default for table border spacing. `w:color="auto"` is the default foreground color. `w:tblLook` and `w:tblStyle` may be removed as part of a table normalization step.
 
-**Proposed fix:** `w:tblLook` attributes should be preserved from the input document. Default-value attributes (`w:space="0"`, `w:color="auto"`) can be safely omitted. If the repairer is intentionally normalizing table structure, `w:tblLook` represents formatting intent and should be retained.
+**Proposed fix:** Default-value attributes (`w:space="0"`, `w:color="auto"`) are harmless to remove — they have no visual effect. However, `w:tblLook` (particularly `w:val="04A0"` with `firstRow/firstColumn/noVBand`) defines conditional formatting behavior and should not be stripped. The repair should preserve `w:tblLook` from the input.
 
 ### Issue 3f: Tracked change IDs shifted
 
-**Observation:** All `w:del` and `w:ins` element IDs shift by +9 or +10 offset (e.g., `w:id="0"` → `w:id="10"`, `w:id="1"` → `w:id="11"`).
+**Observation:** All `w:del` and `w:ins` element IDs are shifted by +9 or +10.
 
-**Possible cause:** The repairer may be applying a base offset to tracked change IDs, possibly to avoid collisions with other document identifiers.
+**Possible cause:** The repairer may prepend or insert additional tracked changes, causing a renumbering. Or it may apply a base offset to avoid conflicts with other IDs used in the document.
 
-**Proposed fix:** Tracked change IDs should be preserved from the original document. If renumbering is required due to conflicts, the new IDs should maintain internal consistency with any cross-referenced elements.
+**Proposed fix:** Tracked change IDs should be preserved from the original unless conflicts require renumbering. If renumbering is needed, cross-reference with the corresponding `w:commentReference` IDs to maintain internal consistency.
 
 ### Issue 3g: Explicit cell borders added (78 instances)
 
-**Observation:** The repairer adds `<w:tcBorders>` to every table cell, with per-edge border properties. The original document relies on table-level `<w:tblBorders>` for border rendering.
+**Observation:** The repairer adds `<w:tcBorders>` to every table cell, with border properties inferred from the table-level `<w:tblBorders>`.
 
-**Possible cause:** This appears to be an intentional behavior in the repairer — expanding table-level borders to individual cell-level borders. This may be a normalization step for validation purposes.
+**Possible cause:** This may be an intentional normalization step — converting table-level borders to cell-level borders for consistency or to work around validation issues.
 
-**Proposed fix:** If this is an intentional normalization, it is not a defect per se. However, the repairer could consider a less invasive approach: preserve the original table-level border model when it passes validation, and only expand to per-cell borders when the borders are structurally corrupt.
+**Proposed fix:** If cell-level borders are the repairer's intentional output format, this is not a defect. However, the repairer could consider preserving the original table-level border model when it passes validation, and only expanding to per-cell borders when the table-level borders are corrupt.
 
 ### Issue 3h: Relationship ID scheme changed
 
-**Observation:** Word uses sequential numeric relationship IDs (rId1 through rId16). The repairer uses string-based hash IDs for hyperlink relationships (e.g., `rIdclrrgvzn-co-bssfjluef`).
+**Observation:** Working uses sequential numeric relationship IDs. Broken uses string-based hash IDs for hyperlinks.
 
-**Possible cause:** The repairer may generate relationship IDs using a non-sequential scheme, potentially hashing the relationship target to produce a unique identifier.
+**Possible cause:** The repairer may regenerate relationship IDs using a different scheme (concatenated string hashes) rather than preserving or rebuilding sequential numeric IDs.
 
-**Proposed fix:** Relationship IDs should use a consistent, deterministic scheme. Sequential numeric IDs (rId1, rId2, ...) are the most common convention in OOXML and should be preferred unless there is a specific reason to use an alternative scheme.
-
-### Issue 3i: Redundant explicit properties (rFonts, sz, spacing, ind)
-
-**Observation:** The repairer adds explicit `w:rFonts`, `w:sz`/`w:szCs`, `w:spacing w:before="0"`, and `w:ind` to runs and paragraphs where Word relies on style inheritance.
-
-**Possible cause:** The repairer may be resolving style inheritance explicitly rather than relying on the style cascade. This could be because font definitions were stripped (see Issue 3b), rendering style-based font resolution unreliable.
-
-**Proposed fix:** If the font table is preserved (see Issue 3b fix), explicit per-run font properties may not be necessary. The repairer should only add explicit formatting where the style cascade would produce incorrect results.
+**Proposed fix:** Relationship IDs should use a consistent, deterministic scheme. The sequential numeric scheme (rId1, rId2, ...) is the most common in OOXML documents and should be preferred.
