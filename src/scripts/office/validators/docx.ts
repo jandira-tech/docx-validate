@@ -41,9 +41,9 @@
  * see `lib/xml-helpers.ts` for the convention.
  */
 
+import { default as JSZip } from "jszip";
 import { promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
-import { default as JSZip } from "jszip";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
 import { makeSelect, parseXml, serializeXml } from "../../../lib/xml-helpers";
@@ -60,6 +60,18 @@ const W16CID_NAMESPACE = "http://schemas.microsoft.com/office/word/2016/wordml/c
 const MATH_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/math";
 const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types";
 const VML_NAMESPACE = "urn:schemas-microsoft-com:vml";
+const WP_NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
+const WP14_DRAWING_NAMESPACE = "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing";
+const DRAWINGML_NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/main";
+const PICTURE_NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/picture";
+const DEFAULT_PICTURE_EXTENT_EMU = "95250";
+
+const WORD_DRAWING_SCALAR_TEXT_ELEMENTS: ReadonlyArray<{ namespace: string; localName: string }> = [
+    { namespace: WP_NAMESPACE, localName: "align" },
+    { namespace: WP_NAMESPACE, localName: "posOffset" },
+    { namespace: WP14_DRAWING_NAMESPACE, localName: "pctWidth" },
+    { namespace: WP14_DRAWING_NAMESPACE, localName: "pctHeight" },
+];
 
 /**
  * Well-known OOXML namespace prefixes Word emits in `mc:Ignorable` and
@@ -315,11 +327,13 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "comment-thread-durableid-orphan":
             case "comment-thread-durableid-missing":
             case "comment-thread-durableid-duplicate":
-            case "rels-missing-sidecar":
             case "id-durable-overflow":
             case "word-math-spre-body":
             case "word-content-type-invalid":
+            case "word-drawing-scalar-whitespace":
                 return true;
+            case "rels-missing-sidecar":
+                return !/^word\/(?:header|footer)\d*\.xml$/i.test(issue.path ?? "");
             case "xml-syntax":
                 return issue.path?.startsWith("word/") ?? false;
             case "rels-broken":
@@ -336,6 +350,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     private async validateWordOpenCompatibility(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
         await this.validateWordContentTypes(issues);
+        await this.validateDrawingScalarTextWhitespace(issues);
         const documentXml = this.xmlFiles.find(
             (xmlFile) => baseName(xmlFile) === "document.xml" && this.relPath(xmlFile).startsWith("word/"),
         );
@@ -354,7 +369,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             return finalize(issues);
         }
 
-        const body = dom.getElementsByTagNameNS(WORD_2006_NAMESPACE, "body").item(0);
+        let body: Element | null = null;
+        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+            const node = dom.getElementsByTagNameNS(ns, "body").item(0);
+            if (node) { body = node; break; }
+        }
         if (!body) return finalize(issues);
         for (let i = 0; i < body.childNodes.length; i += 1) {
             const node = body.childNodes.item(i);
@@ -404,6 +423,38 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (let i = 0; i < defaults.length; i += 1) {
             const elem = defaults.item(i);
             if (elem) check(elem, "Extension");
+        }
+    }
+
+    private async validateDrawingScalarTextWhitespace(issues: ValidationIssue[]): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            for (const { namespace, localName } of WORD_DRAWING_SCALAR_TEXT_ELEMENTS) {
+                const elems = dom.getElementsByTagNameNS(namespace, localName);
+                for (let i = 0; i < elems.length; i += 1) {
+                    const elem = elems.item(i);
+                    if (!elem) continue;
+                    for (let child = elem.firstChild; child; child = child.nextSibling) {
+                        if (child.nodeType !== 3) continue;
+                        const text = child as Text;
+                        const trimmed = text.data.trim();
+                        if (trimmed === text.data) continue;
+                        issues.push({
+                            severity: "error",
+                            message:
+                                `<${elem.tagName}> contains leading/trailing whitespace around scalar value ` +
+                                `${previewRepr(text.data, 80)}; Microsoft Word refuses this shape in drawing anchors.`,
+                            path: this.relPath(xmlFile),
+                            code: "word-drawing-scalar-whitespace",
+                        });
+                    }
+                }
+            }
         }
     }
 
@@ -1951,7 +2002,311 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const ignorableRepairs = await this.repairIgnorable();
         const stampRepairs = await this.repairMissingParaIds();
         const styleRepairs = await this.repairMissingStyleDefinitions();
-        return baseRepairs + durableRepairs + paraIdRepairs + ignorableRepairs + stampRepairs + styleRepairs;
+        const commentThreadingRepairs = await this.repairCommentThreading();
+        const drawingScalarRepairs = await this.repairDrawingScalarTextWhitespace();
+        const inlinePictureRepairs = await this.repairInlinePictureScaffolds();
+        const extendedPropertyRepairs = await this.repairExtendedPropertiesWhitespace();
+        const corePropertyRepairs = await this.repairCorePropertiesWhitespace();
+        return (
+            baseRepairs +
+            durableRepairs +
+            paraIdRepairs +
+            ignorableRepairs +
+            stampRepairs +
+            styleRepairs +
+            commentThreadingRepairs +
+            drawingScalarRepairs +
+            inlinePictureRepairs +
+            extendedPropertyRepairs +
+            corePropertyRepairs
+        );
+    }
+
+    async repairDrawingScalarTextWhitespace(): Promise<number> {
+        let repairs = 0;
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+
+            let modified = false;
+            for (const { namespace, localName } of WORD_DRAWING_SCALAR_TEXT_ELEMENTS) {
+                const elems = dom.getElementsByTagNameNS(namespace, localName);
+                for (let i = 0; i < elems.length; i += 1) {
+                    const elem = elems.item(i);
+                    if (!elem) continue;
+                    for (let child = elem.firstChild; child; child = child.nextSibling) {
+                        if (child.nodeType !== 3) continue;
+                        const text = child as Text;
+                        const trimmed = text.data.trim();
+                        if (trimmed === text.data) continue;
+                        text.data = trimmed;
+                        repairs += 1;
+                        modified = true;
+                    }
+                }
+            }
+
+            if (modified) {
+                await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+            }
+        }
+        return repairs;
+    }
+
+    async repairInlinePictureScaffolds(): Promise<number> {
+        let repairs = 0;
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+
+            let modified = false;
+            const usedDocPrIds = collectNumericAttributeValues(dom, WP_NAMESPACE, "docPr", "id");
+            const allocateDocPrId = (): string => {
+                let candidate = 1;
+                while (usedDocPrIds.has(candidate)) candidate += 1;
+                usedDocPrIds.add(candidate);
+                return String(candidate);
+            };
+
+            const inlines = dom.getElementsByTagNameNS(WP_NAMESPACE, "inline");
+            for (let i = 0; i < inlines.length; i += 1) {
+                const inline = inlines.item(i);
+                if (!inline) continue;
+                const graphic = directChild(inline, DRAWINGML_NAMESPACE, "graphic");
+                if (!graphic) continue;
+
+                if (!directChild(inline, WP_NAMESPACE, "extent")) {
+                    const extent = dom.createElementNS(WP_NAMESPACE, "wp:extent");
+                    extent.setAttribute("cx", DEFAULT_PICTURE_EXTENT_EMU);
+                    extent.setAttribute("cy", DEFAULT_PICTURE_EXTENT_EMU);
+                    inline.insertBefore(extent, graphic);
+                    repairs += 1;
+                    modified = true;
+                }
+
+                if (!directChild(inline, WP_NAMESPACE, "docPr")) {
+                    const docPr = dom.createElementNS(WP_NAMESPACE, "wp:docPr");
+                    docPr.setAttribute("id", allocateDocPrId());
+                    docPr.setAttribute("name", "Picture 1");
+                    inline.insertBefore(docPr, graphic);
+                    repairs += 1;
+                    modified = true;
+                }
+
+                const pictures = inline.getElementsByTagNameNS(PICTURE_NAMESPACE, "pic");
+                for (let j = 0; j < pictures.length; j += 1) {
+                    const pic = pictures.item(j);
+                    if (!pic) continue;
+                    const blipFill = directChild(pic, PICTURE_NAMESPACE, "blipFill");
+
+                    if (!directChild(pic, PICTURE_NAMESPACE, "nvPicPr")) {
+                        const nvPicPr = dom.createElementNS(PICTURE_NAMESPACE, "pic:nvPicPr");
+                        const cNvPr = dom.createElementNS(PICTURE_NAMESPACE, "pic:cNvPr");
+                        cNvPr.setAttribute("id", "0");
+                        cNvPr.setAttribute("name", "image1.png");
+                        const cNvPicPr = dom.createElementNS(PICTURE_NAMESPACE, "pic:cNvPicPr");
+                        nvPicPr.appendChild(cNvPr);
+                        nvPicPr.appendChild(cNvPicPr);
+                        pic.insertBefore(nvPicPr, blipFill ?? pic.firstChild);
+                        repairs += 1;
+                        modified = true;
+                    }
+
+                    if (blipFill && !directChild(blipFill, DRAWINGML_NAMESPACE, "stretch") && !directChild(blipFill, DRAWINGML_NAMESPACE, "tile")) {
+                        const stretch = dom.createElementNS(DRAWINGML_NAMESPACE, "a:stretch");
+                        stretch.appendChild(dom.createElementNS(DRAWINGML_NAMESPACE, "a:fillRect"));
+                        blipFill.appendChild(stretch);
+                        repairs += 1;
+                        modified = true;
+                    }
+
+                    if (!directChild(pic, PICTURE_NAMESPACE, "spPr")) {
+                        const spPr = dom.createElementNS(PICTURE_NAMESPACE, "pic:spPr");
+                        const xfrm = dom.createElementNS(DRAWINGML_NAMESPACE, "a:xfrm");
+                        const off = dom.createElementNS(DRAWINGML_NAMESPACE, "a:off");
+                        off.setAttribute("x", "0");
+                        off.setAttribute("y", "0");
+                        const ext = dom.createElementNS(DRAWINGML_NAMESPACE, "a:ext");
+                        ext.setAttribute("cx", DEFAULT_PICTURE_EXTENT_EMU);
+                        ext.setAttribute("cy", DEFAULT_PICTURE_EXTENT_EMU);
+                        xfrm.appendChild(off);
+                        xfrm.appendChild(ext);
+                        const prstGeom = dom.createElementNS(DRAWINGML_NAMESPACE, "a:prstGeom");
+                        prstGeom.setAttribute("prst", "rect");
+                        prstGeom.appendChild(dom.createElementNS(DRAWINGML_NAMESPACE, "a:avLst"));
+                        spPr.appendChild(xfrm);
+                        spPr.appendChild(prstGeom);
+                        pic.appendChild(spPr);
+                        repairs += 1;
+                        modified = true;
+                    }
+                }
+            }
+
+            if (modified) {
+                await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+            }
+        }
+        return repairs;
+    }
+
+    async repairExtendedPropertiesWhitespace(): Promise<number> {
+        const appXml = path.join(this.unpackedDir, "docProps", "app.xml");
+        let dom: Document;
+        try {
+            dom = parseXml(await fs.readFile(appXml, "utf-8"));
+        } catch {
+            return 0;
+        }
+
+        let repairs = 0;
+        const all = dom.getElementsByTagName("*");
+        for (let i = 0; i < all.length; i += 1) {
+            const elem = all.item(i);
+            if (!elem) continue;
+            for (let child = elem.firstChild; child; child = child.nextSibling) {
+                if (child.nodeType !== 3) continue;
+                const text = child as Text;
+                const trimmed = text.data.trim();
+                if (trimmed === text.data) continue;
+                text.data = trimmed;
+                repairs += 1;
+            }
+        }
+        if (repairs > 0) {
+            await fs.writeFile(appXml, serializeXml(dom, "UTF-8"), "utf-8");
+        }
+        return repairs;
+    }
+
+    async repairCorePropertiesWhitespace(): Promise<number> {
+        const coreXml = path.join(this.unpackedDir, "docProps", "core.xml");
+        let dom: Document;
+        try {
+            dom = parseXml(await fs.readFile(coreXml, "utf-8"));
+        } catch {
+            return 0;
+        }
+
+        const trimFields = new Set(["lastModifiedBy", "revision", "created", "modified"]);
+        let repairs = 0;
+        const all = dom.getElementsByTagName("*");
+        for (let i = 0; i < all.length; i += 1) {
+            const elem = all.item(i);
+            if (!elem) continue;
+            const localName = elem.localName || elem.tagName.split(":").pop() || elem.tagName;
+            if (!trimFields.has(localName)) continue;
+            for (let child = elem.firstChild; child; child = child.nextSibling) {
+                if (child.nodeType !== 3) continue;
+                const text = child as Text;
+                const trimmed = text.data.trim();
+                if (trimmed === text.data) continue;
+                text.data = trimmed;
+                repairs += 1;
+            }
+        }
+        if (repairs > 0) {
+            await fs.writeFile(coreXml, serializeXml(dom, "UTF-8"), "utf-8");
+        }
+        return repairs;
+    }
+
+    async repairCommentThreading(): Promise<number> {
+        let commentsXml: string | null = null;
+        let commentsIdsXml: string | null = null;
+        let commentsExtensibleXml: string | null = null;
+        for (const xmlFile of this.xmlFiles) {
+            const base = baseName(xmlFile);
+            if (base === "comments.xml") commentsXml = xmlFile;
+            else if (base === "commentsIds.xml") commentsIdsXml = xmlFile;
+            else if (base === "commentsExtensible.xml") commentsExtensibleXml = xmlFile;
+        }
+        if (!commentsXml || !commentsIdsXml) return 0;
+
+        let commentsDom: Document;
+        let idsDom: Document;
+        try {
+            commentsDom = parseXml(await fs.readFile(commentsXml, "utf-8"));
+            idsDom = parseXml(await fs.readFile(commentsIdsXml, "utf-8"));
+        } catch {
+            return 0;
+        }
+
+        const commentParaIds = new Set<string>();
+        for (const wNs of WORD_PARAGRAPH_NAMESPACES) {
+            const comments = commentsDom.getElementsByTagNameNS(wNs, "comment");
+            for (let i = 0; i < comments.length; i += 1) {
+                const comment = comments.item(i);
+                if (!comment) continue;
+                const paragraphs = comment.getElementsByTagNameNS(wNs, "p");
+                for (let j = 0; j < paragraphs.length; j += 1) {
+                    const paragraph = paragraphs.item(j);
+                    const paraId = paragraph?.getAttributeNS(W14_NAMESPACE, "paraId");
+                    if (paraId) commentParaIds.add(paraId);
+                }
+            }
+        }
+
+        let repairs = 0;
+        let idsModified = false;
+        let canonicalDurableId: string | null = null;
+        const commentIds = idsDom.getElementsByTagNameNS(W16CID_NAMESPACE, "commentId");
+        if (commentParaIds.size === 1 && commentIds.length === 1) {
+            const targetParaId = [...commentParaIds][0];
+            canonicalDurableId = targetParaId;
+            const commentId = commentIds.item(0);
+            const currentParaId = commentId?.getAttributeNS(W16CID_NAMESPACE, "paraId");
+            if (commentId && currentParaId && currentParaId !== targetParaId && !commentParaIds.has(currentParaId)) {
+                commentId.setAttributeNS(W16CID_NAMESPACE, "w16cid:paraId", targetParaId);
+                repairs += 1;
+                idsModified = true;
+            }
+            const currentDurableId = commentId?.getAttributeNS(W16CID_NAMESPACE, "durableId");
+            if (commentId && currentDurableId && currentDurableId !== canonicalDurableId) {
+                commentId.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", canonicalDurableId);
+                repairs += 1;
+                idsModified = true;
+            }
+        }
+
+        const durableIds = new Set<string>();
+        for (let i = 0; i < commentIds.length; i += 1) {
+            const commentId = commentIds.item(i);
+            const durableId = commentId?.getAttributeNS(W16CID_NAMESPACE, "durableId");
+            if (durableId) durableIds.add(durableId);
+        }
+
+        if (idsModified) {
+            await fs.writeFile(commentsIdsXml, serializeXml(idsDom, "UTF-8"), "utf-8");
+        }
+
+        if (!commentsExtensibleXml || durableIds.size !== 1) return repairs;
+
+        try {
+            const cexDom = parseXml(await fs.readFile(commentsExtensibleXml, "utf-8"));
+            const entries = cexDom.getElementsByTagNameNS(W16CEX_NAMESPACE, "commentExtensible");
+            if (entries.length !== 1) return repairs;
+            const targetDurableId = [...durableIds][0];
+            const entry = entries.item(0);
+            const currentDurableId = entry?.getAttributeNS(W16CEX_NAMESPACE, "durableId");
+            if (entry && currentDurableId && currentDurableId !== targetDurableId && !durableIds.has(currentDurableId)) {
+                entry.setAttributeNS(W16CEX_NAMESPACE, "w16cex:durableId", targetDurableId);
+                await fs.writeFile(commentsExtensibleXml, serializeXml(cexDom, "UTF-8"), "utf-8");
+                repairs += 1;
+            }
+        } catch {
+            return repairs;
+        }
+
+        return repairs;
     }
 
     /**
@@ -2475,10 +2830,38 @@ function isWordBlockingXsdIssue(issue: ValidationIssue): boolean {
         msg.includes("}p2': This element is not expected") ||
         (msg.includes("}pPr': This element is not expected") && msg.includes("Expected is one of")) ||
         msg.includes("}rPr': This element is not expected.") ||
+        msg.includes(
+            "}graphic': This element is not expected. Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}extent",
+        ) ||
+        msg.includes(
+            "}blipFill': This element is not expected. Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/picture}nvPicPr",
+        ) ||
+        msg.includes("Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/picture}spPr") ||
         msg.includes("Element 'link': This element is not expected") ||
         msg.includes("}u': This element is not expected") ||
         msg.includes("}filetime': '' is not a valid value")
     );
+}
+
+function directChild(parent: Element, namespaceURI: string, local: string): Element | null {
+    for (let child = parent.firstChild; child; child = child.nextSibling) {
+        if (child.nodeType !== 1) continue;
+        const elem = child as Element;
+        if (elem.namespaceURI === namespaceURI && (elem.localName || elem.tagName.split(":").pop()) === local) return elem;
+    }
+    return null;
+}
+
+function collectNumericAttributeValues(dom: Document, namespaceURI: string, local: string, attr: string): Set<number> {
+    const out = new Set<number>();
+    const elems = dom.getElementsByTagNameNS(namespaceURI, local);
+    for (let i = 0; i < elems.length; i += 1) {
+        const elem = elems.item(i);
+        if (!elem) continue;
+        const value = Number.parseInt(elem.getAttribute(attr) ?? "", 10);
+        if (Number.isFinite(value)) out.add(value);
+    }
+    return out;
 }
 
 function baseName(p: string): string {

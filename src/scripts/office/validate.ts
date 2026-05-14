@@ -40,6 +40,7 @@ import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
 import { DEFAULT_PROFILE, mergeResults, type Profile, type ValidationResult } from "../../lib/types";
 import { BaseSchemaValidator } from "./validators/base";
 import { DOCXSchemaValidator } from "./validators/docx";
+import { buildRepairPlanIssues, collectDocxSemanticInventory, compareDocxSemanticInventories } from "./validators/docx-diagnostics";
 import { PPTXSchemaValidator } from "./validators/pptx";
 import { validateRedlining } from "./validators/redlining";
 
@@ -213,14 +214,26 @@ async function runValidators(unpackedDir: string, opts: RunValidatorsOptions): P
     }
 
     let repairs = 0;
+    let repairDiagnostics: ValidationResult = { valid: true, issues: [] };
     if (opts.autoRepair) {
+        const beforeInventory = opts.suffix === ".docx" ? await collectDocxSemanticInventory(unpackedDir) : null;
+        const beforeResults = await Promise.all(validators.map((v) => v.validate()));
+        const repairPlanIssues = buildRepairPlanIssues(mergeResults(...beforeResults).issues);
         for (const v of validators) {
             repairs += await v.repair();
         }
+        const contentIssues =
+            beforeInventory && repairs > 0
+                ? compareDocxSemanticInventories(beforeInventory, await collectDocxSemanticInventory(unpackedDir))
+                : [];
+        repairDiagnostics = mergeResults({
+            valid: [...repairPlanIssues, ...contentIssues].every((i) => i.severity !== "error"),
+            issues: [...repairPlanIssues, ...contentIssues],
+        });
     }
 
     const results = await Promise.all(validators.map((v) => v.validate()));
-    const merged = mergeResults(...results);
+    const merged = mergeResults(...results, repairDiagnostics);
     return { ...merged, repairs };
 }
 

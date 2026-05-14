@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
+import JSZip from "jszip";
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import JSZip from "jszip";
 
 import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
@@ -30,6 +30,8 @@ import {
 const W_NS = `xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"`;
 const W14_NS = `xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"`;
 const W16CID_NS = `xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid"`;
+const WP_NS = `xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"`;
+const WP14_DRAWING_NS = `xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing"`;
 
 async function writeFile(p: string, content: string): Promise<void> {
     await fs.mkdir(path.dirname(p), { recursive: true });
@@ -949,6 +951,150 @@ describe("DOCXSchemaValidator", () => {
         });
     });
 
+    describe("repairExtendedPropertiesWhitespace", () => {
+        it("trims simple docProps/app.xml text nodes that Word treats as unreadable metadata", async () => {
+            await withTempDir(async (dir) => {
+                const appXml = path.join(dir, "docProps", "app.xml");
+                await writeFile(
+                    appXml,
+                    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+                        `<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"` +
+                        ` xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">` +
+                        `<TotalTime>3\n  </TotalTime>` +
+                        `<Pages>1\n  </Pages>` +
+                        `<HeadingPairs><vt:vector size="2" baseType="variant">` +
+                        `<vt:variant><vt:lpstr>Title\n        </vt:lpstr></vt:variant>` +
+                        `<vt:variant><vt:i4>1\n        </vt:i4></vt:variant>` +
+                        `</vt:vector></HeadingPairs>` +
+                        `</Properties>`,
+                );
+
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const repairs = await v.repairExtendedPropertiesWhitespace();
+                expect(repairs).toBe(4);
+
+                const after = await fs.readFile(appXml, "utf-8");
+                expect(after).toContain("<TotalTime>3</TotalTime>");
+                expect(after).toContain("<Pages>1</Pages>");
+                expect(after).toContain("<vt:lpstr>Title</vt:lpstr>");
+                expect(after).toContain("<vt:i4>1</vt:i4>");
+            });
+        });
+    });
+
+    describe("drawing scalar whitespace", () => {
+        const drawingBody =
+            `<w:p><w:r><w:drawing><wp:anchor>` +
+            `<wp:positionH><wp:align>center\n  </wp:align></wp:positionH>` +
+            `<wp:positionV><wp:posOffset>0\n  </wp:posOffset></wp:positionV>` +
+            `<wp14:sizeRelH><wp14:pctWidth>40000\n  </wp14:pctWidth></wp14:sizeRelH>` +
+            `<wp14:sizeRelV><wp14:pctHeight>20000\n  </wp14:pctHeight></wp14:sizeRelV>` +
+            `</wp:anchor></w:drawing></w:r><w:r><w:t>Datum plane\n  </w:t></w:r></w:p>`;
+
+        it("treats leading/trailing whitespace in drawing scalar values as word-blocking", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "document.xml"), wrapDocument(drawingBody, `${WP_NS} ${WP14_DRAWING_NS}`));
+
+                const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" });
+                const result = await v.validate();
+                const issues = result.issues.filter((i) => i.code === "word-drawing-scalar-whitespace");
+                expect(issues).toHaveLength(4);
+                expect(issues.every((i) => i.severity === "error")).toBe(true);
+                expect(result.valid).toBe(false);
+            });
+        });
+
+        it("repairs drawing scalar values without trimming user-visible w:t content", async () => {
+            await withTempDir(async (dir) => {
+                const documentXml = path.join(dir, "word", "document.xml");
+                await writeFile(documentXml, wrapDocument(drawingBody, `${WP_NS} ${WP14_DRAWING_NS}`));
+
+                const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" });
+                const repairs = await v.repairDrawingScalarTextWhitespace();
+                expect(repairs).toBe(4);
+
+                const after = await fs.readFile(documentXml, "utf-8");
+                expect(after).toContain("<wp:align>center</wp:align>");
+                expect(after).toContain("<wp:posOffset>0</wp:posOffset>");
+                expect(after).toContain("<wp14:pctWidth>40000</wp14:pctWidth>");
+                expect(after).toContain("<wp14:pctHeight>20000</wp14:pctHeight>");
+                expect(after).toContain("<w:t>Datum plane\n  </w:t>");
+            });
+        });
+    });
+
+    describe("inline picture scaffolds", () => {
+        const inlinePicture =
+            `<w:hdr ${W_NS} xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">` +
+            `<w:p><w:r><w:drawing><wp:inline ${WP_NS}>` +
+            `<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">` +
+            `<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+            `<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+            `<pic:blipFill><a:blip r:embed="rId1"/></pic:blipFill>` +
+            `</pic:pic></a:graphicData></a:graphic>` +
+            `</wp:inline></w:drawing></w:r></w:p></w:hdr>`;
+        const completeInlinePicture =
+            `<w:hdr ${W_NS} xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">` +
+            `<w:p><w:r><w:drawing><wp:inline ${WP_NS}>` +
+            `<wp:extent cx="95250" cy="95250"/><wp:docPr id="1" name="Picture 1"/>` +
+            `<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">` +
+            `<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+            `<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+            `<pic:nvPicPr><pic:cNvPr id="0" name="image1.png"/><pic:cNvPicPr/></pic:nvPicPr>` +
+            `<pic:blipFill><a:blip r:embed="rId1"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>` +
+            `<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="95250" cy="95250"/></a:xfrm>` +
+            `<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>` +
+            `</pic:pic></a:graphicData></a:graphic>` +
+            `</wp:inline></w:drawing></w:r></w:p></w:hdr>`;
+
+        it("treats an inline picture missing required scaffold children as word-blocking", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "header1.xml"), `<?xml version="1.0"?>${inlinePicture}`);
+
+                const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" });
+                const result = await v.validate();
+                const issue = result.issues.find((i) => i.code === "xsd-error" && i.path === "word/header1.xml");
+                expect(issue?.severity).toBe("error");
+                expect(issue?.message).toContain("graphic");
+                expect(result.valid).toBe(false);
+            });
+        });
+
+        it("repairs minimal inline pictures without changing the image relationship", async () => {
+            await withTempDir(async (dir) => {
+                const headerXml = path.join(dir, "word", "header1.xml");
+                await writeFile(headerXml, `<?xml version="1.0"?>${inlinePicture}`);
+
+                const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" });
+                const repairs = await v.repairInlinePictureScaffolds();
+                expect(repairs).toBe(5);
+
+                const after = await fs.readFile(headerXml, "utf-8");
+                expect(after).toContain('<wp:extent cx="95250" cy="95250"/>');
+                expect(after).toContain("<wp:docPr");
+                expect(after).toContain("<pic:nvPicPr>");
+                expect(after).toContain('<a:blip r:embed="rId1"/>');
+                expect(after).toContain("<a:stretch><a:fillRect/></a:stretch>");
+                expect(after).toContain("<pic:spPr>");
+
+                const xsd = await v.validateAgainstXsd();
+                expect(xsd.issues.filter((i) => i.path === "word/header1.xml" && i.code === "xsd-error")).toHaveLength(0);
+            });
+        });
+
+        it("downgrades missing header image sidecars under word-valid because Word opens cleanly", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "header1.xml"), `<?xml version="1.0"?>${completeInlinePicture}`);
+
+                const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" });
+                const result = await v.validate();
+                const issue = result.issues.find((i) => i.code === "rels-missing-sidecar" && i.path === "word/header1.xml");
+                expect(issue?.severity).toBe("warning");
+                expect(result.valid).toBe(true);
+            });
+        });
+    });
+
     describe("WORD_PARAGRAPH_NAMESPACES", () => {
         it("exports the two expected namespace URIs", () => {
             expect(WORD_PARAGRAPH_NAMESPACES).toHaveLength(2);
@@ -1270,6 +1416,32 @@ describe("DOCXSchemaValidator", () => {
             });
             const repairedResult = await repaired.validateCommentThreading();
             expect(repairedResult.valid).toBe(true);
+        });
+
+        it("repairs the second-pass Word-warning sample", async () => {
+            const secondPass = path.join(__dirname, "fixtures/word-strict/second-pass");
+            await withTempDir(async (dir) => {
+                const target = path.join(dir, "unpacked-broken");
+                await fs.cp(path.join(secondPass, "unpacked-broken"), target, { recursive: true });
+
+                const v = new DOCXSchemaValidator({ unpackedDir: target, profile: "word-valid" });
+                const repairs = await v.repair();
+                expect(repairs).toBeGreaterThanOrEqual(7);
+
+                const result = await v.validate();
+                expect(result.valid).toBe(true);
+                expect(result.issues.filter((i) => i.severity === "error")).toHaveLength(0);
+
+                const commentsIdsXml = await fs.readFile(path.join(target, "word", "commentsIds.xml"), "utf-8");
+                expect(commentsIdsXml).toContain('w16cid:paraId="456E2E6B"');
+                expect(commentsIdsXml).toContain('w16cid:durableId="456E2E6B"');
+
+                const coreXml = await fs.readFile(path.join(target, "docProps", "core.xml"), "utf-8");
+                expect(coreXml).toContain("<cp:lastModifiedBy>Un-named</cp:lastModifiedBy>");
+                expect(coreXml).toContain("<cp:revision>1</cp:revision>");
+                expect(coreXml).toContain('<dcterms:created xsi:type="dcterms:W3CDTF">2026-03-05T19:36:13.142Z</dcterms:created>');
+                expect(coreXml).toContain('<dcterms:modified xsi:type="dcterms:W3CDTF">2026-05-10T00:07:14.347Z</dcterms:modified>');
+            });
         });
 
         it("flags missing <w15:commentEx> as ERROR in strict profile", async () => {
