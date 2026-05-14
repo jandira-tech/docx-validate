@@ -166,6 +166,37 @@ describe("DOCXSchemaValidator", () => {
                 expect(result.valid).toBe(true);
             });
         });
+
+        it("issues have correct relative paths (not hardcoded document.xml)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:commentRangeStart w:id="0"/><w:r><w:t>x</w:t></w:r>` +
+                            `<w:commentRangeEnd w:id="1"/>` +
+                            `<w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:commentReference w:id="0"/></w:r>` +
+                            `<w:r><w:commentReference w:id="1"/></w:r></w:p>`,
+                    ),
+                );
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A"/>` +
+                        `<w:comment w:id="1" w:author="B" w:date="2026-01-01T00:00:00Z" w:initials="B"/>` +
+                        `<w:comment w:id="2" w:author="C" w:date="2026-01-01T00:00:00Z" w:initials="C"/>` +
+                        `</w:comments>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateCommentMarkers();
+                expect(result.valid).toBe(false);
+                // Orphaned commentRangeEnd (id=1) and missing comment (id=2)
+                for (const issue of result.issues) {
+                    expect(issue.path).not.toBe("document.xml");
+                    expect(issue.path).toContain("word");
+                    expect(issue.path).toContain("document.xml");
+                }
+            });
+        });
     });
 
     describe("validateIdConstraints", () => {
@@ -269,6 +300,29 @@ describe("DOCXSchemaValidator", () => {
                 const after = await v.validateIdConstraints();
                 expect(after.valid).toBe(true);
                 expect(after.issues.filter((i) => i.code === "id-paraid-overflow")).toHaveLength(0);
+            });
+        });
+
+        it("replacement values never collide with existing valid paraIds that are not being remapped", async () => {
+            await withTempDir(async (dir) => {
+                const filePath = path.join(dir, "word", "document.xml");
+                await writeFile(
+                    filePath,
+                    `<?xml version="1.0"?><w:document ${W_NS} ${W14_NS}><w:body>` +
+                        // Existing valid in-range paraId.
+                        `<w:p w14:paraId="00000001"/>` +
+                        // Over-cap paraId that needs a replacement.
+                        `<w:p w14:paraId="FFFFFFFF"/>` +
+                        `</w:body></w:document>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                await v.repairParaId();
+                const after = await fs.readFile(filePath, "utf-8");
+                const paraIds = Array.from(after.matchAll(/w14:paraId="([0-9A-F]{8})"/g)).map((m) => m[1]);
+                expect(paraIds).toHaveLength(2);
+                expect(new Set(paraIds).size).toBe(2);
+                expect(paraIds).toContain("00000001");
+                expect(paraIds).not.toContain("FFFFFFFF");
             });
         });
     });
@@ -397,6 +451,54 @@ describe("DOCXSchemaValidator", () => {
             });
         });
 
+        it("w15:paraId / paraIdParent under-cap values are added to the collision pool", async () => {
+            await withTempDir(async (dir) => {
+                const docPath = path.join(dir, "word", "document.xml");
+                const extPath = path.join(dir, "word", "commentsExtended.xml");
+                const commentsPath = path.join(dir, "word", "comments.xml");
+                // A w15:paraId under the cap in commentsExtended.xml (not in
+                // w14:paraId form anywhere) that happens to have the value
+                // "00000002" — the sequential allocator would naturally try
+                // this value second if it weren't in the collision pool.
+                await writeFile(
+                    docPath,
+                    `<?xml version="1.0"?><w:document ${W_NS} ${W14_NS}><w:body>` +
+                        `<w:p w14:paraId="FFFFFFFF"/>` + // over-cap → gets replacement 00000001
+                        `<w:p w14:paraId="FFFFFFFF"/>` + // same over-cap → same replacement
+                        `</w:body></w:document>`,
+                );
+                await writeFile(
+                    commentsPath,
+                    `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                        `<w:p w14:paraId="FFFFFFFF"/></w:comment>` +
+                        `<w:comment w:id="1" w:author="B" w:date="2026-01-01T00:00:00Z" w:initials="B">` +
+                        `<w:p w14:paraId="00000002"/></w:comment></w:comments>`,
+                );
+                await writeFile(
+                    extPath,
+                    `<?xml version="1.0"?><w15:commentsEx ${W15_NS}>` +
+                        `<w15:commentEx w15:paraId="FFFFFFFF" w15:done="0"/>` +
+                        `<w15:commentEx w15:paraId="00000002" w15:done="0"/>` +
+                        `</w15:commentsEx>`,
+                );
+
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                await v.repairParaId();
+
+                const docXml = await fs.readFile(docPath, "utf-8");
+                // The new paraId for "FFFFFFFF" must NOT collide with
+                // "00000002" (the in-range w15:paraId from commentsExtended.xml).
+                const replacement = /w14:paraId="([0-9A-F]{8})"/.exec(
+                    docXml.replace(/00000002/g, ""),
+                );
+                expect(replacement?.[1]).toBeDefined();
+                if (replacement?.[1]) {
+                    expect(replacement[1]).not.toBe("00000002");
+                }
+            });
+        });
+
         it("repairs the sample-document.id-overflow fixture cleanly (no orphan paraIds afterward)", async () => {
             const fixturePath = path.join(__dirname, "fixtures/broken/sample-document.id-overflow.docx");
             await withTempDir(async (dir) => {
@@ -426,20 +528,25 @@ describe("DOCXSchemaValidator", () => {
     });
 
     describe("validateStyleDefaults (ECMA-376 §17.7.4.4 implied defaults)", () => {
-        it("flags every missing default style", async () => {
+        it("flags every missing default style as ERROR under strict, WARNING under lenient", async () => {
             await withTempDir(async (dir) => {
                 await writeFile(
                     path.join(dir, "word", "styles.xml"),
                     `<?xml version="1.0"?><w:styles ${W_NS}><w:style w:styleId="Heading1" w:type="paragraph"/></w:styles>`,
                 );
-                const v = new DOCXSchemaValidator({ unpackedDir: dir });
-                const result = await v.validateStyleDefaults();
-                expect(result.valid).toBe(false);
-                const codes = result.issues.filter((i) => i.code === "style-default-missing");
-                // All four implied defaults missing.
+                const strict = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
+                const r1 = await strict.validateStyleDefaults();
+                expect(r1.valid).toBe(false);
+                const codes = r1.issues.filter((i) => i.code === "style-default-missing");
                 expect(codes).toHaveLength(4);
                 const ids = codes.map((i) => /'([^']+)'/.exec(i.message)?.[1]).sort();
                 expect(ids).toEqual(["DefaultParagraphFont", "NoList", "Normal", "TableNormal"]);
+                expect(codes[0]?.severity).toBe("error");
+
+                const lenient = new DOCXSchemaValidator({ unpackedDir: dir, profile: "lenient" });
+                const r2 = await lenient.validateStyleDefaults();
+                expect(r2.valid).toBe(true);
+                expect(r2.issues.find((i) => i.code === "style-default-missing")?.severity).toBe("warning");
             });
         });
 
@@ -485,7 +592,7 @@ describe("DOCXSchemaValidator", () => {
     });
 
     describe("validateStyleReferences / repairMissingStyleDefinitions", () => {
-        it("flags <w:rStyle w:val='X'/> when X is not defined in styles.xml", async () => {
+        it("flags <w:rStyle w:val='X'/> when X is not defined in styles.xml as ERROR under strict, WARNING under lenient", async () => {
             await withTempDir(async (dir) => {
                 await writeFile(
                     path.join(dir, "word", "document.xml"),
@@ -497,12 +604,17 @@ describe("DOCXSchemaValidator", () => {
                     path.join(dir, "word", "styles.xml"),
                     `<?xml version="1.0"?><w:styles ${W_NS}><w:style w:styleId="Heading1" w:type="paragraph"/></w:styles>`,
                 );
-                const v = new DOCXSchemaValidator({ unpackedDir: dir });
-                const result = await v.validateStyleReferences();
-                expect(result.valid).toBe(false);
-                const issue = result.issues.find((i) => i.code === "style-reference-undefined" && i.message.includes("CommentReference"));
+                const strict = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
+                const r1 = await strict.validateStyleReferences();
+                expect(r1.valid).toBe(false);
+                const issue = r1.issues.find((i) => i.code === "style-reference-undefined" && i.message.includes("CommentReference"));
                 expect(issue).toBeDefined();
                 expect(issue?.severity).toBe("error");
+
+                const lenient = new DOCXSchemaValidator({ unpackedDir: dir, profile: "lenient" });
+                const r2 = await lenient.validateStyleReferences();
+                expect(r2.valid).toBe(true);
+                expect(r2.issues.find((i) => i.code === "style-reference-undefined")?.severity).toBe("warning");
             });
         });
 
@@ -537,7 +649,7 @@ describe("DOCXSchemaValidator", () => {
                     path.join(dir, "word", "styles.xml"),
                     `<?xml version="1.0"?><w:styles ${W_NS}/>`,
                 );
-                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
                 const result = await v.validateStyleReferences();
                 expect(result.valid).toBe(false);
                 const issue = result.issues.find((i) => i.code === "style-reference-undefined");
@@ -579,14 +691,14 @@ describe("DOCXSchemaValidator", () => {
                 );
                 const stylesPath = path.join(dir, "word", "styles.xml");
                 await writeFile(stylesPath, `<?xml version="1.0"?><w:styles ${W_NS}/>`);
-                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
                 const repairs = await v.repairMissingStyleDefinitions();
                 // Only the 4 implied defaults are auto-injected; the unknown
                 // 'MyCustomStyle' is left for the caller to handle.
                 expect(repairs).toBe(4);
                 const after = await fs.readFile(stylesPath, "utf-8");
                 expect(after).not.toContain('w:styleId="MyCustomStyle"');
-                // Still flagged because MyCustomStyle is still dangling.
+                // Still flagged because MyCustomStyle is still dangling (strict-mode error).
                 const post = await v.validateStyleReferences();
                 expect(post.valid).toBe(false);
             });
@@ -603,7 +715,7 @@ describe("DOCXSchemaValidator", () => {
                     await fs.mkdir(path.dirname(dest), { recursive: true });
                     await fs.writeFile(dest, await entry.async("nodebuffer"));
                 }
-                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
                 const before = await v.validateStyleReferences();
                 expect(before.valid).toBe(false);
                 expect(before.issues.some((i) => i.message.includes("CommentReference"))).toBe(true);
@@ -641,29 +753,33 @@ describe("DOCXSchemaValidator", () => {
             });
         });
 
-        it("repairMissingParaIds stamps a w14:paraId on every <w:p> and <w:tr> that lacks one", async () => {
+        it("repairMissingParaIds stamps both w14:paraId and w14:textId on every <w:p> and <w:tr> that lacks one", async () => {
             await withTempDir(async (dir) => {
                 const filePath = path.join(dir, "word", "document.xml");
                 await writeFile(
                     filePath,
                     `<?xml version="1.0"?><w:document ${TBL_NS} ${W14_NS}><w:body>` +
-                        // First paragraph already has a paraId — should be left alone.
+                        // First paragraph already has a paraId but not a textId — paraId left alone, textId stamped.
                         `<w:p w14:paraId="11111111"/>` +
-                        // Second paragraph has none — should get one.
+                        // Second paragraph has neither — both stamped.
                         `<w:p/>` +
-                        // Table with two rows, neither stamped.
+                        // Table with two rows, neither stamped on tr or inner p.
                         `<w:tbl><w:tr><w:tc><w:p/></w:tc></w:tr><w:tr><w:tc><w:p/></w:tc></w:tr></w:tbl>` +
                         `</w:body></w:document>`,
                 );
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const repairs = await v.repairMissingParaIds();
-                // 1 missing paragraph + 2 missing rows + 2 missing inner-cell paragraphs = 5
-                expect(repairs).toBe(5);
+                // First <w:p>: paraId present, textId missing = 1 stamp
+                // Second <w:p>: both missing = 2 stamps
+                // 2 <w:tr>: both missing on each = 4 stamps
+                // 2 inner-cell <w:p>: both missing on each = 4 stamps
+                // Total: 1 + 2 + 4 + 4 = 11
+                expect(repairs).toBe(11);
 
                 const after = await fs.readFile(filePath, "utf-8");
                 // Original paraId preserved.
                 expect(after).toContain('w14:paraId="11111111"');
-                // Every <w:p> and <w:tr> now has a paraId.
+                // Every <w:p> and <w:tr> now has both paraId AND textId.
                 const v2 = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
                 const post = await v2.validateAllParagraphsHaveParaId();
                 expect(post.valid).toBe(true);
@@ -671,27 +787,80 @@ describe("DOCXSchemaValidator", () => {
             });
         });
 
-        it("repairMissingParaIds picks values that don't collide with existing paraIds", async () => {
+        it("validateAllParagraphsHaveParaId flags missing w14:textId separately from missing paraId", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    `<?xml version="1.0"?><w:document ${TBL_NS} ${W14_NS}><w:body>` +
+                        // Paragraph with paraId but no textId — should trigger textid-missing-element only.
+                        `<w:p w14:paraId="11111111"/>` +
+                        // Row with paraId but no textId — should trigger textid-missing-element only.
+                        `<w:tbl><w:tr w14:paraId="22222222"><w:tc><w:p w14:paraId="33333333" w14:textId="44444444"/></w:tc></w:tr></w:tbl>` +
+                        `</w:body></w:document>`,
+                );
+                const strict = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
+                const r = await strict.validateAllParagraphsHaveParaId();
+                expect(r.valid).toBe(false);
+                // No paraId-missing issues since every element has paraId.
+                expect(r.issues.find((i) => i.code === "paraid-missing-element")).toBeUndefined();
+                // textId-missing on <w:p> (1) and on <w:tr> (1) — separate issues.
+                const tIssues = r.issues.filter((i) => i.code === "textid-missing-element");
+                expect(tIssues).toHaveLength(2);
+                expect(tIssues.find((i) => i.message.includes("<w:p>"))).toBeDefined();
+                expect(tIssues.find((i) => i.message.includes("<w:tr>"))).toBeDefined();
+                expect(tIssues[0]?.severity).toBe("error");
+
+                const lenient = new DOCXSchemaValidator({ unpackedDir: dir, profile: "lenient" });
+                const r2 = await lenient.validateAllParagraphsHaveParaId();
+                expect(r2.valid).toBe(true);
+                expect(r2.issues.find((i) => i.code === "textid-missing-element")?.severity).toBe("warning");
+            });
+        });
+
+        it("repairMissingParaIds stamps paraId on elements with textId but no paraId (reverse case)", async () => {
             await withTempDir(async (dir) => {
                 const filePath = path.join(dir, "word", "document.xml");
+                // Case 3 in repairMissingParaIds: textId present, paraId missing.
+                // This was previously "leave alone" but now gets paraId stamped.
                 await writeFile(
                     filePath,
                     `<?xml version="1.0"?><w:document ${TBL_NS} ${W14_NS}><w:body>` +
-                        `<w:p w14:paraId="11111111"/>` +
-                        `<w:p w14:paraId="22222222"/>` +
-                        `<w:p/>` +
+                        `<w:p w14:textId="ABCDEF01"/>` +
                         `</w:body></w:document>`,
                 );
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
-                await v.repairMissingParaIds();
+                const repairs = await v.repairMissingParaIds();
+                // Should stamp paraId (1 repair) — textId already present.
+                expect(repairs).toBe(1);
                 const after = await fs.readFile(filePath, "utf-8");
-                const paraIds = Array.from(after.matchAll(/w14:paraId="([0-9A-F]{8})"/g)).map((m) => m[1]);
-                expect(paraIds).toHaveLength(3);
-                // All three must be unique.
-                expect(new Set(paraIds).size).toBe(3);
-                // The pre-existing ones survived.
-                expect(paraIds).toContain("11111111");
-                expect(paraIds).toContain("22222222");
+                expect(after).toContain('w14:paraId="');
+                expect(after).toContain('w14:textId="ABCDEF01"');
+            });
+        });
+
+        it("repairMissingParaIds repairs headers and footers, not just documentXml", async () => {
+            await withTempDir(async (dir) => {
+                // document.xml: already complete — no repairs needed.
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    `<?xml version="1.0"?><w:document ${TBL_NS} ${W14_NS}><w:body><w:p w14:paraId="AAAAAAAA" w14:textId="BBBBBBBB"/></w:body></w:document>`,
+                );
+                // header1.xml: two paragraphs, one missing both paraId and textId.
+                const hdrPath = path.join(dir, "word", "header1.xml");
+                await writeFile(
+                    hdrPath,
+                    `<?xml version="1.0"?><w:hdr ${W_NS} ${W14_NS}><w:p w14:paraId="CCCCCCCC" w14:textId="DDDDDDDD"/><w:p/></w:hdr>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const repairs = await v.repairMissingParaIds();
+                // Two stamps on the second <w:p> in header (paraId + textId).
+                expect(repairs).toBe(2);
+                const after = await fs.readFile(hdrPath, "utf-8");
+                // Both paragraphs in header now have paraId and textId.
+                const paraIds = Array.from(after.matchAll(/w14:paraId="([0-9A-F]{8})"/g));
+                const textIds = Array.from(after.matchAll(/w14:textId="([0-9A-F]{8})"/g));
+                expect(paraIds).toHaveLength(2);
+                expect(textIds).toHaveLength(2);
             });
         });
     });
@@ -905,6 +1074,39 @@ describe("DOCXSchemaValidator", () => {
                 expect(result.valid).toBe(false);
                 expect(result.issues.some((i) => i.path?.endsWith("header1.xml"))).toBe(true);
             });
+        });
+
+        it("detects tokens across multiple XML files without regex state leakage", async () => {
+            await withTempDir(async (dir) => {
+                // Two separate XML files, each with tracking tokens.
+                // If the regex lastIndex leaks between scans, tokens in the
+                // second file would be missed.
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(`<w:p><w:r><w:t>[[DOCX_INS_START:aaa]]first</w:t></w:r></w:p>`),
+                );
+                await writeFile(
+                    path.join(dir, "word", "header1.xml"),
+                    `<?xml version="1.0"?><w:hdr ${W_NS}><w:p><w:r><w:t>[[DOCX_DEL_START:bbb]]second</w:t></w:r></w:p></w:hdr>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateNoTrackingTokens();
+                expect(result.valid).toBe(false);
+                // One token per file.
+                expect(result.issues).toHaveLength(2);
+                expect(result.issues.some((i) => i.path?.endsWith("document.xml"))).toBe(true);
+                expect(result.issues.some((i) => i.path?.endsWith("header1.xml"))).toBe(true);
+            });
+        });
+    });
+
+    describe("superdoc README", () => {
+        it("references the correct fixture test files (not stale fixtures-superdoc.test.ts)", async () => {
+            const readmePath = path.join(__dirname, "fixtures/external/superdoc/README.md");
+            const content = await fs.readFile(readmePath, "utf-8");
+            expect(content).not.toContain("fixtures-superdoc.test.ts");
+            expect(content).toContain("fixtures-all-strict.test.ts");
+            expect(content).toContain("fixtures-all-lenient.test.ts");
         });
     });
 
@@ -1132,6 +1334,41 @@ describe("DOCXSchemaValidator", () => {
                         (i) => i.code === "comment-thread-count-mismatch" && i.message.includes("commentRangeStart"),
                     ),
                 ).toBe(true);
+            });
+        });
+
+        it("issues have correct relative paths (not hardcoded document.xml) for count mismatches", async () => {
+            await withTempDir(async (dir) => {
+                // 2 starts, 1 end → triggers endCount mismatch with hardcoded path bug
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p>` +
+                            `<w:commentRangeStart w:id="0"/><w:commentRangeStart w:id="1"/>x` +
+                            `<w:commentRangeEnd w:id="0"/>` +
+                            `<w:r><w:commentReference w:id="0"/></w:r>` +
+                            `<w:r><w:commentReference w:id="1"/></w:r>` +
+                            `</w:p>`,
+                    ),
+                );
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                        `<w:p w14:paraId="AAAAAAAA"/></w:comment>` +
+                        `<w:comment w:id="1" w:author="B" w:date="2026-01-01T00:00:00Z" w:initials="B">` +
+                        `<w:p w14:paraId="BBBBBBBB"/></w:comment></w:comments>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateCommentThreading();
+                expect(result.valid).toBe(false);
+                const endIssue = result.issues.find(
+                    (i) => i.code === "comment-thread-count-mismatch" && i.message.includes("commentRangeEnd"),
+                );
+                expect(endIssue).toBeDefined();
+                expect(endIssue!.path).not.toBe("document.xml");
+                expect(endIssue!.path).toContain("word");
+                expect(endIssue!.path).toContain("document.xml");
             });
         });
 

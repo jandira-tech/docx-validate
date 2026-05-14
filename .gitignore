@@ -9,3 +9,4 @@ coverage
 /docx
 docs/api
 dotgithubtoport
+package-lock.json

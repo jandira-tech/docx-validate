@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-05-10T03:17:59.822Z",
-  "totalFixtures": 347,
+  "generatedAt": "2026-05-11T21:55:05.399Z",
+  "totalFixtures": 350,
   "entries": [
     {
       "relativePath": "broken/comments.unmatched-comment-marker.docx",
@@ -32,10 +32,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -44,14 +42,14 @@
         "valid": false,
         "errorCodes": [
           "id-paraid-overflow",
-          "style-default-missing"
+          "style-default-missing",
+          "textid-missing-element"
         ]
       },
       "lenient": {
         "valid": false,
         "errorCodes": [
-          "id-paraid-overflow",
-          "style-default-missing"
+          "id-paraid-overflow"
         ]
       }
     },
@@ -60,7 +58,8 @@
       "strict": {
         "valid": false,
         "errorCodes": [
-          "id-paraid-overflow"
+          "id-paraid-overflow",
+          "textid-missing-element"
         ]
       },
       "lenient": {
@@ -95,15 +94,16 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "id-textid-overflow",
           "style-default-missing",
-          "style-reference-undefined"
+          "style-reference-undefined",
+          "textid-missing-element"
         ]
       },
       "lenient": {
         "valid": false,
         "errorCodes": [
-          "style-default-missing",
-          "style-reference-undefined"
+          "id-textid-overflow"
         ]
       }
     },
@@ -112,6 +112,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "id-textid-overflow",
           "paraid-missing-element",
           "rels-empty-part",
           "style-default-missing",
@@ -121,8 +122,7 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
-          "style-default-missing",
-          "style-reference-undefined"
+          "id-textid-overflow"
         ]
       }
     },
@@ -133,6 +133,7 @@
         "errorCodes": [
           "id-durable-overflow",
           "id-paraid-overflow",
+          "id-textid-overflow",
           "ignorable-undeclared",
           "paraid-missing-element",
           "rels-empty-part",
@@ -145,9 +146,8 @@
         "errorCodes": [
           "id-durable-overflow",
           "id-paraid-overflow",
-          "ignorable-undeclared",
-          "style-default-missing",
-          "style-reference-undefined"
+          "id-textid-overflow",
+          "ignorable-undeclared"
         ]
       }
     },
@@ -156,6 +156,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "id-textid-overflow",
           "paraid-missing-element",
           "style-default-missing",
           "style-reference-undefined"
@@ -164,8 +165,23 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
-          "style-default-missing",
-          "style-reference-undefined"
+          "id-textid-overflow"
+        ]
+      }
+    },
+    {
+      "relativePath": "broken/sample-document.our-pipeline-output-tr-no-textid.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "id-textid-overflow",
+          "textid-missing-element"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "id-textid-overflow"
         ]
       }
     },
@@ -282,10 +298,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -323,10 +337,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -477,10 +489,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -493,10 +503,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -520,10 +528,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -536,10 +542,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -552,10 +556,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -579,10 +581,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -595,10 +595,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -611,10 +609,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -672,10 +668,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -688,10 +682,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -704,10 +696,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -720,10 +710,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -736,10 +724,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -972,10 +958,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -1010,10 +994,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -1072,10 +1054,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -1088,10 +1068,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -1114,10 +1092,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -1153,10 +1129,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -1179,10 +1153,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -1301,10 +1273,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -1316,10 +1286,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -1331,10 +1299,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -1347,10 +1313,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -1410,8 +1374,7 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
-          "ct-undeclared-ext",
-          "style-default-missing"
+          "ct-undeclared-ext"
         ]
       }
     },
@@ -1891,6 +1854,7 @@
         "valid": false,
         "errorCodes": [
           "id-paraid-overflow",
+          "id-textid-overflow",
           "paraid-missing-element",
           "rels-broken",
           "style-default-missing"
@@ -1900,8 +1864,8 @@
         "valid": false,
         "errorCodes": [
           "id-paraid-overflow",
-          "rels-broken",
-          "style-default-missing"
+          "id-textid-overflow",
+          "rels-broken"
         ]
       }
     },
@@ -1956,10 +1920,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-reference-undefined"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -2163,10 +2125,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -2223,6 +2183,7 @@
         "valid": false,
         "errorCodes": [
           "style-default-missing",
+          "textid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -2230,7 +2191,6 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
-          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -2375,6 +2335,7 @@
         "valid": false,
         "errorCodes": [
           "style-default-missing",
+          "textid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -2382,7 +2343,6 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
-          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3246,6 +3206,7 @@
         "valid": false,
         "errorCodes": [
           "style-default-missing",
+          "textid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3253,7 +3214,6 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
-          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3265,6 +3225,7 @@
         "valid": false,
         "errorCodes": [
           "style-default-missing",
+          "textid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3272,7 +3233,6 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
-          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3284,6 +3244,7 @@
         "valid": false,
         "errorCodes": [
           "style-default-missing",
+          "textid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3291,7 +3252,6 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
-          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3688,10 +3648,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -3744,6 +3702,7 @@
         "valid": false,
         "errorCodes": [
           "style-default-missing",
+          "textid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3751,7 +3710,6 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
-          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3769,7 +3727,6 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
-          "style-default-missing",
           "ws-missing-preserve"
         ]
       }
@@ -3970,6 +3927,7 @@
         "valid": false,
         "errorCodes": [
           "style-default-missing",
+          "textid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3977,7 +3935,6 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
-          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -4184,6 +4141,7 @@
         "valid": false,
         "errorCodes": [
           "style-default-missing",
+          "textid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -4191,7 +4149,6 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
-          "style-default-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -4332,10 +4289,8 @@
         ]
       },
       "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "style-default-missing"
-        ]
+        "valid": true,
+        "errorCodes": []
       }
     },
     {
@@ -4388,7 +4343,6 @@
         "valid": false,
         "errorCodes": [
           "rels-unreferenced",
-          "style-default-missing",
           "ws-missing-preserve",
           "xsd-error",
           "xsd-summary"
@@ -4593,6 +4547,21 @@
     {
       "relativePath": "working/sample-document.our-repaired.docx",
       "strict": {
+        "valid": false,
+        "errorCodes": [
+          "id-textid-overflow"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "id-textid-overflow"
+        ]
+      }
+    },
+    {
+      "relativePath": "working/sample-document.really-repaired.docx",
+      "strict": {
         "valid": true,
         "errorCodes": []
       },
@@ -4602,7 +4571,18 @@
       }
     },
     {
-      "relativePath": "working/sample-document.really-repaired.docx",
+      "relativePath": "working/sample-document.word-repair-of-our-output-iter2.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      }
+    },
+    {
+      "relativePath": "working/sample-document.word-repair-of-our-output.docx",
       "strict": {
         "valid": true,
         "errorCodes": []

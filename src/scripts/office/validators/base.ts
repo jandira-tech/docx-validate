@@ -308,15 +308,23 @@ export class BaseSchemaValidator {
                 "Relationship",
             );
             if (rels.length === 0) {
-                issues.push({
-                    severity,
-                    message:
-                        `Relationships part has zero <Relationship> children. ` +
-                        `OPC §9.3 says a rels part should exist only when its source part has outgoing relationships; ` +
-                        `Word strips empty rels sidecars on save.`,
-                    path: this.relPath(xmlFile),
-                    code: "rels-empty-part",
-                });
+                // Additional check: only report as empty if the root also has no
+                // element children. Malformed rels files with Relationship elements
+                // in the wrong namespace will return zero from getElementsByTagNameNS
+                // but should NOT be classified as empty parts (they have element
+                // children, just in the wrong namespace).
+                const hasElementChildren = hasAnyElementChild(root);
+                if (!hasElementChildren) {
+                    issues.push({
+                        severity,
+                        message:
+                            `Relationships part has zero <Relationship> children. ` +
+                            `OPC §9.3 says a rels part should exist only when its source part has outgoing relationships; ` +
+                            `Word strips empty rels sidecars on save.`,
+                        path: this.relPath(xmlFile),
+                        code: "rels-empty-part",
+                    });
+                }
             }
         }
         return finalize(issues);
@@ -361,7 +369,13 @@ export class BaseSchemaValidator {
                         "http://schemas.openxmlformats.org/package/2006/relationships",
                         "Relationship",
                     );
-                    isEmpty = rels.length === 0;
+                    if (rels.length === 0) {
+                        // Additional check: only mark as empty if the root also has no
+                        // element children. Malformed rels files with Relationship elements
+                        // in the wrong namespace should not be deleted.
+                        const hasElementChildren = hasAnyElementChild(root);
+                        isEmpty = !hasElementChildren;
+                    }
                 }
             } catch {
                 // malformed — leave it alone, surfaced elsewhere
@@ -1447,4 +1461,13 @@ function removeNonOoxmlElements(root: Element): void {
 
 function finalize(issues: ValidationIssue[]): ValidationResult {
     return { valid: issues.every((i) => i.severity !== "error"), issues };
+}
+
+/** Return true if `node` has at least one Element-type child node. */
+export function hasAnyElementChild(node: Node): boolean {
+    for (let i = 0; i < node.childNodes.length; i += 1) {
+        const child = node.childNodes.item(i);
+        if (child && child.nodeType === 1 /* ELEMENT_NODE */) return true;
+    }
+    return false;
 }
