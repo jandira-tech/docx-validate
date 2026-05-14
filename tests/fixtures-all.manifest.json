@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-05-14T06:11:44.896Z",
-  "totalFixtures": 350,
+  "generatedAt": "2026-05-14T06:41:55.481Z",
+  "totalFixtures": 364,
   "entries": [
     {
       "relativePath": "broken/comments.unmatched-comment-marker.docx",
@@ -2318,12 +2318,12 @@
       "strict": {
         "valid": false,
         "errorCodes": [],
-        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howt"
+        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
       },
       "lenient": {
         "valid": false,
         "errorCodes": [],
-        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howt"
+        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
       },
       "word": "password-required"
     },
@@ -2332,12 +2332,12 @@
       "strict": {
         "valid": false,
         "errorCodes": [],
-        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howt"
+        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
       },
       "lenient": {
         "valid": false,
         "errorCodes": [],
-        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howt"
+        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
       },
       "word": "unknown-dialog"
     },
@@ -3632,7 +3632,7 @@
           "xsd-summary"
         ]
       },
-      "word": "open-error"
+      "word": "timeout"
     },
     {
       "relativePath": "external/superdoc/super-editor/hyperlink_multiple_runs.docx",
@@ -3780,7 +3780,7 @@
           "xsd-summary"
         ]
       },
-      "word": "unreadable-content-warning"
+      "word": "timeout"
     },
     {
       "relativePath": "external/superdoc/super-editor/line-break.docx",
@@ -4297,7 +4297,7 @@
           "xsd-summary"
         ]
       },
-      "word": "unreadable-content-warning"
+      "word": "timeout"
     },
     {
       "relativePath": "external/superdoc/super-editor/paragraph_indent_normal_styles.docx",
@@ -4891,6 +4891,230 @@
       "word": "clean-open"
     },
     {
+      "relativePath": "unknown/unknown/comments.unmatched-comment-marker.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "comment-marker-missing",
+          "comment-orphan-start",
+          "comment-thread-count-mismatch",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "comment-marker-missing",
+          "comment-orphan-start",
+          "comment-thread-count-mismatch",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "timeout"
+    },
+    {
+      "relativePath": "unknown/unknown/empty.missing-content-type.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "clean-open"
+    },
+    {
+      "relativePath": "unknown/unknown/endnotes.paraid-overflow.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "clean-open"
+    },
+    {
+      "relativePath": "unknown/unknown/footnotes.duplicate-paraid.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "timeout"
+    },
+    {
+      "relativePath": "unknown/unknown/header-with-rid-no-sidecar.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "timeout"
+    },
+    {
+      "relativePath": "unknown/unknown/sample-document.broken-tables.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "clean-open"
+    },
+    {
+      "relativePath": "unknown/unknown/sample-document.empty-rels.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "clean-open"
+    },
+    {
+      "relativePath": "unknown/unknown/sample-document.id-overflow.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "clean-open"
+    },
+    {
+      "relativePath": "unknown/unknown/sample-document.missing-paraids.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "clean-open"
+    },
+    {
+      "relativePath": "unknown/unknown/sample-document.our-pipeline-output-tr-no-textid.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "clean-open"
+    },
+    {
+      "relativePath": "unknown/unknown/single-paragraph.malformed-xml.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "clean-open"
+    },
+    {
+      "relativePath": "unknown/unknown/tables.missing-namespace.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "clean-open"
+    },
+    {
+      "relativePath": "unknown/unknown/text-box.orphan-part.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "rels-unreferenced",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "rels-unreferenced",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "timeout"
+    },
+    {
+      "relativePath": "unknown/unknown/tiny-picture.broken-rels.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "rels-broken",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "rels-broken",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "timeout"
+    },
+    {
       "relativePath": "vfdsdfcACawesd.docx",
       "strict": {
         "valid": true,
@@ -4934,7 +5158,7 @@
           "id-textid-overflow"
         ]
       },
-      "word": "unreadable-content-warning"
+      "word": "timeout"
     },
     {
       "relativePath": "working/sample-document.really-repaired.docx",
