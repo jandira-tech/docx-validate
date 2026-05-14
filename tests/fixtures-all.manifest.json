@@ -42,6 +42,7 @@
         "valid": false,
         "errorCodes": [
           "id-paraid-overflow",
+          "paraid-missing-element",
           "style-default-missing",
           "textid-missing-element"
         ]
@@ -59,6 +60,7 @@
         "valid": false,
         "errorCodes": [
           "id-paraid-overflow",
+          "paraid-missing-element",
           "textid-missing-element"
         ]
       },
@@ -95,6 +97,7 @@
         "valid": false,
         "errorCodes": [
           "id-textid-overflow",
+          "paraid-missing-element",
           "style-default-missing",
           "style-reference-undefined",
           "textid-missing-element"
@@ -116,7 +119,8 @@
           "paraid-missing-element",
           "rels-empty-part",
           "style-default-missing",
-          "style-reference-undefined"
+          "style-reference-undefined",
+          "textid-missing-element"
         ]
       },
       "lenient": {
@@ -138,7 +142,8 @@
           "paraid-missing-element",
           "rels-empty-part",
           "style-default-missing",
-          "style-reference-undefined"
+          "style-reference-undefined",
+          "textid-missing-element"
         ]
       },
       "lenient": {
@@ -159,7 +164,8 @@
           "id-textid-overflow",
           "paraid-missing-element",
           "style-default-missing",
-          "style-reference-undefined"
+          "style-reference-undefined",
+          "textid-missing-element"
         ]
       },
       "lenient": {
@@ -175,6 +181,7 @@
         "valid": false,
         "errorCodes": [
           "id-textid-overflow",
+          "paraid-missing-element",
           "textid-missing-element"
         ]
       },
@@ -4057,6 +4064,7 @@
         "valid": false,
         "errorCodes": [
           "paraid-missing-element",
+          "textid-missing-element",
           "xsd-error",
           "xsd-summary"
         ]
@@ -4549,7 +4557,9 @@
       "strict": {
         "valid": false,
         "errorCodes": [
-          "id-textid-overflow"
+          "id-textid-overflow",
+          "paraid-missing-element",
+          "textid-missing-element"
         ]
       },
       "lenient": {

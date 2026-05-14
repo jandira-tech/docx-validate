@@ -686,7 +686,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     async validateAllParagraphsHaveParaId(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
         const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
-        for (const xmlFile of this.documentXmlFiles()) {
+        for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
                 dom = parseXml(await fs.readFile(xmlFile, "utf-8"));

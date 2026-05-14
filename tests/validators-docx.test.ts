@@ -863,6 +863,33 @@ describe("DOCXSchemaValidator", () => {
                 expect(textIds).toHaveLength(2);
             });
         });
+
+        it("validateAllParagraphsHaveParaId flags missing paraIds in headers and footers, not just documentXml", async () => {
+            await withTempDir(async (dir) => {
+                // document.xml: fully stamped — no issues.
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    `<?xml version="1.0"?><w:document ${TBL_NS} ${W14_NS}><w:body><w:p w14:paraId="AAAAAAAA" w14:textId="BBBBBBBB"/></w:body></w:document>`,
+                );
+                // header1.xml: two paragraphs, first stamped, second missing both IDs.
+                await writeFile(
+                    path.join(dir, "word", "header1.xml"),
+                    `<?xml version="1.0"?><w:hdr ${W_NS} ${W14_NS}><w:p w14:paraId="CCCCCCCC" w14:textId="DDDDDDDD"/><w:p/></w:hdr>`,
+                );
+                // footer1.xml: one paragraph missing both IDs.
+                await writeFile(
+                    path.join(dir, "word", "footer1.xml"),
+                    `<?xml version="1.0"?><w:ftr ${W_NS} ${W14_NS}><w:p/></w:ftr>`,
+                );
+                const strict = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
+                const r = await strict.validateAllParagraphsHaveParaId();
+                // Should catch missing IDs on header's second <w:p> and footer's <w:p>.
+                expect(r.valid).toBe(false);
+                const missing = r.issues.filter((i) => i.code === "paraid-missing-element" || i.code === "textid-missing-element");
+                // One paraid-missing issue for header (second <w:p>), one for footer <w:p>.
+                expect(missing).toHaveLength(2);
+            });
+        });
     });
 
     describe("repairIgnorable", () => {
