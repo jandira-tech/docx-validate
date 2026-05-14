@@ -47,7 +47,7 @@ import path from "node:path";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
 import { makeSelect, parseXml, serializeXml } from "../../../lib/xml-helpers";
-import { BaseSchemaValidator, collectDeclaredPrefixes, XML_NAMESPACE } from "./base";
+import { BaseSchemaValidator, collectDeclaredPrefixes, PACKAGE_RELATIONSHIPS_NAMESPACE, XML_NAMESPACE } from "./base";
 
 export const WORD_2006_NAMESPACE = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 export const WORD_STRICT_NAMESPACE = "http://purl.oclc.org/ooxml/wordprocessingml/main";
@@ -72,6 +72,9 @@ const WORD_DRAWING_SCALAR_TEXT_ELEMENTS: ReadonlyArray<{ namespace: string; loca
     { namespace: WP14_DRAWING_NAMESPACE, localName: "pctWidth" },
     { namespace: WP14_DRAWING_NAMESPACE, localName: "pctHeight" },
 ];
+const TRACKED_CHANGE_ID_TAGS = ["ins", "del", "rPrChange", "pPrChange", "tblPrChange", "trPrChange", "tcPrChange"] as const;
+const TABLE_BORDER_SIDES = ["top", "left", "bottom", "right", "insideH", "insideV"] as const;
+const BORDER_COMPARE_ATTRIBUTES = ["val", "sz", "space", "color", "themeColor", "themeTint", "themeShade", "shadow", "frame"] as const;
 
 /**
  * Well-known OOXML namespace prefixes Word emits in `mc:Ignorable` and
@@ -372,7 +375,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         let body: Element | null = null;
         for (const ns of WORD_PARAGRAPH_NAMESPACES) {
             const node = dom.getElementsByTagNameNS(ns, "body").item(0);
-            if (node) { body = node; break; }
+            if (node) {
+                body = node;
+                break;
+            }
         }
         if (!body) return finalize(issues);
         for (let i = 0; i < body.childNodes.length; i += 1) {
@@ -1518,23 +1524,18 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             } catch {
                 continue;
             }
-            // OOXML: targets in .rels files under `_rels/` are relative to the
-            // parent of the `_rels/` directory, not to `_rels/` itself.
-            const relsDir = path.dirname(xmlFile);
-            const baseDir = path.basename(relsDir) === "_rels" ? path.dirname(relsDir) : relsDir;
-            const list = dom.getElementsByTagNameNS(
-                "http://schemas.openxmlformats.org/package/2006/relationships",
-                "Relationship",
-            );
+            const list = dom.getElementsByTagNameNS(PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
             for (let i = 0; i < list.length; i += 1) {
                 const elem = list.item(i);
                 if (!elem) continue;
                 const target = elem.getAttribute("Target");
                 if (!target) continue;
-                if (target.startsWith("http://") || target.startsWith("https://")) continue;
-                const resolved = path.resolve(baseDir, target);
+                if (isExternalRelationship(elem, target)) continue;
+                const resolved = resolveRelationshipTargetPath(this.unpackedDir, xmlFile, target);
+                if (!resolved) continue;
                 try {
-                    await fs.access(resolved);
+                    const stat = await fs.stat(resolved);
+                    if (!stat.isFile()) throw new Error("Target is not a file");
                 } catch {
                     issues.push({
                         severity: "error",
@@ -1659,13 +1660,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 for (let i = 0; i < tbls.length; i += 1) {
                     const tbl = tbls.item(i);
                     if (!tbl) continue;
-                    const tblPrs = tbl.getElementsByTagNameNS(ns, "tblPr");
-                    if (tblPrs.length === 0) continue;
-                    const tblPr = tblPrs.item(0);
+                    const tblPr = directChild(tbl, ns, "tblPr");
                     if (!tblPr) continue;
-                    const hasTblStyle = tblPr.getElementsByTagNameNS(ns, "tblStyle").length > 0;
+                    const hasTblStyle = directChild(tblPr, ns, "tblStyle") !== null;
                     if (!hasTblStyle) continue;
-                    const hasTblLook = tblPr.getElementsByTagNameNS(ns, "tblLook").length > 0;
+                    const hasTblLook = directChild(tblPr, ns, "tblLook") !== null;
                     if (!hasTblLook) {
                         issues.push({
                             severity: "info",
@@ -1701,21 +1700,24 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 continue;
             }
             const ids: number[] = [];
+            let hasUnparseableId = false;
             for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                for (const tag of ["ins", "del"] as const) {
+                for (const tag of TRACKED_CHANGE_ID_TAGS) {
                     const list = dom.getElementsByTagNameNS(ns, tag);
                     for (let j = 0; j < list.length; j += 1) {
                         const elem = list.item(j);
                         if (!elem) continue;
                         const id = elem.getAttributeNS(ns, "id");
-                        if (id) {
-                            const v = parseInt(id, 10);
-                            if (!Number.isNaN(v)) ids.push(v);
+                        if (!id) continue;
+                        if (!/^\d+$/.test(id)) {
+                            hasUnparseableId = true;
+                        } else {
+                            ids.push(Number.parseInt(id, 10));
                         }
                     }
                 }
             }
-            if (ids.length === 0) continue;
+            if (ids.length < 2 || hasUnparseableId) continue;
             ids.sort((a, b) => a - b);
             // Heuristic: if IDs are sequential from 1 with no gaps, likely regenerated.
             const isSequentialFrom1 = ids.every((id, idx) => id === idx + 1);
@@ -1744,6 +1746,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      */
     async validateRedundantCellBorders(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
+        const styleBordersById = await this.tableStyleBordersByStyleId();
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
@@ -1756,80 +1759,20 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 for (let i = 0; i < tbls.length; i += 1) {
                     const tbl = tbls.item(i);
                     if (!tbl) continue;
-                    const tblPrs = tbl.getElementsByTagNameNS(ns, "tblPr");
-                    if (tblPrs.length === 0) continue;
-                    const tblPr = tblPrs.item(0);
+                    const tblPr = directChild(tbl, ns, "tblPr");
                     if (!tblPr) continue;
-                    const tblBordersList = tblPr.getElementsByTagNameNS(ns, "tblBorders");
-                    if (tblBordersList.length === 0) continue;
-                    const tblBorders = tblBordersList.item(0);
-                    if (!tblBorders) continue;
+                    const tblStyleId = directChild(tblPr, ns, "tblStyle")?.getAttributeNS(ns, "val") ?? null;
+                    const tableDefaults =
+                        borderSignature(directChild(tblPr, ns, "tblBorders"), ns) ??
+                        (tblStyleId ? styleBordersById.get(tblStyleId) : undefined);
+                    if (!tableDefaults) continue;
 
-                    // Build map of table-level border sides.
-                    const defaultBorders = new Map<string, string>();
-                    const borderSides = ["top", "left", "bottom", "right", "insideH", "insideV"];
-                    for (const side of borderSides) {
-                        const sideList = tblBorders.getElementsByTagNameNS(ns, side);
-                        if (sideList.length > 0) {
-                            const el = sideList.item(0);
-                            if (el) {
-                                defaultBorders.set(side, el.toString());
-                            }
-                        }
-                    }
-
-                    // Check each cell's tcBorders against table defaults.
-                    const rows = tbl.getElementsByTagNameNS(ns, "tr");
-                    for (let r = 0; r < rows.length; r += 1) {
-                        const row = rows.item(r);
-                        if (!row) continue;
-                        const cells = row.getElementsByTagNameNS(ns, "tc");
-                        for (let c = 0; c < cells.length; c += 1) {
-                            const cell = cells.item(c);
-                            if (!cell) continue;
-                            const tcPrs = cell.getElementsByTagNameNS(ns, "tcPr");
-                            if (tcPrs.length === 0) continue;
-                            const tcPr = tcPrs.item(0);
+                    for (const row of directChildren(tbl, ns, "tr")) {
+                        for (const cell of directChildren(row, ns, "tc")) {
+                            const tcPr = directChild(cell, ns, "tcPr");
                             if (!tcPr) continue;
-                            const tcBordersList = tcPr.getElementsByTagNameNS(ns, "tcBorders");
-                            if (tcBordersList.length === 0) continue;
-                            const tcBorders = tcBordersList.item(0);
-                            if (!tcBorders) continue;
-
-                            // Check if each border side in tcBorders matches tblBorders.
-                            let allRedundant = true;
-                            let hasAnyBorder = false;
-                            for (const side of borderSides) {
-                                const sideList = tcBorders.getElementsByTagNameNS(ns, side);
-                                if (sideList.length === 0) continue;
-                                hasAnyBorder = true;
-                                const tcBorderSide = sideList.item(0);
-                                if (!tcBorderSide) continue;
-                                const defaultSide = defaultBorders.get(side);
-                                if (!defaultSide) {
-                                    allRedundant = false;
-                                    break;
-                                }
-                                // Compare attributes
-                                const tcVal = tcBorderSide.getAttributeNS(ns, "val") ?? "";
-                                const tcSz = tcBorderSide.getAttributeNS(ns, "sz") ?? "";
-                                const tcSpace = tcBorderSide.getAttributeNS(ns, "space") ?? "";
-                                const tcColor = tcBorderSide.getAttributeNS(ns, "color") ?? "";
-                                const defaultEl = tblBorders.getElementsByTagNameNS(ns, side).item(0);
-                                if (!defaultEl) {
-                                    allRedundant = false;
-                                    break;
-                                }
-                                const defVal = defaultEl.getAttributeNS(ns, "val") ?? "";
-                                const defSz = defaultEl.getAttributeNS(ns, "sz") ?? "";
-                                const defSpace = defaultEl.getAttributeNS(ns, "space") ?? "";
-                                const defColor = defaultEl.getAttributeNS(ns, "color") ?? "";
-                                if (tcVal !== defVal || tcSz !== defSz || tcSpace !== defSpace || tcColor !== defColor) {
-                                    allRedundant = false;
-                                    break;
-                                }
-                            }
-                            if (hasAnyBorder && allRedundant) {
+                            const cellBorders = borderSignature(directChild(tcPr, ns, "tcBorders"), ns);
+                            if (cellBorders && borderSignaturesEqual(cellBorders, tableDefaults)) {
                                 issues.push({
                                     severity: "info",
                                     message:
@@ -1866,11 +1809,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             } catch {
                 continue;
             }
-            const relsList = dom.getElementsByTagNameNS(
-                "http://schemas.openxmlformats.org/package/2006/relationships",
-                "Relationship",
-            );
+            const relsList = dom.getElementsByTagNameNS(PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
             const ids: number[] = [];
+            let allIdsUseRidPattern = true;
             for (let i = 0; i < relsList.length; i += 1) {
                 const elem = relsList.item(i);
                 if (!elem) continue;
@@ -1879,9 +1820,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 const match = /^rId(\d+)$/.exec(id);
                 if (match) {
                     ids.push(parseInt(match[1], 10));
+                } else {
+                    allIdsUseRidPattern = false;
                 }
             }
-            if (ids.length === 0) continue;
+            if (!allIdsUseRidPattern || ids.length < 2) continue;
             ids.sort((a, b) => a - b);
             const isSequential = ids.every((id, idx) => id === idx + 1);
             if (isSequential) {
@@ -1953,8 +1896,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         if (!defaultAscii && !defaultHAnsi && !defaultCs) return { valid: true, issues: [] };
 
-        // Check every run in document.xml.
-        for (const xmlFile of this.documentXmlFiles()) {
+        // Check every user-text part; redundant run properties commonly show
+        // up in headers and footers as well as the main document body.
+        for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
                 dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
@@ -1966,13 +1910,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 for (let i = 0; i < runs.length; i += 1) {
                     const run = runs.item(i);
                     if (!run) continue;
-                    const rPrList = run.getElementsByTagNameNS(ns, "rPr");
-                    if (rPrList.length === 0) continue;
-                    const rPr = rPrList.item(0);
+                    const rPr = directChild(run, ns, "rPr");
                     if (!rPr) continue;
-                    const rFontsList = rPr.getElementsByTagNameNS(ns, "rFonts");
-                    if (rFontsList.length === 0) continue;
-                    const rFonts = rFontsList.item(0);
+                    const rFonts = directChild(rPr, ns, "rFonts");
                     if (!rFonts) continue;
                     const ascii = rFonts.getAttributeNS(ns, "ascii") ?? "";
                     const hAnsi = rFonts.getAttributeNS(ns, "hAnsi") ?? "";
@@ -2120,7 +2060,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         modified = true;
                     }
 
-                    if (blipFill && !directChild(blipFill, DRAWINGML_NAMESPACE, "stretch") && !directChild(blipFill, DRAWINGML_NAMESPACE, "tile")) {
+                    if (
+                        blipFill &&
+                        !directChild(blipFill, DRAWINGML_NAMESPACE, "stretch") &&
+                        !directChild(blipFill, DRAWINGML_NAMESPACE, "tile")
+                    ) {
                         const stretch = dom.createElementNS(DRAWINGML_NAMESPACE, "a:stretch");
                         stretch.appendChild(dom.createElementNS(DRAWINGML_NAMESPACE, "a:fillRect"));
                         blipFill.appendChild(stretch);
@@ -2815,9 +2759,40 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             else if (/^footer\d*\.xml$/i.test(name)) yield f;
         }
     }
+
+    private async tableStyleBordersByStyleId(): Promise<Map<string, BorderSignature>> {
+        const out = new Map<string, BorderSignature>();
+        const stylesPath = this.xmlFiles.find((xmlFile) => baseName(xmlFile) === "styles.xml");
+        if (!stylesPath) return out;
+
+        let dom: Document;
+        try {
+            dom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+        } catch {
+            return out;
+        }
+
+        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+            const styles = dom.getElementsByTagNameNS(ns, "style");
+            for (let i = 0; i < styles.length; i += 1) {
+                const style = styles.item(i);
+                if (!style) continue;
+                if (style.getAttributeNS(ns, "type") !== "table") continue;
+                const styleId = style.getAttributeNS(ns, "styleId");
+                if (!styleId) continue;
+                const tblPr = directChild(style, ns, "tblPr");
+                const signature = borderSignature(tblPr ? directChild(tblPr, ns, "tblBorders") : null, ns);
+                if (signature) out.set(styleId, signature);
+            }
+        }
+        return out;
+    }
 }
 
 // ===== module-level helpers ===================================================
+
+type BorderSide = (typeof TABLE_BORDER_SIDES)[number];
+type BorderSignature = ReadonlyMap<BorderSide, ReadonlyMap<string, string>>;
 
 function finalize(issues: ValidationIssue[]): ValidationResult {
     return { valid: issues.every((i) => i.severity !== "error"), issues };
@@ -2850,6 +2825,66 @@ function directChild(parent: Element, namespaceURI: string, local: string): Elem
         if (elem.namespaceURI === namespaceURI && (elem.localName || elem.tagName.split(":").pop()) === local) return elem;
     }
     return null;
+}
+
+function directChildren(parent: Element, namespaceURI: string, local: string): Element[] {
+    const out: Element[] = [];
+    for (let child = parent.firstChild; child; child = child.nextSibling) {
+        if (child.nodeType !== 1) continue;
+        const elem = child as Element;
+        if (elem.namespaceURI === namespaceURI && (elem.localName || elem.tagName.split(":").pop()) === local) {
+            out.push(elem);
+        }
+    }
+    return out;
+}
+
+function isExternalRelationship(rel: Element, target: string): boolean {
+    if (rel.getAttribute("TargetMode") === "External") return true;
+    return /^[a-z][a-z\d+.-]*:/i.test(target);
+}
+
+function resolveRelationshipTargetPath(unpackedDir: string, relsFile: string, target: string): string | null {
+    const targetWithoutFragment = target.split("#", 1)[0];
+    if (!targetWithoutFragment) return null;
+    if (targetWithoutFragment.startsWith("/")) {
+        return path.resolve(unpackedDir, targetWithoutFragment.replace(/^\/+/, ""));
+    }
+
+    const relsDir = path.dirname(relsFile);
+    const baseDir = path.basename(relsDir) === "_rels" ? path.dirname(relsDir) : relsDir;
+    return path.resolve(baseDir, targetWithoutFragment);
+}
+
+function borderSignature(borders: Element | null, namespaceURI: string): BorderSignature | null {
+    if (!borders) return null;
+    const out = new Map<BorderSide, ReadonlyMap<string, string>>();
+    for (const side of TABLE_BORDER_SIDES) {
+        const sideElem = directChild(borders, namespaceURI, side);
+        if (!sideElem) continue;
+        const attrs = new Map<string, string>();
+        for (const attr of BORDER_COMPARE_ATTRIBUTES) {
+            const value = sideElem.getAttributeNS(namespaceURI, attr);
+            if (value !== null) attrs.set(attr, value);
+        }
+        out.set(side, attrs);
+    }
+    return out.size > 0 ? out : null;
+}
+
+function borderSignaturesEqual(a: BorderSignature, b: BorderSignature): boolean {
+    if (a.size !== b.size) return false;
+    for (const side of TABLE_BORDER_SIDES) {
+        const aAttrs = a.get(side);
+        const bAttrs = b.get(side);
+        if (!aAttrs && !bAttrs) continue;
+        if (!aAttrs || !bAttrs) return false;
+        if (aAttrs.size !== bAttrs.size) return false;
+        for (const [attr, value] of aAttrs) {
+            if (bAttrs.get(attr) !== value) return false;
+        }
+    }
+    return true;
 }
 
 function collectNumericAttributeValues(dom: Document, namespaceURI: string, local: string, attr: string): Set<number> {

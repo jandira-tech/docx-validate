@@ -1905,6 +1905,22 @@ describe("DOCXSchemaValidator", () => {
                 expect(result.valid).toBe(true);
             });
         });
+
+        it("skips external targets and resolves absolute package paths", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "media", "image1.png"), "not really a png");
+                await writeFile(
+                    path.join(dir, "word", "_rels", "document.xml.rels"),
+                    `<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                        `<Relationship Id="rId1" Type="http://..." TargetMode="External" Target="mailto:editor@example.com"/>` +
+                        `<Relationship Id="rId2" Type="http://..." Target="/word/media/image1.png"/>` +
+                        `</Relationships>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateOrphanedRelationships();
+                expect(result.valid).toBe(true);
+            });
+        });
     });
 
     // ----- Plan 02: Font table retention --------------------------------------
@@ -2070,14 +2086,24 @@ describe("DOCXSchemaValidator", () => {
 
         it("passes when no tracked changes exist", async () => {
             await withTempDir(async (dir) => {
-                await writeFile(
-                    path.join(dir, "word", "document.xml"),
-                    wrapDocument(`<w:p><w:r><w:t>hello</w:t></w:r></w:p>`),
-                );
+                await writeFile(path.join(dir, "word", "document.xml"), wrapDocument(`<w:p><w:r><w:t>hello</w:t></w:r></w:p>`));
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const result = await v.validateTrackedChangeIds();
                 expect(result.valid).toBe(true);
                 expect(result.issues.length).toBe(0);
+            });
+        });
+
+        it("does not flag a single tracked-change id as regenerated", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(`<w:p><w:ins w:id="1"><w:r><w:t>a</w:t></w:r></w:ins></w:p>`),
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateTrackedChangeIds();
+                expect(result.valid).toBe(true);
+                expect(result.issues.some((i) => i.code === "tracked-change-ids-regenerated")).toBe(false);
             });
         });
     });
@@ -2087,10 +2113,7 @@ describe("DOCXSchemaValidator", () => {
     describe("validateRedundantCellBorders", () => {
         it("flags cell borders that duplicate table-level defaults as info", async () => {
             await withTempDir(async (dir) => {
-                await writeFile(
-                    path.join(dir, "word", "styles.xml"),
-                    `<?xml version="1.0"?><w:styles ${W_NS}></w:styles>`,
-                );
+                await writeFile(path.join(dir, "word", "styles.xml"), `<?xml version="1.0"?><w:styles ${W_NS}></w:styles>`);
                 await writeFile(
                     path.join(dir, "word", "document.xml"),
                     wrapDocument(
@@ -2119,10 +2142,7 @@ describe("DOCXSchemaValidator", () => {
 
         it("passes when cell borders differ from table defaults", async () => {
             await withTempDir(async (dir) => {
-                await writeFile(
-                    path.join(dir, "word", "styles.xml"),
-                    `<?xml version="1.0"?><w:styles ${W_NS}></w:styles>`,
-                );
+                await writeFile(path.join(dir, "word", "styles.xml"), `<?xml version="1.0"?><w:styles ${W_NS}></w:styles>`);
                 await writeFile(
                     path.join(dir, "word", "document.xml"),
                     wrapDocument(
@@ -2139,6 +2159,32 @@ describe("DOCXSchemaValidator", () => {
                 const result = await v.validateRedundantCellBorders();
                 expect(result.valid).toBe(true);
                 expect(result.issues.some((i) => i.code === "cell-borders-redundant")).toBe(false);
+            });
+        });
+
+        it("detects redundant cell borders inherited from a table style", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "styles.xml"),
+                    `<?xml version="1.0"?><w:styles ${W_NS}>` +
+                        `<w:style w:type="table" w:styleId="GridTable"><w:tblPr><w:tblBorders>` +
+                        `<w:top w:val="single" w:sz="4" w:space="0" w:color="auto"/>` +
+                        `</w:tblBorders></w:tblPr></w:style>` +
+                        `</w:styles>`,
+                );
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:tbl><w:tblPr><w:tblStyle w:val="GridTable"/></w:tblPr>` +
+                            `<w:tblGrid/><w:tr><w:tc><w:tcPr><w:tcBorders>` +
+                            `<w:top w:val="single" w:sz="4" w:space="0" w:color="auto"/>` +
+                            `</w:tcBorders></w:tcPr><w:p/></w:tc></w:tr></w:tbl>`,
+                    ),
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateRedundantCellBorders();
+                expect(result.valid).toBe(true);
+                expect(result.issues.some((i) => i.code === "cell-borders-redundant")).toBe(true);
             });
         });
     });
@@ -2186,6 +2232,22 @@ describe("DOCXSchemaValidator", () => {
                 const result = await v.validateRelationshipIdStability();
                 expect(result.valid).toBe(true);
                 expect(result.issues.length).toBe(0);
+            });
+        });
+
+        it("does not flag rels files that mix non-rId identifiers", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "_rels", "document.xml.rels"),
+                    `<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                        `<Relationship Id="rId1" Type="http://..." Target="document.xml"/>` +
+                        `<Relationship Id="customLink" Type="http://..." Target="settings.xml"/>` +
+                        `</Relationships>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateRelationshipIdStability();
+                expect(result.valid).toBe(true);
+                expect(result.issues.some((i) => i.code === "rel-ids-sequential")).toBe(false);
             });
         });
     });
@@ -2244,21 +2306,39 @@ describe("DOCXSchemaValidator", () => {
 
         it("passes when no docDefaults exist", async () => {
             await withTempDir(async (dir) => {
-                await writeFile(
-                    path.join(dir, "word", "styles.xml"),
-                    `<?xml version="1.0"?><w:styles ${W_NS}></w:styles>`,
-                );
+                await writeFile(path.join(dir, "word", "styles.xml"), `<?xml version="1.0"?><w:styles ${W_NS}></w:styles>`);
                 await writeFile(
                     path.join(dir, "word", "document.xml"),
-                    wrapDocument(
-                        `<w:p><w:r><w:rPr><w:rFonts w:ascii="Inter" w:hAnsi="Inter"/></w:rPr>` +
-                            `<w:t>Hello</w:t></w:r></w:p>`,
-                    ),
+                    wrapDocument(`<w:p><w:r><w:rPr><w:rFonts w:ascii="Inter" w:hAnsi="Inter"/></w:rPr>` + `<w:t>Hello</w:t></w:r></w:p>`),
                 );
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const result = await v.validateRedundantRunProperties();
                 expect(result.valid).toBe(true);
                 expect(result.issues.length).toBe(0);
+            });
+        });
+
+        it("checks header and footer runs, not just document.xml", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "styles.xml"),
+                    `<?xml version="1.0"?><w:styles ${W_NS}>` +
+                        `<w:docDefaults><w:rPrDefault><w:rPr>` +
+                        `<w:rFonts w:ascii="Inter" w:hAnsi="Inter" w:cs="Inter"/>` +
+                        `</w:rPr></w:rPrDefault></w:docDefaults>` +
+                        `</w:styles>`,
+                );
+                await writeFile(
+                    path.join(dir, "word", "header1.xml"),
+                    `<?xml version="1.0"?><w:hdr ${W_NS}>` +
+                        `<w:p><w:r><w:rPr><w:rFonts w:ascii="Inter" w:hAnsi="Inter" w:cs="Inter"/></w:rPr>` +
+                        `<w:t>Header</w:t></w:r></w:p>` +
+                        `</w:hdr>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateRedundantRunProperties();
+                expect(result.valid).toBe(true);
+                expect(result.issues.some((i) => i.code === "run-props-redundant" && i.path === "word/header1.xml")).toBe(true);
             });
         });
     });

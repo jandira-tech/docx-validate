@@ -277,13 +277,15 @@
         "valid": false,
         "errorCodes": [
           "paraid-missing-element",
-          "rels-broken"
+          "rels-broken",
+          "rels-target-missing"
         ]
       },
       "lenient": {
         "valid": false,
         "errorCodes": [
-          "rels-broken"
+          "rels-broken",
+          "rels-target-missing"
         ]
       },
       "word": "clean-open"
@@ -1629,6 +1631,7 @@
           "ct-undeclared-part",
           "paraid-missing-element",
           "rels-broken",
+          "rels-target-missing",
           "xml-bom-leading"
         ]
       },
@@ -1636,7 +1639,8 @@
         "valid": false,
         "errorCodes": [
           "ct-undeclared-part",
-          "rels-broken"
+          "rels-broken",
+          "rels-target-missing"
         ]
       },
       "word": "clean-open"
@@ -2516,13 +2520,15 @@
       "strict": {
         "valid": false,
         "errorCodes": [
-          "rels-broken"
+          "rels-broken",
+          "rels-target-missing"
         ]
       },
       "lenient": {
         "valid": false,
         "errorCodes": [
-          "rels-broken"
+          "rels-broken",
+          "rels-target-missing"
         ]
       },
       "word": "unreadable-content-warning"
@@ -4090,6 +4096,7 @@
         "errorCodes": [
           "paraid-missing-element",
           "rels-broken",
+          "rels-target-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -4098,6 +4105,7 @@
         "valid": false,
         "errorCodes": [
           "rels-broken",
+          "rels-target-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -5100,6 +5108,7 @@
         "valid": false,
         "errorCodes": [
           "rels-broken",
+          "rels-target-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -5108,6 +5117,7 @@
         "valid": false,
         "errorCodes": [
           "rels-broken",
+          "rels-target-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -5127,7 +5137,7 @@
       "word": "clean-open"
     },
     {
-      "relativePath": "working/sample-document.afterword-repaired.docx",
+      "relativePath": "working/sample-document.afterword-repaired-word-repaired.docx",
       "strict": {
         "valid": true,
         "errorCodes": []
@@ -5139,7 +5149,7 @@
       "word": "clean-open"
     },
     {
-      "relativePath": "working/sample-document.our-repaired.docx",
+      "relativePath": "working/sample-document.our-repaired-word-broken.docx",
       "strict": {
         "valid": false,
         "errorCodes": [
@@ -5161,7 +5171,7 @@
       "word": "timeout"
     },
     {
-      "relativePath": "working/sample-document.really-repaired.docx",
+      "relativePath": "working/sample-document.really-repaired-word-repaired.docx",
       "strict": {
         "valid": true,
         "errorCodes": []
@@ -5173,7 +5183,7 @@
       "word": "clean-open"
     },
     {
-      "relativePath": "working/sample-document.word-repair-of-our-output-iter2.docx",
+      "relativePath": "working/sample-document.word-repair-of-our-output-iter2-word-repaired.docx",
       "strict": {
         "valid": true,
         "errorCodes": []
@@ -5185,7 +5195,7 @@
       "word": "clean-open"
     },
     {
-      "relativePath": "working/sample-document.word-repair-of-our-output.docx",
+      "relativePath": "working/sample-document.word-repair-of-our-output-word-repaired.docx",
       "strict": {
         "valid": true,
         "errorCodes": []
