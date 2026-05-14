@@ -30,6 +30,8 @@ import {
 const W_NS = `xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"`;
 const W14_NS = `xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"`;
 const W16CID_NS = `xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid"`;
+const WP_NS = `xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"`;
+const WP14_DRAWING_NS = `xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing"`;
 
 async function writeFile(p: string, content: string): Promise<void> {
     await fs.mkdir(path.dirname(p), { recursive: true });
@@ -976,6 +978,47 @@ describe("DOCXSchemaValidator", () => {
                 expect(after).toContain("<Pages>1</Pages>");
                 expect(after).toContain("<vt:lpstr>Title</vt:lpstr>");
                 expect(after).toContain("<vt:i4>1</vt:i4>");
+            });
+        });
+    });
+
+    describe("drawing scalar whitespace", () => {
+        const drawingBody =
+            `<w:p><w:r><w:drawing><wp:anchor>` +
+            `<wp:positionH><wp:align>center\n  </wp:align></wp:positionH>` +
+            `<wp:positionV><wp:posOffset>0\n  </wp:posOffset></wp:positionV>` +
+            `<wp14:sizeRelH><wp14:pctWidth>40000\n  </wp14:pctWidth></wp14:sizeRelH>` +
+            `<wp14:sizeRelV><wp14:pctHeight>20000\n  </wp14:pctHeight></wp14:sizeRelV>` +
+            `</wp:anchor></w:drawing></w:r><w:r><w:t>Datum plane\n  </w:t></w:r></w:p>`;
+
+        it("treats leading/trailing whitespace in drawing scalar values as word-blocking", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "document.xml"), wrapDocument(drawingBody, `${WP_NS} ${WP14_DRAWING_NS}`));
+
+                const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" });
+                const result = await v.validate();
+                const issues = result.issues.filter((i) => i.code === "word-drawing-scalar-whitespace");
+                expect(issues).toHaveLength(4);
+                expect(issues.every((i) => i.severity === "error")).toBe(true);
+                expect(result.valid).toBe(false);
+            });
+        });
+
+        it("repairs drawing scalar values without trimming user-visible w:t content", async () => {
+            await withTempDir(async (dir) => {
+                const documentXml = path.join(dir, "word", "document.xml");
+                await writeFile(documentXml, wrapDocument(drawingBody, `${WP_NS} ${WP14_DRAWING_NS}`));
+
+                const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" });
+                const repairs = await v.repairDrawingScalarTextWhitespace();
+                expect(repairs).toBe(4);
+
+                const after = await fs.readFile(documentXml, "utf-8");
+                expect(after).toContain("<wp:align>center</wp:align>");
+                expect(after).toContain("<wp:posOffset>0</wp:posOffset>");
+                expect(after).toContain("<wp14:pctWidth>40000</wp14:pctWidth>");
+                expect(after).toContain("<wp14:pctHeight>20000</wp14:pctHeight>");
+                expect(after).toContain("<w:t>Datum plane\n  </w:t>");
             });
         });
     });

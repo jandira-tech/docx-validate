@@ -60,6 +60,15 @@ const W16CID_NAMESPACE = "http://schemas.microsoft.com/office/word/2016/wordml/c
 const MATH_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/math";
 const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types";
 const VML_NAMESPACE = "urn:schemas-microsoft-com:vml";
+const WP_NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
+const WP14_DRAWING_NAMESPACE = "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing";
+
+const WORD_DRAWING_SCALAR_TEXT_ELEMENTS: ReadonlyArray<{ namespace: string; localName: string }> = [
+    { namespace: WP_NAMESPACE, localName: "align" },
+    { namespace: WP_NAMESPACE, localName: "posOffset" },
+    { namespace: WP14_DRAWING_NAMESPACE, localName: "pctWidth" },
+    { namespace: WP14_DRAWING_NAMESPACE, localName: "pctHeight" },
+];
 
 /**
  * Well-known OOXML namespace prefixes Word emits in `mc:Ignorable` and
@@ -311,6 +320,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "id-durable-overflow":
             case "word-math-spre-body":
             case "word-content-type-invalid":
+            case "word-drawing-scalar-whitespace":
                 return true;
             case "xml-syntax":
                 return issue.path?.startsWith("word/") ?? false;
@@ -328,6 +338,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     private async validateWordOpenCompatibility(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
         await this.validateWordContentTypes(issues);
+        await this.validateDrawingScalarTextWhitespace(issues);
         const documentXml = this.xmlFiles.find(
             (xmlFile) => baseName(xmlFile) === "document.xml" && this.relPath(xmlFile).startsWith("word/"),
         );
@@ -396,6 +407,38 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (let i = 0; i < defaults.length; i += 1) {
             const elem = defaults.item(i);
             if (elem) check(elem, "Extension");
+        }
+    }
+
+    private async validateDrawingScalarTextWhitespace(issues: ValidationIssue[]): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            for (const { namespace, localName } of WORD_DRAWING_SCALAR_TEXT_ELEMENTS) {
+                const elems = dom.getElementsByTagNameNS(namespace, localName);
+                for (let i = 0; i < elems.length; i += 1) {
+                    const elem = elems.item(i);
+                    if (!elem) continue;
+                    for (let child = elem.firstChild; child; child = child.nextSibling) {
+                        if (child.nodeType !== 3) continue;
+                        const text = child as Text;
+                        const trimmed = text.data.trim();
+                        if (trimmed === text.data) continue;
+                        issues.push({
+                            severity: "error",
+                            message:
+                                `<${elem.tagName}> contains leading/trailing whitespace around scalar value ` +
+                                `${previewRepr(text.data, 80)}; Microsoft Word refuses this shape in drawing anchors.`,
+                            path: this.relPath(xmlFile),
+                            code: "word-drawing-scalar-whitespace",
+                        });
+                    }
+                }
+            }
         }
     }
 
@@ -1450,6 +1493,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const stampRepairs = await this.repairMissingParaIds();
         const styleRepairs = await this.repairMissingStyleDefinitions();
         const commentThreadingRepairs = await this.repairCommentThreading();
+        const drawingScalarRepairs = await this.repairDrawingScalarTextWhitespace();
         const extendedPropertyRepairs = await this.repairExtendedPropertiesWhitespace();
         const corePropertyRepairs = await this.repairCorePropertiesWhitespace();
         return (
@@ -1460,9 +1504,45 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             stampRepairs +
             styleRepairs +
             commentThreadingRepairs +
+            drawingScalarRepairs +
             extendedPropertyRepairs +
             corePropertyRepairs
         );
+    }
+
+    async repairDrawingScalarTextWhitespace(): Promise<number> {
+        let repairs = 0;
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+
+            let modified = false;
+            for (const { namespace, localName } of WORD_DRAWING_SCALAR_TEXT_ELEMENTS) {
+                const elems = dom.getElementsByTagNameNS(namespace, localName);
+                for (let i = 0; i < elems.length; i += 1) {
+                    const elem = elems.item(i);
+                    if (!elem) continue;
+                    for (let child = elem.firstChild; child; child = child.nextSibling) {
+                        if (child.nodeType !== 3) continue;
+                        const text = child as Text;
+                        const trimmed = text.data.trim();
+                        if (trimmed === text.data) continue;
+                        text.data = trimmed;
+                        repairs += 1;
+                        modified = true;
+                    }
+                }
+            }
+
+            if (modified) {
+                await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+            }
+        }
+        return repairs;
     }
 
     async repairExtendedPropertiesWhitespace(): Promise<number> {
