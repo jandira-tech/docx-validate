@@ -1498,5 +1498,206 @@ describe("DOCXSchemaValidator", () => {
                 expect(result.issues).toHaveLength(0);
             });
         });
+
+        // ----- commentsIds.xml coverage (Issues A–D) -------------------------
+
+        it("flags commentsIds.xml commentId missing w16cid:paraId attribute", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:commentRangeStart w:id="0"/>x<w:commentRangeEnd w:id="0"/>` +
+                            `<w:r><w:commentReference w:id="0"/></w:r></w:p>`,
+                    ),
+                );
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                        `<w:p w14:paraId="11111111"/></w:comment></w:comments>`,
+                );
+                // commentId has no paraId attribute — should trigger missing-paraid
+                await writeFile(
+                    path.join(dir, "word", "commentsIds.xml"),
+                    `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                        `<w16cid:commentId w16cid:durableId="22222222"/>` +
+                        `</w16cid:commentsIds>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateCommentThreading();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "comment-thread-commentid-missing-paraid")).toBe(true);
+            });
+        });
+
+        it("flags commentsIds.xml commentId missing w16cid:durableId attribute", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:commentRangeStart w:id="0"/>x<w:commentRangeEnd w:id="0"/>` +
+                            `<w:r><w:commentReference w:id="0"/></w:r></w:p>`,
+                    ),
+                );
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                        `<w:p w14:paraId="11111111"/></w:comment></w:comments>`,
+                );
+                // commentId has no durableId attribute — should trigger missing-durableid
+                await writeFile(
+                    path.join(dir, "word", "commentsIds.xml"),
+                    `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                        `<w16cid:commentId w16cid:paraId="11111111"/>` +
+                        `</w16cid:commentsIds>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateCommentThreading();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "comment-thread-commentid-missing-durableid")).toBe(true);
+            });
+        });
+
+        it("flags commentsIds.xml with duplicate w16cid:paraId values", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:commentRangeStart w:id="0"/>x<w:commentRangeEnd w:id="0"/>` +
+                            `<w:r><w:commentReference w:id="0"/></w:r></w:p>`,
+                    ),
+                );
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                        `<w:p w14:paraId="11111111"/></w:comment></w:comments>`,
+                );
+                // Two entries share the same paraId
+                await writeFile(
+                    path.join(dir, "word", "commentsIds.xml"),
+                    `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                        `<w16cid:commentId w16cid:paraId="11111111" w16cid:durableId="22222222"/>` +
+                        `<w16cid:commentId w16cid:paraId="11111111" w16cid:durableId="33333333"/>` +
+                        `</w16cid:commentsIds>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateCommentThreading();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "comment-thread-commentid-duplicate-paraid")).toBe(true);
+            });
+        });
+
+        it("flags commentsIds.xml with duplicate w16cid:durableId values", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p>` +
+                            `<w:commentRangeStart w:id="0"/><w:commentRangeStart w:id="1"/>x` +
+                            `<w:commentRangeEnd w:id="0"/><w:commentRangeEnd w:id="1"/>` +
+                            `<w:r><w:commentReference w:id="0"/></w:r>` +
+                            `<w:r><w:commentReference w:id="1"/></w:r>` +
+                            `</w:p>`,
+                    ),
+                );
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                        `<w:p w14:paraId="11111111"/></w:comment>` +
+                        `<w:comment w:id="1" w:author="B" w:date="2026-01-01T00:00:00Z" w:initials="B">` +
+                        `<w:p w14:paraId="22222222"/></w:comment></w:comments>`,
+                );
+                // Two entries share the same durableId
+                await writeFile(
+                    path.join(dir, "word", "commentsIds.xml"),
+                    `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                        `<w16cid:commentId w16cid:paraId="11111111" w16cid:durableId="AABBCCDD"/>` +
+                        `<w16cid:commentId w16cid:paraId="22222222" w16cid:durableId="AABBCCDD"/>` +
+                        `</w16cid:commentsIds>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateCommentThreading();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "comment-thread-commentid-duplicate-durableid")).toBe(true);
+            });
+        });
+
+        // ----- commentsExtensible.xml coverage (Issues E–F) ------------------
+
+        it("flags commentsExtensible.xml commentExtensible missing w16cex:durableId attribute", async () => {
+            const W16CEX_NS = `xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex"`;
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:commentRangeStart w:id="0"/>x<w:commentRangeEnd w:id="0"/>` +
+                            `<w:r><w:commentReference w:id="0"/></w:r></w:p>`,
+                    ),
+                );
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                        `<w:p w14:paraId="11111111"/></w:comment></w:comments>`,
+                );
+                await writeFile(
+                    path.join(dir, "word", "commentsIds.xml"),
+                    `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                        `<w16cid:commentId w16cid:paraId="11111111" w16cid:durableId="22222222"/>` +
+                        `</w16cid:commentsIds>`,
+                );
+                // commentExtensible has no durableId attribute — should trigger durableid-missing
+                await writeFile(
+                    path.join(dir, "word", "commentsExtensible.xml"),
+                    `<?xml version="1.0"?><w16cex:commentsExtensible ${W16CEX_NS}>` +
+                        `<w16cex:commentExtensible/>` +
+                        `</w16cex:commentsExtensible>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateCommentThreading();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "comment-thread-durableid-missing")).toBe(true);
+            });
+        });
+
+        it("flags commentsExtensible.xml with duplicate w16cex:durableId values", async () => {
+            const W16CEX_NS = `xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex"`;
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:commentRangeStart w:id="0"/>x<w:commentRangeEnd w:id="0"/>` +
+                            `<w:r><w:commentReference w:id="0"/></w:r></w:p>`,
+                    ),
+                );
+                await writeFile(
+                    path.join(dir, "word", "comments.xml"),
+                    `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+                        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+                        `<w:p w14:paraId="11111111"/></w:comment></w:comments>`,
+                );
+                await writeFile(
+                    path.join(dir, "word", "commentsIds.xml"),
+                    `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                        `<w16cid:commentId w16cid:paraId="11111111" w16cid:durableId="22222222"/>` +
+                        `</w16cid:commentsIds>`,
+                );
+                // Two entries share the same durableId in commentsExtensible.xml
+                await writeFile(
+                    path.join(dir, "word", "commentsExtensible.xml"),
+                    `<?xml version="1.0"?><w16cex:commentsExtensible ${W16CEX_NS}>` +
+                        `<w16cex:commentExtensible w16cex:durableId="22222222"/>` +
+                        `<w16cex:commentExtensible w16cex:durableId="22222222"/>` +
+                        `</w16cex:commentsExtensible>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateCommentThreading();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "comment-thread-durableid-duplicate")).toBe(true);
+            });
+        });
     });
 });
