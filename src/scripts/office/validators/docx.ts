@@ -41,9 +41,9 @@
  * see `lib/xml-helpers.ts` for the convention.
  */
 
+import { default as JSZip } from "jszip";
 import { promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
-import { default as JSZip } from "jszip";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
 import { makeSelect, parseXml, serializeXml } from "../../../lib/xml-helpers";
@@ -1449,7 +1449,140 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const ignorableRepairs = await this.repairIgnorable();
         const stampRepairs = await this.repairMissingParaIds();
         const styleRepairs = await this.repairMissingStyleDefinitions();
-        return baseRepairs + durableRepairs + paraIdRepairs + ignorableRepairs + stampRepairs + styleRepairs;
+        const commentThreadingRepairs = await this.repairCommentThreading();
+        const corePropertyRepairs = await this.repairCorePropertiesWhitespace();
+        return (
+            baseRepairs +
+            durableRepairs +
+            paraIdRepairs +
+            ignorableRepairs +
+            stampRepairs +
+            styleRepairs +
+            commentThreadingRepairs +
+            corePropertyRepairs
+        );
+    }
+
+    async repairCorePropertiesWhitespace(): Promise<number> {
+        const coreXml = path.join(this.unpackedDir, "docProps", "core.xml");
+        let dom: Document;
+        try {
+            dom = parseXml(await fs.readFile(coreXml, "utf-8"));
+        } catch {
+            return 0;
+        }
+
+        const trimFields = new Set(["lastModifiedBy", "revision", "created", "modified"]);
+        let repairs = 0;
+        const all = dom.getElementsByTagName("*");
+        for (let i = 0; i < all.length; i += 1) {
+            const elem = all.item(i);
+            if (!elem) continue;
+            const localName = elem.localName || elem.tagName.split(":").pop() || elem.tagName;
+            if (!trimFields.has(localName)) continue;
+            for (let child = elem.firstChild; child; child = child.nextSibling) {
+                if (child.nodeType !== 3) continue;
+                const text = child as Text;
+                const trimmed = text.data.trim();
+                if (trimmed === text.data) continue;
+                text.data = trimmed;
+                repairs += 1;
+            }
+        }
+        if (repairs > 0) {
+            await fs.writeFile(coreXml, serializeXml(dom, "UTF-8"), "utf-8");
+        }
+        return repairs;
+    }
+
+    async repairCommentThreading(): Promise<number> {
+        let commentsXml: string | null = null;
+        let commentsIdsXml: string | null = null;
+        let commentsExtensibleXml: string | null = null;
+        for (const xmlFile of this.xmlFiles) {
+            const base = baseName(xmlFile);
+            if (base === "comments.xml") commentsXml = xmlFile;
+            else if (base === "commentsIds.xml") commentsIdsXml = xmlFile;
+            else if (base === "commentsExtensible.xml") commentsExtensibleXml = xmlFile;
+        }
+        if (!commentsXml || !commentsIdsXml) return 0;
+
+        let commentsDom: Document;
+        let idsDom: Document;
+        try {
+            commentsDom = parseXml(await fs.readFile(commentsXml, "utf-8"));
+            idsDom = parseXml(await fs.readFile(commentsIdsXml, "utf-8"));
+        } catch {
+            return 0;
+        }
+
+        const commentParaIds = new Set<string>();
+        for (const wNs of WORD_PARAGRAPH_NAMESPACES) {
+            const comments = commentsDom.getElementsByTagNameNS(wNs, "comment");
+            for (let i = 0; i < comments.length; i += 1) {
+                const comment = comments.item(i);
+                if (!comment) continue;
+                const paragraphs = comment.getElementsByTagNameNS(wNs, "p");
+                for (let j = 0; j < paragraphs.length; j += 1) {
+                    const paragraph = paragraphs.item(j);
+                    const paraId = paragraph?.getAttributeNS(W14_NAMESPACE, "paraId");
+                    if (paraId) commentParaIds.add(paraId);
+                }
+            }
+        }
+
+        let repairs = 0;
+        let idsModified = false;
+        let canonicalDurableId: string | null = null;
+        const commentIds = idsDom.getElementsByTagNameNS(W16CID_NAMESPACE, "commentId");
+        if (commentParaIds.size === 1 && commentIds.length === 1) {
+            const targetParaId = [...commentParaIds][0];
+            canonicalDurableId = targetParaId;
+            const commentId = commentIds.item(0);
+            const currentParaId = commentId?.getAttributeNS(W16CID_NAMESPACE, "paraId");
+            if (commentId && currentParaId && currentParaId !== targetParaId && !commentParaIds.has(currentParaId)) {
+                commentId.setAttributeNS(W16CID_NAMESPACE, "w16cid:paraId", targetParaId);
+                repairs += 1;
+                idsModified = true;
+            }
+            const currentDurableId = commentId?.getAttributeNS(W16CID_NAMESPACE, "durableId");
+            if (commentId && currentDurableId && currentDurableId !== canonicalDurableId) {
+                commentId.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", canonicalDurableId);
+                repairs += 1;
+                idsModified = true;
+            }
+        }
+
+        const durableIds = new Set<string>();
+        for (let i = 0; i < commentIds.length; i += 1) {
+            const commentId = commentIds.item(i);
+            const durableId = commentId?.getAttributeNS(W16CID_NAMESPACE, "durableId");
+            if (durableId) durableIds.add(durableId);
+        }
+
+        if (idsModified) {
+            await fs.writeFile(commentsIdsXml, serializeXml(idsDom, "UTF-8"), "utf-8");
+        }
+
+        if (!commentsExtensibleXml || durableIds.size !== 1) return repairs;
+
+        try {
+            const cexDom = parseXml(await fs.readFile(commentsExtensibleXml, "utf-8"));
+            const entries = cexDom.getElementsByTagNameNS(W16CEX_NAMESPACE, "commentExtensible");
+            if (entries.length !== 1) return repairs;
+            const targetDurableId = [...durableIds][0];
+            const entry = entries.item(0);
+            const currentDurableId = entry?.getAttributeNS(W16CEX_NAMESPACE, "durableId");
+            if (entry && currentDurableId && currentDurableId !== targetDurableId && !durableIds.has(currentDurableId)) {
+                entry.setAttributeNS(W16CEX_NAMESPACE, "w16cex:durableId", targetDurableId);
+                await fs.writeFile(commentsExtensibleXml, serializeXml(cexDom, "UTF-8"), "utf-8");
+                repairs += 1;
+            }
+        } catch {
+            return repairs;
+        }
+
+        return repairs;
     }
 
     /**

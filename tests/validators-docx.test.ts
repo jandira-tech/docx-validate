@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
+import JSZip from "jszip";
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import JSZip from "jszip";
 
 import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
@@ -1270,6 +1270,32 @@ describe("DOCXSchemaValidator", () => {
             });
             const repairedResult = await repaired.validateCommentThreading();
             expect(repairedResult.valid).toBe(true);
+        });
+
+        it("repairs the second-pass Word-warning sample", async () => {
+            const secondPass = path.join(__dirname, "fixtures/word-strict/second-pass");
+            await withTempDir(async (dir) => {
+                const target = path.join(dir, "unpacked-broken");
+                await fs.cp(path.join(secondPass, "unpacked-broken"), target, { recursive: true });
+
+                const v = new DOCXSchemaValidator({ unpackedDir: target, profile: "word-valid" });
+                const repairs = await v.repair();
+                expect(repairs).toBeGreaterThanOrEqual(7);
+
+                const result = await v.validate();
+                expect(result.valid).toBe(true);
+                expect(result.issues.filter((i) => i.severity === "error")).toHaveLength(0);
+
+                const commentsIdsXml = await fs.readFile(path.join(target, "word", "commentsIds.xml"), "utf-8");
+                expect(commentsIdsXml).toContain('w16cid:paraId="456E2E6B"');
+                expect(commentsIdsXml).toContain('w16cid:durableId="456E2E6B"');
+
+                const coreXml = await fs.readFile(path.join(target, "docProps", "core.xml"), "utf-8");
+                expect(coreXml).toContain("<cp:lastModifiedBy>Un-named</cp:lastModifiedBy>");
+                expect(coreXml).toContain("<cp:revision>1</cp:revision>");
+                expect(coreXml).toContain('<dcterms:created xsi:type="dcterms:W3CDTF">2026-03-05T19:36:13.142Z</dcterms:created>');
+                expect(coreXml).toContain('<dcterms:modified xsi:type="dcterms:W3CDTF">2026-05-10T00:07:14.347Z</dcterms:modified>');
+            });
         });
 
         it("flags missing <w15:commentEx> as ERROR in strict profile", async () => {
