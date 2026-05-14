@@ -280,6 +280,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             this.validateStyleDefaults(),
             this.validateNoBom(),
             this.validateNoEmptyRelsParts(),
+            this.validateOrphanedRelationships(),
+            this.validateFontTable(),
+            this.validateLatentStyles(),
+            this.validateTableLook(),
+            this.validateTrackedChangeIds(),
+            this.validateRedundantCellBorders(),
+            this.validateRelationshipIdStability(),
+            this.validateRedundantRunProperties(),
         ];
         if (this.profile === "word-valid") {
             checks.push(this.validateWordOpenCompatibility());
@@ -1438,6 +1446,500 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const root = await this.loadOriginalDocumentRoot();
         if (!root) return false;
         return root.namespaceURI === WORD_STRICT_NAMESPACE;
+    }
+
+    // ----- Plan 01: Whole-file preservation -----------------------------------
+
+    /**
+     * Check every `.rels` file and verify that each internal `<Relationship>`
+     * target resolves to an existing file in the unpacked directory.
+     * External (http/https) targets are skipped.
+     *
+     * Reports `rels-target-missing` (error) when a target file is absent.
+     */
+    async validateOrphanedRelationships(): Promise<ValidationResult> {
+        const issues: ValidationIssue[] = [];
+        for (const xmlFile of this.xmlFiles) {
+            if (!xmlFile.endsWith(".rels")) continue;
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            // OOXML: targets in .rels files under `_rels/` are relative to the
+            // parent of the `_rels/` directory, not to `_rels/` itself.
+            const relsDir = path.dirname(xmlFile);
+            const baseDir = path.basename(relsDir) === "_rels" ? path.dirname(relsDir) : relsDir;
+            const list = dom.getElementsByTagNameNS(
+                "http://schemas.openxmlformats.org/package/2006/relationships",
+                "Relationship",
+            );
+            for (let i = 0; i < list.length; i += 1) {
+                const elem = list.item(i);
+                if (!elem) continue;
+                const target = elem.getAttribute("Target");
+                if (!target) continue;
+                if (target.startsWith("http://") || target.startsWith("https://")) continue;
+                const resolved = path.resolve(baseDir, target);
+                try {
+                    await fs.access(resolved);
+                } catch {
+                    issues.push({
+                        severity: "error",
+                        message: `Relationship target '${target}' resolves to '${this.relPath(resolved)}' which does not exist`,
+                        path: this.relPath(xmlFile),
+                        code: "rels-target-missing",
+                    });
+                }
+            }
+        }
+        return finalize(issues);
+    }
+
+    // ----- Plan 02: Font table retention --------------------------------------
+
+    /**
+     * Check `word/fontTable.xml` for empty `<w:fonts>` (no `<w:font>` children).
+     * An empty font table is XSD-valid but almost always indicates a repairer bug
+     * that discards all font metadata.
+     *
+     * Reports `font-table-empty` at `"warning"` severity.
+     */
+    async validateFontTable(): Promise<ValidationResult> {
+        const issues: ValidationIssue[] = [];
+        let fontTablePath: string | null = null;
+        for (const xmlFile of this.xmlFiles) {
+            if (baseName(xmlFile) === "fontTable.xml") fontTablePath = xmlFile;
+        }
+        if (!fontTablePath) return { valid: true, issues: [] };
+
+        let dom: Document;
+        try {
+            dom = parseXml(await fs.readFile(fontTablePath, "utf-8"));
+        } catch {
+            return { valid: true, issues: [] };
+        }
+        const fontList: Element[] = [];
+        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+            const list = dom.getElementsByTagNameNS(ns, "font");
+            for (let i = 0; i < list.length; i += 1) {
+                const elem = list.item(i);
+                if (elem) fontList.push(elem);
+            }
+        }
+        if (fontList.length === 0) {
+            issues.push({
+                severity: "warning",
+                message:
+                    "word/fontTable.xml contains zero <w:font> entries. " +
+                    "This causes Word to substitute all fonts with its default, " +
+                    "silently changing document appearance.",
+                path: this.relPath(fontTablePath),
+                code: "font-table-empty",
+            });
+        }
+        return finalize(issues);
+    }
+
+    // ----- Plan 03: Style passthrough -----------------------------------------
+
+    /**
+     * Check `word/styles.xml` for the presence of `<w:latentStyles>`.
+     * Missing latent styles is XSD-valid but unusual for Word-generated files.
+     *
+     * Reports `latent-styles-missing` at `"info"` severity.
+     */
+    async validateLatentStyles(): Promise<ValidationResult> {
+        const issues: ValidationIssue[] = [];
+        let stylesPath: string | null = null;
+        for (const xmlFile of this.xmlFiles) {
+            if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
+        }
+        if (!stylesPath) return { valid: true, issues: [] };
+
+        let dom: Document;
+        try {
+            dom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+        } catch {
+            return { valid: true, issues: [] };
+        }
+        let hasLatentStyles = false;
+        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+            if (dom.getElementsByTagNameNS(ns, "latentStyles").length > 0) {
+                hasLatentStyles = true;
+                break;
+            }
+        }
+        if (!hasLatentStyles) {
+            issues.push({
+                severity: "info",
+                message:
+                    "word/styles.xml has no <w:latentStyles> block. " +
+                    "This is unusual for Word-generated files and indicates " +
+                    "the repairer may have regenerated styles from scratch.",
+                path: this.relPath(stylesPath),
+                code: "latent-styles-missing",
+            });
+        }
+        return finalize(issues);
+    }
+
+    // ----- Plan 05: tblLook preservation --------------------------------------
+
+    /**
+     * Check every `<w:tbl>` in `word/document.xml` that references a
+     * `<w:tblStyle>` for the presence of `<w:tblLook>`. Missing `<w:tblLook>`
+     * prevents conditional formatting bands from applying.
+     *
+     * Reports `tbl-look-missing` at `"info"` severity.
+     */
+    async validateTableLook(): Promise<ValidationResult> {
+        const issues: ValidationIssue[] = [];
+        for (const xmlFile of this.documentXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const tbls = dom.getElementsByTagNameNS(ns, "tbl");
+                for (let i = 0; i < tbls.length; i += 1) {
+                    const tbl = tbls.item(i);
+                    if (!tbl) continue;
+                    const tblPrs = tbl.getElementsByTagNameNS(ns, "tblPr");
+                    if (tblPrs.length === 0) continue;
+                    const tblPr = tblPrs.item(0);
+                    if (!tblPr) continue;
+                    const hasTblStyle = tblPr.getElementsByTagNameNS(ns, "tblStyle").length > 0;
+                    if (!hasTblStyle) continue;
+                    const hasTblLook = tblPr.getElementsByTagNameNS(ns, "tblLook").length > 0;
+                    if (!hasTblLook) {
+                        issues.push({
+                            severity: "info",
+                            message:
+                                "<w:tbl> has a <w:tblStyle> reference but no <w:tblLook> in <w:tblPr>. " +
+                                "Conditional formatting bands from the table style will not apply.",
+                            path: this.relPath(xmlFile),
+                            code: "tbl-look-missing",
+                        });
+                    }
+                }
+            }
+        }
+        return finalize(issues);
+    }
+
+    // ----- Plan 06: Tracked-change ID stability --------------------------------
+
+    /**
+     * Check tracked-change elements (`<w:ins>`, `<w:del>`) for sequential `w:id`
+     * values starting from 1. A sequential-from-1 pattern is a strong heuristic
+     * signal that the repairer regenerated IDs rather than preserving originals.
+     *
+     * Reports `tracked-change-ids-regenerated` at `"info"` severity.
+     */
+    async validateTrackedChangeIds(): Promise<ValidationResult> {
+        const issues: ValidationIssue[] = [];
+        for (const xmlFile of this.documentXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            const ids: number[] = [];
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                for (const tag of ["ins", "del"] as const) {
+                    const list = dom.getElementsByTagNameNS(ns, tag);
+                    for (let j = 0; j < list.length; j += 1) {
+                        const elem = list.item(j);
+                        if (!elem) continue;
+                        const id = elem.getAttributeNS(ns, "id");
+                        if (id) {
+                            const v = parseInt(id, 10);
+                            if (!Number.isNaN(v)) ids.push(v);
+                        }
+                    }
+                }
+            }
+            if (ids.length === 0) continue;
+            ids.sort((a, b) => a - b);
+            // Heuristic: if IDs are sequential from 1 with no gaps, likely regenerated.
+            const isSequentialFrom1 = ids.every((id, idx) => id === idx + 1);
+            if (isSequentialFrom1) {
+                issues.push({
+                    severity: "info",
+                    message:
+                        `Tracked-change w:id values (${ids.join(", ")}) appear to be regenerated ` +
+                        "(sequential from 1). This breaks external references to tracked changes.",
+                    path: this.relPath(xmlFile),
+                    code: "tracked-change-ids-regenerated",
+                });
+            }
+        }
+        return finalize(issues);
+    }
+
+    // ----- Plan 07: Cell border normalization ---------------------------------
+
+    /**
+     * Check for cell borders (`<w:tcBorders>`) that duplicate the enclosing
+     * table's `<w:tblBorders>` defaults. Redundant borders override style-level
+     * conditional formatting (e.g. `<w:tblLook>` banded-row suppression).
+     *
+     * Reports `cell-borders-redundant` at `"info"` severity.
+     */
+    async validateRedundantCellBorders(): Promise<ValidationResult> {
+        const issues: ValidationIssue[] = [];
+        for (const xmlFile of this.documentXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const tbls = dom.getElementsByTagNameNS(ns, "tbl");
+                for (let i = 0; i < tbls.length; i += 1) {
+                    const tbl = tbls.item(i);
+                    if (!tbl) continue;
+                    const tblPrs = tbl.getElementsByTagNameNS(ns, "tblPr");
+                    if (tblPrs.length === 0) continue;
+                    const tblPr = tblPrs.item(0);
+                    if (!tblPr) continue;
+                    const tblBordersList = tblPr.getElementsByTagNameNS(ns, "tblBorders");
+                    if (tblBordersList.length === 0) continue;
+                    const tblBorders = tblBordersList.item(0);
+                    if (!tblBorders) continue;
+
+                    // Build map of table-level border sides.
+                    const defaultBorders = new Map<string, string>();
+                    const borderSides = ["top", "left", "bottom", "right", "insideH", "insideV"];
+                    for (const side of borderSides) {
+                        const sideList = tblBorders.getElementsByTagNameNS(ns, side);
+                        if (sideList.length > 0) {
+                            const el = sideList.item(0);
+                            if (el) {
+                                defaultBorders.set(side, el.toString());
+                            }
+                        }
+                    }
+
+                    // Check each cell's tcBorders against table defaults.
+                    const rows = tbl.getElementsByTagNameNS(ns, "tr");
+                    for (let r = 0; r < rows.length; r += 1) {
+                        const row = rows.item(r);
+                        if (!row) continue;
+                        const cells = row.getElementsByTagNameNS(ns, "tc");
+                        for (let c = 0; c < cells.length; c += 1) {
+                            const cell = cells.item(c);
+                            if (!cell) continue;
+                            const tcPrs = cell.getElementsByTagNameNS(ns, "tcPr");
+                            if (tcPrs.length === 0) continue;
+                            const tcPr = tcPrs.item(0);
+                            if (!tcPr) continue;
+                            const tcBordersList = tcPr.getElementsByTagNameNS(ns, "tcBorders");
+                            if (tcBordersList.length === 0) continue;
+                            const tcBorders = tcBordersList.item(0);
+                            if (!tcBorders) continue;
+
+                            // Check if each border side in tcBorders matches tblBorders.
+                            let allRedundant = true;
+                            let hasAnyBorder = false;
+                            for (const side of borderSides) {
+                                const sideList = tcBorders.getElementsByTagNameNS(ns, side);
+                                if (sideList.length === 0) continue;
+                                hasAnyBorder = true;
+                                const tcBorderSide = sideList.item(0);
+                                if (!tcBorderSide) continue;
+                                const defaultSide = defaultBorders.get(side);
+                                if (!defaultSide) {
+                                    allRedundant = false;
+                                    break;
+                                }
+                                // Compare attributes
+                                const tcVal = tcBorderSide.getAttributeNS(ns, "val") ?? "";
+                                const tcSz = tcBorderSide.getAttributeNS(ns, "sz") ?? "";
+                                const tcSpace = tcBorderSide.getAttributeNS(ns, "space") ?? "";
+                                const tcColor = tcBorderSide.getAttributeNS(ns, "color") ?? "";
+                                const defaultEl = tblBorders.getElementsByTagNameNS(ns, side).item(0);
+                                if (!defaultEl) {
+                                    allRedundant = false;
+                                    break;
+                                }
+                                const defVal = defaultEl.getAttributeNS(ns, "val") ?? "";
+                                const defSz = defaultEl.getAttributeNS(ns, "sz") ?? "";
+                                const defSpace = defaultEl.getAttributeNS(ns, "space") ?? "";
+                                const defColor = defaultEl.getAttributeNS(ns, "color") ?? "";
+                                if (tcVal !== defVal || tcSz !== defSz || tcSpace !== defSpace || tcColor !== defColor) {
+                                    allRedundant = false;
+                                    break;
+                                }
+                            }
+                            if (hasAnyBorder && allRedundant) {
+                                issues.push({
+                                    severity: "info",
+                                    message:
+                                        "<w:tcBorders> in table cell duplicates the table-level <w:tblBorders> " +
+                                        "defaults. This overrides style-level conditional formatting.",
+                                    path: this.relPath(xmlFile),
+                                    code: "cell-borders-redundant",
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return finalize(issues);
+    }
+
+    // ----- Plan 08: Relationship ID scheme ------------------------------------
+
+    /**
+     * Check relationship `.rels` files for the `rId1`-`rIdN` sequential pattern.
+     * Sequential IDs are valid but indicate the repairer may have regenerated
+     * relationship IDs rather than preserving the originals.
+     *
+     * Reports `rel-ids-sequential` at `"info"` severity.
+     */
+    async validateRelationshipIdStability(): Promise<ValidationResult> {
+        const issues: ValidationIssue[] = [];
+        for (const xmlFile of this.xmlFiles) {
+            if (!xmlFile.endsWith(".rels")) continue;
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            const relsList = dom.getElementsByTagNameNS(
+                "http://schemas.openxmlformats.org/package/2006/relationships",
+                "Relationship",
+            );
+            const ids: number[] = [];
+            for (let i = 0; i < relsList.length; i += 1) {
+                const elem = relsList.item(i);
+                if (!elem) continue;
+                const id = elem.getAttribute("Id");
+                if (!id) continue;
+                const match = /^rId(\d+)$/.exec(id);
+                if (match) {
+                    ids.push(parseInt(match[1], 10));
+                }
+            }
+            if (ids.length === 0) continue;
+            ids.sort((a, b) => a - b);
+            const isSequential = ids.every((id, idx) => id === idx + 1);
+            if (isSequential) {
+                issues.push({
+                    severity: "info",
+                    message:
+                        `Relationship Id values in ${this.relPath(xmlFile)} are sequential from rId1 ` +
+                        "(likely regenerated by the repairer).",
+                    path: this.relPath(xmlFile),
+                    code: "rel-ids-sequential",
+                });
+            }
+        }
+        return finalize(issues);
+    }
+
+    // ----- Plan 09: Redundant explicit properties -----------------------------
+
+    /**
+     * Check for explicit `<w:rFonts>` on runs that duplicate the document
+     * defaults (`<w:docDefaults>/<w:rPrDefault>/<w:rPr>/<w:rFonts>`).
+     * Redundant explicit properties make the document harder to re-style.
+     *
+     * Reports `run-props-redundant` at `"info"` severity.
+     */
+    async validateRedundantRunProperties(): Promise<ValidationResult> {
+        const issues: ValidationIssue[] = [];
+
+        // Find and parse styles.xml for docDefaults.
+        let stylesPath: string | null = null;
+        for (const xmlFile of this.xmlFiles) {
+            if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
+        }
+        if (!stylesPath) return { valid: true, issues: [] };
+
+        let stylesDom: Document;
+        try {
+            stylesDom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+        } catch {
+            return { valid: true, issues: [] };
+        }
+
+        // Extract default rFonts from docDefaults.
+        let defaultAscii = "";
+        let defaultHAnsi = "";
+        let defaultCs = "";
+        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+            const ddList = stylesDom.getElementsByTagNameNS(ns, "docDefaults");
+            if (ddList.length === 0) continue;
+            const dd = ddList.item(0);
+            if (!dd) continue;
+            const rPrDefaultList = dd.getElementsByTagNameNS(ns, "rPrDefault");
+            if (rPrDefaultList.length === 0) continue;
+            const rPrDefault = rPrDefaultList.item(0);
+            if (!rPrDefault) continue;
+            const rPrList = rPrDefault.getElementsByTagNameNS(ns, "rPr");
+            if (rPrList.length === 0) continue;
+            const rPr = rPrList.item(0);
+            if (!rPr) continue;
+            const rFontsList = rPr.getElementsByTagNameNS(ns, "rFonts");
+            if (rFontsList.length === 0) continue;
+            const rFonts = rFontsList.item(0);
+            if (!rFonts) continue;
+            defaultAscii = rFonts.getAttributeNS(ns, "ascii") ?? "";
+            defaultHAnsi = rFonts.getAttributeNS(ns, "hAnsi") ?? "";
+            defaultCs = rFonts.getAttributeNS(ns, "cs") ?? "";
+            break;
+        }
+
+        if (!defaultAscii && !defaultHAnsi && !defaultCs) return { valid: true, issues: [] };
+
+        // Check every run in document.xml.
+        for (const xmlFile of this.documentXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const runs = dom.getElementsByTagNameNS(ns, "r");
+                for (let i = 0; i < runs.length; i += 1) {
+                    const run = runs.item(i);
+                    if (!run) continue;
+                    const rPrList = run.getElementsByTagNameNS(ns, "rPr");
+                    if (rPrList.length === 0) continue;
+                    const rPr = rPrList.item(0);
+                    if (!rPr) continue;
+                    const rFontsList = rPr.getElementsByTagNameNS(ns, "rFonts");
+                    if (rFontsList.length === 0) continue;
+                    const rFonts = rFontsList.item(0);
+                    if (!rFonts) continue;
+                    const ascii = rFonts.getAttributeNS(ns, "ascii") ?? "";
+                    const hAnsi = rFonts.getAttributeNS(ns, "hAnsi") ?? "";
+                    const cs = rFonts.getAttributeNS(ns, "cs") ?? "";
+                    if (ascii && ascii === defaultAscii && hAnsi === defaultHAnsi && cs === defaultCs) {
+                        issues.push({
+                            severity: "info",
+                            message:
+                                `<w:rFonts w:ascii="${ascii}" w:hAnsi="${hAnsi}" w:cs="${cs}" /> ` +
+                                "on run duplicates <w:docDefaults>; redundant explicit property.",
+                            path: this.relPath(xmlFile),
+                            code: "run-props-redundant",
+                        });
+                    }
+                }
+            }
+        }
+        return finalize(issues);
     }
 
     // ----- repair -------------------------------------------------------------
