@@ -3,6 +3,9 @@ dist
 coverage
 *.log
 .DS_Store
+.kilo
+.qodo
+.june
 # Anchor third-party vendored snapshots to the repo root only — without the
 # leading slash, the patterns would also ignore tests/fixtures/external/docx-templates/.
 /docx-templates

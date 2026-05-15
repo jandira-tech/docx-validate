@@ -12,6 +12,7 @@ export * from "./scripts/office/validate";
 export * from "./scripts/office/helpers/merge-runs";
 export * from "./scripts/office/helpers/simplify-redlines";
 export * from "./scripts/office/validators/base";
+export * from "./scripts/office/validators/docx-diagnostics";
 export * from "./scripts/office/validators/docx";
 export * from "./scripts/office/validators/pptx";
 export * from "./scripts/office/validators/redlining";

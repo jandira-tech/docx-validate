@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-05-11T21:55:05.399Z",
-  "totalFixtures": 350,
+  "generatedAt": "2026-05-14T06:41:55.481Z",
+  "totalFixtures": 364,
   "entries": [
     {
       "relativePath": "broken/comments.unmatched-comment-marker.docx",
@@ -20,7 +20,8 @@
           "comment-orphan-start",
           "comment-thread-count-mismatch"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "broken/empty.missing-content-type.docx",
@@ -34,7 +35,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "broken/endnotes.paraid-overflow.docx",
@@ -52,7 +54,8 @@
         "errorCodes": [
           "id-paraid-overflow"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "broken/footnotes.duplicate-paraid.docx",
@@ -69,7 +72,8 @@
         "errorCodes": [
           "id-paraid-overflow"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "broken/header-with-rid-no-sidecar.docx",
@@ -89,13 +93,16 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "open-error"
     },
     {
       "relativePath": "broken/sample-document.broken-tables.docx",
       "strict": {
         "valid": false,
         "errorCodes": [
+          "comment-thread-commentid-paraid-orphan",
+          "comment-thread-durableid-orphan",
           "id-textid-overflow",
           "paraid-missing-element",
           "style-default-missing",
@@ -106,15 +113,20 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "comment-thread-commentid-paraid-orphan",
+          "comment-thread-durableid-orphan",
           "id-textid-overflow"
         ]
-      }
+      },
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "broken/sample-document.empty-rels.docx",
       "strict": {
         "valid": false,
         "errorCodes": [
+          "comment-thread-commentid-paraid-orphan",
+          "comment-thread-durableid-orphan",
           "id-textid-overflow",
           "paraid-missing-element",
           "rels-empty-part",
@@ -126,9 +138,12 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "comment-thread-commentid-paraid-orphan",
+          "comment-thread-durableid-orphan",
           "id-textid-overflow"
         ]
-      }
+      },
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "broken/sample-document.id-overflow.docx",
@@ -154,13 +169,16 @@
           "id-textid-overflow",
           "ignorable-undeclared"
         ]
-      }
+      },
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "broken/sample-document.missing-paraids.docx",
       "strict": {
         "valid": false,
         "errorCodes": [
+          "comment-thread-commentid-paraid-orphan",
+          "comment-thread-durableid-orphan",
           "id-textid-overflow",
           "paraid-missing-element",
           "style-default-missing",
@@ -171,15 +189,20 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "comment-thread-commentid-paraid-orphan",
+          "comment-thread-durableid-orphan",
           "id-textid-overflow"
         ]
-      }
+      },
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "broken/sample-document.our-pipeline-output-tr-no-textid.docx",
       "strict": {
         "valid": false,
         "errorCodes": [
+          "comment-thread-commentid-paraid-orphan",
+          "comment-thread-durableid-orphan",
           "id-textid-overflow",
           "paraid-missing-element",
           "textid-missing-element"
@@ -188,9 +211,12 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "comment-thread-commentid-paraid-orphan",
+          "comment-thread-durableid-orphan",
           "id-textid-overflow"
         ]
-      }
+      },
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "broken/single-paragraph.malformed-xml.docx",
@@ -205,7 +231,8 @@
         "errorCodes": [
           "xml-syntax"
         ]
-      }
+      },
+      "word": "open-error"
     },
     {
       "relativePath": "broken/tables.missing-namespace.docx",
@@ -220,7 +247,8 @@
         "errorCodes": [
           "xml-syntax"
         ]
-      }
+      },
+      "word": "open-error"
     },
     {
       "relativePath": "broken/text-box.orphan-part.docx",
@@ -240,7 +268,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "broken/tiny-picture.broken-rels.docx",
@@ -248,15 +277,18 @@
         "valid": false,
         "errorCodes": [
           "paraid-missing-element",
-          "rels-broken"
+          "rels-broken",
+          "rels-target-missing"
         ]
       },
       "lenient": {
         "valid": false,
         "errorCodes": [
-          "rels-broken"
+          "rels-broken",
+          "rels-target-missing"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/apache-poi/51921-Word-Crash067.docx",
@@ -274,7 +306,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/apache-poi/MultipleBodyBug.docx",
@@ -293,7 +326,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/apache-poi/bug56075-changeTracking_on.docx",
@@ -307,7 +341,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/apache-poi/bug59378.docx",
@@ -320,7 +355,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/apache-poi/crash-517626e815e0afa9decd0ebb6d1dee63fb9907dd.docx",
@@ -333,7 +369,8 @@
         "valid": false,
         "errorCodes": [],
         "threw": "Corrupted zip: can't find end of central directory"
-      }
+      },
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "external/docx-templates/anchor-empty.docx",
@@ -346,7 +383,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/commandExecutionError.docx",
@@ -357,7 +395,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/confusingCommandNames.docx",
@@ -368,7 +407,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/dynamic-columns-with-dynamic-rows.docx",
@@ -381,7 +421,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/dynamic-columns.docx",
@@ -394,7 +435,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/exec.docx",
@@ -405,7 +447,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/execAndIns.docx",
@@ -416,7 +459,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/execPromise.docx",
@@ -427,7 +471,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/execShorthand.docx",
@@ -438,7 +483,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/execWithContext.docx",
@@ -449,7 +495,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/existingUppercaseJPEGExtension.docx",
@@ -460,7 +507,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/falsy-block.docx",
@@ -471,7 +519,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/fixSmartQuotes.docx",
@@ -484,7 +533,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/for-row1.docx",
@@ -498,7 +548,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/for1.docx",
@@ -512,7 +563,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/for1alias.docx",
@@ -523,7 +575,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/for1customDelimiter.docx",
@@ -537,7 +590,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/for1inline.docx",
@@ -551,7 +605,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/for1inlineWithSpaces.docx",
@@ -565,7 +620,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/for1js.docx",
@@ -576,7 +632,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/for1scalars.docx",
@@ -590,7 +647,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/for2.docx",
@@ -604,7 +662,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/for3.docx",
@@ -618,7 +677,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/forLoopWithTextBox.docx",
@@ -629,7 +689,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/forOverObject.docx",
@@ -640,7 +701,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/forOverObjectKeys.docx",
@@ -651,7 +713,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/forWithIdx.docx",
@@ -664,7 +727,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/htmls.docx",
@@ -677,7 +741,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/if-row1.docx",
@@ -691,7 +756,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/if.docx",
@@ -705,7 +771,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/if2.docx",
@@ -719,7 +786,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/ifInline.docx",
@@ -733,7 +801,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/ifStatementsOnSameLine.docx",
@@ -744,7 +813,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/ifStatementsOnSameRow1.docx",
@@ -755,7 +825,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/ifStatementsOnSameRow2.docx",
@@ -766,7 +837,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/imageBase64.docx",
@@ -777,7 +849,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/imageCaption.docx",
@@ -788,7 +861,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/imageExisting.docx",
@@ -799,7 +873,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/imageExistingMultiple.docx",
@@ -810,7 +885,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/imageHeader.docx",
@@ -821,7 +897,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/imageInShapeInFooter.docx",
@@ -832,7 +909,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/imageMultiDelimiter.docx",
@@ -843,7 +921,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/imageRotation.docx",
@@ -854,7 +933,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/imageSimple.docx",
@@ -865,7 +945,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/imagesSVG.docx",
@@ -876,7 +957,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/insJsComplex.docx",
@@ -887,7 +969,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/insJsSimple.docx",
@@ -898,7 +981,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/insJsWithLoops.docx",
@@ -909,7 +993,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/insOmitted.docx",
@@ -920,7 +1005,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/insShorthand.docx",
@@ -931,7 +1017,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/insertArray.docx",
@@ -942,7 +1029,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/insertInHeaderAndFooter.docx",
@@ -953,7 +1041,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/invalidCommand.docx",
@@ -967,7 +1056,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/invalidFor.docx",
@@ -978,7 +1068,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/invalidForCmd.docx",
@@ -989,7 +1080,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/invalidIf.docx",
@@ -1003,7 +1095,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/invalidMultipleErrors.docx",
@@ -1014,7 +1107,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/link-regression-issue-133.docx",
@@ -1025,7 +1119,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/link-regression-issue-83.docx",
@@ -1038,7 +1133,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/links.docx",
@@ -1049,7 +1145,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/literalXml.docx",
@@ -1063,7 +1160,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/longText.docx",
@@ -1077,7 +1175,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/missingEndFor.docx",
@@ -1088,7 +1187,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/missingEndIf.docx",
@@ -1101,7 +1201,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/nestedInlineForLoopWithSurroundingText.docx",
@@ -1114,7 +1215,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/newlineInVariableIssue143.docx",
@@ -1125,7 +1227,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/noQuery.docx",
@@ -1138,7 +1241,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/noQueryBrackets.docx",
@@ -1149,7 +1253,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/noQuerySimpleInserts.docx",
@@ -1162,7 +1267,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/nonAlphaCommandNames1.docx",
@@ -1173,7 +1279,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/nonAlphaCommandNames2.docx",
@@ -1184,7 +1291,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/objectCommandResultError.docx",
@@ -1195,7 +1303,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/office365.docx",
@@ -1213,7 +1322,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/quickTest.docx",
@@ -1224,7 +1334,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/referenceError.docx",
@@ -1235,7 +1346,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/rejectNullishIMAGE.docx",
@@ -1246,7 +1358,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/rejectNullishINS.docx",
@@ -1257,7 +1370,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/replaceOneImage.docx",
@@ -1268,7 +1382,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/replaceTwoImages.docx",
@@ -1282,7 +1397,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/simpleQuery.docx",
@@ -1295,7 +1411,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/simpleQuerySimpleInserts.docx",
@@ -1308,7 +1425,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/splitDelimiters.docx",
@@ -1322,7 +1440,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/tableWithHTML.docx",
@@ -1333,7 +1452,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/unmatchedEndFor.docx",
@@ -1344,7 +1464,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/unmatchedEndIf.docx",
@@ -1355,7 +1476,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/wbs.docx",
@@ -1366,7 +1488,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx-templates/zipGeneration.docx",
@@ -1383,7 +1506,8 @@
         "errorCodes": [
           "ct-undeclared-ext"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx4j/NumberingImplicitNumId.docx",
@@ -1400,7 +1524,8 @@
         "errorCodes": [
           "rels-broken"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx4j/header-no-rels.docx",
@@ -1413,7 +1538,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/docx4j/hyperlink_dupe.docx",
@@ -1427,7 +1553,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/mammoth-js/strict-format.docx",
@@ -1440,7 +1567,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/mammoth-js/text-box.docx",
@@ -1453,7 +1581,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/open-xml-sdk/5Errors.docx",
@@ -1474,7 +1603,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "external/open-xml-sdk/EmptyRelationshipElement.docx",
@@ -1490,7 +1620,8 @@
         "errorCodes": [
           "rels-empty-element"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/open-xml-sdk/InvalidDocProps.docx",
@@ -1500,6 +1631,7 @@
           "ct-undeclared-part",
           "paraid-missing-element",
           "rels-broken",
+          "rels-target-missing",
           "xml-bom-leading"
         ]
       },
@@ -1507,9 +1639,11 @@
         "valid": false,
         "errorCodes": [
           "ct-undeclared-part",
-          "rels-broken"
+          "rels-broken",
+          "rels-target-missing"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/open-xml-sdk/InvalidDocPropsct.docx",
@@ -1526,7 +1660,8 @@
         "errorCodes": [
           "ct-undeclared-part"
         ]
-      }
+      },
+      "word": "open-error"
     },
     {
       "relativePath": "external/open-xml-sdk/Strict01.docx",
@@ -1537,7 +1672,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/open-xml-sdk/UnknownElement.docx",
@@ -1555,7 +1691,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "open-error"
     },
     {
       "relativePath": "external/open-xml-sdk/mcdoc.docx",
@@ -1574,7 +1711,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/math-all-objects.docx",
@@ -1587,7 +1725,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/math-delimiter-tests.docx",
@@ -1605,7 +1744,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/math-eqarr-tests.docx",
@@ -1624,7 +1764,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/math-func-tests.docx",
@@ -1638,7 +1779,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/math-groupchr-tests.docx",
@@ -1656,7 +1798,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/math-limit-tests.docx",
@@ -1667,7 +1810,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/math-matrix-tests.docx",
@@ -1680,7 +1824,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/math-nary-tests.docx",
@@ -1698,7 +1843,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/math-phantom-tests.docx",
@@ -1709,7 +1855,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/math-radical-tests.docx",
@@ -1720,7 +1867,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/math-spre-tests.docx",
@@ -1731,7 +1879,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "open-error"
     },
     {
       "relativePath": "external/superdoc/behavior/multi-image-types.docx",
@@ -1742,7 +1891,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/pageref-standalone-h.docx",
@@ -1753,7 +1903,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/pageref-standalone-uppercase-h.docx",
@@ -1764,7 +1915,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/rtl-header-footer.docx",
@@ -1781,7 +1933,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/rtl-mixed-bidi.docx",
@@ -1798,7 +1951,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/rtl-page-numpages.docx",
@@ -1809,7 +1963,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/sd-1960-word-replacement-no-comments.docx",
@@ -1820,7 +1975,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/sd-2323-image-resize-test.docx",
@@ -1831,7 +1987,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/sd-2343-table-border-widths.docx",
@@ -1842,7 +1999,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/sd-2447-toc-tab-alignment.docx",
@@ -1853,7 +2011,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/sd-2517-localized-heading-styles.docx",
@@ -1874,7 +2033,8 @@
           "id-textid-overflow",
           "rels-broken"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/sd-2672-gridbefore-vmerge.docx",
@@ -1891,7 +2051,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/sd-2672-merged-table.docx",
@@ -1902,7 +2063,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/sd-2672-multipara-cell.docx",
@@ -1915,7 +2077,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/sd-2672-nested-table.docx",
@@ -1929,7 +2092,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/sd-2672-plain-3x3.docx",
@@ -1940,7 +2104,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/sd-2672-rtl-table.docx",
@@ -1951,7 +2116,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/sd-2672-sdt-table.docx",
@@ -1968,7 +2134,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/sd-2750-borderbox.docx",
@@ -1986,7 +2153,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/sd-2888-hyperlink-with-ampersand.docx",
@@ -1997,7 +2165,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/tiff-image.docx",
@@ -2010,7 +2179,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/two-column-simple.docx",
@@ -2021,7 +2191,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/word-native-bullet-circle.docx",
@@ -2032,7 +2203,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/word-native-bullet-disc.docx",
@@ -2043,7 +2215,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/behavior/word-native-bullet-square.docx",
@@ -2054,7 +2227,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/cli-legacy/replace-test.docx",
@@ -2065,7 +2239,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/cli-legacy/sample.docx",
@@ -2076,7 +2251,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/doc-api-stories/diff-doc1.docx",
@@ -2087,7 +2263,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/doc-api-stories/diff-doc2.docx",
@@ -2098,7 +2275,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/doc-api-stories/numwords.docx",
@@ -2109,7 +2287,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/doc-api-stories/sd-2086-header-row-shading-api.docx",
@@ -2120,7 +2299,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/doc-api-stories/table-style-options-roundtrip.docx",
@@ -2134,33 +2314,36 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/encryption/encrypted-advanced-text.docx",
       "strict": {
         "valid": false,
         "errorCodes": [],
-        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howt"
+        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
       },
       "lenient": {
         "valid": false,
         "errorCodes": [],
-        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howt"
-      }
+        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
+      },
+      "word": "password-required"
     },
     {
       "relativePath": "external/superdoc/encryption/encrypted-hello.docx",
       "strict": {
         "valid": false,
         "errorCodes": [],
-        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howt"
+        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
       },
       "lenient": {
         "valid": false,
         "errorCodes": [],
-        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howt"
-      }
+        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
+      },
+      "word": "unknown-dialog"
     },
     {
       "relativePath": "external/superdoc/evals/basic-list.docx",
@@ -2171,7 +2354,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/evals/blank.docx",
@@ -2182,7 +2366,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/evals/comments-doc.docx",
@@ -2201,7 +2386,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/evals/document.docx",
@@ -2221,7 +2407,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/evals/employment-offer.docx",
@@ -2239,7 +2426,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/evals/lease-agreement.docx",
@@ -2257,7 +2445,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/evals/memorandum.docx",
@@ -2268,7 +2457,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/evals/nda.docx",
@@ -2279,7 +2469,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/evals/report-with-formatting.docx",
@@ -2297,7 +2488,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/evals/table-doc.docx",
@@ -2308,7 +2500,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/layout-engine/shapes/basic-vector-shapes.docx",
@@ -2319,22 +2512,26 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/layout-engine/shapes/vectors.docx",
       "strict": {
         "valid": false,
         "errorCodes": [
-          "rels-broken"
+          "rels-broken",
+          "rels-target-missing"
         ]
       },
       "lenient": {
         "valid": false,
         "errorCodes": [
-          "rels-broken"
+          "rels-broken",
+          "rels-target-missing"
         ]
-      }
+      },
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "external/superdoc/super-editor/Google Docs Originated comments & TCs.docx",
@@ -2353,7 +2550,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/Hello docx world.docx",
@@ -2364,7 +2562,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/SD-978-remove-table-borders.docx",
@@ -2375,7 +2574,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/WordOriginatedComments.docx",
@@ -2386,7 +2586,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/advanced-text.docx",
@@ -2397,7 +2598,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/alternateContent_valid.docx",
@@ -2415,7 +2617,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/anchor_images.docx",
@@ -2426,7 +2629,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/annot2.docx",
@@ -2437,7 +2641,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/annotations_import.docx",
@@ -2457,7 +2662,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "external/superdoc/super-editor/annotations_import_2.docx",
@@ -2472,7 +2678,8 @@
         "errorCodes": [
           "xml-syntax"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/base-custom.docx",
@@ -2483,7 +2690,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/base-ordered.docx",
@@ -2494,7 +2702,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/basic-comment.docx",
@@ -2505,7 +2714,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/basic-footnotes.docx",
@@ -2516,7 +2726,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/basic-list.docx",
@@ -2527,7 +2738,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/basic-page-nums.docx",
@@ -2538,7 +2750,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/basic-paragraph.docx",
@@ -2549,7 +2762,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/basic-resolved-comment.docx",
@@ -2560,7 +2774,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/basic-table-shading.docx",
@@ -2571,7 +2786,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/basic-tracked-change.docx",
@@ -2582,7 +2798,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/blank-doc.docx",
@@ -2593,7 +2810,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/bookmark_use_cases.docx",
@@ -2611,7 +2829,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/broken-complex-list.docx",
@@ -2622,7 +2841,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/broken-list-missing-items.docx",
@@ -2633,7 +2853,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/broken-list.docx",
@@ -2644,7 +2865,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/comment.docx",
@@ -2655,7 +2877,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/complex-list-def-issue.docx",
@@ -2666,7 +2889,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/complex-list-def-short-export.docx",
@@ -2684,7 +2908,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/complex-list-def-short.docx",
@@ -2695,7 +2920,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/complex2.docx",
@@ -2713,7 +2939,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/complexexport1.docx",
@@ -2731,7 +2958,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/contract-acc.docx",
@@ -2742,7 +2970,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/custom-list-numbering1.docx",
@@ -2753,7 +2982,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/custom-list1.docx",
@@ -2764,7 +2994,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_after.docx",
@@ -2775,7 +3006,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_after10.docx",
@@ -2786,7 +3018,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_after11.docx",
@@ -2797,7 +3030,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_after16.docx",
@@ -2808,7 +3042,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_after19.docx",
@@ -2819,7 +3054,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_after2.docx",
@@ -2830,7 +3066,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_after3.docx",
@@ -2841,7 +3078,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_after4.docx",
@@ -2852,7 +3090,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_after5.docx",
@@ -2863,7 +3102,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_after6.docx",
@@ -2874,7 +3114,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_after7.docx",
@@ -2885,7 +3126,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_after8.docx",
@@ -2896,7 +3138,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_after9.docx",
@@ -2907,7 +3150,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_before.docx",
@@ -2918,7 +3162,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_before10.docx",
@@ -2929,7 +3174,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_before11.docx",
@@ -2940,7 +3186,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_before16.docx",
@@ -2951,7 +3198,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_before19.docx",
@@ -2962,7 +3210,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_before2.docx",
@@ -2973,7 +3222,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_before3.docx",
@@ -2984,7 +3234,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_before4.docx",
@@ -2995,7 +3246,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_before5.docx",
@@ -3006,7 +3258,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_before6.docx",
@@ -3017,7 +3270,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_before7.docx",
@@ -3028,7 +3282,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_before8.docx",
@@ -3039,7 +3294,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/diffing/diff_before9.docx",
@@ -3050,7 +3306,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/doc-with-graphs-diagrams-rotated.docx",
@@ -3063,7 +3320,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/doc_with_spaces_from_styles.docx",
@@ -3074,7 +3332,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/doc_with_spacing.docx",
@@ -3085,7 +3344,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/dropcaps.docx",
@@ -3096,7 +3356,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/exported-list-font.docx",
@@ -3107,7 +3368,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/exporttest.docx",
@@ -3125,7 +3387,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/features-redlines-comments-annotations-and-more.docx",
@@ -3147,7 +3410,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/fields-test.docx",
@@ -3158,7 +3422,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/fields_attrs1.docx",
@@ -3176,7 +3441,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/fields_attrs2_fonts.docx",
@@ -3194,7 +3460,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/font-formatting-runs.docx",
@@ -3205,7 +3472,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/gdocs-comments-export.docx",
@@ -3224,7 +3492,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/gdocs-single-comment.docx",
@@ -3243,7 +3512,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/gdocs-tracked-changes.docx",
@@ -3262,7 +3532,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/h_f-normal-odd-even-firstpg.docx",
@@ -3273,7 +3544,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/h_f-normal-odd-even-unchecked-first-pg-unchecked.docx",
@@ -3284,7 +3556,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/h_f-normal-odd-even.docx",
@@ -3295,7 +3568,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/h_f-normal.docx",
@@ -3306,7 +3580,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/header-alternating-odd-even.docx",
@@ -3317,7 +3592,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/heading-font.docx",
@@ -3328,7 +3604,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/hummingbird.docx",
@@ -3339,7 +3616,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/hyperlink-exported.docx",
@@ -3359,7 +3637,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "timeout"
     },
     {
       "relativePath": "external/superdoc/super-editor/hyperlink_multiple_runs.docx",
@@ -3379,7 +3658,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/hyperlink_node.docx",
@@ -3390,7 +3670,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/hyperlink_node_internal.docx",
@@ -3401,7 +3682,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/image-inline-and-block.docx",
@@ -3412,7 +3694,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/image-out-of-folder.docx",
@@ -3433,7 +3716,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/image_doc.docx",
@@ -3444,7 +3728,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/image_p_spacing.docx",
@@ -3455,7 +3740,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/instrtext-angled-brackets-bug.docx",
@@ -3466,7 +3752,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/invalid-list-def-fallback.docx",
@@ -3477,7 +3764,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/invalid-underline.docx",
@@ -3497,7 +3785,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "timeout"
     },
     {
       "relativePath": "external/superdoc/super-editor/line-break.docx",
@@ -3508,7 +3797,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/line_space_table.docx",
@@ -3519,7 +3809,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/list-def-mix.docx",
@@ -3530,7 +3821,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/list-numbering-reimport.docx",
@@ -3548,7 +3840,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/list-spacer1.docx",
@@ -3559,7 +3852,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/list-with-break-exported-broken.docx",
@@ -3577,7 +3871,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/list-with-break-from-word.docx",
@@ -3588,7 +3883,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/list-with-table-break.docx",
@@ -3599,7 +3895,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/listWithSpacerNodes.docx",
@@ -3610,7 +3907,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/list_with_indents.docx",
@@ -3621,7 +3919,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/lists-sub-paragraph.docx",
@@ -3632,7 +3931,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/longer-header-sign-area.docx",
@@ -3643,7 +3943,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/missing-sectpr.docx",
@@ -3657,7 +3958,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/missing-separator.docx",
@@ -3668,7 +3970,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/msword-tracked-changes.docx",
@@ -3679,7 +3982,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/multi_section_doc.docx",
@@ -3690,7 +3994,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/multiple-nodes-in-list.docx",
@@ -3701,7 +4006,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/nested-comments-gdocs.docx",
@@ -3720,7 +4026,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/nested-comments.docx",
@@ -3736,7 +4043,8 @@
         "errorCodes": [
           "ws-missing-preserve"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/numwords.docx",
@@ -3747,7 +4055,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/ooxml-bold-rstyle-linked-combos-demo.docx",
@@ -3765,7 +4074,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/ooxml-bold-vals-demo.docx",
@@ -3776,7 +4086,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/ooxml-color-rstyle-linked-combos-demo.docx",
@@ -3785,6 +4096,7 @@
         "errorCodes": [
           "paraid-missing-element",
           "rels-broken",
+          "rels-target-missing",
           "xsd-error",
           "xsd-summary"
         ]
@@ -3793,10 +4105,12 @@
         "valid": false,
         "errorCodes": [
           "rels-broken",
+          "rels-target-missing",
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/ooxml-highlight-rstyle-linked-combos-demo.docx",
@@ -3814,7 +4128,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/ooxml-italic-rstyle-combos-demo.docx",
@@ -3825,7 +4140,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/ooxml-rFonts-rstyle-linked-combos-demo.docx",
@@ -3843,7 +4159,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/ooxml-size-rstyle-linked-combos-demo.docx",
@@ -3861,7 +4178,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/ooxml-strike-rstyle-linked-combos-demo.docx",
@@ -3879,7 +4197,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/ooxml-underline-rstyle-linked-combos-demo.docx",
@@ -3897,7 +4216,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/orderedlist_interrupted1.docx",
@@ -3908,7 +4228,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/page-numbering-examples.docx",
@@ -3926,7 +4247,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/pagination-blank.docx",
@@ -3945,7 +4267,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/pagination-with-hard-break.docx",
@@ -3958,7 +4281,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/paragraph-sectpr-breaks.docx",
@@ -3980,7 +4304,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "timeout"
     },
     {
       "relativePath": "external/superdoc/super-editor/paragraph_indent_normal_styles.docx",
@@ -3997,7 +4322,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/paragraph_pPr_variations.docx",
@@ -4015,7 +4341,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/paragraph_spacing_missing.docx",
@@ -4026,7 +4353,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/pci-table.docx",
@@ -4037,7 +4365,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/pre-separated-list.docx",
@@ -4056,7 +4385,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/python_docx_comment_test.docx",
@@ -4075,7 +4405,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/restart-numbering-sub-list.docx",
@@ -4086,7 +4417,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/sd-1480-two-col-index.docx",
@@ -4097,7 +4429,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/sd-1480-two-col-tab-positions.docx",
@@ -4108,7 +4441,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/sd-1494-table-left-indent.docx",
@@ -4119,7 +4453,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/sd-1495-auto-page-break-2.docx",
@@ -4130,7 +4465,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/sd-1495-auto-page-break.docx",
@@ -4141,7 +4477,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/sd-1707-list-enter-track-changes-with-br.docx",
@@ -4160,7 +4497,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/sd-1919-word-mixed.docx",
@@ -4171,7 +4509,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/sd-1919-word-simple.docx",
@@ -4182,7 +4521,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/sd-1919-word-table.docx",
@@ -4193,7 +4533,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/sd-2534-collab-export.docx",
@@ -4208,7 +4549,8 @@
         "errorCodes": [
           "rels-broken"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/sd-2766-pirates-tracked-changes.docx",
@@ -4219,7 +4561,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/sd_1494_table_left_indent.docx",
@@ -4230,7 +4573,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/sdpr-titleonly.docx",
@@ -4241,7 +4585,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/sdpr.docx",
@@ -4252,7 +4597,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/sdt-node-comment.docx",
@@ -4263,7 +4609,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/sdt_test.docx",
@@ -4274,7 +4621,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/sdts-basic.docx",
@@ -4285,7 +4633,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/shape_group.docx",
@@ -4299,7 +4648,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/simple-ordered-list.docx",
@@ -4310,7 +4660,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/sublist-issue.docx",
@@ -4321,7 +4672,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/super-basic-table.docx",
@@ -4332,7 +4684,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/superdoc-hyperlink-cases.docx",
@@ -4355,7 +4708,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/superdoc_table_tester.docx",
@@ -4366,7 +4720,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/tab-alignment-test.docx",
@@ -4380,7 +4735,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/tab_test.docx",
@@ -4398,7 +4754,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/table-autofit-colspan.docx",
@@ -4409,7 +4766,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/table-merged-cells.docx",
@@ -4420,7 +4778,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/table-width-issue.docx",
@@ -4431,7 +4790,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/table-widths-SD-732.docx",
@@ -4442,7 +4802,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/table.docx",
@@ -4453,7 +4814,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/text-color-highlight.docx",
@@ -4464,7 +4826,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/threaded-comment.docx",
@@ -4475,7 +4838,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/two_column_two_page-arial.docx",
@@ -4486,7 +4850,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/two_column_two_page.docx",
@@ -4497,7 +4862,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/vrect-node.docx",
@@ -4517,7 +4883,8 @@
           "xsd-error",
           "xsd-summary"
         ]
-      }
+      },
+      "word": "clean-open"
     },
     {
       "relativePath": "external/superdoc/super-editor/wmf-emf.docx",
@@ -4528,7 +4895,234 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
+    },
+    {
+      "relativePath": "unknown/unknown/comments.unmatched-comment-marker.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "comment-marker-missing",
+          "comment-orphan-start",
+          "comment-thread-count-mismatch",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "comment-marker-missing",
+          "comment-orphan-start",
+          "comment-thread-count-mismatch",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "timeout"
+    },
+    {
+      "relativePath": "unknown/unknown/empty.missing-content-type.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "clean-open"
+    },
+    {
+      "relativePath": "unknown/unknown/endnotes.paraid-overflow.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "clean-open"
+    },
+    {
+      "relativePath": "unknown/unknown/footnotes.duplicate-paraid.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "timeout"
+    },
+    {
+      "relativePath": "unknown/unknown/header-with-rid-no-sidecar.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "timeout"
+    },
+    {
+      "relativePath": "unknown/unknown/sample-document.broken-tables.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "clean-open"
+    },
+    {
+      "relativePath": "unknown/unknown/sample-document.empty-rels.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "clean-open"
+    },
+    {
+      "relativePath": "unknown/unknown/sample-document.id-overflow.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "clean-open"
+    },
+    {
+      "relativePath": "unknown/unknown/sample-document.missing-paraids.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "clean-open"
+    },
+    {
+      "relativePath": "unknown/unknown/sample-document.our-pipeline-output-tr-no-textid.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "clean-open"
+    },
+    {
+      "relativePath": "unknown/unknown/single-paragraph.malformed-xml.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "clean-open"
+    },
+    {
+      "relativePath": "unknown/unknown/tables.missing-namespace.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "clean-open"
+    },
+    {
+      "relativePath": "unknown/unknown/text-box.orphan-part.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "rels-unreferenced",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "rels-unreferenced",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "timeout"
+    },
+    {
+      "relativePath": "unknown/unknown/tiny-picture.broken-rels.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "rels-broken",
+          "rels-target-missing",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "rels-broken",
+          "rels-target-missing",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "timeout"
     },
     {
       "relativePath": "vfdsdfcACawesd.docx",
@@ -4539,10 +5133,11 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
-      "relativePath": "working/sample-document.afterword-repaired.docx",
+      "relativePath": "working/sample-document.afterword-repaired-word-repaired.docx",
       "strict": {
         "valid": true,
         "errorCodes": []
@@ -4550,13 +5145,16 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
-      "relativePath": "working/sample-document.our-repaired.docx",
+      "relativePath": "working/sample-document.our-repaired-word-broken.docx",
       "strict": {
         "valid": false,
         "errorCodes": [
+          "comment-thread-commentid-paraid-orphan",
+          "comment-thread-durableid-orphan",
           "id-textid-overflow",
           "paraid-missing-element",
           "textid-missing-element"
@@ -4565,12 +5163,15 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "comment-thread-commentid-paraid-orphan",
+          "comment-thread-durableid-orphan",
           "id-textid-overflow"
         ]
-      }
+      },
+      "word": "timeout"
     },
     {
-      "relativePath": "working/sample-document.really-repaired.docx",
+      "relativePath": "working/sample-document.really-repaired-word-repaired.docx",
       "strict": {
         "valid": true,
         "errorCodes": []
@@ -4578,10 +5179,11 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
-      "relativePath": "working/sample-document.word-repair-of-our-output-iter2.docx",
+      "relativePath": "working/sample-document.word-repair-of-our-output-iter2-word-repaired.docx",
       "strict": {
         "valid": true,
         "errorCodes": []
@@ -4589,10 +5191,11 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     },
     {
-      "relativePath": "working/sample-document.word-repair-of-our-output.docx",
+      "relativePath": "working/sample-document.word-repair-of-our-output-word-repaired.docx",
       "strict": {
         "valid": true,
         "errorCodes": []
@@ -4600,7 +5203,8 @@
       "lenient": {
         "valid": true,
         "errorCodes": []
-      }
+      },
+      "word": "clean-open"
     }
   ]
 }

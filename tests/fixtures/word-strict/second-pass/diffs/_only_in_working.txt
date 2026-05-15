@@ -1,0 +1,4 @@
+Files only in WORKING:
+word/endnotes.xml
+word/theme/theme1.xml
+word/webSettings.xml

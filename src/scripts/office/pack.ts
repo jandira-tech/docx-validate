@@ -105,18 +105,27 @@ export async function pack(inputDirectory: string, outputFile: string, opts: Pac
 
     let validationLog: string | undefined;
 
-    if (validate && original) {
-        const originalPath = path.resolve(original);
-        // Fail fast when the caller asked for validation against `original` but
-        // the path is missing/unreadable. Silently skipping validation here
-        // would mask operator error.
-        try {
-            await fs.access(originalPath);
-        } catch {
-            return {
-                ok: false,
-                message: `Error: original file not found: ${original}`,
-            };
+    if (validate) {
+        let originalPath: string | undefined;
+        if (original) {
+            originalPath = path.resolve(original);
+            // Fail fast when the caller asked for validation against `original` but
+            // the path is missing/unreadable. Silently skipping validation here
+            // would mask operator error.
+            try {
+                const originalStat = await fs.stat(originalPath);
+                if (!originalStat.isFile()) {
+                    return {
+                        ok: false,
+                        message: `Error: original file not found: ${original}`,
+                    };
+                }
+            } catch {
+                return {
+                    ok: false,
+                    message: `Error: original file not found: ${original}`,
+                };
+            }
         }
         const { success, log } = await runValidation(inputDir, originalPath, suffix, inferAuthorFunc, opts.author);
         if (log) {
@@ -170,7 +179,7 @@ interface ValidatorRunner {
 
 async function runValidation(
     unpackedDir: string,
-    originalFile: string,
+    originalFile: string | undefined,
     suffix: string,
     inferAuthorFunc?: PackOptions["inferAuthorFunc"],
     explicitAuthor?: string,
@@ -179,28 +188,32 @@ async function runValidation(
     const validators: ValidatorRunner[] = [];
 
     if (suffix === ".docx") {
-        let author: string;
-        try {
-            const fn = inferAuthorFunc ?? ((dir, orig) => inferAuthor(dir, orig, explicitAuthor ?? ""));
-            author = await fn(unpackedDir, originalFile);
-            if (!author) {
-                throw new Error("Could not infer author and `author` was not provided.");
-            }
-        } catch (err) {
-            const message = err instanceof Error ? err.message : String(err);
-            process.stderr.write(`Error: ${message}\n`);
-            return { success: false, log: lines.join("\n") };
-        }
-
         const docx = new DOCXSchemaValidator({ unpackedDir, originalFile });
         validators.push({
             repair: () => docx.repair(),
             runChecks: () => docx.validate(),
         });
-        validators.push({
-            repair: async () => 0,
-            runChecks: () => validateRedlining({ unpackedDir, originalDocx: originalFile, author }),
-        });
+
+        // Only run redlining validation and author inference when originalFile is provided
+        if (originalFile) {
+            let author: string;
+            try {
+                const fn = inferAuthorFunc ?? ((dir, orig) => inferAuthor(dir, orig, explicitAuthor ?? ""));
+                author = await fn(unpackedDir, originalFile);
+                if (!author) {
+                    throw new Error("Could not infer author and `author` was not provided.");
+                }
+            } catch (err) {
+                const message = err instanceof Error ? err.message : String(err);
+                process.stderr.write(`Error: ${message}\n`);
+                return { success: false, log: lines.join("\n") };
+            }
+
+            validators.push({
+                repair: async () => 0,
+                runChecks: () => validateRedlining({ unpackedDir, originalDocx: originalFile, author }),
+            });
+        }
     } else if (suffix === ".pptx") {
         const pptx = new PPTXSchemaValidator({ unpackedDir, originalFile });
         validators.push({

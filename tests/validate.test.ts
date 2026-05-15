@@ -26,6 +26,7 @@ import { runValidateFromArgv, validate } from "../src/scripts/office/validate";
 import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
+const FIXTURES = path.join(HERE, "fixtures");
 const BROKEN_DIR = path.join(HERE, "fixtures", "broken");
 
 const W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
@@ -95,6 +96,40 @@ describe("validate", () => {
         expect(result.issues.some((i) => i.severity === "error" && i.code === "id-paraid-overflow")).toBe(true);
     });
 
+    it("word-valid profile downgrades Word-tolerated paraId overflow", async () => {
+        const docxPath = path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx");
+        const result = await validate(docxPath, { profile: "word-valid" });
+        expect(result.valid).toBe(true);
+        expect(result.issues.some((i) => i.severity === "warning" && i.code === "id-paraid-overflow")).toBe(true);
+    });
+
+    it("word-valid profile keeps commentsIds/commentsExtensible mismatches fatal", async () => {
+        const docxPath = path.join(BROKEN_DIR, "sample-document.broken-tables.docx");
+        const result = await validate(docxPath, { profile: "word-valid" });
+        expect(result.valid).toBe(false);
+        expect(result.issues.some((i) => i.severity === "error" && i.code === "comment-thread-commentid-paraid-orphan")).toBe(true);
+        expect(result.issues.some((i) => i.severity === "error" && i.code === "comment-thread-durableid-orphan")).toBe(true);
+    });
+
+    it("word-valid profile flags body-level m:oMathPara with m:sPre", async () => {
+        const docxPath = path.join(FIXTURES, "external", "superdoc", "behavior", "math-spre-tests.docx");
+        const lenient = await validate(docxPath, { profile: "lenient" });
+        const wordValid = await validate(docxPath, { profile: "word-valid" });
+        expect(lenient.valid).toBe(true);
+        expect(wordValid.valid).toBe(false);
+        expect(wordValid.issues.some((i) => i.severity === "error" && i.code === "word-math-spre-body")).toBe(true);
+    });
+
+    it("word-valid profile flags invalid content types that Word refuses", async () => {
+        const bad = path.join(FIXTURES, "external", "open-xml-sdk", "InvalidDocPropsct.docx");
+        const tolerated = path.join(FIXTURES, "external", "open-xml-sdk", "InvalidDocProps.docx");
+        const badResult = await validate(bad, { profile: "word-valid" });
+        const toleratedResult = await validate(tolerated, { profile: "word-valid" });
+        expect(badResult.valid).toBe(false);
+        expect(badResult.issues.some((i) => i.severity === "error" && i.code === "word-content-type-invalid")).toBe(true);
+        expect(toleratedResult.valid).toBe(true);
+    });
+
     it("auto-repairs missing xml:space='preserve' when --auto-repair is set", async () => {
         await withTempDir(async (tmp) => {
             const unpacked = path.join(tmp, "unpacked");
@@ -135,6 +170,12 @@ describe("validate", () => {
             expect(after.repairs).toBeGreaterThanOrEqual(1);
             const wsAfter = after.issues.filter((i) => i.code === "ws-missing-preserve");
             expect(wsAfter.length).toBe(0);
+            expect(
+                after.issues.some(
+                    (i) => i.code === "repair-plan" && i.path === "word/document.xml" && i.message.includes("add xml:space='preserve'"),
+                ),
+            ).toBe(true);
+            expect(after.issues.some((i) => i.code === "repair-content-preserved")).toBe(true);
 
             // Sanity-check the on-disk file actually got the attribute added.
             const docXml = await fs.readFile(path.join(unpacked, "word", "document.xml"), "utf8");
@@ -228,11 +269,117 @@ describe("xlsx unsupported file type", () => {
     });
 });
 
+describe("word-valid profile — applyWordValidProfile coverage", () => {
+    it("downgrades ws-missing-preserve errors to warnings under word-valid profile (Issue H)", async () => {
+        // A <w:t> with leading whitespace and no xml:space="preserve" triggers
+        // ws-missing-preserve as an error in all profiles. Under word-valid the
+        // error should be downgraded to a warning because it is not Word-blocking.
+        await withTempDir(async (dir) => {
+            const unpacked = path.join(dir, "unpacked");
+            await writeMinimalDocxDir(unpacked, "<w:body><w:p><w:r><w:t> hello</w:t></w:r></w:p></w:body>");
+            const result = await validate(unpacked, {
+                profile: "word-valid",
+                original: path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx"),
+                author: "Test",
+            });
+            expect(result.valid).toBe(true);
+            const wsIssue = result.issues.find((i) => i.code === "ws-missing-preserve");
+            expect(wsIssue).toBeDefined();
+            expect(wsIssue?.severity).toBe("warning");
+        });
+    });
+
+    it("flags Default element with invalid- ContentType under word-valid profile (Issue J)", async () => {
+        // validateWordContentTypes checks both Override and Default elements.
+        // The existing fixture test covers Override; this covers Default.
+        await withTempDir(async (dir) => {
+            const unpacked = path.join(dir, "unpacked");
+            await writeMinimalDocxDir(unpacked, "<w:body><w:p/></w:body>");
+            // Overwrite [Content_Types].xml to add a Default with invalid- ContentType
+            await fs.writeFile(
+                path.join(unpacked, "[Content_Types].xml"),
+                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+                    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+                    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+                    '<Default Extension="json" ContentType="invalid-application/json"/>' +
+                    '<Default Extension="xml" ContentType="application/xml"/>' +
+                    '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+                    "</Types>",
+                "utf8",
+            );
+            const result = await validate(unpacked, {
+                profile: "word-valid",
+                original: path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx"),
+                author: "Test",
+            });
+            expect(result.valid).toBe(false);
+            expect(result.issues.some((i) => i.severity === "error" && i.code === "word-content-type-invalid")).toBe(true);
+        });
+    });
+
+    it("keeps rels-broken error for ../customXml/ targets under word-valid profile (Issue K)", async () => {
+        // rels-broken referencing ../customXml/ is Word-blocking (custom XML parts
+        // cause Word to refuse the file), so it must stay as an error under word-valid.
+        await withTempDir(async (dir) => {
+            const unpacked = path.join(dir, "unpacked");
+            await writeMinimalDocxDir(unpacked, "<w:body><w:p/></w:body>");
+            // Create a word/_rels/document.xml.rels that points to a missing customXml part
+            await fs.mkdir(path.join(unpacked, "word", "_rels"), { recursive: true });
+            await fs.writeFile(
+                path.join(unpacked, "word", "_rels", "document.xml.rels"),
+                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+                    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+                    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml" Target="../customXml/item1.xml"/>' +
+                    "</Relationships>",
+                "utf8",
+            );
+            const result = await validate(unpacked, {
+                profile: "word-valid",
+                original: path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx"),
+                author: "Test",
+            });
+            // The rels-broken issue for ../customXml/ must remain an error, not be downgraded.
+            const relsIssue = result.issues.find((i) => i.code === "rels-broken" && i.message.includes("../customXml/"));
+            expect(relsIssue).toBeDefined();
+            expect(relsIssue?.severity).toBe("error");
+        });
+    });
+
+    it("keeps rels-empty-element error for missing required attributes under word-valid profile (Issue L)", async () => {
+        // A <Relationship> missing a required attribute (Id, Type, or Target) is Word-blocking
+        // and must remain an error under word-valid — only the non-self-closing variant
+        // (body content) is downgraded to a warning.
+        await withTempDir(async (dir) => {
+            const unpacked = path.join(dir, "unpacked");
+            await writeMinimalDocxDir(unpacked, "<w:body><w:p/></w:body>");
+            await fs.mkdir(path.join(unpacked, "word", "_rels"), { recursive: true });
+            // Relationship is missing the required Id attribute
+            await fs.writeFile(
+                path.join(unpacked, "word", "_rels", "document.xml.rels"),
+                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+                    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+                    '<Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
+                    "</Relationships>",
+                "utf8",
+            );
+            const result = await validate(unpacked, {
+                profile: "word-valid",
+                original: path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx"),
+                author: "Test",
+            });
+            const emptyElemIssue = result.issues.find(
+                (i) => i.code === "rels-empty-element" && i.message.includes("missing required attribute"),
+            );
+            expect(emptyElemIssue).toBeDefined();
+            expect(emptyElemIssue?.severity).toBe("error");
+        });
+    });
+});
+
 describe("validate startup probe", () => {
     it("BaseSchemaValidator.assertLibxmljsAvailable() does not throw on this host", () => {
         // The CLI calls this at the top of `runValidateFromArgv` so a broken libxmljs2
         // binding fails loudly instead of degrading into per-file XSD errors.
         expect(() => BaseSchemaValidator.assertLibxmljsAvailable()).not.toThrow();
     });
-
 });
