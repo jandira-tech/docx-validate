@@ -47,7 +47,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { Command } from "commander";
-import { runCli } from "../lib/run-cli";
+import { commanderExitCode, runCli } from "../lib/run-cli";
 import { parseXml, serializeXml } from "../lib/xml-helpers";
 
 const TEMPLATE_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "templates");
@@ -110,6 +110,15 @@ function encodeSmartQuotes(text: string): string {
         out = out.split(char).join(entity);
     }
     return out;
+}
+
+function escapeXml(text: string): string {
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&apos;");
 }
 
 function formatTemplate(tpl: string, vars: Record<string, string | number>): string {
@@ -373,9 +382,9 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
         "w:comments",
         formatTemplate(COMMENT_XML, {
             id: commentId,
-            author,
+            author: escapeXml(author),
             date: ts,
-            initials,
+            initials: escapeXml(initials),
             para_id: paraId,
             text,
         }),
@@ -454,7 +463,11 @@ interface CliOptions {
 export async function runCommentFromArgv(argv: readonly string[]): Promise<number> {
     const cmd = buildCommentCommand();
     cmd.exitOverride();
-    cmd.parse(argv as string[], { from: "user" });
+    try {
+        cmd.parse(argv as string[], { from: "user" });
+    } catch (err) {
+        return commanderExitCode(err);
+    }
     const opts = cmd.opts<CliOptions>();
     const [unpackedDir, commentIdRaw, text] = cmd.args;
 

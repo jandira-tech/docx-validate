@@ -93,7 +93,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         await assertIsFile(original, `Error: ${original} is not a file`);
         const ext = path.extname(original).toLowerCase();
         if (!SUPPORTED_SUFFIXES.has(ext)) {
-            throw new Error(`Error: ${original} must be a .docx, .pptx, or .xlsx file`);
+            throw new Error(`Error: ${original} must be a .docx, .docm, .pptx, or .xlsx file`);
         }
         originalFile = path.resolve(original);
     }
@@ -101,7 +101,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     const dispatchSuffix = path.extname(originalFile ?? target).toLowerCase();
 
     if (!SUPPORTED_SUFFIXES.has(dispatchSuffix)) {
-        throw new Error(`Error: Cannot determine file type from ${target}. Use --original or provide a .docx/.pptx/.xlsx file.`);
+        throw new Error(`Error: Cannot determine file type from ${target}. Use --original or provide a .docx/.docm/.pptx/.xlsx file.`);
     }
 
     const targetStat = await fs.stat(target);
@@ -156,7 +156,7 @@ interface RunValidatorsOptions {
 async function runValidators(unpackedDir: string, opts: RunValidatorsOptions): Promise<ValidationResult & { repairs: number }> {
     const validators: ValidatorRunner[] = [];
 
-    if (opts.suffix === ".docx") {
+    if (opts.suffix === ".docx" || opts.suffix === ".docm") {
         const docx = new DOCXSchemaValidator({
             unpackedDir,
             originalFile: opts.originalFile ?? undefined,
@@ -291,10 +291,10 @@ export function buildValidateCommand(): Command {
     const cmd = new Command();
     cmd.name("validate")
         .description("Validate Office document XML files against XSD schemas and tracked changes")
-        .argument("<path>", "Path to unpacked directory or packed Office file (.docx/.pptx/.xlsx)")
+        .argument("<path>", "Path to unpacked directory or packed Office file (.docx/.docm/.pptx/.xlsx)")
         .option(
             "--original <file>",
-            "Path to original file (.docx/.pptx/.xlsx). If omitted, all XSD errors are reported and redlining validation is skipped.",
+            "Path to original file (.docx/.docm/.pptx/.xlsx). If omitted, all XSD errors are reported and redlining validation is skipped.",
         )
         .option("-v, --verbose", "Enable verbose output", false)
         .option("--auto-repair", "Automatically repair common issues (hex IDs, whitespace preservation)", false)

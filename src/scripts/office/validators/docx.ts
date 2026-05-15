@@ -338,9 +338,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "rels-missing-sidecar":
                 return !/^word\/(?:header|footer)\d*\.xml$/i.test(issue.path ?? "");
             case "xml-syntax":
-                return issue.path?.startsWith("word/") ?? false;
+                return issue.path?.startsWith("word/") || issue.path === "[Content_Types].xml";
             case "rels-broken":
-                return issue.message.includes("../customXml/");
+                return issue.message.includes("../customXml/") || issue.message.includes("media/") || issue.message.includes(".rels");
             case "rels-empty-element":
                 return issue.message.includes("missing required attribute");
             case "xsd-error":
