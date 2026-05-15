@@ -216,7 +216,7 @@ async function runValidators(unpackedDir: string, opts: RunValidatorsOptions): P
     let repairs = 0;
     let repairDiagnostics: ValidationResult = { valid: true, issues: [] };
     if (opts.autoRepair) {
-        const beforeInventory = opts.suffix === ".docx" ? await collectDocxSemanticInventory(unpackedDir) : null;
+        const beforeInventory = (opts.suffix === ".docx" || opts.suffix === ".docm") ? await collectDocxSemanticInventory(unpackedDir) : null;
         const beforeResults = await Promise.all(validators.map((v) => v.validate()));
         const repairPlanIssues = buildRepairPlanIssues(mergeResults(...beforeResults).issues);
         for (const v of validators) {

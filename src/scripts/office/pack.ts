@@ -113,7 +113,13 @@ export async function pack(inputDirectory: string, outputFile: string, opts: Pac
             // the path is missing/unreadable. Silently skipping validation here
             // would mask operator error.
             try {
-                await fs.access(originalPath);
+                const originalStat = await fs.stat(originalPath);
+                if (!originalStat.isFile()) {
+                    return {
+                        ok: false,
+                        message: `Error: original file not found: ${original}`,
+                    };
+                }
             } catch {
                 return {
                     ok: false,
