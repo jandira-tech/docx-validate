@@ -15,7 +15,7 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { existsSync, unlinkSync } from "node:fs";
+import { existsSync } from "node:fs";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -26,15 +26,7 @@ const hasGcc = isLinux && spawnSync("gcc", ["--version"], { stdio: "ignore" }).s
 const hasSoffice = Boolean(process.env.SOFFICE_AVAILABLE);
 
 function clearShim(): void {
-    for (const p of [__test.SHIM_SO, __test.SHIM_C]) {
-        if (existsSync(p)) {
-            try {
-                unlinkSync(p);
-            } catch {
-                /* best effort */
-            }
-        }
-    }
+    __test.resetShimState();
 }
 
 describe("needsShim", () => {
