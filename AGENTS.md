@@ -76,7 +76,7 @@ These are intentional behaviours of the implementation, documented at the call s
 
 10. **`validate.ts` for unsupported suffixes returns a structured error.** For `.xlsx` and similar, `runValidators` writes to `process.stderr` and returns a `ValidationResult` with `code: "unsupported-file-type"` — it does NOT throw.
 
-11. **`repairWhitespacePreservation` prints a per-repair line when `verbose: true`.** `  Repaired: <file>: Added xml:space='preserve' to <tag>: <preview>` per element fixed.
+11. **`repairWhitespacePreservation` prints a per-repair line when `verbose: true`.** `Repaired: <file>: Added xml:space='preserve' to <tag>: <preview>` per element fixed.
 
 12. **Namespace constants exported from `validators/docx.ts`:** `WORD_2006_NAMESPACE`, `WORD_STRICT_NAMESPACE`, and `WORD_PARAGRAPH_NAMESPACES` (a `readonly [string, string]` tuple).
 

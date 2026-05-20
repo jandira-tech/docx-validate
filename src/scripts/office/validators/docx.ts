@@ -340,7 +340,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "xml-syntax":
                 return issue.path?.startsWith("word/") || issue.path === "[Content_Types].xml";
             case "rels-broken":
-                return issue.message.includes("../customXml/") || issue.message.includes("media/") || issue.message.includes(".rels");
+                return issue.message.includes("../customXml/") || issue.message.includes("media/") || /\/_rels\/|\.rels$/i.test(issue.message);
             case "rels-empty-element":
                 return issue.message.includes("missing required attribute");
             case "xsd-error":
@@ -2323,7 +2323,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             const fragment = WELL_KNOWN_STYLE_DEFINITIONS[id];
             if (!fragment) continue;
             // Append the fragment as a child of <w:styles>.
-            const tmp = parseXml(`<w:styles xmlns:w="${WORD_2006_NAMESPACE}">${fragment}</w:styles>`);
+            const actualNamespace = stylesRoot.namespaceURI ?? WORD_2006_NAMESPACE;
+            const tmp = parseXml(`<w:styles xmlns:w="${actualNamespace}">${fragment}</w:styles>`);
             const tmpRoot = tmp.documentElement;
             if (!tmpRoot) continue;
             const child = tmpRoot.firstChild;
