@@ -26,7 +26,7 @@
  */
 
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, unlinkSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 
@@ -51,8 +51,9 @@ export interface RunSofficeResult {
     signal?: NodeJS.Signals | null;
 }
 
-const SHIM_SO = path.join(os.tmpdir(), "lo_socket_shim.so");
-const SHIM_C = path.join(os.tmpdir(), "lo_socket_shim.c");
+let SHIM_DIR: string | null = null;
+let SHIM_SO: string | null = null;
+let SHIM_C: string | null = null;
 
 const SHIM_SOURCE = String.raw`
 #define _GNU_SOURCE
@@ -198,9 +199,17 @@ export function needsShim(): boolean {
  * Exported for tests; production callers should prefer `getSofficeEnv`.
  */
 export function ensureShim(): string {
-    if (existsSync(SHIM_SO)) {
+    if (SHIM_SO && existsSync(SHIM_SO)) {
         return SHIM_SO;
     }
+
+    if (!SHIM_DIR || !existsSync(SHIM_DIR)) {
+        SHIM_DIR = mkdtempSync(path.join(os.tmpdir(), "lo_shim_"));
+    }
+
+    SHIM_SO = path.join(SHIM_DIR, "lo_socket_shim.so");
+    SHIM_C = path.join(SHIM_DIR, "lo_socket_shim.c");
+
     writeFileSync(SHIM_C, SHIM_SOURCE);
     const result = spawnSync("gcc", ["-shared", "-fPIC", "-o", SHIM_SO, SHIM_C, "-ldl"], { encoding: "utf8" });
     if (result.error) {
@@ -316,9 +325,28 @@ export function runSoffice(args: string[], options?: RunSofficeOptions): Promise
 
 // Internal exports for tests.
 export const __test = {
-    SHIM_SO,
-    SHIM_C,
+    get SHIM_SO() {
+        return SHIM_SO || path.join(os.tmpdir(), "lo_socket_shim.so");
+    },
+    get SHIM_C() {
+        return SHIM_C || path.join(os.tmpdir(), "lo_socket_shim.c");
+    },
+    get SHIM_DIR() {
+        return SHIM_DIR;
+    },
     SHIM_SOURCE,
+    resetShimState() {
+        if (SHIM_DIR && existsSync(SHIM_DIR)) {
+            try {
+                rmSync(SHIM_DIR, { recursive: true, force: true });
+            } catch {
+                // ignore
+            }
+        }
+        SHIM_DIR = null;
+        SHIM_SO = null;
+        SHIM_C = null;
+    },
 };
 
 runCli(import.meta.url, async () => {
