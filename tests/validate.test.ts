@@ -374,10 +374,122 @@ describe("word-valid profile — applyWordValidProfile coverage", () => {
             expect(emptyElemIssue?.severity).toBe("error");
         });
     });
+
+    it("word-valid profile emits no word-math-parse when word/document.xml is absent (Issue I)", async () => {
+        // validateWordOpenCompatibility() returns early when document.xml is not found,
+        // so the word-math-parse code must not appear in the result.
+        await withTempDir(async (dir) => {
+            const unpacked = path.join(dir, "unpacked");
+            // Build the minimal directory structure but deliberately omit word/document.xml.
+            await fs.mkdir(path.join(unpacked, "_rels"), { recursive: true });
+            await fs.mkdir(path.join(unpacked, "word"), { recursive: true });
+            await fs.writeFile(
+                path.join(unpacked, "[Content_Types].xml"),
+                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+                    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+                    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+                    '<Default Extension="xml" ContentType="application/xml"/>' +
+                    "</Types>",
+                "utf8",
+            );
+            await fs.writeFile(
+                path.join(unpacked, "_rels", ".rels"),
+                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+                    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+                    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+                    "</Relationships>",
+                "utf8",
+            );
+            const result = await validate(unpacked, {
+                profile: "word-valid",
+                original: path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx"),
+                author: "Test",
+            });
+            expect(result.issues.every((i) => i.code !== "word-math-parse")).toBe(true);
+        });
+    });
+
+    it("word-valid profile flags malformed word/document.xml as word-math-parse error (Issue M)", async () => {
+        // When word/document.xml cannot be XML-parsed, validateWordOpenCompatibility
+        // emits word-math-parse (fatal) instead of proceeding to the m:sPre check.
+        await withTempDir(async (dir) => {
+            const unpacked = path.join(dir, "unpacked");
+            await writeMinimalDocxDir(unpacked, "<w:body><w:p/></w:body>");
+            // Replace document.xml with content that cannot be parsed as XML.
+            await fs.writeFile(
+                path.join(unpacked, "word", "document.xml"),
+                "this is definitely <<< not valid XML >>>",
+                "utf8",
+            );
+            const result = await validate(unpacked, {
+                profile: "word-valid",
+                original: path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx"),
+                author: "Test",
+            });
+            expect(result.valid).toBe(false);
+            const mathParseIssue = result.issues.find((i) => i.code === "word-math-parse");
+            expect(mathParseIssue).toBeDefined();
+            expect(mathParseIssue?.severity).toBe("error");
+            expect(mathParseIssue?.path).toContain("word/document.xml");
+        });
+    });
+
+    it("xml-syntax error in word/ file stays fatal under word-valid profile (Issue N)", async () => {
+        // isWordBlockingIssue returns true for xml-syntax when path starts with 'word/',
+        // so the error must NOT be downgraded to a warning by applyWordValidProfile.
+        await withTempDir(async (dir) => {
+            const unpacked = path.join(dir, "unpacked");
+            await writeMinimalDocxDir(unpacked, "<w:body><w:p/></w:body>");
+            // Write an unparseable word/styles.xml so validateXml emits xml-syntax for it.
+            await fs.writeFile(
+                path.join(unpacked, "word", "styles.xml"),
+                "this is <definitely not valid xml",
+                "utf8",
+            );
+            const result = await validate(unpacked, {
+                profile: "word-valid",
+                original: path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx"),
+                author: "Test",
+            });
+            const xmlSyntaxIssue = result.issues.find(
+                (i) => i.code === "xml-syntax" && (i.path?.startsWith("word/") ?? false),
+            );
+            expect(xmlSyntaxIssue).toBeDefined();
+            expect(xmlSyntaxIssue?.severity).toBe("error");
+        });
+    });
+
+    it("xml-syntax error outside word/ is downgraded to warning under word-valid profile (Issue O)", async () => {
+        // isWordBlockingIssue returns false for xml-syntax when path does NOT start with
+        // 'word/', so applyWordValidProfile must downgrade it to a warning.
+        await withTempDir(async (dir) => {
+            const unpacked = path.join(dir, "unpacked");
+            await writeMinimalDocxDir(unpacked, "<w:body><w:p/></w:body>");
+            // Write unparseable XML in docProps/ (outside word/) to trigger xml-syntax there.
+            await fs.mkdir(path.join(unpacked, "docProps"), { recursive: true });
+            await fs.writeFile(
+                path.join(unpacked, "docProps", "app.xml"),
+                "this is <definitely not valid xml",
+                "utf8",
+            );
+            const result = await validate(unpacked, {
+                profile: "word-valid",
+                original: path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx"),
+                author: "Test",
+            });
+            const xmlSyntaxIssue = result.issues.find(
+                (i) => i.code === "xml-syntax" && (i.path?.startsWith("docProps/") ?? false),
+            );
+            expect(xmlSyntaxIssue).toBeDefined();
+            expect(xmlSyntaxIssue?.severity).toBe("warning");
+            // word-valid remains valid because the only error was downgraded.
+            expect(result.valid).toBe(true);
+        });
+    });
 });
 
 describe("validate startup probe", () => {
-    it("BaseSchemaValidator.assertLibxmljsAvailable() does not throw on this host", () => {
+
         // The CLI calls this at the top of `runValidateFromArgv` so a broken libxmljs2
         // binding fails loudly instead of degrading into per-file XSD errors.
         expect(() => BaseSchemaValidator.assertLibxmljsAvailable()).not.toThrow();
