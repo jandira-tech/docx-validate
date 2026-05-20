@@ -489,7 +489,7 @@ describe("word-valid profile — applyWordValidProfile coverage", () => {
 });
 
 describe("validate startup probe", () => {
-
+    it("should have working libxmljs2 bindings", () => {
         // The CLI calls this at the top of `runValidateFromArgv` so a broken libxmljs2
         // binding fails loudly instead of degrading into per-file XSD errors.
         expect(() => BaseSchemaValidator.assertLibxmljsAvailable()).not.toThrow();

@@ -204,9 +204,10 @@ async function runValidation(
                     throw new Error("Could not infer author and `author` was not provided.");
                 }
             } catch (err) {
-                const message = err instanceof Error ? err.message : String(err);
+                const message = err instanceof Error ? (err.stack ?? err.message) : String(err);
                 process.stderr.write(`Error: ${message}\n`);
-                return { success: false, log: lines.join("\n") };
+                const logPrefix = lines.length > 0 ? lines.join("\n") + "\n" : "";
+                return { success: false, log: logPrefix + `Error: ${message}` };
             }
 
             validators.push({
