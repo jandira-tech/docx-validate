@@ -163,11 +163,7 @@ const WELL_KNOWN_STYLE_DEFINITIONS: Readonly<Record<string, string>> = {
     // looks these up by name when an element omits an explicit style and
     // pops "this document needs to be repaired" with a "Table Properties"
     // category if the lookup misses.
-    Normal:
-        `<w:style w:type="paragraph" w:default="1" w:styleId="Normal">` +
-        `<w:name w:val="Normal"/>` +
-        `<w:qFormat/>` +
-        `</w:style>`,
+    Normal: `<w:style w:type="paragraph" w:default="1" w:styleId="Normal">` + `<w:name w:val="Normal"/>` + `<w:qFormat/>` + `</w:style>`,
     TableNormal:
         `<w:style w:type="table" w:default="1" w:styleId="TableNormal">` +
         `<w:name w:val="Normal Table"/>` +
@@ -219,15 +215,7 @@ const TRACKING_TOKEN_PREFIXES: readonly string[] = [
     "[[DOCX_PMARK_DEL:",
     "[[DOCX_PMARK_INS:",
 ];
-const TRACKING_TOKEN_REGEX =
-    /\[\[DOCX_(?:INS|DEL|CMT)_(?:START|END):[^\]]*?\]\]|\[\[DOCX_PMARK_(?:DEL|INS):[^\]]*?\]\]/g;
-
-// XPath excluding `<w:p>` inside DML/VML text-box overlays. Matches the
-// Python BODY_PARAGRAPH_XPATH.
-const BODY_PARAGRAPH_XPATH =
-    ".//w:p[not(ancestor::w:txbxContent) and not(ancestor::v:textbox)] " +
-    "| " +
-    ".//strict:p[not(ancestor::strict:txbxContent) and not(ancestor::v:textbox)]";
+const TRACKING_TOKEN_REGEX = /\[\[DOCX_(?:INS|DEL|CMT)_(?:START|END):[^\]]*?\]\]|\[\[DOCX_PMARK_(?:DEL|INS):[^\]]*?\]\]/g;
 
 const MAX_PARA_ID = 0x80000000;
 const MAX_DURABLE_ID = 0x7fffffff;
@@ -388,9 +376,37 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 });
                 continue;
             }
-            const invalid = $$(".//w:ins//w:delText[not(ancestor::w:del)]", dom) as Node[];
-            for (const node of invalid) {
-                const elem = node as Element;
+            // ⚡ Bolt: Replaced XPath ancestor:: query with native DOM traversal.
+            // XPath `ancestor::` axis causes severe performance bottlenecks for large documents.
+            // Original query: `.//w:ins//w:delText[not(ancestor::w:del)]`
+            const invalid: Element[] = [];
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const insNodes = dom.getElementsByTagNameNS(ns, "ins");
+                for (let i = 0; i < insNodes.length; i += 1) {
+                    const insElem = insNodes[i];
+                    if (!insElem) continue;
+                    const delTexts = insElem.getElementsByTagNameNS(ns, "delText");
+                    for (let j = 0; j < delTexts.length; j += 1) {
+                        const delText = delTexts[j];
+                        if (!delText) continue;
+                        let hasDelAncestor = false;
+                        let curr = delText.parentNode;
+                        while (curr && curr !== insElem) {
+                            const elem = curr as Element;
+                            if (elem.localName === "del" && elem.namespaceURI === ns) {
+                                hasDelAncestor = true;
+                                break;
+                            }
+                            curr = curr.parentNode;
+                        }
+                        if (!hasDelAncestor) {
+                            invalid.push(delText);
+                        }
+                    }
+                }
+            }
+
+            for (const elem of invalid) {
                 const text = elem.firstChild?.nodeValue ?? "";
                 issues.push({
                     severity: "error",
@@ -853,9 +869,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 if (startCount !== expected) {
                     issues.push({
                         severity: "error",
-                        message:
-                            `commentRangeStart count (${startCount}) does not match ` +
-                            `comment count in comments.xml (${expected})`,
+                        message: `commentRangeStart count (${startCount}) does not match ` + `comment count in comments.xml (${expected})`,
                         code: "comment-thread-count-mismatch",
                         path: this.relPath(documentXml),
                     });
@@ -863,9 +877,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 if (endCount !== expected) {
                     issues.push({
                         severity: "error",
-                        message:
-                            `commentRangeEnd count (${endCount}) does not match ` +
-                            `comment count in comments.xml (${expected})`,
+                        message: `commentRangeEnd count (${endCount}) does not match ` + `comment count in comments.xml (${expected})`,
                         path: this.relPath(documentXml),
                         code: "comment-thread-count-mismatch",
                     });
@@ -873,9 +885,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 if (refCount !== expected) {
                     issues.push({
                         severity: "error",
-                        message:
-                            `commentReference count (${refCount}) does not match ` +
-                            `comment count in comments.xml (${expected})`,
+                        message: `commentReference count (${refCount}) does not match ` + `comment count in comments.xml (${expected})`,
                         path: this.relPath(documentXml),
                         code: "comment-thread-count-mismatch",
                     });
@@ -973,8 +983,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 issues.push({
                     severity: "error",
                     message:
-                        `<w15:commentEx w15:paraIdParent='${parent}'> does not resolve to any ` +
-                        `paraId declared in commentsExtended.xml`,
+                        `<w15:commentEx w15:paraIdParent='${parent}'> does not resolve to any ` + `paraId declared in commentsExtended.xml`,
                     path: this.relPath(commentsExtendedXml),
                     code: "comment-thread-orphan-parent",
                 });
@@ -1771,7 +1780,36 @@ function parseIdValue(val: string, base: number): number {
 }
 
 function countParagraphsInRoot(doc: Document): number {
-    const $$ = makeSelect({ strict: WORD_STRICT_NAMESPACE, v: VML_NAMESPACE });
-    const nodes = $$(BODY_PARAGRAPH_XPATH, doc) as Node[];
-    return nodes.length;
+    // ⚡ Bolt: Replaced XPath ancestor:: query with native DOM traversal.
+    // XPath `ancestor::` axis causes severe performance bottlenecks for large documents.
+    // Original query: `//w:p[not(ancestor::w:txbxContent) and not(ancestor::v:textbox)]`
+    let count = 0;
+    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+        const paras = doc.getElementsByTagNameNS(ns, "p");
+        for (let i = 0; i < paras.length; i += 1) {
+            const p = paras[i];
+            if (!p) continue;
+            let isExcluded = false;
+            let curr = p.parentNode;
+            while (curr && curr.nodeType === 1 /* ELEMENT_NODE */) {
+                const elem = curr as Element;
+                if (
+                    elem.localName === "txbxContent" &&
+                    (elem.namespaceURI === WORD_2006_NAMESPACE || elem.namespaceURI === WORD_STRICT_NAMESPACE)
+                ) {
+                    isExcluded = true;
+                    break;
+                }
+                if (elem.localName === "textbox" && elem.namespaceURI === VML_NAMESPACE) {
+                    isExcluded = true;
+                    break;
+                }
+                curr = curr.parentNode;
+            }
+            if (!isExcluded) {
+                count += 1;
+            }
+        }
+    }
+    return count;
 }
