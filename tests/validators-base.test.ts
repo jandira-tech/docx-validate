@@ -592,10 +592,7 @@ describe("BaseSchemaValidator", () => {
 
         it("flags an empty <Relationships/> as ERROR under strict", async () => {
             await withTempDir(async (dir) => {
-                await writeFile(
-                    path.join(dir, "word", "_rels", "fontTable.xml.rels"),
-                    `${RELS_HEADER}\n<Relationships ${PR_NS}/>`,
-                );
+                await writeFile(path.join(dir, "word", "_rels", "fontTable.xml.rels"), `${RELS_HEADER}\n<Relationships ${PR_NS}/>`);
                 const v = new HarnessValidator({ unpackedDir: dir, profile: "strict" });
                 const result = await v.validateNoEmptyRelsParts();
                 expect(result.valid).toBe(false);
@@ -608,10 +605,7 @@ describe("BaseSchemaValidator", () => {
 
         it("downgrades to WARNING under lenient (still surfaced, doesn't fail validation)", async () => {
             await withTempDir(async (dir) => {
-                await writeFile(
-                    path.join(dir, "word", "_rels", "fontTable.xml.rels"),
-                    `${RELS_HEADER}\n<Relationships ${PR_NS}/>`,
-                );
+                await writeFile(path.join(dir, "word", "_rels", "fontTable.xml.rels"), `${RELS_HEADER}\n<Relationships ${PR_NS}/>`);
                 const v = new HarnessValidator({ unpackedDir: dir, profile: "lenient" });
                 const result = await v.validateNoEmptyRelsParts();
                 expect(result.valid).toBe(true);

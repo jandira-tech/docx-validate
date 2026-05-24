@@ -234,5 +234,4 @@ describe("validate startup probe", () => {
         // binding fails loudly instead of degrading into per-file XSD errors.
         expect(() => BaseSchemaValidator.assertLibxmljsAvailable()).not.toThrow();
     });
-
 });
