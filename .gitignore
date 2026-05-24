@@ -14,3 +14,6 @@ docs/api
 dotgithubtoport
 package-lock.json
 .idea/
+
+# Local Word-probe raw log (machine-specific absolute paths; manifest is the committed artifact)
+tests/word-probe-results.jsonl
