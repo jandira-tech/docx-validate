@@ -3,7 +3,7 @@
  * and combining with Word probe results.
  */
 
-import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -11,7 +11,7 @@ import { validate } from "../src/scripts/office/validate.js";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES_ROOT = path.resolve(HERE, "..", "tests/fixtures");
-const PROBE_RESULTS = "/tmp/word-probe-results.jsonl";
+const PROBE_RESULTS = path.resolve(HERE, "..", "tests", "word-probe-results.jsonl");
 const MANIFEST = path.resolve(HERE, "..", "tests", "fixtures-all.manifest.json");
 
 interface ValidatorResult {
@@ -69,6 +69,7 @@ async function runValidator(file: string, profile: "strict" | "lenient" | "word-
 
 function readProbeResults(): Map<string, ProbeRecord> {
     const map = new Map<string, ProbeRecord>();
+    if (!existsSync(PROBE_RESULTS)) return map;
     const content = readFileSync(PROBE_RESULTS, "utf-8");
     for (const line of content.split(/\r?\n/)) {
         if (!line.trim()) continue;

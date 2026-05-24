@@ -29,7 +29,7 @@ implementation plans are under `docs/plans/conejo/`.
 | Whole parts removed | `word/endnotes.xml`, `word/theme/theme1.xml`, `word/webSettings.xml` |
 | Font table emptied | All `<w:font>` entries removed from `word/fontTable.xml` |
 | `<w:latentStyles>` block | Entire block (~150 lsdException entries) removed from `word/styles.xml` |
-| Comment-related styles | `CommentText`, `CommentSubject`, `CommentReference` removed from styles |
+| Comment-related styles | `CommentText`, `CommentTextChar` style definitions removed from styles (the still-referenced `CommentReference` style is left undefined) |
 | Table structural properties | `<w:tblLook>`, `<w:tblCellSpacing>`, `<w:jc>`, `<w:tblInd>`, `<w:shd>` removed |
 | Settings content | Most of `word/settings.xml` removed (rsids, math props, docId, etc.) |
 | Revision session IDs | `w:rsid*` attributes stripped from all paragraphs and runs |

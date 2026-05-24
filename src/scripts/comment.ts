@@ -386,7 +386,7 @@ export async function addComment(opts: AddCommentOptions): Promise<AddCommentRes
             date: ts,
             initials: escapeXml(initials),
             para_id: paraId,
-            text,
+            text: escapeXml(text),
         }),
     );
 

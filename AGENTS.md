@@ -37,7 +37,7 @@ OOXML validators and redline/comment helpers for `.docx` and `.pptx` files.
 
 ## Repository layout
 
-```
+```text
 src/
   index.ts                  — public barrel
   lib/                      — xml-helpers, types, run-cli

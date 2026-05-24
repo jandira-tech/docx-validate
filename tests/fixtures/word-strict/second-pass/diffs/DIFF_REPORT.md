@@ -171,8 +171,9 @@ Broken: regenerated minimal set — Normal, DefaultParagraphFont, TableNormal,
 NoList, Title, Heading1–6 (renamed, stripped of uiPriority/outline level).
 No latent styles. No comment styles. No custom styles.
 
-**Causes `style-default-missing` errors for CommentReference, CommentText,
-CommentSubject.**
+**Drops the `CommentText`/`CommentTextChar` style definitions; `CommentReference`
+(still referenced from `document.xml`/`comments.xml`) is left undefined, causing
+a `style-default-missing` error.**
 
 ## Group 18 — Main Document (`word/document.xml`)
 

@@ -62,7 +62,7 @@ full comment identity chain across all four comment XML parts.
    `commentsIds.xml`, it must use the `w14:paraId` value from the `<w:p>`
    inside the corresponding `<w:comment>`, not generate a new random value.
    The mapping is:
-   ```
+   ```text
    comments.xml  →  w:comment[w:id=X]/w:p[w14:paraId=Y]
    commentsIds.xml → w16cid:commentId[w16cid:paraId=Y]
    ```

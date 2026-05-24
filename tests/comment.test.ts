@@ -101,6 +101,34 @@ describe("addComment", () => {
         });
     });
 
+    it("escapes XML special characters in author, initials, and text", async () => {
+        await withTempDir(async (dir) => {
+            await makeFixture(dir);
+
+            const result = await addComment({
+                unpackedDir: dir,
+                commentId: 0,
+                text: 'a & b < c > d "quoted"',
+                author: "R&D <team>",
+                initials: 'J"R',
+                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+            });
+            // A raw '&' or '<' in any templated field produces malformed XML and
+            // makes addComment throw while re-parsing comments.xml. A clean
+            // paraId proves every field was escaped before templating.
+            expect(result.paraId).toMatch(/^[0-9A-F]{8}$/);
+
+            const xml = await fs.readFile(path.join(dir, "word", "comments.xml"), "utf-8");
+            // Must still parse as well-formed XML.
+            const dom = parseXml(xml);
+            const comment = dom.getElementsByTagName("w:comment").item(0)!;
+            expect(comment.getAttribute("w:author")).toBe("R&D <team>");
+            expect(comment.getAttribute("w:initials")).toBe('J"R');
+            const t = dom.getElementsByTagName("w:t").item(0)!;
+            expect(t.textContent).toBe('a & b < c > d "quoted"');
+        });
+    });
+
     it("reports an error when the unpacked DOCX has no word/ directory", async () => {
         await withTempDir(async (dir) => {
             const result = await addComment({
