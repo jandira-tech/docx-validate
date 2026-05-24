@@ -388,9 +388,12 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     for (let j = 0; j < delTexts.length; j += 1) {
                         const delText = delTexts[j];
                         if (!delText) continue;
+                        // Mirror the original XPath `not(ancestor::w:del)`: walk the
+                        // ENTIRE ancestor chain, not just up to insElem. A <w:del> that
+                        // wraps the enclosing <w:ins> still legitimizes the <w:delText>.
                         let hasDelAncestor = false;
                         let curr = delText.parentNode;
-                        while (curr && curr !== insElem) {
+                        while (curr) {
                             const elem = curr as Element;
                             if (elem.localName === "del" && elem.namespaceURI === ns) {
                                 hasDelAncestor = true;
