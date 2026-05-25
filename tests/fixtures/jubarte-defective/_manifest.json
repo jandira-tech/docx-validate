@@ -1,0 +1,39 @@
+[
+  {
+    "rel": "Redline_CiceroDo_v_plate(30.docx",
+    "errs": [
+      "commentRangeStart count (1) does not match comment count in comments.xml (3)",
+      "commentRangeEnd count (1) does not match comment count in comments.xml (3)",
+      "commentReference count (1) does not match comment count in comments.xml (3)"
+    ]
+  },
+  {
+    "rel": "comments.docx",
+    "errs": [
+      "commentRangeStart count (1) does not match comment count in comments.xml (2)",
+      "commentRangeEnd count (1) does not match comment count in comments.xml (2)"
+    ]
+  },
+  {
+    "rel": "external/docx-validate/numbering-implicit-numid.docx",
+    "errs": [
+      "Broken reference to file:///C:\\Program%20Files\\Microsoft%20Office\\MacPac\\Firm\\Scratch.dot"
+    ]
+  },
+  {
+    "rel": "nested-comments-marker.docx",
+    "errs": [
+      "w:t element with whitespace missing xml:space='preserve': 'start '",
+      "w:t element with whitespace missing xml:space='preserve': ' middle '",
+      "w:t element with whitespace missing xml:space='preserve': ' end'"
+    ]
+  },
+  {
+    "rel": "sectpr-headerref.docx",
+    "errs": [
+      "Unreferenced file: docProps/custom.xml",
+      "word/document.xml: 1 new error(s)",
+      "  - Element '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ilvl': This element is not expected. Expected is one of ( {http://schemas.openxmlformats.org/wordprocessingml/2006/main}numberingChange, {http://schemas.openxmlformats.org/wordpro..."
+    ]
+  }
+]
