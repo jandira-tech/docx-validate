@@ -43,6 +43,8 @@ import { fileURLToPath } from "node:url";
 import * as libxmljs from "libxmljs2";
 
 import { withTempDir } from "../../../lib/run-cli";
+import type { PartFS } from "../../../lib/part-fs";
+import { DiskPartFS } from "../../../lib/part-fs";
 import type { Profile, ValidationIssue, ValidationResult } from "../../../lib/types";
 import { DEFAULT_PROFILE, OK_RESULT } from "../../../lib/types";
 import { parseXml, serializeXml } from "../../../lib/xml-helpers";
@@ -155,8 +157,17 @@ const TEMPLATE_TAG_PATTERN = new RegExp(TEMPLATE_TAG_PATTERN_SOURCE);
 const TEMPLATE_TAG_PATTERN_GLOBAL = new RegExp(TEMPLATE_TAG_PATTERN_SOURCE, "g");
 
 export interface BaseSchemaValidatorOptions {
-    /** Path to the unpacked OOXML directory. */
-    unpackedDir: string;
+    /**
+     * Path to the unpacked OOXML directory (disk-backed). Provide this OR
+     * `partFS`. When omitted, `partFS` is required.
+     */
+    unpackedDir?: string;
+    /**
+     * In-memory (or custom) part store. When provided, the validator does no
+     * disk I/O for parts — enabling browser-safe, native-dep-free repair.
+     * Mutually exclusive with `unpackedDir`; `partFS` wins if both are given.
+     */
+    partFS?: PartFS;
     /** Path to the original .docx/.pptx for "ignore pre-existing errors" diffing. */
     originalFile?: string;
     /**
@@ -209,6 +220,8 @@ export interface XsdValidationOutcome {
 
 export class BaseSchemaValidator {
     readonly unpackedDir: string;
+    /** Part store backing this validator (disk or in-memory). */
+    protected readonly partFS: PartFS;
     readonly originalFile: string | null;
     readonly verbose: boolean;
     readonly schemasDir: string;
@@ -223,11 +236,15 @@ export class BaseSchemaValidator {
     protected readonly elementRelationshipTypes: Record<string, string> = {};
 
     constructor(opts: BaseSchemaValidatorOptions) {
-        this.unpackedDir = path.resolve(opts.unpackedDir);
+        if (!opts.partFS && !opts.unpackedDir) {
+            throw new Error("BaseSchemaValidator requires either `unpackedDir` or `partFS`.");
+        }
+        this.partFS = opts.partFS ?? new DiskPartFS(opts.unpackedDir as string);
+        this.unpackedDir = this.partFS.root;
         this.originalFile = opts.originalFile ? path.resolve(opts.originalFile) : null;
         this.verbose = opts.verbose ?? false;
         this.schemasDir = opts.schemasDir ?? defaultSchemasDir();
-        this.xmlFiles = walkFiles(this.unpackedDir, [".xml", ".rels"]);
+        this.xmlFiles = this.partFS.list([".xml", ".rels"]);
         this.profile = opts.profile ?? DEFAULT_PROFILE;
     }
 
@@ -251,7 +268,7 @@ export class BaseSchemaValidator {
         for (const xmlFile of this.xmlFiles) {
             let bytes: Buffer;
             try {
-                bytes = await fs.readFile(xmlFile);
+                bytes = await this.partFS.readBytes(xmlFile);
             } catch {
                 continue;
             }
@@ -295,7 +312,7 @@ export class BaseSchemaValidator {
             if (!xmlFile.endsWith(".rels")) continue;
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXml(await this.partFS.readText(xmlFile));
             } catch {
                 // Malformed rels files surface elsewhere via xml-syntax /
                 // rels-broken codes; don't double-report here.
@@ -359,7 +376,7 @@ export class BaseSchemaValidator {
             }
             let isEmpty = false;
             try {
-                const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                const dom = parseXml(await this.partFS.readText(xmlFile));
                 const root = dom.documentElement;
                 if (root) {
                     const rels = root.getElementsByTagNameNS(
@@ -379,7 +396,7 @@ export class BaseSchemaValidator {
             }
             if (isEmpty) {
                 try {
-                    await fs.rm(xmlFile);
+                    await this.partFS.remove(xmlFile);
                     repairs += 1;
                     // intentionally not added to `surviving`
                 } catch {
@@ -402,7 +419,7 @@ export class BaseSchemaValidator {
 
         for (const xmlFile of this.xmlFiles) {
             try {
-                const content = await fs.readFile(xmlFile, "utf-8");
+                const content = await this.partFS.readText(xmlFile);
                 const dom = parseXml(content);
                 let modified = false;
 
@@ -432,7 +449,7 @@ export class BaseSchemaValidator {
                 }
 
                 if (modified) {
-                    await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+                    await this.partFS.write(xmlFile, serializeXml(dom, "UTF-8"));
                 }
             } catch {
                 // pass — mirrors Python's bare except
@@ -448,7 +465,7 @@ export class BaseSchemaValidator {
         const issues: ValidationIssue[] = [];
         for (const xmlFile of this.xmlFiles) {
             try {
-                const content = await fs.readFile(xmlFile, "utf-8");
+                const content = await this.partFS.readText(xmlFile);
                 parseXml(content);
             } catch (err) {
                 const message = err instanceof Error ? err.message : String(err);
@@ -468,7 +485,7 @@ export class BaseSchemaValidator {
         for (const xmlFile of this.xmlFiles) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXml(await this.partFS.readText(xmlFile));
             } catch {
                 continue;
             }
@@ -507,7 +524,7 @@ export class BaseSchemaValidator {
         for (const xmlFile of this.xmlFiles) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXml(await this.partFS.readText(xmlFile));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -576,14 +593,14 @@ export class BaseSchemaValidator {
 
     async validateFileReferences(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const relsFiles = walkFiles(this.unpackedDir, [".rels"]);
+        const relsFiles = this.partFS.list([".rels"]);
 
         if (relsFiles.length === 0) {
             return OK_RESULT;
         }
 
         const allFiles: string[] = [];
-        for (const f of walkFiles(this.unpackedDir)) {
+        for (const f of this.partFS.list()) {
             const base = path.basename(f);
             if (base === "[Content_Types].xml" || f.endsWith(".rels")) continue;
             allFiles.push(path.resolve(f));
@@ -594,7 +611,7 @@ export class BaseSchemaValidator {
         for (const relsFile of relsFiles) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(relsFile, "utf-8"));
+                dom = parseXml(await this.partFS.readText(relsFile));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -666,12 +683,12 @@ export class BaseSchemaValidator {
 
     async validateRelationshipElements(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const relsFiles = walkFiles(this.unpackedDir, [".rels"]);
+        const relsFiles = this.partFS.list([".rels"]);
 
         for (const relsFile of relsFiles) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(relsFile, "utf-8"));
+                dom = parseXml(await this.partFS.readText(relsFile));
             } catch {
                 continue;
             }
@@ -739,7 +756,7 @@ export class BaseSchemaValidator {
             if (!existsSync(relsFile)) {
                 let xmlDomCheck: Document;
                 try {
-                    xmlDomCheck = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                    xmlDomCheck = parseXml(await this.partFS.readText(xmlFile));
                 } catch {
                     continue;
                 }
@@ -768,7 +785,7 @@ export class BaseSchemaValidator {
 
             let relsDom: Document;
             try {
-                relsDom = parseXml(await fs.readFile(relsFile, "utf-8"));
+                relsDom = parseXml(await this.partFS.readText(relsFile));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -801,7 +818,7 @@ export class BaseSchemaValidator {
 
             let xmlDom: Document;
             try {
-                xmlDom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                xmlDom = parseXml(await this.partFS.readText(xmlFile));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -894,7 +911,7 @@ export class BaseSchemaValidator {
 
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(contentTypesFile, "utf-8"));
+            dom = parseXml(await this.partFS.readText(contentTypesFile));
         } catch (err) {
             return {
                 valid: false,
@@ -950,7 +967,7 @@ export class BaseSchemaValidator {
             emf: "image/x-emf",
         };
 
-        const allFiles = walkFiles(this.unpackedDir);
+        const allFiles = this.partFS.list();
 
         for (const xmlFile of this.xmlFiles) {
             const pathStr = this.relPath(xmlFile).replace(/\\/g, "/");
@@ -959,7 +976,7 @@ export class BaseSchemaValidator {
             }
 
             try {
-                const root = parseXml(await fs.readFile(xmlFile, "utf-8")).documentElement;
+                const root = parseXml(await this.partFS.readText(xmlFile)).documentElement;
                 if (!root) continue;
                 const rootName = localName(root.tagName ?? root.nodeName);
                 if (declarableRoots.has(rootName) && !declaredParts.has(pathStr)) {
@@ -1052,7 +1069,7 @@ export class BaseSchemaValidator {
      */
     protected _isStrictXmlFile(xmlFile: string): boolean {
         try {
-            const content = readFileSync(xmlFile, "utf-8");
+            const content = this.partFS.readTextSync(xmlFile);
             const dom = parseXml(content);
             const root = dom.documentElement;
             if (!root) return false;
@@ -1128,7 +1145,7 @@ export class BaseSchemaValidator {
         try {
             const xsdDoc = BaseSchemaValidator._loadXsd(schemaPath);
 
-            const xmlContent = readFileSync(xmlFile, "utf-8");
+            const xmlContent = this.partFS.readTextSync(xmlFile);
             const cleanedString = this._preprocessXmlForXsd(xmlContent, xmlFile);
             const xmlLibDoc = libxmljs.parseXml(cleanedString);
 
@@ -1162,6 +1179,8 @@ export class BaseSchemaValidator {
         const abs = path.resolve(schemaPath);
         const hit = BaseSchemaValidator._xsdCache.get(abs);
         if (hit) return hit;
+        // Schemas live on disk under `schemasDir`, never in the part store, and
+        // this is a static method (no instance / no `partFS`). Read via fs.
         const content = readFileSync(abs, "utf-8");
         // baseUrl lets `<xs:include>` / `<xs:import>` resolve siblings.
         const doc = libxmljs.parseXml(content, { baseUrl: abs });
