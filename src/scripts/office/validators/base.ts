@@ -55,11 +55,11 @@ const SCHEMA_MAPPINGS: Record<string, string> = {
     word: "ISO-IEC29500-4_2016/wml.xsd",
     ppt: "ISO-IEC29500-4_2016/pml.xsd",
     xl: "ISO-IEC29500-4_2016/sml.xsd",
-    "[Content_Types].xml": "ecma/fouth-edition/opc-contentTypes.xsd",
+    "[Content_Types].xml": "ecma/fourth-edition/opc-contentTypes.xsd",
     "app.xml": "ISO-IEC29500-4_2016/shared-documentPropertiesExtended.xsd",
-    "core.xml": "ecma/fouth-edition/opc-coreProperties.xsd",
+    "core.xml": "ecma/fourth-edition/opc-coreProperties.xsd",
     "custom.xml": "ISO-IEC29500-4_2016/shared-documentPropertiesCustom.xsd",
-    ".rels": "ecma/fouth-edition/opc-relationships.xsd",
+    ".rels": "ecma/fourth-edition/opc-relationships.xsd",
     "people.xml": "microsoft/wml-2012.xsd",
     "commentsIds.xml": "microsoft/wml-cid-2016.xsd",
     "commentsExtensible.xml": "microsoft/wml-cex-2018.xsd",
@@ -70,7 +70,7 @@ const SCHEMA_MAPPINGS: Record<string, string> = {
     "bibliography.xml": "ISO-IEC29500-4_2016/shared-bibliography.xsd",
     "additionalCharacteristics.xml": "ISO-IEC29500-4_2016/shared-additionalCharacteristics.xsd",
     itemProps: "ISO-IEC29500-4_2016/shared-customXmlDataProperties.xsd",
-    sig: "ecma/fouth-edition/opc-digSig.xsd",
+    sig: "ecma/fourth-edition/opc-digSig.xsd",
 };
 
 const IGNORED_VALIDATION_ERRORS: readonly string[] = [

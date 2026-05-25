@@ -142,10 +142,13 @@ describe("docx-templates corpus — strict profile flags BOM and other quirks", 
 });
 
 describe("docx-templates corpus — skipped formats", () => {
-    it("macroEnabledTemplate.docm: validate() returns unsupported-file-type for unknown suffix (current behaviour)", async () => {
+    it("macroEnabledTemplate.docm: validate() treats .docm as a supported format (validated like .docx)", async () => {
+        // .docm has been in SUPPORTED_SUFFIXES since the first commit, so it is
+        // dispatched to the DOCX validators rather than skipped. This fixture is
+        // well-formed, so it validates cleanly with no unsupported-file-type issue.
         const result = await validate(path.join(FIXTURE_DIR, "macroEnabledTemplate.docm"));
-        expect(result.valid).toBe(false);
         expect(result.suffix).toBe(".docm");
-        expect(result.issues.some((i) => i.code === "unsupported-file-type")).toBe(true);
+        expect(result.issues.some((i) => i.code === "unsupported-file-type")).toBe(false);
+        expect(result.valid).toBe(true);
     });
 });

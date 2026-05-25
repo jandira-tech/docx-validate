@@ -48,6 +48,7 @@ export interface RunSofficeResult {
     stdout: string;
     stderr: string;
     exitCode: number;
+    signal?: NodeJS.Signals | null;
 }
 
 let SHIM_DIR: string | null = null;
@@ -309,13 +310,14 @@ export function runSoffice(args: string[], options?: RunSofficeOptions): Promise
             options?.signal?.removeEventListener("abort", onAbort);
             reject(err);
         });
-        child.on("close", (code) => {
+        child.on("close", (code, signal) => {
             if (killTimer) clearTimeout(killTimer);
             options?.signal?.removeEventListener("abort", onAbort);
             resolve({
                 stdout: Buffer.concat(stdoutChunks).toString("utf8"),
                 stderr: Buffer.concat(stderrChunks).toString("utf8"),
-                exitCode: code ?? 0,
+                exitCode: code ?? (signal ? 1 : 0),
+                signal,
             });
         });
     });

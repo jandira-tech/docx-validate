@@ -40,6 +40,7 @@ import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
 import { DEFAULT_PROFILE, mergeResults, type Profile, type ValidationResult } from "../../lib/types";
 import { BaseSchemaValidator } from "./validators/base";
 import { DOCXSchemaValidator } from "./validators/docx";
+import { buildRepairPlanIssues, collectDocxSemanticInventory, compareDocxSemanticInventories } from "./validators/docx-diagnostics";
 import { PPTXSchemaValidator } from "./validators/pptx";
 import { validateRedlining } from "./validators/redlining";
 
@@ -92,7 +93,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         await assertIsFile(original, `Error: ${original} is not a file`);
         const ext = path.extname(original).toLowerCase();
         if (!SUPPORTED_SUFFIXES.has(ext)) {
-            throw new Error(`Error: ${original} must be a .docx, .pptx, or .xlsx file`);
+            throw new Error(`Error: ${original} must be a .docx, .docm, .pptx, or .xlsx file`);
         }
         originalFile = path.resolve(original);
     }
@@ -100,7 +101,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     const dispatchSuffix = path.extname(originalFile ?? target).toLowerCase();
 
     if (!SUPPORTED_SUFFIXES.has(dispatchSuffix)) {
-        throw new Error(`Error: Cannot determine file type from ${target}. Use --original or provide a .docx/.pptx/.xlsx file.`);
+        throw new Error(`Error: Cannot determine file type from ${target}. Use --original or provide a .docx/.docm/.pptx/.xlsx file.`);
     }
 
     const targetStat = await fs.stat(target);
@@ -155,7 +156,7 @@ interface RunValidatorsOptions {
 async function runValidators(unpackedDir: string, opts: RunValidatorsOptions): Promise<ValidationResult & { repairs: number }> {
     const validators: ValidatorRunner[] = [];
 
-    if (opts.suffix === ".docx") {
+    if (opts.suffix === ".docx" || opts.suffix === ".docm") {
         const docx = new DOCXSchemaValidator({
             unpackedDir,
             originalFile: opts.originalFile ?? undefined,
@@ -213,14 +214,26 @@ async function runValidators(unpackedDir: string, opts: RunValidatorsOptions): P
     }
 
     let repairs = 0;
+    let repairDiagnostics: ValidationResult = { valid: true, issues: [] };
     if (opts.autoRepair) {
+        const beforeInventory = (opts.suffix === ".docx" || opts.suffix === ".docm") ? await collectDocxSemanticInventory(unpackedDir) : null;
+        const beforeResults = await Promise.all(validators.map((v) => v.validate()));
+        const repairPlanIssues = buildRepairPlanIssues(mergeResults(...beforeResults).issues);
         for (const v of validators) {
             repairs += await v.repair();
         }
+        const contentIssues =
+            beforeInventory && repairs > 0
+                ? compareDocxSemanticInventories(beforeInventory, await collectDocxSemanticInventory(unpackedDir))
+                : [];
+        repairDiagnostics = mergeResults({
+            valid: [...repairPlanIssues, ...contentIssues].every((i) => i.severity !== "error"),
+            issues: [...repairPlanIssues, ...contentIssues],
+        });
     }
 
     const results = await Promise.all(validators.map((v) => v.validate()));
-    const merged = mergeResults(...results);
+    const merged = mergeResults(...results, repairDiagnostics);
     return { ...merged, repairs };
 }
 
@@ -278,17 +291,17 @@ export function buildValidateCommand(): Command {
     const cmd = new Command();
     cmd.name("validate")
         .description("Validate Office document XML files against XSD schemas and tracked changes")
-        .argument("<path>", "Path to unpacked directory or packed Office file (.docx/.pptx/.xlsx)")
+        .argument("<path>", "Path to unpacked directory or packed Office file (.docx/.docm/.pptx/.xlsx)")
         .option(
             "--original <file>",
-            "Path to original file (.docx/.pptx/.xlsx). If omitted, all XSD errors are reported and redlining validation is skipped.",
+            "Path to original file (.docx/.docm/.pptx/.xlsx). If omitted, all XSD errors are reported and redlining validation is skipped.",
         )
         .option("-v, --verbose", "Enable verbose output", false)
         .option("--auto-repair", "Automatically repair common issues (hex IDs, whitespace preservation)", false)
         .option("--author <name>", "Author name for redlining validation (required when --original is provided)")
         .option(
             "--profile <profile>",
-            "Validation profile: 'lenient' (default; tolerates real-world Office output) or 'strict' (spec-purist; flags BOMs and similar)",
+            "Validation profile: 'lenient' (default), 'strict' (spec-purist), or 'word-valid' (Microsoft Word openability)",
             DEFAULT_PROFILE,
         );
     return cmd;
@@ -319,9 +332,9 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
     const opts = cmd.opts<CliOptions>();
     const [target] = cmd.args;
 
-    if (opts.profile !== "lenient" && opts.profile !== "strict") {
+    if (opts.profile !== "lenient" && opts.profile !== "strict" && opts.profile !== "word-valid") {
         const bad = String(opts.profile);
-        process.stderr.write(`Invalid --profile: ${bad}. Must be 'lenient' or 'strict'.\n`);
+        process.stderr.write(`Invalid --profile: ${bad}. Must be 'lenient', 'strict', or 'word-valid'.\n`);
         return 1;
     }
 

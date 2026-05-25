@@ -129,8 +129,11 @@ export type PackageFormat = "docx" | "pptx" | "xlsx";
  * - `"strict"`: spec-purist. Reports a `xml-bom-leading` error for any part
  *   that begins with a BOM and refuses to silently strip it. All other checks
  *   run identically.
+ * - `"word-valid"`: empirical Microsoft Word openability profile. It keeps
+ *   checks that correlate with Word's unreadable-content/open-error dialogs as
+ *   errors and downgrades tolerated OOXML/schema quirks to warnings.
  */
-export type Profile = "lenient" | "strict";
+export type Profile = "lenient" | "strict" | "word-valid";
 
 /** Default validation profile. Lenient matches real-world Microsoft Office output. */
 export const DEFAULT_PROFILE: Profile = "lenient";

@@ -29,7 +29,7 @@ OOXML validators and redline/comment helpers for `.docx` and `.pptx` files.
 - `ISO-IEC29500-4_2016/wml.xsd` — WordprocessingML
 - `ISO-IEC29500-4_2016/dml-main.xsd` — DrawingML
 - `ISO-IEC29500-4_2016/shared-math.xsd` — Math
-- `ecma/fouth-edition/opc-*.xsd` — Open Packaging Conventions
+- `ecma/fourth-edition/opc-*.xsd` — Open Packaging Conventions
 - `mce/mc.xsd` — Markup Compatibility Extensions
 - `microsoft/wml-*.xsd`, `microsoft/word12.xsd` — Microsoft extensions
 
