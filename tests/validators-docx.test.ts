@@ -110,6 +110,25 @@ describe("DOCXSchemaValidator", () => {
                 expect(result.issues.some((i) => i.code === "ins-contains-deltext")).toBe(true);
             });
         });
+
+        it("passes when <w:del> wraps <w:ins> containing <w:delText>", async () => {
+            // Matches the original XPath `.//w:ins//w:delText[not(ancestor::w:del)]`:
+            // a <w:delText> with ANY <w:del> ancestor (here the <w:del> wrapping the
+            // <w:ins>) is legitimate and must not be flagged. Salvaged from #13,
+            // superseded by #14's full-ancestor-chain isInsideDel() walk.
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:del w:id="1"><w:ins w:id="2"><w:r><w:delText>ok</w:delText></w:r></w:ins></w:del></w:p>`,
+                    ),
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateInsertions();
+                expect(result.issues.some((i) => i.code === "ins-contains-deltext")).toBe(false);
+                expect(result.valid).toBe(true);
+            });
+        });
     });
 
     describe("validateCommentMarkers", () => {

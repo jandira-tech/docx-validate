@@ -303,10 +303,7 @@ export class BaseSchemaValidator {
             }
             const root = dom.documentElement;
             if (!root) continue;
-            const rels = root.getElementsByTagNameNS(
-                "http://schemas.openxmlformats.org/package/2006/relationships",
-                "Relationship",
-            );
+            const rels = root.getElementsByTagNameNS("http://schemas.openxmlformats.org/package/2006/relationships", "Relationship");
             if (rels.length === 0) {
                 // Additional check: only report as empty if the root also has no
                 // element children. Malformed rels files with Relationship elements

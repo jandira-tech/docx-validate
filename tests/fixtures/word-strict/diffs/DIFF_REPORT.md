@@ -11,24 +11,26 @@
 
 ## Group 1 — Files Only in One Side
 
-| Present only in | File |
-|-----------------|------|
-| BROKEN | `docProps/custom.xml` |
-| BROKEN | `word/commentsExtensible.xml` |
-| WORKING | `word/endnotes.xml` |
-| WORKING | `word/theme/theme1.xml` |
-| WORKING | `word/webSettings.xml` |
+| Present only in | File                          |
+| --------------- | ----------------------------- |
+| BROKEN          | `docProps/custom.xml`         |
+| BROKEN          | `word/commentsExtensible.xml` |
+| WORKING         | `word/endnotes.xml`           |
+| WORKING         | `word/theme/theme1.xml`       |
+| WORKING         | `word/webSettings.xml`        |
 
 ---
 
 ## Group 2 — XML Declaration Changes (ALL 16 common XML files)
 
 Every XML file in the working version starts with:
+
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 ```
 
 Every XML file in the broken version drops `standalone="yes"`:
+
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 ```
@@ -50,9 +52,11 @@ The **broken** version strips most of these, keeping only the core wordprocessin
 ## Group 4 — Relationship Identity Changes
 
 ### `_rels/.rels`
+
 - Broken ADDED a relationship `rId4` to `docProps/custom.xml` (matching the extra `custom.xml` in Group 1).
 
 ### `word/_rels/document.xml.rels`
+
 - Working has 12 relationships with short sequential IDs: `rId1` through `rId16`.
 - Broken has different relationship IDs. Hyperlink references changed from short IDs (`rId7`, `rId8`, `rId12`) to long random-looking IDs (`rIdclrrgvzn-co-bssfjluef`, `rIdjuy5xlgboggzopeudzji5`, `rIdbckue47mmm_l1hfnxuyyt`).
 - Working has `theme/theme1.xml` relationship (`rId16`); broken does not.
@@ -67,15 +71,15 @@ The **broken** version strips most of these, keeping only the core wordprocessin
 
 This is the namesake issue. The broken version systematically stripped table-structure attributes from every `<w:tbl>` element in the document. There are 7 tables in the document, and **all 7** show these removals:
 
-| Element removed from broken | Found in working | Count in document |
-|---|---|---|
-| `w:tblStyle w:val="Normal"` | Present on table 1 (props table) | 1 |
-| `w:tblInd` | Present on tables 2, 4, 5, 6 | 4 |
-| `w:tblLook` | Present on all 7 tables | 7 |
-| `w:tblCellMar` (table-level) | Present on 4 tables | 4 |
-| `w:tblPrEx` (row-level table property exceptions) | Present on 9 rows across all tables | 9 |
-| `w:tblCellMar` (row-level, inside `tblPrEx`) | Present on 9 rows | 9 |
-| `w:space` on border elements | Present on all bordered tables | many |
+| Element removed from broken                       | Found in working                    | Count in document |
+| ------------------------------------------------- | ----------------------------------- | ----------------- |
+| `w:tblStyle w:val="Normal"`                       | Present on table 1 (props table)    | 1                 |
+| `w:tblInd`                                        | Present on tables 2, 4, 5, 6        | 4                 |
+| `w:tblLook`                                       | Present on all 7 tables             | 7                 |
+| `w:tblCellMar` (table-level)                      | Present on 4 tables                 | 4                 |
+| `w:tblPrEx` (row-level table property exceptions) | Present on 9 rows across all tables | 9                 |
+| `w:tblCellMar` (row-level, inside `tblPrEx`)      | Present on 9 rows                   | 9                 |
+| `w:space` on border elements                      | Present on all bordered tables      | many              |
 
 ### Specific removals by table:
 
@@ -116,18 +120,18 @@ This is the namesake issue. The broken version systematically stripped table-str
 
 ### Removed in broken (present in working):
 
-| Style | Type |
-|-------|------|
-| Normal (default paragraph) | paragraph |
-| DefaultParagraphFont (default character) | character |
-| TableNormal (default table) | table |
-| NoList (default numbering) | numbering |
-| CommentText | paragraph |
-| CommentTextChar | character |
-| CommentReference | character |
-| CommentSubject | (would need definition) |
-| 376 latent styles (`w:latentStyles`) | latent |
-| Title (original with uiPriority) | paragraph |
+| Style                                    | Type                    |
+| ---------------------------------------- | ----------------------- |
+| Normal (default paragraph)               | paragraph               |
+| DefaultParagraphFont (default character) | character               |
+| TableNormal (default table)              | table                   |
+| NoList (default numbering)               | numbering               |
+| CommentText                              | paragraph               |
+| CommentTextChar                          | character               |
+| CommentReference                         | character               |
+| CommentSubject                           | (would need definition) |
+| 376 latent styles (`w:latentStyles`)     | latent                  |
+| Title (original with uiPriority)         | paragraph               |
 
 ### Changed in broken:
 
@@ -191,17 +195,17 @@ The broken document references `<w:rStyle w:val="CommentReference"/>` in both `d
 
 ## Summary of Differences by Severity
 
-| Severity | Group | Description |
-|----------|-------|-------------|
-| **P0** | Group 5 | Table structural elements removed (`w:tblInd`, `w:tblLook`, `w:tblPrEx`, `w:tblCellMar`, `w:tblStyle`) |
-| **P0** | Group 8 | Missing `CommentReference` style definition causing Word repair dialog |
-| **P0** | Group 7 | Font table emptied (5 fonts removed) |
-| **P1** | Group 4 | Relationship ID changes (header/footer references mismatch risk) |
-| **P1** | Group 9 | Numbering restructured (bullet characters changed, IDs shifted) |
-| **P2** | Group 11 | Section properties: `w:cols` removed |
-| **P2** | Group 8 | Removal of default styles (Normal, DefaultParagraphFont, TableNormal, NoList) |
-| **P3** | Group 2 | XML declaration `standalone="yes"` removed |
-| **P3** | Group 3 | Namespace declarations reduced |
-| **P3** | Group 6 | `w:rsidR` removed, `w:rFonts` explicitly added to all runs |
-| **P3** | Group 10 | Comment ID renumbering |
-| **P3** | Group 12 | Content type manifest changes (correct for actual contents) |
+| Severity | Group    | Description                                                                                            |
+| -------- | -------- | ------------------------------------------------------------------------------------------------------ |
+| **P0**   | Group 5  | Table structural elements removed (`w:tblInd`, `w:tblLook`, `w:tblPrEx`, `w:tblCellMar`, `w:tblStyle`) |
+| **P0**   | Group 8  | Missing `CommentReference` style definition causing Word repair dialog                                 |
+| **P0**   | Group 7  | Font table emptied (5 fonts removed)                                                                   |
+| **P1**   | Group 4  | Relationship ID changes (header/footer references mismatch risk)                                       |
+| **P1**   | Group 9  | Numbering restructured (bullet characters changed, IDs shifted)                                        |
+| **P2**   | Group 11 | Section properties: `w:cols` removed                                                                   |
+| **P2**   | Group 8  | Removal of default styles (Normal, DefaultParagraphFont, TableNormal, NoList)                          |
+| **P3**   | Group 2  | XML declaration `standalone="yes"` removed                                                             |
+| **P3**   | Group 3  | Namespace declarations reduced                                                                         |
+| **P3**   | Group 6  | `w:rsidR` removed, `w:rFonts` explicitly added to all runs                                             |
+| **P3**   | Group 10 | Comment ID renumbering                                                                                 |
+| **P3**   | Group 12 | Content type manifest changes (correct for actual contents)                                            |

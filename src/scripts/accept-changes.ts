@@ -24,7 +24,8 @@
  *   bunx tsx scripts/accept-changes.ts <input.docx> <output.docx>
  */
 
-import { existsSync, promises as fs } from "node:fs";
+import { existsSync, mkdtempSync, promises as fs } from "node:fs";
+import * as os from "node:os";
 import path from "node:path";
 
 import { Command } from "commander";
@@ -32,8 +33,21 @@ import { Command } from "commander";
 import { commanderExitCode, runCli } from "../lib/run-cli";
 import { runSoffice } from "./office/soffice";
 
-export const LIBREOFFICE_PROFILE = "/tmp/libreoffice_docx_profile";
-export const MACRO_DIR = `${LIBREOFFICE_PROFILE}/user/basic/Standard`;
+// Security: Prevent CWE-377 (Insecure Temporary File). A shared `/tmp/libreoffice_docx_profile`
+// path would allow local privilege escalation via malicious StarBasic macro injection if pre-created
+// by another user. Using mkdtempSync ensures a unique, unpredictable directory with strict
+// permissions for the current user. Lazily evaluated to prevent side effects on module import.
+let _libreofficeProfile: string | null = null;
+export function getLibreOfficeProfile(): string {
+    if (!_libreofficeProfile) {
+        _libreofficeProfile = mkdtempSync(path.join(os.tmpdir(), "libreoffice_docx_profile_"));
+    }
+    return _libreofficeProfile;
+}
+
+export function getMacroDir(): string {
+    return `${getLibreOfficeProfile()}/user/basic/Standard`;
+}
 
 export const ACCEPT_CHANGES_MACRO = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE script:module PUBLIC "-//OpenOffice.org//DTD OfficeDocument 1.0//EN" "module.dtd">
@@ -92,7 +106,7 @@ export async function acceptChangesResult(inputFile: string, outputFile: string)
 
     const args = [
         "--headless",
-        `-env:UserInstallation=file://${LIBREOFFICE_PROFILE}`,
+        `-env:UserInstallation=file://${getLibreOfficeProfile()}`,
         "--norestore",
         "vnd.sun.star.script:Standard.Module1.AcceptAllTrackedChanges?language=Basic&location=application",
         outputPath,
@@ -174,7 +188,7 @@ async function runSofficeWithTimeout(args: string[], timeoutMs: number): Promise
  * `--terminate_after_init` warm-up that creates the profile skeleton.
  */
 export async function setupLibreofficeMacro(): Promise<boolean> {
-    const macroFile = path.join(MACRO_DIR, "Module1.xba");
+    const macroFile = path.join(getMacroDir(), "Module1.xba");
 
     if (existsSync(macroFile)) {
         try {
@@ -187,10 +201,10 @@ export async function setupLibreofficeMacro(): Promise<boolean> {
         }
     }
 
-    if (!existsSync(MACRO_DIR)) {
+    if (!existsSync(getMacroDir())) {
         try {
             await runSofficeWithTimeout(
-                ["--headless", `-env:UserInstallation=file://${LIBREOFFICE_PROFILE}`, "--terminate_after_init"],
+                ["--headless", `-env:UserInstallation=file://${getLibreOfficeProfile()}`, "--terminate_after_init"],
                 10000,
             );
         } catch {
@@ -199,7 +213,7 @@ export async function setupLibreofficeMacro(): Promise<boolean> {
             // caller gets `false` below.
         }
         try {
-            await fs.mkdir(MACRO_DIR, { recursive: true });
+            await fs.mkdir(getMacroDir(), { recursive: true });
         } catch {
             /* tolerated — write below will surface the real error */
         }

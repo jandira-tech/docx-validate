@@ -236,13 +236,6 @@ const TRACKING_TOKEN_PREFIXES: readonly string[] = [
 ];
 const TRACKING_TOKEN_REGEX = /\[\[DOCX_(?:INS|DEL|CMT)_(?:START|END):[^\]]*?\]\]|\[\[DOCX_PMARK_(?:DEL|INS):[^\]]*?\]\]/g;
 
-// XPath excluding `<w:p>` inside DML/VML text-box overlays. Matches the
-// Python BODY_PARAGRAPH_XPATH.
-const BODY_PARAGRAPH_XPATH =
-    ".//w:p[not(ancestor::w:txbxContent) and not(ancestor::v:textbox)] " +
-    "| " +
-    ".//strict:p[not(ancestor::strict:txbxContent) and not(ancestor::v:textbox)]";
-
 const MAX_PARA_ID = 0x80000000;
 const MAX_DURABLE_ID = 0x7fffffff;
 const MAX_RANDOM_DURABLE = 0x7ffffffe;
@@ -331,6 +324,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "comment-thread-durableid-missing":
             case "comment-thread-durableid-duplicate":
             case "id-durable-overflow":
+            case "word-math-parse":
             case "word-math-spre-body":
             case "word-content-type-invalid":
             case "word-drawing-scalar-whitespace":
@@ -552,7 +546,24 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     async validateInsertions(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const $$ = makeSelect();
+
+        const isInsideDel = (node: Node | null): boolean => {
+            let curr = node?.parentNode;
+            while (curr) {
+                if (curr.nodeType === 1) {
+                    // ELEMENT_NODE
+                    const elem = curr as Element;
+                    const localName = elem.localName;
+                    const ns = elem.namespaceURI;
+                    if (localName === "del" && (ns === WORD_2006_NAMESPACE || ns === WORD_STRICT_NAMESPACE)) {
+                        return true;
+                    }
+                }
+                curr = curr.parentNode;
+            }
+            return false;
+        };
+
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
@@ -566,9 +577,27 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 });
                 continue;
             }
-            const invalid = $$(".//w:ins//w:delText[not(ancestor::w:del)]", dom) as Node[];
-            for (const node of invalid) {
-                const elem = node as Element;
+
+            const invalid: Element[] = [];
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const insNodes = dom.getElementsByTagNameNS(ns, "ins");
+                for (let i = 0; i < insNodes.length; i++) {
+                    const ins = insNodes.item(i);
+                    if (!ins) continue;
+
+                    for (const nsDel of WORD_PARAGRAPH_NAMESPACES) {
+                        const delTexts = ins.getElementsByTagNameNS(nsDel, "delText");
+                        for (let j = 0; j < delTexts.length; j++) {
+                            const delText = delTexts.item(j);
+                            if (delText && !isInsideDel(delText)) {
+                                invalid.push(delText);
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (const elem of invalid) {
                 const text = elem.firstChild?.nodeValue ?? "";
                 issues.push({
                     severity: "error",
@@ -2954,7 +2983,36 @@ function parseIdValue(val: string, base: number): number {
 }
 
 function countParagraphsInRoot(doc: Document): number {
-    const $$ = makeSelect({ strict: WORD_STRICT_NAMESPACE, v: VML_NAMESPACE });
-    const nodes = $$(BODY_PARAGRAPH_XPATH, doc) as Node[];
-    return nodes.length;
+    let count = 0;
+
+    const isInsideTextBox = (node: Node | null): boolean => {
+        let curr = node?.parentNode;
+        while (curr) {
+            if (curr.nodeType === 1) {
+                // ELEMENT_NODE
+                const elem = curr as Element;
+                const localName = elem.localName;
+                const ns = elem.namespaceURI;
+                if (localName === "txbxContent" && (ns === WORD_2006_NAMESPACE || ns === WORD_STRICT_NAMESPACE)) {
+                    return true;
+                }
+                if (localName === "textbox" && ns === VML_NAMESPACE) {
+                    return true;
+                }
+            }
+            curr = curr.parentNode;
+        }
+        return false;
+    };
+
+    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+        const ps = doc.getElementsByTagNameNS(ns, "p");
+        for (let i = 0; i < ps.length; i++) {
+            if (!isInsideTextBox(ps.item(i))) {
+                count++;
+            }
+        }
+    }
+
+    return count;
 }
