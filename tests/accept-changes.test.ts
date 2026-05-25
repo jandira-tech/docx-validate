@@ -25,8 +25,8 @@ import {
     acceptChanges,
     acceptChangesResult,
     buildAcceptChangesCommand,
-    LIBREOFFICE_PROFILE,
-    MACRO_DIR,
+    getLibreOfficeProfile,
+    getMacroDir,
     setupLibreofficeMacro,
 } from "../src/scripts/accept-changes";
 
@@ -47,10 +47,11 @@ describe("ACCEPT_CHANGES_MACRO constant", () => {
     });
 });
 
-describe("LIBREOFFICE_PROFILE / MACRO_DIR", () => {
-    it("matches the Python paths verbatim", () => {
-        expect(LIBREOFFICE_PROFILE).toBe("/tmp/libreoffice_docx_profile");
-        expect(MACRO_DIR).toBe("/tmp/libreoffice_docx_profile/user/basic/Standard");
+describe("getLibreOfficeProfile / getMacroDir", () => {
+    it("uses a dynamic user-specific path to prevent CWE-377", () => {
+        const expectedPrefix = path.join(os.tmpdir(), "libreoffice_docx_profile_");
+        expect(getLibreOfficeProfile().startsWith(expectedPrefix)).toBe(true);
+        expect(getMacroDir()).toBe(`${getLibreOfficeProfile()}/user/basic/Standard`);
     });
 });
 
@@ -104,9 +105,9 @@ describe("setupLibreofficeMacro (smoke test)", () => {
     let savedExisted = false;
 
     beforeEach(async () => {
-        if (existsSync(MACRO_DIR)) {
+        if (existsSync(getMacroDir())) {
             savedExisted = true;
-            const macroFile = path.join(MACRO_DIR, "Module1.xba");
+            const macroFile = path.join(getMacroDir(), "Module1.xba");
             if (existsSync(macroFile)) {
                 savedMacro = await fs.readFile(macroFile, "utf-8");
             } else {
@@ -124,18 +125,18 @@ describe("setupLibreofficeMacro (smoke test)", () => {
             // We may have created the dir tree; remove the parent profile
             // only if we created it — safest is to leave it alone, but we
             // do remove the macro file we wrote.
-            const macroFile = path.join(MACRO_DIR, "Module1.xba");
+            const macroFile = path.join(getMacroDir(), "Module1.xba");
             if (existsSync(macroFile)) {
                 await fs.rm(macroFile, { force: true });
             }
         } else if (savedMacro !== null) {
-            const macroFile = path.join(MACRO_DIR, "Module1.xba");
+            const macroFile = path.join(getMacroDir(), "Module1.xba");
             await fs.writeFile(macroFile, savedMacro, "utf-8");
         }
     });
 
-    it("writes the macro file when MACRO_DIR is writable", async () => {
-        if (!hasSoffice && !existsSync(MACRO_DIR)) {
+    it("writes the macro file when getMacroDir is writable", async () => {
+        if (!hasSoffice && !existsSync(getMacroDir())) {
             // The function will try to spawn soffice to bootstrap the dir.
             // Without soffice that fails silently, then the mkdir fallback
             // runs. If /tmp is writable we should still end up with the
@@ -143,7 +144,7 @@ describe("setupLibreofficeMacro (smoke test)", () => {
         }
         const ok = await setupLibreofficeMacro();
         expect(ok).toBe(true);
-        const macroFile = path.join(MACRO_DIR, "Module1.xba");
+        const macroFile = path.join(getMacroDir(), "Module1.xba");
         expect(existsSync(macroFile)).toBe(true);
         const written = await fs.readFile(macroFile, "utf-8");
         expect(written).toContain("AcceptAllTrackedChanges");
@@ -153,7 +154,7 @@ describe("setupLibreofficeMacro (smoke test)", () => {
     it("is idempotent — second call returns true without rewriting", async () => {
         const ok1 = await setupLibreofficeMacro();
         expect(ok1).toBe(true);
-        const macroFile = path.join(MACRO_DIR, "Module1.xba");
+        const macroFile = path.join(getMacroDir(), "Module1.xba");
         const stat1 = await fs.stat(macroFile);
         // Bump mtime granularity by waiting a hair, then re-run.
         await new Promise((r) => setTimeout(r, 5));
