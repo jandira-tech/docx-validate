@@ -32,7 +32,8 @@ describe("MemoryPartFS", () => {
 
     it("entries() snapshots parts for repacking", () => {
         const fs = new MemoryPartFS([["a.xml", "1"], ["b/c.xml", "2"]]);
-        const map = new Map(fs.entries().map(([k, v]) => [k, v.toString("utf-8")]));
+        const dec = new TextDecoder("utf-8");
+        const map = new Map(fs.entries().map(([k, v]) => [k, dec.decode(v)]));
         expect(map.get("a.xml")).toBe("1");
         expect(map.get("b/c.xml")).toBe("2");
     });

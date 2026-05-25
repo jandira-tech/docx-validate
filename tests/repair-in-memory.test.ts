@@ -38,7 +38,7 @@ describe("repairDocxInMemory", () => {
 
         const doc = parts.find(([rel]) => rel === "word/document.xml");
         expect(doc).toBeDefined();
-        const text = (doc as [string, Buffer])[1].toString("utf-8");
+        const text = new TextDecoder("utf-8").decode((doc as [string, Uint8Array])[1]);
         // the whitespace-bearing run now carries xml:space="preserve"
         expect(text).toMatch(/<w:t[^>]*xml:space="preserve"[^>]*> leading and trailing <\/w:t>/);
     });

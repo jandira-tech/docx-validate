@@ -30,11 +30,11 @@ export interface PartFS {
     /** Whether a part exists at this absolute path. */
     exists(absPath: string): boolean;
     readText(absPath: string): Promise<string>;
-    readBytes(absPath: string): Promise<Buffer>;
+    readBytes(absPath: string): Promise<Uint8Array>;
     readTextSync(absPath: string): string;
-    readBytesSync(absPath: string): Buffer;
+    readBytesSync(absPath: string): Uint8Array;
     /** Write a part; parent "directories" are created implicitly. */
-    write(absPath: string, content: string | Buffer): Promise<void>;
+    write(absPath: string, content: string | Uint8Array): Promise<void>;
     /** Delete a part. Missing parts are a no-op. */
     remove(absPath: string): Promise<void>;
 }
@@ -99,7 +99,7 @@ export class DiskPartFS implements PartFS {
         return readFileSync(absPath);
     }
 
-    async write(absPath: string, content: string | Buffer): Promise<void> {
+    async write(absPath: string, content: string | Uint8Array): Promise<void> {
         await fs.mkdir(path.dirname(absPath), { recursive: true });
         await fs.writeFile(absPath, content);
     }
@@ -117,19 +117,23 @@ export class DiskPartFS implements PartFS {
  */
 export class MemoryPartFS implements PartFS {
     readonly root: string;
-    private readonly parts = new Map<string, Buffer>();
+    private readonly parts = new Map<string, Uint8Array>();
+    private static readonly _encoder = new TextEncoder();
+    private static readonly _decoder = new TextDecoder("utf-8");
 
-    constructor(parts?: Iterable<[string, string | Buffer]>, root = "/__mem__") {
+    constructor(parts?: Iterable<[string, string | Uint8Array]>, root = "/__mem__") {
         this.root = root;
         if (parts) {
             for (const [rel, content] of parts) {
-                this.parts.set(this.normalizeRel(rel), this.toBuffer(content));
+                this.parts.set(this.normalizeRel(rel), this.toBytes(content));
             }
         }
     }
 
-    private toBuffer(content: string | Buffer): Buffer {
-        return Buffer.isBuffer(content) ? content : Buffer.from(content, "utf-8");
+    // Browser-safe: no Node `Buffer`. Strings become UTF-8 byte arrays via
+    // TextEncoder; existing byte arrays pass through.
+    private toBytes(content: string | Uint8Array): Uint8Array {
+        return typeof content === "string" ? MemoryPartFS._encoder.encode(content) : content;
     }
 
     /** Absolute → relative POSIX key. Accepts already-relative inputs too. */
@@ -143,7 +147,7 @@ export class MemoryPartFS implements PartFS {
     }
 
     /** Snapshot of every part as `[relPath, bytes]`, for repacking. */
-    entries(): Array<[string, Buffer]> {
+    entries(): Array<[string, Uint8Array]> {
         return [...this.parts.entries()];
     }
 
@@ -161,7 +165,7 @@ export class MemoryPartFS implements PartFS {
         return this.parts.has(this.relKey(absPath));
     }
 
-    private get(absPath: string): Buffer {
+    private get(absPath: string): Uint8Array {
         const key = this.relKey(absPath);
         const buf = this.parts.get(key);
         if (buf === undefined) {
@@ -173,23 +177,23 @@ export class MemoryPartFS implements PartFS {
     }
 
     async readText(absPath: string): Promise<string> {
-        return this.get(absPath).toString("utf-8");
+        return MemoryPartFS._decoder.decode(this.get(absPath));
     }
 
-    async readBytes(absPath: string): Promise<Buffer> {
+    async readBytes(absPath: string): Promise<Uint8Array> {
         return this.get(absPath);
     }
 
     readTextSync(absPath: string): string {
-        return this.get(absPath).toString("utf-8");
+        return MemoryPartFS._decoder.decode(this.get(absPath));
     }
 
-    readBytesSync(absPath: string): Buffer {
+    readBytesSync(absPath: string): Uint8Array {
         return this.get(absPath);
     }
 
-    write(absPath: string, content: string | Buffer): Promise<void> {
-        this.parts.set(this.relKey(absPath), this.toBuffer(content));
+    write(absPath: string, content: string | Uint8Array): Promise<void> {
+        this.parts.set(this.relKey(absPath), this.toBytes(content));
         return Promise.resolve();
     }
 

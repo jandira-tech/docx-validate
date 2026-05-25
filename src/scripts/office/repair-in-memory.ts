@@ -26,7 +26,7 @@ import { DOCXSchemaValidator } from "./validators/docx";
 
 export interface RepairInMemoryResult {
     /** Repaired parts as `[relativePath, bytes]`, ready to repack into a zip. */
-    parts: Array<[string, Buffer]>;
+    parts: Array<[string, Uint8Array]>;
     /** Number of repairs applied (0 ⇒ nothing changed). */
     repairs: number;
 }
@@ -39,7 +39,7 @@ export interface RepairInMemoryResult {
  *                `"word-valid"`).
  */
 export async function repairDocxInMemory(
-    parts: Iterable<[string, string | Buffer]>,
+    parts: Iterable<[string, string | Uint8Array]>,
     options: { profile?: Profile } = {},
 ): Promise<RepairInMemoryResult> {
     const partFS = new MemoryPartFS(parts);

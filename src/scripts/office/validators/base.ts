@@ -37,10 +37,27 @@
  */
 
 import { existsSync, promises as fs, readdirSync, readFileSync, statSync } from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import * as libxmljs from "libxmljs2";
+import type * as LibXmlJs from "libxmljs2";
+
+// Lazy, synchronous loader for the native `libxmljs2` binding. A static
+// `import` would force the native module into every bundle (and break the
+// browser build); the type-only import above keeps the types while this loads
+// the runtime module on first use. XSD validation is the ONLY caller — the
+// repair path never touches it, so a browser bundle that only repairs never
+// evaluates this. `createRequire` is Node-only; in a browser bundle this code
+// is unreachable on the repair path.
+let _libxmljs: typeof LibXmlJs | null = null;
+function libxmljs(): typeof LibXmlJs {
+    if (!_libxmljs) {
+        const require = createRequire(import.meta.url);
+        _libxmljs = require("libxmljs2") as typeof LibXmlJs;
+    }
+    return _libxmljs;
+}
 
 import { withTempDir } from "../../../lib/run-cli";
 import type { PartFS } from "../../../lib/part-fs";
@@ -266,7 +283,7 @@ export class BaseSchemaValidator {
         const issues: ValidationIssue[] = [];
         const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
         for (const xmlFile of this.xmlFiles) {
-            let bytes: Buffer;
+            let bytes: Uint8Array;
             try {
                 bytes = await this.partFS.readBytes(xmlFile);
             } catch {
@@ -1118,8 +1135,8 @@ export class BaseSchemaValidator {
     static assertLibxmljsAvailable(): void {
         try {
             const xsd = '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="r" type="xs:string"/></xs:schema>';
-            const xsdDoc = libxmljs.parseXml(xsd);
-            const doc = libxmljs.parseXml("<r>ok</r>");
+            const xsdDoc = libxmljs().parseXml(xsd);
+            const doc = libxmljs().parseXml("<r>ok</r>");
             const ok = doc.validate(xsdDoc);
             if (ok !== true) {
                 throw new Error(`validate() returned ${String(ok)} on a known-good doc`);
@@ -1147,7 +1164,7 @@ export class BaseSchemaValidator {
 
             const xmlContent = this.partFS.readTextSync(xmlFile);
             const cleanedString = this._preprocessXmlForXsd(xmlContent, xmlFile);
-            const xmlLibDoc = libxmljs.parseXml(cleanedString);
+            const xmlLibDoc = libxmljs().parseXml(cleanedString);
 
             const valid = xmlLibDoc.validate(xsdDoc);
             if (valid) {
@@ -1173,9 +1190,9 @@ export class BaseSchemaValidator {
     // Process-wide cache of parsed XSDs. The OOXML schema bundle is ~1.1 MB and
     // gets re-used across every file in a package; without this every file
     // validation re-parses the same XSD.
-    private static readonly _xsdCache = new Map<string, libxmljs.Document>();
+    private static readonly _xsdCache = new Map<string, LibXmlJs.Document>();
 
-    private static _loadXsd(schemaPath: string): libxmljs.Document {
+    private static _loadXsd(schemaPath: string): LibXmlJs.Document {
         const abs = path.resolve(schemaPath);
         const hit = BaseSchemaValidator._xsdCache.get(abs);
         if (hit) return hit;
@@ -1183,7 +1200,7 @@ export class BaseSchemaValidator {
         // this is a static method (no instance / no `partFS`). Read via fs.
         const content = readFileSync(abs, "utf-8");
         // baseUrl lets `<xs:include>` / `<xs:import>` resolve siblings.
-        const doc = libxmljs.parseXml(content, { baseUrl: abs });
+        const doc = libxmljs().parseXml(content, { baseUrl: abs });
         BaseSchemaValidator._xsdCache.set(abs, doc);
         return doc;
     }
