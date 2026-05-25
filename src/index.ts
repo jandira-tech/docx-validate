@@ -6,6 +6,7 @@ export * from "./lib/part-fs";
 export * from "./lib/run-cli";
 export * from "./lib/types";
 export * from "./lib/xml-helpers";
+export * from "./lib/xsd-engine/index";
 export * from "./scripts/comment";
 export * from "./scripts/office/pack";
 export * from "./scripts/office/repair-in-memory";

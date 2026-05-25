@@ -36,28 +36,9 @@
  * `validate()` and merge the per-check results with `mergeResults`.
  */
 
-import { existsSync, promises as fs, readdirSync, readFileSync, statSync } from "node:fs";
-import { createRequire } from "node:module";
+import { existsSync, promises as fs, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-
-import type * as LibXmlJs from "libxmljs2";
-
-// Lazy, synchronous loader for the native `libxmljs2` binding. A static
-// `import` would force the native module into every bundle (and break the
-// browser build); the type-only import above keeps the types while this loads
-// the runtime module on first use. XSD validation is the ONLY caller — the
-// repair path never touches it, so a browser bundle that only repairs never
-// evaluates this. `createRequire` is Node-only; in a browser bundle this code
-// is unreachable on the repair path.
-let _libxmljs: typeof LibXmlJs | null = null;
-function libxmljs(): typeof LibXmlJs {
-    if (!_libxmljs) {
-        const require = createRequire(import.meta.url);
-        _libxmljs = require("libxmljs2") as typeof LibXmlJs;
-    }
-    return _libxmljs;
-}
 
 import { withTempDir } from "../../../lib/run-cli";
 import type { PartFS } from "../../../lib/part-fs";
@@ -65,6 +46,8 @@ import { DiskPartFS } from "../../../lib/part-fs";
 import type { Profile, ValidationIssue, ValidationResult } from "../../../lib/types";
 import { DEFAULT_PROFILE, OK_RESULT } from "../../../lib/types";
 import { parseXml, serializeXml } from "../../../lib/xml-helpers";
+import type { XsdEngine } from "../../../lib/xsd-engine/types";
+import { createNodeEngine, createXsdEngine } from "../../../lib/xsd-engine/index";
 
 /**
  * Schema mapping table — file basename / suffix → relative path inside the
@@ -196,6 +179,14 @@ export interface BaseSchemaValidatorOptions {
     verbose?: boolean;
     /** Validation profile. Defaults to `"lenient"`. See {@link Profile}. */
     profile?: Profile;
+    /**
+     * In-memory XSD schema bundle (path-relative-to-root → content) for the
+     * WASM (browser) engine. Ignored by the native engine, which reads schemas
+     * from `schemasDir` on disk.
+     */
+    schemaBundle?: Record<string, string>;
+    /** Override the XSD engine (advanced; tests/injection). */
+    xsdEngine?: XsdEngine;
 }
 
 /**
@@ -244,6 +235,8 @@ export class BaseSchemaValidator {
     readonly schemasDir: string;
     readonly xmlFiles: string[];
     readonly profile: Profile;
+    /** Selected XSD engine: native libxmljs2 in Node, WASM libxml2 in browser. */
+    protected readonly xsdEngine: XsdEngine;
 
     /**
      * Subclasses override to map an element name → expected relationship type
@@ -263,6 +256,10 @@ export class BaseSchemaValidator {
         this.schemasDir = opts.schemasDir ?? defaultSchemasDir();
         this.xmlFiles = this.partFS.list([".xml", ".rels"]);
         this.profile = opts.profile ?? DEFAULT_PROFILE;
+        // Pick the XSD engine by runtime (native in Node, WASM in browser);
+        // callers can inject one explicitly.
+        this.xsdEngine =
+            opts.xsdEngine ?? createXsdEngine({ schemasDir: this.schemasDir, schemaBundle: opts.schemaBundle });
     }
 
     /**
@@ -1037,6 +1034,10 @@ export class BaseSchemaValidator {
         const issues: ValidationIssue[] = [];
         let strictSkipped = false;
 
+        // One-time engine init (loads the WASM module in the browser; no-op in
+        // Node). After this the per-file validate calls are synchronous.
+        await this.xsdEngine.init();
+
         for (const xmlFile of this.xmlFiles) {
             if (this._isStrictXmlFile(xmlFile)) {
                 if (!strictSkipped) {
@@ -1133,76 +1134,26 @@ export class BaseSchemaValidator {
      * cannot be performed. Returns silently on success.
      */
     static assertLibxmljsAvailable(): void {
-        try {
-            const xsd = '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="r" type="xs:string"/></xs:schema>';
-            const xsdDoc = libxmljs().parseXml(xsd);
-            const doc = libxmljs().parseXml("<r>ok</r>");
-            const ok = doc.validate(xsdDoc);
-            if (ok !== true) {
-                throw new Error(`validate() returned ${String(ok)} on a known-good doc`);
-            }
-        } catch (err) {
-            const message = err instanceof Error ? err.message : String(err);
-            throw new Error(`libxmljs2 required for XSD validation: ${message}`);
-        }
+        // Node-only startup diagnostic: assert the native engine is loadable.
+        createNodeEngine({}).assertAvailable();
     }
 
     protected _validateSingleFileXsd(xmlFile: string): XsdValidationOutcome {
-        const schemaPath = this._getSchemaPath(xmlFile);
-        if (!schemaPath) return { valid: null, errors: new Set() };
+        const schemaRelKey = this._getSchemaRelKey(xmlFile);
+        if (!schemaRelKey) return { valid: null, errors: new Set() };
 
-        // Catch-all that mirrors the Python `except Exception` block. Anything
-        // that goes wrong during schema loading, XML preprocessing, or validation
-        // becomes a single per-file validation error so the caller can decide
-        // whether to ignore it via `IGNORED_VALIDATION_ERRORS` (which uses simple
-        // substring matching against this string).
-        //
-        // For loud failure on a missing/broken libxmljs2 binding, call
-        // `BaseSchemaValidator.assertLibxmljsAvailable()` once at startup.
+        // Preprocess (strip template tags / mc:Ignorable namespaces) then hand
+        // off to the selected XSD engine (native libxmljs2 in Node, WASM
+        // libxml2-wasm in the browser). Any failure becomes a single per-file
+        // error so the caller can ignore it via `IGNORED_VALIDATION_ERRORS`.
+        let cleanedString: string;
         try {
-            const xsdDoc = BaseSchemaValidator._loadXsd(schemaPath);
-
-            const xmlContent = this.partFS.readTextSync(xmlFile);
-            const cleanedString = this._preprocessXmlForXsd(xmlContent, xmlFile);
-            const xmlLibDoc = libxmljs().parseXml(cleanedString);
-
-            const valid = xmlLibDoc.validate(xsdDoc);
-            if (valid) {
-                return { valid: true, errors: new Set() };
-            }
-            const errors = new Set<string>();
-            const errs =
-                (
-                    xmlLibDoc as unknown as {
-                        validationErrors?: Array<{ message: string }>;
-                    }
-                ).validationErrors ?? [];
-            for (const e of errs) {
-                errors.add((e.message ?? "").trim());
-            }
-            return { valid: false, errors };
+            cleanedString = this._preprocessXmlForXsd(this.partFS.readTextSync(xmlFile), xmlFile);
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
             return { valid: false, errors: new Set([message]) };
         }
-    }
-
-    // Process-wide cache of parsed XSDs. The OOXML schema bundle is ~1.1 MB and
-    // gets re-used across every file in a package; without this every file
-    // validation re-parses the same XSD.
-    private static readonly _xsdCache = new Map<string, LibXmlJs.Document>();
-
-    private static _loadXsd(schemaPath: string): LibXmlJs.Document {
-        const abs = path.resolve(schemaPath);
-        const hit = BaseSchemaValidator._xsdCache.get(abs);
-        if (hit) return hit;
-        // Schemas live on disk under `schemasDir`, never in the part store, and
-        // this is a static method (no instance / no `partFS`). Read via fs.
-        const content = readFileSync(abs, "utf-8");
-        // baseUrl lets `<xs:include>` / `<xs:import>` resolve siblings.
-        const doc = libxmljs().parseXml(content, { baseUrl: abs });
-        BaseSchemaValidator._xsdCache.set(abs, doc);
-        return doc;
+        return this.xsdEngine.validate(cleanedString, schemaRelKey);
     }
 
     /**
@@ -1261,30 +1212,21 @@ export class BaseSchemaValidator {
         return serializeXml(dom, "UTF-8");
     }
 
-    protected _getSchemaPath(xmlFile: string): string | null {
+    /**
+     * The schema key (path relative to the schema root) for a part, e.g.
+     * `"ISO-IEC29500-4_2016/wml.xsd"`. The engine resolves it against its own
+     * schema source (disk for native, in-memory bundle for WASM).
+     */
+    protected _getSchemaRelKey(xmlFile: string): string | null {
         const base = path.basename(xmlFile);
-        if (SCHEMA_MAPPINGS[base]) {
-            return path.join(this.schemasDir, SCHEMA_MAPPINGS[base]);
-        }
-        if (xmlFile.endsWith(".rels")) {
-            return path.join(this.schemasDir, SCHEMA_MAPPINGS[".rels"]);
-        }
-        if (xmlFile.includes("charts/") && base.startsWith("chart")) {
-            return path.join(this.schemasDir, SCHEMA_MAPPINGS["chart"]);
-        }
-        if (xmlFile.includes("theme/") && base.startsWith("theme")) {
-            return path.join(this.schemasDir, SCHEMA_MAPPINGS["theme"]);
-        }
-        if (xmlFile.includes("customXml/") && base.startsWith("itemProps") && base.endsWith(".xml")) {
-            return path.join(this.schemasDir, SCHEMA_MAPPINGS["itemProps"]);
-        }
-        if (xmlFile.includes("_xmlsignatures/") && base.startsWith("sig") && base.endsWith(".xml")) {
-            return path.join(this.schemasDir, SCHEMA_MAPPINGS["sig"]);
-        }
+        if (SCHEMA_MAPPINGS[base]) return SCHEMA_MAPPINGS[base];
+        if (xmlFile.endsWith(".rels")) return SCHEMA_MAPPINGS[".rels"];
+        if (xmlFile.includes("charts/") && base.startsWith("chart")) return SCHEMA_MAPPINGS["chart"];
+        if (xmlFile.includes("theme/") && base.startsWith("theme")) return SCHEMA_MAPPINGS["theme"];
+        if (xmlFile.includes("customXml/") && base.startsWith("itemProps") && base.endsWith(".xml")) return SCHEMA_MAPPINGS["itemProps"];
+        if (xmlFile.includes("_xmlsignatures/") && base.startsWith("sig") && base.endsWith(".xml")) return SCHEMA_MAPPINGS["sig"];
         const parentName = path.basename(path.dirname(xmlFile));
-        if (MAIN_CONTENT_FOLDERS.has(parentName) && SCHEMA_MAPPINGS[parentName]) {
-            return path.join(this.schemasDir, SCHEMA_MAPPINGS[parentName]);
-        }
+        if (MAIN_CONTENT_FOLDERS.has(parentName) && SCHEMA_MAPPINGS[parentName]) return SCHEMA_MAPPINGS[parentName];
         return null;
     }
 
