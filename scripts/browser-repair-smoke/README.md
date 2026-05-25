@@ -16,7 +16,7 @@ the repair path), so a browser bundle that only repairs never touches it.
   DOCX with JSZip, repairs the parts in memory, exposes `globalThis.runRepair`.
 - `stub.mjs` — browser stubs for the Node builtins the repair path never calls
   (`node:fs`/`module`/`url`/`os`/…, plus the `tmp` package). `node:path` is
-  polyfilled with `path-browserify`.
+  polyfilled with `./scripts/browser-repair-smoke/mini-path.mjs`.
 - `index.html` — loads the bundle as an ES module.
 - `runner.mjs` — Playwright: serves the page, calls `runRepair` on a real DOCX,
   asserts the result.
@@ -24,12 +24,12 @@ the repair path), so a browser bundle that only repairs never touches it.
 ## Run
 
 ```bash
-npm i -D esbuild path-browserify jszip playwright && npx playwright install chromium
+npm i -D esbuild ./scripts/browser-repair-smoke/mini-path.mjs jszip playwright && npx playwright install chromium
 # build dist first: npm run build
 npx esbuild scripts/browser-repair-smoke/entry.mjs --bundle --format=esm --platform=browser \
   --banner:js="globalThis.process=globalThis.process||{env:{},argv:[],platform:'browser',cwd:function(){return '/'}};" \
   --alias:tmp=./scripts/browser-repair-smoke/stub.mjs \
-  --alias:node:path=path-browserify --alias:path=path-browserify \
+  --alias:node:path=./scripts/browser-repair-smoke/mini-path.mjs --alias:path=./scripts/browser-repair-smoke/mini-path.mjs \
   --alias:node:fs=./scripts/browser-repair-smoke/stub.mjs --alias:fs=./scripts/browser-repair-smoke/stub.mjs \
   --alias:node:module=./scripts/browser-repair-smoke/stub.mjs --alias:node:url=./scripts/browser-repair-smoke/stub.mjs \
   --alias:node:child_process=./scripts/browser-repair-smoke/stub.mjs --alias:child_process=./scripts/browser-repair-smoke/stub.mjs \
@@ -59,7 +59,7 @@ Repairing `nested-comments-marker.docx` (source has whitespace `<w:t>` missing
 - **`bufferDefined:false`** — Node's `Buffer` is absent ⇒ genuinely the browser.
 - Identical repair count to the Node path ⇒ "identical in Node and browser".
 
-Note: `node:path` is polyfilled (`path-browserify`); the bundler (vite/esbuild)
+Note: `node:path` is polyfilled (`./scripts/browser-repair-smoke/mini-path.mjs`); the bundler (vite/esbuild)
 supplies it. The native `libxmljs2` (XSD validation) is **not** browser-capable —
 swapping it for a WASM libxml2 (`libxml2-wasm`) would make validation run in the
 browser too; that is a separate enhancement.
