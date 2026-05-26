@@ -1,0 +1,65 @@
+{"file":"Sample Document.repaired.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"fixtures/eigen-extended/Sample Document.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/broken/header-with-rid-no-sidecar.docx","word":"open-error","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/broken/sample-document.broken-tables.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/broken/sample-document.empty-rels.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/broken/sample-document.id-overflow.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/broken/sample-document.missing-paraids.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/broken/sample-document.our-pipeline-output-tr-no-textid.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/broken/single-paragraph.malformed-xml.docx","word":"open-error","libreOffice":"rejects","detail":"no-pdf: Error: source file could not be loaded"}
+{"file":"tests/fixtures/broken/tables.missing-namespace.docx","word":"timeout","libreOffice":"rejects","detail":"no-pdf: Error: source file could not be loaded"}
+{"file":"tests/fixtures/external/apache-poi/crash-517626e815e0afa9decd0ebb6d1dee63fb9907dd.docx","word":"unreadable-content-warning","libreOffice":"rejects","detail":"no-pdf: Error: source file could not be loaded"}
+{"file":"tests/fixtures/external/open-xml-sdk/5Errors.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/external/open-xml-sdk/InvalidDocPropsct.docx","word":"open-error","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/external/open-xml-sdk/UnknownElement.docx","word":"open-error","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/external/superdoc/behavior/math-spre-tests.docx","word":"open-error","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/external/superdoc/encryption/encrypted-advanced-text.docx","word":"password-required","libreOffice":"rejects","detail":"no-pdf: Error: source file could not be loaded"}
+{"file":"tests/fixtures/external/superdoc/encryption/encrypted-hello.docx","word":"unknown-dialog","libreOffice":"rejects","detail":"no-pdf: Error: source file could not be loaded"}
+{"file":"tests/fixtures/external/superdoc/layout-engine/shapes/vectors.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/external/superdoc/super-editor/annotations_import.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/external/superdoc/super-editor/hyperlink-exported.docx","word":"open-error","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/external/superdoc/super-editor/invalid-underline.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/external/superdoc/super-editor/paragraph-sectpr-breaks.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/unknown/unknown/comments.unmatched-comment-marker.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/unknown/unknown/footnotes.duplicate-paraid.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/unknown/unknown/header-with-rid-no-sidecar.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/unknown/unknown/text-box.orphan-part.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/unknown/unknown/tiny-picture.broken-rels.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/broken/header-with-rid-no-sidecar.docx","word":"open-error","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/broken/sample-document.broken-tables.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/broken/sample-document.empty-rels.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/broken/sample-document.id-overflow.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/broken/sample-document.missing-paraids.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/broken/sample-document.our-pipeline-output-tr-no-textid.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/broken/single-paragraph.malformed-xml.docx","word":"open-error","libreOffice":"rejects","detail":"no-pdf: Error: source file could not be loaded"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/broken/tables.missing-namespace.docx","word":"open-error","libreOffice":"rejects","detail":"no-pdf: Error: source file could not be loaded"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/external/apache-poi/crash-517626e815e0afa9decd0ebb6d1dee63fb9907dd.docx","word":"unreadable-content-warning","libreOffice":"rejects","detail":"no-pdf: Error: source file could not be loaded"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/external/open-xml-sdk/5Errors.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/external/open-xml-sdk/InvalidDocPropsct.docx","word":"open-error","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/external/open-xml-sdk/UnknownElement.docx","word":"open-error","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/external/superdoc/behavior/math-spre-tests.docx","word":"open-error","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/external/superdoc/encryption/encrypted-advanced-text.docx","word":"password-required","libreOffice":"rejects","detail":"no-pdf: Error: source file could not be loaded"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/external/superdoc/encryption/encrypted-hello.docx","word":"unknown-dialog","libreOffice":"rejects","detail":"no-pdf: Error: source file could not be loaded"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/external/superdoc/layout-engine/shapes/vectors.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/external/superdoc/super-editor/annotations_import.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/external/superdoc/super-editor/hyperlink-exported.docx","word":"open-error","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/external/superdoc/super-editor/invalid-underline.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/external/superdoc/super-editor/paragraph-sectpr-breaks.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/unknown/unknown/comments.unmatched-comment-marker.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/unknown/unknown/footnotes.duplicate-paraid.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/unknown/unknown/header-with-rid-no-sidecar.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/unknown/unknown/text-box.orphan-part.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/unknown/unknown/tiny-picture.broken-rels.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/original/working/sample-document.our-repaired.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/regenerated/external/open-xml-sdk/5Errors.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/regenerated/external/open-xml-sdk/InvalidDocPropsct.docx","word":"open-error","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/regenerated/external/open-xml-sdk/UnknownElement.docx","word":"open-error","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/regenerated/external/superdoc/behavior/math-spre-tests.docx","word":"open-error","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/regenerated/external/superdoc/layout-engine/shapes/vectors.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/regenerated/external/superdoc/super-editor/annotations_import.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/regenerated/external/superdoc/super-editor/hyperlink-exported.docx","word":"open-error","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/regenerated/external/superdoc/super-editor/invalid-underline.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-regenerate-invalid/regenerated/external/superdoc/super-editor/paragraph-sectpr-breaks.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-strict/sample-document.broken-tables.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/word-strict/second-pass/second-pass-actually-broken-sample-document.broken-tables.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
+{"file":"tests/fixtures/working/sample-document.our-repaired-word-broken.docx","word":"unreadable-content-warning","libreOffice":"opens","detail":"pdf-produced"}
