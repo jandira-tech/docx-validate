@@ -36,9 +36,13 @@
  * `validate()` and merge the per-check results with `mergeResults`.
  */
 
+// node:fs / node:url here are used ONLY by node-only paths (defaultSchemasDir,
+// original-file reads, the disk `walkFiles`) — never by the in-memory validate
+// path, which goes through `this.partFS`. The browser build aliases them to
+// stubs. `node:path` is replaced wholesale by the browser-safe pathlite.
 import { existsSync, promises as fs, readdirSync, statSync } from "node:fs";
-import path from "node:path";
 import { fileURLToPath } from "node:url";
+import path from "../../../lib/pathlite";
 
 import { withTempDir } from "../../../lib/run-cli";
 import type { PartFS } from "../../../lib/part-fs";
@@ -661,7 +665,7 @@ export class BaseSchemaValidator {
 
                 try {
                     targetPath = path.resolve(targetPath);
-                    if (existsSync(targetPath) && statSync(targetPath).isFile()) {
+                    if (this.partFS.exists(targetPath)) {
                         referenced.push(targetPath);
                         allReferenced.add(targetPath);
                     } else {
@@ -767,7 +771,7 @@ export class BaseSchemaValidator {
             const relsFile = path.join(relsDir, `${path.basename(xmlFile)}.rels`);
 
             // Gap 4: flag XML parts that use r:id attributes but have no .rels sidecar.
-            if (!existsSync(relsFile)) {
+            if (!this.partFS.exists(relsFile)) {
                 let xmlDomCheck: Document;
                 try {
                     xmlDomCheck = parseXml(await this.partFS.readText(xmlFile));
@@ -910,7 +914,7 @@ export class BaseSchemaValidator {
     async validateContentTypes(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
         const contentTypesFile = path.join(this.unpackedDir, "[Content_Types].xml");
-        if (!existsSync(contentTypesFile)) {
+        if (!this.partFS.exists(contentTypesFile)) {
             return {
                 valid: false,
                 issues: [

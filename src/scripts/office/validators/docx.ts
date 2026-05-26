@@ -42,8 +42,10 @@
  */
 
 import { default as JSZip } from "jszip";
+// node:fs (`fs`) is used only by the node-only original-file path; the browser
+// build aliases it to a stub. node:path → browser-safe pathlite.
 import { promises as fs } from "node:fs";
-import path from "node:path";
+import path from "../../../lib/pathlite";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
 import { makeSelect, parseXml, serializeXml } from "../../../lib/xml-helpers";
