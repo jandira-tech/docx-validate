@@ -33,6 +33,40 @@ interface MutableDocxSemanticInventory {
     counters: Map<string, DocxSemanticCounter>;
 }
 
+export type InventorySeverityClass =
+    | "content"
+    | "table-shape"
+    | "section-geometry"
+    | "image-shape"
+    | "formatting"
+    | "atomic-marks"
+    | "bookkeeping";
+
+const SEVERITY_CLASS_BY_CATEGORY: Record<string, InventorySeverityClass> = {
+    text: "content",
+    "document structure": "content",
+    comment: "content",
+    "comment marker": "content",
+    "tracked change": "content",
+    "content type": "content",
+    numbering: "content",
+    formatting: "formatting",
+    "style reference": "formatting",
+    "style definition": "formatting",
+    "style formatting": "formatting",
+    "table shape": "table-shape",
+    "section geometry": "section-geometry",
+    "image shape": "image-shape",
+    "inline mark": "atomic-marks",
+    "package asset": "bookkeeping",
+    relationship: "bookkeeping",
+    "comment thread": "bookkeeping",
+};
+
+export function severityClassFor(category: string): InventorySeverityClass {
+    return SEVERITY_CLASS_BY_CATEGORY[category] ?? "content";
+}
+
 interface RepairPlanGroup {
     path?: string;
     code: string;
@@ -68,10 +102,11 @@ export function compareDocxSemanticInventories(before: DocxSemanticInventory, af
         const afterCount = after.counters.get(counterKey(counter.path, counter.category, counter.label, counter.unit))?.count ?? 0;
         if (counter.count <= afterCount) continue;
         const lost = counter.count - afterCount;
+        const isContent = severityClassFor(counter.category) === "content";
         issues.push({
-            severity: "error",
+            severity: isContent ? "error" : "warning",
             path: counter.path,
-            code: "repair-content-loss",
+            code: isContent ? "repair-content-loss" : "repair-fidelity-loss",
             message:
                 `Repair lost ${counter.category} '${counter.label}': ` + `${counter.count} → ${afterCount} (-${lost} ${counter.unit}).`,
         });
@@ -588,7 +623,7 @@ function addCounter(
     inventory.counters.set(key, { path: pathValue, category, label, unit, count });
 }
 
-function counterKey(pathValue: string, category: string, label: string, unit: string): string {
+export function counterKey(pathValue: string, category: string, label: string, unit: string): string {
     return `${pathValue}\u0000${category}\u0000${label}\u0000${unit}`;
 }
 

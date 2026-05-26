@@ -7,6 +7,7 @@ import {
     buildRepairPlanIssues,
     collectDocxSemanticInventory,
     compareDocxSemanticInventories,
+    severityClassFor,
 } from "../src/scripts/office/validators/docx-diagnostics";
 
 const W_NS = `xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"`;
@@ -21,6 +22,47 @@ function doc(body: string): string {
 }
 
 describe("docx diagnostics", () => {
+    it("classifies categories into severity classes", () => {
+        expect(severityClassFor("text")).toBe("content");
+        expect(severityClassFor("document structure")).toBe("content");
+        expect(severityClassFor("tracked change")).toBe("content");
+        expect(severityClassFor("content type")).toBe("content");
+        expect(severityClassFor("numbering")).toBe("content");
+        expect(severityClassFor("table shape")).toBe("table-shape");
+        expect(severityClassFor("section geometry")).toBe("section-geometry");
+        expect(severityClassFor("image shape")).toBe("image-shape");
+        expect(severityClassFor("formatting")).toBe("formatting");
+        expect(severityClassFor("style reference")).toBe("formatting");
+        expect(severityClassFor("inline mark")).toBe("atomic-marks");
+        expect(severityClassFor("package asset")).toBe("bookkeeping");
+        expect(severityClassFor("relationship")).toBe("bookkeeping");
+        expect(severityClassFor("comment thread")).toBe("bookkeeping");
+        expect(severityClassFor("comment")).toBe("content");
+    });
+
+    it("tiers repair loss: content → error, other classes → fidelity warning", async () => {
+        await withTempDir(async (dir) => {
+            const before = path.join(dir, "before");
+            const after = path.join(dir, "after");
+            await writeXml(
+                path.join(before, "word", "document.xml"),
+                doc(`<w:p><w:r><w:t>hello</w:t><w:br/></w:r></w:p><w:p><w:r><w:t>world</w:t></w:r></w:p>`),
+            );
+            // after: lost one paragraph (content) AND the line break (atomic mark)
+            await writeXml(path.join(after, "word", "document.xml"), doc(`<w:p><w:r><w:t>hello</w:t></w:r></w:p>`));
+
+            const issues = compareDocxSemanticInventories(
+                await collectDocxSemanticInventory(before),
+                await collectDocxSemanticInventory(after),
+            );
+            const byCode = (code: string) => issues.filter((i) => i.code === code);
+            expect(byCode("repair-content-loss").some((i) => i.severity === "error")).toBe(true);
+            expect(byCode("repair-fidelity-loss").some((i) => i.severity === "warning")).toBe(true);
+            // the line-break loss must NOT be an error
+            expect(byCode("repair-content-loss").some((i) => i.message.includes("line break"))).toBe(false);
+        });
+    });
+
     it("reports formatting coverage loss without positional character diffs", async () => {
         await withTempDir(async (dir) => {
             const before = path.join(dir, "before");
@@ -41,8 +83,8 @@ describe("docx diagnostics", () => {
 
             expect(issues).toHaveLength(1);
             expect(issues[0]).toMatchObject({
-                severity: "error",
-                code: "repair-content-loss",
+                severity: "warning",
+                code: "repair-fidelity-loss",
                 path: "word/document.xml",
             });
             expect(issues[0].message).toContain("formatting 'bold': 10 → 2 (-8 formatted character(s))");
