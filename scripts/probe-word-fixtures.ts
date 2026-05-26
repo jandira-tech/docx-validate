@@ -401,7 +401,12 @@ async function probeWord(file: string, timeoutMs: number, pollMs: number): Promi
     // a transient AppleScript hiccup is not misread as a crash.
     let everSawProcess = false;
     let missingStreak = 0;
-    await execFileAsync("/usr/bin/open", ["-a", "Microsoft Word", file]);
+    // `-g` opens the file in the background so the probe does not steal window
+    // focus from whatever the user is doing. Word still loads the document and
+    // renders any blocking dialog; System Events can inspect another process's
+    // windows without it being frontmost. (Requires the screen to be unlocked —
+    // macOS will not render the dialog at all while the session is locked.)
+    await execFileAsync("/usr/bin/open", ["-g", "-a", "Microsoft Word", file]);
     while (Date.now() - started < timeoutMs) {
         await sleep(pollMs);
         const observed = await inspectWord();
