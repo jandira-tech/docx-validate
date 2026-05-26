@@ -20,6 +20,7 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
+import { validate } from "../src/scripts/office/validate";
 import {
     DOCXSchemaValidator,
     WORD_2006_NAMESPACE,
@@ -1111,6 +1112,43 @@ describe("DOCXSchemaValidator", () => {
                 expect(issue?.severity).toBe("warning");
                 expect(result.valid).toBe(true);
             });
+        });
+
+        // Regression: these escalations are backed by opening the real fixtures in
+        // Microsoft Word (see broken-word/FINDINGS.md). Word rejected each with an
+        // "unreadable content" dialog, yet word-valid previously passed them.
+        it("keeps ignorable-undeclared an error under word-valid (Word rejects undeclared mc:Ignorable prefixes)", async () => {
+            await withTempDir(async (dir) => {
+                const mcNs = `xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"`;
+                // mc:Ignorable lists w14/w15 but only w14 is declared — Word refuses to open this.
+                const w14 = `xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"`;
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    `<?xml version="1.0"?><w:document ${W_NS} ${mcNs} ${w14} mc:Ignorable="w14 w15 wp14"><w:body/></w:document>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" });
+                const result = await v.validate();
+                const issue = result.issues.find((i) => i.code === "ignorable-undeclared");
+                expect(issue?.severity).toBe("error");
+                expect(result.valid).toBe(false);
+            });
+        });
+
+        // Word's tolerance of malformed docProps atomic values is inconsistent —
+        // it collapses the whitespace and opens endnotes.paraid-overflow.docx and
+        // empty.missing-content-type.docx cleanly, while rejecting other files. So
+        // docProps xsd-errors are NOT escalated under word-valid (no reliable signal).
+        it("does NOT escalate docProps xsd-errors under word-valid (Word opens them cleanly)", async () => {
+            const fixture = path.join(
+                __dirname,
+                "fixtures/unknown/unknown/endnotes.paraid-overflow.docx",
+            );
+            const result = await validate(fixture, { profile: "word-valid" });
+            const blockingDocProps = result.issues.find(
+                (i) => i.code === "xsd-error" && i.severity === "error" && (i.path ?? "").startsWith("docProps/"),
+            );
+            expect(blockingDocProps).toBeUndefined();
+            expect(result.valid).toBe(true);
         });
     });
 

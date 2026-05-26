@@ -2,7 +2,8 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { DiskPartFS, MemoryPartFS } from "../src/lib/part-fs";
+import { MemoryPartFS } from "../src/lib/part-fs";
+import { DiskPartFS } from "../src/lib/part-fs.node";
 
 describe("MemoryPartFS", () => {
     it("lists, reads, writes and removes parts via absolute paths rooted at root", async () => {

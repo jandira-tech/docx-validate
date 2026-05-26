@@ -1,0 +1,58 @@
+{
+  "generatedAt": "2026-05-25T22:45:29.462Z",
+  "tool": "@ooxml-tools/validate@0.4.4",
+  "fixtureCount": 573,
+  "versions": [
+    "Microsoft365",
+    "Office2007",
+    "Office2010",
+    "Office2013",
+    "Office2016",
+    "Office2019",
+    "Office2021"
+  ],
+  "perVersion": {
+    "Microsoft365": {
+      "clean": 323,
+      "withErrors": 232,
+      "crashed": 18,
+      "totalErrors": 2640
+    },
+    "Office2007": {
+      "clean": 367,
+      "withErrors": 188,
+      "crashed": 18,
+      "totalErrors": 3407
+    },
+    "Office2010": {
+      "clean": 322,
+      "withErrors": 233,
+      "crashed": 18,
+      "totalErrors": 2642
+    },
+    "Office2013": {
+      "clean": 324,
+      "withErrors": 231,
+      "crashed": 18,
+      "totalErrors": 2639
+    },
+    "Office2016": {
+      "clean": 324,
+      "withErrors": 231,
+      "crashed": 18,
+      "totalErrors": 2639
+    },
+    "Office2019": {
+      "clean": 324,
+      "withErrors": 231,
+      "crashed": 18,
+      "totalErrors": 2639
+    },
+    "Office2021": {
+      "clean": 323,
+      "withErrors": 232,
+      "crashed": 18,
+      "totalErrors": 2640
+    }
+  }
+}

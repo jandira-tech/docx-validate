@@ -28,7 +28,7 @@ const execFileAsync = promisify(execFile);
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_FIXTURES = path.resolve(HERE, "..", "tests/fixtures");
 
-type WordOutcome = "clean-open" | "unreadable-content-warning" | "open-error" | "password-required" | "unknown-dialog" | "timeout";
+type WordOutcome = "clean-open" | "unreadable-content-warning" | "open-error" | "password-required" | "unknown-dialog" | "timeout" | "word-crashed";
 
 interface CliOptions {
     root: string;
@@ -215,6 +215,42 @@ async function forceQuitWord(): Promise<void> {
     }
 }
 
+/**
+ * Best-effort: dismiss the macOS "Microsoft Word quit unexpectedly" crash
+ * dialog and kill the ReportCrash reporter, so a crash on one fixture cannot
+ * leave a modal blocking the next `open`.
+ */
+async function dismissCrashReporter(): Promise<void> {
+    try {
+        await osascript(`
+tell application "System Events"
+  repeat with p in (every process whose name is "Microsoft Word" or name contains "ReportCrash" or name is "Problem Reporter")
+    try
+      repeat with w in windows of p
+        try
+          if (name of w as text) contains "quit unexpectedly" or (name of w as text) contains "Problem Report" then
+            repeat with bn in {"OK", "Ignore", "Close", "Don’t Reopen", "Don't Reopen"}
+              try
+                if exists button bn of w then click button bn of w
+              end try
+            end repeat
+          end if
+        end try
+      end repeat
+    end try
+  end repeat
+end tell
+`);
+    } catch {
+        // Accessibility hiccups are non-fatal; the pkill below is the backstop.
+    }
+    try {
+        await execFileAsync("/usr/bin/pkill", ["-9", "-x", "ReportCrash"]);
+    } catch {
+        // No reporter running is fine.
+    }
+}
+
 async function cleanupWord(): Promise<void> {
     await osascript(`
 tell application "System Events"
@@ -359,6 +395,12 @@ function sleep(ms: number): Promise<void> {
 async function probeWord(file: string, timeoutMs: number, pollMs: number): Promise<WordProbe> {
     const started = Date.now();
     let lastDetails = "";
+    // Track the Word process lifecycle so a launch-then-vanish (crash) is
+    // recorded distinctly instead of being swallowed as a timeout. We require
+    // two consecutive "process gone" polls *after* having seen it running, so
+    // a transient AppleScript hiccup is not misread as a crash.
+    let everSawProcess = false;
+    let missingStreak = 0;
     await execFileAsync("/usr/bin/open", ["-a", "Microsoft Word", file]);
     while (Date.now() - started < timeoutMs) {
         await sleep(pollMs);
@@ -376,6 +418,25 @@ async function probeWord(file: string, timeoutMs: number, pollMs: number): Promi
                 details: observed.details,
                 durationMs: Date.now() - started,
             };
+        }
+
+        const processAbsent = observed.details.startsWith("NO_PROCESS");
+        if (!processAbsent) {
+            everSawProcess = true;
+            missingStreak = 0;
+        } else if (everSawProcess) {
+            missingStreak += 1;
+            if (missingStreak >= 2) {
+                await dismissCrashReporter();
+                await forceQuitWord();
+                await sleep(1000);
+                return {
+                    outcome: "word-crashed",
+                    clean: false,
+                    details: lastDetails || "process vanished after launching the file",
+                    durationMs: Date.now() - started,
+                };
+            }
         }
     }
     await cleanupWord();

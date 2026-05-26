@@ -24,7 +24,7 @@ the repair path), so a browser bundle that only repairs never touches it.
 ## Run
 
 ```bash
-npm i -D esbuild ./scripts/browser-repair-smoke/mini-path.mjs jszip playwright && npx playwright install chromium
+npm i -D esbuild jszip playwright && npx playwright install chromium  # node:path → ./mini-path.mjs (no polyfill pkg)
 # build dist first: npm run build
 npx esbuild scripts/browser-repair-smoke/entry.mjs --bundle --format=esm --platform=browser \
   --banner:js="globalThis.process=globalThis.process||{env:{},argv:[],platform:'browser',cwd:function(){return '/'}};" \

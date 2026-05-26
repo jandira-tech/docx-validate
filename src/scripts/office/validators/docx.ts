@@ -328,6 +328,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-math-spre-body":
             case "word-content-type-invalid":
             case "word-drawing-scalar-whitespace":
+            // Word refuses to open a package whose mc:Ignorable references a prefix
+            // that was never declared (e.g. mc:Ignorable="w14 w15 wp14" with only
+            // w14 declared). Verified in real Word — see broken-word/FINDINGS.md.
+            case "ignorable-undeclared":
                 return true;
             case "rels-missing-sidecar":
                 return !/^word\/(?:header|footer)\d*\.xml$/i.test(issue.path ?? "");

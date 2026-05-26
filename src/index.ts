@@ -3,6 +3,7 @@
  */
 
 export * from "./lib/part-fs";
+export * from "./lib/part-fs.node";
 export * from "./lib/run-cli";
 export * from "./lib/types";
 export * from "./lib/xml-helpers";

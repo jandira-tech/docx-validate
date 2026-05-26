@@ -1,0 +1,1636 @@
+{
+  "summary": {
+    "baseline": "Microsoft365",
+    "total": 573,
+    "sdkCrashed": 18,
+    "comparable": 555,
+    "matrix": {
+      "bothValid": 312,
+      "bothInvalid": 42,
+      "oursValidSdkInvalid": 190,
+      "oursInvalidSdkValid": 11
+    },
+    "falseNegativeCandidates": 190,
+    "falseNegativeExplainedByStrictSkip": 2,
+    "falsePositiveCandidates": 11,
+    "oursThrewCount": 6
+  },
+  "falsePositives": [
+    {
+      "file": "Sample Document.repaired.docx",
+      "ours": {
+        "valid": false,
+        "errors": 2,
+        "warnings": 5,
+        "infos": 94,
+        "strictSkipped": false,
+        "codes": {
+          "comment-thread-commentid-paraid-orphan": 1,
+          "comment-thread-durableid-orphan": 1,
+          "textid-missing-element": 1,
+          "paraid-missing-element": 3,
+          "font-table-empty": 1,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1,
+          "run-props-redundant": 92
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/super-editor/paragraph-sectpr-breaks.docx",
+      "ours": {
+        "valid": false,
+        "errors": 1,
+        "warnings": 8,
+        "infos": 3,
+        "strictSkipped": false,
+        "codes": {
+          "rels-unreferenced": 4,
+          "ct-undeclared-ext": 2,
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "paraid-missing-element": 1,
+          "rel-ids-sequential": 3
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/unknown/unknown/empty.missing-content-type.docx",
+      "ours": {
+        "valid": false,
+        "errors": 1,
+        "warnings": 1,
+        "infos": 3,
+        "strictSkipped": false,
+        "codes": {
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/unknown/unknown/endnotes.paraid-overflow.docx",
+      "ours": {
+        "valid": false,
+        "errors": 1,
+        "warnings": 1,
+        "infos": 3,
+        "strictSkipped": false,
+        "codes": {
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/unknown/unknown/footnotes.duplicate-paraid.docx",
+      "ours": {
+        "valid": false,
+        "errors": 3,
+        "warnings": 1,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "xsd-summary": 1,
+          "xsd-error": 3,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/unknown/unknown/text-box.orphan-part.docx",
+      "ours": {
+        "valid": false,
+        "errors": 7,
+        "warnings": 4,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "rels-unreferenced": 1,
+          "xsd-summary": 2,
+          "xsd-error": 4,
+          "rel-ids-sequential": 2,
+          "word-drawing-scalar-whitespace": 4
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/word-regenerate-invalid/original/external/superdoc/super-editor/paragraph-sectpr-breaks.docx",
+      "ours": {
+        "valid": false,
+        "errors": 1,
+        "warnings": 8,
+        "infos": 3,
+        "strictSkipped": false,
+        "codes": {
+          "rels-unreferenced": 4,
+          "ct-undeclared-ext": 2,
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "paraid-missing-element": 1,
+          "rel-ids-sequential": 3
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/word-regenerate-invalid/original/unknown/unknown/footnotes.duplicate-paraid.docx",
+      "ours": {
+        "valid": false,
+        "errors": 3,
+        "warnings": 1,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "xsd-summary": 1,
+          "xsd-error": 3,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/word-regenerate-invalid/original/unknown/unknown/text-box.orphan-part.docx",
+      "ours": {
+        "valid": false,
+        "errors": 7,
+        "warnings": 4,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "rels-unreferenced": 1,
+          "xsd-summary": 2,
+          "xsd-error": 4,
+          "rel-ids-sequential": 2,
+          "word-drawing-scalar-whitespace": 4
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/word-regenerate-invalid/regenerated/external/superdoc/super-editor/paragraph-sectpr-breaks.docx",
+      "ours": {
+        "valid": false,
+        "errors": 1,
+        "warnings": 7,
+        "infos": 3,
+        "strictSkipped": false,
+        "codes": {
+          "rels-unreferenced": 4,
+          "ct-undeclared-ext": 2,
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "rel-ids-sequential": 3
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/word-strict/second-pass/second-pass-actually-broken-sample-document.broken-tables.docx",
+      "ours": {
+        "valid": false,
+        "errors": 2,
+        "warnings": 1,
+        "infos": 94,
+        "strictSkipped": false,
+        "codes": {
+          "comment-thread-commentid-paraid-orphan": 1,
+          "comment-thread-durableid-orphan": 1,
+          "font-table-empty": 1,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1,
+          "run-props-redundant": 92
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    }
+  ],
+  "falseNegatives": [
+    {
+      "file": "fixtures/eigen-extended/120_csat-survey-q4-2025-nps-suggestion.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 8,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 4,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 5,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Sample Document (1).docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 122,
+        "infos": 94,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 53,
+          "id-textid-overflow": 51,
+          "textid-missing-element": 1,
+          "paraid-missing-element": 5,
+          "style-reference-undefined": 2,
+          "style-default-missing": 4,
+          "rels-empty-part": 5,
+          "font-table-empty": 1,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1,
+          "run-props-redundant": 92
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 105,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/T01_basic-table-no-styles (1).docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 12,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 7,
+          "textid-missing-element": 1,
+          "paraid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 7,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/T01_basic-table-no-styles.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 12,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 7,
+          "textid-missing-element": 1,
+          "paraid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 7,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/T02_table-bold-header-styled (1).docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 11,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 6,
+          "textid-missing-element": 1,
+          "paraid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 6,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/T02_table-bold-header-styled.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 15,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 10,
+          "textid-missing-element": 1,
+          "paraid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 10,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/T03_table-suggesting-insertions (1).docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 13,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 8,
+          "textid-missing-element": 1,
+          "paraid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 10,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/T04_table-suggesting-deletions (1).docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 13,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 8,
+          "textid-missing-element": 1,
+          "paraid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 10,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/T04_table-suggesting-deletions.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 6,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 2,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 4,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/T05_table-4col-content-rich.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 16,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 11,
+          "textid-missing-element": 1,
+          "paraid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 11,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/T05_table-4col-quarterly-report.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 14,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 9,
+          "textid-missing-element": 1,
+          "paraid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 9,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/T06_table-colored-header-styled.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 5,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 1,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 1,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/T06_table-italic-colored-header.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 15,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 10,
+          "textid-missing-element": 1,
+          "paraid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 10,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/T07_table-2col-no-border-content.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 13,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 8,
+          "textid-missing-element": 1,
+          "paraid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 8,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/T07_table-meeting-agenda.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 11,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 6,
+          "textid-missing-element": 1,
+          "paraid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 6,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/T08_table-book-catalog-italic.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 8,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 3,
+          "textid-missing-element": 1,
+          "paraid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 3,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/T08_table-italic-styled-cells.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 5,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 1,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 1,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/T09_table-suggesting-mixed-edits (1).docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 14,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 9,
+          "textid-missing-element": 1,
+          "paraid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 19,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/T09_table-suggesting-mixed-edits.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 4,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 5,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/T10_table-with-comment.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 14,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 9,
+          "textid-missing-element": 1,
+          "paraid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 9,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T131842.553.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 7,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 3,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 3,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T131916.470.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 6,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 2,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 2,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T131933.559.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 7,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 2,
+          "textid-missing-element": 1,
+          "style-reference-undefined": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 2,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T131949.848.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 6,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 1,
+          "textid-missing-element": 1,
+          "style-reference-undefined": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 1,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T140909.314.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 6,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 1,
+          "textid-missing-element": 1,
+          "style-reference-undefined": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 1,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T140943.292.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 5,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 1,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 1,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T141013.316.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 6,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 2,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 2,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T141057.276.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 6,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 2,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 2,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T141138.380.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 6,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 2,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 2,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T141153.252.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 7,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 3,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 3,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T141232.608.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 6,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 1,
+          "textid-missing-element": 1,
+          "style-reference-undefined": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 1,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T141245.446.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 5,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 1,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 1,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T141301.055.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 7,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 2,
+          "textid-missing-element": 1,
+          "style-reference-undefined": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 2,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T141436.510.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 6,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 2,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 2,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T141529.410.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 6,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 2,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 5,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T141558.133.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 7,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 3,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 3,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T141703.360.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 7,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 3,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 6,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T141807.056.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 9,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 5,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 6,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T141842.980.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 7,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 3,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 4,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T141907.007.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 9,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 5,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 6,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T141930.578.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 9,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 5,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 6,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T141943.764.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 10,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 6,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 7,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T141957.364.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 5,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 1,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 2,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T142012.483.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 6,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 2,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 3,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T142026.696.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 6,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 2,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 3,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T142040.192.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 7,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 3,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 4,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document - 2026-05-14T142058.768.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 8,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 4,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 5,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document (1).docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 5,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 1,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 1,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document (10).docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 6,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 2,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 2,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document (13).docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 7,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 2,
+          "textid-missing-element": 1,
+          "style-reference-undefined": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 2,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document (14).docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 6,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 1,
+          "textid-missing-element": 1,
+          "style-reference-undefined": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 1,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document (15).docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 5,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 1,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 1,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document (16).docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 7,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 3,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 3,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document (17).docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 6,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 2,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 2,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document (18).docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 6,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 2,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 2,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document (19).docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 8,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 4,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 4,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document (2).docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 6,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 2,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 2,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document (20).docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 6,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 2,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 2,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document (21).docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 5,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 1,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 1,
+        "valid": false
+      }
+    },
+    {
+      "file": "fixtures/eigen-extended/Untitled Document (22).docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 5,
+        "infos": 3,
+        "strictSkipped": false,
+        "codes": {
+          "id-paraid-overflow": 1,
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 1,
+        "valid": false
+      }
+    }
+  ],
+  "oursThrew": [
+    {
+      "file": "tests/fixtures/external/apache-poi/crash-517626e815e0afa9decd0ebb6d1dee63fb9907dd.docx",
+      "threw": "Corrupted zip: can't find end of central directory"
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/encryption/encrypted-advanced-text.docx",
+      "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/encryption/encrypted-hello.docx",
+      "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
+    },
+    {
+      "file": "tests/fixtures/word-regenerate-invalid/original/external/apache-poi/crash-517626e815e0afa9decd0ebb6d1dee63fb9907dd.docx",
+      "threw": "Corrupted zip: can't find end of central directory"
+    },
+    {
+      "file": "tests/fixtures/word-regenerate-invalid/original/external/superdoc/encryption/encrypted-advanced-text.docx",
+      "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
+    },
+    {
+      "file": "tests/fixtures/word-regenerate-invalid/original/external/superdoc/encryption/encrypted-hello.docx",
+      "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
+    }
+  ]
+}

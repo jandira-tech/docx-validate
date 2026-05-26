@@ -42,7 +42,7 @@ import { fileURLToPath } from "node:url";
 
 import { withTempDir } from "../../../lib/run-cli";
 import type { PartFS } from "../../../lib/part-fs";
-import { DiskPartFS } from "../../../lib/part-fs";
+import { DiskPartFS } from "../../../lib/part-fs.node";
 import type { Profile, ValidationIssue, ValidationResult } from "../../../lib/types";
 import { DEFAULT_PROFILE, OK_RESULT } from "../../../lib/types";
 import { parseXml, serializeXml } from "../../../lib/xml-helpers";

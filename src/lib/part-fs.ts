@@ -19,8 +19,10 @@
 // uses only `@xmldom/xmldom` for parsing, so an in-memory repair has no native
 // dependency and runs in the browser.
 
-import { existsSync, mkdirSync, promises as fs, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import path from "node:path";
+// Browser-safe: this module uses only pathlite (no `node:fs`/`node:path`), so it
+// bundles for the browser. The disk-backed `DiskPartFS` lives in
+// `part-fs.node.ts` (Node-only) to keep `node:fs` out of the browser graph.
+import path from "./pathlite";
 
 export interface PartFS {
     /** The (possibly virtual) unpacked-package root these paths are relative to. */
@@ -37,76 +39,6 @@ export interface PartFS {
     write(absPath: string, content: string | Uint8Array): Promise<void>;
     /** Delete a part. Missing parts are a no-op. */
     remove(absPath: string): Promise<void>;
-}
-
-/** Disk-backed PartFS — preserves the original `node:fs` behavior exactly. */
-export class DiskPartFS implements PartFS {
-    readonly root: string;
-
-    constructor(unpackedDir: string) {
-        this.root = path.resolve(unpackedDir);
-    }
-
-    list(extensions?: ReadonlyArray<string>): string[] {
-        const results: string[] = [];
-        const stack: string[] = [this.root];
-        while (stack.length > 0) {
-            const current = stack.pop();
-            if (current === undefined) break;
-            let entries: string[];
-            try {
-                entries = readdirSync(current);
-            } catch {
-                continue;
-            }
-            for (const name of entries) {
-                const full = path.join(current, name);
-                let st;
-                try {
-                    st = statSync(full);
-                } catch {
-                    continue;
-                }
-                if (st.isDirectory()) {
-                    stack.push(full);
-                } else if (st.isFile()) {
-                    if (!extensions || extensions.some((e) => full.endsWith(e))) {
-                        results.push(full);
-                    }
-                }
-            }
-        }
-        return results.sort();
-    }
-
-    exists(absPath: string): boolean {
-        return existsSync(absPath);
-    }
-
-    readText(absPath: string): Promise<string> {
-        return fs.readFile(absPath, "utf-8");
-    }
-
-    readBytes(absPath: string): Promise<Buffer> {
-        return fs.readFile(absPath);
-    }
-
-    readTextSync(absPath: string): string {
-        return readFileSync(absPath, "utf-8");
-    }
-
-    readBytesSync(absPath: string): Buffer {
-        return readFileSync(absPath);
-    }
-
-    async write(absPath: string, content: string | Uint8Array): Promise<void> {
-        await fs.mkdir(path.dirname(absPath), { recursive: true });
-        await fs.writeFile(absPath, content);
-    }
-
-    async remove(absPath: string): Promise<void> {
-        await fs.rm(absPath, { force: true });
-    }
 }
 
 /**

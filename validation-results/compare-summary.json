@@ -1,0 +1,1008 @@
+{
+  "summary": {
+    "baseline": "Microsoft365",
+    "total": 573,
+    "sdkCrashed": 18,
+    "comparable": 555,
+    "matrix": {
+      "bothValid": 290,
+      "bothInvalid": 218,
+      "oursValidSdkInvalid": 14,
+      "oursInvalidSdkValid": 33
+    },
+    "falseNegativeCandidates": 14,
+    "falseNegativeExplainedByStrictSkip": 2,
+    "falsePositiveCandidates": 33,
+    "oursThrewCount": 6
+  },
+  "falsePositives": [
+    {
+      "file": "Sample Document.repaired.docx",
+      "ours": {
+        "valid": false,
+        "errors": 2,
+        "warnings": 5,
+        "infos": 94,
+        "strictSkipped": false,
+        "codes": {
+          "comment-thread-commentid-paraid-orphan": 1,
+          "comment-thread-durableid-orphan": 1,
+          "textid-missing-element": 1,
+          "paraid-missing-element": 3,
+          "font-table-empty": 1,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1,
+          "run-props-redundant": 92
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/broken/text-box.orphan-part.docx",
+      "ours": {
+        "valid": false,
+        "errors": 3,
+        "warnings": 1,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "rels-unreferenced": 1,
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "paraid-missing-element": 1,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/external/apache-poi/51921-Word-Crash067.docx",
+      "ours": {
+        "valid": false,
+        "errors": 2,
+        "warnings": 3,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "paraid-missing-element": 3,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/external/docx4j/NumberingImplicitNumId.docx",
+      "ours": {
+        "valid": false,
+        "errors": 1,
+        "warnings": 9,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "rels-broken": 1,
+          "paraid-missing-element": 7,
+          "xml-bom-leading": 2,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/external/open-xml-sdk/EmptyRelationshipElement.docx",
+      "ours": {
+        "valid": false,
+        "errors": 1,
+        "warnings": 1,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "rels-empty-element": 1,
+          "paraid-missing-element": 1,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/behavior/rtl-header-footer.docx",
+      "ours": {
+        "valid": false,
+        "errors": 2,
+        "warnings": 0,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/behavior/rtl-mixed-bidi.docx",
+      "ours": {
+        "valid": false,
+        "errors": 2,
+        "warnings": 0,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/behavior/sd-2672-sdt-table.docx",
+      "ours": {
+        "valid": false,
+        "errors": 2,
+        "warnings": 0,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/evals/employment-offer.docx",
+      "ours": {
+        "valid": false,
+        "errors": 2,
+        "warnings": 1,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "paraid-missing-element": 1,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/evals/lease-agreement.docx",
+      "ours": {
+        "valid": false,
+        "errors": 2,
+        "warnings": 2,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "paraid-missing-element": 2,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/evals/report-with-formatting.docx",
+      "ours": {
+        "valid": false,
+        "errors": 2,
+        "warnings": 2,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "paraid-missing-element": 2,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/super-editor/hyperlink_multiple_runs.docx",
+      "ours": {
+        "valid": false,
+        "errors": 4,
+        "warnings": 1,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "ws-missing-preserve": 2,
+          "paraid-missing-element": 1,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/super-editor/nested-comments.docx",
+      "ours": {
+        "valid": false,
+        "errors": 3,
+        "warnings": 2,
+        "infos": 3,
+        "strictSkipped": false,
+        "codes": {
+          "ws-missing-preserve": 3,
+          "style-default-missing": 2,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/super-editor/page-numbering-examples.docx",
+      "ours": {
+        "valid": false,
+        "errors": 2,
+        "warnings": 2,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "paraid-missing-element": 2,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/super-editor/pagination-blank.docx",
+      "ours": {
+        "valid": false,
+        "errors": 2,
+        "warnings": 3,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "textid-missing-element": 1,
+          "style-default-missing": 2,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/super-editor/paragraph_indent_normal_styles.docx",
+      "ours": {
+        "valid": false,
+        "errors": 2,
+        "warnings": 0,
+        "infos": 4,
+        "strictSkipped": false,
+        "codes": {
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "rel-ids-sequential": 4
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/super-editor/paragraph-sectpr-breaks.docx",
+      "ours": {
+        "valid": false,
+        "errors": 8,
+        "warnings": 1,
+        "infos": 3,
+        "strictSkipped": false,
+        "codes": {
+          "rels-unreferenced": 4,
+          "ct-undeclared-ext": 2,
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "paraid-missing-element": 1,
+          "rel-ids-sequential": 3
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/super-editor/python_docx_comment_test.docx",
+      "ours": {
+        "valid": false,
+        "errors": 2,
+        "warnings": 2,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "textid-missing-element": 1,
+          "paraid-missing-element": 1,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/super-editor/sd-2534-collab-export.docx",
+      "ours": {
+        "valid": false,
+        "errors": 1,
+        "warnings": 0,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "rels-broken": 1,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/super-editor/tab_test.docx",
+      "ours": {
+        "valid": false,
+        "errors": 2,
+        "warnings": 1,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "paraid-missing-element": 1,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/jubarte-defective/jubarte_comments.docx",
+      "ours": {
+        "valid": false,
+        "errors": 2,
+        "warnings": 2,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "comment-thread-count-mismatch": 2,
+          "paraid-missing-element": 2,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/jubarte-defective/jubarte_external_docx-validate_numbering-implicit-numid.docx",
+      "ours": {
+        "valid": false,
+        "errors": 1,
+        "warnings": 7,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "rels-broken": 1,
+          "paraid-missing-element": 7,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/jubarte-defective/jubarte_nested-comments-marker.docx",
+      "ours": {
+        "valid": false,
+        "errors": 3,
+        "warnings": 3,
+        "infos": 3,
+        "strictSkipped": false,
+        "codes": {
+          "ws-missing-preserve": 3,
+          "textid-missing-element": 1,
+          "style-default-missing": 2,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/unknown/unknown/empty.missing-content-type.docx",
+      "ours": {
+        "valid": false,
+        "errors": 2,
+        "warnings": 0,
+        "infos": 3,
+        "strictSkipped": false,
+        "codes": {
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/unknown/unknown/endnotes.paraid-overflow.docx",
+      "ours": {
+        "valid": false,
+        "errors": 2,
+        "warnings": 0,
+        "infos": 3,
+        "strictSkipped": false,
+        "codes": {
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/unknown/unknown/footnotes.duplicate-paraid.docx",
+      "ours": {
+        "valid": false,
+        "errors": 4,
+        "warnings": 0,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "xsd-summary": 1,
+          "xsd-error": 3,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/unknown/unknown/text-box.orphan-part.docx",
+      "ours": {
+        "valid": false,
+        "errors": 7,
+        "warnings": 0,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "rels-unreferenced": 1,
+          "xsd-summary": 2,
+          "xsd-error": 4,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/word-regenerate-invalid/original/external/superdoc/super-editor/paragraph-sectpr-breaks.docx",
+      "ours": {
+        "valid": false,
+        "errors": 8,
+        "warnings": 1,
+        "infos": 3,
+        "strictSkipped": false,
+        "codes": {
+          "rels-unreferenced": 4,
+          "ct-undeclared-ext": 2,
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "paraid-missing-element": 1,
+          "rel-ids-sequential": 3
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/word-regenerate-invalid/original/unknown/unknown/footnotes.duplicate-paraid.docx",
+      "ours": {
+        "valid": false,
+        "errors": 4,
+        "warnings": 0,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "xsd-summary": 1,
+          "xsd-error": 3,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/word-regenerate-invalid/original/unknown/unknown/text-box.orphan-part.docx",
+      "ours": {
+        "valid": false,
+        "errors": 7,
+        "warnings": 0,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "rels-unreferenced": 1,
+          "xsd-summary": 2,
+          "xsd-error": 4,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/word-regenerate-invalid/regenerated/external/superdoc/super-editor/paragraph-sectpr-breaks.docx",
+      "ours": {
+        "valid": false,
+        "errors": 8,
+        "warnings": 0,
+        "infos": 3,
+        "strictSkipped": false,
+        "codes": {
+          "rels-unreferenced": 4,
+          "ct-undeclared-ext": 2,
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "rel-ids-sequential": 3
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/word-regenerate-invalid/regenerated/unknown/unknown/text-box.orphan-part.docx",
+      "ours": {
+        "valid": false,
+        "errors": 3,
+        "warnings": 0,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "rels-unreferenced": 1,
+          "xsd-summary": 1,
+          "xsd-error": 1,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    },
+    {
+      "file": "tests/fixtures/word-strict/second-pass/second-pass-actually-broken-sample-document.broken-tables.docx",
+      "ours": {
+        "valid": false,
+        "errors": 2,
+        "warnings": 1,
+        "infos": 94,
+        "strictSkipped": false,
+        "codes": {
+          "comment-thread-commentid-paraid-orphan": 1,
+          "comment-thread-durableid-orphan": 1,
+          "font-table-empty": 1,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1,
+          "run-props-redundant": 92
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 0,
+        "valid": true
+      }
+    }
+  ],
+  "falseNegatives": [
+    {
+      "file": "fixtures/eigen-extended/T09_table-suggesting-mixed-edits.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 4,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "textid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 1
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 5,
+        "valid": false
+      }
+    },
+    {
+      "file": "tests/fixtures/external/mammoth-js/strict-format.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 1,
+        "infos": 3,
+        "strictSkipped": true,
+        "codes": {
+          "xsd-strict-skipped": 1,
+          "paraid-missing-element": 1,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 58,
+        "valid": false
+      }
+    },
+    {
+      "file": "tests/fixtures/external/open-xml-sdk/Strict01.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 0,
+        "infos": 3,
+        "strictSkipped": true,
+        "codes": {
+          "xsd-strict-skipped": 1,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 788,
+        "valid": false
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/behavior/math-spre-tests.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 0,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 1,
+        "valid": false
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/super-editor/basic-resolved-comment.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 0,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 1,
+        "valid": false
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/super-editor/broken-complex-list.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 0,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 18,
+        "valid": false
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/super-editor/complex-list-def-issue.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 0,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 18,
+        "valid": false
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/super-editor/complex-list-def-short.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 0,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 18,
+        "valid": false
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/super-editor/custom-list1.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 0,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 1,
+        "valid": false
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/super-editor/sdpr-titleonly.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 0,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 9,
+        "valid": false
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/super-editor/sdpr.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 0,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 9,
+        "valid": false
+      }
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/super-editor/shape_group.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 4,
+        "infos": 3,
+        "strictSkipped": false,
+        "codes": {
+          "paraid-missing-element": 1,
+          "style-default-missing": 3,
+          "latent-styles-missing": 1,
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 12,
+        "valid": false
+      }
+    },
+    {
+      "file": "tests/fixtures/word-regenerate-invalid/original/external/superdoc/behavior/math-spre-tests.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 0,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 1,
+        "valid": false
+      }
+    },
+    {
+      "file": "tests/fixtures/word-regenerate-invalid/regenerated/external/superdoc/behavior/math-spre-tests.docx",
+      "ours": {
+        "valid": true,
+        "errors": 0,
+        "warnings": 0,
+        "infos": 2,
+        "strictSkipped": false,
+        "codes": {
+          "rel-ids-sequential": 2
+        }
+      },
+      "sdk": {
+        "crashed": false,
+        "errors": 1,
+        "valid": false
+      }
+    }
+  ],
+  "oursThrew": [
+    {
+      "file": "tests/fixtures/external/apache-poi/crash-517626e815e0afa9decd0ebb6d1dee63fb9907dd.docx",
+      "threw": "Corrupted zip: can't find end of central directory"
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/encryption/encrypted-advanced-text.docx",
+      "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
+    },
+    {
+      "file": "tests/fixtures/external/superdoc/encryption/encrypted-hello.docx",
+      "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
+    },
+    {
+      "file": "tests/fixtures/word-regenerate-invalid/original/external/apache-poi/crash-517626e815e0afa9decd0ebb6d1dee63fb9907dd.docx",
+      "threw": "Corrupted zip: can't find end of central directory"
+    },
+    {
+      "file": "tests/fixtures/word-regenerate-invalid/original/external/superdoc/encryption/encrypted-advanced-text.docx",
+      "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
+    },
+    {
+      "file": "tests/fixtures/word-regenerate-invalid/original/external/superdoc/encryption/encrypted-hello.docx",
+      "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
+    }
+  ]
+}

@@ -1,0 +1,574 @@
+file,format,Microsoft365,Office2007,Office2010,Office2013,Office2016,Office2019,Office2021
+"fixtures/eigen-extended/120_csat-survey-q4-2025-nps-suggestion.docx",docx,5,1,5,5,5,5,5
+"fixtures/eigen-extended/Sample Document (1).docx",docx,105,1,105,105,105,105,105
+"fixtures/eigen-extended/Sample Document.docx",docx,106,2,106,106,106,106,106
+"fixtures/eigen-extended/T01_basic-table-no-styles (1).docx",docx,7,0,7,7,7,7,7
+"fixtures/eigen-extended/T01_basic-table-no-styles.docx",docx,7,0,7,7,7,7,7
+"fixtures/eigen-extended/T02_table-bold-header-styled (1).docx",docx,6,0,6,6,6,6,6
+"fixtures/eigen-extended/T02_table-bold-header-styled.docx",docx,10,0,10,10,10,10,10
+"fixtures/eigen-extended/T03_table-suggesting-insertions (1).docx",docx,10,2,10,10,10,10,10
+"fixtures/eigen-extended/T03_table-suggesting-insertions.docx",docx,0,0,0,0,0,0,0
+"fixtures/eigen-extended/T04_table-suggesting-deletions (1).docx",docx,10,2,10,10,10,10,10
+"fixtures/eigen-extended/T04_table-suggesting-deletions.docx",docx,4,2,4,4,4,4,4
+"fixtures/eigen-extended/T05_table-4col-content-rich.docx",docx,11,0,11,11,11,11,11
+"fixtures/eigen-extended/T05_table-4col-quarterly-report.docx",docx,9,0,9,9,9,9,9
+"fixtures/eigen-extended/T06_table-colored-header-styled.docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/T06_table-italic-colored-header.docx",docx,10,0,10,10,10,10,10
+"fixtures/eigen-extended/T07_table-2col-no-border-content.docx",docx,8,0,8,8,8,8,8
+"fixtures/eigen-extended/T07_table-meeting-agenda.docx",docx,6,0,6,6,6,6,6
+"fixtures/eigen-extended/T08_table-book-catalog-italic.docx",docx,3,0,3,3,3,3,3
+"fixtures/eigen-extended/T08_table-italic-styled-cells.docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/T09_table-suggesting-mixed-edits (1).docx",docx,19,10,19,19,19,19,19
+"fixtures/eigen-extended/T09_table-suggesting-mixed-edits.docx",docx,5,5,5,5,5,5,5
+"fixtures/eigen-extended/T10_table-with-comment.docx",docx,9,0,9,9,9,9,9
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T131830.423.docx",docx,0,0,0,0,0,0,0
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T131842.553.docx",docx,3,0,3,3,3,3,3
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T131916.470.docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T131933.559.docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T131949.848.docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T140909.314.docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T140943.292.docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T141013.316.docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T141057.276.docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T141138.380.docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T141153.252.docx",docx,3,0,3,3,3,3,3
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T141232.608.docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T141245.446.docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T141301.055.docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T141436.510.docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T141529.410.docx",docx,5,3,5,5,5,5,5
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T141558.133.docx",docx,3,0,3,3,3,3,3
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T141703.360.docx",docx,6,3,6,6,6,6,6
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T141807.056.docx",docx,6,1,6,6,6,6,6
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T141842.980.docx",docx,4,1,4,4,4,4,4
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T141907.007.docx",docx,6,1,6,6,6,6,6
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T141930.578.docx",docx,6,1,6,6,6,6,6
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T141943.764.docx",docx,7,1,7,7,7,7,7
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T141957.364.docx",docx,2,1,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T142012.483.docx",docx,3,1,3,3,3,3,3
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T142026.696.docx",docx,3,1,3,3,3,3,3
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T142040.192.docx",docx,4,1,4,4,4,4,4
+"fixtures/eigen-extended/Untitled Document - 2026-05-14T142058.768.docx",docx,5,1,5,5,5,5,5
+"fixtures/eigen-extended/Untitled Document (1).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (10).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (100).docx",docx,0,0,0,0,0,0,0
+"fixtures/eigen-extended/Untitled Document (11).docx",docx,0,0,0,0,0,0,0
+"fixtures/eigen-extended/Untitled Document (12).docx",docx,0,0,0,0,0,0,0
+"fixtures/eigen-extended/Untitled Document (13).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (14).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (15).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (16).docx",docx,3,0,3,3,3,3,3
+"fixtures/eigen-extended/Untitled Document (17).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (18).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (19).docx",docx,4,0,4,4,4,4,4
+"fixtures/eigen-extended/Untitled Document (2).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (20).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (21).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (22).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (23).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (24).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (25).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (26).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (27).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (28).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (29).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (3).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (30).docx",docx,0,0,0,0,0,0,0
+"fixtures/eigen-extended/Untitled Document (31).docx",docx,3,0,3,3,3,3,3
+"fixtures/eigen-extended/Untitled Document (32).docx",docx,0,0,0,0,0,0,0
+"fixtures/eigen-extended/Untitled Document (33).docx",docx,3,0,3,3,3,3,3
+"fixtures/eigen-extended/Untitled Document (34).docx",docx,0,0,0,0,0,0,0
+"fixtures/eigen-extended/Untitled Document (35).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (36).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (37).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (38).docx",docx,3,0,3,3,3,3,3
+"fixtures/eigen-extended/Untitled Document (39).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (4).docx",docx,0,0,0,0,0,0,0
+"fixtures/eigen-extended/Untitled Document (40).docx",docx,3,0,3,3,3,3,3
+"fixtures/eigen-extended/Untitled Document (41).docx",docx,3,0,3,3,3,3,3
+"fixtures/eigen-extended/Untitled Document (42).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (43).docx",docx,3,0,3,3,3,3,3
+"fixtures/eigen-extended/Untitled Document (44).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (45).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (46).docx",docx,3,0,3,3,3,3,3
+"fixtures/eigen-extended/Untitled Document (47).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (48).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (49).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (5).docx",docx,0,0,0,0,0,0,0
+"fixtures/eigen-extended/Untitled Document (50).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (51).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (52).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (53).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (54).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (55).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (56).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (57).docx",docx,3,0,3,3,3,3,3
+"fixtures/eigen-extended/Untitled Document (58).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (59).docx",docx,0,0,0,0,0,0,0
+"fixtures/eigen-extended/Untitled Document (6).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (60).docx",docx,0,0,0,0,0,0,0
+"fixtures/eigen-extended/Untitled Document (61).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (62).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (63).docx",docx,0,0,0,0,0,0,0
+"fixtures/eigen-extended/Untitled Document (64).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (65).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (66).docx",docx,0,0,0,0,0,0,0
+"fixtures/eigen-extended/Untitled Document (67).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (68).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (69).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (7).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (70).docx",docx,3,0,3,3,3,3,3
+"fixtures/eigen-extended/Untitled Document (71).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (72).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (73).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (74).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (75).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (76).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (77).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (78).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (79).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (8).docx",docx,0,0,0,0,0,0,0
+"fixtures/eigen-extended/Untitled Document (80).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (81).docx",docx,3,0,3,3,3,3,3
+"fixtures/eigen-extended/Untitled Document (82).docx",docx,3,0,3,3,3,3,3
+"fixtures/eigen-extended/Untitled Document (83).docx",docx,0,0,0,0,0,0,0
+"fixtures/eigen-extended/Untitled Document (84).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (85).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (86).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (87).docx",docx,0,0,0,0,0,0,0
+"fixtures/eigen-extended/Untitled Document (88).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (89).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (9).docx",docx,3,0,3,3,3,3,3
+"fixtures/eigen-extended/Untitled Document (90).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (91).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (92).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document (93).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (94).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (95).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (96).docx",docx,2,0,2,2,2,2,2
+"fixtures/eigen-extended/Untitled Document (97).docx",docx,0,0,0,0,0,0,0
+"fixtures/eigen-extended/Untitled Document (98).docx",docx,0,0,0,0,0,0,0
+"fixtures/eigen-extended/Untitled Document (99).docx",docx,1,0,1,1,1,1,1
+"fixtures/eigen-extended/Untitled Document.docx",docx,1,0,1,1,1,1,1
+"Sample Document.repaired.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/broken/comments.unmatched-comment-marker.docx",docx,1,1,1,1,1,1,1
+"tests/fixtures/broken/empty.missing-content-type.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/broken/endnotes.paraid-overflow.docx",docx,1,1,1,1,1,1,1
+"tests/fixtures/broken/footnotes.duplicate-paraid.docx",docx,1,0,1,1,1,1,1
+"tests/fixtures/broken/header-with-rid-no-sidecar.docx",docx,3,3,3,3,3,3,3
+"tests/fixtures/broken/sample-document.broken-tables.docx",docx,51,0,51,51,51,51,51
+"tests/fixtures/broken/sample-document.empty-rels.docx",docx,51,0,51,51,51,51,51
+"tests/fixtures/broken/sample-document.id-overflow.docx",docx,106,2,106,106,106,106,106
+"tests/fixtures/broken/sample-document.missing-paraids.docx",docx,51,0,51,51,51,51,51
+"tests/fixtures/broken/sample-document.our-pipeline-output-tr-no-textid.docx",docx,51,0,51,51,51,51,51
+"tests/fixtures/broken/single-paragraph.malformed-xml.docx",docx,1,1,1,1,1,1,1
+"tests/fixtures/broken/tables.missing-namespace.docx",docx,1,1,1,1,1,1,1
+"tests/fixtures/broken/text-box.orphan-part.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/broken/tiny-picture.broken-rels.docx",docx,ERR,ERR,ERR,ERR,ERR,ERR,ERR
+"tests/fixtures/external/apache-poi/51921-Word-Crash067.docx",docx,0,2,0,0,0,0,0
+"tests/fixtures/external/apache-poi/bug56075-changeTracking_on.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/apache-poi/bug59378.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/apache-poi/crash-517626e815e0afa9decd0ebb6d1dee63fb9907dd.docx",docx,ERR,ERR,ERR,ERR,ERR,ERR,ERR
+"tests/fixtures/external/apache-poi/MultipleBodyBug.docx",docx,3,18,3,3,3,3,3
+"tests/fixtures/external/docx-templates/anchor-empty.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/commandExecutionError.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/confusingCommandNames.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/dynamic-columns-with-dynamic-rows.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/docx-templates/dynamic-columns.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/docx-templates/exec.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/execAndIns.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/execPromise.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/execShorthand.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/execWithContext.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/existingUppercaseJPEGExtension.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/falsy-block.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/fixSmartQuotes.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/for-row1.docx",docx,0,90,0,0,0,0,0
+"tests/fixtures/external/docx-templates/for1.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/for1alias.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/for1customDelimiter.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/for1inline.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/for1inlineWithSpaces.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/for1js.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/for1scalars.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/for2.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/for3.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/forLoopWithTextBox.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/forOverObject.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/forOverObjectKeys.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/forWithIdx.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/htmls.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/if-row1.docx",docx,0,162,0,0,0,0,0
+"tests/fixtures/external/docx-templates/if.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/if2.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/ifInline.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/ifStatementsOnSameLine.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/ifStatementsOnSameRow1.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/docx-templates/ifStatementsOnSameRow2.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/docx-templates/imageBase64.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/imageCaption.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/imageExisting.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/imageExistingMultiple.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/imageHeader.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/imageInShapeInFooter.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/docx-templates/imageMultiDelimiter.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/imageRotation.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/imageSimple.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/imagesSVG.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/insertArray.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/insertInHeaderAndFooter.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/insJsComplex.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/insJsSimple.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/insJsWithLoops.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/insOmitted.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/insShorthand.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/invalidCommand.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/invalidFor.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/invalidForCmd.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/invalidIf.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/invalidMultipleErrors.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/link-regression-issue-133.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/link-regression-issue-83.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/links.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/literalXml.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/longText.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/missingEndFor.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/missingEndIf.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/nestedInlineForLoopWithSurroundingText.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/newlineInVariableIssue143.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/nonAlphaCommandNames1.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/nonAlphaCommandNames2.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/noQuery.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/docx-templates/noQueryBrackets.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/noQuerySimpleInserts.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/objectCommandResultError.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/office365.docx",docx,2,1,1,2,2,2,2
+"tests/fixtures/external/docx-templates/quickTest.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/referenceError.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/rejectNullishIMAGE.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/rejectNullishINS.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/replaceOneImage.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/replaceTwoImages.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/simpleQuery.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/simpleQuerySimpleInserts.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/splitDelimiters.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/tableWithHTML.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/docx-templates/unmatchedEndFor.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/unmatchedEndIf.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx-templates/wbs.docx",docx,0,282,0,0,0,0,0
+"tests/fixtures/external/docx-templates/zipGeneration.docx",docx,1,1,1,1,1,1,1
+"tests/fixtures/external/docx4j/header-no-rels.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx4j/hyperlink_dupe.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/docx4j/NumberingImplicitNumId.docx",docx,0,15,0,0,0,0,0
+"tests/fixtures/external/mammoth-js/strict-format.docx",docx,58,61,58,58,58,58,58
+"tests/fixtures/external/mammoth-js/text-box.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/open-xml-sdk/5Errors.docx",docx,5,5,5,5,5,5,5
+"tests/fixtures/external/open-xml-sdk/EmptyRelationshipElement.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/open-xml-sdk/InvalidDocProps.docx",docx,ERR,ERR,ERR,ERR,ERR,ERR,ERR
+"tests/fixtures/external/open-xml-sdk/InvalidDocPropsct.docx",docx,ERR,ERR,ERR,ERR,ERR,ERR,ERR
+"tests/fixtures/external/open-xml-sdk/mcdoc.docx",docx,3,3,3,3,3,3,3
+"tests/fixtures/external/open-xml-sdk/Strict01.docx",docx,788,914,798,788,788,788,788
+"tests/fixtures/external/open-xml-sdk/UnknownElement.docx",docx,1,1,1,1,1,1,1
+"tests/fixtures/external/superdoc/behavior/math-all-objects.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/math-delimiter-tests.docx",docx,6,6,6,6,6,6,6
+"tests/fixtures/external/superdoc/behavior/math-eqarr-tests.docx",docx,1,1,1,1,1,1,1
+"tests/fixtures/external/superdoc/behavior/math-func-tests.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/math-groupchr-tests.docx",docx,2,2,2,2,2,2,2
+"tests/fixtures/external/superdoc/behavior/math-limit-tests.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/math-matrix-tests.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/math-nary-tests.docx",docx,3,3,3,3,3,3,3
+"tests/fixtures/external/superdoc/behavior/math-phantom-tests.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/math-radical-tests.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/math-spre-tests.docx",docx,1,1,1,1,1,1,1
+"tests/fixtures/external/superdoc/behavior/multi-image-types.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/pageref-standalone-h.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/pageref-standalone-uppercase-h.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/rtl-header-footer.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/rtl-mixed-bidi.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/rtl-page-numpages.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/sd-1960-word-replacement-no-comments.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/sd-2323-image-resize-test.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/sd-2343-table-border-widths.docx",docx,0,42,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/sd-2447-toc-tab-alignment.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/sd-2517-localized-heading-styles.docx",docx,6,12,6,6,6,6,6
+"tests/fixtures/external/superdoc/behavior/sd-2672-gridbefore-vmerge.docx",docx,3,9,3,3,3,3,3
+"tests/fixtures/external/superdoc/behavior/sd-2672-merged-table.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/sd-2672-multipara-cell.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/sd-2672-nested-table.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/sd-2672-plain-3x3.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/sd-2672-rtl-table.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/sd-2672-sdt-table.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/sd-2750-borderbox.docx",docx,3,3,3,3,3,3,3
+"tests/fixtures/external/superdoc/behavior/sd-2888-hyperlink-with-ampersand.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/tiff-image.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/two-column-simple.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/word-native-bullet-circle.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/word-native-bullet-disc.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/behavior/word-native-bullet-square.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/cli-legacy/replace-test.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/cli-legacy/sample.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/doc-api-stories/diff-doc1.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/doc-api-stories/diff-doc2.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/doc-api-stories/numwords.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/doc-api-stories/sd-2086-header-row-shading-api.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/doc-api-stories/table-style-options-roundtrip.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/encryption/encrypted-advanced-text.docx",docx,ERR,ERR,ERR,ERR,ERR,ERR,ERR
+"tests/fixtures/external/superdoc/encryption/encrypted-hello.docx",docx,ERR,ERR,ERR,ERR,ERR,ERR,ERR
+"tests/fixtures/external/superdoc/evals/basic-list.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/evals/blank.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/evals/comments-doc.docx",docx,4,7,4,4,4,4,4
+"tests/fixtures/external/superdoc/evals/document.docx",docx,32,32,32,32,32,32,32
+"tests/fixtures/external/superdoc/evals/employment-offer.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/evals/lease-agreement.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/evals/memorandum.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/evals/nda.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/evals/report-with-formatting.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/evals/table-doc.docx",docx,0,174,0,0,0,0,0
+"tests/fixtures/external/superdoc/layout-engine/shapes/basic-vector-shapes.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/layout-engine/shapes/vectors.docx",docx,ERR,ERR,ERR,ERR,ERR,ERR,ERR
+"tests/fixtures/external/superdoc/super-editor/advanced-text.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/alternateContent_valid.docx",docx,1,7,1,1,1,1,1
+"tests/fixtures/external/superdoc/super-editor/anchor_images.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/annot2.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/annotations_import_2.docx",docx,4,4,4,4,4,4,4
+"tests/fixtures/external/superdoc/super-editor/annotations_import.docx",docx,12,12,12,12,12,12,12
+"tests/fixtures/external/superdoc/super-editor/base-custom.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/base-ordered.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/basic-comment.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/basic-footnotes.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/basic-list.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/basic-page-nums.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/basic-paragraph.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/basic-resolved-comment.docx",docx,1,0,0,0,0,0,1
+"tests/fixtures/external/superdoc/super-editor/basic-table-shading.docx",docx,0,78,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/basic-tracked-change.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/blank-doc.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/bookmark_use_cases.docx",docx,8,14,8,8,8,8,8
+"tests/fixtures/external/superdoc/super-editor/broken-complex-list.docx",docx,18,18,18,18,18,18,18
+"tests/fixtures/external/superdoc/super-editor/broken-list-missing-items.docx",docx,0,15,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/broken-list.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/comment.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/complex-list-def-issue.docx",docx,18,18,18,18,18,18,18
+"tests/fixtures/external/superdoc/super-editor/complex-list-def-short-export.docx",docx,24,24,24,24,24,24,24
+"tests/fixtures/external/superdoc/super-editor/complex-list-def-short.docx",docx,18,18,18,18,18,18,18
+"tests/fixtures/external/superdoc/super-editor/complex2.docx",docx,24,24,24,24,24,24,24
+"tests/fixtures/external/superdoc/super-editor/complexexport1.docx",docx,24,24,24,24,24,24,24
+"tests/fixtures/external/superdoc/super-editor/contract-acc.docx",docx,0,18,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/custom-list-numbering1.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/custom-list1.docx",docx,1,16,1,1,1,1,1
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_after.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_after10.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_after11.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_after16.docx",docx,0,126,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_after19.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_after2.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_after3.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_after4.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_after5.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_after6.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_after7.docx",docx,0,12,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_after8.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_after9.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_before.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_before10.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_before11.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_before16.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_before19.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_before2.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_before3.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_before4.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_before5.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_before6.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_before7.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_before8.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/diffing/diff_before9.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/doc_with_spaces_from_styles.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/doc_with_spacing.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/doc-with-graphs-diagrams-rotated.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/dropcaps.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/exported-list-font.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/exporttest.docx",docx,9,9,9,9,9,9,9
+"tests/fixtures/external/superdoc/super-editor/features-redlines-comments-annotations-and-more.docx",docx,4,4,4,4,4,4,4
+"tests/fixtures/external/superdoc/super-editor/fields_attrs1.docx",docx,2,2,2,2,2,2,2
+"tests/fixtures/external/superdoc/super-editor/fields_attrs2_fonts.docx",docx,1,1,1,1,1,1,1
+"tests/fixtures/external/superdoc/super-editor/fields-test.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/font-formatting-runs.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/gdocs-comments-export.docx",docx,4,8,4,4,4,4,4
+"tests/fixtures/external/superdoc/super-editor/gdocs-single-comment.docx",docx,4,6,4,4,4,4,4
+"tests/fixtures/external/superdoc/super-editor/gdocs-tracked-changes.docx",docx,4,9,4,4,4,4,4
+"tests/fixtures/external/superdoc/super-editor/Google Docs Originated comments & TCs.docx",docx,4,23,4,4,4,4,4
+"tests/fixtures/external/superdoc/super-editor/h_f-normal-odd-even-firstpg.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/h_f-normal-odd-even-unchecked-first-pg-unchecked.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/h_f-normal-odd-even.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/h_f-normal.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/header-alternating-odd-even.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/heading-font.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/Hello docx world.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/hummingbird.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/hyperlink_multiple_runs.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/hyperlink_node_internal.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/hyperlink_node.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/hyperlink-exported.docx",docx,4,4,4,4,4,4,4
+"tests/fixtures/external/superdoc/super-editor/image_doc.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/image_p_spacing.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/image-inline-and-block.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/image-out-of-folder.docx",docx,1,1,1,1,1,1,1
+"tests/fixtures/external/superdoc/super-editor/instrtext-angled-brackets-bug.docx",docx,0,15,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/invalid-list-def-fallback.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/invalid-underline.docx",docx,2,2,2,2,2,2,2
+"tests/fixtures/external/superdoc/super-editor/line_space_table.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/line-break.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/list_with_indents.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/list-def-mix.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/list-numbering-reimport.docx",docx,10,10,10,10,10,10,10
+"tests/fixtures/external/superdoc/super-editor/list-spacer1.docx",docx,0,15,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/list-with-break-exported-broken.docx",docx,5,5,5,5,5,5,5
+"tests/fixtures/external/superdoc/super-editor/list-with-break-from-word.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/list-with-table-break.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/lists-sub-paragraph.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/listWithSpacerNodes.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/longer-header-sign-area.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/missing-sectpr.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/missing-separator.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/msword-tracked-changes.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/multi_section_doc.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/multiple-nodes-in-list.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/nested-comments-gdocs.docx",docx,4,10,4,4,4,4,4
+"tests/fixtures/external/superdoc/super-editor/nested-comments.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/numwords.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/ooxml-bold-rstyle-linked-combos-demo.docx",docx,2,8,2,2,2,2,2
+"tests/fixtures/external/superdoc/super-editor/ooxml-bold-vals-demo.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/ooxml-color-rstyle-linked-combos-demo.docx",docx,ERR,ERR,ERR,ERR,ERR,ERR,ERR
+"tests/fixtures/external/superdoc/super-editor/ooxml-highlight-rstyle-linked-combos-demo.docx",docx,7,13,7,7,7,7,7
+"tests/fixtures/external/superdoc/super-editor/ooxml-italic-rstyle-combos-demo.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/ooxml-rFonts-rstyle-linked-combos-demo.docx",docx,3,9,3,3,3,3,3
+"tests/fixtures/external/superdoc/super-editor/ooxml-size-rstyle-linked-combos-demo.docx",docx,2,8,2,2,2,2,2
+"tests/fixtures/external/superdoc/super-editor/ooxml-strike-rstyle-linked-combos-demo.docx",docx,2,8,2,2,2,2,2
+"tests/fixtures/external/superdoc/super-editor/ooxml-underline-rstyle-linked-combos-demo.docx",docx,2,8,2,2,2,2,2
+"tests/fixtures/external/superdoc/super-editor/orderedlist_interrupted1.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/page-numbering-examples.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/pagination-blank.docx",docx,0,1,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/pagination-with-hard-break.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/paragraph_indent_normal_styles.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/paragraph_pPr_variations.docx",docx,4,4,4,4,4,4,4
+"tests/fixtures/external/superdoc/super-editor/paragraph_spacing_missing.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/paragraph-sectpr-breaks.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/pci-table.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/pre-separated-list.docx",docx,3,3,3,3,3,3,3
+"tests/fixtures/external/superdoc/super-editor/python_docx_comment_test.docx",docx,0,1,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/restart-numbering-sub-list.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/sd_1494_table_left_indent.docx",docx,0,12,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/sd-1480-two-col-index.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/sd-1480-two-col-tab-positions.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/sd-1494-table-left-indent.docx",docx,0,12,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/sd-1495-auto-page-break-2.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/sd-1495-auto-page-break.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/sd-1707-list-enter-track-changes-with-br.docx",docx,4,7,4,4,4,4,4
+"tests/fixtures/external/superdoc/super-editor/sd-1919-word-mixed.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/sd-1919-word-simple.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/sd-1919-word-table.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/sd-2534-collab-export.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/sd-2766-pirates-tracked-changes.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/SD-978-remove-table-borders.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/sdpr-titleonly.docx",docx,9,9,9,9,9,9,9
+"tests/fixtures/external/superdoc/super-editor/sdpr.docx",docx,9,9,9,9,9,9,9
+"tests/fixtures/external/superdoc/super-editor/sdt_test.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/sdt-node-comment.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/sdts-basic.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/shape_group.docx",docx,12,12,4,12,12,12,12
+"tests/fixtures/external/superdoc/super-editor/simple-ordered-list.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/sublist-issue.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/super-basic-table.docx",docx,0,12,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/superdoc_table_tester.docx",docx,0,90,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/superdoc-hyperlink-cases.docx",docx,1,1,1,1,1,1,1
+"tests/fixtures/external/superdoc/super-editor/tab_test.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/tab-alignment-test.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/table-autofit-colspan.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/table-merged-cells.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/table-width-issue.docx",docx,0,18,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/table-widths-SD-732.docx",docx,0,48,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/table.docx",docx,0,12,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/text-color-highlight.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/threaded-comment.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/two_column_two_page-arial.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/two_column_two_page.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/vrect-node.docx",docx,10,10,10,10,10,10,10
+"tests/fixtures/external/superdoc/super-editor/wmf-emf.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/external/superdoc/super-editor/WordOriginatedComments.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/jubarte-defective/jubarte_comments.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/jubarte-defective/jubarte_external_docx-validate_numbering-implicit-numid.docx",docx,0,15,0,0,0,0,0
+"tests/fixtures/jubarte-defective/jubarte_nested-comments-marker.docx",docx,0,3,0,0,0,0,0
+"tests/fixtures/jubarte-defective/jubarte_Redline_CiceroDo_v_plate(30.docx",docx,5,52,5,5,5,5,5
+"tests/fixtures/jubarte-defective/jubarte_sectpr-headerref.docx",docx,4,4,4,4,4,4,4
+"tests/fixtures/unknown/unknown/comments.unmatched-comment-marker.docx",docx,1,1,1,1,1,1,1
+"tests/fixtures/unknown/unknown/empty.missing-content-type.docx",docx,0,2,0,0,0,0,0
+"tests/fixtures/unknown/unknown/endnotes.paraid-overflow.docx",docx,0,10,0,0,0,0,0
+"tests/fixtures/unknown/unknown/footnotes.duplicate-paraid.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/unknown/unknown/header-with-rid-no-sidecar.docx",docx,2,4,2,2,2,2,2
+"tests/fixtures/unknown/unknown/sample-document.broken-tables.docx",docx,0,4,0,0,0,0,0
+"tests/fixtures/unknown/unknown/sample-document.empty-rels.docx",docx,0,4,0,0,0,0,0
+"tests/fixtures/unknown/unknown/sample-document.id-overflow.docx",docx,0,4,0,0,0,0,0
+"tests/fixtures/unknown/unknown/sample-document.missing-paraids.docx",docx,0,4,0,0,0,0,0
+"tests/fixtures/unknown/unknown/sample-document.our-pipeline-output-tr-no-textid.docx",docx,0,4,0,0,0,0,0
+"tests/fixtures/unknown/unknown/single-paragraph.malformed-xml.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/unknown/unknown/tables.missing-namespace.docx",docx,0,6,0,0,0,0,0
+"tests/fixtures/unknown/unknown/text-box.orphan-part.docx",docx,0,0,1,0,0,0,0
+"tests/fixtures/unknown/unknown/tiny-picture.broken-rels.docx",docx,ERR,ERR,ERR,ERR,ERR,ERR,ERR
+"tests/fixtures/vfdsdfcACawesd.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/word-regenerate-invalid/original/broken/header-with-rid-no-sidecar.docx",docx,3,3,3,3,3,3,3
+"tests/fixtures/word-regenerate-invalid/original/broken/sample-document.broken-tables.docx",docx,51,0,51,51,51,51,51
+"tests/fixtures/word-regenerate-invalid/original/broken/sample-document.empty-rels.docx",docx,51,0,51,51,51,51,51
+"tests/fixtures/word-regenerate-invalid/original/broken/sample-document.id-overflow.docx",docx,106,2,106,106,106,106,106
+"tests/fixtures/word-regenerate-invalid/original/broken/sample-document.missing-paraids.docx",docx,51,0,51,51,51,51,51
+"tests/fixtures/word-regenerate-invalid/original/broken/sample-document.our-pipeline-output-tr-no-textid.docx",docx,51,0,51,51,51,51,51
+"tests/fixtures/word-regenerate-invalid/original/broken/single-paragraph.malformed-xml.docx",docx,1,1,1,1,1,1,1
+"tests/fixtures/word-regenerate-invalid/original/broken/tables.missing-namespace.docx",docx,1,1,1,1,1,1,1
+"tests/fixtures/word-regenerate-invalid/original/external/apache-poi/crash-517626e815e0afa9decd0ebb6d1dee63fb9907dd.docx",docx,ERR,ERR,ERR,ERR,ERR,ERR,ERR
+"tests/fixtures/word-regenerate-invalid/original/external/open-xml-sdk/5Errors.docx",docx,5,5,5,5,5,5,5
+"tests/fixtures/word-regenerate-invalid/original/external/open-xml-sdk/InvalidDocPropsct.docx",docx,ERR,ERR,ERR,ERR,ERR,ERR,ERR
+"tests/fixtures/word-regenerate-invalid/original/external/open-xml-sdk/UnknownElement.docx",docx,1,1,1,1,1,1,1
+"tests/fixtures/word-regenerate-invalid/original/external/superdoc/behavior/math-spre-tests.docx",docx,1,1,1,1,1,1,1
+"tests/fixtures/word-regenerate-invalid/original/external/superdoc/encryption/encrypted-advanced-text.docx",docx,ERR,ERR,ERR,ERR,ERR,ERR,ERR
+"tests/fixtures/word-regenerate-invalid/original/external/superdoc/encryption/encrypted-hello.docx",docx,ERR,ERR,ERR,ERR,ERR,ERR,ERR
+"tests/fixtures/word-regenerate-invalid/original/external/superdoc/layout-engine/shapes/vectors.docx",docx,ERR,ERR,ERR,ERR,ERR,ERR,ERR
+"tests/fixtures/word-regenerate-invalid/original/external/superdoc/super-editor/annotations_import.docx",docx,12,12,12,12,12,12,12
+"tests/fixtures/word-regenerate-invalid/original/external/superdoc/super-editor/hyperlink-exported.docx",docx,4,4,4,4,4,4,4
+"tests/fixtures/word-regenerate-invalid/original/external/superdoc/super-editor/invalid-underline.docx",docx,2,2,2,2,2,2,2
+"tests/fixtures/word-regenerate-invalid/original/external/superdoc/super-editor/paragraph-sectpr-breaks.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/word-regenerate-invalid/original/unknown/unknown/comments.unmatched-comment-marker.docx",docx,1,1,1,1,1,1,1
+"tests/fixtures/word-regenerate-invalid/original/unknown/unknown/footnotes.duplicate-paraid.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/word-regenerate-invalid/original/unknown/unknown/header-with-rid-no-sidecar.docx",docx,2,4,2,2,2,2,2
+"tests/fixtures/word-regenerate-invalid/original/unknown/unknown/text-box.orphan-part.docx",docx,0,0,1,0,0,0,0
+"tests/fixtures/word-regenerate-invalid/original/unknown/unknown/tiny-picture.broken-rels.docx",docx,ERR,ERR,ERR,ERR,ERR,ERR,ERR
+"tests/fixtures/word-regenerate-invalid/original/working/sample-document.our-repaired.docx",docx,51,0,51,51,51,51,51
+"tests/fixtures/word-regenerate-invalid/regenerated/broken/header-with-rid-no-sidecar.docx",docx,1,3,1,1,1,1,1
+"tests/fixtures/word-regenerate-invalid/regenerated/broken/sample-document.broken-tables.docx",docx,0,4,0,0,0,0,0
+"tests/fixtures/word-regenerate-invalid/regenerated/broken/sample-document.empty-rels.docx",docx,0,4,0,0,0,0,0
+"tests/fixtures/word-regenerate-invalid/regenerated/broken/sample-document.id-overflow.docx",docx,0,4,0,0,0,0,0
+"tests/fixtures/word-regenerate-invalid/regenerated/broken/sample-document.missing-paraids.docx",docx,0,4,0,0,0,0,0
+"tests/fixtures/word-regenerate-invalid/regenerated/broken/sample-document.our-pipeline-output-tr-no-textid.docx",docx,0,4,0,0,0,0,0
+"tests/fixtures/word-regenerate-invalid/regenerated/external/open-xml-sdk/5Errors.docx",docx,5,15,5,5,5,5,5
+"tests/fixtures/word-regenerate-invalid/regenerated/external/open-xml-sdk/InvalidDocPropsct.docx",docx,ERR,ERR,ERR,ERR,ERR,ERR,ERR
+"tests/fixtures/word-regenerate-invalid/regenerated/external/open-xml-sdk/UnknownElement.docx",docx,1,1,1,1,1,1,1
+"tests/fixtures/word-regenerate-invalid/regenerated/external/superdoc/behavior/math-spre-tests.docx",docx,1,1,1,1,1,1,1
+"tests/fixtures/word-regenerate-invalid/regenerated/external/superdoc/layout-engine/shapes/vectors.docx",docx,ERR,ERR,ERR,ERR,ERR,ERR,ERR
+"tests/fixtures/word-regenerate-invalid/regenerated/external/superdoc/super-editor/annotations_import.docx",docx,12,12,12,12,12,12,12
+"tests/fixtures/word-regenerate-invalid/regenerated/external/superdoc/super-editor/hyperlink-exported.docx",docx,4,4,4,4,4,4,4
+"tests/fixtures/word-regenerate-invalid/regenerated/external/superdoc/super-editor/invalid-underline.docx",docx,2,2,2,2,2,2,2
+"tests/fixtures/word-regenerate-invalid/regenerated/external/superdoc/super-editor/paragraph-sectpr-breaks.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/word-regenerate-invalid/regenerated/unknown/unknown/comments.unmatched-comment-marker.docx",docx,1,1,1,1,1,1,1
+"tests/fixtures/word-regenerate-invalid/regenerated/unknown/unknown/footnotes.duplicate-paraid.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/word-regenerate-invalid/regenerated/unknown/unknown/header-with-rid-no-sidecar.docx",docx,0,2,0,0,0,0,0
+"tests/fixtures/word-regenerate-invalid/regenerated/unknown/unknown/text-box.orphan-part.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/word-regenerate-invalid/regenerated/unknown/unknown/tiny-picture.broken-rels.docx",docx,ERR,ERR,ERR,ERR,ERR,ERR,ERR
+"tests/fixtures/word-regenerate-invalid/regenerated/working/sample-document.our-repaired.docx",docx,0,4,0,0,0,0,0
+"tests/fixtures/word-strict/sample-document.broken-tables.docx",docx,51,0,51,51,51,51,51
+"tests/fixtures/word-strict/second-pass/Ouch.docx",docx,0,0,0,0,0,0,0
+"tests/fixtures/word-strict/second-pass/second-pass-actually-broken-sample-document.broken-tables.docx",docx,0,4,0,0,0,0,0
+"tests/fixtures/word-strict/second-pass/second-pass-word-repaired-sample-document.broken-tables.docx",docx,0,36,0,0,0,0,0
+"tests/fixtures/word-strict/tests:fixtures:broken:sample-document.broken-tables.docx-repaired.docx",docx,0,36,0,0,0,0,0
+"tests/fixtures/working/sample-document.afterword-repaired-word-repaired.docx",docx,0,36,0,0,0,0,0
+"tests/fixtures/working/sample-document.our-repaired-word-broken.docx",docx,51,0,51,51,51,51,51
+"tests/fixtures/working/sample-document.really-repaired-word-repaired.docx",docx,0,36,0,0,0,0,0
+"tests/fixtures/working/sample-document.word-repair-of-our-output-iter2-word-repaired.docx",docx,0,36,0,0,0,0,0
+"tests/fixtures/working/sample-document.word-repair-of-our-output-word-repaired.docx",docx,0,36,0,0,0,0,0
