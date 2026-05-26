@@ -1,39 +1,29 @@
-# Word-adjudicated truth: docx-validate vs OpenXML SDK on the disagreement set
+# Word-adjudicated truth: docx-validate vs real Microsoft Word
 
-When docx-validate (`--profile word-valid`) and Microsoft's OpenXML SDK disagree, **real
-Microsoft Word is the tiebreaker.** Opened all 200 disagreement fixtures in Word (macOS,
-`scripts/probe-word-fixtures.ts`). Raw log: `word-probe-disagreements.jsonl`.
+Real MS Word (macOS, `scripts/probe-word-fixtures.ts`) is the ground-truth oracle.
 
-## Result: Word sided with us on 197/200 (98.5%)
+## Full-corpus probe (current) — all 573 fixtures, `word-valid` profile
+Raw log: `word-probe-all.jsonl`. Our validator agrees with real Word on
+**567/573 = 98.95%**.
 
-| | count | Word outcome | verdict |
-|---|--:|---|---|
-| **We reject, SDK accepts** (FP vs SDK) | 7 | **all 7 → Word "unreadable content"** | **we were right, SDK too lenient** |
-| **We accept, SDK rejects** (FN vs SDK) | 193 | 190 clean-open / 3 warned | 190 → **we right, SDK too strict** |
-| **Genuine misses** (we accept, Word rejects) | 3 | unreadable-content-warning | **real gaps to fix** |
+Word outcomes: 508 clean-open, 43 unreadable-content-warning, 17 open-error,
+2 password-required, 2 unknown-dialog, 1 timeout.
 
-Word outcomes overall: `clean-open` 190, `unreadable-content-warning` 10. No crashes, errors,
-timeouts, or password prompts.
+Mismatches (6 records = ~3 distinct files, each duplicated across fixture trees):
+- **2 false positives** (we reject, Word opens clean): `tiny-picture.broken-rels.docx`
+  variants — broken `media/*.png` reference that Word tolerates.
+- **4 false negatives** (we pass, Word rejects): `comments.unmatched-comment-marker.docx`
+  ×2, `footnotes.duplicate-paraid.docx` ×2 — malformed `docProps/app.xml` integers.
 
-So the SDK's strictness produced **190 "errors" that Word does not care about**, and missed
-nothing on these files that we also missed. Our 7 "false positives vs the SDK" were not false at
-all — Word rejects them too.
+These 6 are NOT safely fixable — see `broken-word/FINDINGS.md`. Word is
+non-deterministic on the relevant defects (same malformed docProps field opens one
+file and breaks another), so any escalation creates offsetting false positives or
+false negatives. Left as documented known edge cases.
 
-## The 3 genuine misses (we said valid, Word shows "unreadable content")
+Shipped from this analysis: `ignorable-undeclared` → error under `word-valid`
+(fixed `Sample Document.docx`, Word-verified, 0 false positives).
 
-1. `tests/fixtures/unknown/unknown/comments.unmatched-comment-marker.docx` (and its
-   `word-regenerate-invalid/original/...` copy) — **we DO detect it**, but only at `warning`:
-   `comment-orphan-start`, `comment-marker-missing`, `comment-thread-count-mismatch`
-   (orphan `commentRangeStart id=999999`, marker → non-existent comment, range/Count mismatch).
-   Word actually refuses to open it cleanly. **Fix: escalate these comment-integrity codes to
-   `error` under the `word-valid` profile** — we already see the problem, just under-classify it.
-2. `fixtures/eigen-extended/Sample Document.docx` — we emit only info/warning (e.g.
-   `run-props-redundant`); Word flags unreadable content. Needs investigation into which
-   construct Word rejects (SDK reported 106 schema errors here).
-
-## Note on tooling
-
-`scripts/probe-word-fixtures.ts` was extended this session with a distinct **`word-crashed`**
-outcome (process launches then vanishes → recorded as a crash, not a timeout) plus a crash-reporter
-dismisser, per request. No crashes occurred in this run, but the capability is now in place. This is
-an uncommitted change on the current branch.
+## Earlier disagreement-set probe (superseded, kept for history)
+`word-probe-disagreements.jsonl` — the 200 fixtures where we and the OpenXML SDK
+disagreed, probed before the full-corpus run and before the `ignorable-undeclared`
+fix. Superseded by the full-corpus numbers above.
