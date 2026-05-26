@@ -80,6 +80,102 @@ describe("docx diagnostics", () => {
         });
     });
 
+    it("counts in-run atomic marks by type and excludes tab-stop definitions", async () => {
+        await withTempDir(async (dir) => {
+            const root = path.join(dir, "u");
+            await writeXml(
+                path.join(root, "word", "document.xml"),
+                doc(
+                    `<w:p><w:pPr><w:tabs><w:tab w:val="left" w:pos="720"/></w:tabs></w:pPr>` +
+                        `<w:r><w:br/><w:br w:type="page"/><w:br w:type="column"/><w:tab/><w:sym w:font="Wingdings" w:char="F0E0"/><w:cr/><w:softHyphen/><w:noBreakHyphen/></w:r>` +
+                        `<w:r><w:br w:type="separator"/></w:r></w:p>`,
+                ),
+            );
+            const inv = await collectDocxSemanticInventory(root);
+            const get = (label: string) =>
+                [...inv.counters.values()].find((c) => c.category === "inline mark" && c.label === label)?.count ?? 0;
+            expect(get("line break")).toBe(1); // the bare <w:br/>
+            expect(get("page break")).toBe(1);
+            expect(get("column break")).toBe(1);
+            expect(get("tab")).toBe(1); // only the run-level <w:tab/>, NOT the <w:tabs> stop
+            expect(get("symbol")).toBe(1);
+            expect(get("carriage return")).toBe(1);
+            expect(get("soft hyphen")).toBe(1);
+            expect(get("non-breaking hyphen")).toBe(1);
+            // separator break is excluded entirely
+            expect([...inv.counters.values()].some((c) => c.label.includes("separator"))).toBe(false);
+        });
+    });
+
+    it("captures table shape as rows×cols with a tblGrid-absent fallback", async () => {
+        await withTempDir(async (dir) => {
+            const root = path.join(dir, "u");
+            await writeXml(
+                path.join(root, "word", "document.xml"),
+                doc(
+                    // table A: explicit 1-row, 3-col grid, one cell spans 2
+                    `<w:tbl><w:tblGrid><w:gridCol/><w:gridCol/><w:gridCol/></w:tblGrid>` +
+                        `<w:tr><w:tc><w:tcPr><w:gridSpan w:val="2"/></w:tcPr></w:tc><w:tc/></w:tr></w:tbl>` +
+                        // table B: NO tblGrid, 2 rows; first row has 2 cells, one with gridSpan=2 → 3 cols
+                        `<w:tbl><w:tr><w:tc><w:tcPr><w:gridSpan w:val="2"/></w:tcPr></w:tc><w:tc/></w:tr><w:tr><w:tc/><w:tc/><w:tc/></w:tr></w:tbl>`,
+                ),
+            );
+            const inv = await collectDocxSemanticInventory(root);
+            const shapes = [...inv.counters.values()].filter((c) => c.category === "table shape");
+            const shape = (label: string) => shapes.find((c) => c.label === label)?.count ?? 0;
+            expect(shape("table 1×3")).toBe(1); // table A
+            expect(shape("table 2×3")).toBe(1); // table B via gridSpan fallback
+            expect(shape("merged cell gridSpan=2")).toBe(2); // one in each table
+        });
+    });
+
+    it("collects section geometry and image shape only under the strict profile", async () => {
+        await withTempDir(async (dir) => {
+            const root = path.join(dir, "u");
+            await writeXml(
+                path.join(root, "word", "document.xml"),
+                doc(
+                    `<w:p><w:r><w:drawing><wp:inline xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">` +
+                        `<wp:extent cx="1905000" cy="1270000"/></wp:inline></w:drawing></w:r></w:p>` +
+                        `<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/><w:cols w:num="2"/></w:sectPr>`,
+                ),
+            );
+            const lenient = await collectDocxSemanticInventory(root); // default lenient
+            const strict = await collectDocxSemanticInventory(root, "strict");
+            const has = (inv: Awaited<ReturnType<typeof collectDocxSemanticInventory>>, category: string) =>
+                [...inv.counters.values()].some((c) => c.category === category);
+
+            expect(has(lenient, "section geometry")).toBe(false);
+            expect(has(lenient, "image shape")).toBe(false);
+            expect(has(strict, "section geometry")).toBe(true);
+            expect(has(strict, "image shape")).toBe(true);
+
+            const strictVals = [...strict.counters.values()];
+            expect(strictVals.find((c) => c.category === "section geometry" && c.label === "section portrait 12240×15840")?.count).toBe(1);
+            expect(strictVals.find((c) => c.category === "section geometry" && c.label === "section columns=2")?.count).toBe(1);
+            expect(strictVals.find((c) => c.category === "image shape" && c.label === "image ~1905000×1270000 inline")?.count).toBe(1);
+
+            const wordValid = await collectDocxSemanticInventory(root, "word-valid");
+            expect(has(wordValid, "section geometry")).toBe(false); // word-valid behaves like lenient
+        });
+    });
+
+    it("treats a missing or non-numeric wp:extent dimension as ~0 without throwing", async () => {
+        await withTempDir(async (dir) => {
+            const root = path.join(dir, "u");
+            await writeXml(
+                path.join(root, "word", "document.xml"),
+                doc(
+                    `<w:p><w:r><w:drawing><wp:inline xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">` +
+                        `<wp:extent cy="1270000"/></wp:inline></w:drawing></w:r></w:p>`,
+                ),
+            );
+            const strict = await collectDocxSemanticInventory(root, "strict");
+            const strictVals = [...strict.counters.values()];
+            expect(strictVals.find((c) => c.category === "image shape" && c.label === "image ~0×1270000 inline")?.count).toBe(1);
+        });
+    });
+
     it("emits pre-repair plans for known repairable issue codes", () => {
         const issues = buildRepairPlanIssues([
             { severity: "error", path: "word/document.xml", code: "ws-missing-preserve", message: "missing xml:space" },
