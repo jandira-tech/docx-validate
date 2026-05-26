@@ -43,6 +43,7 @@ import { DOCXSchemaValidator } from "./validators/docx";
 import { buildRepairPlanIssues, collectDocxSemanticInventory, compareDocxSemanticInventories } from "./validators/docx-diagnostics";
 import { PPTXSchemaValidator } from "./validators/pptx";
 import { validateRedlining } from "./validators/redlining";
+import { explainWordError } from "./validators/word-error-explanations";
 
 const SUPPORTED_SUFFIXES = new Set([".docm", ".docx", ".pptx", ".xlsx"]);
 
@@ -364,6 +365,8 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
             if (issue.severity !== "error") continue;
             const where = issue.path ? ` [${issue.path}]` : "";
             process.stderr.write(`${issue.severity.toUpperCase()}${where}: ${issue.message}\n`);
+            const explanation = explainWordError(issue.code);
+            if (explanation) process.stderr.write(`  ↳ ${explanation}\n`);
         }
     }
 

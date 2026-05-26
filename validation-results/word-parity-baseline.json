@@ -1,0 +1,37 @@
+{
+  "generatedFrom": "validation-results/word-probe-all.jsonl",
+  "note": "Accepted validator-vs-real-Word mismatches under the word-valid profile. These are irreducible Word non-determinism cases (see broken-word/FINDINGS.md). word-parity-check fails if a NEW mismatch appears outside this list.",
+  "total": 573,
+  "acceptedMismatches": [
+    {
+      "file": "tests/fixtures/broken/tiny-picture.broken-rels.docx",
+      "kind": "false-positive",
+      "wordOutcome": "clean-open"
+    },
+    {
+      "file": "tests/fixtures/unknown/unknown/comments.unmatched-comment-marker.docx",
+      "kind": "false-negative",
+      "wordOutcome": "unreadable-content-warning"
+    },
+    {
+      "file": "tests/fixtures/unknown/unknown/footnotes.duplicate-paraid.docx",
+      "kind": "false-negative",
+      "wordOutcome": "unreadable-content-warning"
+    },
+    {
+      "file": "tests/fixtures/word-regenerate-invalid/original/unknown/unknown/comments.unmatched-comment-marker.docx",
+      "kind": "false-negative",
+      "wordOutcome": "unreadable-content-warning"
+    },
+    {
+      "file": "tests/fixtures/word-regenerate-invalid/original/unknown/unknown/footnotes.duplicate-paraid.docx",
+      "kind": "false-negative",
+      "wordOutcome": "unreadable-content-warning"
+    },
+    {
+      "file": "tests/fixtures/word-regenerate-invalid/regenerated/unknown/unknown/tiny-picture.broken-rels.docx",
+      "kind": "false-positive",
+      "wordOutcome": "clean-open"
+    }
+  ]
+}

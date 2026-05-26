@@ -20,3 +20,4 @@ export * from "./scripts/office/validators/docx-diagnostics";
 export * from "./scripts/office/validators/docx";
 export * from "./scripts/office/validators/pptx";
 export * from "./scripts/office/validators/redlining";
+export * from "./scripts/office/validators/word-error-explanations";
