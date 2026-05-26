@@ -12,6 +12,10 @@
 
 import type { XsdEngine, XsdEngineConfig, XsdValidationOutcome } from "./types";
 
+// Types come from the npm package (devDependency); the runtime loader is the
+// vendored copy in ./libxml2-wasm, patched to feed the wasm bytes via
+// Emscripten's instantiateWasm (statically inlined). This bypasses the npm
+// glue's browser fetch/streaming path, which hangs when bundled.
 type Libxml2 = typeof import("libxml2-wasm");
 
 export function createXsdEngine(config: XsdEngineConfig): XsdEngine {
@@ -23,7 +27,7 @@ export function createXsdEngine(config: XsdEngineConfig): XsdEngine {
 
     return {
         async init() {
-            if (!lib) lib = await import("libxml2-wasm");
+            if (!lib) lib = (await import("./libxml2-wasm/index.mjs")) as unknown as Libxml2;
             if (!providerRegistered && Object.keys(bundle).length > 0) {
                 const enc = new TextEncoder();
                 const buffers: Record<string, Uint8Array> = {};
