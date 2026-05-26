@@ -39,8 +39,10 @@ accounted for instead of being invisible or mistaken for loss.
 - No per-instance element identity or move/reorder detection. Comparison is an
   **aggregate histogram**: shape is encoded in the counter key, so a reshape
   reads as remove(old-shape) + add(new-shape).
-- No new severity model for the repair pipeline. `compareDocxSemanticInventories`
-  keeps its exact decrease-only logic and `repair-content-loss` **error** code.
+- No change to the repair pipeline's **decrease-only direction** or its call
+  site. `compareDocxSemanticInventories` still fires only on decreases. Its
+  output codes are refined by severity tier (see "Repair gate"), but it never
+  becomes symmetric and is never replaced by the fingerprint.
 - No auto-wiring of the fingerprint into `validate.ts` output. It is a
   standalone library export + CLI.
 
@@ -137,32 +139,72 @@ export function diffDocxInventories(
   concern.
 - Deterministic ordering: all arrays sorted by `(path, category, label)`.
 
+## Severity policy
+
+Severity is a function of the difference's **category-class** and its
+**direction** (loss / reshape / gain). Principle: **error = the rendered
+document changed or content was destroyed; warn = appearance/layout/metadata
+fidelity shifted but content survived; info = a pure, non-rendering addition.**
+
+| Category-class | Members | Loss (removed / count↓) | Reshape (shape key changed) | Gain (added / count↑) |
+|---|---|---|---|---|
+| **Content** | text chars, paragraph, run-with-text, table/row/cell *count*, footnote, endnote, comment entry, comment marker, bookmark, numbering ref, math, drawing/picture, tracked change (ins/del), referenced part/relationship, content-type override | 🔴 error | — | 🟠 warn |
+| **Table shape** | `table R×C` | 🔴 error | 🔴 error | 🟠 warn |
+| **Section geometry** *(strict only)* | page size, orientation, margins, columns | 🔴 error | 🔴 error | 🔴 error |
+| **Image shape** *(strict only)* | extent (bucketed), wrap | 🔴 error | 🔴 error | 🟠 warn |
+| **Formatting** | bold/italic/underline/strike/caps/hidden/color/highlight/size/vertAlign, style ref, style def, style formatting | 🟠 warn | 🟠 warn | ⚪ info |
+| **Atomic marks** | line/page/column break, tab, symbol, cr, soft/no-break hyphen | 🟠 warn | — | ⚪ info |
+| **Bookkeeping** | package-asset bytes & part-exists, relationship target-mode/type, comment-thread aux (Extended/Ids/Extensible) | 🟠 warn | 🟠 warn | ⚪ info |
+
+A counter's category-class is assigned by a single `severityClassFor(counter)`
+helper (keyed off `category`) shared by both consumers, so the policy lives in
+one place.
+
 ## Formatters
 
-- `inventoryDiffToIssues(diff): ValidationIssue[]` — **info severity**, codes
-  `inventory-added` / `inventory-removed` / `inventory-changed`. Descriptive
-  only; never fails validation.
+- `inventoryDiffToIssues(diff): ValidationIssue[]` — **severity-graded** per the
+  matrix above. Codes: `inventory-loss` (error), `inventory-shape-change`
+  (error or warn per table), `inventory-formatting-drift` (warn),
+  `inventory-mark-drift` (warn), `inventory-bookkeeping-drift` (warn),
+  `inventory-added` (warn for content, info otherwise). Descriptive — these are
+  emitted by the standalone fingerprint, not the validator pass/fail path.
 - `formatInventoryDiffMarkdown(diff): string` — sections Added / Removed /
   Changed, grouped by part `path`, and within each part grouped by `category` so
-  a reshape's remove+add render adjacently under the same category heading.
-  Includes a one-line summary (`N added, M removed, K changed, U unchanged`).
+  a reshape's remove+add render adjacently under the same category heading. Each
+  line is prefixed with its severity (🔴/🟠/⚪). Includes a one-line summary
+  (`N added, M removed, K changed, U unchanged; E error / W warn`).
+- **CLI exit code:** `diff-docx` exits non-zero iff the diff contains any
+  **error-tier** difference — usable in CI as "fail if the repaired doc lost
+  content vs the original."
 
 ## Repair gate interaction (decided: feed the gate)
 
 Because the new collectors live in the shared `collectDocxSemanticInventory`,
 the repair pipeline's before/after snapshots now include the richer counters.
-`compareDocxSemanticInventories` stays decrease-only, so the **only** new effect
-is: a repair step that drops a newly-counted element (a line break, a table
-row/col, a merged cell, and under strict a section/image shape) is now caught as
-`repair-content-loss`. This is strictly more protection.
+`compareDocxSemanticInventories` stays decrease-only but splits its loss code by
+severity tier (via the shared `severityClassFor`):
 
-**Consequence:** some `fixtures-all` manifest entries will gain
-`repair-content-loss` (and `repair-plan*`) codes and must be regenerated /
-reviewed. The manifest's validator-side `errorCodes` can be regenerated with
-`bunx tsx scripts/update-manifest.ts`; the LibreOffice **word-probe** fields
-must be preserved (regenerate on a Word-equipped machine via
-`SOFFICE_AVAILABLE=1 bun run test:fixtures:word`, per the existing workflow, or
-patch only the affected `errorCodes` to avoid clobbering word data).
+- **Content / Table-shrink / strict Section+Image loss** → `repair-content-loss`
+  (**error**) — unchanged behavior for genuine content.
+- **Formatting / Atomic-mark / Bookkeeping loss** → `repair-fidelity-loss`
+  (**warn**) — new, non-blocking.
+
+**Consequence for the manifest:** because the *new* collector families
+(atomic marks, formatting nuance, bookkeeping) map to **warn**, they add
+`repair-fidelity-loss` (a warning), **not** new error codes. So `fixtures-all`
+entries only flip to *failing* when a repair drops genuine **content** (text,
+table row/col, footnote, …) — which is exactly what should fail. Expect
+warning-code additions across many entries and error-code changes on only a few.
+Regenerate validator-side codes with `bunx tsx scripts/update-manifest.ts`;
+preserve the LibreOffice **word-probe** fields (regenerate on a Word-equipped
+machine via `SOFFICE_AVAILABLE=1 bun run test:fixtures:word`, or patch only the
+changed code arrays to avoid clobbering word data).
+
+**Byte-noise guard:** package-asset *bytes* appear in the fingerprint (warn),
+but repair only mutates unpacked XML and never rewrites media bytes, so the
+decrease-only gate will not emit spurious `repair-fidelity-loss` on byte counts.
+If that ever proves false, exclude the `part bytes` counter from the gate while
+keeping it in the fingerprint.
 
 ## Testing (TDD red-green)
 
@@ -174,12 +216,22 @@ One vitest spec per concern, fixtures as inline `wrapDocument(...)` strings like
 2. **Diff** (`tests/docx-inventory-diff.test.ts`, new): added / removed /
    changed / unchanged; reshape produces remove+add; empty-vs-empty;
    identical-vs-identical → all unchanged.
-3. **Formatters** (same file): `inventoryDiffToIssues` severities + codes;
-   markdown grouping and summary line.
-4. **CLI** (`tests/diff-docx.cli.test.ts`, new): smoke test over two tiny
-   unpacked fixtures → exit 0, expected markdown sections.
-5. **Repair-gate regression**: a fixture where repair drops a line break now
-   yields `repair-content-loss` (proves the gate sees the new counters).
+3. **Severity policy** (`tests/inventory-severity.test.ts` or within the diff
+   spec): `severityClassFor` maps each category to the right tier; a content
+   loss → error, a formatting loss → warn, a bookkeeping loss → warn, a content
+   gain → warn, a mark gain → info.
+4. **Formatters** (same file): `inventoryDiffToIssues` emits the correct
+   code+severity per tier (e.g. content loss → `inventory-loss` error;
+   formatting drift → warn; bookkeeping → warn); markdown grouping, severity
+   prefixes, and summary line.
+5. **CLI** (`tests/diff-docx.cli.test.ts`, new): exit **0** when only
+   warn/info-tier diffs; exit **non-zero** when an error-tier diff exists
+   (e.g. a removed paragraph); expected markdown sections present.
+6. **Repair-gate regression**: a fixture where repair drops a **paragraph**
+   still yields `repair-content-loss` (**error**); a fixture where repair drops
+   a **line break** now yields `repair-fidelity-loss` (**warn**) and does **not**
+   fail validation — proving the gate sees the new counters and tiers them
+   correctly.
 
 ## Stacked-PR / delivery
 
