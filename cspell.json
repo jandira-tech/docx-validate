@@ -137,7 +137,15 @@
         "pydantic",
         "Rodrigues",
         "Souza",
-        "uvloop"
+        "uvloop",
+
+        "eigen",
+        "eigenpal",
+        "dedup",
+        "undescriptive",
+        "regenerable",
+        "slugified",
+        "llmstxt"
     ],
     "ignoreRegExpList": ["/0x[0-9a-fA-F]+/g", "/[A-Fa-f0-9]{32,}/g", "/https?:\\/\\/[^\\s)]+/g", "/sha\\d+-[A-Za-z0-9+/=]+/g"],
     "allowCompoundWords": true

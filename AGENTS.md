@@ -20,7 +20,7 @@ OOXML validators and redline/comment helpers for `.docx` and `.pptx` files.
 - Temp dirs: `tmp` via `withTempDir(async (dir) => { ... })` (`src/lib/run-cli.ts`). Don't ad-hoc `os.tmpdir()` + `mkdtempSync`.
 - CLIs: `commander`, wired via `runCli(...)`.
 - Validation results: return the `ValidationResult` shape from `src/lib/types.ts`. No per-validator shapes.
-- Tests: one vitest file per module, fixtures under `tests/fixtures/`.
+- Tests: one vitest file per module, fixtures under `tests/fixtures/` (`broken/` synthetic single-defect specimens, `working/` valid/repaired, `eigen/` real-world Plate/SuperDoc specimens, `external/` vendored third-party). Name fixtures `<subject>.<comment-or-error>.docx`; `scripts/apply-fixture-names.ts` derives names from content and `scripts/update-manifest.ts` regenerates `tests/fixtures-all.manifest.json` (which the `fixtures-all-{strict,lenient}` suites pin).
 
 ## Schemas — golden source of truth
 
@@ -49,7 +49,7 @@ src/
       schemas/              — bundled XSDs (see above)
       helpers/              — merge-runs, simplify-redlines
       validators/           — base, docx, pptx, redlining
-tests/                      — vitest specs + fixtures
+tests/                      — vitest specs + fixtures (broken/ working/ eigen/ external/)
 ```
 
 ## Behavioural notes

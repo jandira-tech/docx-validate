@@ -56,7 +56,17 @@ src/
         docx.ts                  — DOCX validator
         pptx.ts                  — PPTX validator
         redlining.ts             — w:ins / w:del / w:moveTo etc. validator
+scripts/                         — repo tooling (not shipped in the package)
+  fixture-fingerprint.ts         — docx content fingerprint (JSZip + validate())
+  derive-fixture-name.ts         — deterministic <subject>.<comment-or-error> naming
+  apply-fixture-names.ts         — rename/sort fixtures by content (dedup, categories)
+  update-manifest.ts             — regenerate tests/fixtures-all.manifest.json
 tests/                           — vitest specs
+  fixtures/
+    broken/                      — synthetic single-defect specimens
+    working/                     — valid / repaired specimens
+    eigen/                       — real-world Plate/SuperDoc specimens (content-named)
+    external/                    — vendored third-party specimens (see NOTICE/LICENSE)
 ```
 
 ## Conventions
