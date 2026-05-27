@@ -83,12 +83,41 @@ function readProbeResults(): Map<string, ProbeRecord> {
     return map;
 }
 
+/**
+ * Resolve the `word` outcome for a fixture: a fresh probe result wins; else
+ * the value carried in the previous manifest is preserved; else "unknown".
+ * Keeps regen idempotent w.r.t. Word-probe metadata when the probe JSONL is
+ * absent (no LibreOffice in CI).
+ */
+export function resolveWordOutcome(
+    relativePath: string,
+    probeOutcome: string | undefined,
+    priorWord: Map<string, string>,
+): string {
+    return probeOutcome ?? priorWord.get(relativePath) ?? "unknown";
+}
+
+function readPriorManifestWord(): Map<string, string> {
+    const map = new Map<string, string>();
+    if (!existsSync(MANIFEST)) return map;
+    try {
+        const prior = JSON.parse(readFileSync(MANIFEST, "utf-8")) as { entries?: { relativePath: string; word?: string }[] };
+        for (const entry of prior.entries ?? []) {
+            if (entry.word) map.set(entry.relativePath, entry.word);
+        }
+    } catch {
+        // Malformed prior manifest — treat as no prior data.
+    }
+    return map;
+}
+
 async function main(): Promise<void> {
     const files: string[] = [];
     walkDocx(FIXTURES_ROOT, files);
     files.sort();
 
     const probeResults = readProbeResults();
+    const priorWord = readPriorManifestWord();
     const entries: ManifestEntry[] = [];
 
     for (const file of files) {
@@ -97,16 +126,11 @@ async function main(): Promise<void> {
 
         const strict = await runValidator(file, "strict");
         const lenient = await runValidator(file, "lenient");
-        
-        const probeRecord = probeResults.get(relativePath);
-        const wordOutcome = probeRecord?.word?.outcome ?? "unknown";
 
-        entries.push({
-            relativePath,
-            strict,
-            lenient,
-            word: wordOutcome,
-        });
+        const probeRecord = probeResults.get(relativePath);
+        const wordOutcome = resolveWordOutcome(relativePath, probeRecord?.word?.outcome, priorWord);
+
+        entries.push({ relativePath, strict, lenient, word: wordOutcome });
     }
 
     const manifest = {
@@ -119,7 +143,9 @@ async function main(): Promise<void> {
     process.stdout.write(`Updated manifest with ${entries.length} fixtures\n`);
 }
 
-main().catch((err) => {
-    process.stderr.write(`Error: ${err}\n`);
-    process.exit(1);
-});
+if (import.meta.url === `file://${process.argv[1]}`) {
+    main().catch((err) => {
+        process.stderr.write(`Error: ${err}\n`);
+        process.exit(1);
+    });
+}
