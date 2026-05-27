@@ -17,3 +17,6 @@ package-lock.json
 
 # Local Word-probe raw log (machine-specific absolute paths; manifest is the committed artifact)
 tests/word-probe-results.jsonl
+
+# Claude Code transient session artifacts
+.claude/
