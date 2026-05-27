@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-import type { ValidationIssue } from "../../../lib/types";
+import type { Profile, ValidationIssue } from "../../../lib/types";
 import { parseXml } from "../../../lib/xml-helpers";
 
 const WORD_NAMESPACES = new Set([
@@ -33,6 +33,41 @@ interface MutableDocxSemanticInventory {
     counters: Map<string, DocxSemanticCounter>;
 }
 
+export type InventorySeverityClass =
+    | "content"
+    | "table-shape"
+    | "section-geometry"
+    | "image-shape"
+    | "formatting"
+    | "atomic-marks"
+    | "bookkeeping";
+
+const SEVERITY_CLASS_BY_CATEGORY: Record<string, InventorySeverityClass> = {
+    text: "content",
+    "document structure": "content",
+    comment: "content",
+    "comment marker": "content",
+    "tracked change": "content",
+    "content type": "content",
+    numbering: "content",
+    formatting: "formatting",
+    "style reference": "formatting",
+    "style definition": "formatting",
+    "style formatting": "formatting",
+    "table shape": "table-shape",
+    "section geometry": "section-geometry",
+    "image shape": "image-shape",
+    "inline mark": "atomic-marks",
+    "package asset": "bookkeeping",
+    relationship: "bookkeeping",
+    "comment thread": "bookkeeping",
+};
+
+export function severityClassFor(category: string): InventorySeverityClass {
+    return SEVERITY_CLASS_BY_CATEGORY[category] ?? "content";
+}
+
+
 interface RepairPlanGroup {
     path?: string;
     code: string;
@@ -41,7 +76,7 @@ interface RepairPlanGroup {
     count: number;
 }
 
-export async function collectDocxSemanticInventory(unpackedDir: string): Promise<DocxSemanticInventory> {
+export async function collectDocxSemanticInventory(unpackedDir: string, profile: Profile = "lenient"): Promise<DocxSemanticInventory> {
     const inventory: MutableDocxSemanticInventory = { counters: new Map() };
     const files = await walkFiles(unpackedDir);
     for (const file of files) {
@@ -56,7 +91,7 @@ export async function collectDocxSemanticInventory(unpackedDir: string): Promise
         } catch {
             continue;
         }
-        collectXmlPart(rel, dom, inventory);
+        collectXmlPart(rel, dom, inventory, profile);
     }
     return { counters: new Map([...inventory.counters].sort(([a], [b]) => a.localeCompare(b))) };
 }
@@ -68,10 +103,11 @@ export function compareDocxSemanticInventories(before: DocxSemanticInventory, af
         const afterCount = after.counters.get(counterKey(counter.path, counter.category, counter.label, counter.unit))?.count ?? 0;
         if (counter.count <= afterCount) continue;
         const lost = counter.count - afterCount;
+        const isContent = severityClassFor(counter.category) === "content";
         issues.push({
-            severity: "error",
+            severity: isContent ? "error" : "warning",
             path: counter.path,
-            code: "repair-content-loss",
+            code: isContent ? "repair-content-loss" : "repair-fidelity-loss",
             message:
                 `Repair lost ${counter.category} '${counter.label}': ` + `${counter.count} → ${afterCount} (-${lost} ${counter.unit}).`,
         });
@@ -124,7 +160,7 @@ async function collectPackageAsset(file: string, rel: string, inventory: Mutable
     addCounter(inventory, rel, "package asset", "part bytes", "byte(s)", stat.size);
 }
 
-function collectXmlPart(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
+function collectXmlPart(rel: string, dom: Document, inventory: MutableDocxSemanticInventory, profile: Profile): void {
     if (rel.endsWith(".rels")) {
         collectRelationships(rel, dom, inventory);
         return;
@@ -133,9 +169,15 @@ function collectXmlPart(rel: string, dom: Document, inventory: MutableDocxSemant
     collectDocumentStructure(rel, dom, inventory);
     collectText(rel, dom, inventory);
     collectFormatting(rel, dom, inventory);
+    collectInlineMarks(rel, dom, inventory);
+    collectTableShape(rel, dom, inventory);
     collectStyles(rel, dom, inventory);
     collectComments(rel, dom, inventory);
     collectTrackedChanges(rel, dom, inventory);
+    if (profile === "strict") {
+        collectSectionGeometry(rel, dom, inventory);
+        collectImageShape(rel, dom, inventory);
+    }
 }
 
 function collectRelationships(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
@@ -279,6 +321,137 @@ function collectFormatting(rel: string, dom: Document, inventory: MutableDocxSem
     }
 }
 
+function collectInlineMarks(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
+    for (const ns of WORD_NAMESPACES) {
+        const brs = dom.getElementsByTagNameNS(ns, "br");
+        for (let i = 0; i < brs.length; i += 1) {
+            const br = brs.item(i);
+            if (!br) continue;
+            const type = br.getAttributeNS(ns, "type") ?? br.getAttribute("w:type") ?? br.getAttribute("type") ?? "textWrapping";
+            if (type === "separator" || type === "continuationSeparator") continue;
+            const label = type === "page" ? "page break" : type === "column" ? "column break" : "line break";
+            addCounter(inventory, rel, "inline mark", label, "occurrence(s)", 1);
+        }
+        // <w:tab/> as a direct child of <w:r> is a tab CHARACTER; <w:tab> inside
+        // <w:tabs> (paragraph properties) is a tab-STOP definition — exclude those.
+        const tabEls = dom.getElementsByTagNameNS(ns, "tab");
+        let tabs = 0;
+        for (let i = 0; i < tabEls.length; i += 1) {
+            const el = tabEls.item(i);
+            if (!el) continue;
+            const parent = el.parentNode;
+            if (parent && parent.nodeType === 1 && isWordElement(parent as Element) && localName(parent as Element) === "r") tabs += 1;
+        }
+        if (tabs > 0) addCounter(inventory, rel, "inline mark", "tab", "occurrence(s)", tabs);
+        const simple: ReadonlyArray<readonly [string, string]> = [
+            ["sym", "symbol"],
+            ["cr", "carriage return"],
+            ["softHyphen", "soft hyphen"],
+            ["noBreakHyphen", "non-breaking hyphen"],
+        ];
+        for (const [local, label] of simple) {
+            const count = dom.getElementsByTagNameNS(ns, local).length;
+            if (count > 0) addCounter(inventory, rel, "inline mark", label, "occurrence(s)", count);
+        }
+    }
+}
+
+function collectTableShape(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
+    for (const ns of WORD_NAMESPACES) {
+        const tables = dom.getElementsByTagNameNS(ns, "tbl");
+        for (let i = 0; i < tables.length; i += 1) {
+            const tbl = tables.item(i);
+            if (!tbl) continue;
+            const rows = directWordChildren(tbl, "tr");
+            const rowCount = rows.length;
+            const grid = directWordChild(tbl, "tblGrid");
+            let cols = grid ? directWordChildren(grid, "gridCol").length : 0;
+            if (cols === 0 && rows[0]) {
+                // Fallback for tables with no/empty tblGrid: sum gridSpan across the first row.
+                let sum = 0;
+                for (const tc of directWordChildren(rows[0], "tc")) {
+                    const tcPr = directWordChild(tc, "tcPr");
+                    const span = tcPr ? wordChildAttr(tcPr, "gridSpan", "val") : null;
+                    const n = span ? Number.parseInt(span, 10) : 1;
+                    sum += Number.isFinite(n) && n > 0 ? n : 1;
+                }
+                cols = sum;
+            }
+            addCounter(inventory, rel, "table shape", `table ${rowCount}×${cols}`, "table(s)", 1);
+        }
+        const cells = dom.getElementsByTagNameNS(ns, "tc");
+        for (let i = 0; i < cells.length; i += 1) {
+            const tc = cells.item(i);
+            if (!tc) continue;
+            const tcPr = directWordChild(tc, "tcPr");
+            if (!tcPr) continue;
+            const span = wordChildAttr(tcPr, "gridSpan", "val");
+            const spanN = span ? Number.parseInt(span, 10) : 1;
+            if (Number.isFinite(spanN) && spanN > 1) {
+                addCounter(inventory, rel, "table shape", `merged cell gridSpan=${spanN}`, "cell(s)", 1);
+            }
+            if (directWordChild(tcPr, "vMerge")) {
+                addCounter(inventory, rel, "table shape", "merged cell vMerge", "cell(s)", 1);
+            }
+        }
+    }
+}
+
+function collectSectionGeometry(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
+    for (const ns of WORD_NAMESPACES) {
+        const sects = dom.getElementsByTagNameNS(ns, "sectPr");
+        for (let i = 0; i < sects.length; i += 1) {
+            const sect = sects.item(i);
+            if (!sect) continue;
+            const pgSz = directWordChild(sect, "pgSz");
+            if (pgSz) {
+                const w = wordChildAttrSelf(pgSz, "w") ?? "?";
+                const h = wordChildAttrSelf(pgSz, "h") ?? "?";
+                const orient = wordChildAttrSelf(pgSz, "orient") ?? "portrait";
+                addCounter(inventory, rel, "section geometry", `section ${orient} ${w}×${h}`, "section(s)", 1);
+            }
+            const pgMar = directWordChild(sect, "pgMar");
+            if (pgMar) {
+                const t = wordChildAttrSelf(pgMar, "top") ?? "?";
+                const r = wordChildAttrSelf(pgMar, "right") ?? "?";
+                const b = wordChildAttrSelf(pgMar, "bottom") ?? "?";
+                const l = wordChildAttrSelf(pgMar, "left") ?? "?";
+                addCounter(inventory, rel, "section geometry", `section margins T${t} R${r} B${b} L${l}`, "section(s)", 1);
+            }
+            const cols = directWordChild(sect, "cols");
+            const num = cols ? wordChildAttrSelf(cols, "num") ?? "1" : "1";
+            addCounter(inventory, rel, "section geometry", `section columns=${num}`, "section(s)", 1);
+        }
+    }
+}
+
+function collectImageShape(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
+    const extents = dom.getElementsByTagNameNS(WP_NAMESPACE, "extent");
+    for (let i = 0; i < extents.length; i += 1) {
+        const ext = extents.item(i);
+        if (!ext) continue;
+        const parent = ext.parentNode;
+        if (!parent || parent.nodeType !== 1) continue;
+        const parentLocal = localName(parent as Element);
+        const wrap = parentLocal === "inline" ? "inline" : parentLocal === "anchor" ? "anchor" : null;
+        if (!wrap) continue; // ignore a:extent / other extents not under wp:inline|wp:anchor
+        const cx = roundEmu(ext.getAttribute("cx"));
+        const cy = roundEmu(ext.getAttribute("cy"));
+        addCounter(inventory, rel, "image shape", `image ~${cx}×${cy} ${wrap}`, "image(s)", 1);
+    }
+}
+
+function roundEmu(raw: string | null): number {
+    const n = raw ? Number.parseInt(raw, 10) : 0;
+    if (!Number.isFinite(n)) return 0;
+    return Math.round(n / 1000) * 1000; // nearest 1000 EMU (≈0.028 mm) to absorb tool re-rounding
+}
+
+function wordChildAttrSelf(elem: Element, attr: string): string | null {
+    return elem.getAttributeNS(wordNamespace(elem), attr) ?? elem.getAttribute(`w:${attr}`) ?? elem.getAttribute(attr);
+}
+
+
 function collectStyles(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
     if (!rel.endsWith("/styles.xml") && rel !== "word/styles.xml") return;
     for (const ns of WORD_NAMESPACES) {
@@ -401,6 +574,16 @@ function directWordChild(parent: Element, local: string): Element | null {
     return null;
 }
 
+function directWordChildren(parent: Element, local: string): Element[] {
+    const out: Element[] = [];
+    for (let child = parent.firstChild; child; child = child.nextSibling) {
+        if (child.nodeType !== 1) continue;
+        const elem = child as Element;
+        if (isWordElement(elem) && localName(elem) === local) out.push(elem);
+    }
+    return out;
+}
+
 function hasWordAncestor(elem: Element, local: string): boolean {
     for (let node = elem.parentNode; node; node = node.parentNode) {
         if (node.nodeType !== 1) continue;
@@ -442,7 +625,7 @@ function addCounter(
     inventory.counters.set(key, { path: pathValue, category, label, unit, count });
 }
 
-function counterKey(pathValue: string, category: string, label: string, unit: string): string {
+export function counterKey(pathValue: string, category: string, label: string, unit: string): string {
     return `${pathValue}\u0000${category}\u0000${label}\u0000${unit}`;
 }
 

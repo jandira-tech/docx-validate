@@ -111,6 +111,7 @@ function readPriorManifestWord(): Map<string, string> {
     return map;
 }
 
+
 async function main(): Promise<void> {
     const files: string[] = [];
     walkDocx(FIXTURES_ROOT, files);
