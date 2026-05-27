@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-24T20:28:17.738Z",
+  "generatedAt": "2026-05-27T04:46:01.178Z",
   "totalFixtures": 416,
   "entries": [
     {
@@ -5125,7 +5125,7 @@
       "word": "unreadable-content-warning"
     },
     {
-      "relativePath": "vfdsdfcACawesd.docx",
+      "relativePath": "vfdsdfcacawesd.suggesting-mixed-edits.docx",
       "strict": {
         "valid": true,
         "errorCodes": []
@@ -5990,6 +5990,18 @@
       "word": "clean-open"
     },
     {
+      "relativePath": "word-strict/eigenpal-docx-editor.suggesting-mixed-edits.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "clean-open"
+    },
+    {
       "relativePath": "word-strict/sample-document.broken-tables.docx",
       "strict": {
         "valid": false,
@@ -6014,7 +6026,7 @@
       "word": "unreadable-content-warning"
     },
     {
-      "relativePath": "word-strict/second-pass/Ouch.docx",
+      "relativePath": "word-strict/second-pass/ouch.comment-a-tachyon-walks-into.docx",
       "strict": {
         "valid": true,
         "errorCodes": []
@@ -6045,18 +6057,6 @@
     },
     {
       "relativePath": "word-strict/second-pass/second-pass-word-repaired-sample-document.broken-tables.docx",
-      "strict": {
-        "valid": true,
-        "errorCodes": []
-      },
-      "lenient": {
-        "valid": true,
-        "errorCodes": []
-      },
-      "word": "clean-open"
-    },
-    {
-      "relativePath": "word-strict/tests:fixtures:broken:sample-document.broken-tables.docx-repaired.docx",
       "strict": {
         "valid": true,
         "errorCodes": []

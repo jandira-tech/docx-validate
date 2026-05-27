@@ -17,7 +17,8 @@
 /**
  * Strict-mode regression pin for every `.docx` / `.pptx` under
  * `tests/fixtures/` (broken/, external/{apache-poi,docx-templates,docx4j,
- * mammoth-js,open-xml-sdk,superdoc}/, plus the lone vfdsdfcACawesd.docx).
+ * mammoth-js,open-xml-sdk,superdoc}/, plus the renamed root specimen
+ * vfdsdfcacawesd.suggesting-mixed-edits.docx).
  *
  * Each fixture is asserted with a specific expected outcome — pass or fail
  * — so a *change* in validator behaviour shows up as a CI red, not a
