@@ -84,3 +84,41 @@ describe("deriveName", () => {
         expect(deriveName(base).fileName).toBe("document.plain-paragraphs.docx");
     });
 });
+
+describe("deriveName — content-first descriptor mode", () => {
+    const opts = { descriptorMode: "content-first" as const };
+
+    it("prefers the content feature over a present error code", () => {
+        // strict error AND a table: content-first names it for the table, not the error
+        const d = deriveName({ ...base, strictErrorCodes: ["id-paraid-overflow"], tableCount: 2 }, opts);
+        expect(d.descriptor).toBe("table");
+    });
+
+    it("prefers tracked changes over a present error code", () => {
+        const d = deriveName({ ...base, strictErrorCodes: ["id-paraid-overflow"], insCount: 2, delCount: 1 }, opts);
+        expect(d.descriptor).toBe("suggesting-mixed-edits");
+    });
+
+    it("falls back to the first error code when there is no content signal", () => {
+        const d = deriveName({ ...base, strictErrorCodes: ["style-default-missing", "id-paraid-overflow"] }, opts);
+        expect(d.descriptor).toBe("id-paraid-overflow"); // alphabetically first strict code
+    });
+
+    it("falls back to a lenient error code when there is no strict error or content", () => {
+        const d = deriveName({ ...base, lenientErrorCodes: ["only-lenient"] }, opts);
+        expect(d.descriptor).toBe("only-lenient");
+    });
+
+    it("falls back to plain-paragraphs when there is neither content nor error", () => {
+        expect(deriveName(base, opts).descriptor).toBe("plain-paragraphs");
+    });
+});
+
+describe("deriveName — fixedCategory override", () => {
+    it("uses the fixed category regardless of error state", () => {
+        const broken = deriveName({ ...base, strictErrorCodes: ["x"] }, { fixedCategory: "eigen" });
+        const clean = deriveName({ ...base, insCount: 1 }, { fixedCategory: "eigen" });
+        expect(broken.category).toBe("eigen");
+        expect(clean.category).toBe("eigen");
+    });
+});
