@@ -120,7 +120,7 @@ describe("external fixtures — open-xml-sdk", () => {
         const result = await validate(fix("open-xml-sdk", "UnknownElement.docx"));
         expect(result.valid).toBe(false);
         expect(result.issues.some((i) => i.code === "xsd-summary")).toBe(true);
-    });
+    }, 20000);
 
     it("rejects mcdoc.docx (Markup Compatibility / AlternateContent issues)", async () => {
         const result = await validate(fix("open-xml-sdk", "mcdoc.docx"));

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2008/6/28/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2008/9/16/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2008/9/12/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2008/6/28/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2008/6/28/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2008/6/28/wordprocessingShape" mc:Ignorable="w14 wp14">
+    <w:body>
+        <w:p w14:paraId="57290E37" w14:editId="5B733B31" w14:textId="5B733B31" w:rsidR="003A3977" w:rsidRDefault="00124289" w:rsidP="006C2917" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" w14:paraId="00000001" w14:textId="00000002">
+            <w:pPr xmlns:w14="http://schemas.microsoft.com/office/word/2008/9/12/wordml" w14:myattr="myattr" mc:PreserveAttributes="w14:myattr">
+                <w:spacing w:before="156" w:after="156" w14:myattr="myattr" w14:myanotherAttr="anotherattr"/>
+                <w:ind w:left="105" w:right="105" w:firstLine="420"/>
+            </w:pPr>
+            <w:r xmlns:w14="http://schemas.microsoft.com/office/word/2008/9/12/wordml" w14:myattr="myattr" mc:PreserveAttributes="w14:*">
+                <w:rPr w14:myanotherAttr="anotherattr">
+                    <w:noProof/>
+                </w:rPr>
+                <mc:AlternateContent>
+                    <mc:Choice Requires="wps">
+                        <w:drawing mc:MustUnderstand="wps">
+                            <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251659264" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1">
+                                <wp:simplePos x="0" y="0"/>
+                                <wp:positionH relativeFrom="column">
+                                    <wp:align>center</wp:align>
+                                </wp:positionH>
+                                <wp:positionV relativeFrom="paragraph">
+                                    <wp:posOffset>0</wp:posOffset>
+                                </wp:positionV>
+                                <wp:extent cx="2366645" cy="1404620"/>
+                                <wp:effectExtent l="0" t="0" r="0" b="0"/>
+                                <wp:wrapNone/>
+                                <wp:docPr id="2" name="Text Box 2"/>
+                                <wp:cNvGraphicFramePr>
+                                    <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+                                </wp:cNvGraphicFramePr>
+                                <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                                    <a:graphicData uri="http://schemas.microsoft.com/office/word/2008/6/28/wordprocessingShape">
+                                        <wps:wsp>
+                                            <wps:cNvSpPr txBox="1">
+                                                <a:spLocks noChangeArrowheads="1"/>
+                                            </wps:cNvSpPr>
+                                            <wps:spPr bwMode="auto">
+                                                <a:xfrm>
+                                                    <a:off x="0" y="0"/>
+                                                    <a:ext cx="2366645" cy="1404620"/>
+                                                </a:xfrm>
+                                                <a:prstGeom prst="rect">
+                                                    <a:avLst/>
+                                                </a:prstGeom>
+                                                <a:solidFill>
+                                                    <a:srgbClr val="FFFFFF" mc:Ignorable="" xmlns:a14="http://schemas.microsoft.com/office/drawing/2007/7/7/main"/>
+                                                </a:solidFill>
+                                                <a:ln w="9525">
+                                                    <a:solidFill>
+                                                        <a:srgbClr val="000000" mc:Ignorable="" xmlns:a14="http://schemas.microsoft.com/office/drawing/2007/7/7/main"/>
+                                                    </a:solidFill>
+                                                    <a:miter lim="800000"/>
+                                                    <a:headEnd/>
+                                                    <a:tailEnd/>
+                                                </a:ln>
+                                            </wps:spPr>
+                                            <wps:txbx r:txbx="rId6" txbxSeq="0"/>
+                                            <wps:bodyPr/>
+                                        </wps:wsp>
+                                    </a:graphicData>
+                                </a:graphic>
+                            </wp:anchor>
+                        </w:drawing>
+                    </mc:Choice>
+                    <mc:Fallback>
+                        <w:pict>
+                            <v:shapetype id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe">
+                                <v:stroke joinstyle="miter"/>
+                                <v:path gradientshapeok="t" o:connecttype="rect"/>
+                            </v:shapetype>
+                            <v:shape id="Text Box 2" o:spid="_x0000_s1026" type="#_x0000_t202" style="position:absolute;left:0;text-align:left;margin-left:0;margin-top:0;width:186.35pt;height:110.6pt;z-index:251659264;visibility:visible;mso-wrap-style:square;mso-wrap-distance-left:9pt;mso-wrap-distance-top:0;mso-wrap-distance-right:9pt;mso-wrap-distance-bottom:0;mso-position-horizontal:center;mso-position-horizontal-relative:text;mso-position-vertical:absolute;mso-position-vertical-relative:text" o:gfxdata="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&#10;">
+                                <v:textbox>
+                                    <w:txbxContent>
+                                        <w:p w14:paraId="3AB787BD" w14:editId="3AB787BD" w14:textId="3AB787BD" w:rsidR="006F62C7" w:rsidRDefault="006F62C7" w:rsidP="00124289" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" w14:paraId="00000003" w14:textId="00000004">
+                                            <w:pPr>
+                                                <w:spacing w:before="156" w:after="156"/>
+                                                <w:ind w:left="105" w:right="105" w:firstLine="420"/>
+                                            </w:pPr>
+                                            <w:r>
+                                                <w:rPr>
+                                                    <w:rFonts w:hint="eastAsia"/>
+                                                </w:rPr>
+                                                <w:t>hello</w:t>
+                                            </w:r>
+                                        </w:p>
+                                    </w:txbxContent>
+                                </v:textbox>
+                            </v:shape>
+                        </w:pict>
+                    </mc:Fallback>
+                </mc:AlternateContent>
+            </w:r>
+        </w:p>
+        <w:sectPr w:rsidR="003A3977" w:rsidSect="003A3977">
+            <w:pgSz w:w="11906" w:h="16838"/>
+            <w:pgMar w:top="1440" w:right="1800" w:bottom="1440" w:left="1800" w:header="851" w:footer="992" w:gutter="0"/>
+            <w:cols w:space="425"/>
+            <w:docGrid w:type="lines" w:linePitch="312"/>
+        </w:sectPr>
+    </w:body>
+</w:document>
