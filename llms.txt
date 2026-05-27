@@ -35,7 +35,7 @@ XSD validation is backed by `libxmljs2` against the bundled ISO/IEC 29500-4 (Tra
 
 ## Tests
 
-- [tests/](https://github.com/jandira-tech/docx-validate/tree/main/tests): vitest specs, one file per module, fixtures under `tests/fixtures/`
+- [tests/](https://github.com/jandira-tech/docx-validate/tree/main/tests): vitest specs, one file per module, fixtures under `tests/fixtures/` named `<subject>.<comment-or-error>.docx` and grouped into `broken/` (synthetic single-defect), `working/` (valid/repaired), `eigen/` (real-world specimens), and `external/` (vendored). Expected outcomes are pinned in `tests/fixtures-all.manifest.json` by the `fixtures-all-{strict,lenient}` suites.
 - [tests/fixtures/external/](https://github.com/jandira-tech/docx-validate/tree/main/tests/fixtures/external): fixtures borrowed from `apache/poi`, `dotnet/Open-XML-SDK`, `plutext/docx4j`, `guigrpa/docx-templates`, `mwilliamson/mammoth.js`
 
 ## Optional

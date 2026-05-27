@@ -6,6 +6,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-05-27
+
+### Added
+
+- **Content-descriptive fixture corpus.** Every undescriptive `.docx` test fixture is now named `<subject>.<comment-or-error>.docx`, derived deterministically from its content. New tooling under `scripts/`: `fixture-fingerprint.ts` (JSZip + `validate()` content fingerprint), `derive-fixture-name.ts` (pure name derivation with `error-first` and `content-first` descriptor modes), and `apply-fixture-names.ts` (rename/sort driver with content-hash dedup, collision disambiguation, and `--into-categories` / `--category` / `--descriptor` flags). All three are unit-tested.
+- **`tests/fixtures/eigen/`** — 148 real-world Plate/SuperDoc specimens (deduped from 151) imported from the former unreferenced top-level `fixtures/eigen-extended/`, renamed by content (`content-first`: distinguishing feature, falling back to the validation error code). Provenance in `tests/fixtures/eigen/README.md`. The `fixtures-all-{strict,lenient}` suites now pin all of them (`tests/fixtures-all.manifest.json`: 416 → 564 fixtures).
+
+### Changed
+
+- **`scripts/update-manifest.ts` preserves `word` metadata across regens.** When the Word-probe JSONL is absent (no LibreOffice in CI), the per-fixture `word` outcome now falls back to the previous manifest's value instead of being downgraded to `"unknown"`. Exposed as the testable `resolveWordOutcome` helper.
+- Renamed three undescriptive `tests/fixtures/` strays (a random-named root specimen, `Ouch.docx`, and a path-as-filename artifact) to content-derived names.
+
+### Removed
+
+- `Sample Document.repaired.docx` (a tracked, regenerable repair artifact) and the stray npm `package-lock.json` (this is a bun-only repo) from the repo root.
+- The dead top-level `fixtures/` directory (nothing referenced it).
+
 ## [0.1.3] — 2026-05-04
 
 ### Added
@@ -87,6 +104,7 @@ dist/index.mjs` returns zero matches.
 Initial publishable release. See `git log --oneline` for the full set of
 commits — the changelog starts here.
 
+[0.5.0]: https://github.com/jandira-tech/docx-validate/compare/v0.1.3...v0.5.0
 [0.1.3]: https://github.com/jandira-tech/docx-validate/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/jandira-tech/docx-validate/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/jandira-tech/docx-validate/releases/tag/v0.1.1
