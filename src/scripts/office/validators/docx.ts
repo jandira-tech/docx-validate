@@ -236,14 +236,6 @@ const TRACKING_TOKEN_PREFIXES: readonly string[] = [
 ];
 const TRACKING_TOKEN_REGEX = /\[\[DOCX_(?:INS|DEL|CMT)_(?:START|END):[^\]]*?\]\]|\[\[DOCX_PMARK_(?:DEL|INS):[^\]]*?\]\]/g;
 
-// XPath excluding `<w:p>` inside DML/VML text-box overlays. Matches the
-// Python BODY_PARAGRAPH_XPATH.
-const BODY_PARAGRAPH_XPATH =
-    ".//w:p[not(ancestor::w:txbxContent) and not(ancestor::v:textbox)] " +
-    "| " +
-    ".//strict:p[not(ancestor::strict:txbxContent) and not(ancestor::v:textbox)]";
-
-
 const MAX_PARA_ID = 0x80000000;
 const MAX_DURABLE_ID = 0x7fffffff;
 const MAX_RANDOM_DURABLE = 0x7ffffffe;
