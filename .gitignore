@@ -20,3 +20,6 @@ tests/word-probe-results.jsonl
 
 # Claude Code transient session artifacts
 .claude/
+
+# fixture drift survey scratch output
+.drift-run/
