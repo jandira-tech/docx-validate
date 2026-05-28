@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-05-28T00:10:20.233Z",
-  "totalFixtures": 565,
+  "generatedAt": "2026-05-28T02:34:17.159Z",
+  "totalFixtures": 592,
   "entries": [
     {
       "relativePath": "broken/comments.unmatched-comment-marker.docx",
@@ -4163,6 +4163,436 @@
         ]
       },
       "word": "clean-open"
+    },
+    {
+      "relativePath": "external/docx2html/attachment_is_tiff.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "ct-undeclared-ext",
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "ct-undeclared-ext"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/bigger_font_size_to_header.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/convert_p_to_h.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/fake_headings_by_length.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/greek_alphabet.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/has_image.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "ct-undeclared-ext",
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "ct-undeclared-ext"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/has_missing_image.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "rels-broken",
+          "rels-target-missing",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "rels-broken",
+          "rels-target-missing"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/has_title.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing",
+          "style-reference-undefined"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/headers.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/headers_with_full_line_styles.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/inline_tags.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/list_in_table.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/list_to_header.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/lists_with_styles.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/nested_lists.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/nested_table_rowspan.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/nested_tables.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/resized_image.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "ct-undeclared-ext",
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "ct-undeclared-ext"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/shift_enter.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/simple.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/simple_lists.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/special_chars.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/split_header.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/table_col_row_span.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/tables_in_lists.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/track_changes_on.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx2html/upper_alpha_all_bold.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
     },
     {
       "relativePath": "external/docx4j/NumberingImplicitNumId.docx",
