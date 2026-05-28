@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-05-28T00:10:20.233Z",
-  "totalFixtures": 565,
+  "generatedAt": "2026-05-28T02:55:36.698Z",
+  "totalFixtures": 584,
   "entries": [
     {
       "relativePath": "broken/comments.unmatched-comment-marker.docx",
@@ -3026,6 +3026,367 @@
         "threw": "Corrupted zip: can't find end of central directory"
       },
       "word": "unreadable-content-warning"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/minimal_for_test.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing",
+          "textid-missing-element",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/tagged_tests/formatting_tests.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "rels-empty-part",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/tagged_tests/image_tests.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/tagged_tests/list_tests.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/tagged_tests/margin_tests.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "rels-empty-part",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/tagged_tests/table_tests_v2.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "rels-empty-part",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/comprehensive_docx_demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing",
+          "textid-missing-element",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/docx_formatting_demo_combinations_paragraphs_fonts.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing",
+          "textid-missing-element",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/docx_inline_formatting_demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing",
+          "textid-missing-element",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/docx_list_formatting_demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing",
+          "textid-missing-element",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/docx_list_numbering_text_styling_demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/fonts_and_sizes_demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "rels-empty-part",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/formatting_and_styles_demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing",
+          "textid-missing-element",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/lists_demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "rels-empty-part",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/paragraph_control_demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/run_effects_demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing",
+          "ws-missing-preserve",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "ws-missing-preserve",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/table_advanced_demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/tables_demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "rels-empty-part",
+          "style-default-missing"
+        ]
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/underline_styles_examples.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
     },
     {
       "relativePath": "external/docx-templates/anchor-empty.docx",
