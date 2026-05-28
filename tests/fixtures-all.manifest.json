@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-05-28T03:26:36.526Z",
-  "totalFixtures": 563,
+  "generatedAt": "2026-05-28T06:21:44.037Z",
+  "totalFixtures": 582,
   "entries": [
     {
       "relativePath": "broken/comments.unmatched-comment-marker.docx",
@@ -3001,6 +3001,272 @@
         "threw": "Corrupted zip: can't find end of central directory"
       },
       "word": "unreadable-content-warning"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/minimal_for_test.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/minimal_for_test.docx does not exist"
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/minimal_for_test.docx does not exist"
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/tagged_tests/formatting_tests.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/tagged_tests/formatting_tests.docx does not exist"
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/tagged_tests/formatting_tests.docx does not exist"
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/tagged_tests/image_tests.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/tagged_tests/image_tests.docx does not exist"
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/tagged_tests/image_tests.docx does not exist"
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/tagged_tests/list_tests.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/tagged_tests/list_tests.docx does not exist"
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/tagged_tests/list_tests.docx does not exist"
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/tagged_tests/margin_tests.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/tagged_tests/margin_tests.docx does not exist"
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/tagged_tests/margin_tests.docx does not exist"
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/tagged_tests/table_tests_v2.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/tagged_tests/table_tests_v2.docx does not exist"
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/tagged_tests/table_tests_v2.docx does not exist"
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/comprehensive_docx_demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/comprehensive_docx_demo.docx does not exist"
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/comprehensive_docx_demo.docx does not exist"
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/docx_formatting_demo_combinations_paragraphs_fonts.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/docx_formatting_demo_combinations_paragraphs_fonts.docx does not exist"
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/docx_formatting_demo_combinations_paragraphs_fonts.docx does not exist"
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/docx_inline_formatting_demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/docx_inline_formatting_demo.docx does not exist"
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/docx_inline_formatting_demo.docx does not exist"
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/docx_list_formatting_demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/docx_list_formatting_demo.docx does not exist"
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/docx_list_formatting_demo.docx does not exist"
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/docx_list_numbering_text_styling_demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/docx_list_numbering_text_styling_demo.docx does not exist"
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/docx_list_numbering_text_styling_demo.docx does not exist"
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/fonts_and_sizes_demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/fonts_and_sizes_demo.docx does not exist"
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/fonts_and_sizes_demo.docx does not exist"
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/formatting_and_styles_demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/formatting_and_styles_demo.docx does not exist"
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/formatting_and_styles_demo.docx does not exist"
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/lists_demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/lists_demo.docx does not exist"
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/lists_demo.docx does not exist"
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/paragraph_control_demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/paragraph_control_demo.docx does not exist"
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/paragraph_control_demo.docx does not exist"
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/run_effects_demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/run_effects_demo.docx does not exist"
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/run_effects_demo.docx does not exist"
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/table_advanced_demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/table_advanced_demo.docx does not exist"
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/table_advanced_demo.docx does not exist"
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/tables_demo.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/tables_demo.docx does not exist"
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/tables_demo.docx does not exist"
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "external/docx-parser-converter/test_docx_files/underline_styles_examples.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/underline_styles_examples.docx does not exist"
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [],
+        "threw": "Error: /home/arthrod/workspace/docx-validate/tests/fixtures/external/docx-parser-converter/test_docx_files/underline_styles_examples.docx does not exist"
+      },
+      "word": "unknown"
     },
     {
       "relativePath": "external/docx-templates/anchor-empty.docx",
