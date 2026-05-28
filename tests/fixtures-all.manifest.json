@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-05-28T00:10:20.233Z",
-  "totalFixtures": 565,
+  "generatedAt": "2026-05-28T03:26:36.526Z",
+  "totalFixtures": 563,
   "entries": [
     {
       "relativePath": "broken/comments.unmatched-comment-marker.docx",
@@ -909,31 +909,6 @@
         "valid": false,
         "errorCodes": [
           "id-paraid-overflow"
-        ]
-      },
-      "word": "unknown"
-    },
-    {
-      "relativePath": "eigen/eigenpal-docx-editor.suggesting-mixed-edits-2.docx",
-      "strict": {
-        "valid": false,
-        "errorCodes": [
-          "id-paraid-overflow",
-          "id-textid-overflow",
-          "ignorable-undeclared",
-          "paraid-missing-element",
-          "rels-empty-part",
-          "style-default-missing",
-          "style-reference-undefined",
-          "textid-missing-element"
-        ]
-      },
-      "lenient": {
-        "valid": false,
-        "errorCodes": [
-          "id-paraid-overflow",
-          "id-textid-overflow",
-          "ignorable-undeclared"
         ]
       },
       "word": "unknown"
@@ -8677,18 +8652,6 @@
           "comment-thread-durableid-orphan",
           "id-textid-overflow"
         ]
-      },
-      "word": "unknown"
-    },
-    {
-      "relativePath": "word-strict/second-pass/Ouch.docx",
-      "strict": {
-        "valid": true,
-        "errorCodes": []
-      },
-      "lenient": {
-        "valid": true,
-        "errorCodes": []
       },
       "word": "unknown"
     },
