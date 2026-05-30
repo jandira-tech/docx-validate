@@ -269,6 +269,58 @@ describe("DOCXSchemaValidator", () => {
                 expect(result.valid).toBe(true);
             });
         });
+
+        // [MS-OI29500] 2.6.2.3: paraId/textId (ST_LongHexNumber) MUST be > 0.
+        // The validator already caps the upper bound; these pin the lower bound.
+        it("flags paraId == 0", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "document.xml"), wrapDocument(`<w:p w14:paraId="00000000"/>`, W14_NS));
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateIdConstraints();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "id-paraid-zero")).toBe(true);
+            });
+        });
+
+        it("flags textId == 0", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "document.xml"), wrapDocument(`<w:p w14:paraId="00000001" w14:textId="00000000"/>`, W14_NS));
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateIdConstraints();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "id-textid-zero")).toBe(true);
+            });
+        });
+
+        it("flags durableId == 0 (hex, non-numbering file)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "commentsIds.xml"),
+                    `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                        `<w16cid:commentId w16cid:paraId="00000001" w16cid:durableId="00000000"/>` +
+                        `</w16cid:commentsIds>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateIdConstraints();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "id-durable-zero")).toBe(true);
+            });
+        });
+
+        it("flags durableId == 0 (decimal, numbering.xml)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "numbering.xml"),
+                    `<?xml version="1.0"?><w:numbering ${W_NS} ${W16CID_NS}>` +
+                        `<w:abstractNum w16cid:durableId="0"/>` +
+                        `</w:numbering>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateIdConstraints();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "id-durable-zero")).toBe(true);
+            });
+        });
     });
 
     describe("repairParaId", () => {
