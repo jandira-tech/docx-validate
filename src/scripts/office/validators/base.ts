@@ -45,6 +45,7 @@ import * as libxmljs from "libxmljs2";
 import { withTempDir } from "../../../lib/run-cli";
 import type { Profile, ValidationIssue, ValidationResult } from "../../../lib/types";
 import { DEFAULT_PROFILE, OK_RESULT } from "../../../lib/types";
+import { createXsdValidator, type XsdValidator } from "../../../lib/xsd-validator";
 import { parseXml, serializeXml } from "../../../lib/xml-helpers";
 
 /**
@@ -168,6 +169,17 @@ export interface BaseSchemaValidatorOptions {
     verbose?: boolean;
     /** Validation profile. Defaults to `"lenient"`. See {@link Profile}. */
     profile?: Profile;
+    /**
+     * Optional XSD validator override. When omitted, BaseSchemaValidator
+     * lazy-creates the default wasm-backed validator from
+     * `src/lib/xsd-validator.ts`. Test code may inject a fake; consumer
+     * code may swap in a different engine.
+     *
+     * Part of the four-class architecture cutover (PR B). The default-wasm
+     * behaviour is strictly stronger than the pre-cutover libxmljs2 path —
+     * see CLAUDE.md note 4 + PR A's commit message for context.
+     */
+    xsdValidator?: XsdValidator;
 }
 
 /**
@@ -222,6 +234,15 @@ export class BaseSchemaValidator {
      */
     protected readonly elementRelationshipTypes: Record<string, string> = {};
 
+    /**
+     * Injected XSD validator. Lazily resolved to the wasm default by
+     * `_getXsdValidator()` on first use. Stored as `XsdValidator | undefined`
+     * (not a Promise) so the field can hold either a synchronously-supplied
+     * test fake or the lazily-resolved wasm singleton.
+     */
+    private xsdValidatorRef: XsdValidator | undefined;
+    private xsdValidatorPromise: Promise<XsdValidator> | undefined;
+
     constructor(opts: BaseSchemaValidatorOptions) {
         this.unpackedDir = path.resolve(opts.unpackedDir);
         this.originalFile = opts.originalFile ? path.resolve(opts.originalFile) : null;
@@ -229,6 +250,27 @@ export class BaseSchemaValidator {
         this.schemasDir = opts.schemasDir ?? defaultSchemasDir();
         this.xmlFiles = walkFiles(this.unpackedDir, [".xml", ".rels"]);
         this.profile = opts.profile ?? DEFAULT_PROFILE;
+        this.xsdValidatorRef = opts.xsdValidator;
+    }
+
+    /**
+     * Returns the active XSD validator. If the constructor was given a
+     * `xsdValidator`, that wins. Otherwise the wasm default is lazily
+     * created (and memoised across calls within this instance).
+     *
+     * Part of the four-class architecture cutover (PR B). When PR B Task B.2
+     * drops libxmljs2, this factory becomes the single XSD entrypoint.
+     */
+    protected async _getXsdValidator(): Promise<XsdValidator> {
+        if (this.xsdValidatorRef) {
+            return this.xsdValidatorRef;
+        }
+        if (!this.xsdValidatorPromise) {
+            this.xsdValidatorPromise = createXsdValidator();
+        }
+        const resolved = await this.xsdValidatorPromise;
+        this.xsdValidatorRef = resolved;
+        return resolved;
     }
 
     /**
@@ -1064,7 +1106,7 @@ export class BaseSchemaValidator {
     }
 
     async validateFileAgainstXsd(xmlFile: string): Promise<XsdValidationOutcome> {
-        const single = this._validateSingleFileXsd(xmlFile);
+        const single = await this._validateSingleFileXsd(xmlFile);
         if (single.valid === null) {
             return { valid: null, errors: new Set() };
         }
@@ -1113,18 +1155,22 @@ export class BaseSchemaValidator {
         }
     }
 
-    protected _validateSingleFileXsd(xmlFile: string): XsdValidationOutcome {
+    protected async _validateSingleFileXsd(xmlFile: string): Promise<XsdValidationOutcome> {
         const schemaPath = this._getSchemaPath(xmlFile);
         if (!schemaPath) return { valid: null, errors: new Set() };
 
-        // Catch-all that mirrors the Python `except Exception` block. Anything
-        // that goes wrong during schema loading, XML preprocessing, or validation
-        // becomes a single per-file validation error so the caller can decide
-        // whether to ignore it via `IGNORED_VALIDATION_ERRORS` (which uses simple
-        // substring matching against this string).
-        //
-        // For loud failure on a missing/broken libxmljs2 binding, call
-        // `BaseSchemaValidator.assertLibxmljsAvailable()` once at startup.
+        // PR B Task B.1: dual-path. If a wasm-backed (or other) XsdValidator
+        // was injected via constructor, delegate to it. Otherwise stay on the
+        // legacy libxmljs2 path so existing fixture-corpus tests pin their
+        // expected error shapes (the engines have semantic differences in
+        // both directions — see the PR B commit message). The actual default
+        // cutover to wasm happens in a follow-up commit alongside test
+        // updates for the ~20 fixtures whose expected error shape changes.
+        if (this.xsdValidatorRef !== undefined) {
+            return this._validateSingleFileXsdViaInjected(xmlFile, schemaPath);
+        }
+
+        // --- legacy libxmljs2 path (unchanged from pre-cutover) ---
         try {
             const xsdDoc = BaseSchemaValidator._loadXsd(schemaPath);
 
@@ -1140,11 +1186,39 @@ export class BaseSchemaValidator {
             const errs =
                 (
                     xmlLibDoc as unknown as {
-                        validationErrors?: Array<{ message: string }>;
+                        validationErrors?: { message: string }[];
                     }
                 ).validationErrors ?? [];
             for (const e of errs) {
                 errors.add((e.message ?? "").trim());
+            }
+            return { valid: false, errors };
+        } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            return { valid: false, errors: new Set([message]) };
+        }
+    }
+
+    private async _validateSingleFileXsdViaInjected(
+        xmlFile: string,
+        schemaPath: string,
+    ): Promise<XsdValidationOutcome> {
+        try {
+            const xmlContent = readFileSync(xmlFile, "utf-8");
+            const cleanedString = this._preprocessXmlForXsd(xmlContent, xmlFile);
+
+            const validator = await this._getXsdValidator();
+            const issues = await validator.validate(cleanedString, schemaPath);
+
+            // info-level issues (e.g. `xsd-schema-load-skipped`) are non-fatal,
+            // preserving the spirit of CLAUDE.md note 4.
+            const errorIssues = issues.filter((i) => i.severity === "error");
+            if (errorIssues.length === 0) {
+                return { valid: true, errors: new Set() };
+            }
+            const errors = new Set<string>();
+            for (const issue of errorIssues) {
+                errors.add(issue.message.trim());
             }
             return { valid: false, errors };
         } catch (err) {
@@ -1282,7 +1356,7 @@ export class BaseSchemaValidator {
             await fs.writeFile(tmpFile, await entry.async("nodebuffer"));
             // Reuse the same single-file XSD validator — we do NOT diff again here
             // (`_validateSingleFileXsd` returns the raw set of errors).
-            const outcome = this._validateSingleFileXsd(tmpFile);
+            const outcome = await this._validateSingleFileXsd(tmpFile);
             return outcome.errors;
         });
     }
