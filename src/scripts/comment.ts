@@ -92,8 +92,17 @@ Nest markers inside parent {pid}'s markers (markers must be direct children of w
   <w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:commentReference w:id="{pid}"/></w:r>
   <w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:commentReference w:id="{cid}"/></w:r>`;
 
-function generateHexId(): string {
-    const n = Math.floor(Math.random() * 0x7ffffffe);
+/**
+ * Generate an 8-digit hex id for `w14:paraId` / `w16cid:durableId`.
+ *
+ * [MS-OI29500] 2.6.2.3 types both as `ST_LongHexNumber` whose value MUST be
+ * greater than 0 and less than 0x80000000. The `1 +` lower bound mirrors the
+ * repair path in `validators/docx.ts` (which seeds durableIds the same way) so
+ * we never write a zero or an over-cap id of our own. Range: [1, 0x7FFFFFFE],
+ * which also clears the tighter durableId cap of 0x7FFFFFFF.
+ */
+export function generateHexId(): string {
+    const n = 1 + Math.floor(Math.random() * 0x7ffffffe);
     return n.toString(16).toUpperCase().padStart(8, "0");
 }
 
