@@ -25,8 +25,8 @@
  *   - tracked-changes nesting (no `<w:t>` inside `<w:del>`, no `<w:delText>`
  *     inside `<w:ins>`);
  *   - comment-marker pairing (`commentRangeStart`/`End`/`commentReference`);
- *   - id constraints (paraId < 0x80000000, durableId < 0x7FFFFFFF — plain
- *     32-bit numbers, well inside Number.MAX_SAFE_INTEGER, no BigInt needed);
+ *   - id constraints (0 < paraId/textId < 0x80000000, 0 < durableId < 0x7FFFFFFF
+ *     — plain 32-bit numbers, well inside Number.MAX_SAFE_INTEGER, no BigInt);
  *   - durableId auto-repair when a value blows past the constraint.
  *
  * All `validate*` methods follow the base-class shape: return
@@ -1392,12 +1392,21 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
                 const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId");
                 if (paraId) {
-                    if (parseIdValue(paraId, 16) >= MAX_PARA_ID) {
+                    const v = parseIdValue(paraId, 16);
+                    if (v >= MAX_PARA_ID) {
                         issues.push({
                             severity: "error",
                             message: `${base}: paraId=${paraId} >= 0x80000000`,
                             path: this.relPath(xmlFile),
                             code: "id-paraid-overflow",
+                        });
+                    } else if (v === 0) {
+                        // [MS-OI29500] 2.6.2.3: paraId MUST be greater than 0.
+                        issues.push({
+                            severity: "error",
+                            message: `${base}: paraId=${paraId} must be > 0`,
+                            path: this.relPath(xmlFile),
+                            code: "id-paraid-zero",
                         });
                     }
                 }
@@ -1412,12 +1421,21 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 // textIds over the cap (every paragraph in the body).
                 const textId = elem.getAttributeNS(W14_NAMESPACE, "textId");
                 if (textId) {
-                    if (parseIdValue(textId, 16) >= MAX_PARA_ID) {
+                    const v = parseIdValue(textId, 16);
+                    if (v >= MAX_PARA_ID) {
                         issues.push({
                             severity: "error",
                             message: `${base}: textId=${textId} >= 0x80000000`,
                             path: this.relPath(xmlFile),
                             code: "id-textid-overflow",
+                        });
+                    } else if (v === 0) {
+                        // textId shares the ST_LongHexNumber type with paraId; same > 0 floor.
+                        issues.push({
+                            severity: "error",
+                            message: `${base}: textId=${textId} must be > 0`,
+                            path: this.relPath(xmlFile),
+                            code: "id-textid-zero",
                         });
                     }
                 }
@@ -1440,14 +1458,31 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                                 path: this.relPath(xmlFile),
                                 code: "id-durable-overflow",
                             });
+                        } else if (v === 0) {
+                            // durableId is a positive id; the repair path seeds it from 1.
+                            issues.push({
+                                severity: "error",
+                                message: `${base}: durableId=${durableId} must be > 0`,
+                                path: this.relPath(xmlFile),
+                                code: "id-durable-zero",
+                            });
                         }
                     } else {
-                        if (parseIdValue(durableId, 16) >= MAX_DURABLE_ID) {
+                        const v = parseIdValue(durableId, 16);
+                        if (v >= MAX_DURABLE_ID) {
                             issues.push({
                                 severity: "error",
                                 message: `${base}: durableId=${durableId} >= 0x7FFFFFFF`,
                                 path: this.relPath(xmlFile),
                                 code: "id-durable-overflow",
+                            });
+                        } else if (v === 0) {
+                            // durableId is a positive id; the repair path seeds it from 1.
+                            issues.push({
+                                severity: "error",
+                                message: `${base}: durableId=${durableId} must be > 0`,
+                                path: this.relPath(xmlFile),
+                                code: "id-durable-zero",
                             });
                         }
                     }
