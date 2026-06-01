@@ -27,7 +27,7 @@ jobs:
   # ---------------------------------------------------------------------------
   static:
     name: Static analysis (uv / bun / cargo)
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v6
         with:
@@ -90,7 +90,7 @@ jobs:
   # ---------------------------------------------------------------------------
   opencode:
     name: opencode review (Qwen3.6 Plus)
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     if: ${{ !github.event.pull_request.draft }}
     steps:
       - uses: actions/checkout@v6
