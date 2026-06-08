@@ -2,12 +2,28 @@
 // Usage: node --import tsx scripts/sweep-word-valid.ts <dir> [--json out.json]
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { validate } from "../src/scripts/office/validate.ts";
+import { validate } from "../src/scripts/office/validate";
 
 const args = process.argv.slice(2);
-const dir = path.resolve(args[0]!);
+if (args.length === 0 || !args[0]) {
+  console.error("Usage: node --import tsx scripts/sweep-word-valid.ts <dir> [--json out.json]");
+  process.exit(1);
+}
+const dir = path.resolve(args[0]);
+if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) {
+  console.error(`Error: not a directory: ${dir}`);
+  process.exit(1);
+}
 const jsonIdx = args.indexOf("--json");
-const jsonOut = jsonIdx >= 0 ? path.resolve(args[jsonIdx + 1]!) : "";
+let jsonOut = "";
+if (jsonIdx >= 0) {
+  const outPath = args[jsonIdx + 1];
+  if (!outPath) {
+    console.error("Error: --json requires an output file path");
+    process.exit(1);
+  }
+  jsonOut = path.resolve(outPath);
+}
 
 function* walk(d: string): Generator<string> {
   for (const n of fs.readdirSync(d)) {
