@@ -1,0 +1,11 @@
+{
+  "_comment": "Representative DOCX fixtures whose validation results are snapshotted on both branches and diffed, to catch branch-over-branch regressions in validator behaviour. Spans valid (working/), defect specimens (broken/), and style-rich real-world specimens (eigen/).",
+  "fixtures": [
+    { "name": "working-really-repaired", "path": "tests/fixtures/working/sample-document.really-repaired-word-repaired.docx" },
+    { "name": "working-word-repair-of-output", "path": "tests/fixtures/working/sample-document.word-repair-of-our-output-word-repaired.docx" },
+    { "name": "broken-empty-content-type", "path": "tests/fixtures/broken/empty.missing-content-type.docx" },
+    { "name": "broken-footnotes-dup-paraid", "path": "tests/fixtures/broken/footnotes.duplicate-paraid.docx" },
+    { "name": "eigen-blue-bold-centered", "path": "tests/fixtures/eigen/blue-bold-centered-demo.id-paraid-overflow.docx" },
+    { "name": "eigen-line-spacing", "path": "tests/fixtures/eigen/1-5-line-spacing.id-paraid-overflow.docx" }
+  ]
+}
