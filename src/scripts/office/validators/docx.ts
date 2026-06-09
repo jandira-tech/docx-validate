@@ -334,7 +334,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "xml-syntax":
                 return issue.path?.startsWith("word/") || issue.path === "[Content_Types].xml";
             case "rels-broken":
-                return issue.message.includes("../customXml/") || issue.message.includes("media/") || /\/_rels\/|\.rels$/i.test(issue.message);
+                return (
+                    issue.message.includes("../customXml/") || issue.message.includes("media/") || /\/_rels\/|\.rels$/i.test(issue.message)
+                );
             case "rels-empty-element":
                 return issue.message.includes("missing required attribute");
             case "xsd-error":
@@ -502,7 +504,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     async validateDeletions(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const $$ = makeSelect();
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
@@ -516,29 +517,48 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 });
                 continue;
             }
-            // <w:t> inside <w:del>
-            const tInDel = $$(".//w:del//w:t", dom) as Node[];
-            for (const node of tInDel) {
-                const elem = node as Element;
-                const text = elem.firstChild?.nodeValue ?? "";
-                issues.push({
-                    severity: "error",
-                    message: `<w:t> found within <w:del>: ${previewRepr(text, 50)}`,
-                    path: this.relPath(xmlFile),
-                    code: "del-contains-t",
-                });
-            }
-            // <w:instrText> inside <w:del>
-            const instrInDel = $$(".//w:del//w:instrText", dom) as Node[];
-            for (const node of instrInDel) {
-                const elem = node as Element;
-                const text = elem.firstChild?.nodeValue ?? "";
-                issues.push({
-                    severity: "error",
-                    message: `<w:instrText> found within <w:del> (use <w:delInstrText>): ${previewRepr(text, 50)}`,
-                    path: this.relPath(xmlFile),
-                    code: "del-contains-instrtext",
-                });
+
+            // ⚡ Bolt Performance Optimization:
+            // Replaced slow XPath descendant queries (`.//w:del//w:t`) with native
+            // DOM traversal (`getElementsByTagNameNS`). The `xpath` package over
+            // `@xmldom/xmldom` dynamic tree search is a severe bottleneck on large documents.
+            // Native DOM traversal provides a massive speedup.
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const delNodes = dom.getElementsByTagNameNS(ns, "del");
+                for (let i = 0; i < delNodes.length; i++) {
+                    const del = delNodes.item(i);
+                    if (!del) continue;
+
+                    for (const nsTarget of WORD_PARAGRAPH_NAMESPACES) {
+                        // <w:t> inside <w:del>
+                        const tNodes = del.getElementsByTagNameNS(nsTarget, "t");
+                        for (let j = 0; j < tNodes.length; j++) {
+                            const elem = tNodes.item(j);
+                            if (!elem) continue;
+                            const text = elem.firstChild?.nodeValue ?? "";
+                            issues.push({
+                                severity: "error",
+                                message: `<w:t> found within <w:del>: ${previewRepr(text, 50)}`,
+                                path: this.relPath(xmlFile),
+                                code: "del-contains-t",
+                            });
+                        }
+
+                        // <w:instrText> inside <w:del>
+                        const instrNodes = del.getElementsByTagNameNS(nsTarget, "instrText");
+                        for (let j = 0; j < instrNodes.length; j++) {
+                            const elem = instrNodes.item(j);
+                            if (!elem) continue;
+                            const text = elem.firstChild?.nodeValue ?? "";
+                            issues.push({
+                                severity: "error",
+                                message: `<w:instrText> found within <w:del> (use <w:delInstrText>): ${previewRepr(text, 50)}`,
+                                path: this.relPath(xmlFile),
+                                code: "del-contains-instrtext",
+                            });
+                        }
+                    }
+                }
             }
         }
         return finalize(issues);

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { DocxSemanticInventory } from "../src/scripts/office/validators/docx-diagnostics";
-import { diffDocxInventories, formatInventoryDiffMarkdown, inventoryDiffToIssues } from "../src/scripts/office/validators/docx-inventory-diff";
+import {
+    diffDocxInventories,
+    formatInventoryDiffMarkdown,
+    inventoryDiffToIssues,
+} from "../src/scripts/office/validators/docx-inventory-diff";
 
 function inv(entries: Array<{ path: string; category: string; label: string; unit: string; count: number }>): DocxSemanticInventory {
     const counters = new Map<string, { path: string; category: string; label: string; unit: string; count: number }>();
@@ -60,12 +64,8 @@ describe("diffDocxInventories", () => {
     });
 
     it("tiers a bookkeeping decrease to a warning", () => {
-        const before = inv([
-            { path: "word/document.xml", category: "package asset", label: "part bytes", unit: "byte(s)", count: 100 },
-        ]);
-        const after = inv([
-            { path: "word/document.xml", category: "package asset", label: "part bytes", unit: "byte(s)", count: 40 },
-        ]);
+        const before = inv([{ path: "word/document.xml", category: "package asset", label: "part bytes", unit: "byte(s)", count: 100 }]);
+        const after = inv([{ path: "word/document.xml", category: "package asset", label: "part bytes", unit: "byte(s)", count: 40 }]);
         const issues = inventoryDiffToIssues(diffDocxInventories(before, after));
         const drift = issues.find((i) => i.code === "inventory-bookkeeping-drift");
         expect(drift?.severity).toBe("warning");

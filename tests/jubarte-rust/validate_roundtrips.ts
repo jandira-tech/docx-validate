@@ -105,12 +105,8 @@ async function main() {
     console.log("");
     console.log("== validate_roundtrips summary ==");
     console.log(`total:                     ${files.length}`);
-    console.log(
-        `lenient ok:                ${lenient_ok} (${((lenient_ok / files.length) * 100).toFixed(1)}%)`,
-    );
-    console.log(
-        `word-valid ok:             ${word_valid_ok} (${((word_valid_ok / files.length) * 100).toFixed(1)}%)`,
-    );
+    console.log(`lenient ok:                ${lenient_ok} (${((lenient_ok / files.length) * 100).toFixed(1)}%)`);
+    console.log(`word-valid ok:             ${word_valid_ok} (${((word_valid_ok / files.length) * 100).toFixed(1)}%)`);
     console.log(`report:                    ${REPORT_PATH}`);
 }
 
