@@ -53,6 +53,43 @@ export const WORD_2006_NAMESPACE = "http://schemas.openxmlformats.org/wordproces
 export const WORD_STRICT_NAMESPACE = "http://purl.oclc.org/ooxml/wordprocessingml/main";
 /** Python: `WORD_PARAGRAPH_NAMESPACES = (WORD_2006_NAMESPACE, WORD_STRICT_NAMESPACE)` */
 export const WORD_PARAGRAPH_NAMESPACES: readonly [string, string] = [WORD_2006_NAMESPACE, WORD_STRICT_NAMESPACE];
+
+/**
+ * Local names of EG_RunInnerContent elements — valid ONLY inside a `<w:r>`,
+ * never as a direct child of `<w:p>` (where they are not in EG_PContent and
+ * Word drops them on open). Used by `validateRunContentPlacement`. Deliberately
+ * excludes elements that ARE valid paragraph-level siblings of runs (w:r,
+ * w:hyperlink, w:fldSimple, w:sdt, w:smartTag, w:bookmarkStart/End,
+ * w:commentRangeStart/End, w:ins, w:del, w:moveFrom/To, math, …).
+ */
+const RUN_INNER_CONTENT_LOCALS: ReadonlySet<string> = new Set([
+    "t",
+    "tab",
+    "br",
+    "cr",
+    "drawing",
+    "pict",
+    "object",
+    "sym",
+    "softHyphen",
+    "noBreakHyphen",
+    "ptab",
+    "fldChar",
+    "instrText",
+    "delText",
+    "delInstrText",
+    "lastRenderedPageBreak",
+    "footnoteReference",
+    "endnoteReference",
+    "commentReference",
+    "pgNum",
+    "dayShort",
+    "monthShort",
+    "yearShort",
+    "dayLong",
+    "monthLong",
+    "yearLong",
+]);
 const W14_NAMESPACE = "http://schemas.microsoft.com/office/word/2010/wordml";
 const W15_NAMESPACE = "http://schemas.microsoft.com/office/word/2012/wordml";
 const W16CEX_NAMESPACE = "http://schemas.microsoft.com/office/word/2018/wordml/cex";
@@ -284,6 +321,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             this.validateCommentThreading(),
             this.validateNoTrackingTokens(),
             this.validateAllParagraphsHaveParaId(),
+            this.validateRunContentPlacement(),
             this.validateStyleReferences(),
             this.validateStyleDefaults(),
             this.validateNoBom(),
@@ -315,6 +353,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     private isWordBlockingIssue(issue: ValidationIssue): boolean {
         switch (issue.code) {
+            // Misplaced run-inner content is silently dropped by Word (data loss).
+            case "run-content-misplaced":
+                return true;
             case "comment-thread-commentid-paraid-orphan":
             case "comment-thread-commentid-missing-paraid":
             case "comment-thread-commentid-missing-durableid":
@@ -936,6 +977,59 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         path: this.relPath(xmlFile),
                         code: "textid-missing-element",
                     });
+                }
+            }
+        }
+        return finalize(issues);
+    }
+
+    // ----- run-inner content placement ----------------------------------------
+
+    /**
+     * EG_RunInnerContent elements (`<w:t>`, `<w:tab>`, `<w:br>`, `<w:cr>`,
+     * `<w:drawing>`, `<w:pict>`, `<w:object>`, `<w:sym>`, `<w:softHyphen>`,
+     * `<w:noBreakHyphen>`, `<w:ptab>`, `<w:fldChar>`, `<w:instrText>`,
+     * `<w:delText>`, `<w:lastRenderedPageBreak>`, the note/comment references,
+     * …) are valid ONLY inside a `<w:r>`. When emitted as a DIRECT child of
+     * `<w:p>` — a sibling of runs, e.g. `<w:r>…</w:r><w:tab/><w:r>…` produced by
+     * a foreign pipeline that forgot to wrap them — they are not in EG_PContent,
+     * so Word silently DROPS them on open (data loss). The bare XSD validator
+     * surfaces this only generically ("this element is not expected") and the
+     * `word-valid` profile downgrades that message; this dedicated rule names
+     * the misplacement and is Word-blocking.
+     *
+     * Reports `run-content-misplaced` at "error" severity.
+     */
+    async validateRunContentPlacement(): Promise<ValidationResult> {
+        const issues: ValidationIssue[] = [];
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const paragraphs = dom.getElementsByTagNameNS(ns, "p");
+                for (let i = 0; i < paragraphs.length; i += 1) {
+                    const para = paragraphs.item(i);
+                    if (!para) continue;
+                    for (let child = para.firstChild; child; child = child.nextSibling) {
+                        if (child.nodeType !== 1) continue;
+                        const elem = child as Element;
+                        if (elem.namespaceURI !== ns) continue;
+                        const local = elem.localName || elem.tagName.split(":").pop() || "";
+                        if (!RUN_INNER_CONTENT_LOCALS.has(local)) continue;
+                        issues.push({
+                            severity: "error",
+                            message:
+                                `<w:${local}> is run-inner content (EG_RunInnerContent) placed ` +
+                                `directly under <w:p>; it must sit inside a <w:r>. Word drops ` +
+                                `misplaced run content on open.`,
+                            path: this.relPath(xmlFile),
+                            code: "run-content-misplaced",
+                        });
+                    }
                 }
             }
         }
