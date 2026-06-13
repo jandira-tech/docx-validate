@@ -353,9 +353,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     private isWordBlockingIssue(issue: ValidationIssue): boolean {
         switch (issue.code) {
-            // Misplaced run-inner content is silently dropped by Word (data loss).
-            case "run-content-misplaced":
-                return true;
+            // NB: run-content-misplaced is NOT Word-blocking — a real Word probe
+            // (open -g, no focus steal) opens bare <w:tab>/<w:br>/<w:drawing> under
+            // <w:p> CLEANLY (Word silently relocates/drops the run content). It
+            // stays an error in lenient/strict (structural invalidity + silent
+            // data loss) but the word-valid openability profile tolerates it.
             case "comment-thread-commentid-paraid-orphan":
             case "comment-thread-commentid-missing-paraid":
             case "comment-thread-commentid-missing-durableid":
@@ -992,11 +994,13 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * `<w:delText>`, `<w:lastRenderedPageBreak>`, the note/comment references,
      * …) are valid ONLY inside a `<w:r>`. When emitted as a DIRECT child of
      * `<w:p>` — a sibling of runs, e.g. `<w:r>…</w:r><w:tab/><w:r>…` produced by
-     * a foreign pipeline that forgot to wrap them — they are not in EG_PContent,
-     * so Word silently DROPS them on open (data loss). The bare XSD validator
-     * surfaces this only generically ("this element is not expected") and the
-     * `word-valid` profile downgrades that message; this dedicated rule names
-     * the misplacement and is Word-blocking.
+     * a foreign pipeline that forgot to wrap them — they are not in EG_PContent
+     * (invalid OOXML). A real Word probe shows Word OPENS such files cleanly and
+     * silently relocates/drops the misplaced content — so this is structural
+     * invalidity + silent data loss, NOT a Word-openability failure: an error in
+     * lenient/strict, tolerated by the word-valid profile. The bare XSD
+     * validator surfaces it only generically ("this element is not expected");
+     * this dedicated rule names the misplacement.
      *
      * Reports `run-content-misplaced` at "error" severity.
      */
