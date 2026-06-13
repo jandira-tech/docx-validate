@@ -559,8 +559,17 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 });
                 continue;
             }
-            // <w:t> inside <w:del>
-            const tInDel = $$(".//w:del//w:t", dom) as Node[];
+            // <w:t> inside <w:del> — but NOT text inside a drawing/VML picture that
+            // is itself part of the deleted run. When a whole <w:drawing>/<w:pict>
+            // (e.g. a text box) is deleted, Word keeps the shape's internal
+            // <w:txbxContent> text as <w:t> (the shape is one opaque deleted object,
+            // not run-level deleted text). A genuine textbox-internal deletion has
+            // its <w:del> INSIDE the txbxContent, so the drawing/pict is NOT a
+            // descendant of that <w:del> and is still flagged.
+            const tInDel = $$(
+                ".//w:del//w:t[not(ancestor::w:drawing[ancestor::w:del]) and not(ancestor::w:pict[ancestor::w:del])]",
+                dom,
+            ) as Node[];
             for (const node of tInDel) {
                 const elem = node as Element;
                 const text = elem.firstChild?.nodeValue ?? "";
@@ -571,8 +580,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     code: "del-contains-t",
                 });
             }
-            // <w:instrText> inside <w:del>
-            const instrInDel = $$(".//w:del//w:instrText", dom) as Node[];
+            // <w:instrText> inside <w:del> — same drawing/pict exclusion as <w:t>.
+            const instrInDel = $$(
+                ".//w:del//w:instrText[not(ancestor::w:drawing[ancestor::w:del]) and not(ancestor::w:pict[ancestor::w:del])]",
+                dom,
+            ) as Node[];
             for (const node of instrInDel) {
                 const elem = node as Element;
                 const text = elem.firstChild?.nodeValue ?? "";
