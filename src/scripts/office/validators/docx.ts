@@ -334,7 +334,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "xml-syntax":
                 return issue.path?.startsWith("word/") || issue.path === "[Content_Types].xml";
             case "rels-broken":
-                return issue.message.includes("../customXml/") || issue.message.includes("media/") || /\/_rels\/|\.rels$/i.test(issue.message);
+                return (
+                    issue.message.includes("../customXml/") || issue.message.includes("media/") || /\/_rels\/|\.rels$/i.test(issue.message)
+                );
             case "rels-empty-element":
                 return issue.message.includes("missing required attribute");
             case "xsd-error":
@@ -502,7 +504,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     async validateDeletions(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const $$ = makeSelect();
+
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
@@ -516,8 +518,29 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 });
                 continue;
             }
+
+            const tInDel: Node[] = [];
+            const instrInDel: Node[] = [];
+
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const tNodes = dom.getElementsByTagNameNS(ns, "t");
+                for (let i = 0; i < tNodes.length; i++) {
+                    const node = tNodes.item(i);
+                    if (node && isInsideDel(node)) {
+                        tInDel.push(node);
+                    }
+                }
+
+                const instrNodes = dom.getElementsByTagNameNS(ns, "instrText");
+                for (let i = 0; i < instrNodes.length; i++) {
+                    const node = instrNodes.item(i);
+                    if (node && isInsideDel(node)) {
+                        instrInDel.push(node);
+                    }
+                }
+            }
+
             // <w:t> inside <w:del>
-            const tInDel = $$(".//w:del//w:t", dom) as Node[];
             for (const node of tInDel) {
                 const elem = node as Element;
                 const text = elem.firstChild?.nodeValue ?? "";
@@ -528,8 +551,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     code: "del-contains-t",
                 });
             }
+
             // <w:instrText> inside <w:del>
-            const instrInDel = $$(".//w:del//w:instrText", dom) as Node[];
             for (const node of instrInDel) {
                 const elem = node as Element;
                 const text = elem.firstChild?.nodeValue ?? "";
@@ -546,23 +569,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     async validateInsertions(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-
-        const isInsideDel = (node: Node | null): boolean => {
-            let curr = node?.parentNode;
-            while (curr) {
-                if (curr.nodeType === 1) {
-                    // ELEMENT_NODE
-                    const elem = curr as Element;
-                    const localName = elem.localName;
-                    const ns = elem.namespaceURI;
-                    if (localName === "del" && (ns === WORD_2006_NAMESPACE || ns === WORD_STRICT_NAMESPACE)) {
-                        return true;
-                    }
-                }
-                curr = curr.parentNode;
-            }
-            return false;
-        };
 
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
@@ -3050,4 +3056,21 @@ function countParagraphsInRoot(doc: Document): number {
     }
 
     return count;
+}
+
+function isInsideDel(node: Node | null): boolean {
+    let curr = node?.parentNode;
+    while (curr) {
+        if (curr.nodeType === 1) {
+            // ELEMENT_NODE
+            const elem = curr as Element;
+            const localName = elem.localName;
+            const ns = elem.namespaceURI;
+            if (localName === "del" && (ns === WORD_2006_NAMESPACE || ns === WORD_STRICT_NAMESPACE)) {
+                return true;
+            }
+        }
+        curr = curr.parentNode;
+    }
+    return false;
 }
