@@ -1,3 +1,6 @@
 ## 2026-05-22 - Avoid xpath ancestor:: resolution in @xmldom
 **Learning:** Using `xpath` (from the `xpath` NPM package) with `@xmldom/xmldom` is extremely slow when querying with the `ancestor::` axis (e.g., `.//w:p[not(ancestor::w:txbxContent)]`). This causes significant performance bottlenecks for large documents because it traverses the tree for every matched element dynamically instead of just caching parent lookups.
 **Action:** When complex ancestor exclusions are needed on large node lists, rely on native DOM APIs (`getElementsByTagNameNS`) combined with a fast `parentNode` while loop in JavaScript. This simple rewrite improved paragraph counting performance by nearly 100x.
+## 2026-06-21 - Avoid xpath descendant resolution in @xmldom
+**Learning:** Using `xpath` with descendant selectors (`.//w:t` or `.//w:instrText`) inside `$$` queries in `@xmldom/xmldom` is extremely slow. We discovered this was taking ~25x longer than native DOM iteration across a large node list.
+**Action:** When gathering descendant elements like `w:t` and `w:instrText` from repeated blocks (like `w:del` nodes), rely on native DOM APIs (`getElementsByTagNameNS`) over the required namespace schemas (e.g., `WORD_PARAGRAPH_NAMESPACES`) instead of using `.//` xpath queries.
