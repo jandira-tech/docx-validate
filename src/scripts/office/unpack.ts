@@ -145,7 +145,8 @@ async function extractAll(zip: JSZip, outputPath: string): Promise<void> {
     for (const { name, file } of entries) {
         const target = path.join(outputPath, name);
         const resolved = path.resolve(target);
-        if (!resolved.startsWith(`${outputPath}${path.sep}`) && resolved !== outputPath) {
+        const resolvedOut = path.resolve(outputPath);
+        if (!resolved.startsWith(`${resolvedOut}${path.sep}`) && resolved !== resolvedOut) {
             throw new Error(`Refusing to extract entry outside output dir: ${name}`);
         }
         if (file.dir) {
