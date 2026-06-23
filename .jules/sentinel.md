@@ -15,3 +15,9 @@
 **Vulnerability:** While fixing the Insecure Temporary File vulnerability with `mkdtempSync`, assigning the result of `mkdtempSync` to an exported constant executed the synchronous I/O operations directly at module load time.
 **Learning:** Performing side effects like file I/O (e.g., creating temporary directories) directly inside the module scope introduces architectural flaws. It means importing the file anywhere (like in test suites or other tools) inadvertently triggers directory creation, leading to orphaned files and unintended side effects, even if the target CLI function is never run.
 **Prevention:** Always encapsulate file system interactions, including the generation of temporary directories or profiles, inside functions (e.g., lazy getters) rather than static module-level initialization.
+
+## 2026-06-23 - Zip Slip Vulnerability in Archive Extraction
+
+**Vulnerability:** When unpacking zip archives (e.g. `originalDocx` in redlining validation), the code directly used `entry.name` to construct the destination path without validating if the resolved path stayed within the intended extraction directory. This allowed malicious zip files containing path traversal characters (`../`) to overwrite arbitrary files on the host system.
+**Learning:** Unzipping files without destination validation is a classic Zip Slip vulnerability. Using `path.join(tempDir, entry.name)` is insufficient because `entry.name` can be manipulated to traverse out of `tempDir`.
+**Prevention:** Always resolve the absolute path of the constructed destination (`path.resolve(target)`) and verify it starts with the absolute path of the intended extraction directory (`path.resolve(tempDir) + path.sep`). Reject or throw an error for any entry that escapes the boundary.

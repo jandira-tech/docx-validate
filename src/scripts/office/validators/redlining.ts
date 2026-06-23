@@ -105,13 +105,18 @@ export async function validateRedlining(options: RedliningOptions): Promise<Vali
             await Promise.all(
                 Object.values(zip.files).map(async (entry) => {
                     const target = path.join(tempDir, entry.name);
+                    const resolved = path.resolve(target);
+                    const resolvedTempDir = path.resolve(tempDir);
+                    if (!resolved.startsWith(`${resolvedTempDir}${path.sep}`) && resolved !== resolvedTempDir) {
+                        throw new Error(`Refusing to extract entry outside output dir: ${entry.name}`);
+                    }
                     if (entry.dir) {
-                        await fs.mkdir(target, { recursive: true });
+                        await fs.mkdir(resolved, { recursive: true });
                         return;
                     }
-                    await fs.mkdir(path.dirname(target), { recursive: true });
+                    await fs.mkdir(path.dirname(resolved), { recursive: true });
                     const buf = await entry.async("nodebuffer");
-                    await fs.writeFile(target, buf);
+                    await fs.writeFile(resolved, buf);
                 }),
             );
         } catch (err) {
