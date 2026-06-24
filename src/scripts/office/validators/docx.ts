@@ -285,7 +285,27 @@ export interface ParagraphCounts {
 }
 
 export class DOCXSchemaValidator extends BaseSchemaValidator {
-    protected readonly elementRelationshipTypes: Record<string, string> = {};
+    /**
+     * Element (lower-cased local name) → required `r:id` relationship-type suffix.
+     * Enables the `rels-id-mismatch` check in `validateAllRelationshipIds`: an
+     * `r:id` that RESOLVES in the sidecar but to the WRONG kind of part. The XSD
+     * cannot catch this (rId target semantics are not schema-constrained), yet
+     * real Microsoft Word REFUSES to open such a file ("Word found unreadable
+     * content"). Proven word-first: a redline whose inserted `<w:hyperlink r:id>`
+     * collided with the destination's `header`/`footer`/`fontTable`/`theme`
+     * relationships passed XSD validation with 0 errors but Word rejected it.
+     * Only `r:id`-bearing elements are listed (image `<a:blip>` uses `r:embed`,
+     * which the existence check already covers).
+     */
+    protected readonly elementRelationshipTypes: Record<string, string> = {
+        // Unambiguous `r:id` invariants only. `<o:OLEObject>` is deliberately
+        // omitted: its r:id legitimately targets EITHER an `oleObject` OR a
+        // `package` rel (embedded packages), so enforcing one type would false-
+        // positive. `<a:blip>` uses `r:embed`, not `r:id`, so it is unaffected.
+        hyperlink: "hyperlink",
+        headerreference: "header",
+        footerreference: "footer",
+    };
 
     /**
      * Cached parse of `word/document.xml` from the original `.docx` zip.
