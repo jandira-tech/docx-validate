@@ -119,9 +119,7 @@ describe("DOCXSchemaValidator", () => {
             await withTempDir(async (dir) => {
                 await writeFile(
                     path.join(dir, "word", "document.xml"),
-                    wrapDocument(
-                        `<w:p><w:del w:id="1"><w:ins w:id="2"><w:r><w:delText>ok</w:delText></w:r></w:ins></w:del></w:p>`,
-                    ),
+                    wrapDocument(`<w:p><w:del w:id="1"><w:ins w:id="2"><w:r><w:delText>ok</w:delText></w:r></w:ins></w:del></w:p>`),
                 );
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const result = await v.validateInsertions();
@@ -284,7 +282,10 @@ describe("DOCXSchemaValidator", () => {
 
         it("flags textId == 0", async () => {
             await withTempDir(async (dir) => {
-                await writeFile(path.join(dir, "word", "document.xml"), wrapDocument(`<w:p w14:paraId="00000001" w14:textId="00000000"/>`, W14_NS));
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(`<w:p w14:paraId="00000001" w14:textId="00000000"/>`, W14_NS),
+                );
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const result = await v.validateIdConstraints();
                 expect(result.valid).toBe(false);
@@ -311,9 +312,7 @@ describe("DOCXSchemaValidator", () => {
             await withTempDir(async (dir) => {
                 await writeFile(
                     path.join(dir, "word", "numbering.xml"),
-                    `<?xml version="1.0"?><w:numbering ${W_NS} ${W16CID_NS}>` +
-                        `<w:abstractNum w16cid:durableId="0"/>` +
-                        `</w:numbering>`,
+                    `<?xml version="1.0"?><w:numbering ${W_NS} ${W16CID_NS}>` + `<w:abstractNum w16cid:durableId="0"/>` + `</w:numbering>`,
                 );
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const result = await v.validateIdConstraints();
@@ -2256,6 +2255,22 @@ describe("DOCXSchemaValidator", () => {
                 const result = await v.validateRedundantCellBorders();
                 expect(result.valid).toBe(true);
                 expect(result.issues.some((i) => i.code === "cell-borders-redundant")).toBe(true);
+            });
+        });
+
+        it("deduplicates multiple matching tags in nested <w:del> structures", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:del w:id="1"><w:del w:id="2"><w:r><w:t>badT</w:t><w:instrText>badInstr</w:instrText></w:r></w:del></w:del></w:p>`,
+                    ),
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateDeletions();
+                expect(result.valid).toBe(false);
+                expect(result.issues.filter((i) => i.code === "del-contains-t")).toHaveLength(1);
+                expect(result.issues.filter((i) => i.code === "del-contains-instrtext")).toHaveLength(1);
             });
         });
     });
