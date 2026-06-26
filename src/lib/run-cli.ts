@@ -36,9 +36,45 @@
  * does not re-trigger argv parsing).
  */
 
+import { realpathSync } from "node:fs";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import * as tmp from "tmp";
+
+/**
+ * Resolve a path to its canonical, symlink-dereferenced form so that two
+ * spellings of the same file compare equal. Falls back to `path.resolve`
+ * when the path does not exist on disk (so the comparison still works for
+ * non-file argv values instead of throwing).
+ */
+const canonicalize = (p: string): string => {
+    try {
+        return realpathSync(p);
+    } catch {
+        return path.resolve(p);
+    }
+};
+
+/**
+ * True iff `metaUrl` (always `import.meta.url`) refers to the same file the
+ * process was launched with (`argv1` = `process.argv[1]`).
+ *
+ * Both sides are realpath-normalized before comparing. This matters because
+ * Node resolves `import.meta.url` through symlinks (it hands you the realpath)
+ * but leaves `process.argv[1]` spelled exactly as invoked. A raw string
+ * compare therefore FALSELY mismatches whenever the script is reached via a
+ * symlinked directory or a relative path — making the CLI silently no-op
+ * (exit 0, no output). That is exactly how a `/Users/arthrod/T ->
+ * /Users/arthrod/temp/T` symlink caused python-jubarte's absolute-path
+ * `validate.ts` invocation to validate nothing and report every file valid.
+ */
+export const isCliEntry = (metaUrl: string, argv1: string | undefined): boolean => {
+    if (!argv1) {
+        return false;
+    }
+    return canonicalize(fileURLToPath(metaUrl)) === canonicalize(argv1);
+};
 
 /**
  * Run `fn` if `metaUrl` (always pass `import.meta.url`) refers to the
@@ -49,12 +85,7 @@ import * as tmp from "tmp";
  * directly inside `main`; just return a number.
  */
 export const runCli = (metaUrl: string, fn: () => number | Promise<number>): void => {
-    const [, entryArg] = process.argv;
-    if (!entryArg) {
-        return;
-    }
-    const modulePath = fileURLToPath(metaUrl);
-    if (modulePath !== entryArg) {
+    if (!isCliEntry(metaUrl, process.argv[1])) {
         return;
     }
     Promise.resolve()
