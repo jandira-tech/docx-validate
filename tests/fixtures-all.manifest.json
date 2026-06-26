@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-26T02:37:24.944Z",
+  "generatedAt": "2026-06-26T06:06:16.892Z",
   "totalFixtures": 619,
   "entries": [
     {
@@ -338,6 +338,7 @@
           "comment-marker-missing",
           "comment-orphan-start",
           "comment-thread-count-mismatch",
+          "docprops-boolean-invalid",
           "xsd-error",
           "xsd-summary"
         ]
@@ -348,6 +349,7 @@
           "comment-marker-missing",
           "comment-orphan-start",
           "comment-thread-count-mismatch",
+          "docprops-boolean-invalid",
           "xsd-error",
           "xsd-summary"
         ]
@@ -8397,6 +8399,7 @@
           "comment-marker-missing",
           "comment-orphan-start",
           "comment-thread-count-mismatch",
+          "docprops-boolean-invalid",
           "xsd-error",
           "xsd-summary"
         ]
@@ -8407,6 +8410,7 @@
           "comment-marker-missing",
           "comment-orphan-start",
           "comment-thread-count-mismatch",
+          "docprops-boolean-invalid",
           "xsd-error",
           "xsd-summary"
         ]
@@ -8454,6 +8458,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "docprops-boolean-invalid",
           "xsd-error",
           "xsd-summary"
         ]
@@ -8461,6 +8466,7 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "docprops-boolean-invalid",
           "xsd-error",
           "xsd-summary"
         ]
@@ -8472,6 +8478,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "docprops-boolean-invalid",
           "xsd-error",
           "xsd-summary"
         ]
@@ -8479,6 +8486,7 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "docprops-boolean-invalid",
           "xsd-error",
           "xsd-summary"
         ]
@@ -8578,6 +8586,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "docprops-boolean-invalid",
           "rels-unreferenced",
           "xsd-error",
           "xsd-summary"
@@ -8586,6 +8595,7 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "docprops-boolean-invalid",
           "rels-unreferenced",
           "xsd-error",
           "xsd-summary"
@@ -8598,6 +8608,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "docprops-boolean-invalid",
           "rels-broken",
           "rels-target-missing",
           "xsd-error",
@@ -8607,6 +8618,7 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "docprops-boolean-invalid",
           "rels-broken",
           "rels-target-missing",
           "xsd-error",
@@ -9033,6 +9045,7 @@
           "comment-marker-missing",
           "comment-orphan-start",
           "comment-thread-count-mismatch",
+          "docprops-boolean-invalid",
           "xsd-error",
           "xsd-summary"
         ]
@@ -9043,6 +9056,7 @@
           "comment-marker-missing",
           "comment-orphan-start",
           "comment-thread-count-mismatch",
+          "docprops-boolean-invalid",
           "xsd-error",
           "xsd-summary"
         ]
@@ -9054,6 +9068,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "docprops-boolean-invalid",
           "xsd-error",
           "xsd-summary"
         ]
@@ -9061,6 +9076,7 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "docprops-boolean-invalid",
           "xsd-error",
           "xsd-summary"
         ]
@@ -9072,6 +9088,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "docprops-boolean-invalid",
           "xsd-error",
           "xsd-summary"
         ]
@@ -9079,6 +9096,7 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "docprops-boolean-invalid",
           "xsd-error",
           "xsd-summary"
         ]
@@ -9090,6 +9108,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "docprops-boolean-invalid",
           "rels-unreferenced",
           "xsd-error",
           "xsd-summary"
@@ -9098,6 +9117,7 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "docprops-boolean-invalid",
           "rels-unreferenced",
           "xsd-error",
           "xsd-summary"
@@ -9110,6 +9130,7 @@
       "strict": {
         "valid": false,
         "errorCodes": [
+          "docprops-boolean-invalid",
           "rels-broken",
           "rels-target-missing",
           "xsd-error",
@@ -9119,6 +9140,7 @@
       "lenient": {
         "valid": false,
         "errorCodes": [
+          "docprops-boolean-invalid",
           "rels-broken",
           "rels-target-missing",
           "xsd-error",

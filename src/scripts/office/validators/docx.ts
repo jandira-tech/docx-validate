@@ -390,6 +390,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             this.validateRunContentPlacement(),
             this.validateStyleReferences(),
             this.validateStyleDefaults(),
+            this.validateDocumentBuilderInserts(),
+            this.validateDocPropsBooleans(),
             this.validateNoBom(),
             this.validateNoEmptyRelsParts(),
             this.validateOrphanedRelationships(),
@@ -437,6 +439,12 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-math-spre-body":
             case "word-content-type-invalid":
             case "word-drawing-scalar-whitespace":
+            // Both root-caused against real Word (minimal-repair + re-probe) and
+            // verified disjoint from the Word-clean corpus (0/350): an unresolved
+            // DocumentBuilder <Insert> directive -> OPEN_ERROR; a docProps boolean
+            // with whitespace -> unreadable-content recovery prompt.
+            case "documentbuilder-insert-unresolved":
+            case "docprops-boolean-invalid":
                 return true;
             // NB: comment-orphan-start/end and comment-marker-missing are NOT
             // promoted here. Empirically Word TOLERATES an orphan comment-range
@@ -912,6 +920,104 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     code: "style-default-missing",
                 });
             }
+        }
+        return finalize(issues);
+    }
+
+    /**
+     * Detect unresolved OpenXmlPowerTools DocumentBuilder `<Insert>` directives
+     * (namespace `http://powertools.codeplex.com/documentbuilder/...`) left in a
+     * WordprocessingML content part. Word cannot open a document whose
+     * header/footer/body content model contains this foreign element — it reports
+     * "Word experienced an error trying to open the file" (a hard OPEN_ERROR).
+     *
+     * Root-caused against REAL Word over the word-invalid-fixtures corpus
+     * (Docxodus DB/HeadersFooters/Dest/{Fax,Letter,…}): removing only the
+     * `<Insert>` element flips every affected file to clean, and 0/350
+     * Word-clean files carry the namespace. Word-blocking in every profile.
+     */
+    async validateDocumentBuilderInserts(): Promise<ValidationResult> {
+        const issues: ValidationIssue[] = [];
+        const DB_NS_PREFIX = "http://powertools.codeplex.com/documentbuilder";
+        for (const xmlFile of this.xmlFiles) {
+            const rel = this.relPath(xmlFile);
+            // WML content parts only; customXml/ legitimately carries foreign content.
+            if (!/^word\/(?:document|header\d*|footer\d*|footnotes|endnotes|glossary\/document)\.xml$/i.test(rel)) {
+                continue;
+            }
+            let content: string;
+            try {
+                content = await fs.readFile(xmlFile, "utf-8");
+            } catch {
+                continue;
+            }
+            if (!content.includes(DB_NS_PREFIX)) continue;
+            let dom: Document;
+            try {
+                dom = parseXml(content);
+            } catch {
+                continue;
+            }
+            const all = dom.getElementsByTagName("*");
+            for (let i = 0; i < all.length; i += 1) {
+                const elem = all.item(i);
+                const ns = elem?.namespaceURI ?? "";
+                if (ns.startsWith(DB_NS_PREFIX)) {
+                    issues.push({
+                        severity: "error",
+                        message:
+                            `<${elem?.nodeName}> is an unresolved OpenXmlPowerTools DocumentBuilder directive ` +
+                            `(namespace '${ns}') in ${rel}. Word cannot open a document with this foreign element ` +
+                            `in its content model; the directive must be resolved/removed before the document is finalized.`,
+                        path: rel,
+                        code: "documentbuilder-insert-unresolved",
+                    });
+                    break; // one finding per part is enough
+                }
+            }
+        }
+        return finalize(issues);
+    }
+
+    /**
+     * Detect docProps/app.xml boolean extended-properties (`ScaleCrop`,
+     * `LinksUpToDate`, `SharedDoc`, `HyperlinksChanged`) whose value is not a
+     * canonical `xsd:boolean` (`true`/`false`/`0`/`1`) — in practice, whitespace
+     * around the value, e.g. `<ScaleCrop>false\n  </ScaleCrop>`. Word reports
+     * "unreadable content" and offers recovery.
+     *
+     * Root-caused against REAL Word: stripping ONLY the boolean whitespace flips
+     * every affected file to clean, and 0/350 Word-clean files carry it. Integer
+     * properties with whitespace (e.g. `<TotalTime>0\n  </TotalTime>`) are
+     * TOLERATED by Word and DO occur in Word-clean files, so they are
+     * deliberately NOT flagged here (that would re-introduce false positives).
+     */
+    async validateDocPropsBooleans(): Promise<ValidationResult> {
+        const issues: ValidationIssue[] = [];
+        const appXml = path.join(this.unpackedDir, "docProps", "app.xml");
+        let dom: Document;
+        try {
+            dom = parseXml(await fs.readFile(appXml, "utf-8"));
+        } catch {
+            return { valid: true, issues: [] };
+        }
+        const BOOLEAN_PROPS = new Set(["ScaleCrop", "LinksUpToDate", "SharedDoc", "HyperlinksChanged"]);
+        const CANONICAL = new Set(["true", "false", "0", "1"]);
+        const all = dom.getElementsByTagName("*");
+        for (let i = 0; i < all.length; i += 1) {
+            const elem = all.item(i);
+            if (!elem || !BOOLEAN_PROPS.has(elem.localName ?? "")) continue;
+            const raw = elem.textContent ?? "";
+            if (raw === raw.trim() && CANONICAL.has(raw)) continue;
+            issues.push({
+                severity: "error",
+                message:
+                    `docProps/app.xml boolean property '${elem.localName}' has the non-canonical value ` +
+                    `${JSON.stringify(raw)} (expected exactly true/false/0/1 with no surrounding whitespace). ` +
+                    `Word rejects this as unreadable content and offers to recover the file.`,
+                path: "docProps/app.xml",
+                code: "docprops-boolean-invalid",
+            });
         }
         return finalize(issues);
     }
