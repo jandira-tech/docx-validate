@@ -89,6 +89,22 @@ describe("validate", () => {
         expect(result.issues.some((i) => i.severity === "error")).toBe(true);
     });
 
+    it("does not throw on a non-ZIP / encrypted / corrupted package; returns an error verdict", async () => {
+        await withTempDir(async (dir) => {
+            // Encrypted OOXML is a CFB/OLE compound file (D0CF11E0 magic), not a
+            // ZIP; a truncated/corrupted .docx fails the same way. JSZip throws
+            // "Can't find end of central directory". validate() must surface that
+            // as a structured error issue, never crash — Word rejects these files,
+            // so they must read as invalid (this profile must keep it blocking).
+            const bad = path.join(dir, "encrypted.docx");
+            await fs.writeFile(bad, Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1, 0x00, 0x00, 0x00, 0x00]));
+            const result = await validate(bad, { profile: "word-valid" });
+            expect(result.suffix).toBe(".docx");
+            expect(result.valid).toBe(false);
+            expect(result.issues.some((i) => i.severity === "error" && i.code === "package-open-failed")).toBe(true);
+        });
+    });
+
     it("flags paraId overflow in a packed DOCX (negative case)", async () => {
         const docxPath = path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx");
         const result = await validate(docxPath);

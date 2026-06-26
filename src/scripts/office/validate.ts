@@ -129,8 +129,33 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     if (targetIsPackedFile) {
         return withTempDir(async (tempDir) => {
             const buf = await fs.readFile(target);
-            const zip = await JSZip.loadAsync(buf);
-            await extractAll(zip, tempDir);
+            let zip: JSZip;
+            try {
+                zip = await JSZip.loadAsync(buf);
+                await extractAll(zip, tempDir);
+            } catch (err) {
+                // The file is not a readable OPC (zip) package: encrypted OOXML
+                // (a CFB/OLE compound file), or a truncated/corrupted archive.
+                // Word refuses to open all of these, so this is an error — but
+                // `validate()` must NEVER throw here (a thrown validator silently
+                // crashes callers that shell out, e.g. python-jubarte, instead of
+                // reporting the file invalid). Surface it as a structured issue.
+                // Kept blocking under every profile: an unopenable package is not
+                // something Word tolerates.
+                const detail = err instanceof Error ? err.message : String(err);
+                return {
+                    valid: false,
+                    issues: [
+                        {
+                            severity: "error" as const,
+                            message: `Cannot open ${target} as an OPC package (not a valid .docx/zip — encrypted, corrupted, or truncated): ${detail}`,
+                            code: "package-open-failed",
+                        },
+                    ],
+                    repairs: 0,
+                    suffix: dispatchSuffix,
+                };
+            }
             return runWithUnpacked(tempDir);
         });
     }

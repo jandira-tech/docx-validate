@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-05-28T06:40:11.799Z",
-  "totalFixtures": 609,
+  "generatedAt": "2026-06-26T02:37:24.944Z",
+  "totalFixtures": 619,
   "entries": [
     {
       "relativePath": "broken/comments.unmatched-comment-marker.docx",
@@ -289,6 +289,70 @@
         ]
       },
       "word": "clean-open"
+    },
+    {
+      "relativePath": "broken/word-rejects-misplaced-run.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "broken/word-rejects-table-cellspacing.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "broken/word-rejects-unmatched-comment.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "comment-marker-missing",
+          "comment-orphan-start",
+          "comment-thread-count-mismatch",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "comment-marker-missing",
+          "comment-orphan-start",
+          "comment-thread-count-mismatch",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
     },
     {
       "relativePath": "eigen/1-5-line-spacing.id-paraid-overflow.docx",
@@ -2992,13 +3056,15 @@
       "relativePath": "external/apache-poi/crash-517626e815e0afa9decd0ebb6d1dee63fb9907dd.docx",
       "strict": {
         "valid": false,
-        "errorCodes": [],
-        "threw": "Corrupted zip: can't find end of central directory"
+        "errorCodes": [
+          "package-open-failed"
+        ]
       },
       "lenient": {
         "valid": false,
-        "errorCodes": [],
-        "threw": "Corrupted zip: can't find end of central directory"
+        "errorCodes": [
+          "package-open-failed"
+        ]
       },
       "word": "unreadable-content-warning"
     },
@@ -5742,13 +5808,15 @@
       "relativePath": "external/superdoc/encryption/encrypted-advanced-text.docx",
       "strict": {
         "valid": false,
-        "errorCodes": [],
-        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
+        "errorCodes": [
+          "package-open-failed"
+        ]
       },
       "lenient": {
         "valid": false,
-        "errorCodes": [],
-        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
+        "errorCodes": [
+          "package-open-failed"
+        ]
       },
       "word": "password-required"
     },
@@ -5756,13 +5824,15 @@
       "relativePath": "external/superdoc/encryption/encrypted-hello.docx",
       "strict": {
         "valid": false,
-        "errorCodes": [],
-        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
+        "errorCodes": [
+          "package-open-failed"
+        ]
       },
       "lenient": {
         "valid": false,
-        "errorCodes": [],
-        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
+        "errorCodes": [
+          "package-open-failed"
+        ]
       },
       "word": "unknown-dialog"
     },
@@ -7059,7 +7129,7 @@
           "xsd-summary"
         ]
       },
-      "word": "timeout"
+      "word": "open-error"
     },
     {
       "relativePath": "external/superdoc/super-editor/hyperlink_multiple_runs.docx",
@@ -7207,7 +7277,7 @@
           "xsd-summary"
         ]
       },
-      "word": "timeout"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "external/superdoc/super-editor/line-break.docx",
@@ -7726,7 +7796,7 @@
           "xsd-summary"
         ]
       },
-      "word": "timeout"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "external/superdoc/super-editor/paragraph_indent_normal_styles.docx",
@@ -8341,7 +8411,7 @@
           "xsd-summary"
         ]
       },
-      "word": "timeout"
+      "word": "open-error"
     },
     {
       "relativePath": "unknown/unknown/empty.missing-content-type.docx",
@@ -8395,7 +8465,7 @@
           "xsd-summary"
         ]
       },
-      "word": "timeout"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "unknown/unknown/header-with-rid-no-sidecar.docx",
@@ -8413,7 +8483,7 @@
           "xsd-summary"
         ]
       },
-      "word": "timeout"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "unknown/unknown/sample-document.broken-tables.docx",
@@ -8521,7 +8591,7 @@
           "xsd-summary"
         ]
       },
-      "word": "timeout"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "unknown/unknown/tiny-picture.broken-rels.docx",
@@ -8543,7 +8613,7 @@
           "xsd-summary"
         ]
       },
-      "word": "timeout"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "vfdsdfcacawesd.suggesting-mixed-edits.docx",
@@ -8576,7 +8646,7 @@
           "xsd-summary"
         ]
       },
-      "word": "unknown"
+      "word": "open-error"
     },
     {
       "relativePath": "word-regenerate-invalid/original/broken/sample-document.broken-tables.docx",
@@ -8600,7 +8670,7 @@
           "id-textid-overflow"
         ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-regenerate-invalid/original/broken/sample-document.empty-rels.docx",
@@ -8625,7 +8695,7 @@
           "id-textid-overflow"
         ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-regenerate-invalid/original/broken/sample-document.id-overflow.docx",
@@ -8652,7 +8722,7 @@
           "ignorable-undeclared"
         ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-regenerate-invalid/original/broken/sample-document.missing-paraids.docx",
@@ -8676,7 +8746,7 @@
           "id-textid-overflow"
         ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-regenerate-invalid/original/broken/sample-document.our-pipeline-output-tr-no-textid.docx",
@@ -8698,7 +8768,7 @@
           "id-textid-overflow"
         ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-regenerate-invalid/original/broken/single-paragraph.malformed-xml.docx",
@@ -8714,7 +8784,7 @@
           "xml-syntax"
         ]
       },
-      "word": "unknown"
+      "word": "open-error"
     },
     {
       "relativePath": "word-regenerate-invalid/original/broken/tables.missing-namespace.docx",
@@ -8730,21 +8800,23 @@
           "xml-syntax"
         ]
       },
-      "word": "unknown"
+      "word": "open-error"
     },
     {
       "relativePath": "word-regenerate-invalid/original/external/apache-poi/crash-517626e815e0afa9decd0ebb6d1dee63fb9907dd.docx",
       "strict": {
         "valid": false,
-        "errorCodes": [],
-        "threw": "Corrupted zip: can't find end of central directory"
+        "errorCodes": [
+          "package-open-failed"
+        ]
       },
       "lenient": {
         "valid": false,
-        "errorCodes": [],
-        "threw": "Corrupted zip: can't find end of central directory"
+        "errorCodes": [
+          "package-open-failed"
+        ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-regenerate-invalid/original/external/open-xml-sdk/5Errors.docx",
@@ -8766,7 +8838,7 @@
           "xsd-summary"
         ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-regenerate-invalid/original/external/open-xml-sdk/InvalidDocPropsct.docx",
@@ -8784,7 +8856,7 @@
           "ct-undeclared-part"
         ]
       },
-      "word": "unknown"
+      "word": "open-error"
     },
     {
       "relativePath": "word-regenerate-invalid/original/external/open-xml-sdk/UnknownElement.docx",
@@ -8803,7 +8875,7 @@
           "xsd-summary"
         ]
       },
-      "word": "unknown"
+      "word": "open-error"
     },
     {
       "relativePath": "word-regenerate-invalid/original/external/superdoc/behavior/math-spre-tests.docx",
@@ -8815,35 +8887,39 @@
         "valid": true,
         "errorCodes": []
       },
-      "word": "unknown"
+      "word": "open-error"
     },
     {
       "relativePath": "word-regenerate-invalid/original/external/superdoc/encryption/encrypted-advanced-text.docx",
       "strict": {
         "valid": false,
-        "errorCodes": [],
-        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
+        "errorCodes": [
+          "package-open-failed"
+        ]
       },
       "lenient": {
         "valid": false,
-        "errorCodes": [],
-        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
+        "errorCodes": [
+          "package-open-failed"
+        ]
       },
-      "word": "unknown"
+      "word": "password-required"
     },
     {
       "relativePath": "word-regenerate-invalid/original/external/superdoc/encryption/encrypted-hello.docx",
       "strict": {
         "valid": false,
-        "errorCodes": [],
-        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
+        "errorCodes": [
+          "package-open-failed"
+        ]
       },
       "lenient": {
         "valid": false,
-        "errorCodes": [],
-        "threw": "Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
+        "errorCodes": [
+          "package-open-failed"
+        ]
       },
-      "word": "unknown"
+      "word": "unknown-dialog"
     },
     {
       "relativePath": "word-regenerate-invalid/original/external/superdoc/layout-engine/shapes/vectors.docx",
@@ -8861,7 +8937,7 @@
           "rels-target-missing"
         ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-regenerate-invalid/original/external/superdoc/super-editor/annotations_import.docx",
@@ -8882,7 +8958,7 @@
           "xsd-summary"
         ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-regenerate-invalid/original/external/superdoc/super-editor/hyperlink-exported.docx",
@@ -8903,7 +8979,7 @@
           "xsd-summary"
         ]
       },
-      "word": "unknown"
+      "word": "open-error"
     },
     {
       "relativePath": "word-regenerate-invalid/original/external/superdoc/super-editor/invalid-underline.docx",
@@ -8924,7 +9000,7 @@
           "xsd-summary"
         ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-regenerate-invalid/original/external/superdoc/super-editor/paragraph-sectpr-breaks.docx",
@@ -8947,7 +9023,7 @@
           "xsd-summary"
         ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-regenerate-invalid/original/unknown/unknown/comments.unmatched-comment-marker.docx",
@@ -8971,7 +9047,7 @@
           "xsd-summary"
         ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-regenerate-invalid/original/unknown/unknown/footnotes.duplicate-paraid.docx",
@@ -8989,7 +9065,7 @@
           "xsd-summary"
         ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-regenerate-invalid/original/unknown/unknown/header-with-rid-no-sidecar.docx",
@@ -9007,7 +9083,7 @@
           "xsd-summary"
         ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-regenerate-invalid/original/unknown/unknown/text-box.orphan-part.docx",
@@ -9027,7 +9103,7 @@
           "xsd-summary"
         ]
       },
-      "word": "unknown"
+      "word": "timeout"
     },
     {
       "relativePath": "word-regenerate-invalid/original/unknown/unknown/tiny-picture.broken-rels.docx",
@@ -9049,7 +9125,7 @@
           "xsd-summary"
         ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-regenerate-invalid/original/working/sample-document.our-repaired.docx",
@@ -9071,7 +9147,7 @@
           "id-textid-overflow"
         ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-regenerate-invalid/regenerated/broken/header-with-rid-no-sidecar.docx",
@@ -9087,7 +9163,7 @@
           "rels-missing-sidecar"
         ]
       },
-      "word": "unknown"
+      "word": "clean-open"
     },
     {
       "relativePath": "word-regenerate-invalid/regenerated/broken/sample-document.broken-tables.docx",
@@ -9099,7 +9175,7 @@
         "valid": true,
         "errorCodes": []
       },
-      "word": "unknown"
+      "word": "clean-open"
     },
     {
       "relativePath": "word-regenerate-invalid/regenerated/broken/sample-document.empty-rels.docx",
@@ -9111,7 +9187,7 @@
         "valid": true,
         "errorCodes": []
       },
-      "word": "unknown"
+      "word": "clean-open"
     },
     {
       "relativePath": "word-regenerate-invalid/regenerated/broken/sample-document.id-overflow.docx",
@@ -9123,7 +9199,7 @@
         "valid": true,
         "errorCodes": []
       },
-      "word": "unknown"
+      "word": "clean-open"
     },
     {
       "relativePath": "word-regenerate-invalid/regenerated/broken/sample-document.missing-paraids.docx",
@@ -9135,7 +9211,7 @@
         "valid": true,
         "errorCodes": []
       },
-      "word": "unknown"
+      "word": "clean-open"
     },
     {
       "relativePath": "word-regenerate-invalid/regenerated/broken/sample-document.our-pipeline-output-tr-no-textid.docx",
@@ -9147,7 +9223,7 @@
         "valid": true,
         "errorCodes": []
       },
-      "word": "unknown"
+      "word": "clean-open"
     },
     {
       "relativePath": "word-regenerate-invalid/regenerated/external/open-xml-sdk/5Errors.docx",
@@ -9167,7 +9243,7 @@
           "xsd-summary"
         ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-regenerate-invalid/regenerated/external/open-xml-sdk/InvalidDocPropsct.docx",
@@ -9184,7 +9260,7 @@
           "ct-undeclared-part"
         ]
       },
-      "word": "unknown"
+      "word": "open-error"
     },
     {
       "relativePath": "word-regenerate-invalid/regenerated/external/open-xml-sdk/UnknownElement.docx",
@@ -9202,7 +9278,7 @@
           "xsd-summary"
         ]
       },
-      "word": "unknown"
+      "word": "open-error"
     },
     {
       "relativePath": "word-regenerate-invalid/regenerated/external/superdoc/behavior/math-spre-tests.docx",
@@ -9214,7 +9290,7 @@
         "valid": true,
         "errorCodes": []
       },
-      "word": "unknown"
+      "word": "open-error"
     },
     {
       "relativePath": "word-regenerate-invalid/regenerated/external/superdoc/layout-engine/shapes/vectors.docx",
@@ -9232,7 +9308,7 @@
           "rels-target-missing"
         ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-regenerate-invalid/regenerated/external/superdoc/super-editor/annotations_import.docx",
@@ -9252,7 +9328,7 @@
           "xsd-summary"
         ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-regenerate-invalid/regenerated/external/superdoc/super-editor/hyperlink-exported.docx",
@@ -9272,7 +9348,7 @@
           "xsd-summary"
         ]
       },
-      "word": "unknown"
+      "word": "open-error"
     },
     {
       "relativePath": "word-regenerate-invalid/regenerated/external/superdoc/super-editor/invalid-underline.docx",
@@ -9292,7 +9368,7 @@
           "xsd-summary"
         ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-regenerate-invalid/regenerated/external/superdoc/super-editor/paragraph-sectpr-breaks.docx",
@@ -9314,7 +9390,7 @@
           "xsd-summary"
         ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-regenerate-invalid/regenerated/unknown/unknown/comments.unmatched-comment-marker.docx",
@@ -9334,7 +9410,7 @@
           "comment-thread-count-mismatch"
         ]
       },
-      "word": "unknown"
+      "word": "clean-open"
     },
     {
       "relativePath": "word-regenerate-invalid/regenerated/unknown/unknown/footnotes.duplicate-paraid.docx",
@@ -9346,7 +9422,7 @@
         "valid": true,
         "errorCodes": []
       },
-      "word": "unknown"
+      "word": "clean-open"
     },
     {
       "relativePath": "word-regenerate-invalid/regenerated/unknown/unknown/header-with-rid-no-sidecar.docx",
@@ -9358,7 +9434,7 @@
         "valid": true,
         "errorCodes": []
       },
-      "word": "unknown"
+      "word": "clean-open"
     },
     {
       "relativePath": "word-regenerate-invalid/regenerated/unknown/unknown/text-box.orphan-part.docx",
@@ -9378,7 +9454,7 @@
           "xsd-summary"
         ]
       },
-      "word": "unknown"
+      "word": "clean-open"
     },
     {
       "relativePath": "word-regenerate-invalid/regenerated/unknown/unknown/tiny-picture.broken-rels.docx",
@@ -9396,7 +9472,7 @@
           "rels-target-missing"
         ]
       },
-      "word": "unknown"
+      "word": "clean-open"
     },
     {
       "relativePath": "word-regenerate-invalid/regenerated/working/sample-document.our-repaired.docx",
@@ -9408,7 +9484,7 @@
         "valid": true,
         "errorCodes": []
       },
-      "word": "unknown"
+      "word": "clean-open"
     },
     {
       "relativePath": "word-strict/eigenpal-docx-editor.suggesting-mixed-edits.docx",
@@ -9444,7 +9520,7 @@
           "id-textid-overflow"
         ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-strict/second-pass/ouch.comment-a-tachyon-walks-into.docx",
@@ -9474,7 +9550,7 @@
           "comment-thread-durableid-orphan"
         ]
       },
-      "word": "unknown"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "word-strict/second-pass/second-pass-word-repaired-sample-document.broken-tables.docx",
@@ -9486,7 +9562,7 @@
         "valid": true,
         "errorCodes": []
       },
-      "word": "unknown"
+      "word": "clean-open"
     },
     {
       "relativePath": "working/sample-document.afterword-repaired-word-repaired.docx",
@@ -9520,7 +9596,7 @@
           "id-textid-overflow"
         ]
       },
-      "word": "timeout"
+      "word": "unreadable-content-warning"
     },
     {
       "relativePath": "working/sample-document.really-repaired-word-repaired.docx",
@@ -9557,6 +9633,137 @@
         "errorCodes": []
       },
       "word": "clean-open"
+    },
+    {
+      "relativePath": "working/word-clean-strict01.docx",
+      "strict": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "lenient": {
+        "valid": true,
+        "errorCodes": []
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "working/word-tolerated-broken-media-rel.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "rels-broken",
+          "rels-target-missing"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "rels-broken",
+          "rels-target-missing"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "working/word-tolerated-duplicate-ppr.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "working/word-tolerated-misplaced-link.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "working/word-tolerated-misplaced-pgsz.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "paraid-missing-element",
+          "style-default-missing",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "working/word-tolerated-misplaced-uipriority.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "style-default-missing",
+          "textid-missing-element",
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "xsd-error",
+          "xsd-summary"
+        ]
+      },
+      "word": "unknown"
+    },
+    {
+      "relativePath": "working/word-tolerated-orphan-comment.docx",
+      "strict": {
+        "valid": false,
+        "errorCodes": [
+          "comment-marker-missing",
+          "comment-orphan-start",
+          "comment-thread-count-mismatch",
+          "paraid-missing-element",
+          "textid-missing-element"
+        ]
+      },
+      "lenient": {
+        "valid": false,
+        "errorCodes": [
+          "comment-marker-missing",
+          "comment-orphan-start",
+          "comment-thread-count-mismatch"
+        ]
+      },
+      "word": "unknown"
     }
   ]
 }
