@@ -392,12 +392,25 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-content-type-invalid":
             case "word-drawing-scalar-whitespace":
                 return true;
+            // NB: comment-orphan-start/end and comment-marker-missing are NOT
+            // promoted here. Empirically Word TOLERATES an orphan comment-range
+            // marker (a commentRangeStart with no End, referencing a missing
+            // comment) — verified: comments.unmatched-comment-marker_from_html.docx
+            // carries the exact same orphan and opens cleanly in real Word. So an
+            // orphan marker does not predict Word rejection; keep it a warning.
             case "rels-missing-sidecar":
                 return !/^word\/(?:header|footer)\d*\.xml$/i.test(issue.path ?? "");
             case "xml-syntax":
                 return issue.path?.startsWith("word/") || issue.path === "[Content_Types].xml";
             case "rels-broken":
-                return issue.message.includes("../customXml/") || issue.message.includes("media/") || /\/_rels\/|\.rels$/i.test(issue.message);
+                // NB: a broken media/ rel (image Target absent) is NOT word-blocking:
+                // real Word shows a missing-image placeholder and opens cleanly
+                // (verified: word-tolerated-broken-media-rel.docx). Broken media alone
+                // does not predict rejection — files unreadable "with" a broken media
+                // ref fail for a separate, undetected reason. Stays an error in
+                // lenient/strict; only the word-valid openability profile tolerates it.
+                // Structural rels (customXml, nested .rels) remain word-blocking.
+                return issue.message.includes("../customXml/") || /\/_rels\/|\.rels$/i.test(issue.message);
             case "rels-empty-element":
                 return issue.message.includes("missing required attribute");
             case "xsd-error":
@@ -2958,9 +2971,43 @@ function finalize(issues: ValidationIssue[]): ValidationResult {
     return { valid: issues.every((i) => i.severity !== "error"), issues };
 }
 
+/**
+ * Element local-names whose XSD "this element is not expected" (content-model)
+ * violation makes real Microsoft Word refuse the file (OPEN_ERROR / unreadable),
+ * as opposed to silently relocating it. Derived empirically from a real-Word
+ * openability probe over a 1300+-file corpus; this set is DISJOINT from the
+ * Word-tolerated misplacements (pgSz, headerReference, uiPriority, link, tr,
+ * hyperlink, duplicate pPr, and EG_RunInnerContent under <w:p>), so promoting
+ * only these keeps the word-valid profile free of false positives.
+ */
+const WORD_BLOCKING_MISPLACED_LOCALS: ReadonlySet<string> = new Set([
+    "r", // a run misplaced (e.g. directly in the body where a sectPr is due)
+    "rPr", // run properties outside a run
+    // NB: pPr is intentionally NOT here. A duplicate <w:pPr> in one paragraph
+    // trips "pPr: not expected", but real Word silently merges/ignores it and
+    // opens cleanly (verified: superdoc exports, word-tolerated-duplicate-ppr.docx).
+    // The narrow line-3002 guard (pPr + "Expected is one of") still covers the
+    // genuinely Word-blocking pPr-misplacement variant.
+    "sectPr", // section properties misplaced
+    "extent", // drawing extent misplaced (corrupt <w:drawing> structure)
+    "tblBorders",
+    "tblCellSpacing", // table-property elements outside <w:tblPr>
+]);
+
 function isWordBlockingXsdIssue(issue: ValidationIssue): boolean {
     if (issue.path && !issue.path.startsWith("word/") && issue.path !== "docProps/custom.xml") return false;
     const msg = issue.message;
+    // Content-model violation ("Element '{ns}local': This element is not expected"):
+    // an element sits where the schema forbids it. Word's loader rejects a specific
+    // family of these (a misplaced run, run/paragraph/section/table-property block,
+    // or drawing extent) with OPEN_ERROR / unreadable; OTHER misplaced elements
+    // (sectPr CHILDREN like pgSz/headerReference, style children like uiPriority/
+    // link, table rows, hyperlinks, and run-inner-content under <w:p>) Word silently
+    // relocates and opens cleanly. The blocking allowlist below is derived
+    // empirically from a real-Word corpus probe (disjoint from the tolerated set);
+    // an allowlist keeps this false-positive-free (unknown elements stay warnings).
+    const notExpected = /Element '\{[^}]*\}([^']+)': This element is not expected/.exec(msg);
+    if (notExpected && WORD_BLOCKING_MISPLACED_LOCALS.has(notExpected[1])) return true;
     return (
         msg.includes("}p2': This element is not expected") ||
         (msg.includes("}pPr': This element is not expected") && msg.includes("Expected is one of")) ||

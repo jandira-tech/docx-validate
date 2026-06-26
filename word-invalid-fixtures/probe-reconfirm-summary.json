@@ -1,0 +1,2009 @@
+{
+  "by_verdict": {
+    "OPEN_ERROR": 25,
+    "TIMEOUT": 6,
+    "PASSWORD": 2,
+    "UNREADABLE_CONTENT": 43
+  },
+  "unknown": [
+    "tests__fixtures__critic-variations__docx__13-table-with-changes.docx: Microsoft Word / Sorry, we couldn't find your file. Was it moved, renamed, or deleted? / (probe-00005.docx) buttons=['OK', 'OK']",
+    "tests__fixtures__word-regenerate-invalid__regenerated__external__open-xml-sdk__UnknownElement.docx: Microsoft Word / Sorry, we couldn't find your file. Was it moved, renamed, or deleted? / (probe-00021.docx) buttons=['OK', 'OK']",
+    "tests__fixtures__word-regenerate-invalid__regenerated__external__open-xml-sdk__UnknownElement.docx:  buttons=['OK']",
+    "tests__fixtures__external__superdoc__encryption__encrypted-hello.docx: Microsoft Word / Word cannot open this file.  The encryption type used is not available, contact the author of the file. buttons=['OK', 'OK']",
+    "tests__fixtures__word-regenerate-invalid__original__external__superdoc__encryption__encrypted-hello.docx: Microsoft Word / Word cannot open this file.  The encryption type used is not available, contact the author of the file. buttons=['OK', 'OK']"
+  ],
+  "results": [
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/Docxodus__TestFiles__DB__HeadersFooters__Dest__Fax.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (Untitledwsdasdsda(4).docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 28.0,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/Docxodus__TestFiles__DB__HeadersFooters__Dest__Letter (run-level insert element).docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00002.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 3.2,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/Docxodus__TestFiles__DB__HeadersFooters__Dest__Letter.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00003.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 2.7,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__broken__header-with-rid-no-sidecar.docx",
+      "op": "probe",
+      "verdict": "TIMEOUT",
+      "grant_required": false,
+      "messages": [],
+      "output": null,
+      "duration_s": 45.5,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__broken__single-paragraph.malformed-xml.docx",
+      "op": "probe",
+      "verdict": "TIMEOUT",
+      "grant_required": false,
+      "messages": [],
+      "output": null,
+      "duration_s": 45.4,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__broken__tables.missing-namespace.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00004.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 22.6,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__critic-variations__docx__13-table-with-changes.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNKNOWN_DIALOG",
+          "severity": "warn",
+          "is_verdict": false,
+          "buttons_to_press": [],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Sorry, we couldn't find your file. Was it moved, renamed, or deleted? / (probe-00005.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        },
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00007.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 7.6,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__critic-variations__docx__20-kitchen-sink.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00008.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 2.5,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__external__docx-validate__unknown-element.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00009.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 3.9,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__external__open-xml-sdk__InvalidDocPropsct.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00010.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 4.0,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__external__open-xml-sdk__UnknownElement.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00011.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 4.1,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__external__superdoc__behavior__math-spre-tests.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00012.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 17.6,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__external__superdoc__super-editor__hyperlink-exported.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00013.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 31.4,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__math-body-level.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00014.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 9.5,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__unknown-element.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00015.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 2.9,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__word-regenerate-invalid__original__broken__header-with-rid-no-sidecar.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00016.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 2.1,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__word-regenerate-invalid__original__broken__single-paragraph.malformed-xml.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00017.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.8,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__word-regenerate-invalid__original__broken__tables.missing-namespace.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00018.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 2.6,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__word-regenerate-invalid__original__external__open-xml-sdk__InvalidDocPropsct.docx",
+      "op": "probe",
+      "verdict": "TIMEOUT",
+      "grant_required": false,
+      "messages": [],
+      "output": null,
+      "duration_s": 45.3,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__word-regenerate-invalid__original__external__open-xml-sdk__UnknownElement.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00019.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 20.5,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__word-regenerate-invalid__original__external__superdoc__behavior__math-spre-tests.docx",
+      "op": "probe",
+      "verdict": "TIMEOUT",
+      "grant_required": false,
+      "messages": [],
+      "output": null,
+      "duration_s": 45.6,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__word-regenerate-invalid__original__external__superdoc__super-editor__hyperlink-exported.docx",
+      "op": "probe",
+      "verdict": "TIMEOUT",
+      "grant_required": false,
+      "messages": [],
+      "output": null,
+      "duration_s": 45.6,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__word-regenerate-invalid__regenerated__external__open-xml-sdk__InvalidDocPropsct.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00020.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 15.0,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__word-regenerate-invalid__regenerated__external__open-xml-sdk__UnknownElement.docx",
+      "op": "probe",
+      "verdict": "TIMEOUT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNKNOWN_DIALOG",
+          "severity": "warn",
+          "is_verdict": false,
+          "buttons_to_press": [],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Sorry, we couldn't find your file. Was it moved, renamed, or deleted? / (probe-00021.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        },
+        {
+          "code": "UNKNOWN_DIALOG",
+          "severity": "warn",
+          "is_verdict": false,
+          "buttons_to_press": [],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "",
+          "buttons": [
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 45.9,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__word-regenerate-invalid__regenerated__external__superdoc__behavior__math-spre-tests.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00025.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 30.9,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/OPEN_ERROR/tests__fixtures__word-regenerate-invalid__regenerated__external__superdoc__super-editor__hyperlink-exported.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00026.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 18.5,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/PASSWORD/tests__fixtures__external__superdoc__encryption__encrypted-advanced-text.docx",
+      "op": "probe",
+      "verdict": "PASSWORD",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "PASSWORD",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "Cancel"
+          ],
+          "window": "Password",
+          "subrole": "AXDialog",
+          "text": "Enter the password to open this file: / probe-00027.docx / Password",
+          "buttons": [
+            "OK",
+            "Cancel",
+            "OK",
+            "Cancel"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 29.4,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/PASSWORD/tests__fixtures__word-regenerate-invalid__original__external__superdoc__encryption__encrypted-advanced-text.docx",
+      "op": "probe",
+      "verdict": "PASSWORD",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "PASSWORD",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "Cancel"
+          ],
+          "window": "Password",
+          "subrole": "AXDialog",
+          "text": "Enter the password to open this file: / probe-00028.docx / Password",
+          "buttons": [
+            "OK",
+            "Cancel",
+            "OK",
+            "Cancel"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 35.5,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/TIMEOUT/tests__fixtures__external__superdoc__encryption__encrypted-hello.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNKNOWN_DIALOG",
+          "severity": "warn",
+          "is_verdict": false,
+          "buttons_to_press": [],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word cannot open this file.  The encryption type used is not available, contact the author of the file. / More encryption types are available using the High Encryption Pack. / (/Users/arthrod/Library/Containers/com...)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        },
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00029.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 4.6,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/TIMEOUT/tests__fixtures__word-regenerate-invalid__original__external__superdoc__encryption__encrypted-hello.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNKNOWN_DIALOG",
+          "severity": "warn",
+          "is_verdict": false,
+          "buttons_to_press": [],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word cannot open this file.  The encryption type used is not available, contact the author of the file. / More encryption types are available using the High Encryption Pack. / (/Users/arthrod/Library/Containers/com...)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        },
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00030.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 3.8,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__annotations-orphan-rel.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00031.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 3.0,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__broken__sample-document.broken-tables.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00032.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 10.5,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__broken__sample-document.empty-rels.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00032.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 3.2,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__broken__sample-document.id-overflow.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00033.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 2.4,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__broken__sample-document.missing-paraids.docx",
+      "op": "probe",
+      "verdict": "OPEN_ERROR",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "OPEN_ERROR",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "OK"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter. / (probe-00034.docx)",
+          "buttons": [
+            "OK",
+            "OK"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.3,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__broken__sample-document.our-pipeline-output-tr-no-textid.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00036.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.4,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__drawing-scalar-whitespace.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00037.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.2,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__empty-filetime-customprops.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00038.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 2.2,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__external__apache-poi__crash-517626e815e0afa9decd0ebb6d1dee63fb9907dd.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00039.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.3,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__external__docx-parser-converter__tagged_tests__table_tests_v2.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00040.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.1,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__external__docx-parser-converter__test_docx_files__table_advanced_demo.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00041.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.0,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__external__open-xml-sdk__5Errors.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00042.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.2,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__external__superdoc__layout-engine__shapes__vectors.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00043.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.0,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__external__superdoc__super-editor__annotations_import.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00044.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.0,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__external__superdoc__super-editor__invalid-underline.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00045.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.2,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__external__superdoc__super-editor__paragraph-sectpr-breaks.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00046.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.2,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__unknown__unknown__comments.unmatched-comment-marker.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00047.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 2.1,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__unknown__unknown__footnotes.duplicate-paraid.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00048.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.1,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__unknown__unknown__header-with-rid-no-sidecar.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00049.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.0,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__unknown__unknown__text-box.orphan-part.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00050.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.3,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__unknown__unknown__tiny-picture.broken-rels.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00051.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.1,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-regenerate-invalid__original__broken__sample-document.broken-tables.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00052.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.1,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-regenerate-invalid__original__broken__sample-document.empty-rels.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00053.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.8,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-regenerate-invalid__original__broken__sample-document.id-overflow.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00054.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.3,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-regenerate-invalid__original__broken__sample-document.missing-paraids.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00055.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.0,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-regenerate-invalid__original__broken__sample-document.our-pipeline-output-tr-no-textid.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00056.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.1,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-regenerate-invalid__original__external__apache-poi__crash-517626e815e0afa9decd0ebb6d1dee63fb9907dd.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00057.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.0,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-regenerate-invalid__original__external__open-xml-sdk__5Errors.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00058.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.1,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-regenerate-invalid__original__external__superdoc__layout-engine__shapes__vectors.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00059.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.0,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-regenerate-invalid__original__external__superdoc__super-editor__annotations_import.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00060.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.9,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-regenerate-invalid__original__external__superdoc__super-editor__invalid-underline.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00061.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.3,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-regenerate-invalid__original__external__superdoc__super-editor__paragraph-sectpr-breaks.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00062.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.1,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-regenerate-invalid__original__unknown__unknown__comments.unmatched-comment-marker.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00063.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.9,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-regenerate-invalid__original__unknown__unknown__footnotes.duplicate-paraid.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00064.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.3,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-regenerate-invalid__original__unknown__unknown__header-with-rid-no-sidecar.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00065.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.0,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-regenerate-invalid__original__unknown__unknown__text-box.orphan-part.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00066.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.0,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-regenerate-invalid__original__unknown__unknown__tiny-picture.broken-rels.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00067.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.0,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-regenerate-invalid__original__working__sample-document.our-repaired.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00068.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.0,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-regenerate-invalid__regenerated__external__open-xml-sdk__5Errors.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00069.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.1,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-regenerate-invalid__regenerated__external__superdoc__layout-engine__shapes__vectors.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00070.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.3,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-regenerate-invalid__regenerated__external__superdoc__super-editor__annotations_import.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00071.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.1,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-regenerate-invalid__regenerated__external__superdoc__super-editor__invalid-underline.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00072.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.0,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-regenerate-invalid__regenerated__external__superdoc__super-editor__paragraph-sectpr-breaks.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00073.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.1,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-strict__sample-document.broken-tables.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00074.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.8,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__word-strict__second-pass__second-pass-actually-broken-sample-document.broken-tables.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00075.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 1.3,
+      "error": null
+    },
+    {
+      "path": "word-rejected-corpus/UNREADABLE_CONTENT/tests__fixtures__working__sample-document.our-repaired-word-broken.docx",
+      "op": "probe",
+      "verdict": "UNREADABLE_CONTENT",
+      "grant_required": false,
+      "messages": [
+        {
+          "code": "UNREADABLE_CONTENT",
+          "severity": "error",
+          "is_verdict": true,
+          "buttons_to_press": [
+            "No"
+          ],
+          "window": "",
+          "subrole": "AXDialog",
+          "text": "Microsoft Word / Word found unreadable content in probe-00076.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.",
+          "buttons": [
+            "No",
+            "No",
+            "Yes"
+          ]
+        }
+      ],
+      "output": null,
+      "duration_s": 2.0,
+      "error": null
+    }
+  ]
+}
