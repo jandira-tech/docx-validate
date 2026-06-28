@@ -46,7 +46,7 @@ import { promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
-import { makeSelect, parseXml, serializeXml } from "../../../lib/xml-helpers";
+import { parseXml, serializeXml } from "../../../lib/xml-helpers";
 import { BaseSchemaValidator, collectDeclaredPrefixes, PACKAGE_RELATIONSHIPS_NAMESPACE, XML_NAMESPACE } from "./base";
 
 export const WORD_2006_NAMESPACE = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
@@ -504,7 +504,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     async validateDeletions(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const $$ = makeSelect();
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
