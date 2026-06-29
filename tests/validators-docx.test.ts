@@ -2414,3 +2414,47 @@ describe("DOCXSchemaValidator", () => {
         });
     });
 });
+
+    describe("validateDeletions", () => {
+        it("flags <w:t> found within <w:del>", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(`<w:p><w:del><w:t>some text</w:t></w:del></w:p>`)
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateDeletions();
+                expect(result.valid).toBe(false);
+                expect(result.issues).toHaveLength(1);
+                expect(result.issues[0]?.code).toBe("del-contains-t");
+            });
+        });
+
+        it("flags <w:instrText> found within <w:del>", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(`<w:p><w:del><w:instrText>PAGE</w:instrText></w:del></w:p>`)
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateDeletions();
+                expect(result.valid).toBe(false);
+                expect(result.issues).toHaveLength(1);
+                expect(result.issues[0]?.code).toBe("del-contains-instrtext");
+            });
+        });
+
+        it("handles parse failures gracefully", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    "not xml"
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateDeletions();
+                expect(result.valid).toBe(false);
+                expect(result.issues).toHaveLength(1);
+                expect(result.issues[0]?.code).toBe("del-parse");
+            });
+        });
+    });
