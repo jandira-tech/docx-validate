@@ -46,7 +46,7 @@ import { promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
-import { makeSelect, parseXml, serializeXml } from "../../../lib/xml-helpers";
+import { parseXml, serializeXml } from "../../../lib/xml-helpers";
 import { BaseSchemaValidator, collectDeclaredPrefixes, PACKAGE_RELATIONSHIPS_NAMESPACE, XML_NAMESPACE } from "./base";
 
 export const WORD_2006_NAMESPACE = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
@@ -502,7 +502,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     async validateDeletions(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const $$ = makeSelect();
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
@@ -516,10 +515,36 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 });
                 continue;
             }
+
+            // Optimization: Avoid `xpath` queries like `.//w:del//w:t` and `.//w:del//w:instrText`
+            // because @xmldom evaluates them dynamically, causing extreme performance degradation
+            // on large node trees. Instead, we use native `getElementsByTagNameNS` and deduplicate
+            // the nodes using a `Set<Element>`.
+            const invalidT = new Set<Element>();
+            const invalidInstrText = new Set<Element>();
+
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const dels = dom.getElementsByTagNameNS(ns, "del");
+                for (let i = 0; i < dels.length; i += 1) {
+                    const del = dels.item(i);
+                    if (!del) continue;
+
+                    const ts = del.getElementsByTagNameNS(ns, "t");
+                    for (let j = 0; j < ts.length; j += 1) {
+                        const t = ts.item(j);
+                        if (t) invalidT.add(t);
+                    }
+
+                    const instrTexts = del.getElementsByTagNameNS(ns, "instrText");
+                    for (let j = 0; j < instrTexts.length; j += 1) {
+                        const instrText = instrTexts.item(j);
+                        if (instrText) invalidInstrText.add(instrText);
+                    }
+                }
+            }
+
             // <w:t> inside <w:del>
-            const tInDel = $$(".//w:del//w:t", dom) as Node[];
-            for (const node of tInDel) {
-                const elem = node as Element;
+            for (const elem of invalidT) {
                 const text = elem.firstChild?.nodeValue ?? "";
                 issues.push({
                     severity: "error",
@@ -528,10 +553,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     code: "del-contains-t",
                 });
             }
+
             // <w:instrText> inside <w:del>
-            const instrInDel = $$(".//w:del//w:instrText", dom) as Node[];
-            for (const node of instrInDel) {
-                const elem = node as Element;
+            for (const elem of invalidInstrText) {
                 const text = elem.firstChild?.nodeValue ?? "";
                 issues.push({
                     severity: "error",
