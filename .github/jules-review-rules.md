@@ -1,1 +1,0 @@
-# Jules PR Review Rules
