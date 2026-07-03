@@ -1,3 +1,9 @@
+## 2026-05-19 - Insecure Randomness in ID Generation
+
+**Vulnerability:** ID generation functions (`generateHexId` in `comment.ts` and `repairDurableId` in `docx.ts`) used `Math.random()` to generate durable tokens and object IDs. Since `Math.random()` is not cryptographically secure and is highly predictable (seeded based on the JS engine's current state), a local or network attacker could potentially predict subsequent ID generations or brute-force collisions to tamper with document structures.
+**Learning:** Using `Math.random()` for any non-trivial identification logic, especially when tracking revisions, comments, or durable document objects across users, breaks security boundary assumptions and can lead to token collision or ID prediction vulnerabilities.
+**Prevention:** Always use cryptographically secure pseudo-random number generators (CSPRNG), such as `randomInt` or `randomBytes` from `node:crypto`, when generating durable, unique IDs for document metadata and internal tokens.
+
 ## 2026-05-19 - Predictable Path Vulnerability in LD_PRELOAD Shim
 
 **Vulnerability:** The LibreOffice shim compiled to a predictable path `/tmp/lo_socket_shim.so`. Since `/tmp` is world-writable, a local attacker could pre-create this file or overwrite it with a malicious shared object. When `soffice` executed with `LD_PRELOAD=/tmp/lo_socket_shim.so`, it would execute arbitrary code as the user running the process.
