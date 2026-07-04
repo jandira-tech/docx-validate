@@ -15,3 +15,7 @@
 **Vulnerability:** While fixing the Insecure Temporary File vulnerability with `mkdtempSync`, assigning the result of `mkdtempSync` to an exported constant executed the synchronous I/O operations directly at module load time.
 **Learning:** Performing side effects like file I/O (e.g., creating temporary directories) directly inside the module scope introduces architectural flaws. It means importing the file anywhere (like in test suites or other tools) inadvertently triggers directory creation, leading to orphaned files and unintended side effects, even if the target CLI function is never run.
 **Prevention:** Always encapsulate file system interactions, including the generation of temporary directories or profiles, inside functions (e.g., lazy getters) rather than static module-level initialization.
+## 2026-07-04 - Predictable Random Number Generation for Object IDs
+**Vulnerability:** The random IDs used as durable and paragraph IDs in comments and table of contents components were generated using Math.random() which is predictable and NOT cryptographically secure, leading to possible collision attacks and ID predictability.
+**Learning:** Generating random IDs for potentially sensitive object anchors should always use a cryptographically secure random number generator (CSPRNG), especially in libraries that mutate files.
+**Prevention:** Replaced Math.random() usage with node:crypto randomInt() to ensure secure, collision-resistant random variables.
