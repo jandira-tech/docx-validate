@@ -101,8 +101,12 @@ Nest markers inside parent {pid}'s markers (markers must be direct children of w
  * we never write a zero or an over-cap id of our own. Range: [1, 0x7FFFFFFE],
  * which also clears the tighter durableId cap of 0x7FFFFFFF.
  */
+import { randomInt } from "node:crypto";
+
 export function generateHexId(): string {
-    const n = 1 + Math.floor(Math.random() * 0x7ffffffe);
+    // SECURITY: Math.random() is not cryptographically secure and can lead to predictability and collision issues.
+    // Use crypto.randomInt instead to generate unpredictable unique IDs.
+    const n = 1 + randomInt(0x7ffffffe);
     return n.toString(16).toUpperCase().padStart(8, "0");
 }
 
@@ -122,12 +126,7 @@ function encodeSmartQuotes(text: string): string {
 }
 
 function escapeXml(text: string): string {
-    return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&apos;");
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 }
 
 function formatTemplate(tpl: string, vars: Record<string, string | number>): string {
