@@ -500,9 +500,25 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     // ----- tracked changes ----------------------------------------------------
 
+    private isInsideDel(node: Node | null): boolean {
+        let curr = node?.parentNode;
+        while (curr) {
+            if (curr.nodeType === 1) {
+                // ELEMENT_NODE
+                const elem = curr as Element;
+                const localName = elem.localName;
+                const ns = elem.namespaceURI;
+                if (localName === "del" && (ns === WORD_2006_NAMESPACE || ns === WORD_STRICT_NAMESPACE)) {
+                    return true;
+                }
+            }
+            curr = curr.parentNode;
+        }
+        return false;
+    }
+
     async validateDeletions(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const $$ = makeSelect();
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
@@ -517,7 +533,16 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 continue;
             }
             // <w:t> inside <w:del>
-            const tInDel = $$(".//w:del//w:t", dom) as Node[];
+            const tInDel = new Set<Node>();
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const elems = dom.getElementsByTagNameNS(ns, "t");
+                for (let i = 0; i < elems.length; i++) {
+                    const elem = elems.item(i);
+                    if (elem && this.isInsideDel(elem)) {
+                        tInDel.add(elem);
+                    }
+                }
+            }
             for (const node of tInDel) {
                 const elem = node as Element;
                 const text = elem.firstChild?.nodeValue ?? "";
@@ -529,7 +554,16 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 });
             }
             // <w:instrText> inside <w:del>
-            const instrInDel = $$(".//w:del//w:instrText", dom) as Node[];
+            const instrInDel = new Set<Node>();
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const elems = dom.getElementsByTagNameNS(ns, "instrText");
+                for (let i = 0; i < elems.length; i++) {
+                    const elem = elems.item(i);
+                    if (elem && this.isInsideDel(elem)) {
+                        instrInDel.add(elem);
+                    }
+                }
+            }
             for (const node of instrInDel) {
                 const elem = node as Element;
                 const text = elem.firstChild?.nodeValue ?? "";
@@ -546,23 +580,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     async validateInsertions(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-
-        const isInsideDel = (node: Node | null): boolean => {
-            let curr = node?.parentNode;
-            while (curr) {
-                if (curr.nodeType === 1) {
-                    // ELEMENT_NODE
-                    const elem = curr as Element;
-                    const localName = elem.localName;
-                    const ns = elem.namespaceURI;
-                    if (localName === "del" && (ns === WORD_2006_NAMESPACE || ns === WORD_STRICT_NAMESPACE)) {
-                        return true;
-                    }
-                }
-                curr = curr.parentNode;
-            }
-            return false;
-        };
 
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
@@ -589,7 +606,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         const delTexts = ins.getElementsByTagNameNS(nsDel, "delText");
                         for (let j = 0; j < delTexts.length; j++) {
                             const delText = delTexts.item(j);
-                            if (delText && !isInsideDel(delText)) {
+                            if (delText && !this.isInsideDel(delText)) {
                                 invalid.push(delText);
                             }
                         }
