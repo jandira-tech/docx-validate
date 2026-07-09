@@ -1,1 +1,1 @@
-# Jules Review Rules
+Skipping rules
