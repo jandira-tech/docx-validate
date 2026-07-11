@@ -334,7 +334,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "xml-syntax":
                 return issue.path?.startsWith("word/") || issue.path === "[Content_Types].xml";
             case "rels-broken":
-                return issue.message.includes("../customXml/") || issue.message.includes("media/") || /\/_rels\/|\.rels$/i.test(issue.message);
+                return (
+                    issue.message.includes("../customXml/") || issue.message.includes("media/") || /\/_rels\/|\.rels$/i.test(issue.message)
+                );
             case "rels-empty-element":
                 return issue.message.includes("missing required attribute");
             case "xsd-error":
@@ -517,9 +519,37 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 continue;
             }
             // <w:t> inside <w:del>
-            const tInDel = $$(".//w:del//w:t", dom) as Node[];
-            for (const node of tInDel) {
-                const elem = node as Element;
+            // ⚡ Bolt Performance Optimization:
+            // Replaced slow xpath descendant queries ($(".//w:del//w:t")) with native DOM traversal
+            // (`getElementsByTagNameNS`). This provides a massive speedup on large documents
+            // by avoiding dynamic tree evaluations. Sets are used to perfectly mimic xpath's
+            // deduplication behavior in case of nested <w:del> structures.
+            const tInDel = new Set<Element>();
+            const instrInDel = new Set<Element>();
+
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const delNodes = dom.getElementsByTagNameNS(ns, "del");
+                for (let i = 0; i < delNodes.length; i++) {
+                    const delNode = delNodes.item(i);
+                    if (!delNode) continue;
+
+                    for (const nsT of WORD_PARAGRAPH_NAMESPACES) {
+                        const tNodes = delNode.getElementsByTagNameNS(nsT, "t");
+                        for (let j = 0; j < tNodes.length; j++) {
+                            const tNode = tNodes.item(j);
+                            if (tNode) tInDel.add(tNode);
+                        }
+
+                        const instrNodes = delNode.getElementsByTagNameNS(nsT, "instrText");
+                        for (let j = 0; j < instrNodes.length; j++) {
+                            const instrNode = instrNodes.item(j);
+                            if (instrNode) instrInDel.add(instrNode);
+                        }
+                    }
+                }
+            }
+
+            for (const elem of tInDel) {
                 const text = elem.firstChild?.nodeValue ?? "";
                 issues.push({
                     severity: "error",
@@ -528,10 +558,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     code: "del-contains-t",
                 });
             }
+
             // <w:instrText> inside <w:del>
-            const instrInDel = $$(".//w:del//w:instrText", dom) as Node[];
-            for (const node of instrInDel) {
-                const elem = node as Element;
+            for (const elem of instrInDel) {
                 const text = elem.firstChild?.nodeValue ?? "";
                 issues.push({
                     severity: "error",
