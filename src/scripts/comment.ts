@@ -42,6 +42,7 @@
  *   <w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:commentReference w:id="0"/></w:r>
  */
 
+import { randomInt } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -100,9 +101,11 @@ Nest markers inside parent {pid}'s markers (markers must be direct children of w
  * repair path in `validators/docx.ts` (which seeds durableIds the same way) so
  * we never write a zero or an over-cap id of our own. Range: [1, 0x7FFFFFFE],
  * which also clears the tighter durableId cap of 0x7FFFFFFF.
+ *
+ * Note: Use randomInt from node:crypto instead of Math.random() to prevent predictability and collision issues.
  */
 export function generateHexId(): string {
-    const n = 1 + Math.floor(Math.random() * 0x7ffffffe);
+    const n = 1 + randomInt(0x7ffffffe);
     return n.toString(16).toUpperCase().padStart(8, "0");
 }
 
