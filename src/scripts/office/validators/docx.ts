@@ -502,7 +502,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     async validateDeletions(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const $$ = makeSelect();
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
@@ -516,8 +515,33 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 });
                 continue;
             }
+
+            const tInDel = new Set<Node>();
+            const instrInDel = new Set<Node>();
+
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const delNodes = dom.getElementsByTagNameNS(ns, "del");
+                for (let i = 0; i < delNodes.length; i++) {
+                    const delNode = delNodes.item(i);
+                    if (!delNode) continue;
+
+                    for (const innerNs of WORD_PARAGRAPH_NAMESPACES) {
+                        const tNodes = delNode.getElementsByTagNameNS(innerNs, "t");
+                        for (let j = 0; j < tNodes.length; j++) {
+                            const tNode = tNodes.item(j);
+                            if (tNode) tInDel.add(tNode);
+                        }
+
+                        const instrNodes = delNode.getElementsByTagNameNS(innerNs, "instrText");
+                        for (let j = 0; j < instrNodes.length; j++) {
+                            const instrNode = instrNodes.item(j);
+                            if (instrNode) instrInDel.add(instrNode);
+                        }
+                    }
+                }
+            }
+
             // <w:t> inside <w:del>
-            const tInDel = $$(".//w:del//w:t", dom) as Node[];
             for (const node of tInDel) {
                 const elem = node as Element;
                 const text = elem.firstChild?.nodeValue ?? "";
@@ -529,7 +553,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 });
             }
             // <w:instrText> inside <w:del>
-            const instrInDel = $$(".//w:del//w:instrText", dom) as Node[];
             for (const node of instrInDel) {
                 const elem = node as Element;
                 const text = elem.firstChild?.nodeValue ?? "";
