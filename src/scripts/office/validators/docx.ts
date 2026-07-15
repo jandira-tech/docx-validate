@@ -46,7 +46,7 @@ import { promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
-import { makeSelect, parseXml, serializeXml } from "../../../lib/xml-helpers";
+import { parseXml, serializeXml } from "../../../lib/xml-helpers";
 import { BaseSchemaValidator, collectDeclaredPrefixes, PACKAGE_RELATIONSHIPS_NAMESPACE, XML_NAMESPACE } from "./base";
 
 export const WORD_2006_NAMESPACE = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
@@ -516,8 +516,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 continue;
             }
 
-            // ⚡ Bolt: Replace slow xpath queries ($$(".//w:del//w:t")) with native getElementsByTagNameNS
-            // for significant performance improvement on large documents.
             const tInDel = new Set<Element>();
             const instrInDel = new Set<Element>();
 
