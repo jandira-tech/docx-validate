@@ -15,3 +15,8 @@
 **Vulnerability:** While fixing the Insecure Temporary File vulnerability with `mkdtempSync`, assigning the result of `mkdtempSync` to an exported constant executed the synchronous I/O operations directly at module load time.
 **Learning:** Performing side effects like file I/O (e.g., creating temporary directories) directly inside the module scope introduces architectural flaws. It means importing the file anywhere (like in test suites or other tools) inadvertently triggers directory creation, leading to orphaned files and unintended side effects, even if the target CLI function is never run.
 **Prevention:** Always encapsulate file system interactions, including the generation of temporary directories or profiles, inside functions (e.g., lazy getters) rather than static module-level initialization.
+
+## 2026-05-19 - Predictable ID Generation for Durable Tokens
+**Vulnerability:** ID values for comments (`generateHexId` in `comment.ts`) and document redlines (`repairDurableId` in `docx.ts`) were generated using `Math.random()`, which is a Pseudo-Random Number Generator (PRNG) and predictable. If used for sensitive IDs, an attacker could predict sequence values and potentially cause collisions or manipulate application logic.
+**Learning:** Using `Math.random()` to generate identifiers like session tokens, API keys, or any tracking identifiers in sensitive applications introduces predictable sequences. For unique identification over large data structures (like Word document tokens), cryptographically secure values should always be used.
+**Prevention:** Avoid `Math.random()` for token or ID generation. Always use cryptographically secure random number generators (CSPRNG), such as `randomInt` or `randomBytes` from `node:crypto`.
