@@ -502,7 +502,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     async validateDeletions(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const $$ = makeSelect();
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
@@ -516,8 +515,34 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 });
                 continue;
             }
+
+            // Performance optimization: Avoid using slow xpath descendant queries.
+            // Use native DOM traversal with Set deduplication instead.
+            const tInDel = new Set<Node>();
+            const instrInDel = new Set<Node>();
+
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const delNodes = dom.getElementsByTagNameNS(ns, "del");
+                for (let i = 0; i < delNodes.length; i++) {
+                    const del = delNodes.item(i);
+                    if (!del) continue;
+
+                    // Reuse del's namespaceURI to find children without a redundant namespace loop
+                    const ts = del.getElementsByTagNameNS(del.namespaceURI, "t");
+                    for (let j = 0; j < ts.length; j++) {
+                        const t = ts.item(j);
+                        if (t) tInDel.add(t);
+                    }
+
+                    const instrs = del.getElementsByTagNameNS(del.namespaceURI, "instrText");
+                    for (let j = 0; j < instrs.length; j++) {
+                        const instr = instrs.item(j);
+                        if (instr) instrInDel.add(instr);
+                    }
+                }
+            }
+
             // <w:t> inside <w:del>
-            const tInDel = $$(".//w:del//w:t", dom) as Node[];
             for (const node of tInDel) {
                 const elem = node as Element;
                 const text = elem.firstChild?.nodeValue ?? "";
@@ -529,7 +554,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 });
             }
             // <w:instrText> inside <w:del>
-            const instrInDel = $$(".//w:del//w:instrText", dom) as Node[];
             for (const node of instrInDel) {
                 const elem = node as Element;
                 const text = elem.firstChild?.nodeValue ?? "";
