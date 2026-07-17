@@ -11,9 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Jules PR Reviewer
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-        uses: sanjay3290/jules-pr-reviewer@fc66a7c78b499bfa2e16235b55574e458c6551d6 # v1.0.0
+        uses: sanjay3290/jules-pr-reviewer@d7c30164dbcb5be7bbec0e9d6bc709cbdb8f62fa # v1.1.0
         with:
           jules_api_key: ${{ secrets.JULES_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
