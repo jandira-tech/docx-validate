@@ -15,3 +15,9 @@
 **Vulnerability:** While fixing the Insecure Temporary File vulnerability with `mkdtempSync`, assigning the result of `mkdtempSync` to an exported constant executed the synchronous I/O operations directly at module load time.
 **Learning:** Performing side effects like file I/O (e.g., creating temporary directories) directly inside the module scope introduces architectural flaws. It means importing the file anywhere (like in test suites or other tools) inadvertently triggers directory creation, leading to orphaned files and unintended side effects, even if the target CLI function is never run.
 **Prevention:** Always encapsulate file system interactions, including the generation of temporary directories or profiles, inside functions (e.g., lazy getters) rather than static module-level initialization.
+
+## 2026-05-20 - Insecure Randomness in ID Generation
+
+**Vulnerability:** The application used `Math.random()` to generate durable tokens and IDs (specifically for comments and tracking IDs). Because `Math.random()` relies on a pseudo-random number generator (PRNG) that is not cryptographically secure, generated IDs were potentially predictable, which can lead to collision issues or allow attackers to guess subsequent IDs.
+**Learning:** In OOXML modification tools, generated IDs need to be globally unique. Using predictable random generation increases the probability of ID clashes and compromises token durability guarantees.
+**Prevention:** Use `randomInt` from `node:crypto` to generate cryptographically secure random values instead of `Math.random()` when unpredictable values or tokens are required.
