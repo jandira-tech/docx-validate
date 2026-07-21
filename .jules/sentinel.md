@@ -15,3 +15,9 @@
 **Vulnerability:** While fixing the Insecure Temporary File vulnerability with `mkdtempSync`, assigning the result of `mkdtempSync` to an exported constant executed the synchronous I/O operations directly at module load time.
 **Learning:** Performing side effects like file I/O (e.g., creating temporary directories) directly inside the module scope introduces architectural flaws. It means importing the file anywhere (like in test suites or other tools) inadvertently triggers directory creation, leading to orphaned files and unintended side effects, even if the target CLI function is never run.
 **Prevention:** Always encapsulate file system interactions, including the generation of temporary directories or profiles, inside functions (e.g., lazy getters) rather than static module-level initialization.
+
+## 2026-05-19 - Weak Randomness for Cryptographic/Durable Identifiers
+
+**Vulnerability:** `Math.random()` was being used to generate `paraId` and `durableId` hexadecimal identifiers for XML elements (e.g., `generateHexId` in `comment.ts` and `repairDurableId` in `validators/docx.ts`). `Math.random()` uses predictable pseudorandom number generators, meaning generated IDs could potentially be guessed, leading to collision issues or allowing an attacker to predict ID sequences in tracking systems.
+**Learning:** `Math.random()` is insufficient for generating unique identifiers where collision avoidance or unpredictability is a security or functional requirement.
+**Prevention:** Always use cryptographically secure methods like `randomInt` from the `node:crypto` library when generating unique identifiers or tokens, especially in shared or critical infrastructure.
