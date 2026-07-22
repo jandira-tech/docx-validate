@@ -8,7 +8,7 @@ permissions:
   statuses: write
 jobs:
   review:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Jules PR Reviewer
         uses: sanjay3290/jules-pr-reviewer@fc66a7c78b499bfa2e16235b55574e458c6551d6 # v1.0.0
