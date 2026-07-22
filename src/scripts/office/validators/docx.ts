@@ -41,6 +41,7 @@
  * see `lib/xml-helpers.ts` for the convention.
  */
 
+import { randomInt } from "node:crypto";
 import { default as JSZip } from "jszip";
 import { promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
@@ -334,7 +335,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "xml-syntax":
                 return issue.path?.startsWith("word/") || issue.path === "[Content_Types].xml";
             case "rels-broken":
-                return issue.message.includes("../customXml/") || issue.message.includes("media/") || /\/_rels\/|\.rels$/i.test(issue.message);
+                return (
+                    issue.message.includes("../customXml/") || issue.message.includes("media/") || /\/_rels\/|\.rels$/i.test(issue.message)
+                );
             case "rels-empty-element":
                 return issue.message.includes("missing required attribute");
             case "xsd-error":
@@ -2615,7 +2618,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     }
 
                     if (needsRepair) {
-                        const value = 1 + Math.floor(Math.random() * MAX_RANDOM_DURABLE);
+                        // SECURITY: Use cryptographically secure random number generation
+                        const value = randomInt(1, MAX_RANDOM_DURABLE + 1);
                         const newId = base === "numbering.xml" ? String(value) : value.toString(16).toUpperCase().padStart(8, "0");
                         // setAttributeNS keeps the prefix binding intact.
                         elem.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", newId);
