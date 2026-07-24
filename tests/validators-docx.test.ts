@@ -2414,3 +2414,52 @@ describe("DOCXSchemaValidator", () => {
         });
     });
 });
+
+    describe("validateDeletions additional coverage", () => {
+        it("flags <w:instrText> inside <w:del>", async () => {
+            await withTempDir(async (dir) => {
+                const wordDir = path.join(dir, "word");
+                await fs.mkdir(wordDir, { recursive: true });
+                await writeFile(
+                    path.join(wordDir, "document.xml"),
+                    wrapDocument(`<w:p><w:del w:id="1"><w:r><w:instrText>bad</w:instrText></w:r></w:del></w:p>`)
+                );
+
+                // Need a valid rels otherwise DOCXSchemaValidator won't find document.xml
+                const relsDir = path.join(dir, "_rels");
+                await fs.mkdir(relsDir, { recursive: true });
+                await writeFile(
+                    path.join(relsDir, ".rels"),
+                    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`
+                );
+
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateDeletions();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "del-contains-instrtext")).toBe(true);
+            });
+        });
+
+        it("handles parsing errors gracefully", async () => {
+            await withTempDir(async (dir) => {
+                const wordDir = path.join(dir, "word");
+                await fs.mkdir(wordDir, { recursive: true });
+                await writeFile(
+                    path.join(wordDir, "document.xml"),
+                    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><<w:del w:id="1"><w:r><w:instrText>bad</w:instrText></w:r></w:del></w:body></w:document>`
+                );
+
+                const relsDir = path.join(dir, "_rels");
+                await fs.mkdir(relsDir, { recursive: true });
+                await writeFile(
+                    path.join(relsDir, ".rels"),
+                    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`
+                );
+
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateDeletions();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "del-parse")).toBe(true);
+            });
+        });
+    });
