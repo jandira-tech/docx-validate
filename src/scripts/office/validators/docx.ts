@@ -502,7 +502,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     async validateDeletions(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const $$ = makeSelect();
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
@@ -516,8 +515,35 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 });
                 continue;
             }
+
+            // PERF: XPath `.//` with `@xmldom` is extremely slow. We use native DOM
+            // APIs (`getElementsByTagNameNS`) and a `Set` to deduplicate nested matches
+            // which exactly replicates xpath node-set behavior.
+            const tInDel = new Set<Node>();
+            const instrInDel = new Set<Node>();
+
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const dels = dom.getElementsByTagNameNS(ns, "del");
+                for (let i = 0; i < dels.length; i++) {
+                    const del = dels.item(i);
+                    if (!del) continue;
+
+                    // Re-use the parent's namespace URI to query its child elements
+                    const ts = del.getElementsByTagNameNS(ns, "t");
+                    for (let j = 0; j < ts.length; j++) {
+                        const t = ts.item(j);
+                        if (t) tInDel.add(t);
+                    }
+
+                    const instrs = del.getElementsByTagNameNS(ns, "instrText");
+                    for (let j = 0; j < instrs.length; j++) {
+                        const instr = instrs.item(j);
+                        if (instr) instrInDel.add(instr);
+                    }
+                }
+            }
+
             // <w:t> inside <w:del>
-            const tInDel = $$(".//w:del//w:t", dom) as Node[];
             for (const node of tInDel) {
                 const elem = node as Element;
                 const text = elem.firstChild?.nodeValue ?? "";
@@ -529,7 +555,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 });
             }
             // <w:instrText> inside <w:del>
-            const instrInDel = $$(".//w:del//w:instrText", dom) as Node[];
             for (const node of instrInDel) {
                 const elem = node as Element;
                 const text = elem.firstChild?.nodeValue ?? "";
