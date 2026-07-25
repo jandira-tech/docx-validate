@@ -522,13 +522,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             for (const ns of WORD_PARAGRAPH_NAMESPACES) {
                 const dels = dom.getElementsByTagNameNS(ns, "del");
                 for (let i = 0; i < dels.length; i++) {
-                    const del = dels.item(i);
-                    if (!del) continue;
+                    const del = dels.item(i)!;
 
                     const ts = del.getElementsByTagNameNS(ns, "t");
                     for (let j = 0; j < ts.length; j++) {
-                        const t = ts.item(j);
-                        if (t) tInDel.add(t);
+                        tInDel.add(ts.item(j)!);
                     }
 
                     const instrs = del.getElementsByTagNameNS(ns, "instrText");
