@@ -10,9 +10,11 @@ jobs:
   review:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Jules PR Reviewer
         uses: sanjay3290/jules-pr-reviewer@main # v1.0.0
         with:
           jules_api_key: ${{ secrets.JULES_API_KEY }}
+          rules_file: AGENTS.md
           github_token: ${{ secrets.GITHUB_TOKEN }}
           fail_on: blocking
