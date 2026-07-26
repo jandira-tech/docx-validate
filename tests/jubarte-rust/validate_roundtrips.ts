@@ -19,7 +19,7 @@ const ROOT = path.dirname(new URL(import.meta.url).pathname);
 const ROUNDTRIP_DIR = path.join(ROOT, "roundtrip_docx");
 const REPORT_PATH = path.join(ROOT, "validate_report.json");
 
-type StagedResult = {
+interface StagedResult {
     name: string;
     lenient_ok: boolean;
     lenient_error?: string;
