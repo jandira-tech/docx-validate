@@ -502,7 +502,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     async validateDeletions(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const $$ = makeSelect();
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
@@ -516,9 +515,34 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 });
                 continue;
             }
+
+            const tInDelNodes = new Set<Node>();
+            const instrInDelNodes = new Set<Node>();
+
+            // ⚡ Bolt: Replaced XPath descendant queries with native DOM traversal.
+            // `.//w:del//w:t` is significantly slower than `getElementsByTagNameNS`
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const delElements = dom.getElementsByTagNameNS(ns, "del");
+                for (let i = 0; i < delElements.length; i++) {
+                    const delNode = delElements.item(i);
+                    if (delNode) {
+                        const tElements = (delNode as Element).getElementsByTagNameNS(ns, "t");
+                        for (let j = 0; j < tElements.length; j++) {
+                            const tNode = tElements.item(j);
+                            if (tNode) tInDelNodes.add(tNode);
+                        }
+
+                        const instrElements = (delNode as Element).getElementsByTagNameNS(ns, "instrText");
+                        for (let j = 0; j < instrElements.length; j++) {
+                            const instrNode = instrElements.item(j);
+                            if (instrNode) instrInDelNodes.add(instrNode);
+                        }
+                    }
+                }
+            }
+
             // <w:t> inside <w:del>
-            const tInDel = $$(".//w:del//w:t", dom) as Node[];
-            for (const node of tInDel) {
+            for (const node of tInDelNodes) {
                 const elem = node as Element;
                 const text = elem.firstChild?.nodeValue ?? "";
                 issues.push({
@@ -529,8 +553,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 });
             }
             // <w:instrText> inside <w:del>
-            const instrInDel = $$(".//w:del//w:instrText", dom) as Node[];
-            for (const node of instrInDel) {
+            for (const node of instrInDelNodes) {
                 const elem = node as Element;
                 const text = elem.firstChild?.nodeValue ?? "";
                 issues.push({
