@@ -43,6 +43,7 @@
 
 import { default as JSZip } from "jszip";
 import { promises as fs, readFileSync } from "node:fs";
+import { randomInt } from "node:crypto";
 import path from "node:path";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
@@ -2615,7 +2616,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     }
 
                     if (needsRepair) {
-                        const value = 1 + Math.floor(Math.random() * MAX_RANDOM_DURABLE);
+                        // SECURITY: Use cryptographically secure random generation to prevent predictability and collision issues.
+                        const value = 1 + randomInt(MAX_RANDOM_DURABLE);
                         const newId = base === "numbering.xml" ? String(value) : value.toString(16).toUpperCase().padStart(8, "0");
                         // setAttributeNS keeps the prefix binding intact.
                         elem.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", newId);

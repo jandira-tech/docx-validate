@@ -15,3 +15,8 @@
 **Vulnerability:** While fixing the Insecure Temporary File vulnerability with `mkdtempSync`, assigning the result of `mkdtempSync` to an exported constant executed the synchronous I/O operations directly at module load time.
 **Learning:** Performing side effects like file I/O (e.g., creating temporary directories) directly inside the module scope introduces architectural flaws. It means importing the file anywhere (like in test suites or other tools) inadvertently triggers directory creation, leading to orphaned files and unintended side effects, even if the target CLI function is never run.
 **Prevention:** Always encapsulate file system interactions, including the generation of temporary directories or profiles, inside functions (e.g., lazy getters) rather than static module-level initialization.
+
+## 2026-05-19 - Predictable Pseudo-Random Number Generator for ID Generation
+**Vulnerability:** The codebase was using `Math.random()` to generate structural IDs (e.g. `paraId`, `durableId`). Since `Math.random()` is a predictable pseudo-random number generator (PRNG), it could allow an attacker to predict generated IDs or purposely cause ID collisions, which might lead to document structure manipulation or referencing issues.
+**Learning:** `Math.random()` should never be used where unpredictability or non-collision is required, especially in document generation/modification scenarios where IDs are used for security references or tracking structural components.
+**Prevention:** Always use cryptographically secure random number generators like `randomInt` or `randomBytes` from `node:crypto` to generate secure, unpredictable values.
