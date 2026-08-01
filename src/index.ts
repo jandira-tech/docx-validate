@@ -27,13 +27,7 @@ export type { RepairOptions, RepairResult } from "./repair";
 export { Normalize } from "./normalize";
 export type { NormalizeResult } from "./normalize";
 export { Measure } from "./measure";
-export type {
-    MeasureOptions,
-    MeasureResult,
-    MeasureClassification,
-    MeasureMetrics,
-    AstAdapter,
-} from "./measure";
+export type { MeasureOptions, MeasureResult, MeasureClassification, MeasureMetrics, AstAdapter } from "./measure";
 
 import { Validate } from "./validate";
 import { Repair } from "./repair";
