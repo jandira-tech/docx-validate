@@ -74,9 +74,7 @@ export function planMoves(files: FingerprintedFile[], opts: PlanOptions): Move[]
             descriptorMode: opts.descriptorMode,
             fixedCategory: opts.fixedCategory,
         });
-        const dir = opts.intoCategories
-            ? path.join(opts.fixturesRoot, derived.category)
-            : path.dirname(file.sourcePath);
+        const dir = opts.intoCategories ? path.join(opts.fixturesRoot, derived.category) : path.dirname(file.sourcePath);
 
         let candidate = path.join(dir, derived.fileName);
         let n = 2;
