@@ -13,8 +13,9 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
       - name: Jules PR Reviewer
-        uses: sanjay3290/jules-pr-reviewer@v1.0.0
+        uses: sanjay3290/jules-pr-reviewer@fc66a7c78b499bfa2e16235b55574e458c6551d6 # v1.0.0
         with:
           jules_api_key: ${{ secrets.JULES_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           fail_on: blocking
+          rules_file: .github/jules-review-rules.md
