@@ -19,13 +19,13 @@ const ROOT = path.dirname(new URL(import.meta.url).pathname);
 const ROUNDTRIP_DIR = path.join(ROOT, "roundtrip_docx");
 const REPORT_PATH = path.join(ROOT, "validate_report.json");
 
-type StagedResult = {
+interface StagedResult {
     name: string;
     lenient_ok: boolean;
     lenient_error?: string;
     word_valid_ok: boolean;
     word_valid_error?: string;
-};
+}
 
 async function listDocx(dir: string): Promise<string[]> {
     const entries = await fs.readdir(dir);
@@ -105,12 +105,8 @@ async function main() {
     console.log("");
     console.log("== validate_roundtrips summary ==");
     console.log(`total:                     ${files.length}`);
-    console.log(
-        `lenient ok:                ${lenient_ok} (${((lenient_ok / files.length) * 100).toFixed(1)}%)`,
-    );
-    console.log(
-        `word-valid ok:             ${word_valid_ok} (${((word_valid_ok / files.length) * 100).toFixed(1)}%)`,
-    );
+    console.log(`lenient ok:                ${lenient_ok} (${((lenient_ok / files.length) * 100).toFixed(1)}%)`);
+    console.log(`word-valid ok:             ${word_valid_ok} (${((word_valid_ok / files.length) * 100).toFixed(1)}%)`);
     console.log(`report:                    ${REPORT_PATH}`);
 }
 

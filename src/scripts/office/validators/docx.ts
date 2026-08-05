@@ -520,11 +520,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             const tInDel = new Set<Element>();
             const instrInDel = new Set<Element>();
 
-            // ⚡ Bolt Performance Optimization:
-            // Avoid dynamically evaluating slow descendant xpath queries like `.//w:del//w:t`
-            // by using native DOM `getElementsByTagNameNS` traversals. Since we need to query
-            // multiple elements inside `<w:del>`, this O(n) scan dramatically reduces traversal overhead
-            // compared to repeatedly walking the full tree with XPath, decreasing validation time on large files.
             for (const ns of WORD_PARAGRAPH_NAMESPACES) {
                 const dels = dom.getElementsByTagNameNS(ns, "del");
                 for (let i = 0; i < dels.length; i++) {
