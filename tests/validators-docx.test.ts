@@ -84,6 +84,19 @@ describe("DOCXSchemaValidator", () => {
             });
         });
 
+        it("flags <w:instrText> inside <w:del>", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(`<w:p><w:del w:id="1"><w:r><w:instrText>bad</w:instrText></w:r></w:del></w:p>`),
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateDeletions();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "del-contains-instrtext")).toBe(true);
+            });
+        });
+
         it("passes when <w:del> wraps <w:delText>", async () => {
             await withTempDir(async (dir) => {
                 await writeFile(
