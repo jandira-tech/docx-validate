@@ -14,10 +14,19 @@
  * limitations under the License.
  */
 
+import * as crypto from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("node:crypto", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("node:crypto")>();
+    return {
+        ...actual,
+        randomInt: vi.fn(actual.randomInt),
+    };
+});
 import { withTempDir } from "../src/lib/run-cli";
 import { parseXml } from "../src/lib/xml-helpers";
 import { addComment, generateHexId } from "../src/scripts/comment";
@@ -48,13 +57,13 @@ describe("generateHexId", () => {
     // greater than 0 and less than 0x80000000. The generator feeds both w14:paraId
     // and w16cid:durableId, so a zero would be an out-of-spec id we wrote ourselves.
     it("never emits 0, even when the RNG floors to its minimum", () => {
-        vi.spyOn(Math, "random").mockReturnValue(0);
+        vi.mocked(crypto.randomInt).mockReturnValue(1 as unknown as void);
         const value = Number.parseInt(generateHexId(), 16);
         expect(value).toBeGreaterThan(0);
     });
 
     it("stays below the ST_LongHexNumber cap at the RNG maximum", () => {
-        vi.spyOn(Math, "random").mockReturnValue(0.9999999999);
+        vi.mocked(crypto.randomInt).mockReturnValue(0x7ffffffe as unknown as void);
         const value = Number.parseInt(generateHexId(), 16);
         expect(value).toBeGreaterThan(0);
         expect(value).toBeLessThan(0x80000000);
@@ -63,7 +72,7 @@ describe("generateHexId", () => {
     });
 
     it("returns a zero-padded 8-digit uppercase hex string", () => {
-        vi.spyOn(Math, "random").mockReturnValue(0);
+        vi.mocked(crypto.randomInt).mockReturnValue(1 as unknown as void);
         expect(generateHexId()).toMatch(/^[0-9A-F]{8}$/);
     });
 });
