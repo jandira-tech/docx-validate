@@ -220,9 +220,24 @@ describe("docx diagnostics", () => {
 
     it("emits pre-repair plans for known repairable issue codes", () => {
         const issues = buildRepairPlanIssues([
-            { severity: "error", path: "word/document.xml", code: "ws-missing-preserve", message: "missing xml:space" },
-            { severity: "error", path: "word/document.xml", code: "ws-missing-preserve", message: "missing xml:space" },
-            { severity: "error", path: "word/document.xml", code: "comment-orphan-start", message: "orphan" },
+            {
+                severity: "error",
+                path: "word/document.xml",
+                code: "ws-missing-preserve",
+                message: "missing xml:space",
+            },
+            {
+                severity: "error",
+                path: "word/document.xml",
+                code: "ws-missing-preserve",
+                message: "missing xml:space",
+            },
+            {
+                severity: "error",
+                path: "word/document.xml",
+                code: "comment-orphan-start",
+                message: "orphan",
+            },
         ]);
 
         expect(issues).toHaveLength(2);

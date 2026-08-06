@@ -105,10 +105,7 @@ export async function fingerprint(docxPath: string): Promise<FixtureFingerprint>
     }
     if (!titleText) titleText = doc ? firstParagraphText(doc) : null;
 
-    const [strictErrorCodes, lenientErrorCodes] = await Promise.all([
-        errorCodes(docxPath, "strict"),
-        errorCodes(docxPath, "lenient"),
-    ]);
+    const [strictErrorCodes, lenientErrorCodes] = await Promise.all([errorCodes(docxPath, "strict"), errorCodes(docxPath, "lenient")]);
 
     return {
         strictErrorCodes,

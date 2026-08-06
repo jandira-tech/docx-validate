@@ -27,7 +27,11 @@ async function main(): Promise<void> {
     }
     const profile = (profileArg ?? "word-valid") as Profile;
     const items: Item[] = JSON.parse(readFileSync(listPath, "utf8"));
-    const out: Array<{ id: string; valid: boolean; errors: Array<{ part: string; message: string }> }> = [];
+    const out: Array<{
+        id: string;
+        valid: boolean;
+        errors: Array<{ part: string; message: string }>;
+    }> = [];
     for (const it of items) {
         try {
             const res = await validate(it.path, { profile });

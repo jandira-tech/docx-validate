@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { DocxSemanticInventory } from "../src/scripts/office/validators/docx-diagnostics";
-import { diffDocxInventories, formatInventoryDiffMarkdown, inventoryDiffToIssues } from "../src/scripts/office/validators/docx-inventory-diff";
+import {
+    diffDocxInventories,
+    formatInventoryDiffMarkdown,
+    inventoryDiffToIssues,
+} from "../src/scripts/office/validators/docx-inventory-diff";
 
 function inv(entries: { path: string; category: string; label: string; unit: string; count: number }[]): DocxSemanticInventory {
     const counters = new Map<string, { path: string; category: string; label: string; unit: string; count: number }>();
@@ -11,14 +15,50 @@ function inv(entries: { path: string; category: string; label: string; unit: str
 describe("diffDocxInventories", () => {
     it("splits added / removed / changed / unchanged by key and direction", () => {
         const before = inv([
-            { path: "word/document.xml", category: "document structure", label: "paragraph", unit: "element(s)", count: 10 },
-            { path: "word/document.xml", category: "table shape", label: "table 3×4", unit: "table(s)", count: 1 },
-            { path: "word/document.xml", category: "inline mark", label: "tab", unit: "occurrence(s)", count: 5 },
+            {
+                path: "word/document.xml",
+                category: "document structure",
+                label: "paragraph",
+                unit: "element(s)",
+                count: 10,
+            },
+            {
+                path: "word/document.xml",
+                category: "table shape",
+                label: "table 3×4",
+                unit: "table(s)",
+                count: 1,
+            },
+            {
+                path: "word/document.xml",
+                category: "inline mark",
+                label: "tab",
+                unit: "occurrence(s)",
+                count: 5,
+            },
         ]);
         const after = inv([
-            { path: "word/document.xml", category: "document structure", label: "paragraph", unit: "element(s)", count: 8 }, // changed ↓
-            { path: "word/document.xml", category: "table shape", label: "table 3×2", unit: "table(s)", count: 1 }, // reshape: 3×4 removed, 3×2 added
-            { path: "word/document.xml", category: "inline mark", label: "tab", unit: "occurrence(s)", count: 5 }, // unchanged
+            {
+                path: "word/document.xml",
+                category: "document structure",
+                label: "paragraph",
+                unit: "element(s)",
+                count: 8,
+            }, // changed ↓
+            {
+                path: "word/document.xml",
+                category: "table shape",
+                label: "table 3×2",
+                unit: "table(s)",
+                count: 1,
+            }, // reshape: 3×4 removed, 3×2 added
+            {
+                path: "word/document.xml",
+                category: "inline mark",
+                label: "tab",
+                unit: "occurrence(s)",
+                count: 5,
+            }, // unchanged
         ]);
         const d = diffDocxInventories(before, after);
         expect(d.added.map((x) => x.label)).toEqual(["table 3×2"]);
@@ -39,14 +79,50 @@ describe("diffDocxInventories", () => {
 
     it("tiers diff deltas into severity-graded issues", () => {
         const before = inv([
-            { path: "word/document.xml", category: "document structure", label: "paragraph", unit: "element(s)", count: 10 },
-            { path: "word/document.xml", category: "formatting", label: "bold", unit: "formatted character(s)", count: 4 },
-            { path: "word/document.xml", category: "table shape", label: "table 3×2", unit: "table(s)", count: 1 },
+            {
+                path: "word/document.xml",
+                category: "document structure",
+                label: "paragraph",
+                unit: "element(s)",
+                count: 10,
+            },
+            {
+                path: "word/document.xml",
+                category: "formatting",
+                label: "bold",
+                unit: "formatted character(s)",
+                count: 4,
+            },
+            {
+                path: "word/document.xml",
+                category: "table shape",
+                label: "table 3×2",
+                unit: "table(s)",
+                count: 1,
+            },
         ]);
         const after = inv([
-            { path: "word/document.xml", category: "document structure", label: "paragraph", unit: "element(s)", count: 8 }, // content ↓ → error
-            { path: "word/document.xml", category: "formatting", label: "bold", unit: "formatted character(s)", count: 1 }, // formatting ↓ → warn
-            { path: "word/document.xml", category: "table shape", label: "table 3×4", unit: "table(s)", count: 1 }, // shape change → warn (both)
+            {
+                path: "word/document.xml",
+                category: "document structure",
+                label: "paragraph",
+                unit: "element(s)",
+                count: 8,
+            }, // content ↓ → error
+            {
+                path: "word/document.xml",
+                category: "formatting",
+                label: "bold",
+                unit: "formatted character(s)",
+                count: 1,
+            }, // formatting ↓ → warn
+            {
+                path: "word/document.xml",
+                category: "table shape",
+                label: "table 3×4",
+                unit: "table(s)",
+                count: 1,
+            }, // shape change → warn (both)
         ]);
         const issues = inventoryDiffToIssues(diffDocxInventories(before, after));
         const find = (code: string) => issues.find((i) => i.code === code);
@@ -61,10 +137,22 @@ describe("diffDocxInventories", () => {
 
     it("tiers a bookkeeping decrease to a warning", () => {
         const before = inv([
-            { path: "word/document.xml", category: "package asset", label: "part bytes", unit: "byte(s)", count: 100 },
+            {
+                path: "word/document.xml",
+                category: "package asset",
+                label: "part bytes",
+                unit: "byte(s)",
+                count: 100,
+            },
         ]);
         const after = inv([
-            { path: "word/document.xml", category: "package asset", label: "part bytes", unit: "byte(s)", count: 40 },
+            {
+                path: "word/document.xml",
+                category: "package asset",
+                label: "part bytes",
+                unit: "byte(s)",
+                count: 40,
+            },
         ]);
         const issues = inventoryDiffToIssues(diffDocxInventories(before, after));
         const drift = issues.find((i) => i.code === "inventory-bookkeeping-drift");
@@ -73,12 +161,36 @@ describe("diffDocxInventories", () => {
 
     it("renders a markdown report with sections, severity prefixes, and a summary", () => {
         const before = inv([
-            { path: "word/document.xml", category: "document structure", label: "paragraph", unit: "element(s)", count: 10 },
-            { path: "word/document.xml", category: "table shape", label: "table 3×4", unit: "table(s)", count: 1 },
+            {
+                path: "word/document.xml",
+                category: "document structure",
+                label: "paragraph",
+                unit: "element(s)",
+                count: 10,
+            },
+            {
+                path: "word/document.xml",
+                category: "table shape",
+                label: "table 3×4",
+                unit: "table(s)",
+                count: 1,
+            },
         ]);
         const after = inv([
-            { path: "word/document.xml", category: "document structure", label: "paragraph", unit: "element(s)", count: 8 },
-            { path: "word/document.xml", category: "table shape", label: "table 3×2", unit: "table(s)", count: 1 },
+            {
+                path: "word/document.xml",
+                category: "document structure",
+                label: "paragraph",
+                unit: "element(s)",
+                count: 8,
+            },
+            {
+                path: "word/document.xml",
+                category: "table shape",
+                label: "table 3×2",
+                unit: "table(s)",
+                count: 1,
+            },
         ]);
         const md = formatInventoryDiffMarkdown(diffDocxInventories(before, after));
         expect(md).toContain("## Removed");

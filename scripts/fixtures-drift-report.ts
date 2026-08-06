@@ -37,10 +37,7 @@ import JSZip from "jszip";
 
 import { withTempDir } from "../src/lib/run-cli";
 import type { Profile } from "../src/lib/types";
-import {
-    collectDocxSemanticInventory,
-    type DocxSemanticInventory,
-} from "../src/scripts/office/validators/docx-diagnostics";
+import { collectDocxSemanticInventory, type DocxSemanticInventory } from "../src/scripts/office/validators/docx-diagnostics";
 import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
 import { diffDocxInventories, inventoryDiffToIssues } from "../src/scripts/office/validators/docx-inventory-diff";
 
@@ -117,7 +114,16 @@ async function repackZip(dir: string, outFile: string): Promise<void> {
 
 async function processFixture(file: string, out: string, profile: Profile): Promise<FixtureResult> {
     const relativePath = path.relative(FIXTURES_ROOT, file).split(path.sep).join("/");
-    const base: FixtureResult = { relativePath, repairs: 0, added: 0, removed: 0, changed: 0, errorCount: 0, warnCount: 0, lossLabels: [] };
+    const base: FixtureResult = {
+        relativePath,
+        repairs: 0,
+        added: 0,
+        removed: 0,
+        changed: 0,
+        errorCount: 0,
+        warnCount: 0,
+        lossLabels: [],
+    };
     try {
         const buf = await fs.readFile(file);
 

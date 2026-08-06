@@ -46,7 +46,7 @@ import { promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
-import { makeSelect, parseXml, serializeXml } from "../../../lib/xml-helpers";
+import { parseXml, serializeXml } from "../../../lib/xml-helpers";
 import { BaseSchemaValidator, collectDeclaredPrefixes, PACKAGE_RELATIONSHIPS_NAMESPACE, XML_NAMESPACE } from "./base";
 
 export const WORD_2006_NAMESPACE = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
@@ -209,7 +209,10 @@ const WELL_KNOWN_STYLE_DEFINITIONS: Readonly<Record<string, string>> = {
  * "Document Recovery" dialog with a "Table Properties" complaint
  * (because the implicit table-style lookup is the most visible failure).
  */
-const REQUIRED_DEFAULT_STYLES: ReadonlyArray<{ styleId: string; type: "paragraph" | "character" | "table" | "numbering" }> = [
+const REQUIRED_DEFAULT_STYLES: ReadonlyArray<{
+    styleId: string;
+    type: "paragraph" | "character" | "table" | "numbering";
+}> = [
     { styleId: "Normal", type: "paragraph" },
     { styleId: "DefaultParagraphFont", type: "character" },
     { styleId: "TableNormal", type: "table" },
@@ -2394,7 +2397,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // Two sources of "needs to be defined": styles referenced by
         // document XML, and the four ECMA-376 implied-defaults — Word
         // looks these up implicitly so they must always be present.
-        const needed = new Set<string>([...referenced]);
+        const needed = new Set<string>(referenced);
         for (const def of REQUIRED_DEFAULT_STYLES) needed.add(def.styleId);
 
         const missing = [...needed].filter((id) => !defined.has(id));

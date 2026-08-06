@@ -66,7 +66,11 @@ describe("deriveName", () => {
     });
 
     it("describes a comment using its slugified gist", () => {
-        const d = deriveName({ ...base, commentCount: 1, firstCommentText: "Please review this clause" });
+        const d = deriveName({
+            ...base,
+            commentCount: 1,
+            firstCommentText: "Please review this clause",
+        });
         expect(d.fileName).toBe("document.comment-please-review-this-clause.docx");
     });
 

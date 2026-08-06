@@ -49,7 +49,15 @@ export function diffDocxInventories(before: DocxSemanticInventory, after: DocxSe
     for (const a of after.counters.values()) {
         const key = counterKey(a.path, a.category, a.label, a.unit);
         if (before.counters.has(key)) continue;
-        added.push({ key, path: a.path, category: a.category, label: a.label, unit: a.unit, before: 0, after: a.count });
+        added.push({
+            key,
+            path: a.path,
+            category: a.category,
+            label: a.label,
+            unit: a.unit,
+            before: 0,
+            after: a.count,
+        });
     }
     added.sort(sortDeltas);
     removed.sort(sortDeltas);

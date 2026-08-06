@@ -12,15 +12,15 @@
 
 ## File structure
 
-| File | Responsibility |
-|---|---|
-| `scripts/derive-fixture-name.ts` | **Pure.** `FixtureFingerprint` + `DerivedName` types, `slugify`, `deriveName`. The TDD core. |
-| `scripts/fixture-fingerprint.ts` | IO. `fingerprint(docxPath)` → `FixtureFingerprint` (JSZip read + `validate()`). |
-| `scripts/apply-fixture-names.ts` | Driver CLI: fingerprint → derive → dedup → `git mv` (in-place or `--into-categories`), `--dry-run`. |
-| `scripts/update-manifest.ts` | **Modify.** Preserve prior `word` values when probe data is absent. |
-| `tests/derive-fixture-name.test.ts` | Unit tests for `deriveName`/`slugify`. |
-| `tests/fixture-fingerprint.test.ts` | Integration test for `fingerprint` against real fixtures. |
-| `tests/update-manifest-word-preservation.test.ts` | Unit test for `word` preservation. |
+| File                                              | Responsibility                                                                                      |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `scripts/derive-fixture-name.ts`                  | **Pure.** `FixtureFingerprint` + `DerivedName` types, `slugify`, `deriveName`. The TDD core.        |
+| `scripts/fixture-fingerprint.ts`                  | IO. `fingerprint(docxPath)` → `FixtureFingerprint` (JSZip read + `validate()`).                     |
+| `scripts/apply-fixture-names.ts`                  | Driver CLI: fingerprint → derive → dedup → `git mv` (in-place or `--into-categories`), `--dry-run`. |
+| `scripts/update-manifest.ts`                      | **Modify.** Preserve prior `word` values when probe data is absent.                                 |
+| `tests/derive-fixture-name.test.ts`               | Unit tests for `deriveName`/`slugify`.                                                              |
+| `tests/fixture-fingerprint.test.ts`               | Integration test for `fingerprint` against real fixtures.                                           |
+| `tests/update-manifest-word-preservation.test.ts` | Unit test for `word` preservation.                                                                  |
 
 The branch `chore/repo-cleanup` (off `main`) already exists and holds the design-spec commit. PR 1 continues on it.
 
@@ -31,6 +31,7 @@ The branch `chore/repo-cleanup` (off `main`) already exists and holds the design
 ### Task 1: Remove root cruft
 
 **Files:**
+
 - Delete: `Sample Document.repaired.docx` (git-tracked)
 - Delete: `package-lock.json` (untracked, gitignored npm leftover)
 
@@ -63,6 +64,7 @@ git commit -m "chore: remove tracked repair artifact and stray npm lockfile"
 ### Task 2: Harden `update-manifest.ts` to preserve `word` metadata
 
 **Files:**
+
 - Modify: `scripts/update-manifest.ts` (the `main()` `word` derivation, ~line 99-107)
 - Test: `tests/update-manifest-word-preservation.test.ts`
 
@@ -126,11 +128,7 @@ In `scripts/update-manifest.ts`, add the exported helper (near the other top-lev
  * Keeps regen idempotent w.r.t. Word-probe metadata when the probe JSONL is
  * absent (no LibreOffice in CI).
  */
-export function resolveWordOutcome(
-    relativePath: string,
-    probeOutcome: string | undefined,
-    priorWord: Map<string, string>,
-): string {
+export function resolveWordOutcome(relativePath: string, probeOutcome: string | undefined, priorWord: Map<string, string>): string {
     return probeOutcome ?? priorWord.get(relativePath) ?? "unknown";
 }
 
@@ -138,7 +136,9 @@ function readPriorManifestWord(): Map<string, string> {
     const map = new Map<string, string>();
     if (!existsSync(MANIFEST)) return map;
     try {
-        const prior = JSON.parse(readFileSync(MANIFEST, "utf-8")) as { entries?: { relativePath: string; word?: string }[] };
+        const prior = JSON.parse(readFileSync(MANIFEST, "utf-8")) as {
+            entries?: { relativePath: string; word?: string }[];
+        };
         for (const entry of prior.entries ?? []) {
             if (entry.word) map.set(entry.relativePath, entry.word);
         }
@@ -152,22 +152,22 @@ function readPriorManifestWord(): Map<string, string> {
 Then in `main()`, replace the `word` derivation block:
 
 ```typescript
-    const probeResults = readProbeResults();
-    const priorWord = readPriorManifestWord();
-    const entries: ManifestEntry[] = [];
+const probeResults = readProbeResults();
+const priorWord = readPriorManifestWord();
+const entries: ManifestEntry[] = [];
 
-    for (const file of files) {
-        const relativePath = path.relative(FIXTURES_ROOT, file);
-        process.stderr.write(`Processing: ${relativePath}\n`);
+for (const file of files) {
+    const relativePath = path.relative(FIXTURES_ROOT, file);
+    process.stderr.write(`Processing: ${relativePath}\n`);
 
-        const strict = await runValidator(file, "strict");
-        const lenient = await runValidator(file, "lenient");
+    const strict = await runValidator(file, "strict");
+    const lenient = await runValidator(file, "lenient");
 
-        const probeRecord = probeResults.get(relativePath);
-        const wordOutcome = resolveWordOutcome(relativePath, probeRecord?.word?.outcome, priorWord);
+    const probeRecord = probeResults.get(relativePath);
+    const wordOutcome = resolveWordOutcome(relativePath, probeRecord?.word?.outcome, priorWord);
 
-        entries.push({ relativePath, strict, lenient, word: wordOutcome });
-    }
+    entries.push({ relativePath, strict, lenient, word: wordOutcome });
+}
 ```
 
 - [ ] **Step 4: Run test to verify it passes**
@@ -187,6 +187,7 @@ git commit -m "fix: preserve word metadata when regenerating fixtures manifest"
 ### Task 3: `deriveName` — pure name derivation
 
 **Files:**
+
 - Create: `scripts/derive-fixture-name.ts`
 - Test: `tests/derive-fixture-name.test.ts`
 
@@ -263,7 +264,11 @@ describe("deriveName", () => {
     });
 
     it("describes a comment using its slugified gist", () => {
-        const d = deriveName({ ...base, commentCount: 1, firstCommentText: "Please review this clause" });
+        const d = deriveName({
+            ...base,
+            commentCount: 1,
+            firstCommentText: "Please review this clause",
+        });
         expect(d.fileName).toBe("document.comment-please-review-this-clause.docx");
     });
 
@@ -392,6 +397,7 @@ git commit -m "feat: deterministic content-descriptive fixture name derivation"
 ### Task 4: `fingerprint` — content fingerprint from a docx
 
 **Files:**
+
 - Create: `scripts/fixture-fingerprint.ts`
 - Test: `tests/fixture-fingerprint.test.ts`
 
@@ -544,10 +550,7 @@ export async function fingerprint(docxPath: string): Promise<FixtureFingerprint>
     }
     if (!titleText) titleText = firstParagraphText(doc);
 
-    const [strictErrorCodes, lenientErrorCodes] = await Promise.all([
-        errorCodes(docxPath, "strict"),
-        errorCodes(docxPath, "lenient"),
-    ]);
+    const [strictErrorCodes, lenientErrorCodes] = await Promise.all([errorCodes(docxPath, "strict"), errorCodes(docxPath, "lenient")]);
 
     return {
         strictErrorCodes,
@@ -582,6 +585,7 @@ git commit -m "feat: docx content fingerprint for fixture naming"
 ### Task 5: `apply-fixture-names.ts` driver
 
 **Files:**
+
 - Create: `scripts/apply-fixture-names.ts`
 - Test: `tests/apply-fixture-names.test.ts`
 
@@ -630,17 +634,30 @@ const fp = (overrides: Partial<FingerprintedFile["fingerprint"]> = {}) => ({
 describe("planMoves", () => {
     it("renames in place (keeps source dir) when intoCategories is false", () => {
         const moves = planMoves(
-            [{ sourcePath: "tests/fixtures/word-strict/Ouch.docx", fingerprint: fp({ insCount: 1, contentHash: "a" }) }],
+            [
+                {
+                    sourcePath: "tests/fixtures/word-strict/Ouch.docx",
+                    fingerprint: fp({ insCount: 1, contentHash: "a" }),
+                },
+            ],
             { intoCategories: false, fixturesRoot: "tests/fixtures" },
         );
         expect(moves).toEqual([
-            { from: "tests/fixtures/word-strict/Ouch.docx", to: "tests/fixtures/word-strict/document.suggesting-insertions.docx" },
+            {
+                from: "tests/fixtures/word-strict/Ouch.docx",
+                to: "tests/fixtures/word-strict/document.suggesting-insertions.docx",
+            },
         ]);
     });
 
     it("routes into category dirs when intoCategories is true", () => {
         const moves = planMoves(
-            [{ sourcePath: "fixtures/eigen-extended/Untitled (1).docx", fingerprint: fp({ strictErrorCodes: ["x-code"], contentHash: "b" }) }],
+            [
+                {
+                    sourcePath: "fixtures/eigen-extended/Untitled (1).docx",
+                    fingerprint: fp({ strictErrorCodes: ["x-code"], contentHash: "b" }),
+                },
+            ],
             { intoCategories: true, fixturesRoot: "tests/fixtures" },
         );
         expect(moves[0].to).toBe("tests/fixtures/broken/document.x-code.docx");
@@ -746,9 +763,7 @@ export function planMoves(files: FingerprintedFile[], opts: PlanOptions): Move[]
             seenHash.add(file.fingerprint.contentHash);
         }
         const derived = deriveName(file.fingerprint);
-        const dir = opts.intoCategories
-            ? path.join(opts.fixturesRoot, derived.category)
-            : path.dirname(file.sourcePath);
+        const dir = opts.intoCategories ? path.join(opts.fixturesRoot, derived.category) : path.dirname(file.sourcePath);
 
         let candidate = path.join(dir, derived.fileName);
         let n = 2;
@@ -782,9 +797,7 @@ async function main(): Promise<void> {
     const rootIdx = argv.indexOf("--fixtures-root");
     const fixturesRoot = rootIdx >= 0 ? argv[rootIdx + 1] : "tests/fixtures";
     const flagValues = new Set([fixturesRoot]);
-    const targets = argv.filter(
-        (a, i) => !a.startsWith("--") && !(i > 0 && argv[i - 1] === "--fixtures-root") && !flagValues.has(a),
-    );
+    const targets = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && argv[i - 1] === "--fixtures-root") && !flagValues.has(a));
 
     const docxPaths: string[] = [];
     for (const t of targets) collectDocx(t, docxPaths);
@@ -846,6 +859,7 @@ Stacked on PR 1.
 ### Task 6: Rename strays in place + regen manifest
 
 **Files:**
+
 - Rename: `tests/fixtures/vfdsdfcACawesd.docx`
 - Rename: `tests/fixtures/word-strict/second-pass/Ouch.docx`
 - Rename: `tests/fixtures/word-strict/tests:fixtures:broken:sample-document.broken-tables.docx-repaired.docx`
@@ -867,6 +881,7 @@ bunx tsx scripts/apply-fixture-names.ts --dry-run \
   "tests/fixtures/word-strict/second-pass/Ouch.docx" \
   "tests/fixtures/word-strict/tests:fixtures:broken:sample-document.broken-tables.docx-repaired.docx"
 ```
+
 Expected: three `from -> to` lines, renamed in place (same dirs), with content-derived basenames. Review they read sensibly.
 
 - [ ] **Step 3: Confirm no test hard-codes these basenames (other than the doc-comment)**
@@ -912,6 +927,7 @@ Stacked on PR 2.
 ### Task 7: Dedup, rename, sort eigen-extended into the corpus
 
 **Files:**
+
 - Move+rename: all of `fixtures/eigen-extended/*.docx` → `tests/fixtures/{broken,working}/`
 - Delete: empty `fixtures/` directory
 - Modify (generated): `tests/fixtures-all.manifest.json`
@@ -931,6 +947,7 @@ git checkout -b chore/repo-cleanup-eigen
 bunx tsx scripts/apply-fixture-names.ts --into-categories --dedup --dry-run \
   fixtures/eigen-extended
 ```
+
 Expected: ~148 `from -> to` lines into `tests/fixtures/broken/` and `tests/fixtures/working/`, plus `~3 dropped as duplicates`. Skim for obviously-wrong names; the logic is deterministic so anomalies indicate a fingerprint edge case worth a follow-up, not a blocker.
 
 - [ ] **Step 3: Pre-flight collision check against existing corpus**
@@ -941,6 +958,7 @@ The driver only dedups within its input. Confirm no derived target collides with
 bunx tsx scripts/apply-fixture-names.ts --into-categories --dedup --dry-run fixtures/eigen-extended \
   | grep ' -> ' | sed 's/.* -> //' | while read t; do [ -e "$t" ] && echo "COLLISION: $t"; done
 ```
+
 Expected: no `COLLISION:` lines. If any appear, they are pre-existing corpus files — re-run is non-destructive; resolve by bumping the colliding eigen file's name manually after apply, or extend `planMoves` to seed `takenTargets` from disk (follow-up).
 
 - [ ] **Step 4: Delete the 3 content-duplicate files first (so dedup choice is explicit in history)**
@@ -957,6 +975,7 @@ Re-run Step 2 without `--dry-run`. This `git mv`s survivors into the category di
 git rm -r fixtures/eigen-extended   # removes the 3 dedup leftovers still sitting here
 rmdir fixtures 2>/dev/null || true
 ```
+
 Expected: `fixtures/` no longer exists; the duplicate files are deleted in this commit.
 
 - [ ] **Step 7: Regenerate the manifest**
@@ -970,7 +989,6 @@ Expected: `totalFixtures` increased by the number of survivors (~145). New entri
 To `tests/fixtures/broken/README.md` and `tests/fixtures/working/README.md`, append a section:
 
 ```markdown
-
 ## Imported real-world specimens (eigen)
 
 The files below were imported from the former `fixtures/eigen-extended/`
@@ -1004,6 +1022,6 @@ gh pr create --base chore/repo-cleanup-renames --title "chore: import eigen-exte
 ## Self-review notes
 
 - **Spec coverage:** root cruft (Task 1) ✓; manifest `word` preservation (Task 2) ✓; naming convention (Task 3) ✓; fingerprint (Task 4) ✓; dedup + sort + collision (Task 5) ✓; 3 strays (Task 6) ✓; eigen triage + READMEs + manifest bump (Task 7) ✓.
-- **Determinism caveat:** final eigen names are produced at runtime by the tested driver, not hardcoded here — because they depend on file content this plan does not pre-read. The *logic* is fully specified and unit-tested in PR 1; PR 2/3 are application + review + verification. This is intentional, not a placeholder.
+- **Determinism caveat:** final eigen names are produced at runtime by the tested driver, not hardcoded here — because they depend on file content this plan does not pre-read. The _logic_ is fully specified and unit-tested in PR 1; PR 2/3 are application + review + verification. This is intentional, not a placeholder.
 - **Type consistency:** `FixtureFingerprint`/`DerivedName` defined in Task 3 are imported unchanged by Tasks 4–5; `planMoves`/`Move`/`FingerprintedFile` defined in Task 5 are used unchanged in Tasks 6–7.
 - **Known follow-up (out of scope):** `planMoves` only dedups/disambiguates within its input set; cross-corpus collisions are surfaced by the Step-3 pre-flight check rather than auto-resolved.

@@ -74,9 +74,7 @@ export function planMoves(files: FingerprintedFile[], opts: PlanOptions): Move[]
             descriptorMode: opts.descriptorMode,
             fixedCategory: opts.fixedCategory,
         });
-        const dir = opts.intoCategories
-            ? path.join(opts.fixturesRoot, derived.category)
-            : path.dirname(file.sourcePath);
+        const dir = opts.intoCategories ? path.join(opts.fixturesRoot, derived.category) : path.dirname(file.sourcePath);
 
         let candidate = path.join(dir, derived.fileName);
         let n = 2;
@@ -130,7 +128,13 @@ async function main(): Promise<void> {
         files.push({ sourcePath: p, fingerprint: await fingerprint(p) });
     }
 
-    const moves = planMoves(files, { intoCategories, fixturesRoot, dedup, descriptorMode, fixedCategory });
+    const moves = planMoves(files, {
+        intoCategories,
+        fixturesRoot,
+        dedup,
+        descriptorMode,
+        fixedCategory,
+    });
     const dropped = files.length - moves.length;
 
     for (const m of moves) {

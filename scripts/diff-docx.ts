@@ -61,7 +61,10 @@ export async function runDiffDocx(args: readonly string[]): Promise<{ code: numb
     const opts = cmd.opts<{ profile: string }>();
     if (opts.profile !== "lenient" && opts.profile !== "strict" && opts.profile !== "word-valid") {
         const bad = String(opts.profile);
-        return { code: 1, markdown: `Invalid --profile: ${bad}. Must be 'lenient', 'strict', or 'word-valid'.` };
+        return {
+            code: 1,
+            markdown: `Invalid --profile: ${bad}. Must be 'lenient', 'strict', or 'word-valid'.`,
+        };
     }
     const profile = opts.profile as Profile;
     const [a, b] = cmd.args;

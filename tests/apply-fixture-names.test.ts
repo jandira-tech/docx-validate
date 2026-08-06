@@ -36,17 +36,30 @@ const fp = (overrides: Partial<FingerprintedFile["fingerprint"]> = {}) => ({
 describe("planMoves", () => {
     it("renames in place (keeps source dir) when intoCategories is false", () => {
         const moves = planMoves(
-            [{ sourcePath: "tests/fixtures/word-strict/Ouch.docx", fingerprint: fp({ insCount: 1, contentHash: "a" }) }],
+            [
+                {
+                    sourcePath: "tests/fixtures/word-strict/Ouch.docx",
+                    fingerprint: fp({ insCount: 1, contentHash: "a" }),
+                },
+            ],
             { intoCategories: false, fixturesRoot: "tests/fixtures" },
         );
         expect(moves).toEqual([
-            { from: "tests/fixtures/word-strict/Ouch.docx", to: "tests/fixtures/word-strict/document.suggesting-insertions.docx" },
+            {
+                from: "tests/fixtures/word-strict/Ouch.docx",
+                to: "tests/fixtures/word-strict/document.suggesting-insertions.docx",
+            },
         ]);
     });
 
     it("routes into category dirs when intoCategories is true", () => {
         const moves = planMoves(
-            [{ sourcePath: "fixtures/eigen-extended/Untitled (1).docx", fingerprint: fp({ strictErrorCodes: ["x-code"], contentHash: "b" }) }],
+            [
+                {
+                    sourcePath: "fixtures/eigen-extended/Untitled (1).docx",
+                    fingerprint: fp({ strictErrorCodes: ["x-code"], contentHash: "b" }),
+                },
+            ],
             { intoCategories: true, fixturesRoot: "tests/fixtures" },
         );
         expect(moves[0].to).toBe("tests/fixtures/broken/document.x-code.docx");
@@ -82,11 +95,26 @@ describe("planMoves", () => {
         const moves = planMoves(
             [
                 // benign quirk + a table -> content wins, lands in eigen/
-                { sourcePath: "fixtures/eigen-extended/x.docx", fingerprint: fp({ strictErrorCodes: ["id-paraid-overflow"], tableCount: 1, contentHash: "e1" }) },
+                {
+                    sourcePath: "fixtures/eigen-extended/x.docx",
+                    fingerprint: fp({
+                        strictErrorCodes: ["id-paraid-overflow"],
+                        tableCount: 1,
+                        contentHash: "e1",
+                    }),
+                },
                 // benign quirk, no content -> falls back to the error code
-                { sourcePath: "fixtures/eigen-extended/y.docx", fingerprint: fp({ strictErrorCodes: ["id-paraid-overflow"], contentHash: "e2" }) },
+                {
+                    sourcePath: "fixtures/eigen-extended/y.docx",
+                    fingerprint: fp({ strictErrorCodes: ["id-paraid-overflow"], contentHash: "e2" }),
+                },
             ],
-            { intoCategories: true, fixturesRoot: "tests/fixtures", descriptorMode: "content-first", fixedCategory: "eigen" },
+            {
+                intoCategories: true,
+                fixturesRoot: "tests/fixtures",
+                descriptorMode: "content-first",
+                fixedCategory: "eigen",
+            },
         );
         expect(moves.map((m) => m.to)).toEqual([
             "tests/fixtures/eigen/document.table.docx",
