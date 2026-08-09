@@ -16,19 +16,20 @@
 
 ## File structure
 
-| File | Responsibility |
-|------|----------------|
-| `src/scripts/office/validators/docx-diagnostics.ts` | **(modify)** Add `directWordChildren` helper, four collector families, `severityClassFor`, a `profile` arg on `collectDocxSemanticInventory`, and the gate code split in `compareDocxSemanticInventories`. |
-| `src/scripts/office/validators/docx-inventory-diff.ts` | **(new)** `DocxInventoryDelta`/`DocxInventoryDiff` types, `diffDocxInventories`, `severityFor`, `inventoryDiffToIssues`, `formatInventoryDiffMarkdown`. |
-| `src/scripts/office/validate.ts` | **(modify)** Thread the active `profile` into the two `collectDocxSemanticInventory` calls in the repair path. |
-| `scripts/diff-docx.ts` | **(new)** CLI: `diff-docx <a> <b> [--profile …]`. |
-| `tests/docx-diagnostics.test.ts` | **(modify)** Tests for new collectors + `severityClassFor` + gate split. |
-| `tests/docx-inventory-diff.test.ts` | **(new)** Tests for diff, severity, formatters. |
-| `tests/diff-docx.cli.test.ts` | **(new)** CLI smoke tests. |
+| File                                                   | Responsibility                                                                                                                                                                                             |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/scripts/office/validators/docx-diagnostics.ts`    | **(modify)** Add `directWordChildren` helper, four collector families, `severityClassFor`, a `profile` arg on `collectDocxSemanticInventory`, and the gate code split in `compareDocxSemanticInventories`. |
+| `src/scripts/office/validators/docx-inventory-diff.ts` | **(new)** `DocxInventoryDelta`/`DocxInventoryDiff` types, `diffDocxInventories`, `severityFor`, `inventoryDiffToIssues`, `formatInventoryDiffMarkdown`.                                                    |
+| `src/scripts/office/validate.ts`                       | **(modify)** Thread the active `profile` into the two `collectDocxSemanticInventory` calls in the repair path.                                                                                             |
+| `scripts/diff-docx.ts`                                 | **(new)** CLI: `diff-docx <a> <b> [--profile …]`.                                                                                                                                                          |
+| `tests/docx-diagnostics.test.ts`                       | **(modify)** Tests for new collectors + `severityClassFor` + gate split.                                                                                                                                   |
+| `tests/docx-inventory-diff.test.ts`                    | **(new)** Tests for diff, severity, formatters.                                                                                                                                                            |
+| `tests/diff-docx.cli.test.ts`                          | **(new)** CLI smoke tests.                                                                                                                                                                                 |
 
 ## Shared reference — helpers that already exist in `docx-diagnostics.ts`
 
 Use these; do **not** reimplement them:
+
 - `addCounter(inventory, pathValue, category, label, unit, count)` — skips `count <= 0`, sums duplicates.
 - `directWordChild(parent, local): Element | null` — first direct child in the `w:`/strict namespace with that local name.
 - `wordChildAttr(parent, local, attr): string | null` — attribute of a direct word child.
@@ -44,6 +45,7 @@ Use these; do **not** reimplement them:
 ## Task A1: `directWordChildren` helper
 
 **Files:**
+
 - Modify: `src/scripts/office/validators/docx-diagnostics.ts` (add near `directWordChild`)
 
 - [ ] **Step 1: Add the helper**
@@ -72,6 +74,7 @@ Expected: exit 0 (no errors). The function is unused for now; that is fine — i
 ## Task A2: Family 1 — in-run atomic marks collector
 
 **Files:**
+
 - Modify: `src/scripts/office/validators/docx-diagnostics.ts`
 - Test: `tests/docx-diagnostics.test.ts`
 
@@ -159,8 +162,8 @@ function collectInlineMarks(rel: string, dom: Document, inventory: MutableDocxSe
 In `collectXmlPart`, add the call after `collectFormatting(rel, dom, inventory);`:
 
 ```ts
-    collectFormatting(rel, dom, inventory);
-    collectInlineMarks(rel, dom, inventory);
+collectFormatting(rel, dom, inventory);
+collectInlineMarks(rel, dom, inventory);
 ```
 
 - [ ] **Step 5: Run it, verify pass**
@@ -178,6 +181,7 @@ Expected: all PASS.
 ## Task A3: Family 2 — table shape collector
 
 **Files:**
+
 - Modify: `src/scripts/office/validators/docx-diagnostics.ts`
 - Test: `tests/docx-diagnostics.test.ts`
 
@@ -264,8 +268,8 @@ function collectTableShape(rel: string, dom: Document, inventory: MutableDocxSem
 In `collectXmlPart`, after `collectInlineMarks(rel, dom, inventory);`:
 
 ```ts
-    collectInlineMarks(rel, dom, inventory);
-    collectTableShape(rel, dom, inventory);
+collectInlineMarks(rel, dom, inventory);
+collectTableShape(rel, dom, inventory);
 ```
 
 - [ ] **Step 5: Run it, verify pass**
@@ -278,6 +282,7 @@ Expected: PASS.
 ## Task A4: `profile` argument + Families 3 & 4 (strict-only)
 
 **Files:**
+
 - Modify: `src/scripts/office/validators/docx-diagnostics.ts`
 - Test: `tests/docx-diagnostics.test.ts`
 
@@ -356,7 +361,7 @@ function collectSectionGeometry(rel: string, dom: Document, inventory: MutableDo
                 addCounter(inventory, rel, "section geometry", `section margins T${t} R${r} B${b} L${l}`, "section(s)", 1);
             }
             const cols = directWordChild(sect, "cols");
-            const num = cols ? wordChildAttrSelf(cols, "num") ?? "1" : "1";
+            const num = cols ? (wordChildAttrSelf(cols, "num") ?? "1") : "1";
             addCounter(inventory, rel, "section geometry", `section columns=${num}`, "section(s)", 1);
         }
     }
@@ -387,7 +392,7 @@ function roundEmu(raw: string | null): number {
 
 - [ ] **Step 5: Add the `wordChildAttrSelf` helper**
 
-`wordChildAttr` reads an attribute off a *child*; here we need an attribute off the element itself. Add:
+`wordChildAttr` reads an attribute off a _child_; here we need an attribute off the element itself. Add:
 
 ```ts
 function wordChildAttrSelf(elem: Element, attr: string): string | null {
@@ -458,6 +463,7 @@ Expected: all PASS, tsc exit 0.
 ## Task A5: Thread `profile` into the repair path in `validate.ts`
 
 **Files:**
+
 - Modify: `src/scripts/office/validate.ts` (the `if (opts.autoRepair)` block, ~lines 219 & 227)
 
 - [ ] **Step 1: Update both collect calls**
@@ -465,18 +471,24 @@ Expected: all PASS, tsc exit 0.
 `runValidation` already has `profile` in scope (`const profile: Profile = opts.profile ?? DEFAULT_PROFILE;` near the top of the file). In the repair block, change:
 
 ```ts
-        const beforeInventory = (opts.suffix === ".docx" || opts.suffix === ".docm") ? await collectDocxSemanticInventory(unpackedDir) : null;
+const beforeInventory = opts.suffix === ".docx" || opts.suffix === ".docm" ? await collectDocxSemanticInventory(unpackedDir) : null;
 ```
+
 to
+
 ```ts
-        const beforeInventory = (opts.suffix === ".docx" || opts.suffix === ".docm") ? await collectDocxSemanticInventory(unpackedDir, profile) : null;
+const beforeInventory =
+    opts.suffix === ".docx" || opts.suffix === ".docm" ? await collectDocxSemanticInventory(unpackedDir, profile) : null;
 ```
 
 and
+
 ```ts
                 ? compareDocxSemanticInventories(beforeInventory, await collectDocxSemanticInventory(unpackedDir))
 ```
+
 to
+
 ```ts
                 ? compareDocxSemanticInventories(beforeInventory, await collectDocxSemanticInventory(unpackedDir, profile))
 ```
@@ -509,6 +521,7 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
 ## Task B1: `severityClassFor` (shared classifier)
 
 **Files:**
+
 - Modify: `src/scripts/office/validators/docx-diagnostics.ts`
 - Test: `tests/docx-diagnostics.test.ts`
 
@@ -604,6 +617,7 @@ Expected: PASS.
 ## Task B2: Split the repair gate codes by class
 
 **Files:**
+
 - Modify: `src/scripts/office/validators/docx-diagnostics.ts` (`compareDocxSemanticInventories`)
 - Test: `tests/docx-diagnostics.test.ts`
 
@@ -681,20 +695,23 @@ Expected: all PASS (including the pre-existing "formatting coverage loss" test �
 - [ ] **Step 5: Fix the pre-existing formatting test**
 
 In the first test ("reports formatting coverage loss…"), change:
+
 ```ts
-            expect(issues[0]).toMatchObject({
-                severity: "error",
-                code: "repair-content-loss",
-                path: "word/document.xml",
-            });
+expect(issues[0]).toMatchObject({
+    severity: "error",
+    code: "repair-content-loss",
+    path: "word/document.xml",
+});
 ```
+
 to
+
 ```ts
-            expect(issues[0]).toMatchObject({
-                severity: "warning",
-                code: "repair-fidelity-loss",
-                path: "word/document.xml",
-            });
+expect(issues[0]).toMatchObject({
+    severity: "warning",
+    code: "repair-fidelity-loss",
+    path: "word/document.xml",
+});
 ```
 
 Run: `bunx vitest run tests/docx-diagnostics.test.ts`
@@ -705,6 +722,7 @@ Expected: all PASS.
 ## Task B3: New module — `diffDocxInventories`
 
 **Files:**
+
 - Create: `src/scripts/office/validators/docx-inventory-diff.ts`
 - Test: `tests/docx-inventory-diff.test.ts`
 
@@ -836,6 +854,7 @@ Expected: PASS.
 ## Task B4: `severityFor` + `inventoryDiffToIssues`
 
 **Files:**
+
 - Modify: `src/scripts/office/validators/docx-inventory-diff.ts`
 - Test: `tests/docx-inventory-diff.test.ts`
 
@@ -946,6 +965,7 @@ Expected: PASS.
 ## Task B5: `formatInventoryDiffMarkdown`
 
 **Files:**
+
 - Modify: `src/scripts/office/validators/docx-inventory-diff.ts`
 - Test: `tests/docx-inventory-diff.test.ts`
 
@@ -1083,6 +1103,7 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
 ## Task C1: CLI
 
 **Files:**
+
 - Create: `scripts/diff-docx.ts`
 - Test: `tests/diff-docx.cli.test.ts`
 
@@ -1111,7 +1132,10 @@ describe("diff-docx CLI", () => {
             const a = path.join(dir, "a");
             const b = path.join(dir, "b");
             await writeUnpacked(a, `<w:tbl><w:tblGrid><w:gridCol/><w:gridCol/></w:tblGrid><w:tr><w:tc/><w:tc/></w:tr></w:tbl>`);
-            await writeUnpacked(b, `<w:tbl><w:tblGrid><w:gridCol/><w:gridCol/><w:gridCol/></w:tblGrid><w:tr><w:tc/><w:tc/><w:tc/></w:tr></w:tbl>`);
+            await writeUnpacked(
+                b,
+                `<w:tbl><w:tblGrid><w:gridCol/><w:gridCol/><w:gridCol/></w:tblGrid><w:tr><w:tc/><w:tc/><w:tc/></w:tr></w:tbl>`,
+            );
             const { code, markdown } = await runDiffDocx([a, b]);
             expect(code).toBe(0);
             expect(markdown).toContain("## Added");
@@ -1148,7 +1172,11 @@ import { Command } from "commander";
 import { runCli, withTempDir } from "../src/lib/run-cli";
 import { unpack } from "../src/scripts/office/unpack";
 import { collectDocxSemanticInventory } from "../src/scripts/office/validators/docx-diagnostics";
-import { diffDocxInventories, formatInventoryDiffMarkdown, inventoryDiffToIssues } from "../src/scripts/office/validators/docx-inventory-diff";
+import {
+    diffDocxInventories,
+    formatInventoryDiffMarkdown,
+    inventoryDiffToIssues,
+} from "../src/scripts/office/validators/docx-inventory-diff";
 import type { Profile } from "../src/lib/types";
 
 async function isDirectory(p: string): Promise<boolean> {
@@ -1242,7 +1270,7 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
 > **Action:** Skip Commit D for this feature. The pre-existing manifest drift is
 > a separate base-branch health issue; regenerating the manifest (below) is
 > optional cleanup the maintainer can do independently on a Word/LibreOffice
-> machine. The repair-gate behavior change *is* covered by unit tests in
+> machine. The repair-gate behavior change _is_ covered by unit tests in
 > `tests/docx-diagnostics.test.ts` (B2), which pass.
 
 ## Task D1 (OPTIONAL / separate cleanup): Regenerate the pre-existing manifest drift
@@ -1252,6 +1280,7 @@ drift (unrelated to this feature). Only do it deliberately, on a Word-equipped
 machine, as base-branch maintenance.
 
 **Files:**
+
 - Modify: `tests/fixtures-all.manifest.json` (generated)
 
 - [ ] **Step 1: See which fixtures move (validator-side only)**
@@ -1262,16 +1291,18 @@ Expected: a list of fixtures whose `errorCodes` / codes changed. Capture it for 
 - [ ] **Step 2: Regenerate the manifest**
 
 > **REQUIRES Word/LibreOffice for the word-probe fields.** On a machine with LibreOffice:
+
 ```bash
 SOFFICE_AVAILABLE=1 bun run test:fixtures:word   # refresh probe JSONL
 bunx tsx scripts/update-manifest.ts              # rebuild manifest from validator + probe
 ```
+
 > On a machine **without** LibreOffice, do NOT run `update-manifest.ts` (it would blank the word-probe fields). Instead, hand-patch only the changed `errorCodes`/codes arrays for the fixtures identified in Step 1, leaving `word`/`aligned` fields untouched.
 
 - [ ] **Step 3: Review the diff**
 
 Run: `git diff tests/fixtures-all.manifest.json | head -200`
-Expected: error-code changes confined to fixtures where a repair drops genuine content; the rest are `repair-fidelity-loss` warnings (which appear in the issues list, not `errorCodes`). Confirm no fixture you expect to be *valid* gained an `xsd-error`/content-loss it shouldn't have. If one did, that is a real collector bug — stop and fix it before committing.
+Expected: error-code changes confined to fixtures where a repair drops genuine content; the rest are `repair-fidelity-loss` warnings (which appear in the issues list, not `errorCodes`). Confirm no fixture you expect to be _valid_ gained an `xsd-error`/content-loss it shouldn't have. If one did, that is a real collector bug — stop and fix it before committing.
 
 - [ ] **Step 4: Run the fixtures suites green**
 
@@ -1309,6 +1340,7 @@ git push -u origin feat/inventory-fingerprint
 - [ ] Do NOT run `bun run fmt:fix` (it reformats the whole repo). If you format, restrict to changed files; revert any unrelated reformatting with `git checkout -- <file>`.
 
 ## Notes / known limitations (from the spec)
+
 - Aggregate histogram cannot distinguish reshape from delete+add, nor reshape-up from reshape-down, when multiple same-shape elements exist. Genuine content loss is still caught via the Content-class element counts.
 - Families 3 & 4 collect only under `strict`; `word-valid` behaves like `lenient`.
 - `diff-docx` exits non-zero iff a Content-class decrease exists.
