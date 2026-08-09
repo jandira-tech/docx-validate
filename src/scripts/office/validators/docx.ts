@@ -502,7 +502,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     async validateDeletions(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const $$ = makeSelect();
+        // Performance: Avoid using xpath's descendant query (.//) which parses the whole tree dynamically.
+        // Instead we traverse the XML DOM natively looking for nested elements within `w:del`.
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
@@ -516,8 +517,29 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 });
                 continue;
             }
-            // <w:t> inside <w:del>
-            const tInDel = $$(".//w:del//w:t", dom) as Node[];
+            // <w:t> and <w:instrText> inside <w:del>
+            const tInDel = new Set<Node>();
+            const instrInDel = new Set<Node>();
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const delElems = dom.getElementsByTagNameNS(ns, "del");
+                for (let i = 0; i < delElems.length; i += 1) {
+                    const delElem = delElems.item(i);
+                    if (!delElem) continue;
+
+                    const tElems = delElem.getElementsByTagNameNS(ns, "t");
+                    for (let j = 0; j < tElems.length; j += 1) {
+                        const t = tElems.item(j);
+                        if (t) tInDel.add(t);
+                    }
+
+                    const instrElems = delElem.getElementsByTagNameNS(ns, "instrText");
+                    for (let j = 0; j < instrElems.length; j += 1) {
+                        const instr = instrElems.item(j);
+                        if (instr) instrInDel.add(instr);
+                    }
+                }
+            }
+
             for (const node of tInDel) {
                 const elem = node as Element;
                 const text = elem.firstChild?.nodeValue ?? "";
@@ -528,8 +550,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     code: "del-contains-t",
                 });
             }
-            // <w:instrText> inside <w:del>
-            const instrInDel = $$(".//w:del//w:instrText", dom) as Node[];
+
             for (const node of instrInDel) {
                 const elem = node as Element;
                 const text = elem.firstChild?.nodeValue ?? "";
