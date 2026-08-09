@@ -47,12 +47,20 @@ import path from "node:path";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
 import { parseXml, serializeXml } from "../../../lib/xml-helpers";
-import { BaseSchemaValidator, collectDeclaredPrefixes, PACKAGE_RELATIONSHIPS_NAMESPACE, XML_NAMESPACE } from "./base";
+import {
+  BaseSchemaValidator,
+  collectDeclaredPrefixes,
+  PACKAGE_RELATIONSHIPS_NAMESPACE,
+  XML_NAMESPACE,
+} from "./base";
 
 export const WORD_2006_NAMESPACE = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 export const WORD_STRICT_NAMESPACE = "http://purl.oclc.org/ooxml/wordprocessingml/main";
 /** Python: `WORD_PARAGRAPH_NAMESPACES = (WORD_2006_NAMESPACE, WORD_STRICT_NAMESPACE)` */
-export const WORD_PARAGRAPH_NAMESPACES: readonly [string, string] = [WORD_2006_NAMESPACE, WORD_STRICT_NAMESPACE];
+export const WORD_PARAGRAPH_NAMESPACES: readonly [string, string] = [
+  WORD_2006_NAMESPACE,
+  WORD_STRICT_NAMESPACE,
+];
 const W14_NAMESPACE = "http://schemas.microsoft.com/office/word/2010/wordml";
 const W15_NAMESPACE = "http://schemas.microsoft.com/office/word/2012/wordml";
 const W16CEX_NAMESPACE = "http://schemas.microsoft.com/office/word/2018/wordml/cex";
@@ -61,20 +69,39 @@ const MATH_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/ma
 const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types";
 const VML_NAMESPACE = "urn:schemas-microsoft-com:vml";
 const WP_NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
-const WP14_DRAWING_NAMESPACE = "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing";
+const WP14_DRAWING_NAMESPACE =
+  "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing";
 const DRAWINGML_NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/main";
 const PICTURE_NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/picture";
 const DEFAULT_PICTURE_EXTENT_EMU = "95250";
 
 const WORD_DRAWING_SCALAR_TEXT_ELEMENTS: ReadonlyArray<{ namespace: string; localName: string }> = [
-    { namespace: WP_NAMESPACE, localName: "align" },
-    { namespace: WP_NAMESPACE, localName: "posOffset" },
-    { namespace: WP14_DRAWING_NAMESPACE, localName: "pctWidth" },
-    { namespace: WP14_DRAWING_NAMESPACE, localName: "pctHeight" },
+  { namespace: WP_NAMESPACE, localName: "align" },
+  { namespace: WP_NAMESPACE, localName: "posOffset" },
+  { namespace: WP14_DRAWING_NAMESPACE, localName: "pctWidth" },
+  { namespace: WP14_DRAWING_NAMESPACE, localName: "pctHeight" },
 ];
-const TRACKED_CHANGE_ID_TAGS = ["ins", "del", "rPrChange", "pPrChange", "tblPrChange", "trPrChange", "tcPrChange"] as const;
+const TRACKED_CHANGE_ID_TAGS = [
+  "ins",
+  "del",
+  "rPrChange",
+  "pPrChange",
+  "tblPrChange",
+  "trPrChange",
+  "tcPrChange",
+] as const;
 const TABLE_BORDER_SIDES = ["top", "left", "bottom", "right", "insideH", "insideV"] as const;
-const BORDER_COMPARE_ATTRIBUTES = ["val", "sz", "space", "color", "themeColor", "themeTint", "themeShade", "shadow", "frame"] as const;
+const BORDER_COMPARE_ATTRIBUTES = [
+  "val",
+  "sz",
+  "space",
+  "color",
+  "themeColor",
+  "themeTint",
+  "themeShade",
+  "shadow",
+  "frame",
+] as const;
 
 /**
  * Well-known OOXML namespace prefixes Word emits in `mc:Ignorable` and
@@ -89,33 +116,33 @@ const BORDER_COMPARE_ATTRIBUTES = ["val", "sz", "space", "color", "themeColor", 
  * Source: Microsoft Office OOXML schema headers + ECMA-376 part 4.
  */
 const KNOWN_OOXML_PREFIX_URIS: Readonly<Record<string, string>> = {
-    w14: W14_NAMESPACE,
-    w15: W15_NAMESPACE,
-    w16: "http://schemas.microsoft.com/office/word/2018/wordml",
-    w16cex: "http://schemas.microsoft.com/office/word/2018/wordml/cex",
-    w16cid: W16CID_NAMESPACE,
-    w16du: "http://schemas.microsoft.com/office/word/2023/wordml/word16du",
-    w16sdtdh: "http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash",
-    w16sdtfl: "http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock",
-    w16se: "http://schemas.microsoft.com/office/word/2015/wordml/symex",
-    wp14: "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing",
-    wpc: "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas",
-    wpg: "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup",
-    wpi: "http://schemas.microsoft.com/office/word/2010/wordprocessingInk",
-    wps: "http://schemas.microsoft.com/office/word/2010/wordprocessingShape",
-    wne: "http://schemas.microsoft.com/office/word/2006/wordml",
-    cx: "http://schemas.microsoft.com/office/drawing/2014/chartex",
-    cx1: "http://schemas.microsoft.com/office/drawing/2015/9/8/chartex",
-    cx2: "http://schemas.microsoft.com/office/drawing/2015/10/21/chartex",
-    cx3: "http://schemas.microsoft.com/office/drawing/2016/5/9/chartex",
-    cx4: "http://schemas.microsoft.com/office/drawing/2016/5/10/chartex",
-    cx5: "http://schemas.microsoft.com/office/drawing/2016/5/11/chartex",
-    cx6: "http://schemas.microsoft.com/office/drawing/2016/5/12/chartex",
-    cx7: "http://schemas.microsoft.com/office/drawing/2016/5/13/chartex",
-    cx8: "http://schemas.microsoft.com/office/drawing/2016/5/14/chartex",
-    aink: "http://schemas.microsoft.com/office/drawing/2016/ink",
-    am3d: "http://schemas.microsoft.com/office/drawing/2017/model3d",
-    oel: "http://schemas.microsoft.com/office/2019/extlst",
+  w14: W14_NAMESPACE,
+  w15: W15_NAMESPACE,
+  w16: "http://schemas.microsoft.com/office/word/2018/wordml",
+  w16cex: "http://schemas.microsoft.com/office/word/2018/wordml/cex",
+  w16cid: W16CID_NAMESPACE,
+  w16du: "http://schemas.microsoft.com/office/word/2023/wordml/word16du",
+  w16sdtdh: "http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash",
+  w16sdtfl: "http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock",
+  w16se: "http://schemas.microsoft.com/office/word/2015/wordml/symex",
+  wp14: "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing",
+  wpc: "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas",
+  wpg: "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup",
+  wpi: "http://schemas.microsoft.com/office/word/2010/wordprocessingInk",
+  wps: "http://schemas.microsoft.com/office/word/2010/wordprocessingShape",
+  wne: "http://schemas.microsoft.com/office/word/2006/wordml",
+  cx: "http://schemas.microsoft.com/office/drawing/2014/chartex",
+  cx1: "http://schemas.microsoft.com/office/drawing/2015/9/8/chartex",
+  cx2: "http://schemas.microsoft.com/office/drawing/2015/10/21/chartex",
+  cx3: "http://schemas.microsoft.com/office/drawing/2016/5/9/chartex",
+  cx4: "http://schemas.microsoft.com/office/drawing/2016/5/10/chartex",
+  cx5: "http://schemas.microsoft.com/office/drawing/2016/5/11/chartex",
+  cx6: "http://schemas.microsoft.com/office/drawing/2016/5/12/chartex",
+  cx7: "http://schemas.microsoft.com/office/drawing/2016/5/13/chartex",
+  cx8: "http://schemas.microsoft.com/office/drawing/2016/5/14/chartex",
+  aink: "http://schemas.microsoft.com/office/drawing/2016/ink",
+  am3d: "http://schemas.microsoft.com/office/drawing/2017/model3d",
+  oel: "http://schemas.microsoft.com/office/2019/extlst",
 };
 
 /**
@@ -131,75 +158,79 @@ const KNOWN_OOXML_PREFIX_URIS: Readonly<Record<string, string>> = {
  * already-present style OR another fragment we'll append in the same pass.
  */
 const WELL_KNOWN_STYLE_DEFINITIONS: Readonly<Record<string, string>> = {
-    CommentReference:
-        `<w:style w:type="character" w:styleId="CommentReference">` +
-        `<w:name w:val="annotation reference"/>` +
-        `<w:uiPriority w:val="99"/>` +
-        `<w:semiHidden/>` +
-        `<w:unhideWhenUsed/>` +
-        `<w:rPr><w:sz w:val="16"/><w:szCs w:val="16"/></w:rPr>` +
-        `</w:style>`,
-    CommentText:
-        `<w:style w:type="paragraph" w:styleId="CommentText">` +
-        `<w:name w:val="annotation text"/>` +
-        `<w:uiPriority w:val="99"/>` +
-        `<w:semiHidden/>` +
-        `<w:unhideWhenUsed/>` +
-        `<w:rPr><w:sz w:val="20"/><w:szCs w:val="20"/></w:rPr>` +
-        `</w:style>`,
-    CommentSubject:
-        `<w:style w:type="paragraph" w:styleId="CommentSubject">` +
-        `<w:name w:val="annotation subject"/>` +
-        `<w:basedOn w:val="CommentText"/>` +
-        `<w:next w:val="CommentText"/>` +
-        `<w:uiPriority w:val="99"/>` +
-        `<w:semiHidden/>` +
-        `<w:unhideWhenUsed/>` +
-        `<w:rPr><w:b/><w:bCs/></w:rPr>` +
-        `</w:style>`,
-    Header:
-        `<w:style w:type="paragraph" w:styleId="Header">` +
-        `<w:name w:val="header"/>` +
-        `<w:uiPriority w:val="99"/>` +
-        `<w:unhideWhenUsed/>` +
-        `</w:style>`,
-    Footer:
-        `<w:style w:type="paragraph" w:styleId="Footer">` +
-        `<w:name w:val="footer"/>` +
-        `<w:uiPriority w:val="99"/>` +
-        `<w:unhideWhenUsed/>` +
-        `</w:style>`,
-    DefaultParagraphFont:
-        `<w:style w:type="character" w:default="1" w:styleId="DefaultParagraphFont">` +
-        `<w:name w:val="Default Paragraph Font"/>` +
-        `<w:uiPriority w:val="1"/>` +
-        `<w:semiHidden/>` +
-        `<w:unhideWhenUsed/>` +
-        `</w:style>`,
-    // The four "implied default" styleIds per ECMA-376 §17.7.4.4. Every
-    // WordprocessingML document must define a default for each of the four
-    // style types (paragraph, character, table, numbering) — Word silently
-    // looks these up by name when an element omits an explicit style and
-    // pops "this document needs to be repaired" with a "Table Properties"
-    // category if the lookup misses.
-    Normal: `<w:style w:type="paragraph" w:default="1" w:styleId="Normal">` + `<w:name w:val="Normal"/>` + `<w:qFormat/>` + `</w:style>`,
-    TableNormal:
-        `<w:style w:type="table" w:default="1" w:styleId="TableNormal">` +
-        `<w:name w:val="Normal Table"/>` +
-        `<w:uiPriority w:val="99"/>` +
-        `<w:semiHidden/>` +
-        `<w:unhideWhenUsed/>` +
-        `<w:tblPr><w:tblInd w:w="0" w:type="dxa"/>` +
-        `<w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="108" w:type="dxa"/>` +
-        `<w:bottom w:w="0" w:type="dxa"/><w:right w:w="108" w:type="dxa"/></w:tblCellMar></w:tblPr>` +
-        `</w:style>`,
-    NoList:
-        `<w:style w:type="numbering" w:default="1" w:styleId="NoList">` +
-        `<w:name w:val="No List"/>` +
-        `<w:uiPriority w:val="99"/>` +
-        `<w:semiHidden/>` +
-        `<w:unhideWhenUsed/>` +
-        `</w:style>`,
+  CommentReference:
+    `<w:style w:type="character" w:styleId="CommentReference">` +
+    `<w:name w:val="annotation reference"/>` +
+    `<w:uiPriority w:val="99"/>` +
+    `<w:semiHidden/>` +
+    `<w:unhideWhenUsed/>` +
+    `<w:rPr><w:sz w:val="16"/><w:szCs w:val="16"/></w:rPr>` +
+    `</w:style>`,
+  CommentText:
+    `<w:style w:type="paragraph" w:styleId="CommentText">` +
+    `<w:name w:val="annotation text"/>` +
+    `<w:uiPriority w:val="99"/>` +
+    `<w:semiHidden/>` +
+    `<w:unhideWhenUsed/>` +
+    `<w:rPr><w:sz w:val="20"/><w:szCs w:val="20"/></w:rPr>` +
+    `</w:style>`,
+  CommentSubject:
+    `<w:style w:type="paragraph" w:styleId="CommentSubject">` +
+    `<w:name w:val="annotation subject"/>` +
+    `<w:basedOn w:val="CommentText"/>` +
+    `<w:next w:val="CommentText"/>` +
+    `<w:uiPriority w:val="99"/>` +
+    `<w:semiHidden/>` +
+    `<w:unhideWhenUsed/>` +
+    `<w:rPr><w:b/><w:bCs/></w:rPr>` +
+    `</w:style>`,
+  Header:
+    `<w:style w:type="paragraph" w:styleId="Header">` +
+    `<w:name w:val="header"/>` +
+    `<w:uiPriority w:val="99"/>` +
+    `<w:unhideWhenUsed/>` +
+    `</w:style>`,
+  Footer:
+    `<w:style w:type="paragraph" w:styleId="Footer">` +
+    `<w:name w:val="footer"/>` +
+    `<w:uiPriority w:val="99"/>` +
+    `<w:unhideWhenUsed/>` +
+    `</w:style>`,
+  DefaultParagraphFont:
+    `<w:style w:type="character" w:default="1" w:styleId="DefaultParagraphFont">` +
+    `<w:name w:val="Default Paragraph Font"/>` +
+    `<w:uiPriority w:val="1"/>` +
+    `<w:semiHidden/>` +
+    `<w:unhideWhenUsed/>` +
+    `</w:style>`,
+  // The four "implied default" styleIds per ECMA-376 §17.7.4.4. Every
+  // WordprocessingML document must define a default for each of the four
+  // style types (paragraph, character, table, numbering) — Word silently
+  // looks these up by name when an element omits an explicit style and
+  // pops "this document needs to be repaired" with a "Table Properties"
+  // category if the lookup misses.
+  Normal:
+    `<w:style w:type="paragraph" w:default="1" w:styleId="Normal">` +
+    `<w:name w:val="Normal"/>` +
+    `<w:qFormat/>` +
+    `</w:style>`,
+  TableNormal:
+    `<w:style w:type="table" w:default="1" w:styleId="TableNormal">` +
+    `<w:name w:val="Normal Table"/>` +
+    `<w:uiPriority w:val="99"/>` +
+    `<w:semiHidden/>` +
+    `<w:unhideWhenUsed/>` +
+    `<w:tblPr><w:tblInd w:w="0" w:type="dxa"/>` +
+    `<w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="108" w:type="dxa"/>` +
+    `<w:bottom w:w="0" w:type="dxa"/><w:right w:w="108" w:type="dxa"/></w:tblCellMar></w:tblPr>` +
+    `</w:style>`,
+  NoList:
+    `<w:style w:type="numbering" w:default="1" w:styleId="NoList">` +
+    `<w:name w:val="No List"/>` +
+    `<w:uiPriority w:val="99"/>` +
+    `<w:semiHidden/>` +
+    `<w:unhideWhenUsed/>` +
+    `</w:style>`,
 };
 
 /**
@@ -209,11 +240,14 @@ const WELL_KNOWN_STYLE_DEFINITIONS: Readonly<Record<string, string>> = {
  * "Document Recovery" dialog with a "Table Properties" complaint
  * (because the implicit table-style lookup is the most visible failure).
  */
-const REQUIRED_DEFAULT_STYLES: ReadonlyArray<{ styleId: string; type: "paragraph" | "character" | "table" | "numbering" }> = [
-    { styleId: "Normal", type: "paragraph" },
-    { styleId: "DefaultParagraphFont", type: "character" },
-    { styleId: "TableNormal", type: "table" },
-    { styleId: "NoList", type: "numbering" },
+const REQUIRED_DEFAULT_STYLES: ReadonlyArray<{
+  styleId: string;
+  type: "paragraph" | "character" | "table" | "numbering";
+}> = [
+  { styleId: "Normal", type: "paragraph" },
+  { styleId: "DefaultParagraphFont", type: "character" },
+  { styleId: "TableNormal", type: "table" },
+  { styleId: "NoList", type: "numbering" },
 ];
 
 /**
@@ -225,2650 +259,2678 @@ const REQUIRED_DEFAULT_STYLES: ReadonlyArray<{ styleId: string; type: "paragraph
  * to a specific producer) so the check generalises across producers.
  */
 const TRACKING_TOKEN_PREFIXES: readonly string[] = [
-    "[[DOCX_INS_START:",
-    "[[DOCX_INS_END:",
-    "[[DOCX_DEL_START:",
-    "[[DOCX_DEL_END:",
-    "[[DOCX_CMT_START:",
-    "[[DOCX_CMT_END:",
-    "[[DOCX_PMARK_DEL:",
-    "[[DOCX_PMARK_INS:",
+  "[[DOCX_INS_START:",
+  "[[DOCX_INS_END:",
+  "[[DOCX_DEL_START:",
+  "[[DOCX_DEL_END:",
+  "[[DOCX_CMT_START:",
+  "[[DOCX_CMT_END:",
+  "[[DOCX_PMARK_DEL:",
+  "[[DOCX_PMARK_INS:",
 ];
-const TRACKING_TOKEN_REGEX = /\[\[DOCX_(?:INS|DEL|CMT)_(?:START|END):[^\]]*?\]\]|\[\[DOCX_PMARK_(?:DEL|INS):[^\]]*?\]\]/g;
+const TRACKING_TOKEN_REGEX =
+  /\[\[DOCX_(?:INS|DEL|CMT)_(?:START|END):[^\]]*?\]\]|\[\[DOCX_PMARK_(?:DEL|INS):[^\]]*?\]\]/g;
 
 const MAX_PARA_ID = 0x80000000;
 const MAX_DURABLE_ID = 0x7fffffff;
 const MAX_RANDOM_DURABLE = 0x7ffffffe;
 
 export interface ParagraphCounts {
-    original: number;
-    modified: number;
-    delta: number;
-    originalUsesStrictNamespace: boolean;
+  original: number;
+  modified: number;
+  delta: number;
+  originalUsesStrictNamespace: boolean;
 }
 
 export class DOCXSchemaValidator extends BaseSchemaValidator {
-    protected readonly elementRelationshipTypes: Record<string, string> = {};
+  protected readonly elementRelationshipTypes: Record<string, string> = {};
 
-    /**
-     * Cached parse of `word/document.xml` from the original `.docx` zip.
-     * `null` means "not yet attempted"; `false` means "attempted and failed,
-     * don't try again".
-     */
-    private originalDocumentRoot: Element | null = null;
-    private originalDocumentRootFailed = false;
+  /**
+   * Cached parse of `word/document.xml` from the original `.docx` zip.
+   * `null` means "not yet attempted"; `false` means "attempted and failed,
+   * don't try again".
+   */
+  private originalDocumentRoot: Element | null = null;
+  private originalDocumentRootFailed = false;
 
-    // ----- top-level entry point ----------------------------------------------
+  // ----- top-level entry point ----------------------------------------------
 
-    /**
-     * Run every check. `compareParagraphCounts` is informational only and
-     * does not affect the merged validity.
-     */
-    async validate(): Promise<ValidationResult> {
-        const xmlOk = await this.validateXml();
-        if (!xmlOk.valid && this.profile !== "word-valid") return xmlOk;
+  /**
+   * Run every check. `compareParagraphCounts` is informational only and
+   * does not affect the merged validity.
+   */
+  async validate(): Promise<ValidationResult> {
+    const xmlOk = await this.validateXml();
+    if (!xmlOk.valid && this.profile !== "word-valid") return xmlOk;
 
-        const checks: Array<Promise<ValidationResult>> = [
-            this.validateNamespaces(),
-            this.validateUniqueIds(),
-            this.validateFileReferences(),
-            this.validateRelationshipElements(),
-            this.validateContentTypes(),
-            this.validateAgainstXsd(),
-            this.validateWhitespacePreservation(),
-            this.validateDeletions(),
-            this.validateInsertions(),
-            this.validateAllRelationshipIds(),
-            this.validateIdConstraints(),
-            this.validateCommentMarkers(),
-            this.validateCommentThreading(),
-            this.validateNoTrackingTokens(),
-            this.validateAllParagraphsHaveParaId(),
-            this.validateStyleReferences(),
-            this.validateStyleDefaults(),
-            this.validateNoBom(),
-            this.validateNoEmptyRelsParts(),
-            this.validateOrphanedRelationships(),
-            this.validateFontTable(),
-            this.validateLatentStyles(),
-            this.validateTableLook(),
-            this.validateTrackedChangeIds(),
-            this.validateRedundantCellBorders(),
-            this.validateRelationshipIdStability(),
-            this.validateRedundantRunProperties(),
-        ];
-        if (this.profile === "word-valid") {
-            checks.push(this.validateWordOpenCompatibility());
-        }
-
-        const merged = mergeResults(xmlOk, ...(await Promise.all(checks)));
-        return this.profile === "word-valid" ? this.applyWordValidProfile(merged) : merged;
+    const checks: Array<Promise<ValidationResult>> = [
+      this.validateNamespaces(),
+      this.validateUniqueIds(),
+      this.validateFileReferences(),
+      this.validateRelationshipElements(),
+      this.validateContentTypes(),
+      this.validateAgainstXsd(),
+      this.validateWhitespacePreservation(),
+      this.validateDeletions(),
+      this.validateInsertions(),
+      this.validateAllRelationshipIds(),
+      this.validateIdConstraints(),
+      this.validateCommentMarkers(),
+      this.validateCommentThreading(),
+      this.validateNoTrackingTokens(),
+      this.validateAllParagraphsHaveParaId(),
+      this.validateStyleReferences(),
+      this.validateStyleDefaults(),
+      this.validateNoBom(),
+      this.validateNoEmptyRelsParts(),
+      this.validateOrphanedRelationships(),
+      this.validateFontTable(),
+      this.validateLatentStyles(),
+      this.validateTableLook(),
+      this.validateTrackedChangeIds(),
+      this.validateRedundantCellBorders(),
+      this.validateRelationshipIdStability(),
+      this.validateRedundantRunProperties(),
+    ];
+    if (this.profile === "word-valid") {
+      checks.push(this.validateWordOpenCompatibility());
     }
 
-    private applyWordValidProfile(result: ValidationResult): ValidationResult {
-        const issues = result.issues.map((issue): ValidationIssue => {
-            if (issue.severity !== "error" || this.isWordBlockingIssue(issue)) return issue;
-            return { ...issue, severity: "warning" };
+    const merged = mergeResults(xmlOk, ...(await Promise.all(checks)));
+    return this.profile === "word-valid" ? this.applyWordValidProfile(merged) : merged;
+  }
+
+  private applyWordValidProfile(result: ValidationResult): ValidationResult {
+    const issues = result.issues.map((issue): ValidationIssue => {
+      if (issue.severity !== "error" || this.isWordBlockingIssue(issue)) return issue;
+      return { ...issue, severity: "warning" };
+    });
+    return finalize(issues);
+  }
+
+  private isWordBlockingIssue(issue: ValidationIssue): boolean {
+    switch (issue.code) {
+      case "comment-thread-commentid-paraid-orphan":
+      case "comment-thread-commentid-missing-paraid":
+      case "comment-thread-commentid-missing-durableid":
+      case "comment-thread-commentid-duplicate-paraid":
+      case "comment-thread-commentid-duplicate-durableid":
+      case "comment-thread-durableid-orphan":
+      case "comment-thread-durableid-missing":
+      case "comment-thread-durableid-duplicate":
+      case "id-durable-overflow":
+      case "word-math-parse":
+      case "word-math-spre-body":
+      case "word-content-type-invalid":
+      case "word-drawing-scalar-whitespace":
+        return true;
+      case "rels-missing-sidecar":
+        return !/^word\/(?:header|footer)\d*\.xml$/i.test(issue.path ?? "");
+      case "xml-syntax":
+        return issue.path?.startsWith("word/") || issue.path === "[Content_Types].xml";
+      case "rels-broken":
+        return (
+          issue.message.includes("../customXml/") ||
+          issue.message.includes("media/") ||
+          /\/_rels\/|\.rels$/i.test(issue.message)
+        );
+      case "rels-empty-element":
+        return issue.message.includes("missing required attribute");
+      case "xsd-error":
+        return isWordBlockingXsdIssue(issue);
+      default:
+        return false;
+    }
+  }
+
+  private async validateWordOpenCompatibility(): Promise<ValidationResult> {
+    const issues: ValidationIssue[] = [];
+    await this.validateWordContentTypes(issues);
+    await this.validateDrawingScalarTextWhitespace(issues);
+    const documentXml = this.xmlFiles.find(
+      (xmlFile) =>
+        baseName(xmlFile) === "document.xml" && this.relPath(xmlFile).startsWith("word/"),
+    );
+    if (!documentXml) return finalize(issues);
+
+    let dom: Document;
+    try {
+      dom = parseXml(await fs.readFile(documentXml, "utf-8"));
+    } catch (err) {
+      issues.push({
+        severity: "error",
+        message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
+        path: this.relPath(documentXml),
+        code: "word-math-parse",
+      });
+      return finalize(issues);
+    }
+
+    let body: Element | null = null;
+    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+      const node = dom.getElementsByTagNameNS(ns, "body").item(0);
+      if (node) {
+        body = node;
+        break;
+      }
+    }
+    if (!body) return finalize(issues);
+    for (let i = 0; i < body.childNodes.length; i += 1) {
+      const node = body.childNodes.item(i);
+      if (!node || node.nodeType !== 1) continue;
+      const elem = node as Element;
+      const tagName = elem.localName || elem.tagName.split(":").pop() || elem.tagName;
+      if (elem.namespaceURI !== MATH_NAMESPACE || tagName !== "oMathPara") continue;
+      if (elem.getElementsByTagNameNS(MATH_NAMESPACE, "sPre").length === 0) continue;
+      issues.push({
+        severity: "error",
+        message:
+          "Microsoft Word refuses to open documents with a body-level <m:oMathPara> " +
+          "that contains <m:sPre>; wrap it in a paragraph or avoid m:sPre in display math.",
+        path: this.relPath(documentXml),
+        code: "word-math-spre-body",
+      });
+    }
+    return finalize(issues);
+  }
+
+  private async validateWordContentTypes(issues: ValidationIssue[]): Promise<void> {
+    const contentTypesFile = path.join(this.unpackedDir, "[Content_Types].xml");
+    let dom: Document;
+    try {
+      dom = parseXml(await fs.readFile(contentTypesFile, "utf-8"));
+    } catch {
+      return;
+    }
+    const check = (elem: Element, attrName: "PartName" | "Extension"): void => {
+      const contentType = elem.getAttribute("ContentType");
+      if (!contentType || !contentType.startsWith("invalid-")) return;
+      const target = elem.getAttribute(attrName) ?? "";
+      issues.push({
+        severity: "error",
+        message: `Microsoft Word refuses content type '${contentType}' for ${target}`,
+        path: "[Content_Types].xml",
+        code: "word-content-type-invalid",
+      });
+    };
+
+    const overrides = dom.getElementsByTagNameNS(CONTENT_TYPES_NAMESPACE, "Override");
+    for (let i = 0; i < overrides.length; i += 1) {
+      const elem = overrides.item(i);
+      if (elem) check(elem, "PartName");
+    }
+    const defaults = dom.getElementsByTagNameNS(CONTENT_TYPES_NAMESPACE, "Default");
+    for (let i = 0; i < defaults.length; i += 1) {
+      const elem = defaults.item(i);
+      if (elem) check(elem, "Extension");
+    }
+  }
+
+  private async validateDrawingScalarTextWhitespace(issues: ValidationIssue[]): Promise<void> {
+    for (const xmlFile of this.userTextXmlFiles()) {
+      let dom: Document;
+      try {
+        dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+      } catch {
+        continue;
+      }
+      for (const { namespace, localName } of WORD_DRAWING_SCALAR_TEXT_ELEMENTS) {
+        const elems = dom.getElementsByTagNameNS(namespace, localName);
+        for (let i = 0; i < elems.length; i += 1) {
+          const elem = elems.item(i);
+          if (!elem) continue;
+          for (let child = elem.firstChild; child; child = child.nextSibling) {
+            if (child.nodeType !== 3) continue;
+            const text = child as Text;
+            const trimmed = text.data.trim();
+            if (trimmed === text.data) continue;
+            issues.push({
+              severity: "error",
+              message:
+                `<${elem.tagName}> contains leading/trailing whitespace around scalar value ` +
+                `${previewRepr(text.data, 80)}; Microsoft Word refuses this shape in drawing anchors.`,
+              path: this.relPath(xmlFile),
+              code: "word-drawing-scalar-whitespace",
+            });
+          }
+        }
+      }
+    }
+  }
+
+  // ----- whitespace ---------------------------------------------------------
+
+  async validateWhitespacePreservation(): Promise<ValidationResult> {
+    const issues: ValidationIssue[] = [];
+    for (const xmlFile of this.documentXmlFiles()) {
+      let dom: Document;
+      try {
+        dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+      } catch (err) {
+        issues.push({
+          severity: "error",
+          message: `Error: ${err instanceof Error ? err.message : String(err)}`,
+          path: this.relPath(xmlFile),
+          code: "ws-parse",
+        });
+        continue;
+      }
+      const tElems = dom.getElementsByTagNameNS(WORD_2006_NAMESPACE, "t");
+      for (let i = 0; i < tElems.length; i += 1) {
+        const elem = tElems.item(i);
+        if (!elem) continue;
+        const first = elem.firstChild;
+        if (!first || first.nodeType !== 3 /* TEXT_NODE */) continue;
+        const text = first.nodeValue ?? "";
+        if (!text) continue;
+        if (!/^[ \t\n\r]/.test(text) && !/[ \t\n\r]$/.test(text)) continue;
+        const xmlSpace = elem.getAttributeNS(XML_NAMESPACE, "space");
+        if (xmlSpace === "preserve") continue;
+        const preview = previewRepr(text, 50);
+        issues.push({
+          severity: "error",
+          message: `w:t element with whitespace missing xml:space='preserve': ${preview}`,
+          path: this.relPath(xmlFile),
+          code: "ws-missing-preserve",
+        });
+      }
+    }
+    return finalize(issues);
+  }
+
+  // ----- tracked changes ----------------------------------------------------
+
+  async validateDeletions(): Promise<ValidationResult> {
+    const issues: ValidationIssue[] = [];
+    // Performance: Avoid using xpath's descendant query (.//) which parses the whole tree dynamically.
+    // Instead we traverse the XML DOM natively looking for nested elements within `w:del`.
+    for (const xmlFile of this.documentXmlFiles()) {
+      let dom: Document;
+      try {
+        dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+      } catch (err) {
+        issues.push({
+          severity: "error",
+          message: `Error: ${err instanceof Error ? err.message : String(err)}`,
+          path: this.relPath(xmlFile),
+          code: "del-parse",
+        });
+        continue;
+      }
+      // <w:t> and <w:instrText> inside <w:del>
+      const tInDel = new Set<Node>();
+      const instrInDel = new Set<Node>();
+      for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+        const delElems = dom.getElementsByTagNameNS(ns, "del");
+        for (let i = 0; i < delElems.length; i += 1) {
+          const delElem = delElems.item(i)!;
+          const nsURI = delElem.namespaceURI ?? ns;
+
+          const tElems = delElem.getElementsByTagNameNS(nsURI, "t");
+          for (let j = 0; j < tElems.length; j += 1) tInDel.add(tElems.item(j)!);
+
+          const instrElems = delElem.getElementsByTagNameNS(nsURI, "instrText");
+          for (let j = 0; j < instrElems.length; j += 1) instrInDel.add(instrElems.item(j)!);
+        }
+      }
+
+      for (const node of tInDel) {
+        const elem = node as Element;
+        const text = elem.firstChild?.nodeValue ?? "";
+        issues.push({
+          severity: "error",
+          message: `<w:t> found within <w:del>: ${previewRepr(text, 50)}`,
+          path: this.relPath(xmlFile),
+          code: "del-contains-t",
+        });
+      }
+
+      for (const node of instrInDel) {
+        const elem = node as Element;
+        const text = elem.firstChild?.nodeValue ?? "";
+        issues.push({
+          severity: "error",
+          message: `<w:instrText> found within <w:del> (use <w:delInstrText>): ${previewRepr(text, 50)}`,
+          path: this.relPath(xmlFile),
+          code: "del-contains-instrtext",
+        });
+      }
+    }
+    return finalize(issues);
+  }
+
+  async validateInsertions(): Promise<ValidationResult> {
+    const issues: ValidationIssue[] = [];
+
+    const isInsideDel = (node: Node | null): boolean => {
+      let curr = node?.parentNode;
+      while (curr) {
+        if (curr.nodeType === 1) {
+          // ELEMENT_NODE
+          const elem = curr as Element;
+          const localName = elem.localName;
+          const ns = elem.namespaceURI;
+          if (localName === "del" && (ns === WORD_2006_NAMESPACE || ns === WORD_STRICT_NAMESPACE)) {
+            return true;
+          }
+        }
+        curr = curr.parentNode;
+      }
+      return false;
+    };
+
+    for (const xmlFile of this.documentXmlFiles()) {
+      let dom: Document;
+      try {
+        dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+      } catch (err) {
+        issues.push({
+          severity: "error",
+          message: `Error: ${err instanceof Error ? err.message : String(err)}`,
+          path: this.relPath(xmlFile),
+          code: "ins-parse",
+        });
+        continue;
+      }
+
+      const invalid: Element[] = [];
+      for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+        const insNodes = dom.getElementsByTagNameNS(ns, "ins");
+        for (let i = 0; i < insNodes.length; i++) {
+          const ins = insNodes.item(i);
+          if (!ins) continue;
+
+          for (const nsDel of WORD_PARAGRAPH_NAMESPACES) {
+            const delTexts = ins.getElementsByTagNameNS(nsDel, "delText");
+            for (let j = 0; j < delTexts.length; j++) {
+              const delText = delTexts.item(j);
+              if (delText && !isInsideDel(delText)) {
+                invalid.push(delText);
+              }
+            }
+          }
+        }
+      }
+
+      for (const elem of invalid) {
+        const text = elem.firstChild?.nodeValue ?? "";
+        issues.push({
+          severity: "error",
+          message: `<w:delText> within <w:ins>: ${previewRepr(text, 50)}`,
+          path: this.relPath(xmlFile),
+          code: "ins-contains-deltext",
+        });
+      }
+    }
+    return finalize(issues);
+  }
+
+  // ----- comment markers ----------------------------------------------------
+
+  async validateCommentMarkers(): Promise<ValidationResult> {
+    const issues: ValidationIssue[] = [];
+
+    let documentXml: string | null = null;
+    let commentsXml: string | null = null;
+    for (const xmlFile of this.xmlFiles) {
+      const base = baseName(xmlFile);
+      if (base === "document.xml" && xmlFile.includes("word")) {
+        documentXml = xmlFile;
+      } else if (base === "comments.xml") {
+        commentsXml = xmlFile;
+      }
+    }
+
+    if (!documentXml) {
+      // Mirrors Python: "no document.xml" is a pass.
+      return { valid: true, issues: [] };
+    }
+
+    let docDom: Document;
+    try {
+      docDom = parseXml(await fs.readFile(documentXml, "utf-8"));
+    } catch (err) {
+      issues.push({
+        severity: "error",
+        message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
+        path: this.relPath(documentXml),
+        code: "comment-marker-parse",
+      });
+      return finalize(issues);
+    }
+
+    const collectIds = (localName: string): Set<string> => {
+      const out = new Set<string>();
+      const list = docDom.getElementsByTagNameNS(WORD_2006_NAMESPACE, localName);
+      for (let i = 0; i < list.length; i += 1) {
+        const elem = list.item(i);
+        if (!elem) continue;
+        const id = elem.getAttributeNS(WORD_2006_NAMESPACE, "id");
+        out.add(id ?? "");
+      }
+      return out;
+    };
+
+    const rangeStarts = collectIds("commentRangeStart");
+    const rangeEnds = collectIds("commentRangeEnd");
+    const references = collectIds("commentReference");
+
+    const orphanedEnds = setDiff(rangeEnds, rangeStarts);
+    for (const id of sortIdsNumeric(orphanedEnds)) {
+      issues.push({
+        severity: "error",
+        message: `commentRangeEnd id="${id}" has no matching commentRangeStart`,
+        path: this.relPath(documentXml),
+        code: "comment-orphan-end",
+      });
+    }
+
+    const orphanedStarts = setDiff(rangeStarts, rangeEnds);
+    for (const id of sortIdsNumeric(orphanedStarts)) {
+      issues.push({
+        severity: "error",
+        message: `commentRangeStart id="${id}" has no matching commentRangeEnd`,
+        path: this.relPath(documentXml),
+        code: "comment-orphan-start",
+      });
+    }
+
+    if (commentsXml) {
+      let commentsDom: Document;
+      try {
+        commentsDom = parseXml(await fs.readFile(commentsXml, "utf-8"));
+      } catch (err) {
+        issues.push({
+          severity: "error",
+          message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
+          path: this.relPath(commentsXml),
+          code: "comment-marker-parse",
         });
         return finalize(issues);
+      }
+      const commentIds = new Set<string>();
+      const list = commentsDom.getElementsByTagNameNS(WORD_2006_NAMESPACE, "comment");
+      for (let i = 0; i < list.length; i += 1) {
+        const elem = list.item(i);
+        if (!elem) continue;
+        const id = elem.getAttributeNS(WORD_2006_NAMESPACE, "id");
+        if (id) commentIds.add(id);
+      }
+
+      const markerIds = new Set<string>([...rangeStarts, ...rangeEnds, ...references]);
+      const invalidRefs = setDiff(markerIds, commentIds);
+      for (const id of sortIdsNumeric(invalidRefs)) {
+        if (!id) continue;
+        issues.push({
+          severity: "error",
+          message: `marker id="${id}" references non-existent comment`,
+          path: this.relPath(documentXml),
+          code: "comment-marker-missing",
+        });
+      }
     }
 
-    private isWordBlockingIssue(issue: ValidationIssue): boolean {
-        switch (issue.code) {
-            case "comment-thread-commentid-paraid-orphan":
-            case "comment-thread-commentid-missing-paraid":
-            case "comment-thread-commentid-missing-durableid":
-            case "comment-thread-commentid-duplicate-paraid":
-            case "comment-thread-commentid-duplicate-durableid":
-            case "comment-thread-durableid-orphan":
-            case "comment-thread-durableid-missing":
-            case "comment-thread-durableid-duplicate":
-            case "id-durable-overflow":
-            case "word-math-parse":
-            case "word-math-spre-body":
-            case "word-content-type-invalid":
-            case "word-drawing-scalar-whitespace":
-                return true;
-            case "rels-missing-sidecar":
-                return !/^word\/(?:header|footer)\d*\.xml$/i.test(issue.path ?? "");
-            case "xml-syntax":
-                return issue.path?.startsWith("word/") || issue.path === "[Content_Types].xml";
-            case "rels-broken":
-                return (
-                    issue.message.includes("../customXml/") || issue.message.includes("media/") || /\/_rels\/|\.rels$/i.test(issue.message)
-                );
-            case "rels-empty-element":
-                return issue.message.includes("missing required attribute");
-            case "xsd-error":
-                return isWordBlockingXsdIssue(issue);
-            default:
-                return false;
+    return finalize(issues);
+  }
+
+  // ----- style reference integrity ------------------------------------------
+
+  /**
+   * Every `w:val` on a style-reference element (`w:pStyle`, `w:rStyle`,
+   * `w:tblStyle`, `w:numStyle`, `w:tblpPr/w:tblStyle`, `w:linkedStyle`)
+   * in document/header/footer/footnote/comment XML must resolve to a
+   * `<w:style w:styleId="...">` defined in `word/styles.xml`. Word
+   * silently substitutes the default style for missing references but
+   * pops a "this document needs to be repaired" dialog when opening
+   * unfamiliar dangling references.
+   *
+   * Always reported as `error` (real spec violation under both
+   * profiles — there's no "lenient" interpretation of a dangling style).
+   *
+   * Surfaced by the comparison against Word's own save output for the
+   * sample-document fixture: jubarte's writer emits
+   * `<w:rStyle w:val="CommentReference"/>` around comment anchors but
+   * never adds a `CommentReference` style definition to `styles.xml`.
+   * Word's repaired version injects the canonical definition.
+   */
+  /**
+   * Verify `word/styles.xml` defines the four "implied default" styles
+   * required by ECMA-376 §17.7.4.4 — `Normal` (paragraph), `DefaultParagraphFont`
+   * (character), `TableNormal` (table), `NoList` (numbering). Word
+   * looks these up by name when an element omits an explicit style and
+   * pops "Document Recovery" with a "Table Properties" complaint if
+   * `TableNormal` (the most visible default) is missing — even when no
+   * `<w:tblStyle>` references it.
+   *
+   * Profile-aware: strict reports `error`, lenient downgrades to
+   * `warning` (many real-world templates omit one or more of the
+   * implied defaults and Word still opens them — the dialog only
+   * fires for `TableNormal`-on-tables, not for absence in general).
+   * The repair pass `repairMissingStyleDefinitions` injects canonical
+   * definitions for any missing default, so `--auto-repair` resolves
+   * this without manual fixes regardless of profile.
+   */
+  async validateStyleDefaults(): Promise<ValidationResult> {
+    const issues: ValidationIssue[] = [];
+    const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
+    let stylesPath: string | null = null;
+    for (const xmlFile of this.xmlFiles) {
+      if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
+    }
+    if (!stylesPath) return { valid: true, issues: [] };
+
+    let dom: Document;
+    try {
+      dom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+    } catch {
+      return { valid: true, issues: [] };
+    }
+    const defined = new Set<string>();
+    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+      const list = dom.getElementsByTagNameNS(ns, "style");
+      for (let i = 0; i < list.length; i += 1) {
+        const elem = list.item(i);
+        if (!elem) continue;
+        const id = elem.getAttributeNS(ns, "styleId");
+        if (id) defined.add(id);
+      }
+    }
+    for (const required of REQUIRED_DEFAULT_STYLES) {
+      if (!defined.has(required.styleId)) {
+        issues.push({
+          severity,
+          message:
+            `word/styles.xml is missing the implied-default style '${required.styleId}' ` +
+            `(type='${required.type}'). ECMA-376 §17.7.4.4 requires a default for each of the ` +
+            `four style types; missing 'TableNormal' in particular triggers Word's ` +
+            `"Document Recovery — Table Properties" dialog on open.`,
+          path: this.relPath(stylesPath),
+          code: "style-default-missing",
+        });
+      }
+    }
+    return finalize(issues);
+  }
+
+  async validateStyleReferences(): Promise<ValidationResult> {
+    const issues: ValidationIssue[] = [];
+    const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
+
+    // Find styles.xml; if absent, every reference is dangling — but
+    // most documents lacking styles.xml are abnormal in other ways
+    // already detected.
+    let stylesPath: string | null = null;
+    for (const xmlFile of this.xmlFiles) {
+      if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
+    }
+    const defined = new Set<string>();
+    if (stylesPath) {
+      try {
+        const dom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+          const list = dom.getElementsByTagNameNS(ns, "style");
+          for (let i = 0; i < list.length; i += 1) {
+            const elem = list.item(i);
+            if (!elem) continue;
+            const id = elem.getAttributeNS(ns, "styleId");
+            if (id) defined.add(id);
+          }
         }
+      } catch {
+        // styles.xml malformed — covered by xml-syntax check.
+        return finalize(issues);
+      }
     }
 
-    private async validateWordOpenCompatibility(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-        await this.validateWordContentTypes(issues);
-        await this.validateDrawingScalarTextWhitespace(issues);
-        const documentXml = this.xmlFiles.find(
-            (xmlFile) => baseName(xmlFile) === "document.xml" && this.relPath(xmlFile).startsWith("word/"),
+    const refTags = ["pStyle", "rStyle", "tblStyle", "numStyle", "linkedStyle"] as const;
+    // Track each (file, styleId) pair so we don't spam multiple
+    // issues for the same dangling reference repeated 100 times.
+    const reported = new Set<string>();
+    for (const xmlFile of this.userTextXmlFiles()) {
+      let dom: Document;
+      try {
+        dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+      } catch {
+        continue;
+      }
+      for (const tag of refTags) {
+        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+          const list = dom.getElementsByTagNameNS(ns, tag);
+          for (let i = 0; i < list.length; i += 1) {
+            const elem = list.item(i);
+            if (!elem) continue;
+            const val = elem.getAttributeNS(ns, "val");
+            if (!val) continue;
+            if (defined.has(val)) continue;
+            const key = `${xmlFile}|${tag}|${val}`;
+            if (reported.has(key)) continue;
+            reported.add(key);
+            issues.push({
+              severity,
+              message:
+                `<w:${tag} w:val='${val}'/> references a style not defined in word/styles.xml. ` +
+                `Word substitutes the default style and triggers a repair dialog.`,
+              path: this.relPath(xmlFile),
+              code: "style-reference-undefined",
+            });
+          }
+        }
+      }
+    }
+    return finalize(issues);
+  }
+
+  // ----- paraId completeness (Word's tracking-anchor convention) ------------
+
+  /**
+   * Profile-aware: every `<w:p>` AND every `<w:tr>` should carry a
+   * `w14:paraId` attribute, AND any element that has paraId must
+   * also have a `w14:textId`. The OOXML schema makes both optional,
+   * but Word's tracked-changes machinery treats them as a pair —
+   * empirically, across 226 real-world SuperDoc fixtures, ZERO
+   * `<w:tr>` elements were observed with paraId present and textId
+   * absent. Elements with NEITHER attribute are common and Word
+   * handles them silently. The asymmetric "paraId without textId"
+   * shape is what trips Word's "Document Recovery — Table
+   * Properties" dialog on open, because the row's paraId cannot be
+   * linked to any text-content fingerprint for change tracking.
+   *
+   * Severity:
+   *   - `strict`  → `error` (spec-purist + Word-parity).
+   *   - `lenient` → `warning` (ours-vs-Word stylistic difference; the
+   *     schema allows it, but downstream collaboration tooling may
+   *     need it).
+   *
+   * Surfaced by the comparison against Word's `reallyrepaired.docx`
+   * for the sample-document fixture: jubarte's writer leaves table
+   * rows without paraId/textId; Word stamps both on all 13 of them.
+   */
+  async validateAllParagraphsHaveParaId(): Promise<ValidationResult> {
+    const issues: ValidationIssue[] = [];
+    const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
+    for (const xmlFile of this.userTextXmlFiles()) {
+      let dom: Document;
+      try {
+        dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+      } catch {
+        continue;
+      }
+      for (const local of ["p", "tr"] as const) {
+        let missingParaId = 0;
+        let asymmetric = 0;
+        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+          const list = dom.getElementsByTagNameNS(ns, local);
+          for (let i = 0; i < list.length; i += 1) {
+            const elem = list.item(i);
+            if (!elem) continue;
+            const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId");
+            const textId = elem.getAttributeNS(W14_NAMESPACE, "textId");
+            if (!paraId) missingParaId += 1;
+            else if (!textId) asymmetric += 1;
+          }
+        }
+        if (missingParaId > 0) {
+          issues.push({
+            severity,
+            message:
+              `${missingParaId} <w:${local}> element(s) lack a w14:paraId. ` +
+              `Word stamps one on every paragraph and table row as the anchor for ` +
+              `tracked-changes / comment-range infrastructure.`,
+            path: this.relPath(xmlFile),
+            code: "paraid-missing-element",
+          });
+        }
+        if (asymmetric > 0) {
+          issues.push({
+            severity,
+            message:
+              `${asymmetric} <w:${local}> element(s) carry a w14:paraId but no ` +
+              `w14:textId. The pair is what Word's tracked-changes machinery uses ` +
+              `to anchor revisions; an asymmetric paraId-without-textId row is ` +
+              `what triggers Word's "Document Recovery — Table Properties" dialog.`,
+            path: this.relPath(xmlFile),
+            code: "textid-missing-element",
+          });
+        }
+      }
+    }
+    return finalize(issues);
+  }
+
+  // ----- comment threading --------------------------------------------------
+
+  /**
+   * Verify the cross-references between `word/comments.xml` and
+   * `word/commentsExtended.xml` (issue #153 in jubarte was a regression in
+   * this exact integrity contract).
+   *
+   * This is a STRICT validator. Some Word builds emit a comments.xml
+   * paraId that has no matching `<w15:commentEx>` entry (notably for
+   * non-threaded comments) — we still flag that here, because callers
+   * that want to ignore Word's output divergences should run validation
+   * with `profile: "lenient"` (where the strict-only `code` is downgraded
+   * to a `warning`).
+   *
+   * Rules enforced (severity = error in `strict`, warning in `lenient`):
+   *   1. Every `<w:comment>` in comments.xml that carries a `w14:paraId`
+   *      on its first paragraph must have a matching `<w15:commentEx>`
+   *      entry in commentsExtended.xml.
+   *   2. Every `<w15:commentEx>` must have a `w15:paraId` matching the
+   *      paraId of some `<w:comment>` first paragraph (the inverse of #1).
+   *   3. No two `<w15:commentEx>` entries may share the same `w15:paraId`
+   *      (this was the surface symptom of jubarte's #153 regression).
+   *   4. Every non-null `w15:paraIdParent` must resolve to a paraId
+   *      present somewhere else in commentsExtended.xml.
+   *   5. The number of `w:commentRangeStart`, `w:commentRangeEnd`, and
+   *      `w:commentReference` elements in document.xml must each equal
+   *      the number of comments in comments.xml.
+   *   6. Every `w16cid:commentId/@paraId` in commentsIds.xml must resolve
+   *      to a paragraph in comments.xml.
+   *   7. Every `w16cex:commentExtensible/@durableId` in
+   *      commentsExtensible.xml must resolve to a durableId in
+   *      commentsIds.xml.
+   *
+   * `validateCommentMarkers` already covers orphan range start/end and
+   * missing-comment references — this validator is strictly about the
+   * threaded-comments extension surface.
+   */
+  async validateCommentThreading(): Promise<ValidationResult> {
+    const issues: ValidationIssue[] = [];
+
+    let documentXml: string | null = null;
+    let commentsXml: string | null = null;
+    let commentsExtendedXml: string | null = null;
+    let commentsIdsXml: string | null = null;
+    let commentsExtensibleXml: string | null = null;
+    for (const xmlFile of this.xmlFiles) {
+      const base = baseName(xmlFile);
+      if (base === "document.xml" && xmlFile.includes("word")) {
+        documentXml = xmlFile;
+      } else if (base === "comments.xml") {
+        commentsXml = xmlFile;
+      } else if (base === "commentsExtended.xml") {
+        commentsExtendedXml = xmlFile;
+      } else if (base === "commentsIds.xml") {
+        commentsIdsXml = xmlFile;
+      } else if (base === "commentsExtensible.xml") {
+        commentsExtensibleXml = xmlFile;
+      }
+    }
+
+    // No comments.xml → no threading to check.
+    if (!commentsXml) return { valid: true, issues: [] };
+
+    let commentsDom: Document;
+    try {
+      commentsDom = parseXml(await fs.readFile(commentsXml, "utf-8"));
+    } catch (err) {
+      issues.push({
+        severity: "error",
+        message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
+        path: this.relPath(commentsXml),
+        code: "comment-thread-parse",
+      });
+      return finalize(issues);
+    }
+
+    // Build the comment-id → all-paragraph-paraIds map.
+    //
+    // Word's threading uses the LAST paragraph's paraId (the
+    // thread-anchor paragraph) in commentsExtended.xml, not the first.
+    // For a single-paragraph comment they're the same; for multi-
+    // paragraph comments (typical of replies) only the last paraId is
+    // referenced from the extension. So we collect every paraId on
+    // every <w:p> inside each <w:comment> and match against the full
+    // set rather than guessing first-vs-last.
+    //
+    // Both Transitional (`schemas.openxmlformats.org/.../2006/main`)
+    // and Strict (`purl.oclc.org/ooxml/wordprocessingml/main`)
+    // namespace URIs are queried because OOXML Strict-conformance
+    // documents use the latter and the rest of the validator pipeline
+    // already supports both.
+    const commentParaIds = new Map<string, string[]>();
+    for (const wNs of WORD_PARAGRAPH_NAMESPACES) {
+      const commentList = commentsDom.getElementsByTagNameNS(wNs, "comment");
+      for (let i = 0; i < commentList.length; i += 1) {
+        const elem = commentList.item(i);
+        if (!elem) continue;
+        const id = elem.getAttributeNS(wNs, "id");
+        if (!id) continue;
+        const ps = elem.getElementsByTagNameNS(wNs, "p");
+        const paraIds: string[] = [];
+        for (let j = 0; j < ps.length; j += 1) {
+          const p = ps.item(j);
+          if (!p) continue;
+          const paraId = p.getAttributeNS(W14_NAMESPACE, "paraId");
+          if (paraId) paraIds.push(paraId);
+        }
+        if (!commentParaIds.has(id)) commentParaIds.set(id, paraIds);
+      }
+    }
+    const allCommentParaIds = new Set<string>();
+    for (const v of commentParaIds.values()) {
+      for (const p of v) allCommentParaIds.add(p);
+    }
+
+    // ----- rule 4: marker counts ---------------------------------------
+    if (documentXml) {
+      try {
+        const docDom = parseXml(await fs.readFile(documentXml, "utf-8"));
+        const counts = (local: string): number => {
+          let total = 0;
+          for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+            total += docDom.getElementsByTagNameNS(ns, local).length;
+          }
+          return total;
+        };
+        const startCount = counts("commentRangeStart");
+        const endCount = counts("commentRangeEnd");
+        const refCount = counts("commentReference");
+        const expected = commentParaIds.size;
+        if (startCount !== expected) {
+          issues.push({
+            severity: "error",
+            message:
+              `commentRangeStart count (${startCount}) does not match ` +
+              `comment count in comments.xml (${expected})`,
+            code: "comment-thread-count-mismatch",
+            path: this.relPath(documentXml),
+          });
+        }
+        if (endCount !== expected) {
+          issues.push({
+            severity: "error",
+            message:
+              `commentRangeEnd count (${endCount}) does not match ` +
+              `comment count in comments.xml (${expected})`,
+            path: this.relPath(documentXml),
+            code: "comment-thread-count-mismatch",
+          });
+        }
+        if (refCount !== expected) {
+          issues.push({
+            severity: "error",
+            message:
+              `commentReference count (${refCount}) does not match ` +
+              `comment count in comments.xml (${expected})`,
+            path: this.relPath(documentXml),
+            code: "comment-thread-count-mismatch",
+          });
+        }
+      } catch {
+        // document.xml parse failures are reported elsewhere.
+      }
+    }
+
+    const commentIdDurableIds = new Set<string>();
+    if (commentsIdsXml) {
+      let idsDom: Document;
+      try {
+        idsDom = parseXml(await fs.readFile(commentsIdsXml, "utf-8"));
+      } catch (err) {
+        issues.push({
+          severity: "error",
+          message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
+          path: this.relPath(commentsIdsXml),
+          code: "comment-thread-parse",
+        });
+        return finalize(issues);
+      }
+
+      const commentIds = idsDom.getElementsByTagNameNS(W16CID_NAMESPACE, "commentId");
+      const paraIdCounts = new Map<string, number>();
+      const durableIdCounts = new Map<string, number>();
+      for (let i = 0; i < commentIds.length; i += 1) {
+        const elem = commentIds.item(i);
+        if (!elem) continue;
+        const paraId = elem.getAttributeNS(W16CID_NAMESPACE, "paraId");
+        const durableId = elem.getAttributeNS(W16CID_NAMESPACE, "durableId");
+        if (paraId) {
+          paraIdCounts.set(paraId, (paraIdCounts.get(paraId) ?? 0) + 1);
+          if (!allCommentParaIds.has(paraId)) {
+            issues.push({
+              severity: "error",
+              message:
+                `<w16cid:commentId w16cid:paraId='${paraId}'> does not match any paragraph paraId ` +
+                `in any <w:comment> in comments.xml`,
+              path: this.relPath(commentsIdsXml),
+              code: "comment-thread-commentid-paraid-orphan",
+            });
+          }
+        } else {
+          issues.push({
+            severity: "error",
+            message: `<w16cid:commentId> is missing required w16cid:paraId`,
+            path: this.relPath(commentsIdsXml),
+            code: "comment-thread-commentid-missing-paraid",
+          });
+        }
+
+        if (durableId) {
+          durableIdCounts.set(durableId, (durableIdCounts.get(durableId) ?? 0) + 1);
+          commentIdDurableIds.add(durableId);
+        } else {
+          issues.push({
+            severity: "error",
+            message: `<w16cid:commentId> is missing required w16cid:durableId`,
+            path: this.relPath(commentsIdsXml),
+            code: "comment-thread-commentid-missing-durableid",
+          });
+        }
+      }
+
+      for (const [paraId, count] of paraIdCounts) {
+        if (count > 1) {
+          issues.push({
+            severity: "error",
+            message: `commentsIds.xml has ${count} entries with duplicate paraId='${paraId}'`,
+            path: this.relPath(commentsIdsXml),
+            code: "comment-thread-commentid-duplicate-paraid",
+          });
+        }
+      }
+      for (const [durableId, count] of durableIdCounts) {
+        if (count > 1) {
+          issues.push({
+            severity: "error",
+            message: `commentsIds.xml has ${count} entries with duplicate durableId='${durableId}'`,
+            path: this.relPath(commentsIdsXml),
+            code: "comment-thread-commentid-duplicate-durableid",
+          });
+        }
+      }
+    }
+
+    if (commentsExtensibleXml) {
+      let cexDom: Document;
+      try {
+        cexDom = parseXml(await fs.readFile(commentsExtensibleXml, "utf-8"));
+      } catch (err) {
+        issues.push({
+          severity: "error",
+          message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
+          path: this.relPath(commentsExtensibleXml),
+          code: "comment-thread-parse",
+        });
+        return finalize(issues);
+      }
+
+      const extensibleEntries = cexDom.getElementsByTagNameNS(
+        W16CEX_NAMESPACE,
+        "commentExtensible",
+      );
+      const durableIdCounts = new Map<string, number>();
+      for (let i = 0; i < extensibleEntries.length; i += 1) {
+        const elem = extensibleEntries.item(i);
+        if (!elem) continue;
+        const durableId = elem.getAttributeNS(W16CEX_NAMESPACE, "durableId");
+        if (!durableId) {
+          issues.push({
+            severity: "error",
+            message: `<w16cex:commentExtensible> is missing required w16cex:durableId`,
+            path: this.relPath(commentsExtensibleXml),
+            code: "comment-thread-durableid-missing",
+          });
+          continue;
+        }
+        durableIdCounts.set(durableId, (durableIdCounts.get(durableId) ?? 0) + 1);
+        if (!commentIdDurableIds.has(durableId)) {
+          issues.push({
+            severity: "error",
+            message:
+              `<w16cex:commentExtensible w16cex:durableId='${durableId}'> does not match any ` +
+              `w16cid:durableId in commentsIds.xml`,
+            path: this.relPath(commentsExtensibleXml),
+            code: "comment-thread-durableid-orphan",
+          });
+        }
+      }
+      for (const [durableId, count] of durableIdCounts) {
+        if (count > 1) {
+          issues.push({
+            severity: "error",
+            message: `commentsExtensible.xml has ${count} entries with duplicate durableId='${durableId}'`,
+            path: this.relPath(commentsExtensibleXml),
+            code: "comment-thread-durableid-duplicate",
+          });
+        }
+      }
+    }
+
+    // No commentsExtended.xml → rules 1–3 are vacuous, return now.
+    if (!commentsExtendedXml) return finalize(issues);
+
+    let extDom: Document;
+    try {
+      extDom = parseXml(await fs.readFile(commentsExtendedXml, "utf-8"));
+    } catch (err) {
+      issues.push({
+        severity: "error",
+        message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
+        path: this.relPath(commentsExtendedXml),
+        code: "comment-thread-parse",
+      });
+      return finalize(issues);
+    }
+
+    const extEntries = extDom.getElementsByTagNameNS(W15_NAMESPACE, "commentEx");
+    const extByParaId = new Map<string, number>();
+    const extParents: string[] = [];
+    for (let i = 0; i < extEntries.length; i += 1) {
+      const elem = extEntries.item(i);
+      if (!elem) continue;
+      const paraId = elem.getAttributeNS(W15_NAMESPACE, "paraId");
+      const parent = elem.getAttributeNS(W15_NAMESPACE, "paraIdParent");
+      if (paraId) {
+        extByParaId.set(paraId, (extByParaId.get(paraId) ?? 0) + 1);
+      }
+      if (parent) extParents.push(parent);
+    }
+
+    // Severity for soft-strict rules: strict profile reports an error,
+    // lenient profile records a warning so the integrity gap is visible
+    // without flunking real-world Word-emitted documents that omit
+    // commentsExtended entries on standalone (non-threaded) comments.
+    const softSeverity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
+
+    // ----- rule 3: no duplicate paraId entries (jubarte #153) ---------
+    // Always an error — duplicates are unambiguous writer bugs.
+    for (const [paraId, count] of extByParaId) {
+      if (count > 1) {
+        issues.push({
+          severity: "error",
+          message: `commentsExtended.xml has ${count} entries with duplicate paraId='${paraId}'`,
+          path: this.relPath(commentsExtendedXml),
+          code: "comment-thread-duplicate-paraid",
+        });
+      }
+    }
+
+    // ----- rule 1: every comment with paraIds has at least one matching commentEx --
+    for (const [commentId, paraIds] of commentParaIds) {
+      if (paraIds.length === 0) continue;
+      if (!paraIds.some((p) => extByParaId.has(p))) {
+        issues.push({
+          severity: softSeverity,
+          message:
+            `comment id='${commentId}' has paraIds=[${paraIds.join(", ")}] in comments.xml ` +
+            `but none match a <w15:commentEx w15:paraId='...'> entry in commentsExtended.xml`,
+          path: this.relPath(commentsExtendedXml),
+          code: "comment-thread-paraid-missing",
+        });
+      }
+    }
+
+    // ----- rule 2: every commentEx points at a real comment paragraph --
+    for (const paraId of extByParaId.keys()) {
+      if (!allCommentParaIds.has(paraId)) {
+        issues.push({
+          severity: "error",
+          message:
+            `<w15:commentEx w15:paraId='${paraId}'> does not match any paragraph paraId ` +
+            `in any <w:comment> in comments.xml`,
+          path: this.relPath(commentsExtendedXml),
+          code: "comment-thread-paraid-orphan",
+        });
+      }
+    }
+
+    // ----- rule 3: paraIdParent resolves -------------------------------
+    for (const parent of extParents) {
+      if (!extByParaId.has(parent)) {
+        issues.push({
+          severity: "error",
+          message:
+            `<w15:commentEx w15:paraIdParent='${parent}'> does not resolve to any ` +
+            `paraId declared in commentsExtended.xml`,
+          path: this.relPath(commentsExtendedXml),
+          code: "comment-thread-orphan-parent",
+        });
+      }
+    }
+
+    return finalize(issues);
+  }
+
+  // ----- tracking-token leak detection --------------------------------------
+
+  /**
+   * Detect HTML-to-DOCX wire-format tracking tokens (e.g.
+   * `[[DOCX_INS_START:{...}]]`) that leaked into the OOXML output. These
+   * are placeholder strings emitted by html-to-docx-style pipelines for
+   * tracked-changes round-tripping; they MUST be expanded into proper
+   * `<w:ins>` / `<w:del>` / comment markers before serialisation. A leak
+   * is a writer-pipeline bug — the document will render the literal
+   * `[[DOCX_…]]` text in Word.
+   *
+   * Only scans the document XML files (document.xml + headers / footers /
+   * footnotes / endnotes), not the relationship sidecars or content
+   * types — those parts can never legitimately contain user-visible text.
+   */
+  async validateNoTrackingTokens(): Promise<ValidationResult> {
+    const issues: ValidationIssue[] = [];
+    for (const xmlFile of this.userTextXmlFiles()) {
+      let raw: string;
+      try {
+        raw = await fs.readFile(xmlFile, "utf-8");
+      } catch {
+        continue;
+      }
+      // Cheap pre-filter — if no `[[DOCX_` substring, skip the regex.
+      if (!TRACKING_TOKEN_PREFIXES.some((p) => raw.includes(p))) continue;
+
+      TRACKING_TOKEN_REGEX.lastIndex = 0;
+      let match: RegExpExecArray | null;
+      const seen = new Set<string>();
+      while ((match = TRACKING_TOKEN_REGEX.exec(raw)) !== null) {
+        const token = match[0];
+        if (seen.has(token)) continue;
+        seen.add(token);
+        issues.push({
+          severity: "error",
+          message: `Wire-format tracking token leaked into OOXML output: ${previewRepr(token, 80)}`,
+          path: this.relPath(xmlFile),
+          code: "tracking-token-leak",
+        });
+      }
+    }
+    return finalize(issues);
+  }
+
+  // ----- id constraints -----------------------------------------------------
+
+  async validateIdConstraints(): Promise<ValidationResult> {
+    const issues: ValidationIssue[] = [];
+    for (const xmlFile of this.xmlFiles) {
+      let dom: Document;
+      try {
+        dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+      } catch {
+        // Mirrors Python's bare except — silently skip.
+        continue;
+      }
+      const all = dom.getElementsByTagName("*");
+      const base = baseName(xmlFile);
+      for (let i = 0; i < all.length; i += 1) {
+        const elem = all.item(i);
+        if (!elem) continue;
+
+        const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId");
+        if (paraId) {
+          const v = parseIdValue(paraId, 16);
+          if (v >= MAX_PARA_ID) {
+            issues.push({
+              severity: "error",
+              message: `${base}: paraId=${paraId} >= 0x80000000`,
+              path: this.relPath(xmlFile),
+              code: "id-paraid-overflow",
+            });
+          } else if (v === 0) {
+            // [MS-OI29500] 2.6.2.3: paraId MUST be greater than 0.
+            issues.push({
+              severity: "error",
+              message: `${base}: paraId=${paraId} must be > 0`,
+              path: this.relPath(xmlFile),
+              code: "id-paraid-zero",
+            });
+          }
+        }
+
+        // textId shares the ST_LongHexNumber type with paraId and is
+        // bound by the same < 0x80000000 cap. Word's parser silently
+        // recovers any over-cap textId on a <w:p>/<w:tr>; the recovery
+        // cascades through the row's table-properties machinery and
+        // surfaces as a "Document Recovery — Table Properties" dialog
+        // on open. Empirically: across 226 SuperDoc real-world fixtures
+        // the cap is never exceeded; a Plate-pipeline export had 51
+        // textIds over the cap (every paragraph in the body).
+        const textId = elem.getAttributeNS(W14_NAMESPACE, "textId");
+        if (textId) {
+          const v = parseIdValue(textId, 16);
+          if (v >= MAX_PARA_ID) {
+            issues.push({
+              severity: "error",
+              message: `${base}: textId=${textId} >= 0x80000000`,
+              path: this.relPath(xmlFile),
+              code: "id-textid-overflow",
+            });
+          } else if (v === 0) {
+            // textId shares the ST_LongHexNumber type with paraId; same > 0 floor.
+            issues.push({
+              severity: "error",
+              message: `${base}: textId=${textId} must be > 0`,
+              path: this.relPath(xmlFile),
+              code: "id-textid-zero",
+            });
+          }
+        }
+
+        const durableId = elem.getAttributeNS(W16CID_NAMESPACE, "durableId");
+        if (durableId) {
+          if (base === "numbering.xml") {
+            const v = parseIdValue(durableId, 10);
+            if (Number.isNaN(v)) {
+              issues.push({
+                severity: "error",
+                message: `${base}: durableId=${durableId} must be decimal in numbering.xml`,
+                path: this.relPath(xmlFile),
+                code: "id-durable-decimal",
+              });
+            } else if (v >= MAX_DURABLE_ID) {
+              issues.push({
+                severity: "error",
+                message: `${base}: durableId=${durableId} >= 0x7FFFFFFF`,
+                path: this.relPath(xmlFile),
+                code: "id-durable-overflow",
+              });
+            } else if (v === 0) {
+              // durableId is a positive id; the repair path seeds it from 1.
+              issues.push({
+                severity: "error",
+                message: `${base}: durableId=${durableId} must be > 0`,
+                path: this.relPath(xmlFile),
+                code: "id-durable-zero",
+              });
+            }
+          } else {
+            const v = parseIdValue(durableId, 16);
+            if (v >= MAX_DURABLE_ID) {
+              issues.push({
+                severity: "error",
+                message: `${base}: durableId=${durableId} >= 0x7FFFFFFF`,
+                path: this.relPath(xmlFile),
+                code: "id-durable-overflow",
+              });
+            } else if (v === 0) {
+              // durableId is a positive id; the repair path seeds it from 1.
+              issues.push({
+                severity: "error",
+                message: `${base}: durableId=${durableId} must be > 0`,
+                path: this.relPath(xmlFile),
+                code: "id-durable-zero",
+              });
+            }
+          }
+        }
+      }
+    }
+    return finalize(issues);
+  }
+
+  // ----- paragraph counts (informational) -----------------------------------
+
+  countParagraphsInUnpacked(): number {
+    let count = 0;
+    for (const xmlFile of this.xmlFiles) {
+      if (baseName(xmlFile) !== "document.xml") continue;
+      try {
+        const dom = parseXml(readFileSync(xmlFile, "utf-8"));
+        count = countParagraphsInRoot(dom);
+      } catch {
+        // mirrors Python catch-and-print; we just swallow
+      }
+    }
+    return count;
+  }
+
+  async countParagraphsInOriginal(): Promise<number> {
+    if (!this.originalFile) return 0;
+    const root = await this.loadOriginalDocumentRoot();
+    if (!root) return 0;
+    try {
+      // Wrap the root element in its owner document for xpath evaluation.
+      const doc = root.ownerDocument!;
+      return countParagraphsInRoot(doc);
+    } catch {
+      return 0;
+    }
+  }
+
+  async compareParagraphCounts(): Promise<ParagraphCounts> {
+    const original = await this.countParagraphsInOriginal();
+    const modified = this.countParagraphsInUnpacked();
+    const delta = modified - original;
+    const strict = await this.originalUsesStrictNamespace();
+    if (this.verbose) {
+      const diffStr = delta > 0 ? `+${delta}` : String(delta);
+      process.stdout.write(`\nParagraphs: ${original} → ${modified} (${diffStr})\n`);
+      if (strict) {
+        process.stdout.write(
+          "Note: input document uses the ECMA-376 Strict OOXML " +
+            "conformance class; output uses Transitional.\n",
         );
-        if (!documentXml) return finalize(issues);
-
-        let dom: Document;
-        try {
-            dom = parseXml(await fs.readFile(documentXml, "utf-8"));
-        } catch (err) {
-            issues.push({
-                severity: "error",
-                message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
-                path: this.relPath(documentXml),
-                code: "word-math-parse",
-            });
-            return finalize(issues);
-        }
-
-        let body: Element | null = null;
-        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-            const node = dom.getElementsByTagNameNS(ns, "body").item(0);
-            if (node) {
-                body = node;
-                break;
-            }
-        }
-        if (!body) return finalize(issues);
-        for (let i = 0; i < body.childNodes.length; i += 1) {
-            const node = body.childNodes.item(i);
-            if (!node || node.nodeType !== 1) continue;
-            const elem = node as Element;
-            const tagName = elem.localName || elem.tagName.split(":").pop() || elem.tagName;
-            if (elem.namespaceURI !== MATH_NAMESPACE || tagName !== "oMathPara") continue;
-            if (elem.getElementsByTagNameNS(MATH_NAMESPACE, "sPre").length === 0) continue;
-            issues.push({
-                severity: "error",
-                message:
-                    "Microsoft Word refuses to open documents with a body-level <m:oMathPara> " +
-                    "that contains <m:sPre>; wrap it in a paragraph or avoid m:sPre in display math.",
-                path: this.relPath(documentXml),
-                code: "word-math-spre-body",
-            });
-        }
-        return finalize(issues);
+      }
     }
+    return { original, modified, delta, originalUsesStrictNamespace: strict };
+  }
 
-    private async validateWordContentTypes(issues: ValidationIssue[]): Promise<void> {
-        const contentTypesFile = path.join(this.unpackedDir, "[Content_Types].xml");
-        let dom: Document;
+  private async loadOriginalDocumentRoot(): Promise<Element | null> {
+    if (this.originalDocumentRoot) return this.originalDocumentRoot;
+    if (this.originalDocumentRootFailed) return null;
+    if (!this.originalFile) {
+      this.originalDocumentRootFailed = true;
+      return null;
+    }
+    try {
+      const buf = await fs.readFile(this.originalFile);
+      const zip = await JSZip.loadAsync(buf);
+      const entry = zip.file("word/document.xml");
+      if (!entry) {
+        this.originalDocumentRootFailed = true;
+        return null;
+      }
+      const text = await entry.async("text");
+      const dom = parseXml(text);
+      this.originalDocumentRoot = dom.documentElement;
+      return this.originalDocumentRoot;
+    } catch {
+      this.originalDocumentRootFailed = true;
+      return null;
+    }
+  }
+
+  private async originalUsesStrictNamespace(): Promise<boolean> {
+    const root = await this.loadOriginalDocumentRoot();
+    if (!root) return false;
+    return root.namespaceURI === WORD_STRICT_NAMESPACE;
+  }
+
+  // ----- Plan 01: Whole-file preservation -----------------------------------
+
+  /**
+   * Check every `.rels` file and verify that each internal `<Relationship>`
+   * target resolves to an existing file in the unpacked directory.
+   * External (http/https) targets are skipped.
+   *
+   * Reports `rels-target-missing` (error) when a target file is absent.
+   */
+  async validateOrphanedRelationships(): Promise<ValidationResult> {
+    const issues: ValidationIssue[] = [];
+    for (const xmlFile of this.xmlFiles) {
+      if (!xmlFile.endsWith(".rels")) continue;
+      let dom: Document;
+      try {
+        dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+      } catch {
+        continue;
+      }
+      const list = dom.getElementsByTagNameNS(PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+      for (let i = 0; i < list.length; i += 1) {
+        const elem = list.item(i);
+        if (!elem) continue;
+        const target = elem.getAttribute("Target");
+        if (!target) continue;
+        if (isExternalRelationship(elem, target)) continue;
+        const resolved = resolveRelationshipTargetPath(this.unpackedDir, xmlFile, target);
+        if (!resolved) continue;
         try {
-            dom = parseXml(await fs.readFile(contentTypesFile, "utf-8"));
+          const stat = await fs.stat(resolved);
+          if (!stat.isFile()) throw new Error("Target is not a file");
         } catch {
-            return;
+          issues.push({
+            severity: "error",
+            message: `Relationship target '${target}' resolves to '${this.relPath(resolved)}' which does not exist`,
+            path: this.relPath(xmlFile),
+            code: "rels-target-missing",
+          });
         }
-        const check = (elem: Element, attrName: "PartName" | "Extension"): void => {
-            const contentType = elem.getAttribute("ContentType");
-            if (!contentType || !contentType.startsWith("invalid-")) return;
-            const target = elem.getAttribute(attrName) ?? "";
+      }
+    }
+    return finalize(issues);
+  }
+
+  // ----- Plan 02: Font table retention --------------------------------------
+
+  /**
+   * Check `word/fontTable.xml` for empty `<w:fonts>` (no `<w:font>` children).
+   * An empty font table is XSD-valid but almost always indicates a repairer bug
+   * that discards all font metadata.
+   *
+   * Reports `font-table-empty` at `"warning"` severity.
+   */
+  async validateFontTable(): Promise<ValidationResult> {
+    const issues: ValidationIssue[] = [];
+    let fontTablePath: string | null = null;
+    for (const xmlFile of this.xmlFiles) {
+      if (baseName(xmlFile) === "fontTable.xml") fontTablePath = xmlFile;
+    }
+    if (!fontTablePath) return { valid: true, issues: [] };
+
+    let dom: Document;
+    try {
+      dom = parseXml(await fs.readFile(fontTablePath, "utf-8"));
+    } catch {
+      return { valid: true, issues: [] };
+    }
+    const fontList: Element[] = [];
+    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+      const list = dom.getElementsByTagNameNS(ns, "font");
+      for (let i = 0; i < list.length; i += 1) {
+        const elem = list.item(i);
+        if (elem) fontList.push(elem);
+      }
+    }
+    if (fontList.length === 0) {
+      issues.push({
+        severity: "warning",
+        message:
+          "word/fontTable.xml contains zero <w:font> entries. " +
+          "This causes Word to substitute all fonts with its default, " +
+          "silently changing document appearance.",
+        path: this.relPath(fontTablePath),
+        code: "font-table-empty",
+      });
+    }
+    return finalize(issues);
+  }
+
+  // ----- Plan 03: Style passthrough -----------------------------------------
+
+  /**
+   * Check `word/styles.xml` for the presence of `<w:latentStyles>`.
+   * Missing latent styles is XSD-valid but unusual for Word-generated files.
+   *
+   * Reports `latent-styles-missing` at `"info"` severity.
+   */
+  async validateLatentStyles(): Promise<ValidationResult> {
+    const issues: ValidationIssue[] = [];
+    let stylesPath: string | null = null;
+    for (const xmlFile of this.xmlFiles) {
+      if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
+    }
+    if (!stylesPath) return { valid: true, issues: [] };
+
+    let dom: Document;
+    try {
+      dom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+    } catch {
+      return { valid: true, issues: [] };
+    }
+    let hasLatentStyles = false;
+    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+      if (dom.getElementsByTagNameNS(ns, "latentStyles").length > 0) {
+        hasLatentStyles = true;
+        break;
+      }
+    }
+    if (!hasLatentStyles) {
+      issues.push({
+        severity: "info",
+        message:
+          "word/styles.xml has no <w:latentStyles> block. " +
+          "This is unusual for Word-generated files and indicates " +
+          "the repairer may have regenerated styles from scratch.",
+        path: this.relPath(stylesPath),
+        code: "latent-styles-missing",
+      });
+    }
+    return finalize(issues);
+  }
+
+  // ----- Plan 05: tblLook preservation --------------------------------------
+
+  /**
+   * Check every `<w:tbl>` in `word/document.xml` that references a
+   * `<w:tblStyle>` for the presence of `<w:tblLook>`. Missing `<w:tblLook>`
+   * prevents conditional formatting bands from applying.
+   *
+   * Reports `tbl-look-missing` at `"info"` severity.
+   */
+  async validateTableLook(): Promise<ValidationResult> {
+    const issues: ValidationIssue[] = [];
+    for (const xmlFile of this.documentXmlFiles()) {
+      let dom: Document;
+      try {
+        dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+      } catch {
+        continue;
+      }
+      for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+        const tbls = dom.getElementsByTagNameNS(ns, "tbl");
+        for (let i = 0; i < tbls.length; i += 1) {
+          const tbl = tbls.item(i);
+          if (!tbl) continue;
+          const tblPr = directChild(tbl, ns, "tblPr");
+          if (!tblPr) continue;
+          const hasTblStyle = directChild(tblPr, ns, "tblStyle") !== null;
+          if (!hasTblStyle) continue;
+          const hasTblLook = directChild(tblPr, ns, "tblLook") !== null;
+          if (!hasTblLook) {
             issues.push({
-                severity: "error",
-                message: `Microsoft Word refuses content type '${contentType}' for ${target}`,
-                path: "[Content_Types].xml",
-                code: "word-content-type-invalid",
+              severity: "info",
+              message:
+                "<w:tbl> has a <w:tblStyle> reference but no <w:tblLook> in <w:tblPr>. " +
+                "Conditional formatting bands from the table style will not apply.",
+              path: this.relPath(xmlFile),
+              code: "tbl-look-missing",
             });
-        };
-
-        const overrides = dom.getElementsByTagNameNS(CONTENT_TYPES_NAMESPACE, "Override");
-        for (let i = 0; i < overrides.length; i += 1) {
-            const elem = overrides.item(i);
-            if (elem) check(elem, "PartName");
+          }
         }
-        const defaults = dom.getElementsByTagNameNS(CONTENT_TYPES_NAMESPACE, "Default");
-        for (let i = 0; i < defaults.length; i += 1) {
-            const elem = defaults.item(i);
-            if (elem) check(elem, "Extension");
-        }
+      }
     }
+    return finalize(issues);
+  }
 
-    private async validateDrawingScalarTextWhitespace(issues: ValidationIssue[]): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
-            } catch {
-                continue;
-            }
-            for (const { namespace, localName } of WORD_DRAWING_SCALAR_TEXT_ELEMENTS) {
-                const elems = dom.getElementsByTagNameNS(namespace, localName);
-                for (let i = 0; i < elems.length; i += 1) {
-                    const elem = elems.item(i);
-                    if (!elem) continue;
-                    for (let child = elem.firstChild; child; child = child.nextSibling) {
-                        if (child.nodeType !== 3) continue;
-                        const text = child as Text;
-                        const trimmed = text.data.trim();
-                        if (trimmed === text.data) continue;
-                        issues.push({
-                            severity: "error",
-                            message:
-                                `<${elem.tagName}> contains leading/trailing whitespace around scalar value ` +
-                                `${previewRepr(text.data, 80)}; Microsoft Word refuses this shape in drawing anchors.`,
-                            path: this.relPath(xmlFile),
-                            code: "word-drawing-scalar-whitespace",
-                        });
-                    }
-                }
-            }
-        }
-    }
+  // ----- Plan 06: Tracked-change ID stability --------------------------------
 
-    // ----- whitespace ---------------------------------------------------------
-
-    async validateWhitespacePreservation(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-        for (const xmlFile of this.documentXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
-            } catch (err) {
-                issues.push({
-                    severity: "error",
-                    message: `Error: ${err instanceof Error ? err.message : String(err)}`,
-                    path: this.relPath(xmlFile),
-                    code: "ws-parse",
-                });
-                continue;
-            }
-            const tElems = dom.getElementsByTagNameNS(WORD_2006_NAMESPACE, "t");
-            for (let i = 0; i < tElems.length; i += 1) {
-                const elem = tElems.item(i);
-                if (!elem) continue;
-                const first = elem.firstChild;
-                if (!first || first.nodeType !== 3 /* TEXT_NODE */) continue;
-                const text = first.nodeValue ?? "";
-                if (!text) continue;
-                if (!/^[ \t\n\r]/.test(text) && !/[ \t\n\r]$/.test(text)) continue;
-                const xmlSpace = elem.getAttributeNS(XML_NAMESPACE, "space");
-                if (xmlSpace === "preserve") continue;
-                const preview = previewRepr(text, 50);
-                issues.push({
-                    severity: "error",
-                    message: `w:t element with whitespace missing xml:space='preserve': ${preview}`,
-                    path: this.relPath(xmlFile),
-                    code: "ws-missing-preserve",
-                });
-            }
-        }
-        return finalize(issues);
-    }
-
-    // ----- tracked changes ----------------------------------------------------
-
-    async validateDeletions(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-        // Performance: Avoid using xpath's descendant query (.//) which parses the whole tree dynamically.
-        // Instead we traverse the XML DOM natively looking for nested elements within `w:del`.
-        for (const xmlFile of this.documentXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
-            } catch (err) {
-                issues.push({
-                    severity: "error",
-                    message: `Error: ${err instanceof Error ? err.message : String(err)}`,
-                    path: this.relPath(xmlFile),
-                    code: "del-parse",
-                });
-                continue;
-            }
-            // <w:t> and <w:instrText> inside <w:del>
-            const tInDel = new Set<Node>();
-            const instrInDel = new Set<Node>();
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const delElems = dom.getElementsByTagNameNS(ns, "del");
-                for (let i = 0; i < delElems.length; i += 1) {
-                    const delElem = delElems.item(i)!;
-                    const nsURI = delElem.namespaceURI ?? ns;
-
-                    const tElems = delElem.getElementsByTagNameNS(nsURI, "t");
-                    for (let j = 0; j < tElems.length; j += 1) tInDel.add(tElems.item(j)!);
-
-                    const instrElems = delElem.getElementsByTagNameNS(nsURI, "instrText");
-                    for (let j = 0; j < instrElems.length; j += 1) instrInDel.add(instrElems.item(j)!);
-                }
-            }
-
-            for (const node of tInDel) {
-                const elem = node as Element;
-                const text = elem.firstChild?.nodeValue ?? "";
-                issues.push({
-                    severity: "error",
-                    message: `<w:t> found within <w:del>: ${previewRepr(text, 50)}`,
-                    path: this.relPath(xmlFile),
-                    code: "del-contains-t",
-                });
-            }
-
-            for (const node of instrInDel) {
-                const elem = node as Element;
-                const text = elem.firstChild?.nodeValue ?? "";
-                issues.push({
-                    severity: "error",
-                    message: `<w:instrText> found within <w:del> (use <w:delInstrText>): ${previewRepr(text, 50)}`,
-                    path: this.relPath(xmlFile),
-                    code: "del-contains-instrtext",
-                });
-            }
-        }
-        return finalize(issues);
-    }
-
-    async validateInsertions(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-
-        const isInsideDel = (node: Node | null): boolean => {
-            let curr = node?.parentNode;
-            while (curr) {
-                if (curr.nodeType === 1) {
-                    // ELEMENT_NODE
-                    const elem = curr as Element;
-                    const localName = elem.localName;
-                    const ns = elem.namespaceURI;
-                    if (localName === "del" && (ns === WORD_2006_NAMESPACE || ns === WORD_STRICT_NAMESPACE)) {
-                        return true;
-                    }
-                }
-                curr = curr.parentNode;
-            }
-            return false;
-        };
-
-        for (const xmlFile of this.documentXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
-            } catch (err) {
-                issues.push({
-                    severity: "error",
-                    message: `Error: ${err instanceof Error ? err.message : String(err)}`,
-                    path: this.relPath(xmlFile),
-                    code: "ins-parse",
-                });
-                continue;
-            }
-
-            const invalid: Element[] = [];
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const insNodes = dom.getElementsByTagNameNS(ns, "ins");
-                for (let i = 0; i < insNodes.length; i++) {
-                    const ins = insNodes.item(i);
-                    if (!ins) continue;
-
-                    for (const nsDel of WORD_PARAGRAPH_NAMESPACES) {
-                        const delTexts = ins.getElementsByTagNameNS(nsDel, "delText");
-                        for (let j = 0; j < delTexts.length; j++) {
-                            const delText = delTexts.item(j);
-                            if (delText && !isInsideDel(delText)) {
-                                invalid.push(delText);
-                            }
-                        }
-                    }
-                }
-            }
-
-            for (const elem of invalid) {
-                const text = elem.firstChild?.nodeValue ?? "";
-                issues.push({
-                    severity: "error",
-                    message: `<w:delText> within <w:ins>: ${previewRepr(text, 50)}`,
-                    path: this.relPath(xmlFile),
-                    code: "ins-contains-deltext",
-                });
-            }
-        }
-        return finalize(issues);
-    }
-
-    // ----- comment markers ----------------------------------------------------
-
-    async validateCommentMarkers(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-
-        let documentXml: string | null = null;
-        let commentsXml: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            const base = baseName(xmlFile);
-            if (base === "document.xml" && xmlFile.includes("word")) {
-                documentXml = xmlFile;
-            } else if (base === "comments.xml") {
-                commentsXml = xmlFile;
-            }
-        }
-
-        if (!documentXml) {
-            // Mirrors Python: "no document.xml" is a pass.
-            return { valid: true, issues: [] };
-        }
-
-        let docDom: Document;
-        try {
-            docDom = parseXml(await fs.readFile(documentXml, "utf-8"));
-        } catch (err) {
-            issues.push({
-                severity: "error",
-                message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
-                path: this.relPath(documentXml),
-                code: "comment-marker-parse",
-            });
-            return finalize(issues);
-        }
-
-        const collectIds = (localName: string): Set<string> => {
-            const out = new Set<string>();
-            const list = docDom.getElementsByTagNameNS(WORD_2006_NAMESPACE, localName);
-            for (let i = 0; i < list.length; i += 1) {
-                const elem = list.item(i);
-                if (!elem) continue;
-                const id = elem.getAttributeNS(WORD_2006_NAMESPACE, "id");
-                out.add(id ?? "");
-            }
-            return out;
-        };
-
-        const rangeStarts = collectIds("commentRangeStart");
-        const rangeEnds = collectIds("commentRangeEnd");
-        const references = collectIds("commentReference");
-
-        const orphanedEnds = setDiff(rangeEnds, rangeStarts);
-        for (const id of sortIdsNumeric(orphanedEnds)) {
-            issues.push({
-                severity: "error",
-                message: `commentRangeEnd id="${id}" has no matching commentRangeStart`,
-                path: this.relPath(documentXml),
-                code: "comment-orphan-end",
-            });
-        }
-
-        const orphanedStarts = setDiff(rangeStarts, rangeEnds);
-        for (const id of sortIdsNumeric(orphanedStarts)) {
-            issues.push({
-                severity: "error",
-                message: `commentRangeStart id="${id}" has no matching commentRangeEnd`,
-                path: this.relPath(documentXml),
-                code: "comment-orphan-start",
-            });
-        }
-
-        if (commentsXml) {
-            let commentsDom: Document;
-            try {
-                commentsDom = parseXml(await fs.readFile(commentsXml, "utf-8"));
-            } catch (err) {
-                issues.push({
-                    severity: "error",
-                    message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
-                    path: this.relPath(commentsXml),
-                    code: "comment-marker-parse",
-                });
-                return finalize(issues);
-            }
-            const commentIds = new Set<string>();
-            const list = commentsDom.getElementsByTagNameNS(WORD_2006_NAMESPACE, "comment");
-            for (let i = 0; i < list.length; i += 1) {
-                const elem = list.item(i);
-                if (!elem) continue;
-                const id = elem.getAttributeNS(WORD_2006_NAMESPACE, "id");
-                if (id) commentIds.add(id);
-            }
-
-            const markerIds = new Set<string>([...rangeStarts, ...rangeEnds, ...references]);
-            const invalidRefs = setDiff(markerIds, commentIds);
-            for (const id of sortIdsNumeric(invalidRefs)) {
-                if (!id) continue;
-                issues.push({
-                    severity: "error",
-                    message: `marker id="${id}" references non-existent comment`,
-                    path: this.relPath(documentXml),
-                    code: "comment-marker-missing",
-                });
-            }
-        }
-
-        return finalize(issues);
-    }
-
-    // ----- style reference integrity ------------------------------------------
-
-    /**
-     * Every `w:val` on a style-reference element (`w:pStyle`, `w:rStyle`,
-     * `w:tblStyle`, `w:numStyle`, `w:tblpPr/w:tblStyle`, `w:linkedStyle`)
-     * in document/header/footer/footnote/comment XML must resolve to a
-     * `<w:style w:styleId="...">` defined in `word/styles.xml`. Word
-     * silently substitutes the default style for missing references but
-     * pops a "this document needs to be repaired" dialog when opening
-     * unfamiliar dangling references.
-     *
-     * Always reported as `error` (real spec violation under both
-     * profiles — there's no "lenient" interpretation of a dangling style).
-     *
-     * Surfaced by the comparison against Word's own save output for the
-     * sample-document fixture: jubarte's writer emits
-     * `<w:rStyle w:val="CommentReference"/>` around comment anchors but
-     * never adds a `CommentReference` style definition to `styles.xml`.
-     * Word's repaired version injects the canonical definition.
-     */
-    /**
-     * Verify `word/styles.xml` defines the four "implied default" styles
-     * required by ECMA-376 §17.7.4.4 — `Normal` (paragraph), `DefaultParagraphFont`
-     * (character), `TableNormal` (table), `NoList` (numbering). Word
-     * looks these up by name when an element omits an explicit style and
-     * pops "Document Recovery" with a "Table Properties" complaint if
-     * `TableNormal` (the most visible default) is missing — even when no
-     * `<w:tblStyle>` references it.
-     *
-     * Profile-aware: strict reports `error`, lenient downgrades to
-     * `warning` (many real-world templates omit one or more of the
-     * implied defaults and Word still opens them — the dialog only
-     * fires for `TableNormal`-on-tables, not for absence in general).
-     * The repair pass `repairMissingStyleDefinitions` injects canonical
-     * definitions for any missing default, so `--auto-repair` resolves
-     * this without manual fixes regardless of profile.
-     */
-    async validateStyleDefaults(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-        const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
-        let stylesPath: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
-        }
-        if (!stylesPath) return { valid: true, issues: [] };
-
-        let dom: Document;
-        try {
-            dom = parseXml(await fs.readFile(stylesPath, "utf-8"));
-        } catch {
-            return { valid: true, issues: [] };
-        }
-        const defined = new Set<string>();
-        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-            const list = dom.getElementsByTagNameNS(ns, "style");
-            for (let i = 0; i < list.length; i += 1) {
-                const elem = list.item(i);
-                if (!elem) continue;
-                const id = elem.getAttributeNS(ns, "styleId");
-                if (id) defined.add(id);
-            }
-        }
-        for (const required of REQUIRED_DEFAULT_STYLES) {
-            if (!defined.has(required.styleId)) {
-                issues.push({
-                    severity,
-                    message:
-                        `word/styles.xml is missing the implied-default style '${required.styleId}' ` +
-                        `(type='${required.type}'). ECMA-376 §17.7.4.4 requires a default for each of the ` +
-                        `four style types; missing 'TableNormal' in particular triggers Word's ` +
-                        `"Document Recovery — Table Properties" dialog on open.`,
-                    path: this.relPath(stylesPath),
-                    code: "style-default-missing",
-                });
-            }
-        }
-        return finalize(issues);
-    }
-
-    async validateStyleReferences(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-        const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
-
-        // Find styles.xml; if absent, every reference is dangling — but
-        // most documents lacking styles.xml are abnormal in other ways
-        // already detected.
-        let stylesPath: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
-        }
-        const defined = new Set<string>();
-        if (stylesPath) {
-            try {
-                const dom = parseXml(await fs.readFile(stylesPath, "utf-8"));
-                for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                    const list = dom.getElementsByTagNameNS(ns, "style");
-                    for (let i = 0; i < list.length; i += 1) {
-                        const elem = list.item(i);
-                        if (!elem) continue;
-                        const id = elem.getAttributeNS(ns, "styleId");
-                        if (id) defined.add(id);
-                    }
-                }
-            } catch {
-                // styles.xml malformed — covered by xml-syntax check.
-                return finalize(issues);
-            }
-        }
-
-        const refTags = ["pStyle", "rStyle", "tblStyle", "numStyle", "linkedStyle"] as const;
-        // Track each (file, styleId) pair so we don't spam multiple
-        // issues for the same dangling reference repeated 100 times.
-        const reported = new Set<string>();
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
-            } catch {
-                continue;
-            }
-            for (const tag of refTags) {
-                for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                    const list = dom.getElementsByTagNameNS(ns, tag);
-                    for (let i = 0; i < list.length; i += 1) {
-                        const elem = list.item(i);
-                        if (!elem) continue;
-                        const val = elem.getAttributeNS(ns, "val");
-                        if (!val) continue;
-                        if (defined.has(val)) continue;
-                        const key = `${xmlFile}|${tag}|${val}`;
-                        if (reported.has(key)) continue;
-                        reported.add(key);
-                        issues.push({
-                            severity,
-                            message:
-                                `<w:${tag} w:val='${val}'/> references a style not defined in word/styles.xml. ` +
-                                `Word substitutes the default style and triggers a repair dialog.`,
-                            path: this.relPath(xmlFile),
-                            code: "style-reference-undefined",
-                        });
-                    }
-                }
-            }
-        }
-        return finalize(issues);
-    }
-
-    // ----- paraId completeness (Word's tracking-anchor convention) ------------
-
-    /**
-     * Profile-aware: every `<w:p>` AND every `<w:tr>` should carry a
-     * `w14:paraId` attribute, AND any element that has paraId must
-     * also have a `w14:textId`. The OOXML schema makes both optional,
-     * but Word's tracked-changes machinery treats them as a pair —
-     * empirically, across 226 real-world SuperDoc fixtures, ZERO
-     * `<w:tr>` elements were observed with paraId present and textId
-     * absent. Elements with NEITHER attribute are common and Word
-     * handles them silently. The asymmetric "paraId without textId"
-     * shape is what trips Word's "Document Recovery — Table
-     * Properties" dialog on open, because the row's paraId cannot be
-     * linked to any text-content fingerprint for change tracking.
-     *
-     * Severity:
-     *   - `strict`  → `error` (spec-purist + Word-parity).
-     *   - `lenient` → `warning` (ours-vs-Word stylistic difference; the
-     *     schema allows it, but downstream collaboration tooling may
-     *     need it).
-     *
-     * Surfaced by the comparison against Word's `reallyrepaired.docx`
-     * for the sample-document fixture: jubarte's writer leaves table
-     * rows without paraId/textId; Word stamps both on all 13 of them.
-     */
-    async validateAllParagraphsHaveParaId(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-        const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
-            } catch {
-                continue;
-            }
-            for (const local of ["p", "tr"] as const) {
-                let missingParaId = 0;
-                let asymmetric = 0;
-                for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                    const list = dom.getElementsByTagNameNS(ns, local);
-                    for (let i = 0; i < list.length; i += 1) {
-                        const elem = list.item(i);
-                        if (!elem) continue;
-                        const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId");
-                        const textId = elem.getAttributeNS(W14_NAMESPACE, "textId");
-                        if (!paraId) missingParaId += 1;
-                        else if (!textId) asymmetric += 1;
-                    }
-                }
-                if (missingParaId > 0) {
-                    issues.push({
-                        severity,
-                        message:
-                            `${missingParaId} <w:${local}> element(s) lack a w14:paraId. ` +
-                            `Word stamps one on every paragraph and table row as the anchor for ` +
-                            `tracked-changes / comment-range infrastructure.`,
-                        path: this.relPath(xmlFile),
-                        code: "paraid-missing-element",
-                    });
-                }
-                if (asymmetric > 0) {
-                    issues.push({
-                        severity,
-                        message:
-                            `${asymmetric} <w:${local}> element(s) carry a w14:paraId but no ` +
-                            `w14:textId. The pair is what Word's tracked-changes machinery uses ` +
-                            `to anchor revisions; an asymmetric paraId-without-textId row is ` +
-                            `what triggers Word's "Document Recovery — Table Properties" dialog.`,
-                        path: this.relPath(xmlFile),
-                        code: "textid-missing-element",
-                    });
-                }
-            }
-        }
-        return finalize(issues);
-    }
-
-    // ----- comment threading --------------------------------------------------
-
-    /**
-     * Verify the cross-references between `word/comments.xml` and
-     * `word/commentsExtended.xml` (issue #153 in jubarte was a regression in
-     * this exact integrity contract).
-     *
-     * This is a STRICT validator. Some Word builds emit a comments.xml
-     * paraId that has no matching `<w15:commentEx>` entry (notably for
-     * non-threaded comments) — we still flag that here, because callers
-     * that want to ignore Word's output divergences should run validation
-     * with `profile: "lenient"` (where the strict-only `code` is downgraded
-     * to a `warning`).
-     *
-     * Rules enforced (severity = error in `strict`, warning in `lenient`):
-     *   1. Every `<w:comment>` in comments.xml that carries a `w14:paraId`
-     *      on its first paragraph must have a matching `<w15:commentEx>`
-     *      entry in commentsExtended.xml.
-     *   2. Every `<w15:commentEx>` must have a `w15:paraId` matching the
-     *      paraId of some `<w:comment>` first paragraph (the inverse of #1).
-     *   3. No two `<w15:commentEx>` entries may share the same `w15:paraId`
-     *      (this was the surface symptom of jubarte's #153 regression).
-     *   4. Every non-null `w15:paraIdParent` must resolve to a paraId
-     *      present somewhere else in commentsExtended.xml.
-     *   5. The number of `w:commentRangeStart`, `w:commentRangeEnd`, and
-     *      `w:commentReference` elements in document.xml must each equal
-     *      the number of comments in comments.xml.
-     *   6. Every `w16cid:commentId/@paraId` in commentsIds.xml must resolve
-     *      to a paragraph in comments.xml.
-     *   7. Every `w16cex:commentExtensible/@durableId` in
-     *      commentsExtensible.xml must resolve to a durableId in
-     *      commentsIds.xml.
-     *
-     * `validateCommentMarkers` already covers orphan range start/end and
-     * missing-comment references — this validator is strictly about the
-     * threaded-comments extension surface.
-     */
-    async validateCommentThreading(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-
-        let documentXml: string | null = null;
-        let commentsXml: string | null = null;
-        let commentsExtendedXml: string | null = null;
-        let commentsIdsXml: string | null = null;
-        let commentsExtensibleXml: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            const base = baseName(xmlFile);
-            if (base === "document.xml" && xmlFile.includes("word")) {
-                documentXml = xmlFile;
-            } else if (base === "comments.xml") {
-                commentsXml = xmlFile;
-            } else if (base === "commentsExtended.xml") {
-                commentsExtendedXml = xmlFile;
-            } else if (base === "commentsIds.xml") {
-                commentsIdsXml = xmlFile;
-            } else if (base === "commentsExtensible.xml") {
-                commentsExtensibleXml = xmlFile;
-            }
-        }
-
-        // No comments.xml → no threading to check.
-        if (!commentsXml) return { valid: true, issues: [] };
-
-        let commentsDom: Document;
-        try {
-            commentsDom = parseXml(await fs.readFile(commentsXml, "utf-8"));
-        } catch (err) {
-            issues.push({
-                severity: "error",
-                message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
-                path: this.relPath(commentsXml),
-                code: "comment-thread-parse",
-            });
-            return finalize(issues);
-        }
-
-        // Build the comment-id → all-paragraph-paraIds map.
-        //
-        // Word's threading uses the LAST paragraph's paraId (the
-        // thread-anchor paragraph) in commentsExtended.xml, not the first.
-        // For a single-paragraph comment they're the same; for multi-
-        // paragraph comments (typical of replies) only the last paraId is
-        // referenced from the extension. So we collect every paraId on
-        // every <w:p> inside each <w:comment> and match against the full
-        // set rather than guessing first-vs-last.
-        //
-        // Both Transitional (`schemas.openxmlformats.org/.../2006/main`)
-        // and Strict (`purl.oclc.org/ooxml/wordprocessingml/main`)
-        // namespace URIs are queried because OOXML Strict-conformance
-        // documents use the latter and the rest of the validator pipeline
-        // already supports both.
-        const commentParaIds = new Map<string, string[]>();
-        for (const wNs of WORD_PARAGRAPH_NAMESPACES) {
-            const commentList = commentsDom.getElementsByTagNameNS(wNs, "comment");
-            for (let i = 0; i < commentList.length; i += 1) {
-                const elem = commentList.item(i);
-                if (!elem) continue;
-                const id = elem.getAttributeNS(wNs, "id");
-                if (!id) continue;
-                const ps = elem.getElementsByTagNameNS(wNs, "p");
-                const paraIds: string[] = [];
-                for (let j = 0; j < ps.length; j += 1) {
-                    const p = ps.item(j);
-                    if (!p) continue;
-                    const paraId = p.getAttributeNS(W14_NAMESPACE, "paraId");
-                    if (paraId) paraIds.push(paraId);
-                }
-                if (!commentParaIds.has(id)) commentParaIds.set(id, paraIds);
-            }
-        }
-        const allCommentParaIds = new Set<string>();
-        for (const v of commentParaIds.values()) {
-            for (const p of v) allCommentParaIds.add(p);
-        }
-
-        // ----- rule 4: marker counts ---------------------------------------
-        if (documentXml) {
-            try {
-                const docDom = parseXml(await fs.readFile(documentXml, "utf-8"));
-                const counts = (local: string): number => {
-                    let total = 0;
-                    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                        total += docDom.getElementsByTagNameNS(ns, local).length;
-                    }
-                    return total;
-                };
-                const startCount = counts("commentRangeStart");
-                const endCount = counts("commentRangeEnd");
-                const refCount = counts("commentReference");
-                const expected = commentParaIds.size;
-                if (startCount !== expected) {
-                    issues.push({
-                        severity: "error",
-                        message: `commentRangeStart count (${startCount}) does not match ` + `comment count in comments.xml (${expected})`,
-                        code: "comment-thread-count-mismatch",
-                        path: this.relPath(documentXml),
-                    });
-                }
-                if (endCount !== expected) {
-                    issues.push({
-                        severity: "error",
-                        message: `commentRangeEnd count (${endCount}) does not match ` + `comment count in comments.xml (${expected})`,
-                        path: this.relPath(documentXml),
-                        code: "comment-thread-count-mismatch",
-                    });
-                }
-                if (refCount !== expected) {
-                    issues.push({
-                        severity: "error",
-                        message: `commentReference count (${refCount}) does not match ` + `comment count in comments.xml (${expected})`,
-                        path: this.relPath(documentXml),
-                        code: "comment-thread-count-mismatch",
-                    });
-                }
-            } catch {
-                // document.xml parse failures are reported elsewhere.
-            }
-        }
-
-        const commentIdDurableIds = new Set<string>();
-        if (commentsIdsXml) {
-            let idsDom: Document;
-            try {
-                idsDom = parseXml(await fs.readFile(commentsIdsXml, "utf-8"));
-            } catch (err) {
-                issues.push({
-                    severity: "error",
-                    message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
-                    path: this.relPath(commentsIdsXml),
-                    code: "comment-thread-parse",
-                });
-                return finalize(issues);
-            }
-
-            const commentIds = idsDom.getElementsByTagNameNS(W16CID_NAMESPACE, "commentId");
-            const paraIdCounts = new Map<string, number>();
-            const durableIdCounts = new Map<string, number>();
-            for (let i = 0; i < commentIds.length; i += 1) {
-                const elem = commentIds.item(i);
-                if (!elem) continue;
-                const paraId = elem.getAttributeNS(W16CID_NAMESPACE, "paraId");
-                const durableId = elem.getAttributeNS(W16CID_NAMESPACE, "durableId");
-                if (paraId) {
-                    paraIdCounts.set(paraId, (paraIdCounts.get(paraId) ?? 0) + 1);
-                    if (!allCommentParaIds.has(paraId)) {
-                        issues.push({
-                            severity: "error",
-                            message:
-                                `<w16cid:commentId w16cid:paraId='${paraId}'> does not match any paragraph paraId ` +
-                                `in any <w:comment> in comments.xml`,
-                            path: this.relPath(commentsIdsXml),
-                            code: "comment-thread-commentid-paraid-orphan",
-                        });
-                    }
-                } else {
-                    issues.push({
-                        severity: "error",
-                        message: `<w16cid:commentId> is missing required w16cid:paraId`,
-                        path: this.relPath(commentsIdsXml),
-                        code: "comment-thread-commentid-missing-paraid",
-                    });
-                }
-
-                if (durableId) {
-                    durableIdCounts.set(durableId, (durableIdCounts.get(durableId) ?? 0) + 1);
-                    commentIdDurableIds.add(durableId);
-                } else {
-                    issues.push({
-                        severity: "error",
-                        message: `<w16cid:commentId> is missing required w16cid:durableId`,
-                        path: this.relPath(commentsIdsXml),
-                        code: "comment-thread-commentid-missing-durableid",
-                    });
-                }
-            }
-
-            for (const [paraId, count] of paraIdCounts) {
-                if (count > 1) {
-                    issues.push({
-                        severity: "error",
-                        message: `commentsIds.xml has ${count} entries with duplicate paraId='${paraId}'`,
-                        path: this.relPath(commentsIdsXml),
-                        code: "comment-thread-commentid-duplicate-paraid",
-                    });
-                }
-            }
-            for (const [durableId, count] of durableIdCounts) {
-                if (count > 1) {
-                    issues.push({
-                        severity: "error",
-                        message: `commentsIds.xml has ${count} entries with duplicate durableId='${durableId}'`,
-                        path: this.relPath(commentsIdsXml),
-                        code: "comment-thread-commentid-duplicate-durableid",
-                    });
-                }
-            }
-        }
-
-        if (commentsExtensibleXml) {
-            let cexDom: Document;
-            try {
-                cexDom = parseXml(await fs.readFile(commentsExtensibleXml, "utf-8"));
-            } catch (err) {
-                issues.push({
-                    severity: "error",
-                    message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
-                    path: this.relPath(commentsExtensibleXml),
-                    code: "comment-thread-parse",
-                });
-                return finalize(issues);
-            }
-
-            const extensibleEntries = cexDom.getElementsByTagNameNS(W16CEX_NAMESPACE, "commentExtensible");
-            const durableIdCounts = new Map<string, number>();
-            for (let i = 0; i < extensibleEntries.length; i += 1) {
-                const elem = extensibleEntries.item(i);
-                if (!elem) continue;
-                const durableId = elem.getAttributeNS(W16CEX_NAMESPACE, "durableId");
-                if (!durableId) {
-                    issues.push({
-                        severity: "error",
-                        message: `<w16cex:commentExtensible> is missing required w16cex:durableId`,
-                        path: this.relPath(commentsExtensibleXml),
-                        code: "comment-thread-durableid-missing",
-                    });
-                    continue;
-                }
-                durableIdCounts.set(durableId, (durableIdCounts.get(durableId) ?? 0) + 1);
-                if (!commentIdDurableIds.has(durableId)) {
-                    issues.push({
-                        severity: "error",
-                        message:
-                            `<w16cex:commentExtensible w16cex:durableId='${durableId}'> does not match any ` +
-                            `w16cid:durableId in commentsIds.xml`,
-                        path: this.relPath(commentsExtensibleXml),
-                        code: "comment-thread-durableid-orphan",
-                    });
-                }
-            }
-            for (const [durableId, count] of durableIdCounts) {
-                if (count > 1) {
-                    issues.push({
-                        severity: "error",
-                        message: `commentsExtensible.xml has ${count} entries with duplicate durableId='${durableId}'`,
-                        path: this.relPath(commentsExtensibleXml),
-                        code: "comment-thread-durableid-duplicate",
-                    });
-                }
-            }
-        }
-
-        // No commentsExtended.xml → rules 1–3 are vacuous, return now.
-        if (!commentsExtendedXml) return finalize(issues);
-
-        let extDom: Document;
-        try {
-            extDom = parseXml(await fs.readFile(commentsExtendedXml, "utf-8"));
-        } catch (err) {
-            issues.push({
-                severity: "error",
-                message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
-                path: this.relPath(commentsExtendedXml),
-                code: "comment-thread-parse",
-            });
-            return finalize(issues);
-        }
-
-        const extEntries = extDom.getElementsByTagNameNS(W15_NAMESPACE, "commentEx");
-        const extByParaId = new Map<string, number>();
-        const extParents: string[] = [];
-        for (let i = 0; i < extEntries.length; i += 1) {
-            const elem = extEntries.item(i);
+  /**
+   * Check tracked-change elements (`<w:ins>`, `<w:del>`) for sequential `w:id`
+   * values starting from 1. A sequential-from-1 pattern is a strong heuristic
+   * signal that the repairer regenerated IDs rather than preserving originals.
+   *
+   * Reports `tracked-change-ids-regenerated` at `"info"` severity.
+   */
+  async validateTrackedChangeIds(): Promise<ValidationResult> {
+    const issues: ValidationIssue[] = [];
+    for (const xmlFile of this.documentXmlFiles()) {
+      let dom: Document;
+      try {
+        dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+      } catch {
+        continue;
+      }
+      const ids: number[] = [];
+      let hasUnparseableId = false;
+      for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+        for (const tag of TRACKED_CHANGE_ID_TAGS) {
+          const list = dom.getElementsByTagNameNS(ns, tag);
+          for (let j = 0; j < list.length; j += 1) {
+            const elem = list.item(j);
             if (!elem) continue;
-            const paraId = elem.getAttributeNS(W15_NAMESPACE, "paraId");
-            const parent = elem.getAttributeNS(W15_NAMESPACE, "paraIdParent");
-            if (paraId) {
-                extByParaId.set(paraId, (extByParaId.get(paraId) ?? 0) + 1);
+            const id = elem.getAttributeNS(ns, "id");
+            if (!id) continue;
+            if (!/^\d+$/.test(id)) {
+              hasUnparseableId = true;
+            } else {
+              ids.push(Number.parseInt(id, 10));
             }
-            if (parent) extParents.push(parent);
+          }
         }
+      }
+      if (ids.length < 2 || hasUnparseableId) continue;
+      ids.sort((a, b) => a - b);
+      // Heuristic: if IDs are sequential from 1 with no gaps, likely regenerated.
+      const isSequentialFrom1 = ids.every((id, idx) => id === idx + 1);
+      if (isSequentialFrom1) {
+        issues.push({
+          severity: "info",
+          message:
+            `Tracked-change w:id values (${ids.join(", ")}) appear to be regenerated ` +
+            "(sequential from 1). This breaks external references to tracked changes.",
+          path: this.relPath(xmlFile),
+          code: "tracked-change-ids-regenerated",
+        });
+      }
+    }
+    return finalize(issues);
+  }
 
-        // Severity for soft-strict rules: strict profile reports an error,
-        // lenient profile records a warning so the integrity gap is visible
-        // without flunking real-world Word-emitted documents that omit
-        // commentsExtended entries on standalone (non-threaded) comments.
-        const softSeverity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
+  // ----- Plan 07: Cell border normalization ---------------------------------
 
-        // ----- rule 3: no duplicate paraId entries (jubarte #153) ---------
-        // Always an error — duplicates are unambiguous writer bugs.
-        for (const [paraId, count] of extByParaId) {
-            if (count > 1) {
+  /**
+   * Check for cell borders (`<w:tcBorders>`) that duplicate the enclosing
+   * table's `<w:tblBorders>` defaults. Redundant borders override style-level
+   * conditional formatting (e.g. `<w:tblLook>` banded-row suppression).
+   *
+   * Reports `cell-borders-redundant` at `"info"` severity.
+   */
+  async validateRedundantCellBorders(): Promise<ValidationResult> {
+    const issues: ValidationIssue[] = [];
+    const styleBordersById = await this.tableStyleBordersByStyleId();
+    for (const xmlFile of this.documentXmlFiles()) {
+      let dom: Document;
+      try {
+        dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+      } catch {
+        continue;
+      }
+      for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+        const tbls = dom.getElementsByTagNameNS(ns, "tbl");
+        for (let i = 0; i < tbls.length; i += 1) {
+          const tbl = tbls.item(i);
+          if (!tbl) continue;
+          const tblPr = directChild(tbl, ns, "tblPr");
+          if (!tblPr) continue;
+          const tblStyleId = directChild(tblPr, ns, "tblStyle")?.getAttributeNS(ns, "val") ?? null;
+          const tableDefaults =
+            borderSignature(directChild(tblPr, ns, "tblBorders"), ns) ??
+            (tblStyleId ? styleBordersById.get(tblStyleId) : undefined);
+          if (!tableDefaults) continue;
+
+          for (const row of directChildren(tbl, ns, "tr")) {
+            for (const cell of directChildren(row, ns, "tc")) {
+              const tcPr = directChild(cell, ns, "tcPr");
+              if (!tcPr) continue;
+              const cellBorders = borderSignature(directChild(tcPr, ns, "tcBorders"), ns);
+              if (cellBorders && borderSignaturesEqual(cellBorders, tableDefaults)) {
                 issues.push({
-                    severity: "error",
-                    message: `commentsExtended.xml has ${count} entries with duplicate paraId='${paraId}'`,
-                    path: this.relPath(commentsExtendedXml),
-                    code: "comment-thread-duplicate-paraid",
+                  severity: "info",
+                  message:
+                    "<w:tcBorders> in table cell duplicates the table-level <w:tblBorders> " +
+                    "defaults. This overrides style-level conditional formatting.",
+                  path: this.relPath(xmlFile),
+                  code: "cell-borders-redundant",
                 });
+              }
             }
+          }
         }
+      }
+    }
+    return finalize(issues);
+  }
 
-        // ----- rule 1: every comment with paraIds has at least one matching commentEx --
-        for (const [commentId, paraIds] of commentParaIds) {
-            if (paraIds.length === 0) continue;
-            if (!paraIds.some((p) => extByParaId.has(p))) {
-                issues.push({
-                    severity: softSeverity,
-                    message:
-                        `comment id='${commentId}' has paraIds=[${paraIds.join(", ")}] in comments.xml ` +
-                        `but none match a <w15:commentEx w15:paraId='...'> entry in commentsExtended.xml`,
-                    path: this.relPath(commentsExtendedXml),
-                    code: "comment-thread-paraid-missing",
-                });
-            }
+  // ----- Plan 08: Relationship ID scheme ------------------------------------
+
+  /**
+   * Check relationship `.rels` files for the `rId1`-`rIdN` sequential pattern.
+   * Sequential IDs are valid but indicate the repairer may have regenerated
+   * relationship IDs rather than preserving the originals.
+   *
+   * Reports `rel-ids-sequential` at `"info"` severity.
+   */
+  async validateRelationshipIdStability(): Promise<ValidationResult> {
+    const issues: ValidationIssue[] = [];
+    for (const xmlFile of this.xmlFiles) {
+      if (!xmlFile.endsWith(".rels")) continue;
+      let dom: Document;
+      try {
+        dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+      } catch {
+        continue;
+      }
+      const relsList = dom.getElementsByTagNameNS(PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+      const ids: number[] = [];
+      let allIdsUseRidPattern = true;
+      for (let i = 0; i < relsList.length; i += 1) {
+        const elem = relsList.item(i);
+        if (!elem) continue;
+        const id = elem.getAttribute("Id");
+        if (!id) continue;
+        const match = /^rId(\d+)$/.exec(id);
+        if (match) {
+          ids.push(parseInt(match[1], 10));
+        } else {
+          allIdsUseRidPattern = false;
         }
+      }
+      if (!allIdsUseRidPattern || ids.length < 2) continue;
+      ids.sort((a, b) => a - b);
+      const isSequential = ids.every((id, idx) => id === idx + 1);
+      if (isSequential) {
+        issues.push({
+          severity: "info",
+          message:
+            `Relationship Id values in ${this.relPath(xmlFile)} are sequential from rId1 ` +
+            "(likely regenerated by the repairer).",
+          path: this.relPath(xmlFile),
+          code: "rel-ids-sequential",
+        });
+      }
+    }
+    return finalize(issues);
+  }
 
-        // ----- rule 2: every commentEx points at a real comment paragraph --
-        for (const paraId of extByParaId.keys()) {
-            if (!allCommentParaIds.has(paraId)) {
-                issues.push({
-                    severity: "error",
-                    message:
-                        `<w15:commentEx w15:paraId='${paraId}'> does not match any paragraph paraId ` +
-                        `in any <w:comment> in comments.xml`,
-                    path: this.relPath(commentsExtendedXml),
-                    code: "comment-thread-paraid-orphan",
-                });
-            }
-        }
+  // ----- Plan 09: Redundant explicit properties -----------------------------
 
-        // ----- rule 3: paraIdParent resolves -------------------------------
-        for (const parent of extParents) {
-            if (!extByParaId.has(parent)) {
-                issues.push({
-                    severity: "error",
-                    message:
-                        `<w15:commentEx w15:paraIdParent='${parent}'> does not resolve to any ` + `paraId declared in commentsExtended.xml`,
-                    path: this.relPath(commentsExtendedXml),
-                    code: "comment-thread-orphan-parent",
-                });
-            }
-        }
+  /**
+   * Check for explicit `<w:rFonts>` on runs that duplicate the document
+   * defaults (`<w:docDefaults>/<w:rPrDefault>/<w:rPr>/<w:rFonts>`).
+   * Redundant explicit properties make the document harder to re-style.
+   *
+   * Reports `run-props-redundant` at `"info"` severity.
+   */
+  async validateRedundantRunProperties(): Promise<ValidationResult> {
+    const issues: ValidationIssue[] = [];
 
-        return finalize(issues);
+    // Find and parse styles.xml for docDefaults.
+    let stylesPath: string | null = null;
+    for (const xmlFile of this.xmlFiles) {
+      if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
+    }
+    if (!stylesPath) return { valid: true, issues: [] };
+
+    let stylesDom: Document;
+    try {
+      stylesDom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+    } catch {
+      return { valid: true, issues: [] };
     }
 
-    // ----- tracking-token leak detection --------------------------------------
-
-    /**
-     * Detect HTML-to-DOCX wire-format tracking tokens (e.g.
-     * `[[DOCX_INS_START:{...}]]`) that leaked into the OOXML output. These
-     * are placeholder strings emitted by html-to-docx-style pipelines for
-     * tracked-changes round-tripping; they MUST be expanded into proper
-     * `<w:ins>` / `<w:del>` / comment markers before serialisation. A leak
-     * is a writer-pipeline bug — the document will render the literal
-     * `[[DOCX_…]]` text in Word.
-     *
-     * Only scans the document XML files (document.xml + headers / footers /
-     * footnotes / endnotes), not the relationship sidecars or content
-     * types — those parts can never legitimately contain user-visible text.
-     */
-    async validateNoTrackingTokens(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let raw: string;
-            try {
-                raw = await fs.readFile(xmlFile, "utf-8");
-            } catch {
-                continue;
-            }
-            // Cheap pre-filter — if no `[[DOCX_` substring, skip the regex.
-            if (!TRACKING_TOKEN_PREFIXES.some((p) => raw.includes(p))) continue;
-
-            TRACKING_TOKEN_REGEX.lastIndex = 0;
-            let match: RegExpExecArray | null;
-            const seen = new Set<string>();
-            while ((match = TRACKING_TOKEN_REGEX.exec(raw)) !== null) {
-                const token = match[0];
-                if (seen.has(token)) continue;
-                seen.add(token);
-                issues.push({
-                    severity: "error",
-                    message: `Wire-format tracking token leaked into OOXML output: ${previewRepr(token, 80)}`,
-                    path: this.relPath(xmlFile),
-                    code: "tracking-token-leak",
-                });
-            }
-        }
-        return finalize(issues);
+    // Extract default rFonts from docDefaults.
+    let defaultAscii = "";
+    let defaultHAnsi = "";
+    let defaultCs = "";
+    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+      const ddList = stylesDom.getElementsByTagNameNS(ns, "docDefaults");
+      if (ddList.length === 0) continue;
+      const dd = ddList.item(0);
+      if (!dd) continue;
+      const rPrDefaultList = dd.getElementsByTagNameNS(ns, "rPrDefault");
+      if (rPrDefaultList.length === 0) continue;
+      const rPrDefault = rPrDefaultList.item(0);
+      if (!rPrDefault) continue;
+      const rPrList = rPrDefault.getElementsByTagNameNS(ns, "rPr");
+      if (rPrList.length === 0) continue;
+      const rPr = rPrList.item(0);
+      if (!rPr) continue;
+      const rFontsList = rPr.getElementsByTagNameNS(ns, "rFonts");
+      if (rFontsList.length === 0) continue;
+      const rFonts = rFontsList.item(0);
+      if (!rFonts) continue;
+      defaultAscii = rFonts.getAttributeNS(ns, "ascii") ?? "";
+      defaultHAnsi = rFonts.getAttributeNS(ns, "hAnsi") ?? "";
+      defaultCs = rFonts.getAttributeNS(ns, "cs") ?? "";
+      break;
     }
 
-    // ----- id constraints -----------------------------------------------------
+    if (!defaultAscii && !defaultHAnsi && !defaultCs) return { valid: true, issues: [] };
 
-    async validateIdConstraints(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-        for (const xmlFile of this.xmlFiles) {
-            let dom: Document;
-            try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
-            } catch {
-                // Mirrors Python's bare except — silently skip.
-                continue;
-            }
-            const all = dom.getElementsByTagName("*");
-            const base = baseName(xmlFile);
-            for (let i = 0; i < all.length; i += 1) {
-                const elem = all.item(i);
-                if (!elem) continue;
-
-                const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId");
-                if (paraId) {
-                    const v = parseIdValue(paraId, 16);
-                    if (v >= MAX_PARA_ID) {
-                        issues.push({
-                            severity: "error",
-                            message: `${base}: paraId=${paraId} >= 0x80000000`,
-                            path: this.relPath(xmlFile),
-                            code: "id-paraid-overflow",
-                        });
-                    } else if (v === 0) {
-                        // [MS-OI29500] 2.6.2.3: paraId MUST be greater than 0.
-                        issues.push({
-                            severity: "error",
-                            message: `${base}: paraId=${paraId} must be > 0`,
-                            path: this.relPath(xmlFile),
-                            code: "id-paraid-zero",
-                        });
-                    }
-                }
-
-                // textId shares the ST_LongHexNumber type with paraId and is
-                // bound by the same < 0x80000000 cap. Word's parser silently
-                // recovers any over-cap textId on a <w:p>/<w:tr>; the recovery
-                // cascades through the row's table-properties machinery and
-                // surfaces as a "Document Recovery — Table Properties" dialog
-                // on open. Empirically: across 226 SuperDoc real-world fixtures
-                // the cap is never exceeded; a Plate-pipeline export had 51
-                // textIds over the cap (every paragraph in the body).
-                const textId = elem.getAttributeNS(W14_NAMESPACE, "textId");
-                if (textId) {
-                    const v = parseIdValue(textId, 16);
-                    if (v >= MAX_PARA_ID) {
-                        issues.push({
-                            severity: "error",
-                            message: `${base}: textId=${textId} >= 0x80000000`,
-                            path: this.relPath(xmlFile),
-                            code: "id-textid-overflow",
-                        });
-                    } else if (v === 0) {
-                        // textId shares the ST_LongHexNumber type with paraId; same > 0 floor.
-                        issues.push({
-                            severity: "error",
-                            message: `${base}: textId=${textId} must be > 0`,
-                            path: this.relPath(xmlFile),
-                            code: "id-textid-zero",
-                        });
-                    }
-                }
-
-                const durableId = elem.getAttributeNS(W16CID_NAMESPACE, "durableId");
-                if (durableId) {
-                    if (base === "numbering.xml") {
-                        const v = parseIdValue(durableId, 10);
-                        if (Number.isNaN(v)) {
-                            issues.push({
-                                severity: "error",
-                                message: `${base}: durableId=${durableId} must be decimal in numbering.xml`,
-                                path: this.relPath(xmlFile),
-                                code: "id-durable-decimal",
-                            });
-                        } else if (v >= MAX_DURABLE_ID) {
-                            issues.push({
-                                severity: "error",
-                                message: `${base}: durableId=${durableId} >= 0x7FFFFFFF`,
-                                path: this.relPath(xmlFile),
-                                code: "id-durable-overflow",
-                            });
-                        } else if (v === 0) {
-                            // durableId is a positive id; the repair path seeds it from 1.
-                            issues.push({
-                                severity: "error",
-                                message: `${base}: durableId=${durableId} must be > 0`,
-                                path: this.relPath(xmlFile),
-                                code: "id-durable-zero",
-                            });
-                        }
-                    } else {
-                        const v = parseIdValue(durableId, 16);
-                        if (v >= MAX_DURABLE_ID) {
-                            issues.push({
-                                severity: "error",
-                                message: `${base}: durableId=${durableId} >= 0x7FFFFFFF`,
-                                path: this.relPath(xmlFile),
-                                code: "id-durable-overflow",
-                            });
-                        } else if (v === 0) {
-                            // durableId is a positive id; the repair path seeds it from 1.
-                            issues.push({
-                                severity: "error",
-                                message: `${base}: durableId=${durableId} must be > 0`,
-                                path: this.relPath(xmlFile),
-                                code: "id-durable-zero",
-                            });
-                        }
-                    }
-                }
-            }
-        }
-        return finalize(issues);
-    }
-
-    // ----- paragraph counts (informational) -----------------------------------
-
-    countParagraphsInUnpacked(): number {
-        let count = 0;
-        for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) !== "document.xml") continue;
-            try {
-                const dom = parseXml(readFileSync(xmlFile, "utf-8"));
-                count = countParagraphsInRoot(dom);
-            } catch {
-                // mirrors Python catch-and-print; we just swallow
-            }
-        }
-        return count;
-    }
-
-    async countParagraphsInOriginal(): Promise<number> {
-        if (!this.originalFile) return 0;
-        const root = await this.loadOriginalDocumentRoot();
-        if (!root) return 0;
-        try {
-            // Wrap the root element in its owner document for xpath evaluation.
-            const doc = root.ownerDocument!;
-            return countParagraphsInRoot(doc);
-        } catch {
-            return 0;
-        }
-    }
-
-    async compareParagraphCounts(): Promise<ParagraphCounts> {
-        const original = await this.countParagraphsInOriginal();
-        const modified = this.countParagraphsInUnpacked();
-        const delta = modified - original;
-        const strict = await this.originalUsesStrictNamespace();
-        if (this.verbose) {
-            const diffStr = delta > 0 ? `+${delta}` : String(delta);
-            process.stdout.write(`\nParagraphs: ${original} → ${modified} (${diffStr})\n`);
-            if (strict) {
-                process.stdout.write(
-                    "Note: input document uses the ECMA-376 Strict OOXML " + "conformance class; output uses Transitional.\n",
-                );
-            }
-        }
-        return { original, modified, delta, originalUsesStrictNamespace: strict };
-    }
-
-    private async loadOriginalDocumentRoot(): Promise<Element | null> {
-        if (this.originalDocumentRoot) return this.originalDocumentRoot;
-        if (this.originalDocumentRootFailed) return null;
-        if (!this.originalFile) {
-            this.originalDocumentRootFailed = true;
-            return null;
-        }
-        try {
-            const buf = await fs.readFile(this.originalFile);
-            const zip = await JSZip.loadAsync(buf);
-            const entry = zip.file("word/document.xml");
-            if (!entry) {
-                this.originalDocumentRootFailed = true;
-                return null;
-            }
-            const text = await entry.async("text");
-            const dom = parseXml(text);
-            this.originalDocumentRoot = dom.documentElement;
-            return this.originalDocumentRoot;
-        } catch {
-            this.originalDocumentRootFailed = true;
-            return null;
-        }
-    }
-
-    private async originalUsesStrictNamespace(): Promise<boolean> {
-        const root = await this.loadOriginalDocumentRoot();
-        if (!root) return false;
-        return root.namespaceURI === WORD_STRICT_NAMESPACE;
-    }
-
-    // ----- Plan 01: Whole-file preservation -----------------------------------
-
-    /**
-     * Check every `.rels` file and verify that each internal `<Relationship>`
-     * target resolves to an existing file in the unpacked directory.
-     * External (http/https) targets are skipped.
-     *
-     * Reports `rels-target-missing` (error) when a target file is absent.
-     */
-    async validateOrphanedRelationships(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-        for (const xmlFile of this.xmlFiles) {
-            if (!xmlFile.endsWith(".rels")) continue;
-            let dom: Document;
-            try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
-            } catch {
-                continue;
-            }
-            const list = dom.getElementsByTagNameNS(PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
-            for (let i = 0; i < list.length; i += 1) {
-                const elem = list.item(i);
-                if (!elem) continue;
-                const target = elem.getAttribute("Target");
-                if (!target) continue;
-                if (isExternalRelationship(elem, target)) continue;
-                const resolved = resolveRelationshipTargetPath(this.unpackedDir, xmlFile, target);
-                if (!resolved) continue;
-                try {
-                    const stat = await fs.stat(resolved);
-                    if (!stat.isFile()) throw new Error("Target is not a file");
-                } catch {
-                    issues.push({
-                        severity: "error",
-                        message: `Relationship target '${target}' resolves to '${this.relPath(resolved)}' which does not exist`,
-                        path: this.relPath(xmlFile),
-                        code: "rels-target-missing",
-                    });
-                }
-            }
-        }
-        return finalize(issues);
-    }
-
-    // ----- Plan 02: Font table retention --------------------------------------
-
-    /**
-     * Check `word/fontTable.xml` for empty `<w:fonts>` (no `<w:font>` children).
-     * An empty font table is XSD-valid but almost always indicates a repairer bug
-     * that discards all font metadata.
-     *
-     * Reports `font-table-empty` at `"warning"` severity.
-     */
-    async validateFontTable(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-        let fontTablePath: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) === "fontTable.xml") fontTablePath = xmlFile;
-        }
-        if (!fontTablePath) return { valid: true, issues: [] };
-
-        let dom: Document;
-        try {
-            dom = parseXml(await fs.readFile(fontTablePath, "utf-8"));
-        } catch {
-            return { valid: true, issues: [] };
-        }
-        const fontList: Element[] = [];
-        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-            const list = dom.getElementsByTagNameNS(ns, "font");
-            for (let i = 0; i < list.length; i += 1) {
-                const elem = list.item(i);
-                if (elem) fontList.push(elem);
-            }
-        }
-        if (fontList.length === 0) {
+    // Check every user-text part; redundant run properties commonly show
+    // up in headers and footers as well as the main document body.
+    for (const xmlFile of this.userTextXmlFiles()) {
+      let dom: Document;
+      try {
+        dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+      } catch {
+        continue;
+      }
+      for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+        const runs = dom.getElementsByTagNameNS(ns, "r");
+        for (let i = 0; i < runs.length; i += 1) {
+          const run = runs.item(i);
+          if (!run) continue;
+          const rPr = directChild(run, ns, "rPr");
+          if (!rPr) continue;
+          const rFonts = directChild(rPr, ns, "rFonts");
+          if (!rFonts) continue;
+          const ascii = rFonts.getAttributeNS(ns, "ascii") ?? "";
+          const hAnsi = rFonts.getAttributeNS(ns, "hAnsi") ?? "";
+          const cs = rFonts.getAttributeNS(ns, "cs") ?? "";
+          if (ascii && ascii === defaultAscii && hAnsi === defaultHAnsi && cs === defaultCs) {
             issues.push({
-                severity: "warning",
-                message:
-                    "word/fontTable.xml contains zero <w:font> entries. " +
-                    "This causes Word to substitute all fonts with its default, " +
-                    "silently changing document appearance.",
-                path: this.relPath(fontTablePath),
-                code: "font-table-empty",
+              severity: "info",
+              message:
+                `<w:rFonts w:ascii="${ascii}" w:hAnsi="${hAnsi}" w:cs="${cs}" /> ` +
+                "on run duplicates <w:docDefaults>; redundant explicit property.",
+              path: this.relPath(xmlFile),
+              code: "run-props-redundant",
             });
+          }
         }
-        return finalize(issues);
+      }
     }
+    return finalize(issues);
+  }
 
-    // ----- Plan 03: Style passthrough -----------------------------------------
+  // ----- repair -------------------------------------------------------------
 
-    /**
-     * Check `word/styles.xml` for the presence of `<w:latentStyles>`.
-     * Missing latent styles is XSD-valid but unusual for Word-generated files.
-     *
-     * Reports `latent-styles-missing` at `"info"` severity.
-     */
-    async validateLatentStyles(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-        let stylesPath: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
-        }
-        if (!stylesPath) return { valid: true, issues: [] };
+  async repair(): Promise<number> {
+    const baseRepairs = await super.repair();
+    const durableRepairs = await this.repairDurableId();
+    const paraIdRepairs = await this.repairParaId();
+    const ignorableRepairs = await this.repairIgnorable();
+    const stampRepairs = await this.repairMissingParaIds();
+    const styleRepairs = await this.repairMissingStyleDefinitions();
+    const commentThreadingRepairs = await this.repairCommentThreading();
+    const drawingScalarRepairs = await this.repairDrawingScalarTextWhitespace();
+    const inlinePictureRepairs = await this.repairInlinePictureScaffolds();
+    const extendedPropertyRepairs = await this.repairExtendedPropertiesWhitespace();
+    const corePropertyRepairs = await this.repairCorePropertiesWhitespace();
+    return (
+      baseRepairs +
+      durableRepairs +
+      paraIdRepairs +
+      ignorableRepairs +
+      stampRepairs +
+      styleRepairs +
+      commentThreadingRepairs +
+      drawingScalarRepairs +
+      inlinePictureRepairs +
+      extendedPropertyRepairs +
+      corePropertyRepairs
+    );
+  }
 
-        let dom: Document;
-        try {
-            dom = parseXml(await fs.readFile(stylesPath, "utf-8"));
-        } catch {
-            return { valid: true, issues: [] };
-        }
-        let hasLatentStyles = false;
-        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-            if (dom.getElementsByTagNameNS(ns, "latentStyles").length > 0) {
-                hasLatentStyles = true;
-                break;
-            }
-        }
-        if (!hasLatentStyles) {
-            issues.push({
-                severity: "info",
-                message:
-                    "word/styles.xml has no <w:latentStyles> block. " +
-                    "This is unusual for Word-generated files and indicates " +
-                    "the repairer may have regenerated styles from scratch.",
-                path: this.relPath(stylesPath),
-                code: "latent-styles-missing",
-            });
-        }
-        return finalize(issues);
-    }
+  async repairDrawingScalarTextWhitespace(): Promise<number> {
+    let repairs = 0;
+    for (const xmlFile of this.userTextXmlFiles()) {
+      let dom: Document;
+      try {
+        dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+      } catch {
+        continue;
+      }
 
-    // ----- Plan 05: tblLook preservation --------------------------------------
-
-    /**
-     * Check every `<w:tbl>` in `word/document.xml` that references a
-     * `<w:tblStyle>` for the presence of `<w:tblLook>`. Missing `<w:tblLook>`
-     * prevents conditional formatting bands from applying.
-     *
-     * Reports `tbl-look-missing` at `"info"` severity.
-     */
-    async validateTableLook(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-        for (const xmlFile of this.documentXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
-            } catch {
-                continue;
-            }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const tbls = dom.getElementsByTagNameNS(ns, "tbl");
-                for (let i = 0; i < tbls.length; i += 1) {
-                    const tbl = tbls.item(i);
-                    if (!tbl) continue;
-                    const tblPr = directChild(tbl, ns, "tblPr");
-                    if (!tblPr) continue;
-                    const hasTblStyle = directChild(tblPr, ns, "tblStyle") !== null;
-                    if (!hasTblStyle) continue;
-                    const hasTblLook = directChild(tblPr, ns, "tblLook") !== null;
-                    if (!hasTblLook) {
-                        issues.push({
-                            severity: "info",
-                            message:
-                                "<w:tbl> has a <w:tblStyle> reference but no <w:tblLook> in <w:tblPr>. " +
-                                "Conditional formatting bands from the table style will not apply.",
-                            path: this.relPath(xmlFile),
-                            code: "tbl-look-missing",
-                        });
-                    }
-                }
-            }
-        }
-        return finalize(issues);
-    }
-
-    // ----- Plan 06: Tracked-change ID stability --------------------------------
-
-    /**
-     * Check tracked-change elements (`<w:ins>`, `<w:del>`) for sequential `w:id`
-     * values starting from 1. A sequential-from-1 pattern is a strong heuristic
-     * signal that the repairer regenerated IDs rather than preserving originals.
-     *
-     * Reports `tracked-change-ids-regenerated` at `"info"` severity.
-     */
-    async validateTrackedChangeIds(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-        for (const xmlFile of this.documentXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
-            } catch {
-                continue;
-            }
-            const ids: number[] = [];
-            let hasUnparseableId = false;
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                for (const tag of TRACKED_CHANGE_ID_TAGS) {
-                    const list = dom.getElementsByTagNameNS(ns, tag);
-                    for (let j = 0; j < list.length; j += 1) {
-                        const elem = list.item(j);
-                        if (!elem) continue;
-                        const id = elem.getAttributeNS(ns, "id");
-                        if (!id) continue;
-                        if (!/^\d+$/.test(id)) {
-                            hasUnparseableId = true;
-                        } else {
-                            ids.push(Number.parseInt(id, 10));
-                        }
-                    }
-                }
-            }
-            if (ids.length < 2 || hasUnparseableId) continue;
-            ids.sort((a, b) => a - b);
-            // Heuristic: if IDs are sequential from 1 with no gaps, likely regenerated.
-            const isSequentialFrom1 = ids.every((id, idx) => id === idx + 1);
-            if (isSequentialFrom1) {
-                issues.push({
-                    severity: "info",
-                    message:
-                        `Tracked-change w:id values (${ids.join(", ")}) appear to be regenerated ` +
-                        "(sequential from 1). This breaks external references to tracked changes.",
-                    path: this.relPath(xmlFile),
-                    code: "tracked-change-ids-regenerated",
-                });
-            }
-        }
-        return finalize(issues);
-    }
-
-    // ----- Plan 07: Cell border normalization ---------------------------------
-
-    /**
-     * Check for cell borders (`<w:tcBorders>`) that duplicate the enclosing
-     * table's `<w:tblBorders>` defaults. Redundant borders override style-level
-     * conditional formatting (e.g. `<w:tblLook>` banded-row suppression).
-     *
-     * Reports `cell-borders-redundant` at `"info"` severity.
-     */
-    async validateRedundantCellBorders(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-        const styleBordersById = await this.tableStyleBordersByStyleId();
-        for (const xmlFile of this.documentXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
-            } catch {
-                continue;
-            }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const tbls = dom.getElementsByTagNameNS(ns, "tbl");
-                for (let i = 0; i < tbls.length; i += 1) {
-                    const tbl = tbls.item(i);
-                    if (!tbl) continue;
-                    const tblPr = directChild(tbl, ns, "tblPr");
-                    if (!tblPr) continue;
-                    const tblStyleId = directChild(tblPr, ns, "tblStyle")?.getAttributeNS(ns, "val") ?? null;
-                    const tableDefaults =
-                        borderSignature(directChild(tblPr, ns, "tblBorders"), ns) ??
-                        (tblStyleId ? styleBordersById.get(tblStyleId) : undefined);
-                    if (!tableDefaults) continue;
-
-                    for (const row of directChildren(tbl, ns, "tr")) {
-                        for (const cell of directChildren(row, ns, "tc")) {
-                            const tcPr = directChild(cell, ns, "tcPr");
-                            if (!tcPr) continue;
-                            const cellBorders = borderSignature(directChild(tcPr, ns, "tcBorders"), ns);
-                            if (cellBorders && borderSignaturesEqual(cellBorders, tableDefaults)) {
-                                issues.push({
-                                    severity: "info",
-                                    message:
-                                        "<w:tcBorders> in table cell duplicates the table-level <w:tblBorders> " +
-                                        "defaults. This overrides style-level conditional formatting.",
-                                    path: this.relPath(xmlFile),
-                                    code: "cell-borders-redundant",
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return finalize(issues);
-    }
-
-    // ----- Plan 08: Relationship ID scheme ------------------------------------
-
-    /**
-     * Check relationship `.rels` files for the `rId1`-`rIdN` sequential pattern.
-     * Sequential IDs are valid but indicate the repairer may have regenerated
-     * relationship IDs rather than preserving the originals.
-     *
-     * Reports `rel-ids-sequential` at `"info"` severity.
-     */
-    async validateRelationshipIdStability(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-        for (const xmlFile of this.xmlFiles) {
-            if (!xmlFile.endsWith(".rels")) continue;
-            let dom: Document;
-            try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
-            } catch {
-                continue;
-            }
-            const relsList = dom.getElementsByTagNameNS(PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
-            const ids: number[] = [];
-            let allIdsUseRidPattern = true;
-            for (let i = 0; i < relsList.length; i += 1) {
-                const elem = relsList.item(i);
-                if (!elem) continue;
-                const id = elem.getAttribute("Id");
-                if (!id) continue;
-                const match = /^rId(\d+)$/.exec(id);
-                if (match) {
-                    ids.push(parseInt(match[1], 10));
-                } else {
-                    allIdsUseRidPattern = false;
-                }
-            }
-            if (!allIdsUseRidPattern || ids.length < 2) continue;
-            ids.sort((a, b) => a - b);
-            const isSequential = ids.every((id, idx) => id === idx + 1);
-            if (isSequential) {
-                issues.push({
-                    severity: "info",
-                    message:
-                        `Relationship Id values in ${this.relPath(xmlFile)} are sequential from rId1 ` +
-                        "(likely regenerated by the repairer).",
-                    path: this.relPath(xmlFile),
-                    code: "rel-ids-sequential",
-                });
-            }
-        }
-        return finalize(issues);
-    }
-
-    // ----- Plan 09: Redundant explicit properties -----------------------------
-
-    /**
-     * Check for explicit `<w:rFonts>` on runs that duplicate the document
-     * defaults (`<w:docDefaults>/<w:rPrDefault>/<w:rPr>/<w:rFonts>`).
-     * Redundant explicit properties make the document harder to re-style.
-     *
-     * Reports `run-props-redundant` at `"info"` severity.
-     */
-    async validateRedundantRunProperties(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-
-        // Find and parse styles.xml for docDefaults.
-        let stylesPath: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
-        }
-        if (!stylesPath) return { valid: true, issues: [] };
-
-        let stylesDom: Document;
-        try {
-            stylesDom = parseXml(await fs.readFile(stylesPath, "utf-8"));
-        } catch {
-            return { valid: true, issues: [] };
-        }
-
-        // Extract default rFonts from docDefaults.
-        let defaultAscii = "";
-        let defaultHAnsi = "";
-        let defaultCs = "";
-        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-            const ddList = stylesDom.getElementsByTagNameNS(ns, "docDefaults");
-            if (ddList.length === 0) continue;
-            const dd = ddList.item(0);
-            if (!dd) continue;
-            const rPrDefaultList = dd.getElementsByTagNameNS(ns, "rPrDefault");
-            if (rPrDefaultList.length === 0) continue;
-            const rPrDefault = rPrDefaultList.item(0);
-            if (!rPrDefault) continue;
-            const rPrList = rPrDefault.getElementsByTagNameNS(ns, "rPr");
-            if (rPrList.length === 0) continue;
-            const rPr = rPrList.item(0);
-            if (!rPr) continue;
-            const rFontsList = rPr.getElementsByTagNameNS(ns, "rFonts");
-            if (rFontsList.length === 0) continue;
-            const rFonts = rFontsList.item(0);
-            if (!rFonts) continue;
-            defaultAscii = rFonts.getAttributeNS(ns, "ascii") ?? "";
-            defaultHAnsi = rFonts.getAttributeNS(ns, "hAnsi") ?? "";
-            defaultCs = rFonts.getAttributeNS(ns, "cs") ?? "";
-            break;
-        }
-
-        if (!defaultAscii && !defaultHAnsi && !defaultCs) return { valid: true, issues: [] };
-
-        // Check every user-text part; redundant run properties commonly show
-        // up in headers and footers as well as the main document body.
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
-            } catch {
-                continue;
-            }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const runs = dom.getElementsByTagNameNS(ns, "r");
-                for (let i = 0; i < runs.length; i += 1) {
-                    const run = runs.item(i);
-                    if (!run) continue;
-                    const rPr = directChild(run, ns, "rPr");
-                    if (!rPr) continue;
-                    const rFonts = directChild(rPr, ns, "rFonts");
-                    if (!rFonts) continue;
-                    const ascii = rFonts.getAttributeNS(ns, "ascii") ?? "";
-                    const hAnsi = rFonts.getAttributeNS(ns, "hAnsi") ?? "";
-                    const cs = rFonts.getAttributeNS(ns, "cs") ?? "";
-                    if (ascii && ascii === defaultAscii && hAnsi === defaultHAnsi && cs === defaultCs) {
-                        issues.push({
-                            severity: "info",
-                            message:
-                                `<w:rFonts w:ascii="${ascii}" w:hAnsi="${hAnsi}" w:cs="${cs}" /> ` +
-                                "on run duplicates <w:docDefaults>; redundant explicit property.",
-                            path: this.relPath(xmlFile),
-                            code: "run-props-redundant",
-                        });
-                    }
-                }
-            }
-        }
-        return finalize(issues);
-    }
-
-    // ----- repair -------------------------------------------------------------
-
-    async repair(): Promise<number> {
-        const baseRepairs = await super.repair();
-        const durableRepairs = await this.repairDurableId();
-        const paraIdRepairs = await this.repairParaId();
-        const ignorableRepairs = await this.repairIgnorable();
-        const stampRepairs = await this.repairMissingParaIds();
-        const styleRepairs = await this.repairMissingStyleDefinitions();
-        const commentThreadingRepairs = await this.repairCommentThreading();
-        const drawingScalarRepairs = await this.repairDrawingScalarTextWhitespace();
-        const inlinePictureRepairs = await this.repairInlinePictureScaffolds();
-        const extendedPropertyRepairs = await this.repairExtendedPropertiesWhitespace();
-        const corePropertyRepairs = await this.repairCorePropertiesWhitespace();
-        return (
-            baseRepairs +
-            durableRepairs +
-            paraIdRepairs +
-            ignorableRepairs +
-            stampRepairs +
-            styleRepairs +
-            commentThreadingRepairs +
-            drawingScalarRepairs +
-            inlinePictureRepairs +
-            extendedPropertyRepairs +
-            corePropertyRepairs
-        );
-    }
-
-    async repairDrawingScalarTextWhitespace(): Promise<number> {
-        let repairs = 0;
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
-            } catch {
-                continue;
-            }
-
-            let modified = false;
-            for (const { namespace, localName } of WORD_DRAWING_SCALAR_TEXT_ELEMENTS) {
-                const elems = dom.getElementsByTagNameNS(namespace, localName);
-                for (let i = 0; i < elems.length; i += 1) {
-                    const elem = elems.item(i);
-                    if (!elem) continue;
-                    for (let child = elem.firstChild; child; child = child.nextSibling) {
-                        if (child.nodeType !== 3) continue;
-                        const text = child as Text;
-                        const trimmed = text.data.trim();
-                        if (trimmed === text.data) continue;
-                        text.data = trimmed;
-                        repairs += 1;
-                        modified = true;
-                    }
-                }
-            }
-
-            if (modified) {
-                await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
-            }
-        }
-        return repairs;
-    }
-
-    async repairInlinePictureScaffolds(): Promise<number> {
-        let repairs = 0;
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
-            } catch {
-                continue;
-            }
-
-            let modified = false;
-            const usedDocPrIds = collectNumericAttributeValues(dom, WP_NAMESPACE, "docPr", "id");
-            const allocateDocPrId = (): string => {
-                let candidate = 1;
-                while (usedDocPrIds.has(candidate)) candidate += 1;
-                usedDocPrIds.add(candidate);
-                return String(candidate);
-            };
-
-            const inlines = dom.getElementsByTagNameNS(WP_NAMESPACE, "inline");
-            for (let i = 0; i < inlines.length; i += 1) {
-                const inline = inlines.item(i);
-                if (!inline) continue;
-                const graphic = directChild(inline, DRAWINGML_NAMESPACE, "graphic");
-                if (!graphic) continue;
-
-                if (!directChild(inline, WP_NAMESPACE, "extent")) {
-                    const extent = dom.createElementNS(WP_NAMESPACE, "wp:extent");
-                    extent.setAttribute("cx", DEFAULT_PICTURE_EXTENT_EMU);
-                    extent.setAttribute("cy", DEFAULT_PICTURE_EXTENT_EMU);
-                    inline.insertBefore(extent, graphic);
-                    repairs += 1;
-                    modified = true;
-                }
-
-                if (!directChild(inline, WP_NAMESPACE, "docPr")) {
-                    const docPr = dom.createElementNS(WP_NAMESPACE, "wp:docPr");
-                    docPr.setAttribute("id", allocateDocPrId());
-                    docPr.setAttribute("name", "Picture 1");
-                    inline.insertBefore(docPr, graphic);
-                    repairs += 1;
-                    modified = true;
-                }
-
-                const pictures = inline.getElementsByTagNameNS(PICTURE_NAMESPACE, "pic");
-                for (let j = 0; j < pictures.length; j += 1) {
-                    const pic = pictures.item(j);
-                    if (!pic) continue;
-                    const blipFill = directChild(pic, PICTURE_NAMESPACE, "blipFill");
-
-                    if (!directChild(pic, PICTURE_NAMESPACE, "nvPicPr")) {
-                        const nvPicPr = dom.createElementNS(PICTURE_NAMESPACE, "pic:nvPicPr");
-                        const cNvPr = dom.createElementNS(PICTURE_NAMESPACE, "pic:cNvPr");
-                        cNvPr.setAttribute("id", "0");
-                        cNvPr.setAttribute("name", "image1.png");
-                        const cNvPicPr = dom.createElementNS(PICTURE_NAMESPACE, "pic:cNvPicPr");
-                        nvPicPr.appendChild(cNvPr);
-                        nvPicPr.appendChild(cNvPicPr);
-                        pic.insertBefore(nvPicPr, blipFill ?? pic.firstChild);
-                        repairs += 1;
-                        modified = true;
-                    }
-
-                    if (
-                        blipFill &&
-                        !directChild(blipFill, DRAWINGML_NAMESPACE, "stretch") &&
-                        !directChild(blipFill, DRAWINGML_NAMESPACE, "tile")
-                    ) {
-                        const stretch = dom.createElementNS(DRAWINGML_NAMESPACE, "a:stretch");
-                        stretch.appendChild(dom.createElementNS(DRAWINGML_NAMESPACE, "a:fillRect"));
-                        blipFill.appendChild(stretch);
-                        repairs += 1;
-                        modified = true;
-                    }
-
-                    if (!directChild(pic, PICTURE_NAMESPACE, "spPr")) {
-                        const spPr = dom.createElementNS(PICTURE_NAMESPACE, "pic:spPr");
-                        const xfrm = dom.createElementNS(DRAWINGML_NAMESPACE, "a:xfrm");
-                        const off = dom.createElementNS(DRAWINGML_NAMESPACE, "a:off");
-                        off.setAttribute("x", "0");
-                        off.setAttribute("y", "0");
-                        const ext = dom.createElementNS(DRAWINGML_NAMESPACE, "a:ext");
-                        ext.setAttribute("cx", DEFAULT_PICTURE_EXTENT_EMU);
-                        ext.setAttribute("cy", DEFAULT_PICTURE_EXTENT_EMU);
-                        xfrm.appendChild(off);
-                        xfrm.appendChild(ext);
-                        const prstGeom = dom.createElementNS(DRAWINGML_NAMESPACE, "a:prstGeom");
-                        prstGeom.setAttribute("prst", "rect");
-                        prstGeom.appendChild(dom.createElementNS(DRAWINGML_NAMESPACE, "a:avLst"));
-                        spPr.appendChild(xfrm);
-                        spPr.appendChild(prstGeom);
-                        pic.appendChild(spPr);
-                        repairs += 1;
-                        modified = true;
-                    }
-                }
-            }
-
-            if (modified) {
-                await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
-            }
-        }
-        return repairs;
-    }
-
-    async repairExtendedPropertiesWhitespace(): Promise<number> {
-        const appXml = path.join(this.unpackedDir, "docProps", "app.xml");
-        let dom: Document;
-        try {
-            dom = parseXml(await fs.readFile(appXml, "utf-8"));
-        } catch {
-            return 0;
-        }
-
-        let repairs = 0;
-        const all = dom.getElementsByTagName("*");
-        for (let i = 0; i < all.length; i += 1) {
-            const elem = all.item(i);
-            if (!elem) continue;
-            for (let child = elem.firstChild; child; child = child.nextSibling) {
-                if (child.nodeType !== 3) continue;
-                const text = child as Text;
-                const trimmed = text.data.trim();
-                if (trimmed === text.data) continue;
-                text.data = trimmed;
-                repairs += 1;
-            }
-        }
-        if (repairs > 0) {
-            await fs.writeFile(appXml, serializeXml(dom, "UTF-8"), "utf-8");
-        }
-        return repairs;
-    }
-
-    async repairCorePropertiesWhitespace(): Promise<number> {
-        const coreXml = path.join(this.unpackedDir, "docProps", "core.xml");
-        let dom: Document;
-        try {
-            dom = parseXml(await fs.readFile(coreXml, "utf-8"));
-        } catch {
-            return 0;
-        }
-
-        const trimFields = new Set(["lastModifiedBy", "revision", "created", "modified"]);
-        let repairs = 0;
-        const all = dom.getElementsByTagName("*");
-        for (let i = 0; i < all.length; i += 1) {
-            const elem = all.item(i);
-            if (!elem) continue;
-            const localName = elem.localName || elem.tagName.split(":").pop() || elem.tagName;
-            if (!trimFields.has(localName)) continue;
-            for (let child = elem.firstChild; child; child = child.nextSibling) {
-                if (child.nodeType !== 3) continue;
-                const text = child as Text;
-                const trimmed = text.data.trim();
-                if (trimmed === text.data) continue;
-                text.data = trimmed;
-                repairs += 1;
-            }
-        }
-        if (repairs > 0) {
-            await fs.writeFile(coreXml, serializeXml(dom, "UTF-8"), "utf-8");
-        }
-        return repairs;
-    }
-
-    async repairCommentThreading(): Promise<number> {
-        let commentsXml: string | null = null;
-        let commentsIdsXml: string | null = null;
-        let commentsExtensibleXml: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            const base = baseName(xmlFile);
-            if (base === "comments.xml") commentsXml = xmlFile;
-            else if (base === "commentsIds.xml") commentsIdsXml = xmlFile;
-            else if (base === "commentsExtensible.xml") commentsExtensibleXml = xmlFile;
-        }
-        if (!commentsXml || !commentsIdsXml) return 0;
-
-        let commentsDom: Document;
-        let idsDom: Document;
-        try {
-            commentsDom = parseXml(await fs.readFile(commentsXml, "utf-8"));
-            idsDom = parseXml(await fs.readFile(commentsIdsXml, "utf-8"));
-        } catch {
-            return 0;
-        }
-
-        const commentParaIds = new Set<string>();
-        for (const wNs of WORD_PARAGRAPH_NAMESPACES) {
-            const comments = commentsDom.getElementsByTagNameNS(wNs, "comment");
-            for (let i = 0; i < comments.length; i += 1) {
-                const comment = comments.item(i);
-                if (!comment) continue;
-                const paragraphs = comment.getElementsByTagNameNS(wNs, "p");
-                for (let j = 0; j < paragraphs.length; j += 1) {
-                    const paragraph = paragraphs.item(j);
-                    const paraId = paragraph?.getAttributeNS(W14_NAMESPACE, "paraId");
-                    if (paraId) commentParaIds.add(paraId);
-                }
-            }
-        }
-
-        let repairs = 0;
-        let idsModified = false;
-        let canonicalDurableId: string | null = null;
-        const commentIds = idsDom.getElementsByTagNameNS(W16CID_NAMESPACE, "commentId");
-        if (commentParaIds.size === 1 && commentIds.length === 1) {
-            const targetParaId = [...commentParaIds][0];
-            canonicalDurableId = targetParaId;
-            const commentId = commentIds.item(0);
-            const currentParaId = commentId?.getAttributeNS(W16CID_NAMESPACE, "paraId");
-            if (commentId && currentParaId && currentParaId !== targetParaId && !commentParaIds.has(currentParaId)) {
-                commentId.setAttributeNS(W16CID_NAMESPACE, "w16cid:paraId", targetParaId);
-                repairs += 1;
-                idsModified = true;
-            }
-            const currentDurableId = commentId?.getAttributeNS(W16CID_NAMESPACE, "durableId");
-            if (commentId && currentDurableId && currentDurableId !== canonicalDurableId) {
-                commentId.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", canonicalDurableId);
-                repairs += 1;
-                idsModified = true;
-            }
-        }
-
-        const durableIds = new Set<string>();
-        for (let i = 0; i < commentIds.length; i += 1) {
-            const commentId = commentIds.item(i);
-            const durableId = commentId?.getAttributeNS(W16CID_NAMESPACE, "durableId");
-            if (durableId) durableIds.add(durableId);
-        }
-
-        if (idsModified) {
-            await fs.writeFile(commentsIdsXml, serializeXml(idsDom, "UTF-8"), "utf-8");
-        }
-
-        if (!commentsExtensibleXml || durableIds.size !== 1) return repairs;
-
-        try {
-            const cexDom = parseXml(await fs.readFile(commentsExtensibleXml, "utf-8"));
-            const entries = cexDom.getElementsByTagNameNS(W16CEX_NAMESPACE, "commentExtensible");
-            if (entries.length !== 1) return repairs;
-            const targetDurableId = [...durableIds][0];
-            const entry = entries.item(0);
-            const currentDurableId = entry?.getAttributeNS(W16CEX_NAMESPACE, "durableId");
-            if (entry && currentDurableId && currentDurableId !== targetDurableId && !durableIds.has(currentDurableId)) {
-                entry.setAttributeNS(W16CEX_NAMESPACE, "w16cex:durableId", targetDurableId);
-                await fs.writeFile(commentsExtensibleXml, serializeXml(cexDom, "UTF-8"), "utf-8");
-                repairs += 1;
-            }
-        } catch {
-            return repairs;
-        }
-
-        return repairs;
-    }
-
-    /**
-     * Inject canonical definitions into `word/styles.xml` for every
-     * well-known style ID referenced by document XML but not defined.
-     * Only handles the small set of styles writers commonly leak —
-     * unknown style IDs are NOT auto-defined (we don't know what they
-     * mean). Pairs with `validateStyleReferences`.
-     */
-    async repairMissingStyleDefinitions(): Promise<number> {
-        let stylesPath: string | null = null;
-        for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
-        }
-        if (!stylesPath) return 0;
-
-        let stylesDom: Document;
-        try {
-            stylesDom = parseXml(await fs.readFile(stylesPath, "utf-8"));
-        } catch {
-            return 0;
-        }
-        const stylesRoot = stylesDom.documentElement;
-        if (!stylesRoot) return 0;
-
-        const defined = new Set<string>();
-        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-            const list = stylesDom.getElementsByTagNameNS(ns, "style");
-            for (let i = 0; i < list.length; i += 1) {
-                const elem = list.item(i);
-                if (!elem) continue;
-                const id = elem.getAttributeNS(ns, "styleId");
-                if (id) defined.add(id);
-            }
-        }
-
-        // Collect all referenced IDs across all user-text XML files.
-        const referenced = new Set<string>();
-        const refTags = ["pStyle", "rStyle", "tblStyle", "numStyle", "linkedStyle"] as const;
-        for (const xmlFile of this.userTextXmlFiles()) {
-            try {
-                const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
-                for (const tag of refTags) {
-                    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                        const list = dom.getElementsByTagNameNS(ns, tag);
-                        for (let i = 0; i < list.length; i += 1) {
-                            const elem = list.item(i);
-                            if (!elem) continue;
-                            const val = elem.getAttributeNS(ns, "val");
-                            if (val) referenced.add(val);
-                        }
-                    }
-                }
-            } catch {
-                // pass
-            }
-        }
-
-        // Two sources of "needs to be defined": styles referenced by
-        // document XML, and the four ECMA-376 implied-defaults — Word
-        // looks these up implicitly so they must always be present.
-        const needed = new Set<string>([...referenced]);
-        for (const def of REQUIRED_DEFAULT_STYLES) needed.add(def.styleId);
-
-        const missing = [...needed].filter((id) => !defined.has(id));
-        if (missing.length === 0) return 0;
-
-        let repairs = 0;
-        for (const id of missing) {
-            const fragment = WELL_KNOWN_STYLE_DEFINITIONS[id];
-            if (!fragment) continue;
-            // Append the fragment as a child of <w:styles>.
-            const actualNamespace = stylesRoot.namespaceURI ?? WORD_2006_NAMESPACE;
-            const tmp = parseXml(`<w:styles xmlns:w="${actualNamespace}">${fragment}</w:styles>`);
-            const tmpRoot = tmp.documentElement;
-            if (!tmpRoot) continue;
-            const child = tmpRoot.firstChild;
-            if (!child) continue;
-            const imported = stylesDom.importNode(child, true);
-            stylesRoot.appendChild(imported);
+      let modified = false;
+      for (const { namespace, localName } of WORD_DRAWING_SCALAR_TEXT_ELEMENTS) {
+        const elems = dom.getElementsByTagNameNS(namespace, localName);
+        for (let i = 0; i < elems.length; i += 1) {
+          const elem = elems.item(i);
+          if (!elem) continue;
+          for (let child = elem.firstChild; child; child = child.nextSibling) {
+            if (child.nodeType !== 3) continue;
+            const text = child as Text;
+            const trimmed = text.data.trim();
+            if (trimmed === text.data) continue;
+            text.data = trimmed;
             repairs += 1;
+            modified = true;
+          }
+        }
+      }
+
+      if (modified) {
+        await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+      }
+    }
+    return repairs;
+  }
+
+  async repairInlinePictureScaffolds(): Promise<number> {
+    let repairs = 0;
+    for (const xmlFile of this.userTextXmlFiles()) {
+      let dom: Document;
+      try {
+        dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+      } catch {
+        continue;
+      }
+
+      let modified = false;
+      const usedDocPrIds = collectNumericAttributeValues(dom, WP_NAMESPACE, "docPr", "id");
+      const allocateDocPrId = (): string => {
+        let candidate = 1;
+        while (usedDocPrIds.has(candidate)) candidate += 1;
+        usedDocPrIds.add(candidate);
+        return String(candidate);
+      };
+
+      const inlines = dom.getElementsByTagNameNS(WP_NAMESPACE, "inline");
+      for (let i = 0; i < inlines.length; i += 1) {
+        const inline = inlines.item(i);
+        if (!inline) continue;
+        const graphic = directChild(inline, DRAWINGML_NAMESPACE, "graphic");
+        if (!graphic) continue;
+
+        if (!directChild(inline, WP_NAMESPACE, "extent")) {
+          const extent = dom.createElementNS(WP_NAMESPACE, "wp:extent");
+          extent.setAttribute("cx", DEFAULT_PICTURE_EXTENT_EMU);
+          extent.setAttribute("cy", DEFAULT_PICTURE_EXTENT_EMU);
+          inline.insertBefore(extent, graphic);
+          repairs += 1;
+          modified = true;
         }
 
-        if (repairs > 0) {
-            await fs.writeFile(stylesPath, serializeXml(stylesDom, "UTF-8"), "utf-8");
+        if (!directChild(inline, WP_NAMESPACE, "docPr")) {
+          const docPr = dom.createElementNS(WP_NAMESPACE, "wp:docPr");
+          docPr.setAttribute("id", allocateDocPrId());
+          docPr.setAttribute("name", "Picture 1");
+          inline.insertBefore(docPr, graphic);
+          repairs += 1;
+          modified = true;
         }
-        return repairs;
+
+        const pictures = inline.getElementsByTagNameNS(PICTURE_NAMESPACE, "pic");
+        for (let j = 0; j < pictures.length; j += 1) {
+          const pic = pictures.item(j);
+          if (!pic) continue;
+          const blipFill = directChild(pic, PICTURE_NAMESPACE, "blipFill");
+
+          if (!directChild(pic, PICTURE_NAMESPACE, "nvPicPr")) {
+            const nvPicPr = dom.createElementNS(PICTURE_NAMESPACE, "pic:nvPicPr");
+            const cNvPr = dom.createElementNS(PICTURE_NAMESPACE, "pic:cNvPr");
+            cNvPr.setAttribute("id", "0");
+            cNvPr.setAttribute("name", "image1.png");
+            const cNvPicPr = dom.createElementNS(PICTURE_NAMESPACE, "pic:cNvPicPr");
+            nvPicPr.appendChild(cNvPr);
+            nvPicPr.appendChild(cNvPicPr);
+            pic.insertBefore(nvPicPr, blipFill ?? pic.firstChild);
+            repairs += 1;
+            modified = true;
+          }
+
+          if (
+            blipFill &&
+            !directChild(blipFill, DRAWINGML_NAMESPACE, "stretch") &&
+            !directChild(blipFill, DRAWINGML_NAMESPACE, "tile")
+          ) {
+            const stretch = dom.createElementNS(DRAWINGML_NAMESPACE, "a:stretch");
+            stretch.appendChild(dom.createElementNS(DRAWINGML_NAMESPACE, "a:fillRect"));
+            blipFill.appendChild(stretch);
+            repairs += 1;
+            modified = true;
+          }
+
+          if (!directChild(pic, PICTURE_NAMESPACE, "spPr")) {
+            const spPr = dom.createElementNS(PICTURE_NAMESPACE, "pic:spPr");
+            const xfrm = dom.createElementNS(DRAWINGML_NAMESPACE, "a:xfrm");
+            const off = dom.createElementNS(DRAWINGML_NAMESPACE, "a:off");
+            off.setAttribute("x", "0");
+            off.setAttribute("y", "0");
+            const ext = dom.createElementNS(DRAWINGML_NAMESPACE, "a:ext");
+            ext.setAttribute("cx", DEFAULT_PICTURE_EXTENT_EMU);
+            ext.setAttribute("cy", DEFAULT_PICTURE_EXTENT_EMU);
+            xfrm.appendChild(off);
+            xfrm.appendChild(ext);
+            const prstGeom = dom.createElementNS(DRAWINGML_NAMESPACE, "a:prstGeom");
+            prstGeom.setAttribute("prst", "rect");
+            prstGeom.appendChild(dom.createElementNS(DRAWINGML_NAMESPACE, "a:avLst"));
+            spPr.appendChild(xfrm);
+            spPr.appendChild(prstGeom);
+            pic.appendChild(spPr);
+            repairs += 1;
+            modified = true;
+          }
+        }
+      }
+
+      if (modified) {
+        await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+      }
+    }
+    return repairs;
+  }
+
+  async repairExtendedPropertiesWhitespace(): Promise<number> {
+    const appXml = path.join(this.unpackedDir, "docProps", "app.xml");
+    let dom: Document;
+    try {
+      dom = parseXml(await fs.readFile(appXml, "utf-8"));
+    } catch {
+      return 0;
     }
 
-    /**
-     * Stamp a fresh in-range `w14:paraId` (and the matching
-     * `w14:textId`) on every `<w:p>` and `<w:tr>` that needs one. The
-     * new paraIds are random and avoid colliding with any paraId
-     * already present on either side (incl. the renumbered ones from
-     * `repairParaId`); textIds are sampled from the same space and
-     * likewise deduped within their own pool (paraId and textId
-     * namespaces are independent in Word's model — Word's saves often
-     * emit the placeholder `77777777` for textId, but the spec only
-     * requires it be a hex digit string).
-     *
-     * Four cases:
-     *   1. Element has neither → stamp both (Word's tracked-changes
-     *      infrastructure expects them paired).
-     *   2. Element has paraId but no textId → stamp textId. This is
-     *      the asymmetric shape that triggers Word's "Document
-     *      Recovery — Table Properties" dialog on open.
-     *   3. Element has textId but no paraId → stamp paraId (the
-     *      inverse asymmetric shape — unusual but handled for
-     *      completeness so Word doesn't see a dangling textId).
-     *   4. Element has both → leave alone.
-     */
-    async repairMissingParaIds(): Promise<number> {
-        let repairs = 0;
-        const usedParaIds = new Set<string>();
-        const usedTextIds = new Set<string>();
+    let repairs = 0;
+    const all = dom.getElementsByTagName("*");
+    for (let i = 0; i < all.length; i += 1) {
+      const elem = all.item(i);
+      if (!elem) continue;
+      for (let child = elem.firstChild; child; child = child.nextSibling) {
+        if (child.nodeType !== 3) continue;
+        const text = child as Text;
+        const trimmed = text.data.trim();
+        if (trimmed === text.data) continue;
+        text.data = trimmed;
+        repairs += 1;
+      }
+    }
+    if (repairs > 0) {
+      await fs.writeFile(appXml, serializeXml(dom, "UTF-8"), "utf-8");
+    }
+    return repairs;
+  }
 
-        // Parse every user-text XML file once; collect existing IDs and
-        // store parsed DOMs for the stamp pass so we avoid a re-parse.
-        const domByFile = new Map<string, Document>();
-        for (const xmlFile of this.userTextXmlFiles()) {
-            try {
-                const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
-                domByFile.set(xmlFile, dom);
-                const all = dom.getElementsByTagName("*");
-                for (let i = 0; i < all.length; i += 1) {
-                    const elem = all.item(i);
-                    if (!elem) continue;
-                    const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId");
-                    if (paraId) usedParaIds.add(paraId.toUpperCase());
-                    const textId = elem.getAttributeNS(W14_NAMESPACE, "textId");
-                    if (textId) usedTextIds.add(textId.toUpperCase());
-                }
-            } catch {
-                // pass
-            }
-        }
-
-        let allocCounter = 1;
-        const allocate = (pool: Set<string>): string => {
-            for (;;) {
-                const newId = allocCounter.toString(16).toUpperCase().padStart(8, "0");
-                allocCounter += 1;
-                if (!pool.has(newId)) {
-                    pool.add(newId);
-                    return newId;
-                }
-            }
-        };
-
-        // Stamp pass: reuse the DOMs we already parsed.
-        for (const [xmlFile, dom] of domByFile) {
-            try {
-                let modified = false;
-                for (const local of ["p", "tr"] as const) {
-                    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                        const list = dom.getElementsByTagNameNS(ns, local);
-                        for (let i = 0; i < list.length; i += 1) {
-                            const elem = list.item(i);
-                            if (!elem) continue;
-                            const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId");
-                            const textId = elem.getAttributeNS(W14_NAMESPACE, "textId");
-                            if (!paraId && !textId) {
-                                // Case 1: stamp both as a pair.
-                                elem.setAttributeNS(W14_NAMESPACE, "w14:paraId", allocate(usedParaIds));
-                                elem.setAttributeNS(W14_NAMESPACE, "w14:textId", allocate(usedTextIds));
-                                repairs += 2;
-                                modified = true;
-                            } else if (paraId && !textId) {
-                                // Case 2: asymmetric — stamp textId.
-                                elem.setAttributeNS(W14_NAMESPACE, "w14:textId", allocate(usedTextIds));
-                                repairs += 1;
-                                modified = true;
-                            } else if (!paraId && textId) {
-                                // Case 3: has textId but no paraId — stamp paraId.
-                                elem.setAttributeNS(W14_NAMESPACE, "w14:paraId", allocate(usedParaIds));
-                                repairs += 1;
-                                modified = true;
-                            }
-                            // Case 4: both present — nothing to do.
-                        }
-                    }
-                }
-                if (modified) {
-                    await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
-                }
-            } catch {
-                // pass
-            }
-        }
-        return repairs;
+  async repairCorePropertiesWhitespace(): Promise<number> {
+    const coreXml = path.join(this.unpackedDir, "docProps", "core.xml");
+    let dom: Document;
+    try {
+      dom = parseXml(await fs.readFile(coreXml, "utf-8"));
+    } catch {
+      return 0;
     }
 
-    /**
-     * Repair `mc:Ignorable` entries that name an undeclared namespace
-     * prefix. For each undeclared prefix:
-     *
-     *   - If the prefix is in `KNOWN_OOXML_PREFIX_URIS` (the table of
-     *     well-known Word/OOXML namespaces), declare it on the document
-     *     root: `xmlns:prefix="<canonical-uri>"`. Mirrors what Word does
-     *     on save and preserves the tolerated-extension semantics for any
-     *     `<prefix:*>` elements present elsewhere in the document.
-     *   - Otherwise (truly unknown prefix), drop it from the
-     *     `mc:Ignorable` token list. If that empties the attribute, the
-     *     attribute is removed entirely.
-     *
-     * Returns the count of mutations made (one per declaration added or
-     * Ignorable token dropped).
-     */
-    async repairIgnorable(): Promise<number> {
-        let repairs = 0;
-        for (const xmlFile of this.xmlFiles) {
-            try {
-                const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
-                const root = dom.documentElement;
-                if (!root) continue;
+    const trimFields = new Set(["lastModifiedBy", "revision", "created", "modified"]);
+    let repairs = 0;
+    const all = dom.getElementsByTagName("*");
+    for (let i = 0; i < all.length; i += 1) {
+      const elem = all.item(i);
+      if (!elem) continue;
+      const localName = elem.localName || elem.tagName.split(":").pop() || elem.tagName;
+      if (!trimFields.has(localName)) continue;
+      for (let child = elem.firstChild; child; child = child.nextSibling) {
+        if (child.nodeType !== 3) continue;
+        const text = child as Text;
+        const trimmed = text.data.trim();
+        if (trimmed === text.data) continue;
+        text.data = trimmed;
+        repairs += 1;
+      }
+    }
+    if (repairs > 0) {
+      await fs.writeFile(coreXml, serializeXml(dom, "UTF-8"), "utf-8");
+    }
+    return repairs;
+  }
 
-                // Find every element on the root carrying an Ignorable attr —
-                // the MC namespace gives `mc:Ignorable`, but the lxml-style
-                // collector in `validateNamespaces` matches anything ending
-                // in `Ignorable` so we mirror that to stay symmetric with
-                // the validator.
-                const declared = collectDeclaredPrefixes(root);
-                const attrs = root.attributes;
-                const ignorableAttrs: Array<{ name: string; value: string }> = [];
-                for (let i = 0; i < attrs.length; i += 1) {
-                    const attr = attrs.item(i);
-                    if (!attr) continue;
-                    if (!attr.name.endsWith("Ignorable")) continue;
-                    ignorableAttrs.push({ name: attr.name, value: attr.value });
-                }
-                if (ignorableAttrs.length === 0) continue;
+  async repairCommentThreading(): Promise<number> {
+    let commentsXml: string | null = null;
+    let commentsIdsXml: string | null = null;
+    let commentsExtensibleXml: string | null = null;
+    for (const xmlFile of this.xmlFiles) {
+      const base = baseName(xmlFile);
+      if (base === "comments.xml") commentsXml = xmlFile;
+      else if (base === "commentsIds.xml") commentsIdsXml = xmlFile;
+      else if (base === "commentsExtensible.xml") commentsExtensibleXml = xmlFile;
+    }
+    if (!commentsXml || !commentsIdsXml) return 0;
 
-                let perFileMutations = 0;
-                for (const { name, value } of ignorableAttrs) {
-                    const tokens = value.split(/\s+/).filter(Boolean);
-                    const surviving: string[] = [];
-                    for (const prefix of tokens) {
-                        if (declared.has(prefix)) {
-                            surviving.push(prefix);
-                            continue;
-                        }
-                        const uri = KNOWN_OOXML_PREFIX_URIS[prefix];
-                        if (uri !== undefined) {
-                            // Declare on the root and keep the Ignorable entry.
-                            root.setAttribute(`xmlns:${prefix}`, uri);
-                            declared.add(prefix);
-                            surviving.push(prefix);
-                            perFileMutations += 1;
-                            repairs += 1;
-                        } else {
-                            // Truly unknown — drop from Ignorable rather than
-                            // guessing a URI.
-                            perFileMutations += 1;
-                            repairs += 1;
-                        }
-                    }
-                    const next = surviving.join(" ");
-                    if (next === value) continue;
-                    if (next.length === 0) {
-                        root.removeAttribute(name);
-                    } else {
-                        root.setAttribute(name, next);
-                    }
-                }
-
-                if (perFileMutations > 0) {
-                    await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
-                }
-            } catch {
-                // swallow — corrupted XML files surface elsewhere
-            }
-        }
-        return repairs;
+    let commentsDom: Document;
+    let idsDom: Document;
+    try {
+      commentsDom = parseXml(await fs.readFile(commentsXml, "utf-8"));
+      idsDom = parseXml(await fs.readFile(commentsIdsXml, "utf-8"));
+    } catch {
+      return 0;
     }
 
-    async repairDurableId(): Promise<number> {
-        let repairs = 0;
-        for (const xmlFile of this.xmlFiles) {
-            try {
-                const content = await fs.readFile(xmlFile, "utf-8");
-                const dom = parseXml(content);
-                let modified = false;
-                const base = baseName(xmlFile);
-                const all = dom.getElementsByTagName("*");
-                for (let i = 0; i < all.length; i += 1) {
-                    const elem = all.item(i);
-                    if (!elem) continue;
-                    const durableId = elem.getAttributeNS(W16CID_NAMESPACE, "durableId");
-                    if (!durableId) continue;
-
-                    let needsRepair: boolean;
-                    if (base === "numbering.xml") {
-                        const v = parseIdValue(durableId, 10);
-                        needsRepair = Number.isNaN(v) || v >= MAX_DURABLE_ID;
-                    } else {
-                        const v = parseIdValue(durableId, 16);
-                        needsRepair = Number.isNaN(v) || v >= MAX_DURABLE_ID;
-                    }
-
-                    if (needsRepair) {
-                        const value = 1 + Math.floor(Math.random() * MAX_RANDOM_DURABLE);
-                        const newId = base === "numbering.xml" ? String(value) : value.toString(16).toUpperCase().padStart(8, "0");
-                        // setAttributeNS keeps the prefix binding intact.
-                        elem.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", newId);
-                        repairs += 1;
-                        modified = true;
-                    }
-                }
-                if (modified) {
-                    await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
-                }
-            } catch {
-                // swallow — mirrors Python bare except
-            }
+    const commentParaIds = new Set<string>();
+    for (const wNs of WORD_PARAGRAPH_NAMESPACES) {
+      const comments = commentsDom.getElementsByTagNameNS(wNs, "comment");
+      for (let i = 0; i < comments.length; i += 1) {
+        const comment = comments.item(i);
+        if (!comment) continue;
+        const paragraphs = comment.getElementsByTagNameNS(wNs, "p");
+        for (let j = 0; j < paragraphs.length; j += 1) {
+          const paragraph = paragraphs.item(j);
+          const paraId = paragraph?.getAttributeNS(W14_NAMESPACE, "paraId");
+          if (paraId) commentParaIds.add(paraId);
         }
-        return repairs;
+      }
     }
 
-    /**
-     * Repair every `w14:paraId` whose value is `>= 0x80000000` (the spec
-     * cap), and propagate the renumbering into the threaded-comments
-     * extension.
-     *
-     * Two-pass implementation:
-     *
-     *  Pass 1: scan all XML files, build a `Map<oldId, newId>` for every
-     *          over-cap `w14:paraId`. Each old ID gets one new value
-     *          (deterministic per-run via random allocation, with a
-     *          collision-avoidance set so two different over-cap IDs can't
-     *          both land on the same fresh value).
-     *  Pass 2: walk every XML file again and rewrite (a) every
-     *          `w14:paraId` referenced in the map, AND (b) every
-     *          `w15:paraId` / `w15:paraIdParent` in `commentsExtended.xml`
-     *          that names an old value. Without (b), the cross-reference
-     *          between `comments.xml` and `commentsExtended.xml` breaks
-     *          and Word's threading view shows no replies — surfaced by
-     *          `validateCommentThreading`'s `comment-thread-paraid-orphan`
-     *          check.
-     */
-    async repairParaId(): Promise<number> {
-        let repairs = 0;
-        const remap = new Map<string, string>();
-        // textId is not cross-referenced (unlike paraId, which appears in
-        // w15:paraId / w15:paraIdParent in commentsExtended.xml), so it gets
-        // its own remap to keep the value pools cleanly separated.
-        const textIdRemap = new Map<string, string>();
-        // Separate pools for paraId and textId so that the two value
-        // namespaces remain independent (Word's model tolerates, and
-        // routinely produces, the same hex value appearing as both a
-        // paraId on one element and a textId on another).
-        const usedNewParaIds = new Set<string>();
-        const usedNewTextIds = new Set<string>();
-
-        let paraIdCounter = 1;
-        const allocateNewParaId = (): string => {
-            for (;;) {
-                const newId = paraIdCounter.toString(16).toUpperCase().padStart(8, "0");
-                paraIdCounter += 1;
-                if (!usedNewParaIds.has(newId)) {
-                    usedNewParaIds.add(newId);
-                    return newId;
-                }
-            }
-        };
-
-        let textIdCounter = 1;
-        const allocateNewTextId = (): string => {
-            for (;;) {
-                const newId = textIdCounter.toString(16).toUpperCase().padStart(8, "0");
-                textIdCounter += 1;
-                if (!usedNewTextIds.has(newId)) {
-                    usedNewTextIds.add(newId);
-                    return newId;
-                }
-            }
-        };
-
-        // Pass 1: discover every over-cap w14:paraId / w14:textId and pick
-        // replacements. Both share the < 0x80000000 cap (ST_LongHexNumber).
-        // Existing in-range IDs are collected into the per-type pools so
-        // that replacements can't collide with values already in use.
-        const parsedDoms = new Map<string, Document>();
-        for (const xmlFile of this.xmlFiles) {
-            try {
-                const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
-                parsedDoms.set(xmlFile, dom);
-                const all = dom.getElementsByTagName("*");
-                for (let i = 0; i < all.length; i += 1) {
-                    const elem = all.item(i);
-                    if (!elem) continue;
-                    const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId");
-                    if (paraId && !remap.has(paraId)) {
-                        const v = parseIdValue(paraId, 16);
-                        if (Number.isNaN(v) || v >= MAX_PARA_ID) {
-                            remap.set(paraId, allocateNewParaId());
-                        } else {
-                            usedNewParaIds.add(paraId.toUpperCase());
-                        }
-                    }
-                    const textId = elem.getAttributeNS(W14_NAMESPACE, "textId");
-                    if (textId && !textIdRemap.has(textId)) {
-                        const v = parseIdValue(textId, 16);
-                        if (Number.isNaN(v) || v >= MAX_PARA_ID) {
-                            textIdRemap.set(textId, allocateNewTextId());
-                        } else {
-                            usedNewTextIds.add(textId.toUpperCase());
-                        }
-                    }
-                }
-            } catch {
-                // pass — corrupted XML files surface elsewhere.
-            }
-        }
-
-        // Also pre-allocate replacements for any w15:paraId / paraIdParent
-        // values that are over-cap *and* don't appear as a w14:paraId
-        // (rare — would happen if commentsExtended.xml has a stale entry).
-        // Keeping these in the same remap means cross-file references stay
-        // self-consistent.
-        for (const [xmlFile, dom] of parsedDoms) {
-            if (baseName(xmlFile) !== "commentsExtended.xml") continue;
-            const exts = dom.getElementsByTagNameNS(W15_NAMESPACE, "commentEx");
-            for (let i = 0; i < exts.length; i += 1) {
-                const elem = exts.item(i);
-                if (!elem) continue;
-                for (const attr of ["paraId", "paraIdParent"] as const) {
-                    const val = elem.getAttributeNS(W15_NAMESPACE, attr);
-                    if (!val) continue;
-                    if (remap.has(val)) continue;
-                    const v = parseIdValue(val, 16);
-                    if (Number.isNaN(v) || v >= MAX_PARA_ID) {
-                        remap.set(val, allocateNewParaId());
-                    } else {
-                        usedNewParaIds.add(val.toUpperCase());
-                    }
-                }
-            }
-        }
-
-        if (remap.size === 0 && textIdRemap.size === 0) return 0;
-
-        // Pass 2: rewrite all references.
-        for (const [xmlFile, dom] of parsedDoms) {
-            try {
-                let modified = false;
-                const all = dom.getElementsByTagName("*");
-                for (let i = 0; i < all.length; i += 1) {
-                    const elem = all.item(i);
-                    if (!elem) continue;
-                    const w14Para = elem.getAttributeNS(W14_NAMESPACE, "paraId");
-                    if (w14Para && remap.has(w14Para)) {
-                        elem.setAttributeNS(W14_NAMESPACE, "w14:paraId", remap.get(w14Para)!);
-                        repairs += 1;
-                        modified = true;
-                    }
-                    const w14Text = elem.getAttributeNS(W14_NAMESPACE, "textId");
-                    if (w14Text && textIdRemap.has(w14Text)) {
-                        elem.setAttributeNS(W14_NAMESPACE, "w14:textId", textIdRemap.get(w14Text)!);
-                        repairs += 1;
-                        modified = true;
-                    }
-                    const w15Para = elem.getAttributeNS(W15_NAMESPACE, "paraId");
-                    if (w15Para && remap.has(w15Para)) {
-                        elem.setAttributeNS(W15_NAMESPACE, "w15:paraId", remap.get(w15Para)!);
-                        repairs += 1;
-                        modified = true;
-                    }
-                    const w15Parent = elem.getAttributeNS(W15_NAMESPACE, "paraIdParent");
-                    if (w15Parent && remap.has(w15Parent)) {
-                        elem.setAttributeNS(W15_NAMESPACE, "w15:paraIdParent", remap.get(w15Parent)!);
-                        repairs += 1;
-                        modified = true;
-                    }
-                }
-                if (modified) {
-                    await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
-                }
-            } catch {
-                // swallow — mirrors Python bare except in repairDurableId
-            }
-        }
-        return repairs;
+    let repairs = 0;
+    let idsModified = false;
+    let canonicalDurableId: string | null = null;
+    const commentIds = idsDom.getElementsByTagNameNS(W16CID_NAMESPACE, "commentId");
+    if (commentParaIds.size === 1 && commentIds.length === 1) {
+      const targetParaId = [...commentParaIds][0];
+      canonicalDurableId = targetParaId;
+      const commentId = commentIds.item(0);
+      const currentParaId = commentId?.getAttributeNS(W16CID_NAMESPACE, "paraId");
+      if (
+        commentId &&
+        currentParaId &&
+        currentParaId !== targetParaId &&
+        !commentParaIds.has(currentParaId)
+      ) {
+        commentId.setAttributeNS(W16CID_NAMESPACE, "w16cid:paraId", targetParaId);
+        repairs += 1;
+        idsModified = true;
+      }
+      const currentDurableId = commentId?.getAttributeNS(W16CID_NAMESPACE, "durableId");
+      if (commentId && currentDurableId && currentDurableId !== canonicalDurableId) {
+        commentId.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", canonicalDurableId);
+        repairs += 1;
+        idsModified = true;
+      }
     }
 
-    // ----- internal helpers ---------------------------------------------------
-
-    private *documentXmlFiles(): IterableIterator<string> {
-        for (const f of this.xmlFiles) {
-            if (baseName(f) === "document.xml") yield f;
-        }
+    const durableIds = new Set<string>();
+    for (let i = 0; i < commentIds.length; i += 1) {
+      const commentId = commentIds.item(i);
+      const durableId = commentId?.getAttributeNS(W16CID_NAMESPACE, "durableId");
+      if (durableId) durableIds.add(durableId);
     }
 
-    /**
-     * XML parts that can hold user-visible text and therefore can leak
-     * wire-format tracking tokens: the body, headers, footers, footnotes,
-     * endnotes, comments, and glossary part. Excludes settings / styles /
-     * rels / numbering since they never contain user text.
-     */
-    private *userTextXmlFiles(): IterableIterator<string> {
-        for (const f of this.xmlFiles) {
-            const name = baseName(f);
-            if (name === "document.xml") yield f;
-            else if (name === "comments.xml") yield f;
-            else if (name === "footnotes.xml") yield f;
-            else if (name === "endnotes.xml") yield f;
-            else if (/^header\d*\.xml$/i.test(name)) yield f;
-            else if (/^footer\d*\.xml$/i.test(name)) yield f;
-        }
+    if (idsModified) {
+      await fs.writeFile(commentsIdsXml, serializeXml(idsDom, "UTF-8"), "utf-8");
     }
 
-    private async tableStyleBordersByStyleId(): Promise<Map<string, BorderSignature>> {
-        const out = new Map<string, BorderSignature>();
-        const stylesPath = this.xmlFiles.find((xmlFile) => baseName(xmlFile) === "styles.xml");
-        if (!stylesPath) return out;
+    if (!commentsExtensibleXml || durableIds.size !== 1) return repairs;
 
-        let dom: Document;
-        try {
-            dom = parseXml(await fs.readFile(stylesPath, "utf-8"));
-        } catch {
-            return out;
-        }
+    try {
+      const cexDom = parseXml(await fs.readFile(commentsExtensibleXml, "utf-8"));
+      const entries = cexDom.getElementsByTagNameNS(W16CEX_NAMESPACE, "commentExtensible");
+      if (entries.length !== 1) return repairs;
+      const targetDurableId = [...durableIds][0];
+      const entry = entries.item(0);
+      const currentDurableId = entry?.getAttributeNS(W16CEX_NAMESPACE, "durableId");
+      if (
+        entry &&
+        currentDurableId &&
+        currentDurableId !== targetDurableId &&
+        !durableIds.has(currentDurableId)
+      ) {
+        entry.setAttributeNS(W16CEX_NAMESPACE, "w16cex:durableId", targetDurableId);
+        await fs.writeFile(commentsExtensibleXml, serializeXml(cexDom, "UTF-8"), "utf-8");
+        repairs += 1;
+      }
+    } catch {
+      return repairs;
+    }
 
-        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-            const styles = dom.getElementsByTagNameNS(ns, "style");
-            for (let i = 0; i < styles.length; i += 1) {
-                const style = styles.item(i);
-                if (!style) continue;
-                if (style.getAttributeNS(ns, "type") !== "table") continue;
-                const styleId = style.getAttributeNS(ns, "styleId");
-                if (!styleId) continue;
-                const tblPr = directChild(style, ns, "tblPr");
-                const signature = borderSignature(tblPr ? directChild(tblPr, ns, "tblBorders") : null, ns);
-                if (signature) out.set(styleId, signature);
+    return repairs;
+  }
+
+  /**
+   * Inject canonical definitions into `word/styles.xml` for every
+   * well-known style ID referenced by document XML but not defined.
+   * Only handles the small set of styles writers commonly leak —
+   * unknown style IDs are NOT auto-defined (we don't know what they
+   * mean). Pairs with `validateStyleReferences`.
+   */
+  async repairMissingStyleDefinitions(): Promise<number> {
+    let stylesPath: string | null = null;
+    for (const xmlFile of this.xmlFiles) {
+      if (baseName(xmlFile) === "styles.xml") stylesPath = xmlFile;
+    }
+    if (!stylesPath) return 0;
+
+    let stylesDom: Document;
+    try {
+      stylesDom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+    } catch {
+      return 0;
+    }
+    const stylesRoot = stylesDom.documentElement;
+    if (!stylesRoot) return 0;
+
+    const defined = new Set<string>();
+    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+      const list = stylesDom.getElementsByTagNameNS(ns, "style");
+      for (let i = 0; i < list.length; i += 1) {
+        const elem = list.item(i);
+        if (!elem) continue;
+        const id = elem.getAttributeNS(ns, "styleId");
+        if (id) defined.add(id);
+      }
+    }
+
+    // Collect all referenced IDs across all user-text XML files.
+    const referenced = new Set<string>();
+    const refTags = ["pStyle", "rStyle", "tblStyle", "numStyle", "linkedStyle"] as const;
+    for (const xmlFile of this.userTextXmlFiles()) {
+      try {
+        const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+        for (const tag of refTags) {
+          for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+            const list = dom.getElementsByTagNameNS(ns, tag);
+            for (let i = 0; i < list.length; i += 1) {
+              const elem = list.item(i);
+              if (!elem) continue;
+              const val = elem.getAttributeNS(ns, "val");
+              if (val) referenced.add(val);
             }
+          }
         }
-        return out;
+      } catch {
+        // pass
+      }
     }
+
+    // Two sources of "needs to be defined": styles referenced by
+    // document XML, and the four ECMA-376 implied-defaults — Word
+    // looks these up implicitly so they must always be present.
+    const needed = new Set<string>(referenced);
+    for (const def of REQUIRED_DEFAULT_STYLES) needed.add(def.styleId);
+
+    const missing = [...needed].filter((id) => !defined.has(id));
+    if (missing.length === 0) return 0;
+
+    let repairs = 0;
+    for (const id of missing) {
+      const fragment = WELL_KNOWN_STYLE_DEFINITIONS[id];
+      if (!fragment) continue;
+      // Append the fragment as a child of <w:styles>.
+      const actualNamespace = stylesRoot.namespaceURI ?? WORD_2006_NAMESPACE;
+      const tmp = parseXml(`<w:styles xmlns:w="${actualNamespace}">${fragment}</w:styles>`);
+      const tmpRoot = tmp.documentElement;
+      if (!tmpRoot) continue;
+      const child = tmpRoot.firstChild;
+      if (!child) continue;
+      const imported = stylesDom.importNode(child, true);
+      stylesRoot.appendChild(imported);
+      repairs += 1;
+    }
+
+    if (repairs > 0) {
+      await fs.writeFile(stylesPath, serializeXml(stylesDom, "UTF-8"), "utf-8");
+    }
+    return repairs;
+  }
+
+  /**
+   * Stamp a fresh in-range `w14:paraId` (and the matching
+   * `w14:textId`) on every `<w:p>` and `<w:tr>` that needs one. The
+   * new paraIds are random and avoid colliding with any paraId
+   * already present on either side (incl. the renumbered ones from
+   * `repairParaId`); textIds are sampled from the same space and
+   * likewise deduped within their own pool (paraId and textId
+   * namespaces are independent in Word's model — Word's saves often
+   * emit the placeholder `77777777` for textId, but the spec only
+   * requires it be a hex digit string).
+   *
+   * Four cases:
+   *   1. Element has neither → stamp both (Word's tracked-changes
+   *      infrastructure expects them paired).
+   *   2. Element has paraId but no textId → stamp textId. This is
+   *      the asymmetric shape that triggers Word's "Document
+   *      Recovery — Table Properties" dialog on open.
+   *   3. Element has textId but no paraId → stamp paraId (the
+   *      inverse asymmetric shape — unusual but handled for
+   *      completeness so Word doesn't see a dangling textId).
+   *   4. Element has both → leave alone.
+   */
+  async repairMissingParaIds(): Promise<number> {
+    let repairs = 0;
+    const usedParaIds = new Set<string>();
+    const usedTextIds = new Set<string>();
+
+    // Parse every user-text XML file once; collect existing IDs and
+    // store parsed DOMs for the stamp pass so we avoid a re-parse.
+    const domByFile = new Map<string, Document>();
+    for (const xmlFile of this.userTextXmlFiles()) {
+      try {
+        const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+        domByFile.set(xmlFile, dom);
+        const all = dom.getElementsByTagName("*");
+        for (let i = 0; i < all.length; i += 1) {
+          const elem = all.item(i);
+          if (!elem) continue;
+          const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId");
+          if (paraId) usedParaIds.add(paraId.toUpperCase());
+          const textId = elem.getAttributeNS(W14_NAMESPACE, "textId");
+          if (textId) usedTextIds.add(textId.toUpperCase());
+        }
+      } catch {
+        // pass
+      }
+    }
+
+    let allocCounter = 1;
+    const allocate = (pool: Set<string>): string => {
+      for (;;) {
+        const newId = allocCounter.toString(16).toUpperCase().padStart(8, "0");
+        allocCounter += 1;
+        if (!pool.has(newId)) {
+          pool.add(newId);
+          return newId;
+        }
+      }
+    };
+
+    // Stamp pass: reuse the DOMs we already parsed.
+    for (const [xmlFile, dom] of domByFile) {
+      try {
+        let modified = false;
+        for (const local of ["p", "tr"] as const) {
+          for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+            const list = dom.getElementsByTagNameNS(ns, local);
+            for (let i = 0; i < list.length; i += 1) {
+              const elem = list.item(i);
+              if (!elem) continue;
+              const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId");
+              const textId = elem.getAttributeNS(W14_NAMESPACE, "textId");
+              if (!paraId && !textId) {
+                // Case 1: stamp both as a pair.
+                elem.setAttributeNS(W14_NAMESPACE, "w14:paraId", allocate(usedParaIds));
+                elem.setAttributeNS(W14_NAMESPACE, "w14:textId", allocate(usedTextIds));
+                repairs += 2;
+                modified = true;
+              } else if (paraId && !textId) {
+                // Case 2: asymmetric — stamp textId.
+                elem.setAttributeNS(W14_NAMESPACE, "w14:textId", allocate(usedTextIds));
+                repairs += 1;
+                modified = true;
+              } else if (!paraId && textId) {
+                // Case 3: has textId but no paraId — stamp paraId.
+                elem.setAttributeNS(W14_NAMESPACE, "w14:paraId", allocate(usedParaIds));
+                repairs += 1;
+                modified = true;
+              }
+              // Case 4: both present — nothing to do.
+            }
+          }
+        }
+        if (modified) {
+          await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+        }
+      } catch {
+        // pass
+      }
+    }
+    return repairs;
+  }
+
+  /**
+   * Repair `mc:Ignorable` entries that name an undeclared namespace
+   * prefix. For each undeclared prefix:
+   *
+   *   - If the prefix is in `KNOWN_OOXML_PREFIX_URIS` (the table of
+   *     well-known Word/OOXML namespaces), declare it on the document
+   *     root: `xmlns:prefix="<canonical-uri>"`. Mirrors what Word does
+   *     on save and preserves the tolerated-extension semantics for any
+   *     `<prefix:*>` elements present elsewhere in the document.
+   *   - Otherwise (truly unknown prefix), drop it from the
+   *     `mc:Ignorable` token list. If that empties the attribute, the
+   *     attribute is removed entirely.
+   *
+   * Returns the count of mutations made (one per declaration added or
+   * Ignorable token dropped).
+   */
+  async repairIgnorable(): Promise<number> {
+    let repairs = 0;
+    for (const xmlFile of this.xmlFiles) {
+      try {
+        const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+        const root = dom.documentElement;
+        if (!root) continue;
+
+        // Find every element on the root carrying an Ignorable attr —
+        // the MC namespace gives `mc:Ignorable`, but the lxml-style
+        // collector in `validateNamespaces` matches anything ending
+        // in `Ignorable` so we mirror that to stay symmetric with
+        // the validator.
+        const declared = collectDeclaredPrefixes(root);
+        const attrs = root.attributes;
+        const ignorableAttrs: Array<{ name: string; value: string }> = [];
+        for (let i = 0; i < attrs.length; i += 1) {
+          const attr = attrs.item(i);
+          if (!attr) continue;
+          if (!attr.name.endsWith("Ignorable")) continue;
+          ignorableAttrs.push({ name: attr.name, value: attr.value });
+        }
+        if (ignorableAttrs.length === 0) continue;
+
+        let perFileMutations = 0;
+        for (const { name, value } of ignorableAttrs) {
+          const tokens = value.split(/\s+/).filter(Boolean);
+          const surviving: string[] = [];
+          for (const prefix of tokens) {
+            if (declared.has(prefix)) {
+              surviving.push(prefix);
+              continue;
+            }
+            const uri = KNOWN_OOXML_PREFIX_URIS[prefix];
+            if (uri !== undefined) {
+              // Declare on the root and keep the Ignorable entry.
+              root.setAttribute(`xmlns:${prefix}`, uri);
+              declared.add(prefix);
+              surviving.push(prefix);
+              perFileMutations += 1;
+              repairs += 1;
+            } else {
+              // Truly unknown — drop from Ignorable rather than
+              // guessing a URI.
+              perFileMutations += 1;
+              repairs += 1;
+            }
+          }
+          const next = surviving.join(" ");
+          if (next === value) continue;
+          if (next.length === 0) {
+            root.removeAttribute(name);
+          } else {
+            root.setAttribute(name, next);
+          }
+        }
+
+        if (perFileMutations > 0) {
+          await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+        }
+      } catch {
+        // swallow — corrupted XML files surface elsewhere
+      }
+    }
+    return repairs;
+  }
+
+  async repairDurableId(): Promise<number> {
+    let repairs = 0;
+    for (const xmlFile of this.xmlFiles) {
+      try {
+        const content = await fs.readFile(xmlFile, "utf-8");
+        const dom = parseXml(content);
+        let modified = false;
+        const base = baseName(xmlFile);
+        const all = dom.getElementsByTagName("*");
+        for (let i = 0; i < all.length; i += 1) {
+          const elem = all.item(i);
+          if (!elem) continue;
+          const durableId = elem.getAttributeNS(W16CID_NAMESPACE, "durableId");
+          if (!durableId) continue;
+
+          let needsRepair: boolean;
+          if (base === "numbering.xml") {
+            const v = parseIdValue(durableId, 10);
+            needsRepair = Number.isNaN(v) || v >= MAX_DURABLE_ID;
+          } else {
+            const v = parseIdValue(durableId, 16);
+            needsRepair = Number.isNaN(v) || v >= MAX_DURABLE_ID;
+          }
+
+          if (needsRepair) {
+            const value = 1 + Math.floor(Math.random() * MAX_RANDOM_DURABLE);
+            const newId =
+              base === "numbering.xml"
+                ? String(value)
+                : value.toString(16).toUpperCase().padStart(8, "0");
+            // setAttributeNS keeps the prefix binding intact.
+            elem.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", newId);
+            repairs += 1;
+            modified = true;
+          }
+        }
+        if (modified) {
+          await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+        }
+      } catch {
+        // swallow — mirrors Python bare except
+      }
+    }
+    return repairs;
+  }
+
+  /**
+   * Repair every `w14:paraId` whose value is `>= 0x80000000` (the spec
+   * cap), and propagate the renumbering into the threaded-comments
+   * extension.
+   *
+   * Two-pass implementation:
+   *
+   *  Pass 1: scan all XML files, build a `Map<oldId, newId>` for every
+   *          over-cap `w14:paraId`. Each old ID gets one new value
+   *          (deterministic per-run via random allocation, with a
+   *          collision-avoidance set so two different over-cap IDs can't
+   *          both land on the same fresh value).
+   *  Pass 2: walk every XML file again and rewrite (a) every
+   *          `w14:paraId` referenced in the map, AND (b) every
+   *          `w15:paraId` / `w15:paraIdParent` in `commentsExtended.xml`
+   *          that names an old value. Without (b), the cross-reference
+   *          between `comments.xml` and `commentsExtended.xml` breaks
+   *          and Word's threading view shows no replies — surfaced by
+   *          `validateCommentThreading`'s `comment-thread-paraid-orphan`
+   *          check.
+   */
+  async repairParaId(): Promise<number> {
+    let repairs = 0;
+    const remap = new Map<string, string>();
+    // textId is not cross-referenced (unlike paraId, which appears in
+    // w15:paraId / w15:paraIdParent in commentsExtended.xml), so it gets
+    // its own remap to keep the value pools cleanly separated.
+    const textIdRemap = new Map<string, string>();
+    // Separate pools for paraId and textId so that the two value
+    // namespaces remain independent (Word's model tolerates, and
+    // routinely produces, the same hex value appearing as both a
+    // paraId on one element and a textId on another).
+    const usedNewParaIds = new Set<string>();
+    const usedNewTextIds = new Set<string>();
+
+    let paraIdCounter = 1;
+    const allocateNewParaId = (): string => {
+      for (;;) {
+        const newId = paraIdCounter.toString(16).toUpperCase().padStart(8, "0");
+        paraIdCounter += 1;
+        if (!usedNewParaIds.has(newId)) {
+          usedNewParaIds.add(newId);
+          return newId;
+        }
+      }
+    };
+
+    let textIdCounter = 1;
+    const allocateNewTextId = (): string => {
+      for (;;) {
+        const newId = textIdCounter.toString(16).toUpperCase().padStart(8, "0");
+        textIdCounter += 1;
+        if (!usedNewTextIds.has(newId)) {
+          usedNewTextIds.add(newId);
+          return newId;
+        }
+      }
+    };
+
+    // Pass 1: discover every over-cap w14:paraId / w14:textId and pick
+    // replacements. Both share the < 0x80000000 cap (ST_LongHexNumber).
+    // Existing in-range IDs are collected into the per-type pools so
+    // that replacements can't collide with values already in use.
+    const parsedDoms = new Map<string, Document>();
+    for (const xmlFile of this.xmlFiles) {
+      try {
+        const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+        parsedDoms.set(xmlFile, dom);
+        const all = dom.getElementsByTagName("*");
+        for (let i = 0; i < all.length; i += 1) {
+          const elem = all.item(i);
+          if (!elem) continue;
+          const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId");
+          if (paraId && !remap.has(paraId)) {
+            const v = parseIdValue(paraId, 16);
+            if (Number.isNaN(v) || v >= MAX_PARA_ID) {
+              remap.set(paraId, allocateNewParaId());
+            } else {
+              usedNewParaIds.add(paraId.toUpperCase());
+            }
+          }
+          const textId = elem.getAttributeNS(W14_NAMESPACE, "textId");
+          if (textId && !textIdRemap.has(textId)) {
+            const v = parseIdValue(textId, 16);
+            if (Number.isNaN(v) || v >= MAX_PARA_ID) {
+              textIdRemap.set(textId, allocateNewTextId());
+            } else {
+              usedNewTextIds.add(textId.toUpperCase());
+            }
+          }
+        }
+      } catch {
+        // pass — corrupted XML files surface elsewhere.
+      }
+    }
+
+    // Also pre-allocate replacements for any w15:paraId / paraIdParent
+    // values that are over-cap *and* don't appear as a w14:paraId
+    // (rare — would happen if commentsExtended.xml has a stale entry).
+    // Keeping these in the same remap means cross-file references stay
+    // self-consistent.
+    for (const [xmlFile, dom] of parsedDoms) {
+      if (baseName(xmlFile) !== "commentsExtended.xml") continue;
+      const exts = dom.getElementsByTagNameNS(W15_NAMESPACE, "commentEx");
+      for (let i = 0; i < exts.length; i += 1) {
+        const elem = exts.item(i);
+        if (!elem) continue;
+        for (const attr of ["paraId", "paraIdParent"] as const) {
+          const val = elem.getAttributeNS(W15_NAMESPACE, attr);
+          if (!val) continue;
+          if (remap.has(val)) continue;
+          const v = parseIdValue(val, 16);
+          if (Number.isNaN(v) || v >= MAX_PARA_ID) {
+            remap.set(val, allocateNewParaId());
+          } else {
+            usedNewParaIds.add(val.toUpperCase());
+          }
+        }
+      }
+    }
+
+    if (remap.size === 0 && textIdRemap.size === 0) return 0;
+
+    // Pass 2: rewrite all references.
+    for (const [xmlFile, dom] of parsedDoms) {
+      try {
+        let modified = false;
+        const all = dom.getElementsByTagName("*");
+        for (let i = 0; i < all.length; i += 1) {
+          const elem = all.item(i);
+          if (!elem) continue;
+          const w14Para = elem.getAttributeNS(W14_NAMESPACE, "paraId");
+          if (w14Para && remap.has(w14Para)) {
+            elem.setAttributeNS(W14_NAMESPACE, "w14:paraId", remap.get(w14Para)!);
+            repairs += 1;
+            modified = true;
+          }
+          const w14Text = elem.getAttributeNS(W14_NAMESPACE, "textId");
+          if (w14Text && textIdRemap.has(w14Text)) {
+            elem.setAttributeNS(W14_NAMESPACE, "w14:textId", textIdRemap.get(w14Text)!);
+            repairs += 1;
+            modified = true;
+          }
+          const w15Para = elem.getAttributeNS(W15_NAMESPACE, "paraId");
+          if (w15Para && remap.has(w15Para)) {
+            elem.setAttributeNS(W15_NAMESPACE, "w15:paraId", remap.get(w15Para)!);
+            repairs += 1;
+            modified = true;
+          }
+          const w15Parent = elem.getAttributeNS(W15_NAMESPACE, "paraIdParent");
+          if (w15Parent && remap.has(w15Parent)) {
+            elem.setAttributeNS(W15_NAMESPACE, "w15:paraIdParent", remap.get(w15Parent)!);
+            repairs += 1;
+            modified = true;
+          }
+        }
+        if (modified) {
+          await fs.writeFile(xmlFile, serializeXml(dom, "UTF-8"), "utf-8");
+        }
+      } catch {
+        // swallow — mirrors Python bare except in repairDurableId
+      }
+    }
+    return repairs;
+  }
+
+  // ----- internal helpers ---------------------------------------------------
+
+  private *documentXmlFiles(): IterableIterator<string> {
+    for (const f of this.xmlFiles) {
+      if (baseName(f) === "document.xml") yield f;
+    }
+  }
+
+  /**
+   * XML parts that can hold user-visible text and therefore can leak
+   * wire-format tracking tokens: the body, headers, footers, footnotes,
+   * endnotes, comments, and glossary part. Excludes settings / styles /
+   * rels / numbering since they never contain user text.
+   */
+  private *userTextXmlFiles(): IterableIterator<string> {
+    for (const f of this.xmlFiles) {
+      const name = baseName(f);
+      if (name === "document.xml") yield f;
+      else if (name === "comments.xml") yield f;
+      else if (name === "footnotes.xml") yield f;
+      else if (name === "endnotes.xml") yield f;
+      else if (/^header\d*\.xml$/i.test(name)) yield f;
+      else if (/^footer\d*\.xml$/i.test(name)) yield f;
+    }
+  }
+
+  private async tableStyleBordersByStyleId(): Promise<Map<string, BorderSignature>> {
+    const out = new Map<string, BorderSignature>();
+    const stylesPath = this.xmlFiles.find((xmlFile) => baseName(xmlFile) === "styles.xml");
+    if (!stylesPath) return out;
+
+    let dom: Document;
+    try {
+      dom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+    } catch {
+      return out;
+    }
+
+    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+      const styles = dom.getElementsByTagNameNS(ns, "style");
+      for (let i = 0; i < styles.length; i += 1) {
+        const style = styles.item(i);
+        if (!style) continue;
+        if (style.getAttributeNS(ns, "type") !== "table") continue;
+        const styleId = style.getAttributeNS(ns, "styleId");
+        if (!styleId) continue;
+        const tblPr = directChild(style, ns, "tblPr");
+        const signature = borderSignature(tblPr ? directChild(tblPr, ns, "tblBorders") : null, ns);
+        if (signature) out.set(styleId, signature);
+      }
+    }
+    return out;
+  }
 }
 
 // ===== module-level helpers ===================================================
@@ -2877,147 +2939,164 @@ type BorderSide = (typeof TABLE_BORDER_SIDES)[number];
 type BorderSignature = ReadonlyMap<BorderSide, ReadonlyMap<string, string>>;
 
 function finalize(issues: ValidationIssue[]): ValidationResult {
-    return { valid: issues.every((i) => i.severity !== "error"), issues };
+  return { valid: issues.every((i) => i.severity !== "error"), issues };
 }
 
 function isWordBlockingXsdIssue(issue: ValidationIssue): boolean {
-    if (issue.path && !issue.path.startsWith("word/") && issue.path !== "docProps/custom.xml") return false;
-    const msg = issue.message;
-    return (
-        msg.includes("}p2': This element is not expected") ||
-        (msg.includes("}pPr': This element is not expected") && msg.includes("Expected is one of")) ||
-        msg.includes("}rPr': This element is not expected.") ||
-        msg.includes(
-            "}graphic': This element is not expected. Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}extent",
-        ) ||
-        msg.includes(
-            "}blipFill': This element is not expected. Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/picture}nvPicPr",
-        ) ||
-        msg.includes("Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/picture}spPr") ||
-        msg.includes("Element 'link': This element is not expected") ||
-        msg.includes("}u': This element is not expected") ||
-        msg.includes("}filetime': '' is not a valid value")
-    );
+  if (issue.path && !issue.path.startsWith("word/") && issue.path !== "docProps/custom.xml")
+    return false;
+  const msg = issue.message;
+  return (
+    msg.includes("}p2': This element is not expected") ||
+    (msg.includes("}pPr': This element is not expected") && msg.includes("Expected is one of")) ||
+    msg.includes("}rPr': This element is not expected.") ||
+    msg.includes(
+      "}graphic': This element is not expected. Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}extent",
+    ) ||
+    msg.includes(
+      "}blipFill': This element is not expected. Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/picture}nvPicPr",
+    ) ||
+    msg.includes("Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/picture}spPr") ||
+    msg.includes("Element 'link': This element is not expected") ||
+    msg.includes("}u': This element is not expected") ||
+    msg.includes("}filetime': '' is not a valid value")
+  );
 }
 
 function directChild(parent: Element, namespaceURI: string, local: string): Element | null {
-    for (let child = parent.firstChild; child; child = child.nextSibling) {
-        if (child.nodeType !== 1) continue;
-        const elem = child as Element;
-        if (elem.namespaceURI === namespaceURI && (elem.localName || elem.tagName.split(":").pop()) === local) return elem;
-    }
-    return null;
+  for (let child = parent.firstChild; child; child = child.nextSibling) {
+    if (child.nodeType !== 1) continue;
+    const elem = child as Element;
+    if (
+      elem.namespaceURI === namespaceURI &&
+      (elem.localName || elem.tagName.split(":").pop()) === local
+    )
+      return elem;
+  }
+  return null;
 }
 
 function directChildren(parent: Element, namespaceURI: string, local: string): Element[] {
-    const out: Element[] = [];
-    for (let child = parent.firstChild; child; child = child.nextSibling) {
-        if (child.nodeType !== 1) continue;
-        const elem = child as Element;
-        if (elem.namespaceURI === namespaceURI && (elem.localName || elem.tagName.split(":").pop()) === local) {
-            out.push(elem);
-        }
+  const out: Element[] = [];
+  for (let child = parent.firstChild; child; child = child.nextSibling) {
+    if (child.nodeType !== 1) continue;
+    const elem = child as Element;
+    if (
+      elem.namespaceURI === namespaceURI &&
+      (elem.localName || elem.tagName.split(":").pop()) === local
+    ) {
+      out.push(elem);
     }
-    return out;
+  }
+  return out;
 }
 
 function isExternalRelationship(rel: Element, target: string): boolean {
-    if (rel.getAttribute("TargetMode") === "External") return true;
-    return /^[a-z][a-z\d+.-]*:/i.test(target);
+  if (rel.getAttribute("TargetMode") === "External") return true;
+  return /^[a-z][a-z\d+.-]*:/i.test(target);
 }
 
-function resolveRelationshipTargetPath(unpackedDir: string, relsFile: string, target: string): string | null {
-    const targetWithoutFragment = target.split("#", 1)[0];
-    if (!targetWithoutFragment) return null;
-    if (targetWithoutFragment.startsWith("/")) {
-        return path.resolve(unpackedDir, targetWithoutFragment.replace(/^\/+/, ""));
-    }
+function resolveRelationshipTargetPath(
+  unpackedDir: string,
+  relsFile: string,
+  target: string,
+): string | null {
+  const targetWithoutFragment = target.split("#", 1)[0];
+  if (!targetWithoutFragment) return null;
+  if (targetWithoutFragment.startsWith("/")) {
+    return path.resolve(unpackedDir, targetWithoutFragment.replace(/^\/+/, ""));
+  }
 
-    const relsDir = path.dirname(relsFile);
-    const baseDir = path.basename(relsDir) === "_rels" ? path.dirname(relsDir) : relsDir;
-    return path.resolve(baseDir, targetWithoutFragment);
+  const relsDir = path.dirname(relsFile);
+  const baseDir = path.basename(relsDir) === "_rels" ? path.dirname(relsDir) : relsDir;
+  return path.resolve(baseDir, targetWithoutFragment);
 }
 
 function borderSignature(borders: Element | null, namespaceURI: string): BorderSignature | null {
-    if (!borders) return null;
-    const out = new Map<BorderSide, ReadonlyMap<string, string>>();
-    for (const side of TABLE_BORDER_SIDES) {
-        const sideElem = directChild(borders, namespaceURI, side);
-        if (!sideElem) continue;
-        const attrs = new Map<string, string>();
-        for (const attr of BORDER_COMPARE_ATTRIBUTES) {
-            const value = sideElem.getAttributeNS(namespaceURI, attr);
-            if (value !== null) attrs.set(attr, value);
-        }
-        out.set(side, attrs);
+  if (!borders) return null;
+  const out = new Map<BorderSide, ReadonlyMap<string, string>>();
+  for (const side of TABLE_BORDER_SIDES) {
+    const sideElem = directChild(borders, namespaceURI, side);
+    if (!sideElem) continue;
+    const attrs = new Map<string, string>();
+    for (const attr of BORDER_COMPARE_ATTRIBUTES) {
+      const value = sideElem.getAttributeNS(namespaceURI, attr);
+      if (value !== null) attrs.set(attr, value);
     }
-    return out.size > 0 ? out : null;
+    out.set(side, attrs);
+  }
+  return out.size > 0 ? out : null;
 }
 
 function borderSignaturesEqual(a: BorderSignature, b: BorderSignature): boolean {
-    if (a.size !== b.size) return false;
-    for (const side of TABLE_BORDER_SIDES) {
-        const aAttrs = a.get(side);
-        const bAttrs = b.get(side);
-        if (!aAttrs && !bAttrs) continue;
-        if (!aAttrs || !bAttrs) return false;
-        if (aAttrs.size !== bAttrs.size) return false;
-        for (const [attr, value] of aAttrs) {
-            if (bAttrs.get(attr) !== value) return false;
-        }
+  if (a.size !== b.size) return false;
+  for (const side of TABLE_BORDER_SIDES) {
+    const aAttrs = a.get(side);
+    const bAttrs = b.get(side);
+    if (!aAttrs && !bAttrs) continue;
+    if (!aAttrs || !bAttrs) return false;
+    if (aAttrs.size !== bAttrs.size) return false;
+    for (const [attr, value] of aAttrs) {
+      if (bAttrs.get(attr) !== value) return false;
     }
-    return true;
+  }
+  return true;
 }
 
-function collectNumericAttributeValues(dom: Document, namespaceURI: string, local: string, attr: string): Set<number> {
-    const out = new Set<number>();
-    const elems = dom.getElementsByTagNameNS(namespaceURI, local);
-    for (let i = 0; i < elems.length; i += 1) {
-        const elem = elems.item(i);
-        if (!elem) continue;
-        const value = Number.parseInt(elem.getAttribute(attr) ?? "", 10);
-        if (Number.isFinite(value)) out.add(value);
-    }
-    return out;
+function collectNumericAttributeValues(
+  dom: Document,
+  namespaceURI: string,
+  local: string,
+  attr: string,
+): Set<number> {
+  const out = new Set<number>();
+  const elems = dom.getElementsByTagNameNS(namespaceURI, local);
+  for (let i = 0; i < elems.length; i += 1) {
+    const elem = elems.item(i);
+    if (!elem) continue;
+    const value = Number.parseInt(elem.getAttribute(attr) ?? "", 10);
+    if (Number.isFinite(value)) out.add(value);
+  }
+  return out;
 }
 
 function baseName(p: string): string {
-    const idx = Math.max(p.lastIndexOf("/"), p.lastIndexOf("\\"));
-    return idx >= 0 ? p.slice(idx + 1) : p;
+  const idx = Math.max(p.lastIndexOf("/"), p.lastIndexOf("\\"));
+  return idx >= 0 ? p.slice(idx + 1) : p;
 }
 
 function previewRepr(text: string, max: number): string {
-    // Mirrors Python's `repr(text)` truncation: wraps in single quotes and
-    // escapes embedded backslashes / quotes the same way repr() does.
-    const repr = pythonRepr(text);
-    return repr.length > max ? `${repr.slice(0, max)}...` : repr;
+  // Mirrors Python's `repr(text)` truncation: wraps in single quotes and
+  // escapes embedded backslashes / quotes the same way repr() does.
+  const repr = pythonRepr(text);
+  return repr.length > max ? `${repr.slice(0, max)}...` : repr;
 }
 
 function pythonRepr(s: string): string {
-    let out = "";
-    for (const ch of s) {
-        if (ch === "\\") out += "\\\\";
-        else if (ch === "'") out += "\\'";
-        else if (ch === "\n") out += "\\n";
-        else if (ch === "\r") out += "\\r";
-        else if (ch === "\t") out += "\\t";
-        else out += ch;
-    }
-    return `'${out}'`;
+  let out = "";
+  for (const ch of s) {
+    if (ch === "\\") out += "\\\\";
+    else if (ch === "'") out += "\\'";
+    else if (ch === "\n") out += "\\n";
+    else if (ch === "\r") out += "\\r";
+    else if (ch === "\t") out += "\\t";
+    else out += ch;
+  }
+  return `'${out}'`;
 }
 
 function setDiff(a: Set<string>, b: Set<string>): Set<string> {
-    const out = new Set<string>();
-    for (const v of a) if (!b.has(v)) out.add(v);
-    return out;
+  const out = new Set<string>();
+  for (const v of a) if (!b.has(v)) out.add(v);
+  return out;
 }
 
 function sortIdsNumeric(ids: Iterable<string>): string[] {
-    return [...ids].sort((x, y) => {
-        const a = /^\d+$/.test(x) ? Number.parseInt(x, 10) : 0;
-        const b = /^\d+$/.test(y) ? Number.parseInt(y, 10) : 0;
-        return a - b;
-    });
+  return [...ids].sort((x, y) => {
+    const a = /^\d+$/.test(x) ? Number.parseInt(x, 10) : 0;
+    const b = /^\d+$/.test(y) ? Number.parseInt(y, 10) : 0;
+    return a - b;
+  });
 }
 
 /**
@@ -3025,46 +3104,49 @@ function sortIdsNumeric(ids: Iterable<string>): string[] {
  * We return NaN for "could not parse" so callers can branch.
  */
 function parseIdValue(val: string, base: number): number {
-    const trimmed = val.trim();
-    if (!trimmed) return Number.NaN;
-    // Reject anything that's not pure digits / hex chars for the requested base.
-    const re = base === 16 ? /^[+-]?[0-9A-Fa-f]+$/ : /^[+-]?[0-9]+$/;
-    if (!re.test(trimmed)) return Number.NaN;
-    const v = Number.parseInt(trimmed, base);
-    return Number.isFinite(v) ? v : Number.NaN;
+  const trimmed = val.trim();
+  if (!trimmed) return Number.NaN;
+  // Reject anything that's not pure digits / hex chars for the requested base.
+  const re = base === 16 ? /^[+-]?[0-9A-Fa-f]+$/ : /^[+-]?[0-9]+$/;
+  if (!re.test(trimmed)) return Number.NaN;
+  const v = Number.parseInt(trimmed, base);
+  return Number.isFinite(v) ? v : Number.NaN;
 }
 
 function countParagraphsInRoot(doc: Document): number {
-    let count = 0;
+  let count = 0;
 
-    const isInsideTextBox = (node: Node | null): boolean => {
-        let curr = node?.parentNode;
-        while (curr) {
-            if (curr.nodeType === 1) {
-                // ELEMENT_NODE
-                const elem = curr as Element;
-                const localName = elem.localName;
-                const ns = elem.namespaceURI;
-                if (localName === "txbxContent" && (ns === WORD_2006_NAMESPACE || ns === WORD_STRICT_NAMESPACE)) {
-                    return true;
-                }
-                if (localName === "textbox" && ns === VML_NAMESPACE) {
-                    return true;
-                }
-            }
-            curr = curr.parentNode;
+  const isInsideTextBox = (node: Node | null): boolean => {
+    let curr = node?.parentNode;
+    while (curr) {
+      if (curr.nodeType === 1) {
+        // ELEMENT_NODE
+        const elem = curr as Element;
+        const localName = elem.localName;
+        const ns = elem.namespaceURI;
+        if (
+          localName === "txbxContent" &&
+          (ns === WORD_2006_NAMESPACE || ns === WORD_STRICT_NAMESPACE)
+        ) {
+          return true;
         }
-        return false;
-    };
-
-    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-        const ps = doc.getElementsByTagNameNS(ns, "p");
-        for (let i = 0; i < ps.length; i++) {
-            if (!isInsideTextBox(ps.item(i))) {
-                count++;
-            }
+        if (localName === "textbox" && ns === VML_NAMESPACE) {
+          return true;
         }
+      }
+      curr = curr.parentNode;
     }
+    return false;
+  };
 
-    return count;
+  for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+    const ps = doc.getElementsByTagNameNS(ns, "p");
+    for (let i = 0; i < ps.length; i++) {
+      if (!isInsideTextBox(ps.item(i))) {
+        count++;
+      }
+    }
+  }
+
+  return count;
 }

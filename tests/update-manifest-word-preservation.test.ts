@@ -19,17 +19,17 @@ import { describe, expect, it } from "vitest";
 import { resolveWordOutcome } from "../scripts/update-manifest";
 
 describe("resolveWordOutcome", () => {
-    const prior = new Map<string, string>([["broken/a.docx", "clean-open"]]);
+  const prior = new Map<string, string>([["broken/a.docx", "clean-open"]]);
 
-    it("prefers a fresh probe outcome", () => {
-        expect(resolveWordOutcome("broken/a.docx", "recovered", prior)).toBe("recovered");
-    });
+  it("prefers a fresh probe outcome", () => {
+    expect(resolveWordOutcome("broken/a.docx", "recovered", prior)).toBe("recovered");
+  });
 
-    it("falls back to the prior manifest value when no probe", () => {
-        expect(resolveWordOutcome("broken/a.docx", undefined, prior)).toBe("clean-open");
-    });
+  it("falls back to the prior manifest value when no probe", () => {
+    expect(resolveWordOutcome("broken/a.docx", undefined, prior)).toBe("clean-open");
+  });
 
-    it("is 'unknown' when neither probe nor prior value exists", () => {
-        expect(resolveWordOutcome("broken/new.docx", undefined, prior)).toBe("unknown");
-    });
+  it("is 'unknown' when neither probe nor prior value exists", () => {
+    expect(resolveWordOutcome("broken/new.docx", undefined, prior)).toBe("unknown");
+  });
 });

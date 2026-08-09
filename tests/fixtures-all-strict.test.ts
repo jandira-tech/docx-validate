@@ -43,65 +43,69 @@ const FIXTURES = path.join(HERE, "fixtures");
 const MANIFEST_PATH = path.join(HERE, "fixtures-all.manifest.json");
 
 interface ManifestOutcome {
-    valid: boolean;
-    errorCodes: string[];
-    threw?: string;
+  valid: boolean;
+  errorCodes: string[];
+  threw?: string;
 }
 
 interface ManifestEntry {
-    relativePath: string;
-    strict: ManifestOutcome;
-    lenient: ManifestOutcome;
+  relativePath: string;
+  strict: ManifestOutcome;
+  lenient: ManifestOutcome;
 }
 
 interface Manifest {
-    generatedAt: string;
-    totalFixtures: number;
-    entries: ManifestEntry[];
+  generatedAt: string;
+  totalFixtures: number;
+  entries: ManifestEntry[];
 }
 
 const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf-8")) as Manifest;
 
 describe("all fixtures — strict profile", () => {
-    it(`manifest covers all ${manifest.totalFixtures} fixtures`, () => {
-        expect(manifest.entries.length).toBe(manifest.totalFixtures);
+  it(`manifest covers all ${manifest.totalFixtures} fixtures`, () => {
+    expect(manifest.entries.length).toBe(manifest.totalFixtures);
+  });
+
+  for (const entry of manifest.entries) {
+    const expected = entry.strict;
+    const label = expected.valid ? "PASS" : expected.threw ? "THROW" : "FAIL";
+    const fixturePath = path.join(FIXTURES, entry.relativePath);
+
+    // 60s per fixture: a few large/complex fixtures (heavy XSD-validation
+    // passes through libxmljs2) take longer than vitest's 5s default.
+    it(`[${label}] ${entry.relativePath}`, { timeout: 60_000 }, async () => {
+      if (expected.threw) {
+        let captured: unknown;
+        try {
+          await validate(fixturePath, { profile: "strict" });
+        } catch (e) {
+          captured = e;
+        }
+        expect(captured, `expected validate() to throw for ${entry.relativePath}`).toBeInstanceOf(
+          Error,
+        );
+        return;
+      }
+
+      const result = await validate(fixturePath, { profile: "strict" });
+      const errorCodes = Array.from(
+        new Set(
+          result.issues
+            .filter((i) => i.severity === "error")
+            .map((i) => i.code)
+            .filter((c): c is string => Boolean(c)),
+        ),
+      ).sort();
+
+      // Pin pass/fail.
+      expect(result.valid, `expected ${expected.valid ? "valid" : "invalid"} in strict mode`).toBe(
+        expected.valid,
+      );
+
+      // Pin the *set* of error codes — drift indicates an unintended
+      // behaviour change. We compare sorted arrays for stable diffs.
+      expect(errorCodes).toEqual(expected.errorCodes);
     });
-
-    for (const entry of manifest.entries) {
-        const expected = entry.strict;
-        const label = expected.valid ? "PASS" : expected.threw ? "THROW" : "FAIL";
-        const fixturePath = path.join(FIXTURES, entry.relativePath);
-
-        // 60s per fixture: a few large/complex fixtures (heavy XSD-validation
-        // passes through libxmljs2) take longer than vitest's 5s default.
-        it(`[${label}] ${entry.relativePath}`, { timeout: 60_000 }, async () => {
-            if (expected.threw) {
-                let captured: unknown;
-                try {
-                    await validate(fixturePath, { profile: "strict" });
-                } catch (e) {
-                    captured = e;
-                }
-                expect(captured, `expected validate() to throw for ${entry.relativePath}`).toBeInstanceOf(Error);
-                return;
-            }
-
-            const result = await validate(fixturePath, { profile: "strict" });
-            const errorCodes = Array.from(
-                new Set(
-                    result.issues
-                        .filter((i) => i.severity === "error")
-                        .map((i) => i.code)
-                        .filter((c): c is string => Boolean(c)),
-                ),
-            ).sort();
-
-            // Pin pass/fail.
-            expect(result.valid, `expected ${expected.valid ? "valid" : "invalid"} in strict mode`).toBe(expected.valid);
-
-            // Pin the *set* of error codes — drift indicates an unintended
-            // behaviour change. We compare sorted arrays for stable diffs.
-            expect(errorCodes).toEqual(expected.errorCodes);
-        });
-    }
+  }
 });

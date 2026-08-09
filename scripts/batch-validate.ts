@@ -20,30 +20,34 @@ import type { Profile } from "../src/lib/types";
 type Item = { id: string; path: string };
 
 async function main(): Promise<void> {
-    const [, , listPath, outPath, profileArg] = process.argv;
-    if (!listPath || !outPath) {
-        process.stderr.write("usage: batch-validate.ts <list.json> <out.json> [profile]\n");
-        process.exit(2);
+  const [, , listPath, outPath, profileArg] = process.argv;
+  if (!listPath || !outPath) {
+    process.stderr.write("usage: batch-validate.ts <list.json> <out.json> [profile]\n");
+    process.exit(2);
+  }
+  const profile = (profileArg ?? "word-valid") as Profile;
+  const items: Item[] = JSON.parse(readFileSync(listPath, "utf8"));
+  const out: Array<{
+    id: string;
+    valid: boolean;
+    errors: Array<{ part: string; message: string }>;
+  }> = [];
+  for (const it of items) {
+    try {
+      const res = await validate(it.path, { profile });
+      const errors = (res.issues ?? [])
+        .filter((i) => i.severity === "error")
+        .map((i) => ({ part: i.path ?? "<unknown>", message: i.message }));
+      out.push({ id: it.id, valid: Boolean(res.valid) && errors.length === 0, errors });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      out.push({ id: it.id, valid: false, errors: [{ part: "<cli>", message }] });
     }
-    const profile = (profileArg ?? "word-valid") as Profile;
-    const items: Item[] = JSON.parse(readFileSync(listPath, "utf8"));
-    const out: Array<{ id: string; valid: boolean; errors: Array<{ part: string; message: string }> }> = [];
-    for (const it of items) {
-        try {
-            const res = await validate(it.path, { profile });
-            const errors = (res.issues ?? [])
-                .filter((i) => i.severity === "error")
-                .map((i) => ({ part: i.path ?? "<unknown>", message: i.message }));
-            out.push({ id: it.id, valid: Boolean(res.valid) && errors.length === 0, errors });
-        } catch (err) {
-            const message = err instanceof Error ? err.message : String(err);
-            out.push({ id: it.id, valid: false, errors: [{ part: "<cli>", message }] });
-        }
-    }
-    writeFileSync(outPath, JSON.stringify(out));
+  }
+  writeFileSync(outPath, JSON.stringify(out));
 }
 
 main().catch((e: unknown) => {
-    process.stderr.write(`${e instanceof Error ? e.stack : String(e)}\n`);
-    process.exit(2);
+  process.stderr.write(`${e instanceof Error ? e.stack : String(e)}\n`);
+  process.exit(2);
 });

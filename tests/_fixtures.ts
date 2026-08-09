@@ -42,26 +42,26 @@ export const TEXTBOX_FIXTURE = path.join(MAMMOTH_FIXTURES, "text-box.docx");
  * `zipfile.ZipFile(...).extractall(target)`.
  */
 export async function unpackDocxFixture(docxPath: string, tmpDir: string): Promise<string> {
-    const target = path.join(tmpDir, "unpacked");
-    await fs.mkdir(target, { recursive: true });
+  const target = path.join(tmpDir, "unpacked");
+  await fs.mkdir(target, { recursive: true });
 
-    const buf = await fs.readFile(docxPath);
-    const zip = await JSZip.loadAsync(buf);
+  const buf = await fs.readFile(docxPath);
+  const zip = await JSZip.loadAsync(buf);
 
-    await Promise.all(
-        Object.values(zip.files).map(async (entry) => {
-            const out = path.join(target, entry.name);
-            if (entry.dir) {
-                await fs.mkdir(out, { recursive: true });
-                return;
-            }
-            await fs.mkdir(path.dirname(out), { recursive: true });
-            const data = await entry.async("nodebuffer");
-            await fs.writeFile(out, data);
-        }),
-    );
+  await Promise.all(
+    Object.values(zip.files).map(async (entry) => {
+      const out = path.join(target, entry.name);
+      if (entry.dir) {
+        await fs.mkdir(out, { recursive: true });
+        return;
+      }
+      await fs.mkdir(path.dirname(out), { recursive: true });
+      const data = await entry.async("nodebuffer");
+      await fs.writeFile(out, data);
+    }),
+  );
 
-    return target;
+  return target;
 }
 
 /**
@@ -69,7 +69,7 @@ export async function unpackDocxFixture(docxPath: string, tmpDir: string): Promi
  * unpacked-dir argument it never reads from.
  */
 export async function makeEmptyPlaceholder(tmpDir: string): Promise<string> {
-    const placeholder = path.join(tmpDir, "empty");
-    await fs.mkdir(placeholder, { recursive: true });
-    return placeholder;
+  const placeholder = path.join(tmpDir, "empty");
+  await fs.mkdir(placeholder, { recursive: true });
+  return placeholder;
 }

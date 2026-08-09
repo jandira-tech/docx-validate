@@ -25,10 +25,10 @@ accounted for instead of being invisible or mistaken for loss.
 - A symmetric A-vs-B comparison reporting **additions, removals, and count
   deltas** between two document inventories.
 - Expanded collector coverage:
-    - **Family 1 — in-run atomic marks** (quantity). Always collected.
-    - **Family 2 — table shape** (count + shape). Always collected.
-    - **Family 3 — section/page geometry** (shape). Strict profile only.
-    - **Family 4 — image/drawing shape** (shape, tolerance-bucketed). Strict profile only.
+  - **Family 1 — in-run atomic marks** (quantity). Always collected.
+  - **Family 2 — table shape** (count + shape). Always collected.
+  - **Family 3 — section/page geometry** (shape). Strict profile only.
+  - **Family 4 — image/drawing shape** (shape, tolerance-bucketed). Strict profile only.
 - Structured diff output + two formatters (`ValidationIssue[]`, markdown) + a
   thin CLI.
 - The new collectors feed **both** the new fingerprint **and** the existing
@@ -144,23 +144,26 @@ category `"image shape"`:
 
 ```ts
 export interface DocxInventoryDelta {
-    key: string; // path\0category\0label\0unit
-    path: string; // always present (every counter carries its part path)
-    category: string;
-    label: string;
-    unit: string;
-    before: number; // 0 for added
-    after: number; // 0 for removed
+  key: string; // path\0category\0label\0unit
+  path: string; // always present (every counter carries its part path)
+  category: string;
+  label: string;
+  unit: string;
+  before: number; // 0 for added
+  after: number; // 0 for removed
 }
 
 export interface DocxInventoryDiff {
-    added: DocxInventoryDelta[]; // key only in B (before 0)
-    removed: DocxInventoryDelta[]; // key only in A (after 0)
-    changed: DocxInventoryDelta[]; // same key, before !== after
-    unchangedCount: number; // keys identical in both
+  added: DocxInventoryDelta[]; // key only in B (before 0)
+  removed: DocxInventoryDelta[]; // key only in A (after 0)
+  changed: DocxInventoryDelta[]; // same key, before !== after
+  unchangedCount: number; // keys identical in both
 }
 
-export function diffDocxInventories(before: DocxSemanticInventory, after: DocxSemanticInventory): DocxInventoryDiff;
+export function diffDocxInventories(
+  before: DocxSemanticInventory,
+  after: DocxSemanticInventory,
+): DocxInventoryDiff;
 ```
 
 - **Symmetric**: a key in only B → `added`; only A → `removed`; in both with a

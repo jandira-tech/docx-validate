@@ -96,19 +96,19 @@ import { describe, expect, it } from "vitest";
 import { resolveWordOutcome } from "../scripts/update-manifest";
 
 describe("resolveWordOutcome", () => {
-    const prior = new Map<string, string>([["broken/a.docx", "clean-open"]]);
+  const prior = new Map<string, string>([["broken/a.docx", "clean-open"]]);
 
-    it("prefers a fresh probe outcome", () => {
-        expect(resolveWordOutcome("broken/a.docx", "recovered", prior)).toBe("recovered");
-    });
+  it("prefers a fresh probe outcome", () => {
+    expect(resolveWordOutcome("broken/a.docx", "recovered", prior)).toBe("recovered");
+  });
 
-    it("falls back to the prior manifest value when no probe", () => {
-        expect(resolveWordOutcome("broken/a.docx", undefined, prior)).toBe("clean-open");
-    });
+  it("falls back to the prior manifest value when no probe", () => {
+    expect(resolveWordOutcome("broken/a.docx", undefined, prior)).toBe("clean-open");
+  });
 
-    it("is 'unknown' when neither probe nor prior value exists", () => {
-        expect(resolveWordOutcome("broken/new.docx", undefined, prior)).toBe("unknown");
-    });
+  it("is 'unknown' when neither probe nor prior value exists", () => {
+    expect(resolveWordOutcome("broken/new.docx", undefined, prior)).toBe("unknown");
+  });
 });
 ```
 
@@ -128,22 +128,28 @@ In `scripts/update-manifest.ts`, add the exported helper (near the other top-lev
  * Keeps regen idempotent w.r.t. Word-probe metadata when the probe JSONL is
  * absent (no LibreOffice in CI).
  */
-export function resolveWordOutcome(relativePath: string, probeOutcome: string | undefined, priorWord: Map<string, string>): string {
-    return probeOutcome ?? priorWord.get(relativePath) ?? "unknown";
+export function resolveWordOutcome(
+  relativePath: string,
+  probeOutcome: string | undefined,
+  priorWord: Map<string, string>,
+): string {
+  return probeOutcome ?? priorWord.get(relativePath) ?? "unknown";
 }
 
 function readPriorManifestWord(): Map<string, string> {
-    const map = new Map<string, string>();
-    if (!existsSync(MANIFEST)) return map;
-    try {
-        const prior = JSON.parse(readFileSync(MANIFEST, "utf-8")) as { entries?: { relativePath: string; word?: string }[] };
-        for (const entry of prior.entries ?? []) {
-            if (entry.word) map.set(entry.relativePath, entry.word);
-        }
-    } catch {
-        // Malformed prior manifest — treat as no prior data.
+  const map = new Map<string, string>();
+  if (!existsSync(MANIFEST)) return map;
+  try {
+    const prior = JSON.parse(readFileSync(MANIFEST, "utf-8")) as {
+      entries?: { relativePath: string; word?: string }[];
+    };
+    for (const entry of prior.entries ?? []) {
+      if (entry.word) map.set(entry.relativePath, entry.word);
     }
-    return map;
+  } catch {
+    // Malformed prior manifest — treat as no prior data.
+  }
+  return map;
 }
 ```
 
@@ -155,16 +161,16 @@ const priorWord = readPriorManifestWord();
 const entries: ManifestEntry[] = [];
 
 for (const file of files) {
-    const relativePath = path.relative(FIXTURES_ROOT, file);
-    process.stderr.write(`Processing: ${relativePath}\n`);
+  const relativePath = path.relative(FIXTURES_ROOT, file);
+  process.stderr.write(`Processing: ${relativePath}\n`);
 
-    const strict = await runValidator(file, "strict");
-    const lenient = await runValidator(file, "lenient");
+  const strict = await runValidator(file, "strict");
+  const lenient = await runValidator(file, "lenient");
 
-    const probeRecord = probeResults.get(relativePath);
-    const wordOutcome = resolveWordOutcome(relativePath, probeRecord?.word?.outcome, priorWord);
+  const probeRecord = probeResults.get(relativePath);
+  const wordOutcome = resolveWordOutcome(relativePath, probeRecord?.word?.outcome, priorWord);
 
-    entries.push({ relativePath, strict, lenient, word: wordOutcome });
+  entries.push({ relativePath, strict, lenient, word: wordOutcome });
 }
 ```
 
@@ -215,70 +221,74 @@ import { describe, expect, it } from "vitest";
 import { type FixtureFingerprint, deriveName, slugify } from "../scripts/derive-fixture-name";
 
 const base: FixtureFingerprint = {
-    strictErrorCodes: [],
-    lenientErrorCodes: [],
-    insCount: 0,
-    delCount: 0,
-    commentCount: 0,
-    firstCommentText: null,
-    tableCount: 0,
-    hasTextBox: false,
-    hasHeaderFooter: false,
-    titleText: null,
-    contentHash: "deadbeef",
+  strictErrorCodes: [],
+  lenientErrorCodes: [],
+  insCount: 0,
+  delCount: 0,
+  commentCount: 0,
+  firstCommentText: null,
+  tableCount: 0,
+  hasTextBox: false,
+  hasHeaderFooter: false,
+  titleText: null,
+  contentHash: "deadbeef",
 };
 
 describe("slugify", () => {
-    it("lowercases, hyphenates, and caps word count", () => {
-        expect(slugify("Q4 2025 NPS Survey Results Extra", 4)).toBe("q4-2025-nps-survey");
-    });
-    it("returns empty string for punctuation-only input", () => {
-        expect(slugify("!!! ???")).toBe("");
-    });
+  it("lowercases, hyphenates, and caps word count", () => {
+    expect(slugify("Q4 2025 NPS Survey Results Extra", 4)).toBe("q4-2025-nps-survey");
+  });
+  it("returns empty string for punctuation-only input", () => {
+    expect(slugify("!!! ???")).toBe("");
+  });
 });
 
 describe("deriveName", () => {
-    it("routes a file with strict errors to broken/ using the first error code", () => {
-        const d = deriveName({ ...base, strictErrorCodes: ["tables-broken-rels", "another-code"] });
-        expect(d.category).toBe("broken");
-        expect(d.descriptor).toBe("another-code"); // alphabetically first
-        expect(d.fileName).toBe("document.another-code.docx");
-    });
+  it("routes a file with strict errors to broken/ using the first error code", () => {
+    const d = deriveName({ ...base, strictErrorCodes: ["tables-broken-rels", "another-code"] });
+    expect(d.category).toBe("broken");
+    expect(d.descriptor).toBe("another-code"); // alphabetically first
+    expect(d.fileName).toBe("document.another-code.docx");
+  });
 
-    it("describes insertions-only tracked changes", () => {
-        const d = deriveName({ ...base, insCount: 3 });
-        expect(d.category).toBe("working");
-        expect(d.fileName).toBe("document.suggesting-insertions.docx");
-    });
+  it("describes insertions-only tracked changes", () => {
+    const d = deriveName({ ...base, insCount: 3 });
+    expect(d.category).toBe("working");
+    expect(d.fileName).toBe("document.suggesting-insertions.docx");
+  });
 
-    it("describes deletions-only tracked changes", () => {
-        const d = deriveName({ ...base, delCount: 2 });
-        expect(d.fileName).toBe("document.suggesting-deletions.docx");
-    });
+  it("describes deletions-only tracked changes", () => {
+    const d = deriveName({ ...base, delCount: 2 });
+    expect(d.fileName).toBe("document.suggesting-deletions.docx");
+  });
 
-    it("describes mixed tracked changes", () => {
-        const d = deriveName({ ...base, insCount: 1, delCount: 1 });
-        expect(d.fileName).toBe("document.suggesting-mixed-edits.docx");
-    });
+  it("describes mixed tracked changes", () => {
+    const d = deriveName({ ...base, insCount: 1, delCount: 1 });
+    expect(d.fileName).toBe("document.suggesting-mixed-edits.docx");
+  });
 
-    it("describes a comment using its slugified gist", () => {
-        const d = deriveName({ ...base, commentCount: 1, firstCommentText: "Please review this clause" });
-        expect(d.fileName).toBe("document.comment-please-review-this-clause.docx");
+  it("describes a comment using its slugified gist", () => {
+    const d = deriveName({
+      ...base,
+      commentCount: 1,
+      firstCommentText: "Please review this clause",
     });
+    expect(d.fileName).toBe("document.comment-please-review-this-clause.docx");
+  });
 
-    it("falls back to a structural descriptor for a clean table doc", () => {
-        const d = deriveName({ ...base, tableCount: 2 });
-        expect(d.fileName).toBe("document.table.docx");
-    });
+  it("falls back to a structural descriptor for a clean table doc", () => {
+    const d = deriveName({ ...base, tableCount: 2 });
+    expect(d.fileName).toBe("document.table.docx");
+  });
 
-    it("uses the slugified title as the subject when present", () => {
-        const d = deriveName({ ...base, titleText: "Master Services Agreement", insCount: 1 });
-        expect(d.fileName).toBe("master-services-agreement.suggesting-insertions.docx");
-    });
+  it("uses the slugified title as the subject when present", () => {
+    const d = deriveName({ ...base, titleText: "Master Services Agreement", insCount: 1 });
+    expect(d.fileName).toBe("master-services-agreement.suggesting-insertions.docx");
+  });
 
-    it("falls back to plain-paragraphs for an otherwise featureless clean doc", () => {
-        expect(deriveName(base).fileName).toBe("document.plain-paragraphs.docx");
-    });
+  it("falls back to plain-paragraphs for an otherwise featureless clean doc", () => {
+    expect(deriveName(base).fileName).toBe("document.plain-paragraphs.docx");
+  });
 });
 ```
 
@@ -313,64 +323,64 @@ Expected: FAIL — module not found.
  */
 
 export interface FixtureFingerprint {
-    /** Distinct, sorted strict-profile error codes. */
-    strictErrorCodes: string[];
-    /** Distinct, sorted lenient-profile error codes. */
-    lenientErrorCodes: string[];
-    insCount: number;
-    delCount: number;
-    commentCount: number;
-    firstCommentText: string | null;
-    tableCount: number;
-    hasTextBox: boolean;
-    hasHeaderFooter: boolean;
-    /** dc:title or first non-empty paragraph text, if any. */
-    titleText: string | null;
-    /** sha256 of word/document.xml, for dedup. */
-    contentHash: string;
+  /** Distinct, sorted strict-profile error codes. */
+  strictErrorCodes: string[];
+  /** Distinct, sorted lenient-profile error codes. */
+  lenientErrorCodes: string[];
+  insCount: number;
+  delCount: number;
+  commentCount: number;
+  firstCommentText: string | null;
+  tableCount: number;
+  hasTextBox: boolean;
+  hasHeaderFooter: boolean;
+  /** dc:title or first non-empty paragraph text, if any. */
+  titleText: string | null;
+  /** sha256 of word/document.xml, for dedup. */
+  contentHash: string;
 }
 
 export interface DerivedName {
-    category: "broken" | "working";
-    subjectSlug: string;
-    descriptor: string;
-    /** `${subjectSlug}.${descriptor}.docx` */
-    fileName: string;
+  category: "broken" | "working";
+  subjectSlug: string;
+  descriptor: string;
+  /** `${subjectSlug}.${descriptor}.docx` */
+  fileName: string;
 }
 
 /** Lowercase kebab slug, capped at `maxWords` hyphen-delimited words. */
 export function slugify(text: string, maxWords = 4): string {
-    const words = text
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "")
-        .split("-")
-        .filter(Boolean);
-    return words.slice(0, maxWords).join("-");
+  const words = text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .split("-")
+    .filter(Boolean);
+  return words.slice(0, maxWords).join("-");
 }
 
 function descriptorFor(fp: FixtureFingerprint): string {
-    if (fp.strictErrorCodes.length > 0) {
-        return [...fp.strictErrorCodes].sort()[0];
-    }
-    if (fp.insCount > 0 && fp.delCount > 0) return "suggesting-mixed-edits";
-    if (fp.insCount > 0) return "suggesting-insertions";
-    if (fp.delCount > 0) return "suggesting-deletions";
-    if (fp.commentCount > 0) {
-        const gist = slugify(fp.firstCommentText ?? "", 4);
-        return gist ? `comment-${gist}` : "comment";
-    }
-    if (fp.tableCount > 0) return "table";
-    if (fp.hasTextBox) return "text-box";
-    if (fp.hasHeaderFooter) return "header-footer";
-    return "plain-paragraphs";
+  if (fp.strictErrorCodes.length > 0) {
+    return [...fp.strictErrorCodes].sort()[0];
+  }
+  if (fp.insCount > 0 && fp.delCount > 0) return "suggesting-mixed-edits";
+  if (fp.insCount > 0) return "suggesting-insertions";
+  if (fp.delCount > 0) return "suggesting-deletions";
+  if (fp.commentCount > 0) {
+    const gist = slugify(fp.firstCommentText ?? "", 4);
+    return gist ? `comment-${gist}` : "comment";
+  }
+  if (fp.tableCount > 0) return "table";
+  if (fp.hasTextBox) return "text-box";
+  if (fp.hasHeaderFooter) return "header-footer";
+  return "plain-paragraphs";
 }
 
 export function deriveName(fp: FixtureFingerprint): DerivedName {
-    const category: "broken" | "working" = fp.strictErrorCodes.length > 0 ? "broken" : "working";
-    const subjectSlug = (fp.titleText && slugify(fp.titleText)) || "document";
-    const descriptor = descriptorFor(fp);
-    return { category, subjectSlug, descriptor, fileName: `${subjectSlug}.${descriptor}.docx` };
+  const category: "broken" | "working" = fp.strictErrorCodes.length > 0 ? "broken" : "working";
+  const subjectSlug = (fp.titleText && slugify(fp.titleText)) || "document";
+  const descriptor = descriptorFor(fp);
+  return { category, subjectSlug, descriptor, fileName: `${subjectSlug}.${descriptor}.docx` };
 }
 ```
 
@@ -427,19 +437,19 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES = path.join(HERE, "fixtures");
 
 describe("fingerprint", () => {
-    it("captures strict errors and a content hash for a known-broken fixture", async () => {
-        const fp = await fingerprint(path.join(FIXTURES, "broken/tables.missing-namespace.docx"));
-        expect(fp.strictErrorCodes.length).toBeGreaterThan(0);
-        expect(fp.contentHash).toMatch(/^[0-9a-f]{64}$/);
-        // sorted + de-duplicated
-        expect([...fp.strictErrorCodes].sort()).toEqual(fp.strictErrorCodes);
-    }, 20000);
+  it("captures strict errors and a content hash for a known-broken fixture", async () => {
+    const fp = await fingerprint(path.join(FIXTURES, "broken/tables.missing-namespace.docx"));
+    expect(fp.strictErrorCodes.length).toBeGreaterThan(0);
+    expect(fp.contentHash).toMatch(/^[0-9a-f]{64}$/);
+    // sorted + de-duplicated
+    expect([...fp.strictErrorCodes].sort()).toEqual(fp.strictErrorCodes);
+  }, 20000);
 
-    it("reports zero strict errors for a structurally-valid fixture", async () => {
-        const fp = await fingerprint(path.join(FIXTURES, "external/mammoth-js/strict-format.docx"));
-        expect(fp.strictErrorCodes).toEqual([]);
-        expect(fp.contentHash).toMatch(/^[0-9a-f]{64}$/);
-    }, 20000);
+  it("reports zero strict errors for a structurally-valid fixture", async () => {
+    const fp = await fingerprint(path.join(FIXTURES, "external/mammoth-js/strict-format.docx"));
+    expect(fp.strictErrorCodes).toEqual([]);
+    expect(fp.contentHash).toMatch(/^[0-9a-f]{64}$/);
+  }, 20000);
 });
 ```
 
@@ -482,83 +492,86 @@ import type { FixtureFingerprint } from "./derive-fixture-name";
 const DC = "http://purl.org/dc/elements/1.1/";
 
 async function errorCodes(file: string, profile: "strict" | "lenient"): Promise<string[]> {
-    const result = await validate(file, { profile });
-    return Array.from(
-        new Set(
-            result.issues
-                .filter((i) => i.severity === "error")
-                .map((i) => i.code)
-                .filter((c): c is string => Boolean(c)),
-        ),
-    ).sort();
+  const result = await validate(file, { profile });
+  return Array.from(
+    new Set(
+      result.issues
+        .filter((i) => i.severity === "error")
+        .map((i) => i.code)
+        .filter((c): c is string => Boolean(c)),
+    ),
+  ).sort();
 }
 
 function firstParagraphText(doc: Document): string | null {
-    const paras = getElementsByTagNameNSAll(doc, NS.W, "p");
-    for (const p of paras) {
-        const text = getElementsByTagNameNSAll(p, NS.W, "t")
-            .map((t) => t.textContent ?? "")
-            .join("")
-            .trim();
-        if (text) return text;
-    }
-    return null;
+  const paras = getElementsByTagNameNSAll(doc, NS.W, "p");
+  for (const p of paras) {
+    const text = getElementsByTagNameNSAll(p, NS.W, "t")
+      .map((t) => t.textContent ?? "")
+      .join("")
+      .trim();
+    if (text) return text;
+  }
+  return null;
 }
 
 export async function fingerprint(docxPath: string): Promise<FixtureFingerprint> {
-    const buf = await fs.readFile(docxPath);
-    const zip = await JSZip.loadAsync(buf);
+  const buf = await fs.readFile(docxPath);
+  const zip = await JSZip.loadAsync(buf);
 
-    const docXml = (await zip.file("word/document.xml")?.async("string")) ?? "";
-    const contentHash = createHash("sha256").update(docXml).digest("hex");
-    const doc = parseXml(docXml);
+  const docXml = (await zip.file("word/document.xml")?.async("string")) ?? "";
+  const contentHash = createHash("sha256").update(docXml).digest("hex");
+  const doc = parseXml(docXml);
 
-    const insCount = getElementsByTagNameNSAll(doc, NS.W, "ins").length;
-    const delCount = getElementsByTagNameNSAll(doc, NS.W, "del").length;
-    const tableCount = getElementsByTagNameNSAll(doc, NS.W, "tbl").length;
-    const hasTextBox = docXml.includes("txbxContent") || docXml.includes("textbox");
-    const hasHeaderFooter = zip.file(/word\/(header|footer)\d*\.xml$/).length > 0;
+  const insCount = getElementsByTagNameNSAll(doc, NS.W, "ins").length;
+  const delCount = getElementsByTagNameNSAll(doc, NS.W, "del").length;
+  const tableCount = getElementsByTagNameNSAll(doc, NS.W, "tbl").length;
+  const hasTextBox = docXml.includes("txbxContent") || docXml.includes("textbox");
+  const hasHeaderFooter = zip.file(/word\/(header|footer)\d*\.xml$/).length > 0;
 
-    let commentCount = 0;
-    let firstCommentText: string | null = null;
-    const commentsXml = await zip.file("word/comments.xml")?.async("string");
-    if (commentsXml) {
-        const cdoc = parseXml(commentsXml);
-        const comments = getElementsByTagNameNSAll(cdoc, NS.W, "comment");
-        commentCount = comments.length;
-        if (comments[0]) {
-            const text = getElementsByTagNameNSAll(comments[0], NS.W, "t")
-                .map((t) => t.textContent ?? "")
-                .join("")
-                .trim();
-            firstCommentText = text || null;
-        }
+  let commentCount = 0;
+  let firstCommentText: string | null = null;
+  const commentsXml = await zip.file("word/comments.xml")?.async("string");
+  if (commentsXml) {
+    const cdoc = parseXml(commentsXml);
+    const comments = getElementsByTagNameNSAll(cdoc, NS.W, "comment");
+    commentCount = comments.length;
+    if (comments[0]) {
+      const text = getElementsByTagNameNSAll(comments[0], NS.W, "t")
+        .map((t) => t.textContent ?? "")
+        .join("")
+        .trim();
+      firstCommentText = text || null;
     }
+  }
 
-    let titleText: string | null = null;
-    const coreXml = await zip.file("docProps/core.xml")?.async("string");
-    if (coreXml) {
-        const core = parseXml(coreXml);
-        const title = getElementsByTagNameNSAll(core, DC, "title")[0]?.textContent?.trim();
-        if (title) titleText = title;
-    }
-    if (!titleText) titleText = firstParagraphText(doc);
+  let titleText: string | null = null;
+  const coreXml = await zip.file("docProps/core.xml")?.async("string");
+  if (coreXml) {
+    const core = parseXml(coreXml);
+    const title = getElementsByTagNameNSAll(core, DC, "title")[0]?.textContent?.trim();
+    if (title) titleText = title;
+  }
+  if (!titleText) titleText = firstParagraphText(doc);
 
-    const [strictErrorCodes, lenientErrorCodes] = await Promise.all([errorCodes(docxPath, "strict"), errorCodes(docxPath, "lenient")]);
+  const [strictErrorCodes, lenientErrorCodes] = await Promise.all([
+    errorCodes(docxPath, "strict"),
+    errorCodes(docxPath, "lenient"),
+  ]);
 
-    return {
-        strictErrorCodes,
-        lenientErrorCodes,
-        insCount,
-        delCount,
-        commentCount,
-        firstCommentText,
-        tableCount,
-        hasTextBox,
-        hasHeaderFooter,
-        titleText,
-        contentHash,
-    };
+  return {
+    strictErrorCodes,
+    lenientErrorCodes,
+    insCount,
+    delCount,
+    commentCount,
+    firstCommentText,
+    tableCount,
+    hasTextBox,
+    hasHeaderFooter,
+    titleText,
+    contentHash,
+  };
 }
 ```
 
@@ -611,69 +624,77 @@ import { describe, expect, it } from "vitest";
 import { type FingerprintedFile, planMoves } from "../scripts/apply-fixture-names";
 
 const fp = (overrides: Partial<FingerprintedFile["fingerprint"]> = {}) => ({
-    strictErrorCodes: [] as string[],
-    lenientErrorCodes: [] as string[],
-    insCount: 0,
-    delCount: 0,
-    commentCount: 0,
-    firstCommentText: null,
-    tableCount: 0,
-    hasTextBox: false,
-    hasHeaderFooter: false,
-    titleText: null,
-    contentHash: "h0",
-    ...overrides,
+  strictErrorCodes: [] as string[],
+  lenientErrorCodes: [] as string[],
+  insCount: 0,
+  delCount: 0,
+  commentCount: 0,
+  firstCommentText: null,
+  tableCount: 0,
+  hasTextBox: false,
+  hasHeaderFooter: false,
+  titleText: null,
+  contentHash: "h0",
+  ...overrides,
 });
 
 describe("planMoves", () => {
-    it("renames in place (keeps source dir) when intoCategories is false", () => {
-        const moves = planMoves(
-            [{ sourcePath: "tests/fixtures/word-strict/Ouch.docx", fingerprint: fp({ insCount: 1, contentHash: "a" }) }],
-            { intoCategories: false, fixturesRoot: "tests/fixtures" },
-        );
-        expect(moves).toEqual([
-            { from: "tests/fixtures/word-strict/Ouch.docx", to: "tests/fixtures/word-strict/document.suggesting-insertions.docx" },
-        ]);
-    });
+  it("renames in place (keeps source dir) when intoCategories is false", () => {
+    const moves = planMoves(
+      [
+        {
+          sourcePath: "tests/fixtures/word-strict/Ouch.docx",
+          fingerprint: fp({ insCount: 1, contentHash: "a" }),
+        },
+      ],
+      { intoCategories: false, fixturesRoot: "tests/fixtures" },
+    );
+    expect(moves).toEqual([
+      {
+        from: "tests/fixtures/word-strict/Ouch.docx",
+        to: "tests/fixtures/word-strict/document.suggesting-insertions.docx",
+      },
+    ]);
+  });
 
-    it("routes into category dirs when intoCategories is true", () => {
-        const moves = planMoves(
-            [
-                {
-                    sourcePath: "fixtures/eigen-extended/Untitled (1).docx",
-                    fingerprint: fp({ strictErrorCodes: ["x-code"], contentHash: "b" }),
-                },
-            ],
-            { intoCategories: true, fixturesRoot: "tests/fixtures" },
-        );
-        expect(moves[0].to).toBe("tests/fixtures/broken/document.x-code.docx");
-    });
+  it("routes into category dirs when intoCategories is true", () => {
+    const moves = planMoves(
+      [
+        {
+          sourcePath: "fixtures/eigen-extended/Untitled (1).docx",
+          fingerprint: fp({ strictErrorCodes: ["x-code"], contentHash: "b" }),
+        },
+      ],
+      { intoCategories: true, fixturesRoot: "tests/fixtures" },
+    );
+    expect(moves[0].to).toBe("tests/fixtures/broken/document.x-code.docx");
+  });
 
-    it("disambiguates colliding target names with a numeric suffix", () => {
-        const moves = planMoves(
-            [
-                { sourcePath: "a.docx", fingerprint: fp({ insCount: 1, contentHash: "c1" }) },
-                { sourcePath: "b.docx", fingerprint: fp({ insCount: 1, contentHash: "c2" }) },
-            ],
-            { intoCategories: true, fixturesRoot: "tests/fixtures" },
-        );
-        expect(moves.map((m) => m.to)).toEqual([
-            "tests/fixtures/working/document.suggesting-insertions.docx",
-            "tests/fixtures/working/document.suggesting-insertions-2.docx",
-        ]);
-    });
+  it("disambiguates colliding target names with a numeric suffix", () => {
+    const moves = planMoves(
+      [
+        { sourcePath: "a.docx", fingerprint: fp({ insCount: 1, contentHash: "c1" }) },
+        { sourcePath: "b.docx", fingerprint: fp({ insCount: 1, contentHash: "c2" }) },
+      ],
+      { intoCategories: true, fixturesRoot: "tests/fixtures" },
+    );
+    expect(moves.map((m) => m.to)).toEqual([
+      "tests/fixtures/working/document.suggesting-insertions.docx",
+      "tests/fixtures/working/document.suggesting-insertions-2.docx",
+    ]);
+  });
 
-    it("drops content duplicates, keeping the first source path", () => {
-        const moves = planMoves(
-            [
-                { sourcePath: "b.docx", fingerprint: fp({ insCount: 1, contentHash: "dup" }) },
-                { sourcePath: "a.docx", fingerprint: fp({ insCount: 1, contentHash: "dup" }) },
-            ],
-            { intoCategories: true, fixturesRoot: "tests/fixtures", dedup: true },
-        );
-        expect(moves).toHaveLength(1);
-        expect(moves[0].from).toBe("a.docx"); // lexicographically first kept
-    });
+  it("drops content duplicates, keeping the first source path", () => {
+    const moves = planMoves(
+      [
+        { sourcePath: "b.docx", fingerprint: fp({ insCount: 1, contentHash: "dup" }) },
+        { sourcePath: "a.docx", fingerprint: fp({ insCount: 1, contentHash: "dup" }) },
+      ],
+      { intoCategories: true, fixturesRoot: "tests/fixtures", dedup: true },
+    );
+    expect(moves).toHaveLength(1);
+    expect(moves[0].from).toBe("a.docx"); // lexicographically first kept
+  });
 });
 ```
 
@@ -719,97 +740,104 @@ import { type FixtureFingerprint, deriveName } from "./derive-fixture-name";
 import { fingerprint } from "./fixture-fingerprint";
 
 export interface FingerprintedFile {
-    sourcePath: string;
-    fingerprint: FixtureFingerprint;
+  sourcePath: string;
+  fingerprint: FixtureFingerprint;
 }
 
 export interface PlanOptions {
-    intoCategories: boolean;
-    fixturesRoot: string;
-    dedup?: boolean;
+  intoCategories: boolean;
+  fixturesRoot: string;
+  dedup?: boolean;
 }
 
 export interface Move {
-    from: string;
-    to: string;
+  from: string;
+  to: string;
 }
 
 /** Pure: turn fingerprinted files into a deduped, collision-free move list. */
 export function planMoves(files: FingerprintedFile[], opts: PlanOptions): Move[] {
-    const seenHash = new Set<string>();
-    const takenTargets = new Set<string>();
-    const moves: Move[] = [];
+  const seenHash = new Set<string>();
+  const takenTargets = new Set<string>();
+  const moves: Move[] = [];
 
-    // Deterministic order; dedup keeps the lexicographically-first source.
-    const sorted = [...files].sort((a, b) => a.sourcePath.localeCompare(b.sourcePath));
+  // Deterministic order; dedup keeps the lexicographically-first source.
+  const sorted = [...files].sort((a, b) => a.sourcePath.localeCompare(b.sourcePath));
 
-    for (const file of sorted) {
-        if (opts.dedup) {
-            if (seenHash.has(file.fingerprint.contentHash)) continue;
-            seenHash.add(file.fingerprint.contentHash);
-        }
-        const derived = deriveName(file.fingerprint);
-        const dir = opts.intoCategories ? path.join(opts.fixturesRoot, derived.category) : path.dirname(file.sourcePath);
-
-        let candidate = path.join(dir, derived.fileName);
-        let n = 2;
-        while (takenTargets.has(candidate)) {
-            candidate = path.join(dir, `${derived.subjectSlug}.${derived.descriptor}-${n}.docx`);
-            n += 1;
-        }
-        takenTargets.add(candidate);
-        moves.push({ from: file.sourcePath, to: candidate });
+  for (const file of sorted) {
+    if (opts.dedup) {
+      if (seenHash.has(file.fingerprint.contentHash)) continue;
+      seenHash.add(file.fingerprint.contentHash);
     }
-    return moves;
+    const derived = deriveName(file.fingerprint);
+    const dir = opts.intoCategories
+      ? path.join(opts.fixturesRoot, derived.category)
+      : path.dirname(file.sourcePath);
+
+    let candidate = path.join(dir, derived.fileName);
+    let n = 2;
+    while (takenTargets.has(candidate)) {
+      candidate = path.join(dir, `${derived.subjectSlug}.${derived.descriptor}-${n}.docx`);
+      n += 1;
+    }
+    takenTargets.add(candidate);
+    moves.push({ from: file.sourcePath, to: candidate });
+  }
+  return moves;
 }
 
 function collectDocx(target: string, out: string[]): void {
-    const stat = statSync(target);
-    if (stat.isDirectory()) {
-        for (const entry of readdirSync(target)) {
-            if (entry.startsWith("~$")) continue;
-            collectDocx(path.join(target, entry), out);
-        }
-    } else if (target.toLowerCase().endsWith(".docx")) {
-        out.push(target);
+  const stat = statSync(target);
+  if (stat.isDirectory()) {
+    for (const entry of readdirSync(target)) {
+      if (entry.startsWith("~$")) continue;
+      collectDocx(path.join(target, entry), out);
     }
+  } else if (target.toLowerCase().endsWith(".docx")) {
+    out.push(target);
+  }
 }
 
 async function main(): Promise<void> {
-    const argv = process.argv.slice(2);
-    const intoCategories = argv.includes("--into-categories");
-    const dedup = argv.includes("--dedup");
-    const dryRun = argv.includes("--dry-run");
-    const rootIdx = argv.indexOf("--fixtures-root");
-    const fixturesRoot = rootIdx >= 0 ? argv[rootIdx + 1] : "tests/fixtures";
-    const flagValues = new Set([fixturesRoot]);
-    const targets = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && argv[i - 1] === "--fixtures-root") && !flagValues.has(a));
+  const argv = process.argv.slice(2);
+  const intoCategories = argv.includes("--into-categories");
+  const dedup = argv.includes("--dedup");
+  const dryRun = argv.includes("--dry-run");
+  const rootIdx = argv.indexOf("--fixtures-root");
+  const fixturesRoot = rootIdx >= 0 ? argv[rootIdx + 1] : "tests/fixtures";
+  const flagValues = new Set([fixturesRoot]);
+  const targets = argv.filter(
+    (a, i) =>
+      !a.startsWith("--") && !(i > 0 && argv[i - 1] === "--fixtures-root") && !flagValues.has(a),
+  );
 
-    const docxPaths: string[] = [];
-    for (const t of targets) collectDocx(t, docxPaths);
+  const docxPaths: string[] = [];
+  for (const t of targets) collectDocx(t, docxPaths);
 
-    const files: FingerprintedFile[] = [];
-    for (const p of docxPaths) {
-        files.push({ sourcePath: p, fingerprint: await fingerprint(p) });
+  const files: FingerprintedFile[] = [];
+  for (const p of docxPaths) {
+    files.push({ sourcePath: p, fingerprint: await fingerprint(p) });
+  }
+
+  const moves = planMoves(files, { intoCategories, fixturesRoot, dedup });
+  const dropped = files.length - moves.length;
+
+  for (const m of moves) {
+    process.stdout.write(`${m.from}  ->  ${m.to}\n`);
+    if (!dryRun) {
+      execFileSync("git", ["mv", m.from, m.to]);
     }
-
-    const moves = planMoves(files, { intoCategories, fixturesRoot, dedup });
-    const dropped = files.length - moves.length;
-
-    for (const m of moves) {
-        process.stdout.write(`${m.from}  ->  ${m.to}\n`);
-        if (!dryRun) {
-            execFileSync("git", ["mv", m.from, m.to]);
-        }
-    }
-    process.stdout.write(`\n${moves.length} renamed, ${dropped} dropped as duplicates${dryRun ? " (dry-run)" : ""}\n`);
+  }
+  process.stdout.write(
+    `\n${moves.length} renamed, ${dropped} dropped as duplicates${dryRun ? " (dry-run)" : ""}\n`,
+  );
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-    main().catch((err) => {
-        process.stderr.write(`Error: ${err}\n`);
-        process.exit(1);
-    });
+  main().catch((err) => {
+    process.stderr.write(`Error: ${err}\n`);
+    process.exit(1);
+  });
 }
 ```
 

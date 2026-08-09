@@ -65,8 +65,8 @@ Add `validateRedundantRunProperties()` to `DOCXSchemaValidator`:
 
 1. Parse `word/styles.xml` to build the default run property chain.
 2. For each `<w:r>` in `word/document.xml` that has an explicit `<w:rFonts>`:
-    - If the font values match the document default (`<w:docDefaults>/<w:rPrDefault>`),
-      emit `run-props-redundant` at `"info"` severity.
+   - If the font values match the document default (`<w:docDefaults>/<w:rPrDefault>`),
+     emit `run-props-redundant` at `"info"` severity.
 
 Limit to `<w:rFonts>` initially (highest signal-to-noise) before expanding to
 other properties.

@@ -37,31 +37,31 @@ export type Severity = "error" | "warning" | "info";
  * specific findings without matching prose.
  */
 export type ValidationIssue = {
-    severity: Severity;
-    message: string;
-    path?: string;
-    line?: number;
-    column?: number;
-    code?: string;
+  severity: Severity;
+  message: string;
+  path?: string;
+  line?: number;
+  column?: number;
+  code?: string;
 };
 
 /** Aggregate result returned by every validator. `valid` is false iff there is at least one `error` issue. */
 export type ValidationResult = {
-    valid: boolean;
-    issues: ValidationIssue[];
+  valid: boolean;
+  issues: ValidationIssue[];
 };
 
 /** Empty success result (zero issues, valid). */
 export const OK_RESULT: ValidationResult = Object.freeze({
-    valid: true,
-    issues: [],
+  valid: true,
+  issues: [],
 });
 
 /** Combine multiple results into one; `valid` is the AND of all inputs. */
 export const mergeResults = (...results: ValidationResult[]): ValidationResult => {
-    const issues = results.flatMap((r) => r.issues);
-    const valid = results.every((r) => r.valid);
-    return { valid, issues };
+  const issues = results.flatMap((r) => r.issues);
+  const valid = results.every((r) => r.valid);
+  return { valid, issues };
 };
 
 /**
@@ -72,48 +72,48 @@ export const mergeResults = (...results: ValidationResult[]): ValidationResult =
  * so cross-referencing the two trees is straightforward.
  */
 export const NS = {
-    /** WordprocessingML — `w:` */
-    W: "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
-    /** Word 2010 extensions — `w14:` (paraId, durableId, …) */
-    W14: "http://schemas.microsoft.com/office/word/2010/wordml",
-    /** Word 2012 extensions — `w15:` */
-    W15: "http://schemas.microsoft.com/office/word/2012/wordml",
-    /** Word 2014/16 — `w16:` family */
-    W16CEX: "http://schemas.microsoft.com/office/word/2018/wordml/cex",
-    W16CID: "http://schemas.microsoft.com/office/word/2016/wordml/cid",
-    /** PresentationML — `p:` */
-    P: "http://schemas.openxmlformats.org/presentationml/2006/main",
-    /** SpreadsheetML — `s:` (also `x:` in some places) */
-    S: "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
-    /** DrawingML — `a:` */
-    A: "http://schemas.openxmlformats.org/drawingml/2006/main",
-    /** Relationships — `r:` */
-    R: "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
-    /** Package relationships (`.rels`) */
-    PR: "http://schemas.openxmlformats.org/package/2006/relationships",
-    /** Content Types */
-    CT: "http://schemas.openxmlformats.org/package/2006/content-types",
-    /** Markup Compatibility — `mc:` */
-    MC: "http://schemas.openxmlformats.org/markup-compatibility/2006",
-    /** xml: namespace (xml:space, xml:lang) */
-    XML: "http://www.w3.org/XML/1998/namespace",
+  /** WordprocessingML — `w:` */
+  W: "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
+  /** Word 2010 extensions — `w14:` (paraId, durableId, …) */
+  W14: "http://schemas.microsoft.com/office/word/2010/wordml",
+  /** Word 2012 extensions — `w15:` */
+  W15: "http://schemas.microsoft.com/office/word/2012/wordml",
+  /** Word 2014/16 — `w16:` family */
+  W16CEX: "http://schemas.microsoft.com/office/word/2018/wordml/cex",
+  W16CID: "http://schemas.microsoft.com/office/word/2016/wordml/cid",
+  /** PresentationML — `p:` */
+  P: "http://schemas.openxmlformats.org/presentationml/2006/main",
+  /** SpreadsheetML — `s:` (also `x:` in some places) */
+  S: "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
+  /** DrawingML — `a:` */
+  A: "http://schemas.openxmlformats.org/drawingml/2006/main",
+  /** Relationships — `r:` */
+  R: "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
+  /** Package relationships (`.rels`) */
+  PR: "http://schemas.openxmlformats.org/package/2006/relationships",
+  /** Content Types */
+  CT: "http://schemas.openxmlformats.org/package/2006/content-types",
+  /** Markup Compatibility — `mc:` */
+  MC: "http://schemas.openxmlformats.org/markup-compatibility/2006",
+  /** xml: namespace (xml:space, xml:lang) */
+  XML: "http://www.w3.org/XML/1998/namespace",
 } as const;
 
 /** Default xpath select factory namespace map; mirror of `NS` keyed by lower-case prefix. */
 export const XPATH_NS: Record<string, string> = {
-    w: NS.W,
-    w14: NS.W14,
-    w15: NS.W15,
-    w16cex: NS.W16CEX,
-    w16cid: NS.W16CID,
-    p: NS.P,
-    s: NS.S,
-    a: NS.A,
-    r: NS.R,
-    pr: NS.PR,
-    ct: NS.CT,
-    mc: NS.MC,
-    xml: NS.XML,
+  w: NS.W,
+  w14: NS.W14,
+  w15: NS.W15,
+  w16cex: NS.W16CEX,
+  w16cid: NS.W16CID,
+  p: NS.P,
+  s: NS.S,
+  a: NS.A,
+  r: NS.R,
+  pr: NS.PR,
+  ct: NS.CT,
+  mc: NS.MC,
+  xml: NS.XML,
 };
 
 /** Office package format inferred from a file path or content-types stream. */

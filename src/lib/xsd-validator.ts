@@ -45,7 +45,7 @@ import type { ValidationIssue } from "./types";
  * on issues without matching free-form error prose.
  */
 export type XsdValidator = {
-    readonly validate: (xml: string, schemaPath: string) => Promise<ValidationIssue[]>;
+  readonly validate: (xml: string, schemaPath: string) => Promise<ValidationIssue[]>;
 };
 
 let memoizedValidator: Promise<XsdValidator> | undefined;
@@ -57,10 +57,10 @@ let memoizedValidator: Promise<XsdValidator> | undefined;
  * object and pass it through the constructors documented in the spec.
  */
 export const createXsdValidator = (): Promise<XsdValidator> => {
-    if (!memoizedValidator) {
-        memoizedValidator = buildWasmValidator();
-    }
-    return memoizedValidator;
+  if (!memoizedValidator) {
+    memoizedValidator = buildWasmValidator();
+  }
+  return memoizedValidator;
 };
 
 /**
@@ -68,7 +68,7 @@ export const createXsdValidator = (): Promise<XsdValidator> => {
  * this. Used to force a fresh WASM init between independent test cases.
  */
 export const _resetXsdValidatorMemo = (): void => {
-    memoizedValidator = undefined;
+  memoizedValidator = undefined;
 };
 
 /**
@@ -82,75 +82,79 @@ export const _resetXsdValidatorMemo = (): void => {
  */
 let fsProvidersRegistered = false;
 const ensureFsProviders = async (): Promise<void> => {
-    if (fsProvidersRegistered) {
-        return;
-    }
-    const { xmlRegisterFsInputProviders } = await import("libxml2-wasm/lib/nodejs.mjs");
-    xmlRegisterFsInputProviders();
-    fsProvidersRegistered = true;
+  if (fsProvidersRegistered) {
+    return;
+  }
+  const { xmlRegisterFsInputProviders } = await import("libxml2-wasm/lib/nodejs.mjs");
+  xmlRegisterFsInputProviders();
+  fsProvidersRegistered = true;
 };
 
 const buildWasmValidator = async (): Promise<XsdValidator> => {
-    const { XmlDocument, XsdValidator: WasmXsdValidator, XmlValidateError } = await import("libxml2-wasm");
-    const { readFile } = await import("node:fs/promises");
-    await ensureFsProviders();
+  const {
+    XmlDocument,
+    XsdValidator: WasmXsdValidator,
+    XmlValidateError,
+  } = await import("libxml2-wasm");
+  const { readFile } = await import("node:fs/promises");
+  await ensureFsProviders();
 
-    const validate = async (xml: string, schemaPath: string): Promise<ValidationIssue[]> => {
-        // Read schema file directly, parse with fromString. fsInputProviders
-        // resolves any relative <xs:import schemaLocation="..."/> references
-        // encountered during the parse, allowing OOXML schemas with imports
-        // to load cleanly when they're all present on disk.
-        let validator;
-        try {
-            const schemaSource = await readFile(schemaPath, "utf-8");
-            // Set the document base URL so relative imports resolve against
-            // the schema file's directory, not the process cwd.
-            const schemaDoc = XmlDocument.fromString(schemaSource, { url: schemaPath });
-            validator = WasmXsdValidator.fromDoc(schemaDoc);
-            schemaDoc.dispose();
-        } catch (loadErr) {
-            // The bundled OOXML schemas may have unresolvable imports; surface
-            // as info-level diagnostic (preserves CLAUDE.md note 4's spirit).
-            const message = loadErr instanceof Error ? loadErr.message : String(loadErr);
-            return [
-                {
-                    severity: "info",
-                    code: "xsd-schema-load-skipped",
-                    message: `Schema load failed (${schemaPath}): ${message}`,
-                    path: schemaPath,
-                },
-            ];
-        }
+  const validate = async (xml: string, schemaPath: string): Promise<ValidationIssue[]> => {
+    // Read schema file directly, parse with fromString. fsInputProviders
+    // resolves any relative <xs:import schemaLocation="..."/> references
+    // encountered during the parse, allowing OOXML schemas with imports
+    // to load cleanly when they're all present on disk.
+    let validator;
+    try {
+      const schemaSource = await readFile(schemaPath, "utf-8");
+      // Set the document base URL so relative imports resolve against
+      // the schema file's directory, not the process cwd.
+      const schemaDoc = XmlDocument.fromString(schemaSource, { url: schemaPath });
+      validator = WasmXsdValidator.fromDoc(schemaDoc);
+      schemaDoc.dispose();
+    } catch (loadErr) {
+      // The bundled OOXML schemas may have unresolvable imports; surface
+      // as info-level diagnostic (preserves CLAUDE.md note 4's spirit).
+      const message = loadErr instanceof Error ? loadErr.message : String(loadErr);
+      return [
+        {
+          severity: "info",
+          code: "xsd-schema-load-skipped",
+          message: `Schema load failed (${schemaPath}): ${message}`,
+          path: schemaPath,
+        },
+      ];
+    }
 
-        let xmlDoc;
-        try {
-            xmlDoc = XmlDocument.fromString(xml);
-        } catch (parseErr) {
-            validator.dispose();
-            const message = parseErr instanceof Error ? parseErr.message : String(parseErr);
-            return [{ severity: "error", code: "xml-parse-error", message }];
-        }
+    let xmlDoc;
+    try {
+      xmlDoc = XmlDocument.fromString(xml);
+    } catch (parseErr) {
+      validator.dispose();
+      const message = parseErr instanceof Error ? parseErr.message : String(parseErr);
+      return [{ severity: "error", code: "xml-parse-error", message }];
+    }
 
-        try {
-            validator.validate(xmlDoc);
-            return [];
-        } catch (err) {
-            if (err instanceof XmlValidateError) {
-                return err.details.map((d) => ({
-                    severity: "error" as const,
-                    code: "xsd-validation-failed",
-                    message: d.message,
-                    ...(d.file !== undefined ? { path: d.file } : {}),
-                    ...(d.line !== undefined ? { line: d.line } : {}),
-                }));
-            }
-            const message = err instanceof Error ? err.message : String(err);
-            return [{ severity: "error", code: "xsd-validation-failed", message }];
-        } finally {
-            xmlDoc.dispose();
-            validator.dispose();
-        }
-    };
+    try {
+      validator.validate(xmlDoc);
+      return [];
+    } catch (err) {
+      if (err instanceof XmlValidateError) {
+        return err.details.map((d) => ({
+          severity: "error" as const,
+          code: "xsd-validation-failed",
+          message: d.message,
+          ...(d.file !== undefined ? { path: d.file } : {}),
+          ...(d.line !== undefined ? { line: d.line } : {}),
+        }));
+      }
+      const message = err instanceof Error ? err.message : String(err);
+      return [{ severity: "error", code: "xsd-validation-failed", message }];
+    } finally {
+      xmlDoc.dispose();
+      validator.dispose();
+    }
+  };
 
-    return { validate };
+  return { validate };
 };

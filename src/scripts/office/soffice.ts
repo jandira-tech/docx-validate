@@ -33,22 +33,22 @@ import * as path from "node:path";
 import { runCli } from "../../lib/run-cli";
 
 export interface RunSofficeOptions {
-    env?: NodeJS.ProcessEnv;
-    cwd?: string;
-    /**
-     * If provided, aborting this signal terminates the spawned soffice
-     * process (SIGTERM, then SIGKILL after 1s if it has not exited).
-     * Used by `runSofficeWithTimeout()` so the caller does not leak a
-     * zombie process when the timer wins the race.
-     */
-    signal?: AbortSignal;
+  env?: NodeJS.ProcessEnv;
+  cwd?: string;
+  /**
+   * If provided, aborting this signal terminates the spawned soffice
+   * process (SIGTERM, then SIGKILL after 1s if it has not exited).
+   * Used by `runSofficeWithTimeout()` so the caller does not leak a
+   * zombie process when the timer wins the race.
+   */
+  signal?: AbortSignal;
 }
 
 export interface RunSofficeResult {
-    stdout: string;
-    stderr: string;
-    exitCode: number;
-    signal?: NodeJS.Signals | null;
+  stdout: string;
+  stderr: string;
+  exitCode: number;
+  signal?: NodeJS.Signals | null;
 }
 
 let SHIM_DIR: string | null = null;
@@ -175,21 +175,21 @@ int close(int fd) {
  * Unix path so it leaves no fs trace.
  */
 export function needsShim(): boolean {
-    if (process.platform !== "linux") {
-        return false;
-    }
-    const probeScript = [
-        "const net = require('node:net');",
-        "const s = net.createServer();",
-        "s.once('error', () => process.exit(1));",
-        "s.once('listening', () => { s.close(); process.exit(0); });",
-        `s.listen({ path: '\\0lo-shim-probe-' + process.pid });`,
-    ].join("");
-    const result = spawnSync(process.execPath, ["-e", probeScript], {
-        stdio: "ignore",
-        timeout: 5000,
-    });
-    return result.status !== 0;
+  if (process.platform !== "linux") {
+    return false;
+  }
+  const probeScript = [
+    "const net = require('node:net');",
+    "const s = net.createServer();",
+    "s.once('error', () => process.exit(1));",
+    "s.once('listening', () => { s.close(); process.exit(0); });",
+    `s.listen({ path: '\\0lo-shim-probe-' + process.pid });`,
+  ].join("");
+  const result = spawnSync(process.execPath, ["-e", probeScript], {
+    stdio: "ignore",
+    timeout: 5000,
+  });
+  return result.status !== 0;
 }
 
 /**
@@ -199,41 +199,43 @@ export function needsShim(): boolean {
  * Exported for tests; production callers should prefer `getSofficeEnv`.
  */
 export function ensureShim(): string {
-    if (SHIM_SO && existsSync(SHIM_SO)) {
-        return SHIM_SO;
-    }
-
-    if (!SHIM_DIR || !existsSync(SHIM_DIR)) {
-        SHIM_DIR = mkdtempSync(path.join(os.tmpdir(), "lo_shim_"));
-    }
-
-    SHIM_SO = path.join(SHIM_DIR, "lo_socket_shim.so");
-    SHIM_C = path.join(SHIM_DIR, "lo_socket_shim.c");
-
-    writeFileSync(SHIM_C, SHIM_SOURCE);
-    const result = spawnSync("gcc", ["-shared", "-fPIC", "-o", SHIM_SO, SHIM_C, "-ldl"], { encoding: "utf8" });
-    if (result.error) {
-        try {
-            unlinkSync(SHIM_C);
-        } catch {
-            /* ignore */
-        }
-        throw result.error;
-    }
-    if (result.status !== 0) {
-        try {
-            unlinkSync(SHIM_C);
-        } catch {
-            /* ignore */
-        }
-        throw new Error(`gcc failed (exit ${result.status}): ${result.stderr ?? ""}`.trim());
-    }
-    try {
-        unlinkSync(SHIM_C);
-    } catch {
-        /* ignore */
-    }
+  if (SHIM_SO && existsSync(SHIM_SO)) {
     return SHIM_SO;
+  }
+
+  if (!SHIM_DIR || !existsSync(SHIM_DIR)) {
+    SHIM_DIR = mkdtempSync(path.join(os.tmpdir(), "lo_shim_"));
+  }
+
+  SHIM_SO = path.join(SHIM_DIR, "lo_socket_shim.so");
+  SHIM_C = path.join(SHIM_DIR, "lo_socket_shim.c");
+
+  writeFileSync(SHIM_C, SHIM_SOURCE);
+  const result = spawnSync("gcc", ["-shared", "-fPIC", "-o", SHIM_SO, SHIM_C, "-ldl"], {
+    encoding: "utf8",
+  });
+  if (result.error) {
+    try {
+      unlinkSync(SHIM_C);
+    } catch {
+      /* ignore */
+    }
+    throw result.error;
+  }
+  if (result.status !== 0) {
+    try {
+      unlinkSync(SHIM_C);
+    } catch {
+      /* ignore */
+    }
+    throw new Error(`gcc failed (exit ${result.status}): ${result.stderr ?? ""}`.trim());
+  }
+  try {
+    unlinkSync(SHIM_C);
+  } catch {
+    /* ignore */
+  }
+  return SHIM_SO;
 }
 
 /**
@@ -242,15 +244,15 @@ export function ensureShim(): string {
  * required and we are on Linux.
  */
 export function getSofficeEnv(base?: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
-    const env: NodeJS.ProcessEnv = { ...(base ?? process.env) };
-    env.SAL_USE_VCLPLUGIN = "svp";
+  const env: NodeJS.ProcessEnv = { ...(base ?? process.env) };
+  env.SAL_USE_VCLPLUGIN = "svp";
 
-    if (needsShim()) {
-        const shim = ensureShim();
-        env.LD_PRELOAD = shim;
-    }
+  if (needsShim()) {
+    const shim = ensureShim();
+    env.LD_PRELOAD = shim;
+  }
 
-    return env;
+  return env;
 }
 
 /**
@@ -258,100 +260,100 @@ export function getSofficeEnv(base?: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
  * the exit code. Mirrors the Python `run_soffice` helper.
  */
 export function runSoffice(args: string[], options?: RunSofficeOptions): Promise<RunSofficeResult> {
-    const env = getSofficeEnv(options?.env);
-    return new Promise((resolve, reject) => {
-        const child = spawn("soffice", args, {
-            env,
-            cwd: options?.cwd,
-            stdio: ["ignore", "pipe", "pipe"],
-        });
-
-        // Collect raw chunks so that multi-byte UTF-8 sequences split across
-        // chunks are decoded once at the end (string concatenation per-chunk
-        // would corrupt characters straddling a chunk boundary).
-        const stdoutChunks: Buffer[] = [];
-        const stderrChunks: Buffer[] = [];
-
-        child.stdout.on("data", (chunk: Buffer) => {
-            stdoutChunks.push(chunk);
-        });
-        child.stderr.on("data", (chunk: Buffer) => {
-            stderrChunks.push(chunk);
-        });
-
-        let killTimer: NodeJS.Timeout | undefined;
-        const onAbort = (): void => {
-            // First SIGTERM, then escalate to SIGKILL if the process has not
-            // exited within 1s — soffice occasionally ignores SIGTERM during
-            // startup.
-            try {
-                child.kill("SIGTERM");
-            } catch {
-                /* already exited */
-            }
-            killTimer = setTimeout(() => {
-                try {
-                    child.kill("SIGKILL");
-                } catch {
-                    /* already exited */
-                }
-            }, 1000);
-        };
-        if (options?.signal) {
-            if (options.signal.aborted) {
-                onAbort();
-            } else {
-                options.signal.addEventListener("abort", onAbort, { once: true });
-            }
-        }
-
-        child.on("error", (err) => {
-            if (killTimer) clearTimeout(killTimer);
-            options?.signal?.removeEventListener("abort", onAbort);
-            reject(err);
-        });
-        child.on("close", (code, signal) => {
-            if (killTimer) clearTimeout(killTimer);
-            options?.signal?.removeEventListener("abort", onAbort);
-            resolve({
-                stdout: Buffer.concat(stdoutChunks).toString("utf8"),
-                stderr: Buffer.concat(stderrChunks).toString("utf8"),
-                exitCode: code ?? (signal ? 1 : 0),
-                signal,
-            });
-        });
+  const env = getSofficeEnv(options?.env);
+  return new Promise((resolve, reject) => {
+    const child = spawn("soffice", args, {
+      env,
+      cwd: options?.cwd,
+      stdio: ["ignore", "pipe", "pipe"],
     });
+
+    // Collect raw chunks so that multi-byte UTF-8 sequences split across
+    // chunks are decoded once at the end (string concatenation per-chunk
+    // would corrupt characters straddling a chunk boundary).
+    const stdoutChunks: Buffer[] = [];
+    const stderrChunks: Buffer[] = [];
+
+    child.stdout.on("data", (chunk: Buffer) => {
+      stdoutChunks.push(chunk);
+    });
+    child.stderr.on("data", (chunk: Buffer) => {
+      stderrChunks.push(chunk);
+    });
+
+    let killTimer: NodeJS.Timeout | undefined;
+    const onAbort = (): void => {
+      // First SIGTERM, then escalate to SIGKILL if the process has not
+      // exited within 1s — soffice occasionally ignores SIGTERM during
+      // startup.
+      try {
+        child.kill("SIGTERM");
+      } catch {
+        /* already exited */
+      }
+      killTimer = setTimeout(() => {
+        try {
+          child.kill("SIGKILL");
+        } catch {
+          /* already exited */
+        }
+      }, 1000);
+    };
+    if (options?.signal) {
+      if (options.signal.aborted) {
+        onAbort();
+      } else {
+        options.signal.addEventListener("abort", onAbort, { once: true });
+      }
+    }
+
+    child.on("error", (err) => {
+      if (killTimer) clearTimeout(killTimer);
+      options?.signal?.removeEventListener("abort", onAbort);
+      reject(err);
+    });
+    child.on("close", (code, signal) => {
+      if (killTimer) clearTimeout(killTimer);
+      options?.signal?.removeEventListener("abort", onAbort);
+      resolve({
+        stdout: Buffer.concat(stdoutChunks).toString("utf8"),
+        stderr: Buffer.concat(stderrChunks).toString("utf8"),
+        exitCode: code ?? (signal ? 1 : 0),
+        signal,
+      });
+    });
+  });
 }
 
 // Internal exports for tests.
 export const __test = {
-    get SHIM_SO() {
-        return SHIM_SO || path.join(os.tmpdir(), "lo_socket_shim.so");
-    },
-    get SHIM_C() {
-        return SHIM_C || path.join(os.tmpdir(), "lo_socket_shim.c");
-    },
-    get SHIM_DIR() {
-        return SHIM_DIR;
-    },
-    SHIM_SOURCE,
-    resetShimState() {
-        if (SHIM_DIR && existsSync(SHIM_DIR)) {
-            try {
-                rmSync(SHIM_DIR, { recursive: true, force: true });
-            } catch {
-                // ignore
-            }
-        }
-        SHIM_DIR = null;
-        SHIM_SO = null;
-        SHIM_C = null;
-    },
+  get SHIM_SO() {
+    return SHIM_SO || path.join(os.tmpdir(), "lo_socket_shim.so");
+  },
+  get SHIM_C() {
+    return SHIM_C || path.join(os.tmpdir(), "lo_socket_shim.c");
+  },
+  get SHIM_DIR() {
+    return SHIM_DIR;
+  },
+  SHIM_SOURCE,
+  resetShimState() {
+    if (SHIM_DIR && existsSync(SHIM_DIR)) {
+      try {
+        rmSync(SHIM_DIR, { recursive: true, force: true });
+      } catch {
+        // ignore
+      }
+    }
+    SHIM_DIR = null;
+    SHIM_SO = null;
+    SHIM_C = null;
+  },
 };
 
 runCli(import.meta.url, async () => {
-    const result = await runSoffice(process.argv.slice(2));
-    process.stdout.write(result.stdout);
-    process.stderr.write(result.stderr);
-    return result.exitCode;
+  const result = await runSoffice(process.argv.slice(2));
+  process.stdout.write(result.stdout);
+  process.stderr.write(result.stderr);
+  return result.exitCode;
 });

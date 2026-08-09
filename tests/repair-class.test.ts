@@ -13,19 +13,24 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { Repair } from "../src/repair";
 
-const WORKING_FIXTURE = path.resolve(__dirname, "fixtures", "working", "sample-document.afterword-repaired-word-repaired.docx");
+const WORKING_FIXTURE = path.resolve(
+  __dirname,
+  "fixtures",
+  "working",
+  "sample-document.afterword-repaired-word-repaired.docx",
+);
 
 describe("Repair class (PR C task C.2)", () => {
-    it("instantiates with no options", () => {
-        expect(new Repair()).toBeInstanceOf(Repair);
-    });
+  it("instantiates with no options", () => {
+    expect(new Repair()).toBeInstanceOf(Repair);
+  });
 
-    it("returns a RepairResult shape (bytes + repairs + diagnostics)", async () => {
-        const bytes = readFileSync(WORKING_FIXTURE);
-        const result = await new Repair().run(new Uint8Array(bytes));
-        expect(result.bytes).toBeInstanceOf(Uint8Array);
-        expect(result.bytes.byteLength).toBeGreaterThan(0);
-        expect(typeof result.repairs).toBe("number");
-        expect(Array.isArray(result.diagnostics)).toBe(true);
-    }, 30_000);
+  it("returns a RepairResult shape (bytes + repairs + diagnostics)", async () => {
+    const bytes = readFileSync(WORKING_FIXTURE);
+    const result = await new Repair().run(new Uint8Array(bytes));
+    expect(result.bytes).toBeInstanceOf(Uint8Array);
+    expect(result.bytes.byteLength).toBeGreaterThan(0);
+    expect(typeof result.repairs).toBe("number");
+    expect(Array.isArray(result.diagnostics)).toBe(true);
+  }, 30_000);
 });

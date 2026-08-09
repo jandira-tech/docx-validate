@@ -34,40 +34,40 @@ import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
 import { makeEmptyPlaceholder, STRICT_FIXTURE, unpackDocxFixture } from "./_fixtures";
 
 describe("DOCXSchemaValidator strict-namespace paragraph counts", () => {
-    it("counts one body paragraph in the unpacked strict-format fixture", async () => {
-        await withTempDir(async (tmp) => {
-            const unpacked = await unpackDocxFixture(STRICT_FIXTURE, tmp);
-            const validator = new DOCXSchemaValidator({
-                unpackedDir: unpacked,
-                originalFile: STRICT_FIXTURE,
-            });
-            expect(validator.countParagraphsInUnpacked()).toBe(1);
-        });
+  it("counts one body paragraph in the unpacked strict-format fixture", async () => {
+    await withTempDir(async (tmp) => {
+      const unpacked = await unpackDocxFixture(STRICT_FIXTURE, tmp);
+      const validator = new DOCXSchemaValidator({
+        unpackedDir: unpacked,
+        originalFile: STRICT_FIXTURE,
+      });
+      expect(validator.countParagraphsInUnpacked()).toBe(1);
     });
+  });
 
-    it("counts one body paragraph in the original strict-format docx", async () => {
-        await withTempDir(async (tmp) => {
-            const placeholder = await makeEmptyPlaceholder(tmp);
-            const validator = new DOCXSchemaValidator({
-                unpackedDir: placeholder,
-                originalFile: STRICT_FIXTURE,
-            });
-            expect(await validator.countParagraphsInOriginal()).toBe(1);
-        });
+  it("counts one body paragraph in the original strict-format docx", async () => {
+    await withTempDir(async (tmp) => {
+      const placeholder = await makeEmptyPlaceholder(tmp);
+      const validator = new DOCXSchemaValidator({
+        unpackedDir: placeholder,
+        originalFile: STRICT_FIXTURE,
+      });
+      expect(await validator.countParagraphsInOriginal()).toBe(1);
     });
+  });
 
-    it("flags strict OOXML conformance in compareParagraphCounts result", async () => {
-        await withTempDir(async (tmp) => {
-            const unpacked = await unpackDocxFixture(STRICT_FIXTURE, tmp);
-            const validator = new DOCXSchemaValidator({
-                unpackedDir: unpacked,
-                originalFile: STRICT_FIXTURE,
-            });
-            const summary = await validator.compareParagraphCounts();
-            expect(summary.originalUsesStrictNamespace).toBe(true);
-            expect(summary.original).toBe(1);
-            expect(summary.modified).toBe(1);
-            expect(summary.delta).toBe(0);
-        });
+  it("flags strict OOXML conformance in compareParagraphCounts result", async () => {
+    await withTempDir(async (tmp) => {
+      const unpacked = await unpackDocxFixture(STRICT_FIXTURE, tmp);
+      const validator = new DOCXSchemaValidator({
+        unpackedDir: unpacked,
+        originalFile: STRICT_FIXTURE,
+      });
+      const summary = await validator.compareParagraphCounts();
+      expect(summary.originalUsesStrictNamespace).toBe(true);
+      expect(summary.original).toBe(1);
+      expect(summary.modified).toBe(1);
+      expect(summary.delta).toBe(0);
     });
+  });
 });

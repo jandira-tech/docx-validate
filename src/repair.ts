@@ -32,51 +32,51 @@ import { pack } from "./scripts/office/pack";
 import { withTempDir } from "./lib/run-cli";
 
 export type RepairOptions = {
-    /**
-     * Override the XSD engine used internally (PR B's injection mechanism).
-     * Defaults to the legacy libxmljs2 path until the cutover lands.
-     */
-    xsdValidator?: XsdValidator;
-    /** Override the bundled XSD schemas directory. */
-    schemasDir?: string;
-    /** Verbose mode passed through to the validator. */
-    verbose?: boolean;
+  /**
+   * Override the XSD engine used internally (PR B's injection mechanism).
+   * Defaults to the legacy libxmljs2 path until the cutover lands.
+   */
+  xsdValidator?: XsdValidator;
+  /** Override the bundled XSD schemas directory. */
+  schemasDir?: string;
+  /** Verbose mode passed through to the validator. */
+  verbose?: boolean;
 };
 
 export type RepairResult = {
-    bytes: Uint8Array;
-    repairs: number;
-    diagnostics: ValidationIssue[];
+  bytes: Uint8Array;
+  repairs: number;
+  diagnostics: ValidationIssue[];
 };
 
 export class Repair {
-    public constructor(private readonly opts: RepairOptions = {}) {}
+  public constructor(private readonly opts: RepairOptions = {}) {}
 
-    public run(bytes: Uint8Array): Promise<RepairResult> {
-        return withTempDir(async (dir) => {
-            const inputPath = path.join(dir, "input.docx");
-            await writeFile(inputPath, bytes);
+  public run(bytes: Uint8Array): Promise<RepairResult> {
+    return withTempDir(async (dir) => {
+      const inputPath = path.join(dir, "input.docx");
+      await writeFile(inputPath, bytes);
 
-            const unpackedDir = path.join(dir, "unpacked");
-            await unpack(inputPath, unpackedDir);
+      const unpackedDir = path.join(dir, "unpacked");
+      await unpack(inputPath, unpackedDir);
 
-            const validator = new DOCXSchemaValidator({
-                unpackedDir,
-                verbose: this.opts.verbose ?? false,
-                schemasDir: this.opts.schemasDir,
-                xsdValidator: this.opts.xsdValidator,
-            });
-            const repairs = await validator.repair();
+      const validator = new DOCXSchemaValidator({
+        unpackedDir,
+        verbose: this.opts.verbose ?? false,
+        schemasDir: this.opts.schemasDir,
+        xsdValidator: this.opts.xsdValidator,
+      });
+      const repairs = await validator.repair();
 
-            const outPath = path.join(dir, "out.docx");
-            await pack(unpackedDir, outPath);
-            const out = await readFile(outPath);
+      const outPath = path.join(dir, "out.docx");
+      await pack(unpackedDir, outPath);
+      const out = await readFile(outPath);
 
-            return {
-                bytes: new Uint8Array(out),
-                repairs,
-                diagnostics: [],
-            };
-        });
-    }
+      return {
+        bytes: new Uint8Array(out),
+        repairs,
+        diagnostics: [],
+      };
+    });
+  }
 }

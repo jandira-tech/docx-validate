@@ -54,101 +54,107 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE_DIR = path.resolve(HERE, "fixtures", "external", "docx-templates");
 
 interface ExpectedFailure {
-    /** issue codes that MUST appear in `result.issues` */
-    codes: string[];
+  /** issue codes that MUST appear in `result.issues` */
+  codes: string[];
 }
 
 const KNOWN_FAILURES_LENIENT: Record<string, ExpectedFailure> = {
-    // BOMs no longer trip us (parseXml strips them under both profiles), but
-    // office365.docx has a separate real-world Office 365 quirk: word/settings.xml
-    // has <w:zoom> in a position the ISO Transitional XSD does not allow in its
-    // CT_Settings sequence. Word produces and reads this fine; the bundled XSDs
-    // are stricter than Microsoft's actual implementation. A future "lenient
-    // tolerates Office sequence-order deviations" pass would unblock this.
-    "office365.docx": { codes: ["xsd-summary"] },
-    "zipGeneration.docx": { codes: ["ct-undeclared-ext"] },
+  // BOMs no longer trip us (parseXml strips them under both profiles), but
+  // office365.docx has a separate real-world Office 365 quirk: word/settings.xml
+  // has <w:zoom> in a position the ISO Transitional XSD does not allow in its
+  // CT_Settings sequence. Word produces and reads this fine; the bundled XSDs
+  // are stricter than Microsoft's actual implementation. A future "lenient
+  // tolerates Office sequence-order deviations" pass would unblock this.
+  "office365.docx": { codes: ["xsd-summary"] },
+  "zipGeneration.docx": { codes: ["ct-undeclared-ext"] },
 };
 
 const KNOWN_FAILURES_STRICT: Record<string, ExpectedFailure> = {
-    // Strict additionally surfaces xml-bom-leading (the canonical strict-only check).
-    "office365.docx": { codes: ["xml-bom-leading", "xsd-summary"] },
-    "zipGeneration.docx": { codes: ["ct-undeclared-ext"] },
+  // Strict additionally surfaces xml-bom-leading (the canonical strict-only check).
+  "office365.docx": { codes: ["xml-bom-leading", "xsd-summary"] },
+  "zipGeneration.docx": { codes: ["ct-undeclared-ext"] },
 };
 
 const SKIP = new Set<string>([
-    // .docm — validate() suffix gate rejects it; structurally identical to .docx.
-    "macroEnabledTemplate.docm",
+  // .docm — validate() suffix gate rejects it; structurally identical to .docx.
+  "macroEnabledTemplate.docm",
 ]);
 
 const allFixtures = (await fs.readdir(FIXTURE_DIR))
-    // Office writes lockfiles as `~$*.docx` while a document is open. They are
-    // not real DOCX files; defensively filter even though the copy step
-    // already excludes them.
-    .filter((f) => !f.startsWith("~$"))
-    .filter((f) => f.endsWith(".docx") || f.endsWith(".docm"))
-    .sort();
+  // Office writes lockfiles as `~$*.docx` while a document is open. They are
+  // not real DOCX files; defensively filter even though the copy step
+  // already excludes them.
+  .filter((f) => !f.startsWith("~$"))
+  .filter((f) => f.endsWith(".docx") || f.endsWith(".docm"))
+  .sort();
 
 const validFixturesLenient = allFixtures.filter((f) => !KNOWN_FAILURES_LENIENT[f] && !SKIP.has(f));
 
 describe("docx-templates corpus — valid templates pass under default (lenient) profile", () => {
-    it.each(validFixturesLenient)("%s validates as ok", async (name) => {
-        const result = await validate(path.join(FIXTURE_DIR, name));
-        if (!result.valid) {
-            console.error(`unexpected failure for ${name}:`, result.issues);
-        }
-        expect(result.valid).toBe(true);
-        expect(result.issues.filter((i) => i.severity === "error")).toEqual([]);
-    });
+  it.each(validFixturesLenient)("%s validates as ok", async (name) => {
+    const result = await validate(path.join(FIXTURE_DIR, name));
+    if (!result.valid) {
+      console.error(`unexpected failure for ${name}:`, result.issues);
+    }
+    expect(result.valid).toBe(true);
+    expect(result.issues.filter((i) => i.severity === "error")).toEqual([]);
+  });
 });
 
 describe("docx-templates corpus — known failures under lenient profile", () => {
-    it.each(Object.keys(KNOWN_FAILURES_LENIENT).sort())("%s is rejected with the expected codes", async (name) => {
-        const expected = KNOWN_FAILURES_LENIENT[name];
-        if (!expected) throw new Error(`missing expectation for ${name}`);
-        const result = await validate(path.join(FIXTURE_DIR, name));
-        expect(result.valid).toBe(false);
-        for (const code of expected.codes) {
-            expect(result.issues.some((i) => i.code === code)).toBe(true);
-        }
-    });
+  it.each(Object.keys(KNOWN_FAILURES_LENIENT).sort())(
+    "%s is rejected with the expected codes",
+    async (name) => {
+      const expected = KNOWN_FAILURES_LENIENT[name];
+      if (!expected) throw new Error(`missing expectation for ${name}`);
+      const result = await validate(path.join(FIXTURE_DIR, name));
+      expect(result.valid).toBe(false);
+      for (const code of expected.codes) {
+        expect(result.issues.some((i) => i.code === code)).toBe(true);
+      }
+    },
+  );
 });
 
 describe("docx-templates corpus — strict profile flags BOM and other quirks", () => {
-    it.each(Object.keys(KNOWN_FAILURES_STRICT).sort())("%s under strict profile is rejected with the expected codes", async (name) => {
-        const expected = KNOWN_FAILURES_STRICT[name];
-        if (!expected) throw new Error(`missing expectation for ${name}`);
-        const result = await validate(path.join(FIXTURE_DIR, name), {
-            profile: "strict",
-        });
-        expect(result.valid).toBe(false);
-        for (const code of expected.codes) {
-            expect(result.issues.some((i) => i.code === code)).toBe(true);
-        }
-    });
+  it.each(Object.keys(KNOWN_FAILURES_STRICT).sort())(
+    "%s under strict profile is rejected with the expected codes",
+    async (name) => {
+      const expected = KNOWN_FAILURES_STRICT[name];
+      if (!expected) throw new Error(`missing expectation for ${name}`);
+      const result = await validate(path.join(FIXTURE_DIR, name), {
+        profile: "strict",
+      });
+      expect(result.valid).toBe(false);
+      for (const code of expected.codes) {
+        expect(result.issues.some((i) => i.code === code)).toBe(true);
+      }
+    },
+  );
 
-    it("office365.docx: lenient strips BOM and surfaces it as a WARNING (not an error)", async () => {
-        // Pin the BOM behaviour under lenient: parseXml still strips the BOM
-        // so no xml-syntax error appears, but `validateNoBom` now records
-        // each BOM as severity:warning rather than going silent. That keeps
-        // the gap visible in `result.issues` for callers who audit them,
-        // without flipping `valid` to false. The XSD sequence-order issue
-        // is a separate concern (see KNOWN_FAILURES_LENIENT).
-        const result = await validate(path.join(FIXTURE_DIR, "office365.docx"));
-        expect(result.issues.some((i) => i.code === "xml-syntax")).toBe(false);
-        const bomIssues = result.issues.filter((i) => i.code === "xml-bom-leading");
-        expect(bomIssues.length).toBeGreaterThan(0);
-        expect(bomIssues.every((i) => i.severity === "warning")).toBe(true);
-    });
+  it("office365.docx: lenient strips BOM and surfaces it as a WARNING (not an error)", async () => {
+    // Pin the BOM behaviour under lenient: parseXml still strips the BOM
+    // so no xml-syntax error appears, but `validateNoBom` now records
+    // each BOM as severity:warning rather than going silent. That keeps
+    // the gap visible in `result.issues` for callers who audit them,
+    // without flipping `valid` to false. The XSD sequence-order issue
+    // is a separate concern (see KNOWN_FAILURES_LENIENT).
+    const result = await validate(path.join(FIXTURE_DIR, "office365.docx"));
+    expect(result.issues.some((i) => i.code === "xml-syntax")).toBe(false);
+    const bomIssues = result.issues.filter((i) => i.code === "xml-bom-leading");
+    expect(bomIssues.length).toBeGreaterThan(0);
+    expect(bomIssues.every((i) => i.severity === "warning")).toBe(true);
+  });
 });
 
 describe("docx-templates corpus — skipped formats", () => {
-    it("macroEnabledTemplate.docm: validate() treats .docm as a supported format (validated like .docx)", async () => {
-        // .docm has been in SUPPORTED_SUFFIXES since the first commit, so it is
-        // dispatched to the DOCX validators rather than skipped. This fixture is
-        // well-formed, so it validates cleanly with no unsupported-file-type issue.
-        const result = await validate(path.join(FIXTURE_DIR, "macroEnabledTemplate.docm"));
-        expect(result.suffix).toBe(".docm");
-        expect(result.issues.some((i) => i.code === "unsupported-file-type")).toBe(false);
-        expect(result.valid).toBe(true);
-    });
+  it("macroEnabledTemplate.docm: validate() treats .docm as a supported format (validated like .docx)", async () => {
+    // .docm has been in SUPPORTED_SUFFIXES since the first commit, so it is
+    // dispatched to the DOCX validators rather than skipped. This fixture is
+    // well-formed, so it validates cleanly with no unsupported-file-type issue.
+    const result = await validate(path.join(FIXTURE_DIR, "macroEnabledTemplate.docm"));
+    expect(result.suffix).toBe(".docm");
+    expect(result.issues.some((i) => i.code === "unsupported-file-type")).toBe(false);
+    expect(result.valid).toBe(true);
+  });
 });

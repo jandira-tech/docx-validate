@@ -34,44 +34,44 @@ import { validate as runValidate } from "./scripts/office/validate";
 import { withTempDir } from "./lib/run-cli";
 
 export type ValidateOptions = {
-    /**
-     * Override the XSD engine. When omitted, BaseSchemaValidator uses its
-     * legacy libxmljs2 path (the dual-path injection mechanism landed in
-     * PR B). PR C wires this option end-to-end so consumers can opt into
-     * the wasm validator without modifying BaseSchemaValidator construction.
-     */
-    xsdValidator?: XsdValidator;
-    /**
-     * Override the bundled XSD schemas directory. Defaults to the
-     * `src/scripts/office/schemas/` tree shipped with the package.
-     */
-    schemasDir?: string;
-    /**
-     * `"lenient"` (default — matches real-world Microsoft Office output)
-     * or `"strict"` (spec-purist). See {@link "./lib/types"} for the union.
-     */
-    profile?: "lenient" | "strict" | "word-valid";
-    /**
-     * File-extension override. Detected from the DOCX magic bytes when
-     * omitted; specify when the bytes are known to be a different
-     * supported suffix (e.g. `.pptx`, `.docm`).
-     */
-    suffix?: string;
+  /**
+   * Override the XSD engine. When omitted, BaseSchemaValidator uses its
+   * legacy libxmljs2 path (the dual-path injection mechanism landed in
+   * PR B). PR C wires this option end-to-end so consumers can opt into
+   * the wasm validator without modifying BaseSchemaValidator construction.
+   */
+  xsdValidator?: XsdValidator;
+  /**
+   * Override the bundled XSD schemas directory. Defaults to the
+   * `src/scripts/office/schemas/` tree shipped with the package.
+   */
+  schemasDir?: string;
+  /**
+   * `"lenient"` (default — matches real-world Microsoft Office output)
+   * or `"strict"` (spec-purist). See {@link "./lib/types"} for the union.
+   */
+  profile?: "lenient" | "strict" | "word-valid";
+  /**
+   * File-extension override. Detected from the DOCX magic bytes when
+   * omitted; specify when the bytes are known to be a different
+   * supported suffix (e.g. `.pptx`, `.docm`).
+   */
+  suffix?: string;
 };
 
 export class Validate {
-    public constructor(private readonly opts: ValidateOptions = {}) {}
+  public constructor(private readonly opts: ValidateOptions = {}) {}
 
-    public run(bytes: Uint8Array): Promise<ValidationResult> {
-        return withTempDir(async (dir) => {
-            const suffix = this.opts.suffix ?? ".docx";
-            const docxPath = path.join(dir, `input${suffix}`);
-            await writeFile(docxPath, bytes);
-            const result = await runValidate(docxPath, {
-                schemasDir: this.opts.schemasDir,
-                profile: this.opts.profile,
-            });
-            return { valid: result.valid, issues: result.issues };
-        });
-    }
+  public run(bytes: Uint8Array): Promise<ValidationResult> {
+    return withTempDir(async (dir) => {
+      const suffix = this.opts.suffix ?? ".docx";
+      const docxPath = path.join(dir, `input${suffix}`);
+      await writeFile(docxPath, bytes);
+      const result = await runValidate(docxPath, {
+        schemasDir: this.opts.schemasDir,
+        profile: this.opts.profile,
+      });
+      return { valid: result.valid, issues: result.issues };
+    });
+  }
 }

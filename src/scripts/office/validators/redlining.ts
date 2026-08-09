@@ -40,11 +40,11 @@ import { getElementsByTagNameNSAll, parseXml } from "../../../lib/xml-helpers";
 const ELEMENT_NODE = 1;
 
 export interface RedliningOptions {
-    unpackedDir: string;
-    originalDocx: string;
-    verbose?: boolean;
-    /** Author whose tracked changes are being validated. Required. */
-    author: string;
+  unpackedDir: string;
+  originalDocx: string;
+  verbose?: boolean;
+  /** Author whose tracked changes are being validated. Required. */
+  author: string;
 }
 
 /**
@@ -58,119 +58,119 @@ export interface RedliningOptions {
  * its diagnostic messages, which downstream tooling greps for verbatim.
  */
 export async function validateRedlining(options: RedliningOptions): Promise<ValidationResult> {
-    const author = options.author;
-    const verbose = options.verbose ?? false;
-    const unpackedDir = options.unpackedDir;
-    const originalDocx = options.originalDocx;
+  const author = options.author;
+  const verbose = options.verbose ?? false;
+  const unpackedDir = options.unpackedDir;
+  const originalDocx = options.originalDocx;
 
-    const modifiedFile = path.join(unpackedDir, "word", "document.xml");
+  const modifiedFile = path.join(unpackedDir, "word", "document.xml");
 
-    let modifiedText: string;
+  let modifiedText: string;
+  try {
+    modifiedText = await fs.readFile(modifiedFile, "utf8");
+  } catch {
+    return failure(`FAILED - Modified document.xml not found at ${modifiedFile}`);
+  }
+
+  let modifiedRoot: Element;
+  try {
+    const parsed = parseXml(modifiedText);
+    if (!parsed.documentElement) {
+      throw new Error("missing document element");
+    }
+    modifiedRoot = parsed.documentElement;
+  } catch {
+    modifiedRoot = null as unknown as Element;
+  }
+
+  if (modifiedRoot) {
+    const delElements = getElementsByTagNameNSAll(modifiedRoot, NS.W, "del");
+    const insElements = getElementsByTagNameNSAll(modifiedRoot, NS.W, "ins");
+
+    const authorDel = delElements.filter((el) => el.getAttributeNS(NS.W, "author") === author);
+    const authorIns = insElements.filter((el) => el.getAttributeNS(NS.W, "author") === author);
+
+    if (authorDel.length === 0 && authorIns.length === 0) {
+      if (verbose) {
+        process.stdout.write(`PASSED - No tracked changes by ${author} found.\n`);
+      }
+      return { valid: true, issues: [] };
+    }
+  }
+
+  return withTempDir(async (tempDir) => {
     try {
-        modifiedText = await fs.readFile(modifiedFile, "utf8");
-    } catch {
-        return failure(`FAILED - Modified document.xml not found at ${modifiedFile}`);
+      const data = await fs.readFile(originalDocx);
+      const zip = await JSZip.loadAsync(data);
+      await Promise.all(
+        Object.values(zip.files).map(async (entry) => {
+          const target = path.join(tempDir, entry.name);
+          if (entry.dir) {
+            await fs.mkdir(target, { recursive: true });
+            return;
+          }
+          await fs.mkdir(path.dirname(target), { recursive: true });
+          const buf = await entry.async("nodebuffer");
+          await fs.writeFile(target, buf);
+        }),
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      return failure(`FAILED - Error unpacking original docx: ${message}`);
     }
 
-    let modifiedRoot: Element;
+    const originalFile = path.join(tempDir, "word", "document.xml");
     try {
-        const parsed = parseXml(modifiedText);
-        if (!parsed.documentElement) {
-            throw new Error("missing document element");
-        }
-        modifiedRoot = parsed.documentElement;
+      await fs.access(originalFile);
     } catch {
-        modifiedRoot = null as unknown as Element;
+      return failure(`FAILED - Original document.xml not found in ${originalDocx}`);
     }
 
-    if (modifiedRoot) {
-        const delElements = getElementsByTagNameNSAll(modifiedRoot, NS.W, "del");
-        const insElements = getElementsByTagNameNSAll(modifiedRoot, NS.W, "ins");
-
-        const authorDel = delElements.filter((el) => el.getAttributeNS(NS.W, "author") === author);
-        const authorIns = insElements.filter((el) => el.getAttributeNS(NS.W, "author") === author);
-
-        if (authorDel.length === 0 && authorIns.length === 0) {
-            if (verbose) {
-                process.stdout.write(`PASSED - No tracked changes by ${author} found.\n`);
-            }
-            return { valid: true, issues: [] };
-        }
+    let modifiedDoc: Document;
+    let originalDoc: Document;
+    try {
+      modifiedDoc = parseXml(await fs.readFile(modifiedFile, "utf8"));
+      originalDoc = parseXml(await fs.readFile(originalFile, "utf8"));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      return failure(`FAILED - Error parsing XML files: ${message}`);
     }
 
-    return withTempDir(async (tempDir) => {
-        try {
-            const data = await fs.readFile(originalDocx);
-            const zip = await JSZip.loadAsync(data);
-            await Promise.all(
-                Object.values(zip.files).map(async (entry) => {
-                    const target = path.join(tempDir, entry.name);
-                    if (entry.dir) {
-                        await fs.mkdir(target, { recursive: true });
-                        return;
-                    }
-                    await fs.mkdir(path.dirname(target), { recursive: true });
-                    const buf = await entry.async("nodebuffer");
-                    await fs.writeFile(target, buf);
-                }),
-            );
-        } catch (err) {
-            const message = err instanceof Error ? err.message : String(err);
-            return failure(`FAILED - Error unpacking original docx: ${message}`);
-        }
-
-        const originalFile = path.join(tempDir, "word", "document.xml");
-        try {
-            await fs.access(originalFile);
-        } catch {
-            return failure(`FAILED - Original document.xml not found in ${originalDocx}`);
-        }
-
-        let modifiedDoc: Document;
-        let originalDoc: Document;
-        try {
-            modifiedDoc = parseXml(await fs.readFile(modifiedFile, "utf8"));
-            originalDoc = parseXml(await fs.readFile(originalFile, "utf8"));
-        } catch (err) {
-            const message = err instanceof Error ? err.message : String(err);
-            return failure(`FAILED - Error parsing XML files: ${message}`);
-        }
-
-        const modRoot = modifiedDoc.documentElement;
-        const origRoot = originalDoc.documentElement;
-        if (!modRoot || !origRoot) {
-            return failure("FAILED - Error parsing XML files: missing document element");
-        }
-
-        removeAuthorTrackedChanges(origRoot, author);
-        removeAuthorTrackedChanges(modRoot, author);
-
-        const modifiedTxt = extractTextContent(modRoot);
-        const originalTxt = extractTextContent(origRoot);
-
-        if (modifiedTxt !== originalTxt) {
-            const message = await generateDetailedDiff(originalTxt, modifiedTxt, author);
-            if (verbose) {
-                process.stdout.write(`${message}\n`);
-            }
-            return {
-                valid: false,
-                issues: [{ severity: "error", message, code: "redlining/mismatch" }],
-            };
-        }
-
-        if (verbose) {
-            process.stdout.write(`PASSED - All changes by ${author} are properly tracked\n`);
-        }
-        return { valid: true, issues: [] };
-    });
-
-    function failure(message: string): ValidationResult {
-        if (verbose) {
-            process.stdout.write(`${message}\n`);
-        }
-        return { valid: false, issues: [{ severity: "error", message }] };
+    const modRoot = modifiedDoc.documentElement;
+    const origRoot = originalDoc.documentElement;
+    if (!modRoot || !origRoot) {
+      return failure("FAILED - Error parsing XML files: missing document element");
     }
+
+    removeAuthorTrackedChanges(origRoot, author);
+    removeAuthorTrackedChanges(modRoot, author);
+
+    const modifiedTxt = extractTextContent(modRoot);
+    const originalTxt = extractTextContent(origRoot);
+
+    if (modifiedTxt !== originalTxt) {
+      const message = await generateDetailedDiff(originalTxt, modifiedTxt, author);
+      if (verbose) {
+        process.stdout.write(`${message}\n`);
+      }
+      return {
+        valid: false,
+        issues: [{ severity: "error", message, code: "redlining/mismatch" }],
+      };
+    }
+
+    if (verbose) {
+      process.stdout.write(`PASSED - All changes by ${author} are properly tracked\n`);
+    }
+    return { valid: true, issues: [] };
+  });
+
+  function failure(message: string): ValidationResult {
+    if (verbose) {
+      process.stdout.write(`${message}\n`);
+    }
+    return { valid: false, issues: [{ severity: "error", message }] };
+  }
 }
 
 /**
@@ -183,55 +183,58 @@ export async function validateRedlining(options: RedliningOptions): Promise<Vali
  * being unwrapped into the surrounding paragraph.
  */
 export function removeAuthorTrackedChanges(root: Element, author: string): void {
-    const allElements = collectAllElements(root);
-    for (const parent of allElements) {
-        const toRemove: Element[] = [];
-        for (let child = parent.firstChild; child; child = child.nextSibling) {
-            if (
-                child.nodeType === ELEMENT_NODE &&
-                (child as Element).namespaceURI === NS.W &&
-                (child as Element).localName === "ins" &&
-                (child as Element).getAttributeNS(NS.W, "author") === author
-            ) {
-                toRemove.push(child as Element);
-            }
-        }
-        for (const elem of toRemove) {
-            parent.removeChild(elem);
-        }
+  const allElements = collectAllElements(root);
+  for (const parent of allElements) {
+    const toRemove: Element[] = [];
+    for (let child = parent.firstChild; child; child = child.nextSibling) {
+      if (
+        child.nodeType === ELEMENT_NODE &&
+        (child as Element).namespaceURI === NS.W &&
+        (child as Element).localName === "ins" &&
+        (child as Element).getAttributeNS(NS.W, "author") === author
+      ) {
+        toRemove.push(child as Element);
+      }
     }
+    for (const elem of toRemove) {
+      parent.removeChild(elem);
+    }
+  }
 
-    const remaining = collectAllElements(root);
-    for (const parent of remaining) {
-        const children: Element[] = [];
-        for (let child = parent.firstChild; child; child = child.nextSibling) {
-            if (child.nodeType === ELEMENT_NODE) {
-                children.push(child as Element);
-            }
-        }
-        const targets: Element[] = children.filter(
-            (el) => el.namespaceURI === NS.W && el.localName === "del" && el.getAttributeNS(NS.W, "author") === author,
-        );
-        for (const delElem of targets.slice().reverse()) {
-            const delTexts = getElementsByTagNameNSAll(delElem, NS.W, "delText");
-            for (const dt of delTexts) {
-                renameElement(dt, "w:t");
-            }
-            const owned: Element[] = [];
-            for (let child = delElem.firstChild; child; child = child.nextSibling) {
-                if (child.nodeType === ELEMENT_NODE) {
-                    owned.push(child as Element);
-                }
-            }
-            // Iterate forward; insertBefore() preserves natural order (A, B, C)
-            // when the reference node is fixed on `delElem`. Reversed iteration
-            // would emit C, B, A and corrupt the stripped text stream.
-            for (const child of owned) {
-                parent.insertBefore(child, delElem);
-            }
-            parent.removeChild(delElem);
-        }
+  const remaining = collectAllElements(root);
+  for (const parent of remaining) {
+    const children: Element[] = [];
+    for (let child = parent.firstChild; child; child = child.nextSibling) {
+      if (child.nodeType === ELEMENT_NODE) {
+        children.push(child as Element);
+      }
     }
+    const targets: Element[] = children.filter(
+      (el) =>
+        el.namespaceURI === NS.W &&
+        el.localName === "del" &&
+        el.getAttributeNS(NS.W, "author") === author,
+    );
+    for (const delElem of targets.slice().reverse()) {
+      const delTexts = getElementsByTagNameNSAll(delElem, NS.W, "delText");
+      for (const dt of delTexts) {
+        renameElement(dt, "w:t");
+      }
+      const owned: Element[] = [];
+      for (let child = delElem.firstChild; child; child = child.nextSibling) {
+        if (child.nodeType === ELEMENT_NODE) {
+          owned.push(child as Element);
+        }
+      }
+      // Iterate forward; insertBefore() preserves natural order (A, B, C)
+      // when the reference node is fixed on `delElem`. Reversed iteration
+      // would emit C, B, A and corrupt the stripped text stream.
+      for (const child of owned) {
+        parent.insertBefore(child, delElem);
+      }
+      parent.removeChild(delElem);
+    }
+  }
 }
 
 /**
@@ -240,45 +243,49 @@ export function removeAuthorTrackedChanges(root: Element, author: string): void 
  * non-empty paragraphs are emitted (joined by '\n').
  */
 export function extractTextContent(root: Element): string {
-    const paragraphs: string[] = [];
-    for (const p of getElementsByTagNameNSAll(root, NS.W, "p")) {
-        const parts: string[] = [];
-        for (const t of getElementsByTagNameNSAll(p, NS.W, "t")) {
-            if (t.textContent) {
-                parts.push(t.textContent);
-            }
-        }
-        const joined = parts.join("");
-        if (joined) {
-            paragraphs.push(joined);
-        }
+  const paragraphs: string[] = [];
+  for (const p of getElementsByTagNameNSAll(root, NS.W, "p")) {
+    const parts: string[] = [];
+    for (const t of getElementsByTagNameNSAll(p, NS.W, "t")) {
+      if (t.textContent) {
+        parts.push(t.textContent);
+      }
     }
-    return paragraphs.join("\n");
+    const joined = parts.join("");
+    if (joined) {
+      paragraphs.push(joined);
+    }
+  }
+  return paragraphs.join("\n");
 }
 
-async function generateDetailedDiff(originalText: string, modifiedText: string, author: string): Promise<string> {
-    const errorParts: string[] = [
-        `FAILED - Document text doesn't match after removing ${author}'s tracked changes`,
-        "",
-        "Likely causes:",
-        "  1. Modified text inside another author's <w:ins> or <w:del> tags",
-        "  2. Made edits without proper tracked changes",
-        "  3. Didn't nest <w:del> inside <w:ins> when deleting another's insertion",
-        "",
-        "For pre-redlined documents, use correct patterns:",
-        "  - To reject another's INSERTION: Nest <w:del> inside their <w:ins>",
-        "  - To restore another's DELETION: Add new <w:ins> AFTER their <w:del>",
-        "",
-    ];
+async function generateDetailedDiff(
+  originalText: string,
+  modifiedText: string,
+  author: string,
+): Promise<string> {
+  const errorParts: string[] = [
+    `FAILED - Document text doesn't match after removing ${author}'s tracked changes`,
+    "",
+    "Likely causes:",
+    "  1. Modified text inside another author's <w:ins> or <w:del> tags",
+    "  2. Made edits without proper tracked changes",
+    "  3. Didn't nest <w:del> inside <w:ins> when deleting another's insertion",
+    "",
+    "For pre-redlined documents, use correct patterns:",
+    "  - To reject another's INSERTION: Nest <w:del> inside their <w:ins>",
+    "  - To restore another's DELETION: Add new <w:ins> AFTER their <w:del>",
+    "",
+  ];
 
-    const gitDiff = await getGitWordDiff(originalText, modifiedText);
-    if (gitDiff) {
-        errorParts.push("Differences:", "============", gitDiff);
-    } else {
-        errorParts.push("Unable to generate word diff (git not available)");
-    }
+  const gitDiff = await getGitWordDiff(originalText, modifiedText);
+  if (gitDiff) {
+    errorParts.push("Differences:", "============", gitDiff);
+  } else {
+    errorParts.push("Unable to generate word diff (git not available)");
+  }
 
-    return errorParts.join("\n");
+  return errorParts.join("\n");
 }
 
 /**
@@ -288,67 +295,88 @@ async function generateDetailedDiff(originalText: string, modifiedText: string, 
  * granularity); if that yields nothing, retries without the regex (line
  * granularity).
  */
-export async function getGitWordDiff(originalText: string, modifiedText: string): Promise<string | null> {
-    return withTempDir((tempDir) => {
-        const origFile = path.join(tempDir, "original.txt");
-        const modFile = path.join(tempDir, "modified.txt");
-        return Promise.all([fs.writeFile(origFile, originalText, "utf8"), fs.writeFile(modFile, modifiedText, "utf8")]).then(() => {
-            const granular = runGitDiff(["diff", "--word-diff=plain", "--word-diff-regex=.", "-U0", "--no-index", origFile, modFile]);
-            if (granular !== null && granular.trim() !== "") {
-                const filtered = filterDiffContent(granular);
-                if (filtered) {
-                    return filtered;
-                }
-            }
+export async function getGitWordDiff(
+  originalText: string,
+  modifiedText: string,
+): Promise<string | null> {
+  return withTempDir((tempDir) => {
+    const origFile = path.join(tempDir, "original.txt");
+    const modFile = path.join(tempDir, "modified.txt");
+    return Promise.all([
+      fs.writeFile(origFile, originalText, "utf8"),
+      fs.writeFile(modFile, modifiedText, "utf8"),
+    ]).then(() => {
+      const granular = runGitDiff([
+        "diff",
+        "--word-diff=plain",
+        "--word-diff-regex=.",
+        "-U0",
+        "--no-index",
+        origFile,
+        modFile,
+      ]);
+      if (granular !== null && granular.trim() !== "") {
+        const filtered = filterDiffContent(granular);
+        if (filtered) {
+          return filtered;
+        }
+      }
 
-            const wordLevel = runGitDiff(["diff", "--word-diff=plain", "-U0", "--no-index", origFile, modFile]);
-            if (wordLevel !== null && wordLevel.trim() !== "") {
-                return filterDiffContent(wordLevel);
-            }
+      const wordLevel = runGitDiff([
+        "diff",
+        "--word-diff=plain",
+        "-U0",
+        "--no-index",
+        origFile,
+        modFile,
+      ]);
+      if (wordLevel !== null && wordLevel.trim() !== "") {
+        return filterDiffContent(wordLevel);
+      }
 
-            return null;
-        });
+      return null;
     });
+  });
 }
 
 function runGitDiff(args: string[]): string | null {
-    try {
-        const result = spawnSync("git", args, { encoding: "utf8" });
-        if (result.error) {
-            return null;
-        }
-        return result.stdout ?? "";
-    } catch {
-        return null;
+  try {
+    const result = spawnSync("git", args, { encoding: "utf8" });
+    if (result.error) {
+      return null;
     }
+    return result.stdout ?? "";
+  } catch {
+    return null;
+  }
 }
 
 function filterDiffContent(stdout: string): string {
-    const lines = stdout.split("\n");
-    const contentLines: string[] = [];
-    let inContent = false;
-    for (const line of lines) {
-        if (line.startsWith("@@")) {
-            inContent = true;
-            continue;
-        }
-        if (inContent && line.trim() !== "") {
-            contentLines.push(line);
-        }
+  const lines = stdout.split("\n");
+  const contentLines: string[] = [];
+  let inContent = false;
+  for (const line of lines) {
+    if (line.startsWith("@@")) {
+      inContent = true;
+      continue;
     }
-    return contentLines.join("\n");
+    if (inContent && line.trim() !== "") {
+      contentLines.push(line);
+    }
+  }
+  return contentLines.join("\n");
 }
 
 function collectAllElements(root: Element): Element[] {
-    const out: Element[] = [root];
-    const list = root.getElementsByTagName("*");
-    for (let i = 0; i < list.length; i += 1) {
-        const item = list.item(i);
-        if (item) {
-            out.push(item as Element);
-        }
+  const out: Element[] = [root];
+  const list = root.getElementsByTagName("*");
+  for (let i = 0; i < list.length; i += 1) {
+    const item = list.item(i);
+    if (item) {
+      out.push(item as Element);
     }
-    return out;
+  }
+  return out;
 }
 
 /**
@@ -357,29 +385,29 @@ function collectAllElements(root: Element): Element[] {
  * `w:delText` → `w:t` after stripping a tracked deletion.
  */
 function renameElement(elem: Element, newQName: string): Element {
-    const doc = elem.ownerDocument;
-    if (!doc) {
-        return elem;
+  const doc = elem.ownerDocument;
+  if (!doc) {
+    return elem;
+  }
+  const replacement = doc.createElementNS(NS.W, newQName);
+  const attrs = elem.attributes;
+  for (let i = 0; i < attrs.length; i += 1) {
+    const attr = attrs.item(i);
+    if (!attr) continue;
+    if (attr.namespaceURI) {
+      replacement.setAttributeNS(attr.namespaceURI, attr.name, attr.value);
+    } else {
+      replacement.setAttribute(attr.name, attr.value);
     }
-    const replacement = doc.createElementNS(NS.W, newQName);
-    const attrs = elem.attributes;
-    for (let i = 0; i < attrs.length; i += 1) {
-        const attr = attrs.item(i);
-        if (!attr) continue;
-        if (attr.namespaceURI) {
-            replacement.setAttributeNS(attr.namespaceURI, attr.name, attr.value);
-        } else {
-            replacement.setAttribute(attr.name, attr.value);
-        }
-    }
-    while (elem.firstChild) {
-        replacement.appendChild(elem.firstChild);
-    }
-    const parent = elem.parentNode;
-    if (parent) {
-        parent.replaceChild(replacement, elem);
-    }
-    return replacement;
+  }
+  while (elem.firstChild) {
+    replacement.appendChild(elem.firstChild);
+  }
+  const parent = elem.parentNode;
+  if (parent) {
+    parent.replaceChild(replacement, elem);
+  }
+  return replacement;
 }
 
 /**
@@ -389,13 +417,13 @@ function renameElement(elem: Element, newQName: string): Element {
  * to the Python source.
  */
 export class RedliningValidator {
-    constructor(private readonly options: RedliningOptions) {}
+  constructor(private readonly options: RedliningOptions) {}
 
-    validate(): Promise<ValidationResult> {
-        return validateRedlining(this.options);
-    }
+  validate(): Promise<ValidationResult> {
+    return validateRedlining(this.options);
+  }
 
-    async repair(): Promise<number> {
-        return 0;
-    }
+  async repair(): Promise<number> {
+    return 0;
+  }
 }

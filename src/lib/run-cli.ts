@@ -49,24 +49,24 @@ import * as tmp from "tmp";
  * directly inside `main`; just return a number.
  */
 export const runCli = (metaUrl: string, fn: () => number | Promise<number>): void => {
-    const [, entryArg] = process.argv;
-    if (!entryArg) {
-        return;
-    }
-    const modulePath = fileURLToPath(metaUrl);
-    if (modulePath !== entryArg) {
-        return;
-    }
-    Promise.resolve()
-        .then(fn)
-        .then((code) => {
-            process.exit(typeof code === "number" ? code : 0);
-        })
-        .catch((err: unknown) => {
-            const message = err instanceof Error ? (err.stack ?? err.message) : String(err);
-            process.stderr.write(`${message}\n`);
-            process.exit(1);
-        });
+  const [, entryArg] = process.argv;
+  if (!entryArg) {
+    return;
+  }
+  const modulePath = fileURLToPath(metaUrl);
+  if (modulePath !== entryArg) {
+    return;
+  }
+  Promise.resolve()
+    .then(fn)
+    .then((code) => {
+      process.exit(typeof code === "number" ? code : 0);
+    })
+    .catch((err: unknown) => {
+      const message = err instanceof Error ? (err.stack ?? err.message) : String(err);
+      process.stderr.write(`${message}\n`);
+      process.exit(1);
+    });
 };
 
 /**
@@ -79,15 +79,15 @@ export const runCli = (metaUrl: string, fn: () => number | Promise<number>): voi
  * so callers should NOT re-emit the message themselves.
  */
 export const commanderExitCode = (err: unknown): number => {
-    if (
-        typeof err === "object" &&
-        err !== null &&
-        "exitCode" in err &&
-        typeof (err as { readonly exitCode?: unknown }).exitCode === "number"
-    ) {
-        return (err as { readonly exitCode: number }).exitCode;
-    }
-    return 1;
+  if (
+    typeof err === "object" &&
+    err !== null &&
+    "exitCode" in err &&
+    typeof (err as { readonly exitCode?: unknown }).exitCode === "number"
+  ) {
+    return (err as { readonly exitCode: number }).exitCode;
+  }
+  return 1;
 };
 
 /**
@@ -98,10 +98,10 @@ export const commanderExitCode = (err: unknown): number => {
  * Use this everywhere — do not call `tmp.dirSync` / `mkdtempSync` inline.
  */
 export const withTempDir = async <T>(fn: (dir: string) => Promise<T> | T): Promise<T> => {
-    const handle = tmp.dirSync({ unsafeCleanup: true });
-    try {
-        return await fn(handle.name);
-    } finally {
-        handle.removeCallback();
-    }
+  const handle = tmp.dirSync({ unsafeCleanup: true });
+  try {
+    return await fn(handle.name);
+  } finally {
+    handle.removeCallback();
+  }
 };

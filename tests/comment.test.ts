@@ -34,164 +34,172 @@ const CT_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 </Types>`;
 
 async function makeFixture(dir: string): Promise<void> {
-    await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
-    await fs.writeFile(path.join(dir, "word", "_rels", "document.xml.rels"), RELS_XML, "utf-8");
-    await fs.writeFile(path.join(dir, "[Content_Types].xml"), CT_XML, "utf-8");
+  await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+  await fs.writeFile(path.join(dir, "word", "_rels", "document.xml.rels"), RELS_XML, "utf-8");
+  await fs.writeFile(path.join(dir, "[Content_Types].xml"), CT_XML, "utf-8");
 }
 
 describe("generateHexId", () => {
-    afterEach(() => {
-        vi.restoreAllMocks();
-    });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
-    // [MS-OI29500] 2.6.2.3: paraId is an ST_LongHexNumber whose value MUST be
-    // greater than 0 and less than 0x80000000. The generator feeds both w14:paraId
-    // and w16cid:durableId, so a zero would be an out-of-spec id we wrote ourselves.
-    it("never emits 0, even when the RNG floors to its minimum", () => {
-        vi.spyOn(Math, "random").mockReturnValue(0);
-        const value = Number.parseInt(generateHexId(), 16);
-        expect(value).toBeGreaterThan(0);
-    });
+  // [MS-OI29500] 2.6.2.3: paraId is an ST_LongHexNumber whose value MUST be
+  // greater than 0 and less than 0x80000000. The generator feeds both w14:paraId
+  // and w16cid:durableId, so a zero would be an out-of-spec id we wrote ourselves.
+  it("never emits 0, even when the RNG floors to its minimum", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    const value = Number.parseInt(generateHexId(), 16);
+    expect(value).toBeGreaterThan(0);
+  });
 
-    it("stays below the ST_LongHexNumber cap at the RNG maximum", () => {
-        vi.spyOn(Math, "random").mockReturnValue(0.9999999999);
-        const value = Number.parseInt(generateHexId(), 16);
-        expect(value).toBeGreaterThan(0);
-        expect(value).toBeLessThan(0x80000000);
-        // Also below the tighter durableId cap, since the same id seeds durableId.
-        expect(value).toBeLessThan(0x7fffffff);
-    });
+  it("stays below the ST_LongHexNumber cap at the RNG maximum", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0.9999999999);
+    const value = Number.parseInt(generateHexId(), 16);
+    expect(value).toBeGreaterThan(0);
+    expect(value).toBeLessThan(0x80000000);
+    // Also below the tighter durableId cap, since the same id seeds durableId.
+    expect(value).toBeLessThan(0x7fffffff);
+  });
 
-    it("returns a zero-padded 8-digit uppercase hex string", () => {
-        vi.spyOn(Math, "random").mockReturnValue(0);
-        expect(generateHexId()).toMatch(/^[0-9A-F]{8}$/);
-    });
+  it("returns a zero-padded 8-digit uppercase hex string", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    expect(generateHexId()).toMatch(/^[0-9A-F]{8}$/);
+  });
 });
 
 describe("addComment", () => {
-    it("adds a top-level comment, seeds parts, and registers rels + content types", async () => {
-        await withTempDir(async (dir) => {
-            await makeFixture(dir);
+  it("adds a top-level comment, seeds parts, and registers rels + content types", async () => {
+    await withTempDir(async (dir) => {
+      await makeFixture(dir);
 
-            const result = await addComment({
-                unpackedDir: dir,
-                commentId: 0,
-                text: "Hello world",
-                author: "Test",
-                initials: "C",
-                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
-            });
-            expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
-            expect(result.paraId).toMatch(/^[0-9A-F]{8}$/);
+      const result = await addComment({
+        unpackedDir: dir,
+        commentId: 0,
+        text: "Hello world",
+        author: "Test",
+        initials: "C",
+        date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+      });
+      expect(result.message).toMatch(/^Added comment 0 \(para_id=[0-9A-F]{8}\)$/);
+      expect(result.paraId).toMatch(/^[0-9A-F]{8}$/);
 
-            for (const name of ["comments.xml", "commentsExtended.xml", "commentsIds.xml", "commentsExtensible.xml"]) {
-                await fs.access(path.join(dir, "word", name));
-            }
+      for (const name of [
+        "comments.xml",
+        "commentsExtended.xml",
+        "commentsIds.xml",
+        "commentsExtensible.xml",
+      ]) {
+        await fs.access(path.join(dir, "word", name));
+      }
 
-            const commentsXml = await fs.readFile(path.join(dir, "word", "comments.xml"), "utf-8");
-            const commentsDom = parseXml(commentsXml);
-            const comments = commentsDom.getElementsByTagName("w:comment");
-            expect(comments.length).toBe(1);
-            const c0 = comments.item(0)!;
-            expect(c0.getAttribute("w:id")).toBe("0");
-            expect(c0.getAttribute("w:author")).toBe("Test");
-            expect(c0.getAttribute("w:initials")).toBe("C");
-            expect(c0.getAttribute("w:date")).toBe("2026-05-03T12:00:00Z");
-            expect(commentsXml).toContain("Hello world");
+      const commentsXml = await fs.readFile(path.join(dir, "word", "comments.xml"), "utf-8");
+      const commentsDom = parseXml(commentsXml);
+      const comments = commentsDom.getElementsByTagName("w:comment");
+      expect(comments.length).toBe(1);
+      const c0 = comments.item(0)!;
+      expect(c0.getAttribute("w:id")).toBe("0");
+      expect(c0.getAttribute("w:author")).toBe("Test");
+      expect(c0.getAttribute("w:initials")).toBe("C");
+      expect(c0.getAttribute("w:date")).toBe("2026-05-03T12:00:00Z");
+      expect(commentsXml).toContain("Hello world");
 
-            const relsXml = await fs.readFile(path.join(dir, "word", "_rels", "document.xml.rels"), "utf-8");
-            expect(relsXml).toContain('Target="comments.xml"');
-            expect(relsXml).toContain('Target="commentsExtended.xml"');
-            expect(relsXml).toContain('Target="commentsIds.xml"');
-            expect(relsXml).toContain('Target="commentsExtensible.xml"');
+      const relsXml = await fs.readFile(
+        path.join(dir, "word", "_rels", "document.xml.rels"),
+        "utf-8",
+      );
+      expect(relsXml).toContain('Target="comments.xml"');
+      expect(relsXml).toContain('Target="commentsExtended.xml"');
+      expect(relsXml).toContain('Target="commentsIds.xml"');
+      expect(relsXml).toContain('Target="commentsExtensible.xml"');
 
-            const ctXml = await fs.readFile(path.join(dir, "[Content_Types].xml"), "utf-8");
-            expect(ctXml).toContain('PartName="/word/comments.xml"');
-            expect(ctXml).toContain('PartName="/word/commentsExtended.xml"');
+      const ctXml = await fs.readFile(path.join(dir, "[Content_Types].xml"), "utf-8");
+      expect(ctXml).toContain('PartName="/word/comments.xml"');
+      expect(ctXml).toContain('PartName="/word/commentsExtended.xml"');
 
-            const reply = await addComment({
-                unpackedDir: dir,
-                commentId: 1,
-                text: "Reply text",
-                parent: 0,
-                author: "Reviewer",
-                initials: "R",
-                date: new Date(Date.UTC(2026, 4, 3, 12, 5, 0)),
-            });
-            expect(reply.message).toMatch(/^Added reply 1 \(para_id=[0-9A-F]{8}\)$/);
+      const reply = await addComment({
+        unpackedDir: dir,
+        commentId: 1,
+        text: "Reply text",
+        parent: 0,
+        author: "Reviewer",
+        initials: "R",
+        date: new Date(Date.UTC(2026, 4, 3, 12, 5, 0)),
+      });
+      expect(reply.message).toMatch(/^Added reply 1 \(para_id=[0-9A-F]{8}\)$/);
 
-            const extXml = await fs.readFile(path.join(dir, "word", "commentsExtended.xml"), "utf-8");
-            const extDom = parseXml(extXml);
-            const exItems = extDom.getElementsByTagName("w15:commentEx");
-            expect(exItems.length).toBe(2);
-            const replyEx = exItems.item(1)!;
-            expect(replyEx.getAttribute("w15:paraId")).toBe(reply.paraId);
-            expect(replyEx.getAttribute("w15:paraIdParent")).toBe(result.paraId);
-        });
+      const extXml = await fs.readFile(path.join(dir, "word", "commentsExtended.xml"), "utf-8");
+      const extDom = parseXml(extXml);
+      const exItems = extDom.getElementsByTagName("w15:commentEx");
+      expect(exItems.length).toBe(2);
+      const replyEx = exItems.item(1)!;
+      expect(replyEx.getAttribute("w15:paraId")).toBe(reply.paraId);
+      expect(replyEx.getAttribute("w15:paraIdParent")).toBe(result.paraId);
     });
+  });
 
-    it("escapes XML special characters in author, initials, and text", async () => {
-        await withTempDir(async (dir) => {
-            await makeFixture(dir);
+  it("escapes XML special characters in author, initials, and text", async () => {
+    await withTempDir(async (dir) => {
+      await makeFixture(dir);
 
-            const result = await addComment({
-                unpackedDir: dir,
-                commentId: 0,
-                text: 'a & b < c > d "quoted"',
-                author: "R&D <team>",
-                initials: 'J"R',
-                date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
-            });
-            // A raw '&' or '<' in any templated field produces malformed XML and
-            // makes addComment throw while re-parsing comments.xml. A clean
-            // paraId proves every field was escaped before templating.
-            expect(result.paraId).toMatch(/^[0-9A-F]{8}$/);
+      const result = await addComment({
+        unpackedDir: dir,
+        commentId: 0,
+        text: 'a & b < c > d "quoted"',
+        author: "R&D <team>",
+        initials: 'J"R',
+        date: new Date(Date.UTC(2026, 4, 3, 12, 0, 0)),
+      });
+      // A raw '&' or '<' in any templated field produces malformed XML and
+      // makes addComment throw while re-parsing comments.xml. A clean
+      // paraId proves every field was escaped before templating.
+      expect(result.paraId).toMatch(/^[0-9A-F]{8}$/);
 
-            const xml = await fs.readFile(path.join(dir, "word", "comments.xml"), "utf-8");
-            // Must still parse as well-formed XML.
-            const dom = parseXml(xml);
-            const comment = dom.getElementsByTagName("w:comment").item(0)!;
-            expect(comment.getAttribute("w:author")).toBe("R&D <team>");
-            expect(comment.getAttribute("w:initials")).toBe('J"R');
-            const t = dom.getElementsByTagName("w:t").item(0)!;
-            expect(t.textContent).toBe('a & b < c > d "quoted"');
-        });
+      const xml = await fs.readFile(path.join(dir, "word", "comments.xml"), "utf-8");
+      // Must still parse as well-formed XML.
+      const dom = parseXml(xml);
+      const comment = dom.getElementsByTagName("w:comment").item(0)!;
+      expect(comment.getAttribute("w:author")).toBe("R&D <team>");
+      expect(comment.getAttribute("w:initials")).toBe('J"R');
+      const t = dom.getElementsByTagName("w:t").item(0)!;
+      expect(t.textContent).toBe('a & b < c > d "quoted"');
     });
+  });
 
-    it("reports an error when the unpacked DOCX has no word/ directory", async () => {
-        await withTempDir(async (dir) => {
-            const result = await addComment({
-                unpackedDir: dir,
-                commentId: 0,
-                text: "x",
-                author: "TestAuthor",
-                initials: "TA",
-            });
-            expect(result.paraId).toBe("");
-            expect(result.message).toMatch(/^Error: .*word not found$/);
-        });
+  it("reports an error when the unpacked DOCX has no word/ directory", async () => {
+    await withTempDir(async (dir) => {
+      const result = await addComment({
+        unpackedDir: dir,
+        commentId: 0,
+        text: "x",
+        author: "TestAuthor",
+        initials: "TA",
+      });
+      expect(result.paraId).toBe("");
+      expect(result.message).toMatch(/^Error: .*word not found$/);
     });
+  });
 
-    it("reports an error when the parent comment id is unknown", async () => {
-        await withTempDir(async (dir) => {
-            await makeFixture(dir);
-            await addComment({
-                unpackedDir: dir,
-                commentId: 0,
-                text: "first",
-                author: "TestAuthor",
-                initials: "TA",
-            });
-            const reply = await addComment({
-                unpackedDir: dir,
-                commentId: 1,
-                text: "orphan reply",
-                parent: 99,
-                author: "TestAuthor",
-                initials: "TA",
-            });
-            expect(reply.paraId).toBe("");
-            expect(reply.message).toBe("Error: Parent comment 99 not found");
-        });
+  it("reports an error when the parent comment id is unknown", async () => {
+    await withTempDir(async (dir) => {
+      await makeFixture(dir);
+      await addComment({
+        unpackedDir: dir,
+        commentId: 0,
+        text: "first",
+        author: "TestAuthor",
+        initials: "TA",
+      });
+      const reply = await addComment({
+        unpackedDir: dir,
+        commentId: 1,
+        text: "orphan reply",
+        parent: 99,
+        author: "TestAuthor",
+        initials: "TA",
+      });
+      expect(reply.paraId).toBe("");
+      expect(reply.message).toBe("Error: Parent comment 99 not found");
     });
+  });
 });

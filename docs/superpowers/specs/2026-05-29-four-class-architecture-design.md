@@ -69,10 +69,10 @@ src/
 
 ```json
 {
-    "exports": {
-        ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" },
-        "./node": { "import": "./dist/node/index.js", "types": "./dist/node/index.d.ts" }
-    }
+  "exports": {
+    ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" },
+    "./node": { "import": "./dist/node/index.js", "types": "./dist/node/index.d.ts" }
+  }
 }
 ```
 
@@ -87,8 +87,8 @@ A test (delivered in PR A) enforces it:
 ```ts
 // tests/no-node-imports-in-core.test.ts
 it("no src/ file outside src/node/ imports node:*", () => {
-    // ripgrep ^import .* from ['"]node:  across src/ excluding src/node/
-    // expected: zero matches
+  // ripgrep ^import .* from ['"]node:  across src/ excluding src/node/
+  // expected: zero matches
 });
 ```
 
@@ -102,33 +102,33 @@ All four classes take `Uint8Array`. File-path overloads live in `src/node/` (wra
 
 ```ts
 class Validate {
-    constructor(opts?: { xsdValidator?: XsdValidator; schemasDir?: string });
-    async run(bytes: Uint8Array): Promise<ValidationResult>;
+  constructor(opts?: { xsdValidator?: XsdValidator; schemasDir?: string });
+  async run(bytes: Uint8Array): Promise<ValidationResult>;
 }
 
 class Repair {
-    // Exactly the surface that BaseValidator.repair() + DocxValidator.repair() implement today,
-    // lifted into a class: whitespace xml:space="preserve" injection, structural fixes.
-    // Returns repaired bytes + repair count + diagnostics.
-    constructor(opts?: { xsdValidator?: XsdValidator });
-    async run(bytes: Uint8Array): Promise<{
-        bytes: Uint8Array;
-        repairs: number;
-        diagnostics: Issue[];
-    }>;
+  // Exactly the surface that BaseValidator.repair() + DocxValidator.repair() implement today,
+  // lifted into a class: whitespace xml:space="preserve" injection, structural fixes.
+  // Returns repaired bytes + repair count + diagnostics.
+  constructor(opts?: { xsdValidator?: XsdValidator });
+  async run(bytes: Uint8Array): Promise<{
+    bytes: Uint8Array;
+    repairs: number;
+    diagnostics: Issue[];
+  }>;
 }
 
 class Normalize {
-    // New unified surface. Idempotent. Covers what's scattered today:
-    //   mergeRuns, simplifyRedlines, whitespace-preserve injection.
-    // Distinct from Repair: assumes valid input; the goal is a canonical form, not fixup.
-    async run(bytes: Uint8Array): Promise<{ bytes: Uint8Array; changed: boolean }>;
+  // New unified surface. Idempotent. Covers what's scattered today:
+  //   mergeRuns, simplifyRedlines, whitespace-preserve injection.
+  // Distinct from Repair: assumes valid input; the goal is a canonical form, not fixup.
+  async run(bytes: Uint8Array): Promise<{ bytes: Uint8Array; changed: boolean }>;
 }
 
 class Measure {
-    // New in docx-validate (adapted from jubarte-first's audit-a-runner).
-    // Per-file: read → write → re-read → compare → classify.
-    async runOne(bytes: Uint8Array): Promise<MeasureResult>;
+  // New in docx-validate (adapted from jubarte-first's audit-a-runner).
+  // Per-file: read → write → re-read → compare → classify.
+  async runOne(bytes: Uint8Array): Promise<MeasureResult>;
 }
 ```
 
@@ -136,12 +136,12 @@ class Measure {
 
 ```ts
 export const jubarte = {
-    validate: (bytes: Uint8Array) => new Validate().run(bytes),
-    repair: (bytes: Uint8Array) => new Repair().run(bytes),
-    normalize: (bytes: Uint8Array) => new Normalize().run(bytes),
-    measure: (bytes: Uint8Array) => new Measure().runOne(bytes),
-    // read / write come from the AST hub (jubarte-first project) and are composed
-    // into this namespace when the AST hub consumes docx-validate as a dependency.
+  validate: (bytes: Uint8Array) => new Validate().run(bytes),
+  repair: (bytes: Uint8Array) => new Repair().run(bytes),
+  normalize: (bytes: Uint8Array) => new Normalize().run(bytes),
+  measure: (bytes: Uint8Array) => new Measure().runOne(bytes),
+  // read / write come from the AST hub (jubarte-first project) and are composed
+  // into this namespace when the AST hub consumes docx-validate as a dependency.
 };
 ```
 
@@ -153,13 +153,13 @@ the functional helpers.
 ```ts
 // src/node/validate-file.ts
 export async function validateFile(path: string): Promise<ValidationResult> {
-    const bytes = await fs.readFile(path);
-    return new Validate().run(bytes);
+  const bytes = await fs.readFile(path);
+  return new Validate().run(bytes);
 }
 
 // src/node/measure-corpus.ts
 export async function runCorpus(manifest: ManifestEntry[]): Promise<CorpusReport> {
-    // reads each fixture path, calls Measure.runOne, aggregates classification + metrics
+  // reads each fixture path, calls Measure.runOne, aggregates classification + metrics
 }
 
 // src/node/accept-changes.ts — unchanged behavior; just relocated
@@ -180,12 +180,12 @@ default factory.
 ```ts
 // src/lib/xsd-validator.ts — the ONLY place that touches the XSD engine
 export interface XsdValidator {
-    validate(xml: string, schemaPath: string): Promise<Issue[]>;
+  validate(xml: string, schemaPath: string): Promise<Issue[]>;
 }
 
 export async function createXsdValidator(): Promise<XsdValidator> {
-    const { parseXmlString, XmlDocument } = await import("libxml2-wasm");
-    // wraps the wasm engine in the interface above
+  const { parseXmlString, XmlDocument } = await import("libxml2-wasm");
+  // wraps the wasm engine in the interface above
 }
 ```
 
@@ -321,9 +321,9 @@ import { jubarte as validators } from "docx-validate";
 import { docxToAst, astToDocx } from "./ast-hub";
 
 export const jubarte = {
-    ...validators, // validate, repair, normalize, measure
-    read: docxToAst,
-    write: astToDocx,
+  ...validators, // validate, repair, normalize, measure
+  read: docxToAst,
+  write: astToDocx,
 };
 ```
 

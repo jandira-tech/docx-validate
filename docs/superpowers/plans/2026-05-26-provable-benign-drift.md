@@ -50,23 +50,23 @@ Add to `tests/validators-docx.test.ts` (it already imports `DOCXSchemaValidator`
 
 ```ts
 it("does not duplicate w14:paraId when the doc binds w14 to the legacy 2008 namespace", async () => {
-    await withTempDir(async (dir) => {
-        await writeFile(
-            path.join(dir, "word", "document.xml"),
-            `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
-                `<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ` +
-                `xmlns:w14="http://schemas.microsoft.com/office/word/2008/9/12/wordml">` +
-                `<w:body><w:p w14:paraId="57290E37" w14:textId="5B733B31"><w:r><w:t>hi</w:t></w:r></w:p></w:body></w:document>`,
-        );
-        const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
-        await v.repairMissingParaIds();
+  await withTempDir(async (dir) => {
+    await writeFile(
+      path.join(dir, "word", "document.xml"),
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+        `<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ` +
+        `xmlns:w14="http://schemas.microsoft.com/office/word/2008/9/12/wordml">` +
+        `<w:body><w:p w14:paraId="57290E37" w14:textId="5B733B31"><w:r><w:t>hi</w:t></w:r></w:p></w:body></w:document>`,
+    );
+    const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
+    await v.repairMissingParaIds();
 
-        const xml = await readFile(path.join(dir, "word", "document.xml"), "utf-8");
-        // Must not have stamped a second w14:paraId.
-        expect((xml.match(/w14:paraId=/g) ?? []).length).toBe(1);
-        // And the result must still parse (duplicate attributes throw "redefined").
-        expect(() => parseXml(xml)).not.toThrow();
-    });
+    const xml = await readFile(path.join(dir, "word", "document.xml"), "utf-8");
+    // Must not have stamped a second w14:paraId.
+    expect((xml.match(/w14:paraId=/g) ?? []).length).toBe(1);
+    // And the result must still parse (duplicate attributes throw "redefined").
+    expect(() => parseXml(xml)).not.toThrow();
+  });
 });
 ```
 
@@ -137,17 +137,21 @@ Add to `tests/diff-docx.cli.test.ts`:
 
 ```ts
 it("reports a non-zero code instead of throwing when an input cannot be read", async () => {
-    await withTempDir(async (dir) => {
-        const good = path.join(dir, "good");
-        await fs.mkdir(path.join(good, "word"), { recursive: true });
-        await fs.writeFile(path.join(good, "word", "document.xml"), docXml(`<w:p><w:r><w:t>x</w:t></w:r></w:p>`), "utf-8");
-        const bad = path.join(dir, "not-a-real.docx");
-        await fs.writeFile(bad, "this is not a zip", "utf-8"); // unpack will fail
+  await withTempDir(async (dir) => {
+    const good = path.join(dir, "good");
+    await fs.mkdir(path.join(good, "word"), { recursive: true });
+    await fs.writeFile(
+      path.join(good, "word", "document.xml"),
+      docXml(`<w:p><w:r><w:t>x</w:t></w:r></w:p>`),
+      "utf-8",
+    );
+    const bad = path.join(dir, "not-a-real.docx");
+    await fs.writeFile(bad, "this is not a zip", "utf-8"); // unpack will fail
 
-        const { code, markdown } = await runDiffDocx([good, bad]);
-        expect(code).not.toBe(0);
-        expect(markdown.toLowerCase()).toContain("could not read");
-    });
+    const { code, markdown } = await runDiffDocx([good, bad]);
+    expect(code).not.toBe(0);
+    expect(markdown.toLowerCase()).toContain("could not read");
+  });
 });
 ```
 
@@ -172,14 +176,20 @@ Replace with:
 let invA: Awaited<ReturnType<typeof inventoryOf>>;
 let invB: Awaited<ReturnType<typeof inventoryOf>>;
 try {
-    invA = await inventoryOf(a, profile);
+  invA = await inventoryOf(a, profile);
 } catch (err) {
-    return { code: 1, markdown: `Error: could not read '${a}': ${err instanceof Error ? err.message : String(err)}` };
+  return {
+    code: 1,
+    markdown: `Error: could not read '${a}': ${err instanceof Error ? err.message : String(err)}`,
+  };
 }
 try {
-    invB = await inventoryOf(b, profile);
+  invB = await inventoryOf(b, profile);
 } catch (err) {
-    return { code: 1, markdown: `Error: could not read '${b}': ${err instanceof Error ? err.message : String(err)}` };
+  return {
+    code: 1,
+    markdown: `Error: could not read '${b}': ${err instanceof Error ? err.message : String(err)}`,
+  };
 }
 const diff = diffDocxInventories(invA, invB);
 ```
@@ -224,32 +234,39 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
-import { collectVisibleProjection, diffVisibleProjections } from "../src/scripts/office/validators/docx-visible-projection";
+import {
+  collectVisibleProjection,
+  diffVisibleProjections,
+} from "../src/scripts/office/validators/docx-visible-projection";
 
 const W_NS = `xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"`;
 const W14 = `xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"`;
 function doc(body: string): string {
-    return `<?xml version="1.0"?><w:document ${W_NS} ${W14}><w:body>${body}</w:body></w:document>`;
+  return `<?xml version="1.0"?><w:document ${W_NS} ${W14}><w:body>${body}</w:body></w:document>`;
 }
 async function write(dir: string, body: string): Promise<string> {
-    await fs.mkdir(path.join(dir, "word"), { recursive: true });
-    await fs.writeFile(path.join(dir, "word", "document.xml"), doc(body), "utf-8");
-    return dir;
+  await fs.mkdir(path.join(dir, "word"), { recursive: true });
+  await fs.writeFile(path.join(dir, "word", "document.xml"), doc(body), "utf-8");
+  return dir;
 }
 
 describe("collectVisibleProjection", () => {
-    it("captures paragraph text in order, final tracked-changes view, tabs and breaks", async () => {
-        await withTempDir(async (dir) => {
-            await write(
-                dir,
-                `<w:p><w:r><w:t>One</w:t><w:tab/><w:t>Two</w:t></w:r></w:p>` +
-                    `<w:p><w:ins><w:r><w:t>kept</w:t></w:r></w:ins><w:del><w:r><w:delText>gone</w:delText></w:r></w:del></w:p>` +
-                    `<w:p><w:r><w:br/><w:t>after-break</w:t></w:r></w:p>`,
-            );
-            const proj = await collectVisibleProjection(dir, "strict");
-            expect(proj.parts["word/document.xml"].blocks.map((b: any) => b.text)).toEqual(["One\tTwo", "kept", "¶after-break"]);
-        });
+  it("captures paragraph text in order, final tracked-changes view, tabs and breaks", async () => {
+    await withTempDir(async (dir) => {
+      await write(
+        dir,
+        `<w:p><w:r><w:t>One</w:t><w:tab/><w:t>Two</w:t></w:r></w:p>` +
+          `<w:p><w:ins><w:r><w:t>kept</w:t></w:r></w:ins><w:del><w:r><w:delText>gone</w:delText></w:r></w:del></w:p>` +
+          `<w:p><w:r><w:br/><w:t>after-break</w:t></w:r></w:p>`,
+      );
+      const proj = await collectVisibleProjection(dir, "strict");
+      expect(proj.parts["word/document.xml"].blocks.map((b: any) => b.text)).toEqual([
+        "One\tTwo",
+        "kept",
+        "¶after-break",
+      ]);
     });
+  });
 });
 ```
 
@@ -270,148 +287,158 @@ import type { Profile } from "../../../lib/types";
 import { parseXml } from "../../../lib/xml-helpers";
 
 const WORD_NAMESPACES = [
-    "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
-    "http://purl.oclc.org/ooxml/wordprocessingml/main",
+  "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
+  "http://purl.oclc.org/ooxml/wordprocessingml/main",
 ] as const;
 
 export interface VisibleRun {
-    text: string;
-    fmt: string; // canonical sorted visible run-format signature ("" if none)
+  text: string;
+  fmt: string; // canonical sorted visible run-format signature ("" if none)
 }
 export interface VisibleBlock {
-    kind: "paragraph" | "table";
-    text: string; // paragraph: final visible text; table: "" (see grid)
-    style?: string; // pStyle / tblStyle
-    pPr?: string; // canonical visible paragraph-property signature
-    runs?: VisibleRun[];
-    grid?: { rows: number; cols: number; cells: VisibleBlock[][] }; // tables
-    image?: { target: string; cx: number; cy: number };
-    hyperlink?: { target: string; text: string };
+  kind: "paragraph" | "table";
+  text: string; // paragraph: final visible text; table: "" (see grid)
+  style?: string; // pStyle / tblStyle
+  pPr?: string; // canonical visible paragraph-property signature
+  runs?: VisibleRun[];
+  grid?: { rows: number; cols: number; cells: VisibleBlock[][] }; // tables
+  image?: { target: string; cx: number; cy: number };
+  hyperlink?: { target: string; text: string };
 }
 export interface VisiblePart {
-    blocks: VisibleBlock[];
+  blocks: VisibleBlock[];
 }
 export interface VisibleProjection {
-    parts: Record<string, VisiblePart>; // keyed by part rel path
-    pageGeometry: string[]; // ordered section-geometry signatures
-    comments: string[]; // ordered comment texts
+  parts: Record<string, VisiblePart>; // keyed by part rel path
+  pageGeometry: string[]; // ordered section-geometry signatures
+  comments: string[]; // ordered comment texts
 }
 
 function isWordEl(node: Node | null): node is Element {
-    return !!node && node.nodeType === 1 && WORD_NAMESPACES.includes((node as Element).namespaceURI as never);
+  return (
+    !!node &&
+    node.nodeType === 1 &&
+    WORD_NAMESPACES.includes((node as Element).namespaceURI as never)
+  );
 }
 function local(el: Element): string {
-    return el.localName ?? el.nodeName.replace(/^.*:/, "");
+  return el.localName ?? el.nodeName.replace(/^.*:/, "");
 }
 function wAttr(el: Element, name: string): string | null {
-    for (const ns of WORD_NAMESPACES) {
-        const v = el.getAttributeNS(ns, name);
-        if (v) return v;
-    }
-    return el.getAttribute(`w:${name}`) ?? el.getAttribute(name);
+  for (const ns of WORD_NAMESPACES) {
+    const v = el.getAttributeNS(ns, name);
+    if (v) return v;
+  }
+  return el.getAttribute(`w:${name}`) ?? el.getAttribute(name);
 }
 function wChild(parent: Element, name: string): Element | null {
-    for (let c = parent.firstChild; c; c = c.nextSibling) {
-        if (isWordEl(c) && local(c as Element) === name) return c as Element;
-    }
-    return null;
+  for (let c = parent.firstChild; c; c = c.nextSibling) {
+    if (isWordEl(c) && local(c as Element) === name) return c as Element;
+  }
+  return null;
 }
 function wChildren(parent: Element, name: string): Element[] {
-    const out: Element[] = [];
-    for (let c = parent.firstChild; c; c = c.nextSibling) {
-        if (isWordEl(c) && local(c as Element) === name) out.push(c as Element);
-    }
-    return out;
+  const out: Element[] = [];
+  for (let c = parent.firstChild; c; c = c.nextSibling) {
+    if (isWordEl(c) && local(c as Element) === name) out.push(c as Element);
+  }
+  return out;
 }
 function hasWordAncestor(el: Element, name: string): boolean {
-    for (let n: Node | null = el.parentNode; n; n = n.parentNode) {
-        if (isWordEl(n) && local(n as Element) === name) return true;
-    }
-    return false;
+  for (let n: Node | null = el.parentNode; n; n = n.parentNode) {
+    if (isWordEl(n) && local(n as Element) === name) return true;
+  }
+  return false;
 }
 
 // Final-view visible text of a paragraph: tabs -> \t, breaks -> ¶, deleted text
 // (w:delText / inside w:del) dropped, hidden (w:vanish run) dropped.
 function paragraphText(p: Element): string {
-    let out = "";
-    const walk = (node: Node): void => {
-        for (let c = node.firstChild; c; c = c.nextSibling) {
-            if (c.nodeType !== 1) continue;
-            const el = c as Element;
-            if (!isWordEl(el)) {
-                walk(el);
-                continue;
-            }
-            const ln = local(el);
-            if (ln === "del" || ln === "delText" || ln === "delInstrText") continue; // not in final view
-            if (ln === "r") {
-                const rPr = wChild(el, "rPr");
-                if (rPr && wChild(rPr, "vanish")) continue; // hidden run: not rendered
-                walk(el);
-                continue;
-            }
-            if (ln === "t") {
-                out += el.textContent ?? "";
-                continue;
-            }
-            if (ln === "tab") {
-                out += "\t";
-                continue;
-            }
-            if (ln === "br" || ln === "cr") {
-                out += "¶";
-                continue;
-            }
-            walk(el);
-        }
-    };
-    walk(p);
-    return out;
+  let out = "";
+  const walk = (node: Node): void => {
+    for (let c = node.firstChild; c; c = c.nextSibling) {
+      if (c.nodeType !== 1) continue;
+      const el = c as Element;
+      if (!isWordEl(el)) {
+        walk(el);
+        continue;
+      }
+      const ln = local(el);
+      if (ln === "del" || ln === "delText" || ln === "delInstrText") continue; // not in final view
+      if (ln === "r") {
+        const rPr = wChild(el, "rPr");
+        if (rPr && wChild(rPr, "vanish")) continue; // hidden run: not rendered
+        walk(el);
+        continue;
+      }
+      if (ln === "t") {
+        out += el.textContent ?? "";
+        continue;
+      }
+      if (ln === "tab") {
+        out += "\t";
+        continue;
+      }
+      if (ln === "br" || ln === "cr") {
+        out += "¶";
+        continue;
+      }
+      walk(el);
+    }
+  };
+  walk(p);
+  return out;
 }
 
 function projectParagraph(p: Element): VisibleBlock {
-    return { kind: "paragraph", text: paragraphText(p) };
+  return { kind: "paragraph", text: paragraphText(p) };
 }
 
 function projectBody(dom: Document): VisibleBlock[] {
-    const blocks: VisibleBlock[] = [];
-    let body: Element | null = null;
-    for (const ns of WORD_NAMESPACES) {
-        const list = dom.getElementsByTagNameNS(ns, "body");
-        if (list.length > 0) {
-            body = list.item(0);
-            break;
-        }
+  const blocks: VisibleBlock[] = [];
+  let body: Element | null = null;
+  for (const ns of WORD_NAMESPACES) {
+    const list = dom.getElementsByTagNameNS(ns, "body");
+    if (list.length > 0) {
+      body = list.item(0);
+      break;
     }
-    if (!body) return blocks;
-    for (let c = body.firstChild; c; c = c.nextSibling) {
-        if (!isWordEl(c)) continue;
-        const el = c as Element;
-        const ln = local(el);
-        if (ln === "p") blocks.push(projectParagraph(el));
-        // tables added in Task 3c
-    }
-    return blocks;
+  }
+  if (!body) return blocks;
+  for (let c = body.firstChild; c; c = c.nextSibling) {
+    if (!isWordEl(c)) continue;
+    const el = c as Element;
+    const ln = local(el);
+    if (ln === "p") blocks.push(projectParagraph(el));
+    // tables added in Task 3c
+  }
+  return blocks;
 }
 
-export async function collectVisibleProjection(unpackedDir: string, _profile: Profile = "lenient"): Promise<VisibleProjection> {
-    const proj: VisibleProjection = { parts: {}, pageGeometry: [], comments: [] };
-    const docPath = path.join(unpackedDir, "word", "document.xml");
-    try {
-        const dom = parseXml(await fs.readFile(docPath, "utf-8"));
-        proj.parts["word/document.xml"] = { blocks: projectBody(dom) };
-    } catch {
-        // unreadable document.xml: leave parts empty (caller treats as a defect-worthy difference)
-    }
-    return proj;
+export async function collectVisibleProjection(
+  unpackedDir: string,
+  _profile: Profile = "lenient",
+): Promise<VisibleProjection> {
+  const proj: VisibleProjection = { parts: {}, pageGeometry: [], comments: [] };
+  const docPath = path.join(unpackedDir, "word", "document.xml");
+  try {
+    const dom = parseXml(await fs.readFile(docPath, "utf-8"));
+    proj.parts["word/document.xml"] = { blocks: projectBody(dom) };
+  } catch {
+    // unreadable document.xml: leave parts empty (caller treats as a defect-worthy difference)
+  }
+  return proj;
 }
 
 export interface VisibleProjectionDelta {
-    path: string;
-    detail: string;
+  path: string;
+  detail: string;
 }
-export function diffVisibleProjections(_before: VisibleProjection, _after: VisibleProjection): VisibleProjectionDelta[] {
-    return []; // implemented in Task 3h
+export function diffVisibleProjections(
+  _before: VisibleProjection,
+  _after: VisibleProjection,
+): VisibleProjectionDelta[] {
+  return []; // implemented in Task 3h
 }
 ```
 
@@ -428,21 +455,21 @@ Expected: PASS.
 
 ```ts
 it("captures visible run formatting and paragraph style, excludes hidden runs", async () => {
-    await withTempDir(async (dir) => {
-        await write(
-            dir,
-            `<w:p><w:pPr><w:pStyle w:val="Heading1"/><w:jc w:val="center"/></w:pPr>` +
-                `<w:r><w:rPr><w:b/><w:color w:val="FF0000"/></w:rPr><w:t>Bold red</w:t></w:r></w:p>` +
-                `<w:p><w:r><w:rPr><w:vanish/></w:rPr><w:t>secret</w:t></w:r><w:r><w:t>shown</w:t></w:r></w:p>`,
-        );
-        const proj = await collectVisibleProjection(dir, "strict");
-        const blocks = proj.parts["word/document.xml"].blocks as any[];
-        expect(blocks[0].style).toBe("Heading1");
-        expect(blocks[0].pPr).toContain("jc=center");
-        expect(blocks[0].runs[0].fmt).toContain("b");
-        expect(blocks[0].runs[0].fmt).toContain("color=FF0000");
-        expect(blocks[1].text).toBe("shown"); // hidden run excluded
-    });
+  await withTempDir(async (dir) => {
+    await write(
+      dir,
+      `<w:p><w:pPr><w:pStyle w:val="Heading1"/><w:jc w:val="center"/></w:pPr>` +
+        `<w:r><w:rPr><w:b/><w:color w:val="FF0000"/></w:rPr><w:t>Bold red</w:t></w:r></w:p>` +
+        `<w:p><w:r><w:rPr><w:vanish/></w:rPr><w:t>secret</w:t></w:r><w:r><w:t>shown</w:t></w:r></w:p>`,
+    );
+    const proj = await collectVisibleProjection(dir, "strict");
+    const blocks = proj.parts["word/document.xml"].blocks as any[];
+    expect(blocks[0].style).toBe("Heading1");
+    expect(blocks[0].pPr).toContain("jc=center");
+    expect(blocks[0].runs[0].fmt).toContain("b");
+    expect(blocks[0].runs[0].fmt).toContain("color=FF0000");
+    expect(blocks[1].text).toBe("shown"); // hidden run excluded
+  });
 });
 ```
 
@@ -457,83 +484,83 @@ Add helpers and extend `projectParagraph` in the module:
 
 ```ts
 function runFormat(rPr: Element | null): string {
-    if (!rPr) return "";
-    const sig: string[] = [];
-    for (const toggle of ["b", "i", "strike", "dstrike", "caps", "smallCaps"]) {
-        if (wChild(rPr, toggle)) sig.push(toggle);
+  if (!rPr) return "";
+  const sig: string[] = [];
+  for (const toggle of ["b", "i", "strike", "dstrike", "caps", "smallCaps"]) {
+    if (wChild(rPr, toggle)) sig.push(toggle);
+  }
+  for (const [el, key] of [
+    ["u", "u"],
+    ["color", "color"],
+    ["highlight", "highlight"],
+    ["sz", "sz"],
+    ["vertAlign", "vertAlign"],
+    ["rStyle", "rStyle"],
+  ] as const) {
+    const child = wChild(rPr, el);
+    if (child) {
+      const cv = wAttr(child, "val");
+      if (cv !== null) sig.push(`${key}=${cv}`);
     }
-    for (const [el, key] of [
-        ["u", "u"],
-        ["color", "color"],
-        ["highlight", "highlight"],
-        ["sz", "sz"],
-        ["vertAlign", "vertAlign"],
-        ["rStyle", "rStyle"],
-    ] as const) {
-        const child = wChild(rPr, el);
-        if (child) {
-            const cv = wAttr(child, "val");
-            if (cv !== null) sig.push(`${key}=${cv}`);
-        }
-    }
-    const fonts = wChild(rPr, "rFonts");
-    if (fonts) {
-        const a = wAttr(fonts, "ascii");
-        if (a) sig.push(`font=${a}`);
-    }
-    return sig.sort().join(",");
+  }
+  const fonts = wChild(rPr, "rFonts");
+  if (fonts) {
+    const a = wAttr(fonts, "ascii");
+    if (a) sig.push(`font=${a}`);
+  }
+  return sig.sort().join(",");
 }
 
 function paragraphProps(p: Element): { style?: string; pPr: string } {
-    const pPr = wChild(p, "pPr");
-    if (!pPr) return { pPr: "" };
-    const pStyleEl = wChild(pPr, "pStyle");
-    const style = pStyleEl ? (wAttr(pStyleEl, "val") ?? undefined) : undefined;
-    const sig: string[] = [];
-    for (const [el, key] of [
-        ["jc", "jc"],
-        ["ind", "ind"],
-        ["spacing", "spacing"],
-    ] as const) {
-        const child = wChild(pPr, el);
-        if (child) {
-            const v = wAttr(child, "val") ?? wAttr(child, "left") ?? wAttr(child, "line") ?? "y";
-            sig.push(`${key}=${v}`);
-        }
+  const pPr = wChild(p, "pPr");
+  if (!pPr) return { pPr: "" };
+  const pStyleEl = wChild(pPr, "pStyle");
+  const style = pStyleEl ? (wAttr(pStyleEl, "val") ?? undefined) : undefined;
+  const sig: string[] = [];
+  for (const [el, key] of [
+    ["jc", "jc"],
+    ["ind", "ind"],
+    ["spacing", "spacing"],
+  ] as const) {
+    const child = wChild(pPr, el);
+    if (child) {
+      const v = wAttr(child, "val") ?? wAttr(child, "left") ?? wAttr(child, "line") ?? "y";
+      sig.push(`${key}=${v}`);
     }
-    const numPr = wChild(pPr, "numPr");
-    if (numPr) {
-        const numId = wAttr(wChild(numPr, "numId") ?? numPr, "val");
-        const ilvl = wAttr(wChild(numPr, "ilvl") ?? numPr, "val");
-        sig.push(`num=${numId ?? "?"}:${ilvl ?? "0"}`);
-    }
-    return { style, pPr: sig.sort().join(",") };
+  }
+  const numPr = wChild(pPr, "numPr");
+  if (numPr) {
+    const numId = wAttr(wChild(numPr, "numId") ?? numPr, "val");
+    const ilvl = wAttr(wChild(numPr, "ilvl") ?? numPr, "val");
+    sig.push(`num=${numId ?? "?"}:${ilvl ?? "0"}`);
+  }
+  return { style, pPr: sig.sort().join(",") };
 }
 
 function projectRuns(p: Element): VisibleRun[] {
-    const runs: VisibleRun[] = [];
-    const collect = (node: Node, deleted: boolean): void => {
-        for (let c = node.firstChild; c; c = c.nextSibling) {
-            if (!isWordEl(c)) continue;
-            const el = c as Element;
-            const ln = local(el);
-            if (ln === "del") {
-                continue;
-            }
-            if (ln === "ins") {
-                collect(el, deleted);
-                continue;
-            }
-            if (ln === "r") {
-                const rPr = wChild(el, "rPr");
-                if (rPr && wChild(rPr, "vanish")) continue;
-                const text = paragraphText(el); // reuse: handles t/tab/br within run
-                if (text.length > 0) runs.push({ text, fmt: runFormat(rPr) });
-            }
-        }
-    };
-    collect(p, false);
-    return runs;
+  const runs: VisibleRun[] = [];
+  const collect = (node: Node, deleted: boolean): void => {
+    for (let c = node.firstChild; c; c = c.nextSibling) {
+      if (!isWordEl(c)) continue;
+      const el = c as Element;
+      const ln = local(el);
+      if (ln === "del") {
+        continue;
+      }
+      if (ln === "ins") {
+        collect(el, deleted);
+        continue;
+      }
+      if (ln === "r") {
+        const rPr = wChild(el, "rPr");
+        if (rPr && wChild(rPr, "vanish")) continue;
+        const text = paragraphText(el); // reuse: handles t/tab/br within run
+        if (text.length > 0) runs.push({ text, fmt: runFormat(rPr) });
+      }
+    }
+  };
+  collect(p, false);
+  return runs;
 }
 ```
 
@@ -541,8 +568,8 @@ Replace `projectParagraph` with:
 
 ```ts
 function projectParagraph(p: Element): VisibleBlock {
-    const { style, pPr } = paragraphProps(p);
-    return { kind: "paragraph", text: paragraphText(p), style, pPr, runs: projectRuns(p) };
+  const { style, pPr } = paragraphProps(p);
+  return { kind: "paragraph", text: paragraphText(p), style, pPr, runs: projectRuns(p) };
 }
 ```
 
@@ -557,21 +584,21 @@ Expected: PASS.
 
 ```ts
 it("projects table grid and cell content", async () => {
-    await withTempDir(async (dir) => {
-        await write(
-            dir,
-            `<w:tbl><w:tblPr><w:tblStyle w:val="TableGrid"/></w:tblPr><w:tblGrid><w:gridCol/><w:gridCol/></w:tblGrid>` +
-                `<w:tr><w:tc><w:p><w:r><w:t>A1</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>B1</w:t></w:r></w:p></w:tc></w:tr></w:tbl>`,
-        );
-        const proj = await collectVisibleProjection(dir, "strict");
-        const tbl = (proj.parts["word/document.xml"].blocks as any[])[0];
-        expect(tbl.kind).toBe("table");
-        expect(tbl.style).toBe("TableGrid");
-        expect(tbl.grid.rows).toBe(1);
-        expect(tbl.grid.cols).toBe(2);
-        expect(tbl.grid.cells[0][0].text).toBe("A1");
-        expect(tbl.grid.cells[0][1].text).toBe("B1");
-    });
+  await withTempDir(async (dir) => {
+    await write(
+      dir,
+      `<w:tbl><w:tblPr><w:tblStyle w:val="TableGrid"/></w:tblPr><w:tblGrid><w:gridCol/><w:gridCol/></w:tblGrid>` +
+        `<w:tr><w:tc><w:p><w:r><w:t>A1</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>B1</w:t></w:r></w:p></w:tc></w:tr></w:tbl>`,
+    );
+    const proj = await collectVisibleProjection(dir, "strict");
+    const tbl = (proj.parts["word/document.xml"].blocks as any[])[0];
+    expect(tbl.kind).toBe("table");
+    expect(tbl.style).toBe("TableGrid");
+    expect(tbl.grid.rows).toBe(1);
+    expect(tbl.grid.cols).toBe(2);
+    expect(tbl.grid.cells[0][0].text).toBe("A1");
+    expect(tbl.grid.cells[0][1].text).toBe("B1");
+  });
 });
 ```
 
@@ -586,29 +613,37 @@ Add to the module and wire into `projectBody`:
 
 ```ts
 function projectTable(tbl: Element): VisibleBlock {
-    const tblPr = wChild(tbl, "tblPr");
-    const style = tblPr ? (wChild(tblPr, "tblStyle") ? (wAttr(wChild(tblPr, "tblStyle")!, "val") ?? undefined) : undefined) : undefined;
-    const rows = wChildren(tbl, "tr");
-    const grid = wChild(tbl, "tblGrid");
-    const cols = grid ? wChildren(grid, "gridCol").length : rows[0] ? wChildren(rows[0], "tc").length : 0;
-    const cells: VisibleBlock[][] = rows.map((tr) =>
-        wChildren(tr, "tc").map((tc) => {
-            const inner: VisibleBlock[] = [];
-            for (let c = tc.firstChild; c; c = c.nextSibling) {
-                if (!isWordEl(c)) continue;
-                const el = c as Element;
-                if (local(el) === "p") inner.push(projectParagraph(el));
-                else if (local(el) === "tbl") inner.push(projectTable(el));
-            }
-            // flatten cell text for convenient assertions
-            return {
-                kind: "paragraph",
-                text: inner.map((b) => b.text).join("\n"),
-                runs: inner.flatMap((b) => b.runs ?? []),
-            } as VisibleBlock;
-        }),
-    );
-    return { kind: "table", text: "", style, grid: { rows: rows.length, cols, cells } };
+  const tblPr = wChild(tbl, "tblPr");
+  const style = tblPr
+    ? wChild(tblPr, "tblStyle")
+      ? (wAttr(wChild(tblPr, "tblStyle")!, "val") ?? undefined)
+      : undefined
+    : undefined;
+  const rows = wChildren(tbl, "tr");
+  const grid = wChild(tbl, "tblGrid");
+  const cols = grid
+    ? wChildren(grid, "gridCol").length
+    : rows[0]
+      ? wChildren(rows[0], "tc").length
+      : 0;
+  const cells: VisibleBlock[][] = rows.map((tr) =>
+    wChildren(tr, "tc").map((tc) => {
+      const inner: VisibleBlock[] = [];
+      for (let c = tc.firstChild; c; c = c.nextSibling) {
+        if (!isWordEl(c)) continue;
+        const el = c as Element;
+        if (local(el) === "p") inner.push(projectParagraph(el));
+        else if (local(el) === "tbl") inner.push(projectTable(el));
+      }
+      // flatten cell text for convenient assertions
+      return {
+        kind: "paragraph",
+        text: inner.map((b) => b.text).join("\n"),
+        runs: inner.flatMap((b) => b.runs ?? []),
+      } as VisibleBlock;
+    }),
+  );
+  return { kind: "table", text: "", style, grid: { rows: rows.length, cols, cells } };
 }
 ```
 
@@ -630,28 +665,28 @@ Expected: PASS.
 
 ```ts
 it("resolves image and hyperlink relationship targets (not the rId string)", async () => {
-    await withTempDir(async (dir) => {
-        await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
-        await fs.writeFile(
-            path.join(dir, "word", "_rels", "document.xml.rels"),
-            `<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
-                `<Relationship Id="rId9" Type="img" Target="media/image1.png"/>` +
-                `<Relationship Id="rId5" Type="hyperlink" Target="https://example.com" TargetMode="External"/></Relationships>`,
-            "utf-8",
-        );
-        await write(
-            dir,
-            `<w:p><w:hyperlink r:id="rId5" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:r><w:t>link</w:t></w:r></w:hyperlink></w:p>` +
-                `<w:p><w:r><w:drawing><wp:inline xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">` +
-                `<wp:extent cx="1905000" cy="1270000"/>` +
-                `<a:blip xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="rId9"/>` +
-                `</wp:inline></w:drawing></w:r></w:p>`,
-        );
-        const proj = await collectVisibleProjection(dir, "strict");
-        const blocks = proj.parts["word/document.xml"].blocks as any[];
-        expect(blocks[0].hyperlink).toEqual({ target: "https://example.com", text: "link" });
-        expect(blocks[1].image).toEqual({ target: "media/image1.png", cx: 1905000, cy: 1270000 });
-    });
+  await withTempDir(async (dir) => {
+    await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+    await fs.writeFile(
+      path.join(dir, "word", "_rels", "document.xml.rels"),
+      `<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+        `<Relationship Id="rId9" Type="img" Target="media/image1.png"/>` +
+        `<Relationship Id="rId5" Type="hyperlink" Target="https://example.com" TargetMode="External"/></Relationships>`,
+      "utf-8",
+    );
+    await write(
+      dir,
+      `<w:p><w:hyperlink r:id="rId5" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:r><w:t>link</w:t></w:r></w:hyperlink></w:p>` +
+        `<w:p><w:r><w:drawing><wp:inline xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">` +
+        `<wp:extent cx="1905000" cy="1270000"/>` +
+        `<a:blip xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="rId9"/>` +
+        `</wp:inline></w:drawing></w:r></w:p>`,
+    );
+    const proj = await collectVisibleProjection(dir, "strict");
+    const blocks = proj.parts["word/document.xml"].blocks as any[];
+    expect(blocks[0].hyperlink).toEqual({ target: "https://example.com", text: "link" });
+    expect(blocks[1].image).toEqual({ target: "media/image1.png", cx: 1905000, cy: 1270000 });
+  });
 });
 ```
 
@@ -671,29 +706,29 @@ const WP_NS = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDr
 const A_NS = "http://schemas.openxmlformats.org/drawingml/2006/main";
 
 async function loadRels(unpackedDir: string, partRelPath: string): Promise<Map<string, string>> {
-    // partRelPath e.g. "word/document.xml" -> "word/_rels/document.xml.rels"
-    const dir = path.dirname(partRelPath);
-    const base = path.basename(partRelPath);
-    const relsPath = path.join(unpackedDir, dir, "_rels", `${base}.rels`);
-    const map = new Map<string, string>();
-    try {
-        const dom = parseXml(await fs.readFile(relsPath, "utf-8"));
-        const rels = dom.getElementsByTagNameNS(REL_NS, "Relationship");
-        for (let i = 0; i < rels.length; i += 1) {
-            const r = rels.item(i)!;
-            const id = r.getAttribute("Id");
-            const target = r.getAttribute("Target");
-            if (id && target) map.set(id, target);
-        }
-    } catch {
-        // no rels
+  // partRelPath e.g. "word/document.xml" -> "word/_rels/document.xml.rels"
+  const dir = path.dirname(partRelPath);
+  const base = path.basename(partRelPath);
+  const relsPath = path.join(unpackedDir, dir, "_rels", `${base}.rels`);
+  const map = new Map<string, string>();
+  try {
+    const dom = parseXml(await fs.readFile(relsPath, "utf-8"));
+    const rels = dom.getElementsByTagNameNS(REL_NS, "Relationship");
+    for (let i = 0; i < rels.length; i += 1) {
+      const r = rels.item(i)!;
+      const id = r.getAttribute("Id");
+      const target = r.getAttribute("Target");
+      if (id && target) map.set(id, target);
     }
-    return map;
+  } catch {
+    // no rels
+  }
+  return map;
 }
 
 function firstDescendantNS(el: Element, ns: string, name: string): Element | null {
-    const list = el.getElementsByTagNameNS(ns, name);
-    return list.length > 0 ? list.item(0) : null;
+  const list = el.getElementsByTagNameNS(ns, name);
+  return list.length > 0 ? list.item(0) : null;
 }
 ```
 
@@ -701,27 +736,33 @@ Then thread `rels` into block projection. Change `projectBody(dom)` to `projectB
 
 ```ts
 function projectParagraph(p: Element, rels: Map<string, string>): VisibleBlock {
-    const { style, pPr } = paragraphProps(p);
-    const block: VisibleBlock = { kind: "paragraph", text: paragraphText(p), style, pPr, runs: projectRuns(p) };
-    // hyperlink (w:hyperlink with r:id)
-    for (let c = p.firstChild; c; c = c.nextSibling) {
-        if (isWordEl(c) && local(c as Element) === "hyperlink") {
-            const id = (c as Element).getAttributeNS(R_NS, "id");
-            block.hyperlink = { target: (id && rels.get(id)) || "", text: paragraphText(c as Element) };
-        }
+  const { style, pPr } = paragraphProps(p);
+  const block: VisibleBlock = {
+    kind: "paragraph",
+    text: paragraphText(p),
+    style,
+    pPr,
+    runs: projectRuns(p),
+  };
+  // hyperlink (w:hyperlink with r:id)
+  for (let c = p.firstChild; c; c = c.nextSibling) {
+    if (isWordEl(c) && local(c as Element) === "hyperlink") {
+      const id = (c as Element).getAttributeNS(R_NS, "id");
+      block.hyperlink = { target: (id && rels.get(id)) || "", text: paragraphText(c as Element) };
     }
-    // image (wp:extent + a:blip r:embed)
-    const extent = firstDescendantNS(p, WP_NS, "extent");
-    if (extent) {
-        const blip = firstDescendantNS(p, A_NS, "blip");
-        const embed = blip?.getAttributeNS(R_NS, "embed") ?? "";
-        block.image = {
-            target: (embed && rels.get(embed)) || "",
-            cx: Number.parseInt(extent.getAttribute("cx") ?? "0", 10) || 0,
-            cy: Number.parseInt(extent.getAttribute("cy") ?? "0", 10) || 0,
-        };
-    }
-    return block;
+  }
+  // image (wp:extent + a:blip r:embed)
+  const extent = firstDescendantNS(p, WP_NS, "extent");
+  if (extent) {
+    const blip = firstDescendantNS(p, A_NS, "blip");
+    const embed = blip?.getAttributeNS(R_NS, "embed") ?? "";
+    block.image = {
+      target: (embed && rels.get(embed)) || "",
+      cx: Number.parseInt(extent.getAttribute("cx") ?? "0", 10) || 0,
+      cy: Number.parseInt(extent.getAttribute("cy") ?? "0", 10) || 0,
+    };
+  }
+  return block;
 }
 ```
 
@@ -743,22 +784,22 @@ Expected: PASS.
 
 ```ts
 it("captures page geometry and comment text", async () => {
-    await withTempDir(async (dir) => {
-        await write(
-            dir,
-            `<w:p><w:r><w:t>body</w:t></w:r></w:p>` +
-                `<w:sectPr><w:pgSz w:w="12240" w:h="15840" w:orient="portrait"/><w:cols w:num="2"/></w:sectPr>`,
-        );
-        await fs.writeFile(
-            path.join(dir, "word", "comments.xml"),
-            `<?xml version="1.0"?><w:comments ${W_NS}><w:comment w:id="1"><w:p><w:r><w:t>nice</w:t></w:r></w:p></w:comment></w:comments>`,
-            "utf-8",
-        );
-        const proj = await collectVisibleProjection(dir, "strict");
-        expect(proj.pageGeometry.join("|")).toContain("portrait 12240x15840");
-        expect(proj.pageGeometry.join("|")).toContain("cols=2");
-        expect(proj.comments).toEqual(["nice"]);
-    });
+  await withTempDir(async (dir) => {
+    await write(
+      dir,
+      `<w:p><w:r><w:t>body</w:t></w:r></w:p>` +
+        `<w:sectPr><w:pgSz w:w="12240" w:h="15840" w:orient="portrait"/><w:cols w:num="2"/></w:sectPr>`,
+    );
+    await fs.writeFile(
+      path.join(dir, "word", "comments.xml"),
+      `<?xml version="1.0"?><w:comments ${W_NS}><w:comment w:id="1"><w:p><w:r><w:t>nice</w:t></w:r></w:p></w:comment></w:comments>`,
+      "utf-8",
+    );
+    const proj = await collectVisibleProjection(dir, "strict");
+    expect(proj.pageGeometry.join("|")).toContain("portrait 12240x15840");
+    expect(proj.pageGeometry.join("|")).toContain("cols=2");
+    expect(proj.comments).toEqual(["nice"]);
+  });
 });
 ```
 
@@ -774,21 +815,24 @@ Add to `collectVisibleProjection`, after building `parts["word/document.xml"]`:
 ```ts
 // Page geometry (all sectPr in document order).
 for (const ns of WORD_NAMESPACES) {
-    const sects = dom.getElementsByTagNameNS(ns, "sectPr");
-    for (let i = 0; i < sects.length; i += 1) {
-        const sect = sects.item(i)!;
-        const sig: string[] = [];
-        const pgSz = wChild(sect, "pgSz");
-        if (pgSz) sig.push(`${wAttr(pgSz, "orient") ?? "portrait"} ${wAttr(pgSz, "w") ?? "?"}x${wAttr(pgSz, "h") ?? "?"}`);
-        const pgMar = wChild(sect, "pgMar");
-        if (pgMar)
-            sig.push(
-                `mar ${wAttr(pgMar, "top") ?? "?"},${wAttr(pgMar, "right") ?? "?"},${wAttr(pgMar, "bottom") ?? "?"},${wAttr(pgMar, "left") ?? "?"}`,
-            );
-        const cols = wChild(sect, "cols");
-        sig.push(`cols=${cols ? (wAttr(cols, "num") ?? "1") : "1"}`);
-        proj.pageGeometry.push(sig.join(" "));
-    }
+  const sects = dom.getElementsByTagNameNS(ns, "sectPr");
+  for (let i = 0; i < sects.length; i += 1) {
+    const sect = sects.item(i)!;
+    const sig: string[] = [];
+    const pgSz = wChild(sect, "pgSz");
+    if (pgSz)
+      sig.push(
+        `${wAttr(pgSz, "orient") ?? "portrait"} ${wAttr(pgSz, "w") ?? "?"}x${wAttr(pgSz, "h") ?? "?"}`,
+      );
+    const pgMar = wChild(sect, "pgMar");
+    if (pgMar)
+      sig.push(
+        `mar ${wAttr(pgMar, "top") ?? "?"},${wAttr(pgMar, "right") ?? "?"},${wAttr(pgMar, "bottom") ?? "?"},${wAttr(pgMar, "left") ?? "?"}`,
+      );
+    const cols = wChild(sect, "cols");
+    sig.push(`cols=${cols ? (wAttr(cols, "num") ?? "1") : "1"}`);
+    proj.pageGeometry.push(sig.join(" "));
+  }
 }
 ```
 
@@ -796,16 +840,16 @@ And a comments collector (after the try for document.xml):
 
 ```ts
 try {
-    const cdom = parseXml(await fs.readFile(path.join(unpackedDir, "word", "comments.xml"), "utf-8"));
-    for (const ns of WORD_NAMESPACES) {
-        const cs = cdom.getElementsByTagNameNS(ns, "comment");
-        for (let i = 0; i < cs.length; i += 1) {
-            const paras = wChildren(cs.item(i)!, "p");
-            proj.comments.push(paras.map((p) => paragraphText(p)).join("\n"));
-        }
+  const cdom = parseXml(await fs.readFile(path.join(unpackedDir, "word", "comments.xml"), "utf-8"));
+  for (const ns of WORD_NAMESPACES) {
+    const cs = cdom.getElementsByTagNameNS(ns, "comment");
+    for (let i = 0; i < cs.length; i += 1) {
+      const paras = wChildren(cs.item(i)!, "p");
+      proj.comments.push(paras.map((p) => paragraphText(p)).join("\n"));
     }
+  }
 } catch {
-    // no comments part
+  // no comments part
 }
 ```
 
@@ -820,16 +864,16 @@ Expected: PASS.
 
 ```ts
 it("projects header and footer part content", async () => {
-    await withTempDir(async (dir) => {
-        await write(dir, `<w:p><w:r><w:t>body</w:t></w:r></w:p>`);
-        await fs.writeFile(
-            path.join(dir, "word", "header1.xml"),
-            `<?xml version="1.0"?><w:hdr ${W_NS}><w:p><w:r><w:t>HEAD</w:t></w:r></w:p></w:hdr>`,
-            "utf-8",
-        );
-        const proj = await collectVisibleProjection(dir, "strict");
-        expect(proj.parts["word/header1.xml"].blocks.map((b: any) => b.text)).toEqual(["HEAD"]);
-    });
+  await withTempDir(async (dir) => {
+    await write(dir, `<w:p><w:r><w:t>body</w:t></w:r></w:p>`);
+    await fs.writeFile(
+      path.join(dir, "word", "header1.xml"),
+      `<?xml version="1.0"?><w:hdr ${W_NS}><w:p><w:r><w:t>HEAD</w:t></w:r></w:p></w:hdr>`,
+      "utf-8",
+    );
+    const proj = await collectVisibleProjection(dir, "strict");
+    expect(proj.parts["word/header1.xml"].blocks.map((b: any) => b.text)).toEqual(["HEAD"]);
+  });
 });
 ```
 
@@ -844,29 +888,29 @@ In `collectVisibleProjection`, after the document.xml block, scan the `word/` di
 
 ```ts
 try {
-    const wordDir = path.join(unpackedDir, "word");
-    for (const name of await fs.readdir(wordDir)) {
-        if (!/^(header|footer)\d*\.xml$/i.test(name)) continue;
-        const rel = `word/${name}`;
-        try {
-            const hdom = parseXml(await fs.readFile(path.join(wordDir, name), "utf-8"));
-            const rels = await loadRels(unpackedDir, rel);
-            // root is w:hdr/w:ftr — reuse projectBody by treating root's children
-            const blocks: VisibleBlock[] = [];
-            const root = hdom.documentElement;
-            for (let c = root.firstChild; c; c = c.nextSibling) {
-                if (!isWordEl(c)) continue;
-                const el = c as Element;
-                if (local(el) === "p") blocks.push(projectParagraph(el, rels));
-                else if (local(el) === "tbl") blocks.push(projectTable(el, rels));
-            }
-            proj.parts[rel] = { blocks };
-        } catch {
-            // skip unreadable header/footer
-        }
+  const wordDir = path.join(unpackedDir, "word");
+  for (const name of await fs.readdir(wordDir)) {
+    if (!/^(header|footer)\d*\.xml$/i.test(name)) continue;
+    const rel = `word/${name}`;
+    try {
+      const hdom = parseXml(await fs.readFile(path.join(wordDir, name), "utf-8"));
+      const rels = await loadRels(unpackedDir, rel);
+      // root is w:hdr/w:ftr — reuse projectBody by treating root's children
+      const blocks: VisibleBlock[] = [];
+      const root = hdom.documentElement;
+      for (let c = root.firstChild; c; c = c.nextSibling) {
+        if (!isWordEl(c)) continue;
+        const el = c as Element;
+        if (local(el) === "p") blocks.push(projectParagraph(el, rels));
+        else if (local(el) === "tbl") blocks.push(projectTable(el, rels));
+      }
+      proj.parts[rel] = { blocks };
+    } catch {
+      // skip unreadable header/footer
     }
+  }
 } catch {
-    // no word dir
+  // no word dir
 }
 ```
 
@@ -883,23 +927,23 @@ Expected: PASS.
 
 ```ts
 it("normalizes insignificant whitespace and ignores plumbing so a plumbing-only change is identical", async () => {
-    await withTempDir(async (dir) => {
-        const a = path.join(dir, "a");
-        const b = path.join(dir, "b");
-        await write(a, `<w:p><w:r><w:t>Hello</w:t></w:r></w:p>`);
-        // b differs ONLY by added w14:paraId + reordered/extra xmlns + indentation
-        await fs.mkdir(path.join(b, "word"), { recursive: true });
-        await fs.writeFile(
-            path.join(b, "word", "document.xml"),
-            `<?xml version="1.0"?>\n<w:document ${W_NS} ${W14}>\n  <w:body>\n` +
-                `    <w:p w14:paraId="11111111" w14:textId="22222222"><w:r><w:t>Hello</w:t></w:r></w:p>\n` +
-                `  </w:body>\n</w:document>`,
-            "utf-8",
-        );
-        const pa = await collectVisibleProjection(a, "strict");
-        const pb = await collectVisibleProjection(b, "strict");
-        expect(diffVisibleProjections(pa, pb)).toEqual([]);
-    });
+  await withTempDir(async (dir) => {
+    const a = path.join(dir, "a");
+    const b = path.join(dir, "b");
+    await write(a, `<w:p><w:r><w:t>Hello</w:t></w:r></w:p>`);
+    // b differs ONLY by added w14:paraId + reordered/extra xmlns + indentation
+    await fs.mkdir(path.join(b, "word"), { recursive: true });
+    await fs.writeFile(
+      path.join(b, "word", "document.xml"),
+      `<?xml version="1.0"?>\n<w:document ${W_NS} ${W14}>\n  <w:body>\n` +
+        `    <w:p w14:paraId="11111111" w14:textId="22222222"><w:r><w:t>Hello</w:t></w:r></w:p>\n` +
+        `  </w:body>\n</w:document>`,
+      "utf-8",
+    );
+    const pa = await collectVisibleProjection(a, "strict");
+    const pb = await collectVisibleProjection(b, "strict");
+    expect(diffVisibleProjections(pa, pb)).toEqual([]);
+  });
 });
 ```
 
@@ -914,15 +958,18 @@ Expected: PASS already if `diffVisibleProjections` returns `[]` unconditionally 
 
 ```ts
 it("detects a visible change (dropped bold) as a non-empty delta", async () => {
-    await withTempDir(async (dir) => {
-        const a = path.join(dir, "a");
-        const b = path.join(dir, "b");
-        await write(a, `<w:p><w:r><w:rPr><w:b/></w:rPr><w:t>Hi</w:t></w:r></w:p>`);
-        await write(b, `<w:p><w:r><w:t>Hi</w:t></w:r></w:p>`); // bold removed
-        const delta = diffVisibleProjections(await collectVisibleProjection(a, "strict"), await collectVisibleProjection(b, "strict"));
-        expect(delta.length).toBeGreaterThan(0);
-        expect(JSON.stringify(delta)).toContain("word/document.xml");
-    });
+  await withTempDir(async (dir) => {
+    const a = path.join(dir, "a");
+    const b = path.join(dir, "b");
+    await write(a, `<w:p><w:r><w:rPr><w:b/></w:rPr><w:t>Hi</w:t></w:r></w:p>`);
+    await write(b, `<w:p><w:r><w:t>Hi</w:t></w:r></w:p>`); // bold removed
+    const delta = diffVisibleProjections(
+      await collectVisibleProjection(a, "strict"),
+      await collectVisibleProjection(b, "strict"),
+    );
+    expect(delta.length).toBeGreaterThan(0);
+    expect(JSON.stringify(delta)).toContain("word/document.xml");
+  });
 });
 ```
 
@@ -937,34 +984,40 @@ Replace the stub:
 
 ```ts
 function canonical(value: unknown): string {
-    return JSON.stringify(value, (_k, v) => {
-        if (v && typeof v === "object" && !Array.isArray(v)) {
-            return Object.keys(v as Record<string, unknown>)
-                .sort()
-                .reduce<Record<string, unknown>>((acc, k) => {
-                    acc[k] = (v as Record<string, unknown>)[k];
-                    return acc;
-                }, {});
-        }
-        return v;
-    });
+  return JSON.stringify(value, (_k, v) => {
+    if (v && typeof v === "object" && !Array.isArray(v)) {
+      return Object.keys(v as Record<string, unknown>)
+        .sort()
+        .reduce<Record<string, unknown>>((acc, k) => {
+          acc[k] = (v as Record<string, unknown>)[k];
+          return acc;
+        }, {});
+    }
+    return v;
+  });
 }
 
-export function diffVisibleProjections(before: VisibleProjection, after: VisibleProjection): VisibleProjectionDelta[] {
-    const deltas: VisibleProjectionDelta[] = [];
-    const partNames = new Set([...Object.keys(before.parts), ...Object.keys(after.parts)]);
-    for (const name of [...partNames].sort()) {
-        const a = canonical(before.parts[name]?.blocks ?? null);
-        const b = canonical(after.parts[name]?.blocks ?? null);
-        if (a !== b) deltas.push({ path: name, detail: `visible content changed (before≠after)` });
-    }
-    if (canonical(before.pageGeometry) !== canonical(after.pageGeometry)) {
-        deltas.push({ path: "<page-geometry>", detail: `${before.pageGeometry.join(" | ")} → ${after.pageGeometry.join(" | ")}` });
-    }
-    if (canonical(before.comments) !== canonical(after.comments)) {
-        deltas.push({ path: "<comments>", detail: `comment text changed` });
-    }
-    return deltas;
+export function diffVisibleProjections(
+  before: VisibleProjection,
+  after: VisibleProjection,
+): VisibleProjectionDelta[] {
+  const deltas: VisibleProjectionDelta[] = [];
+  const partNames = new Set([...Object.keys(before.parts), ...Object.keys(after.parts)]);
+  for (const name of [...partNames].sort()) {
+    const a = canonical(before.parts[name]?.blocks ?? null);
+    const b = canonical(after.parts[name]?.blocks ?? null);
+    if (a !== b) deltas.push({ path: name, detail: `visible content changed (before≠after)` });
+  }
+  if (canonical(before.pageGeometry) !== canonical(after.pageGeometry)) {
+    deltas.push({
+      path: "<page-geometry>",
+      detail: `${before.pageGeometry.join(" | ")} → ${after.pageGeometry.join(" | ")}`,
+    });
+  }
+  if (canonical(before.comments) !== canonical(after.comments)) {
+    deltas.push({ path: "<comments>", detail: `comment text changed` });
+  }
+  return deltas;
 }
 ```
 
@@ -1014,102 +1067,120 @@ import JSZip from "jszip";
 import { withTempDir } from "../src/lib/run-cli";
 import type { Profile } from "../src/lib/types";
 import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
-import { collectVisibleProjection, diffVisibleProjections } from "../src/scripts/office/validators/docx-visible-projection";
+import {
+  collectVisibleProjection,
+  diffVisibleProjections,
+} from "../src/scripts/office/validators/docx-visible-projection";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES_ROOT = path.resolve(HERE, "..", "tests", "fixtures");
 
 async function walk(dir: string, out: string[]): Promise<void> {
-    for (const e of await fs.readdir(dir, { withFileTypes: true })) {
-        const full = path.join(dir, e.name);
-        if (e.isDirectory()) await walk(full, out);
-        else if (e.isFile() && full.toLowerCase().endsWith(".docx")) out.push(full);
-    }
+  for (const e of await fs.readdir(dir, { withFileTypes: true })) {
+    const full = path.join(dir, e.name);
+    if (e.isDirectory()) await walk(full, out);
+    else if (e.isFile() && full.toLowerCase().endsWith(".docx")) out.push(full);
+  }
 }
 async function extract(buf: Buffer, outDir: string): Promise<void> {
-    const zip = await JSZip.loadAsync(buf);
-    const entries: Array<{ name: string; file: JSZip.JSZipObject }> = [];
-    zip.forEach((p, f) => entries.push({ name: p, file: f }));
-    for (const { name, file } of entries) {
-        const resolved = path.resolve(outDir, name);
-        if (!resolved.startsWith(`${outDir}${path.sep}`) && resolved !== outDir) throw new Error(`zip-slip: ${name}`);
-        if (file.dir) await fs.mkdir(resolved, { recursive: true });
-        else {
-            await fs.mkdir(path.dirname(resolved), { recursive: true });
-            await fs.writeFile(resolved, await file.async("nodebuffer"));
-        }
+  const zip = await JSZip.loadAsync(buf);
+  const entries: Array<{ name: string; file: JSZip.JSZipObject }> = [];
+  zip.forEach((p, f) => entries.push({ name: p, file: f }));
+  for (const { name, file } of entries) {
+    const resolved = path.resolve(outDir, name);
+    if (!resolved.startsWith(`${outDir}${path.sep}`) && resolved !== outDir)
+      throw new Error(`zip-slip: ${name}`);
+    if (file.dir) await fs.mkdir(resolved, { recursive: true });
+    else {
+      await fs.mkdir(path.dirname(resolved), { recursive: true });
+      await fs.writeFile(resolved, await file.async("nodebuffer"));
     }
+  }
 }
 
 interface Row {
-    rel: string;
-    verdict: "proven-benign" | "defect" | "errored";
-    detail: string;
+  rel: string;
+  verdict: "proven-benign" | "defect" | "errored";
+  detail: string;
 }
 
 async function main(): Promise<void> {
-    const profile: Profile = "strict";
-    const out = path.resolve(HERE, "..", ".drift-run");
-    const files: string[] = [];
-    await walk(FIXTURES_ROOT, files);
-    files.sort((a, b) => a.localeCompare(b));
-    const rows: Row[] = [];
-    for (let i = 0; i < files.length; i += 1) {
-        const rel = path.relative(FIXTURES_ROOT, files[i]!).split(path.sep).join("/");
-        try {
-            const buf = await fs.readFile(files[i]!);
-            const row = await withTempDir(async (tmp) => {
-                const before = path.join(tmp, "before");
-                const after = path.join(tmp, "after");
-                await extract(buf, before);
-                await extract(buf, after);
-                const beforeProj = await collectVisibleProjection(before, profile);
-                await new DOCXSchemaValidator({ unpackedDir: after, profile }).repair();
-                const afterProj = await collectVisibleProjection(after, profile);
-                const delta = diffVisibleProjections(beforeProj, afterProj);
-                return delta.length === 0
-                    ? ({ rel, verdict: "proven-benign", detail: "visible projection identical" } as Row)
-                    : ({ rel, verdict: "defect", detail: delta.map((d) => `${d.path}: ${d.detail}`).join("; ") } as Row);
-            });
-            rows.push(row);
-        } catch (err) {
-            rows.push({ rel, verdict: "errored", detail: err instanceof Error ? err.message : String(err) });
-        }
-        if ((i + 1) % 50 === 0 || i + 1 === files.length) process.stdout.write(`  ${i + 1}/${files.length}\n`);
+  const profile: Profile = "strict";
+  const out = path.resolve(HERE, "..", ".drift-run");
+  const files: string[] = [];
+  await walk(FIXTURES_ROOT, files);
+  files.sort((a, b) => a.localeCompare(b));
+  const rows: Row[] = [];
+  for (let i = 0; i < files.length; i += 1) {
+    const rel = path.relative(FIXTURES_ROOT, files[i]!).split(path.sep).join("/");
+    try {
+      const buf = await fs.readFile(files[i]!);
+      const row = await withTempDir(async (tmp) => {
+        const before = path.join(tmp, "before");
+        const after = path.join(tmp, "after");
+        await extract(buf, before);
+        await extract(buf, after);
+        const beforeProj = await collectVisibleProjection(before, profile);
+        await new DOCXSchemaValidator({ unpackedDir: after, profile }).repair();
+        const afterProj = await collectVisibleProjection(after, profile);
+        const delta = diffVisibleProjections(beforeProj, afterProj);
+        return delta.length === 0
+          ? ({ rel, verdict: "proven-benign", detail: "visible projection identical" } as Row)
+          : ({
+              rel,
+              verdict: "defect",
+              detail: delta.map((d) => `${d.path}: ${d.detail}`).join("; "),
+            } as Row);
+      });
+      rows.push(row);
+    } catch (err) {
+      rows.push({
+        rel,
+        verdict: "errored",
+        detail: err instanceof Error ? err.message : String(err),
+      });
     }
-    const proven = rows.filter((r) => r.verdict === "proven-benign");
-    const defects = rows.filter((r) => r.verdict === "defect");
-    const errored = rows.filter((r) => r.verdict === "errored");
-    const md = [
-        `# Benign-drift proof (profile: ${profile})`,
-        "",
-        `Invariant: **repair must not change a document's visible projection** (the ordinary-Word-user model).`,
-        "",
-        `- Proven benign (visible projection identical before/after repair): **${proven.length}**`,
-        `- **Repair defects (visible change): ${defects.length}**`,
-        `- Could not process (encrypted/corrupt): ${errored.length}`,
-        "",
-        ...(defects.length
-            ? [
-                  "## Repair defects — visible change detected",
-                  "",
-                  "| Fixture | visible delta |",
-                  "|---|---|",
-                  ...defects.map((r) => `| \`${r.rel}\` | ${r.detail} |`),
-                  "",
-              ]
-            : ["_No repair defects: every processable fixture's visible projection was invariant under repair._", ""]),
-        ...(errored.length ? ["## Could not process", "", ...errored.map((r) => `- \`${r.rel}\`: ${r.detail}`), ""] : []),
-    ].join("\n");
-    await fs.mkdir(out, { recursive: true });
-    await fs.writeFile(path.join(out, "BENIGN_PROOF.md"), md, "utf-8");
-    process.stdout.write(
-        `\nproven=${proven.length} defects=${defects.length} errored=${errored.length}\nReport: ${path.join(out, "BENIGN_PROOF.md")}\n`,
-    );
+    if ((i + 1) % 50 === 0 || i + 1 === files.length)
+      process.stdout.write(`  ${i + 1}/${files.length}\n`);
+  }
+  const proven = rows.filter((r) => r.verdict === "proven-benign");
+  const defects = rows.filter((r) => r.verdict === "defect");
+  const errored = rows.filter((r) => r.verdict === "errored");
+  const md = [
+    `# Benign-drift proof (profile: ${profile})`,
+    "",
+    `Invariant: **repair must not change a document's visible projection** (the ordinary-Word-user model).`,
+    "",
+    `- Proven benign (visible projection identical before/after repair): **${proven.length}**`,
+    `- **Repair defects (visible change): ${defects.length}**`,
+    `- Could not process (encrypted/corrupt): ${errored.length}`,
+    "",
+    ...(defects.length
+      ? [
+          "## Repair defects — visible change detected",
+          "",
+          "| Fixture | visible delta |",
+          "|---|---|",
+          ...defects.map((r) => `| \`${r.rel}\` | ${r.detail} |`),
+          "",
+        ]
+      : [
+          "_No repair defects: every processable fixture's visible projection was invariant under repair._",
+          "",
+        ]),
+    ...(errored.length
+      ? ["## Could not process", "", ...errored.map((r) => `- \`${r.rel}\`: ${r.detail}`), ""]
+      : []),
+  ].join("\n");
+  await fs.mkdir(out, { recursive: true });
+  await fs.writeFile(path.join(out, "BENIGN_PROOF.md"), md, "utf-8");
+  process.stdout.write(
+    `\nproven=${proven.length} defects=${defects.length} errored=${errored.length}\nReport: ${path.join(out, "BENIGN_PROOF.md")}\n`,
+  );
 }
 main().catch((e: unknown) => {
-    process.stderr.write(`${e instanceof Error ? (e.stack ?? e.message) : String(e)}\n`);
-    process.exit(1);
+  process.stderr.write(`${e instanceof Error ? (e.stack ?? e.message) : String(e)}\n`);
+  process.exit(1);
 });
 ```
 

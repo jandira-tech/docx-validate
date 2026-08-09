@@ -34,40 +34,40 @@ import { mergeRuns } from "./scripts/office/helpers/merge-runs";
 import { withTempDir } from "./lib/run-cli";
 
 export type NormalizeResult = {
-    bytes: Uint8Array;
-    changed: boolean;
-    /**
-     * Per-pass change counts. Today only `mergeRuns`; future canonical-form
-     * passes (e.g. `normalize-sectpr-order`) get their own entry here.
-     */
-    passes: { mergeRuns: number };
+  bytes: Uint8Array;
+  changed: boolean;
+  /**
+   * Per-pass change counts. Today only `mergeRuns`; future canonical-form
+   * passes (e.g. `normalize-sectpr-order`) get their own entry here.
+   */
+  passes: { mergeRuns: number };
 };
 
 export class Normalize {
-    public run(bytes: Uint8Array): Promise<NormalizeResult> {
-        return withTempDir(async (dir) => {
-            const inputPath = path.join(dir, "input.docx");
-            await writeFile(inputPath, bytes);
+  public run(bytes: Uint8Array): Promise<NormalizeResult> {
+    return withTempDir(async (dir) => {
+      const inputPath = path.join(dir, "input.docx");
+      await writeFile(inputPath, bytes);
 
-            const unpackedDir = path.join(dir, "unpacked");
-            await unpack(inputPath, unpackedDir);
+      const unpackedDir = path.join(dir, "unpacked");
+      await unpack(inputPath, unpackedDir);
 
-            // Canonical-form passes. `mergeRuns` is the one we always apply.
-            // `simplifyRedlines` requires an author identity and isn't
-            // appropriate as a default canonical pass — consumers compose
-            // it directly via the existing helper when needed.
-            const mergeResult = await mergeRuns(unpackedDir);
+      // Canonical-form passes. `mergeRuns` is the one we always apply.
+      // `simplifyRedlines` requires an author identity and isn't
+      // appropriate as a default canonical pass — consumers compose
+      // it directly via the existing helper when needed.
+      const mergeResult = await mergeRuns(unpackedDir);
 
-            const outPath = path.join(dir, "out.docx");
-            await pack(unpackedDir, outPath);
-            const outBuffer = await readFile(outPath);
-            const outBytes = new Uint8Array(outBuffer);
+      const outPath = path.join(dir, "out.docx");
+      await pack(unpackedDir, outPath);
+      const outBuffer = await readFile(outPath);
+      const outBytes = new Uint8Array(outBuffer);
 
-            return {
-                bytes: outBytes,
-                changed: mergeResult.count > 0,
-                passes: { mergeRuns: mergeResult.count },
-            };
-        });
-    }
+      return {
+        bytes: outBytes,
+        changed: mergeResult.count > 0,
+        passes: { mergeRuns: mergeResult.count },
+      };
+    });
+  }
 }

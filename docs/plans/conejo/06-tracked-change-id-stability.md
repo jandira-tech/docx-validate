@@ -46,14 +46,14 @@ applies to tracked-change IDs but is not currently implemented.
    (e.g., it is itself making a tracked insertion), allocate IDs above the
    maximum existing ID:
 
-    ```typescript
-    const maxExistingId = Math.max(
-        0,
-        ...insElements.map((el) => parseInt(el.getAttribute("w:id") ?? "0", 10)),
-        ...delElements.map((el) => parseInt(el.getAttribute("w:id") ?? "0", 10)),
-    );
-    let nextId = maxExistingId + 1;
-    ```
+   ```typescript
+   const maxExistingId = Math.max(
+     0,
+     ...insElements.map((el) => parseInt(el.getAttribute("w:id") ?? "0", 10)),
+     ...delElements.map((el) => parseInt(el.getAttribute("w:id") ?? "0", 10)),
+   );
+   let nextId = maxExistingId + 1;
+   ```
 
 3. **Preserve `w:rsid*` attributes**: Do not strip revision session IDs from
    paragraphs and runs. These are informational but removing them silently

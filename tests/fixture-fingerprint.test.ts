@@ -25,16 +25,16 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES = path.join(HERE, "fixtures");
 
 describe("fingerprint", () => {
-    it("captures strict errors and a content hash for a known-broken fixture", async () => {
-        const fp = await fingerprint(path.join(FIXTURES, "broken/tables.missing-namespace.docx"));
-        expect(fp.strictErrorCodes.length).toBeGreaterThan(0);
-        expect(fp.contentHash).toMatch(/^[0-9a-f]{64}$/);
-        expect([...fp.strictErrorCodes].sort()).toEqual(fp.strictErrorCodes);
-    }, 20000);
+  it("captures strict errors and a content hash for a known-broken fixture", async () => {
+    const fp = await fingerprint(path.join(FIXTURES, "broken/tables.missing-namespace.docx"));
+    expect(fp.strictErrorCodes.length).toBeGreaterThan(0);
+    expect(fp.contentHash).toMatch(/^[0-9a-f]{64}$/);
+    expect([...fp.strictErrorCodes].sort()).toEqual(fp.strictErrorCodes);
+  }, 20000);
 
-    it("reports zero strict errors for a structurally-valid fixture", async () => {
-        const fp = await fingerprint(path.join(FIXTURES, "external/docx-templates/exec.docx"));
-        expect(fp.strictErrorCodes).toEqual([]);
-        expect(fp.contentHash).toMatch(/^[0-9a-f]{64}$/);
-    }, 20000);
+  it("reports zero strict errors for a structurally-valid fixture", async () => {
+    const fp = await fingerprint(path.join(FIXTURES, "external/docx-templates/exec.docx"));
+    expect(fp.strictErrorCodes).toEqual([]);
+    expect(fp.contentHash).toMatch(/^[0-9a-f]{64}$/);
+  }, 20000);
 });

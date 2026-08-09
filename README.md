@@ -123,9 +123,9 @@ const result = await validate("./contract.docx");
 //                   { valid: boolean; issues: ValidationIssue[]; suffix: ".docx"; repairs: number }
 
 if (!result.valid) {
-    for (const issue of result.issues) {
-        console.error(`${issue.severity}${issue.path ? ` [${issue.path}]` : ""}: ${issue.message}`);
-    }
+  for (const issue of result.issues) {
+    console.error(`${issue.severity}${issue.path ? ` [${issue.path}]` : ""}: ${issue.message}`);
+  }
 }
 ```
 
@@ -140,8 +140,8 @@ Cross-check tracked changes against an original (the `--original` CLI flag):
 
 ```ts
 const result = await validate("./redlined.docx", {
-    original: "./baseline.docx",
-    author: "Alice",
+  original: "./baseline.docx",
+  author: "Alice",
 });
 ```
 
@@ -151,9 +151,9 @@ const result = await validate("./redlined.docx", {
 import { DOCXSchemaValidator, defaultSchemasDir } from "docx-validate";
 
 const v = new DOCXSchemaValidator({
-    unpackedDir: "./unpacked",
-    schemasDir: defaultSchemasDir(), // override if you bundle your own XSDs
-    profile: "lenient",
+  unpackedDir: "./unpacked",
+  schemasDir: defaultSchemasDir(), // override if you bundle your own XSDs
+  profile: "lenient",
 });
 
 const xsdResult = await v.validateAgainstXsd();
@@ -169,11 +169,11 @@ list.
 
 ```ts
 import {
-    pack, // repack an unpacked dir into .docx/.pptx/.xlsx
-    unpack, // unzip + pretty-print + optional run-merging
-    addComment, // append a w:comment to an unpacked DOCX
-    mergeRuns, // collapse adjacent w:r runs with identical formatting
-    simplifyRedlines, // collapse adjacent same-author tracked changes
+  pack, // repack an unpacked dir into .docx/.pptx/.xlsx
+  unpack, // unzip + pretty-print + optional run-merging
+  addComment, // append a w:comment to an unpacked DOCX
+  mergeRuns, // collapse adjacent w:r runs with identical formatting
+  simplifyRedlines, // collapse adjacent same-author tracked changes
 } from "docx-validate";
 
 // e.g. unpack → mutate → repack:
@@ -218,15 +218,15 @@ importing from the published package.
 
 ```ts
 interface ValidationIssue {
-    severity: "error" | "warning" | "info";
-    message: string;
-    path?: string; // file path inside the unpacked dir, when applicable
-    code?: string; // stable string ID; safe to switch on
+  severity: "error" | "warning" | "info";
+  message: string;
+  path?: string; // file path inside the unpacked dir, when applicable
+  code?: string; // stable string ID; safe to switch on
 }
 
 interface ValidationResult {
-    valid: boolean; // true when every issue is severity !== "error"
-    issues: ValidationIssue[];
+  valid: boolean; // true when every issue is severity !== "error"
+  issues: ValidationIssue[];
 }
 ```
 

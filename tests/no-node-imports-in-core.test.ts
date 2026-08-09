@@ -28,16 +28,28 @@ import { spawnSync } from "node:child_process";
 import { describe, it, expect } from "vitest";
 
 describe("src/ segregation: no node:* imports outside src/node/ (PR C un-skips this)", () => {
-    it.skip("zero src/ files outside src/node/ import from node:*", () => {
-        const result = spawnSync(
-            "rg",
-            ["-n", "--type", "ts", "-e", String.raw`^import .* from ['"]node:`, "src/", "--glob", "!src/node/**"],
-            { encoding: "utf-8" },
-        );
+  it.skip("zero src/ files outside src/node/ import from node:*", () => {
+    const result = spawnSync(
+      "rg",
+      [
+        "-n",
+        "--type",
+        "ts",
+        "-e",
+        String.raw`^import .* from ['"]node:`,
+        "src/",
+        "--glob",
+        "!src/node/**",
+      ],
+      { encoding: "utf-8" },
+    );
 
-        // ripgrep exits 1 when no matches — that's our success signal.
-        // exits 0 means at least one match (failure for this assertion).
-        const lines = result.stdout.split("\n").filter((l) => l.length > 0);
-        expect(lines, `expected zero node:* imports outside src/node/, got:\n${lines.join("\n")}`).toEqual([]);
-    });
+    // ripgrep exits 1 when no matches — that's our success signal.
+    // exits 0 means at least one match (failure for this assertion).
+    const lines = result.stdout.split("\n").filter((l) => l.length > 0);
+    expect(
+      lines,
+      `expected zero node:* imports outside src/node/, got:\n${lines.join("\n")}`,
+    ).toEqual([]);
+  });
 });

@@ -37,114 +37,124 @@ import { type DescriptorMode, type FixtureFingerprint, deriveName } from "./deri
 import { fingerprint } from "./fixture-fingerprint";
 
 export interface FingerprintedFile {
-    sourcePath: string;
-    fingerprint: FixtureFingerprint;
+  sourcePath: string;
+  fingerprint: FixtureFingerprint;
 }
 
 export interface PlanOptions {
-    intoCategories: boolean;
-    fixturesRoot: string;
-    dedup?: boolean;
-    /** Passed through to deriveName; defaults to "error-first". */
-    descriptorMode?: DescriptorMode;
-    /** Force a single category dir (e.g. "eigen") instead of broken/working. */
-    fixedCategory?: string;
+  intoCategories: boolean;
+  fixturesRoot: string;
+  dedup?: boolean;
+  /** Passed through to deriveName; defaults to "error-first". */
+  descriptorMode?: DescriptorMode;
+  /** Force a single category dir (e.g. "eigen") instead of broken/working. */
+  fixedCategory?: string;
 }
 
 export interface Move {
-    from: string;
-    to: string;
+  from: string;
+  to: string;
 }
 
 /** Pure: turn fingerprinted files into a deduped, collision-free move list. */
 export function planMoves(files: FingerprintedFile[], opts: PlanOptions): Move[] {
-    const seenHash = new Set<string>();
-    const takenTargets = new Set<string>();
-    const moves: Move[] = [];
+  const seenHash = new Set<string>();
+  const takenTargets = new Set<string>();
+  const moves: Move[] = [];
 
-    // Deterministic order; dedup keeps the lexicographically-first source.
-    const sorted = [...files].sort((a, b) => a.sourcePath.localeCompare(b.sourcePath));
+  // Deterministic order; dedup keeps the lexicographically-first source.
+  const sorted = [...files].sort((a, b) => a.sourcePath.localeCompare(b.sourcePath));
 
-    for (const file of sorted) {
-        if (opts.dedup) {
-            if (seenHash.has(file.fingerprint.contentHash)) continue;
-            seenHash.add(file.fingerprint.contentHash);
-        }
-        const derived = deriveName(file.fingerprint, {
-            descriptorMode: opts.descriptorMode,
-            fixedCategory: opts.fixedCategory,
-        });
-        const dir = opts.intoCategories ? path.join(opts.fixturesRoot, derived.category) : path.dirname(file.sourcePath);
-
-        let candidate = path.join(dir, derived.fileName);
-        let n = 2;
-        while (takenTargets.has(candidate)) {
-            candidate = path.join(dir, `${derived.subjectSlug}.${derived.descriptor}-${n}.docx`);
-            n += 1;
-        }
-        takenTargets.add(candidate);
-        moves.push({ from: file.sourcePath, to: candidate });
+  for (const file of sorted) {
+    if (opts.dedup) {
+      if (seenHash.has(file.fingerprint.contentHash)) continue;
+      seenHash.add(file.fingerprint.contentHash);
     }
-    return moves;
+    const derived = deriveName(file.fingerprint, {
+      descriptorMode: opts.descriptorMode,
+      fixedCategory: opts.fixedCategory,
+    });
+    const dir = opts.intoCategories
+      ? path.join(opts.fixturesRoot, derived.category)
+      : path.dirname(file.sourcePath);
+
+    let candidate = path.join(dir, derived.fileName);
+    let n = 2;
+    while (takenTargets.has(candidate)) {
+      candidate = path.join(dir, `${derived.subjectSlug}.${derived.descriptor}-${n}.docx`);
+      n += 1;
+    }
+    takenTargets.add(candidate);
+    moves.push({ from: file.sourcePath, to: candidate });
+  }
+  return moves;
 }
 
 function collectDocx(target: string, out: string[]): void {
-    const stat = statSync(target);
-    if (stat.isDirectory()) {
-        for (const entry of readdirSync(target)) {
-            if (entry.startsWith("~$")) continue;
-            collectDocx(path.join(target, entry), out);
-        }
-    } else if (target.toLowerCase().endsWith(".docx")) {
-        out.push(target);
+  const stat = statSync(target);
+  if (stat.isDirectory()) {
+    for (const entry of readdirSync(target)) {
+      if (entry.startsWith("~$")) continue;
+      collectDocx(path.join(target, entry), out);
     }
+  } else if (target.toLowerCase().endsWith(".docx")) {
+    out.push(target);
+  }
 }
 
 async function main(): Promise<void> {
-    const argv = process.argv.slice(2);
-    const intoCategories = argv.includes("--into-categories");
-    const dedup = argv.includes("--dedup");
-    const dryRun = argv.includes("--dry-run");
+  const argv = process.argv.slice(2);
+  const intoCategories = argv.includes("--into-categories");
+  const dedup = argv.includes("--dedup");
+  const dryRun = argv.includes("--dry-run");
 
-    // Flags that take a value; their value-index must be excluded from targets.
-    const valueFlagIndices = new Set<number>();
-    const flagValue = (name: string): string | undefined => {
-        const i = argv.indexOf(name);
-        if (i < 0) return undefined;
-        valueFlagIndices.add(i + 1);
-        return argv[i + 1];
-    };
-    const fixturesRoot = flagValue("--fixtures-root") ?? "tests/fixtures";
-    const descriptorMode = flagValue("--descriptor") as DescriptorMode | undefined;
-    const fixedCategory = flagValue("--category");
+  // Flags that take a value; their value-index must be excluded from targets.
+  const valueFlagIndices = new Set<number>();
+  const flagValue = (name: string): string | undefined => {
+    const i = argv.indexOf(name);
+    if (i < 0) return undefined;
+    valueFlagIndices.add(i + 1);
+    return argv[i + 1];
+  };
+  const fixturesRoot = flagValue("--fixtures-root") ?? "tests/fixtures";
+  const descriptorMode = flagValue("--descriptor") as DescriptorMode | undefined;
+  const fixedCategory = flagValue("--category");
 
-    const targets = argv.filter((a, i) => !a.startsWith("--") && !valueFlagIndices.has(i));
+  const targets = argv.filter((a, i) => !a.startsWith("--") && !valueFlagIndices.has(i));
 
-    const docxPaths: string[] = [];
-    for (const t of targets) collectDocx(t, docxPaths);
+  const docxPaths: string[] = [];
+  for (const t of targets) collectDocx(t, docxPaths);
 
-    const files: FingerprintedFile[] = [];
-    for (const p of docxPaths) {
-        files.push({ sourcePath: p, fingerprint: await fingerprint(p) });
+  const files: FingerprintedFile[] = [];
+  for (const p of docxPaths) {
+    files.push({ sourcePath: p, fingerprint: await fingerprint(p) });
+  }
+
+  const moves = planMoves(files, {
+    intoCategories,
+    fixturesRoot,
+    dedup,
+    descriptorMode,
+    fixedCategory,
+  });
+  const dropped = files.length - moves.length;
+
+  for (const m of moves) {
+    process.stdout.write(`${m.from}  ->  ${m.to}\n`);
+    if (!dryRun) {
+      // git mv won't create a missing target directory (e.g. a new category dir).
+      mkdirSync(path.dirname(m.to), { recursive: true });
+      execFileSync("git", ["mv", m.from, m.to]);
     }
-
-    const moves = planMoves(files, { intoCategories, fixturesRoot, dedup, descriptorMode, fixedCategory });
-    const dropped = files.length - moves.length;
-
-    for (const m of moves) {
-        process.stdout.write(`${m.from}  ->  ${m.to}\n`);
-        if (!dryRun) {
-            // git mv won't create a missing target directory (e.g. a new category dir).
-            mkdirSync(path.dirname(m.to), { recursive: true });
-            execFileSync("git", ["mv", m.from, m.to]);
-        }
-    }
-    process.stdout.write(`\n${moves.length} renamed, ${dropped} dropped as duplicates${dryRun ? " (dry-run)" : ""}\n`);
+  }
+  process.stdout.write(
+    `\n${moves.length} renamed, ${dropped} dropped as duplicates${dryRun ? " (dry-run)" : ""}\n`,
+  );
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-    main().catch((err) => {
-        process.stderr.write(`Error: ${err}\n`);
-        process.exit(1);
-    });
+  main().catch((err) => {
+    process.stderr.write(`Error: ${err}\n`);
+    process.exit(1);
+  });
 }

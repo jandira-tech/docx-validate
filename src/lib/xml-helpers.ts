@@ -35,27 +35,27 @@ import { XPATH_NS } from "./types";
  * detailed line/column info in the message body).
  */
 export const parseXml = (text: string): Document => {
-    const errors: string[] = [];
-    const parser = new DOMParser({
-        onError: (level, msg) => {
-            if (level === "error" || level === "fatalError") {
-                errors.push(msg);
-            }
-        },
-    });
-    // XML 1.0 §2.8 permits a UTF-8 BOM (U+FEFF) at the start of an entity;
-    // @xmldom does not strip it and surfaces it as a "processing instruction
-    // at position 1" error. Strip defensively so callers don't see spurious
-    // failures on files produced by Microsoft Office (which routinely emits
-    // BOM-prefixed parts). The strict profile detects BOMs at the byte level
-    // before they reach the parser, so this strip never silently masks an
-    // intentional check.
-    const stripped = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
-    const doc = parser.parseFromString(stripped, "text/xml") as unknown as Document;
-    if (errors.length > 0) {
-        throw new Error(`parseXml failed: ${errors.join("; ")}`);
-    }
-    return doc;
+  const errors: string[] = [];
+  const parser = new DOMParser({
+    onError: (level, msg) => {
+      if (level === "error" || level === "fatalError") {
+        errors.push(msg);
+      }
+    },
+  });
+  // XML 1.0 §2.8 permits a UTF-8 BOM (U+FEFF) at the start of an entity;
+  // @xmldom does not strip it and surfaces it as a "processing instruction
+  // at position 1" error. Strip defensively so callers don't see spurious
+  // failures on files produced by Microsoft Office (which routinely emits
+  // BOM-prefixed parts). The strict profile detects BOMs at the byte level
+  // before they reach the parser, so this strip never silently masks an
+  // intentional check.
+  const stripped = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
+  const doc = parser.parseFromString(stripped, "text/xml") as unknown as Document;
+  if (errors.length > 0) {
+    throw new Error(`parseXml failed: ${errors.join("; ")}`);
+  }
+  return doc;
 };
 
 /**
@@ -68,12 +68,12 @@ export const parseXml = (text: string): Document => {
  * we prepend an XML declaration that names it, like Python does.
  */
 export const serializeXml = (node: Node, encoding?: string): string => {
-    const xml = new XMLSerializer().serializeToString(node as unknown as XmldomNode);
-    if (encoding) {
-        const decl = `<?xml version="1.0" encoding="${encoding}" standalone="yes"?>`;
-        return xml.startsWith("<?xml") ? xml : `${decl}\n${xml}`;
-    }
-    return xml;
+  const xml = new XMLSerializer().serializeToString(node as unknown as XmldomNode);
+  if (encoding) {
+    const decl = `<?xml version="1.0" encoding="${encoding}" standalone="yes"?>`;
+    return xml.startsWith("<?xml") ? xml : `${decl}\n${xml}`;
+  }
+  return xml;
 };
 
 /**
@@ -87,45 +87,45 @@ export const serializeXml = (node: Node, encoding?: string): string => {
  * survives but surrounding indentation is reflowed).
  */
 export const prettyXml = (node: Node, indent = "  "): string => {
-    const raw = serializeXml(node);
-    // Match either: an XML comment (<!-- ... -->, may contain '>'), any other
-    // tag/decl/PI, or a run of text. The comment branch must come first so
-    // comments containing '>' don't terminate the [^>]+ branch prematurely.
-    const tokens = raw.match(/<(?:!--[\s\S]*?--|[^>]+)>|[^<]+/g) ?? [];
-    let depth = 0;
-    const lines: string[] = [];
-    for (const token of tokens) {
-        if (token.startsWith("<?") || token.startsWith("<!")) {
-            lines.push(indent.repeat(depth) + token);
-            continue;
-        }
-        if (token.startsWith("</")) {
-            depth = Math.max(0, depth - 1);
-            lines.push(indent.repeat(depth) + token);
-            continue;
-        }
-        if (token.startsWith("<") && !token.endsWith("/>")) {
-            lines.push(indent.repeat(depth) + token);
-            depth += 1;
-            continue;
-        }
-        if (token.startsWith("<") && token.endsWith("/>")) {
-            lines.push(indent.repeat(depth) + token);
-            continue;
-        }
-        const trimmed = token.replace(/\s+/g, " ").trim();
-        if (trimmed === "") {
-            continue;
-        }
-        if (lines.length > 0 && !lines[lines.length - 1].endsWith(">")) {
-            lines[lines.length - 1] += trimmed;
-        } else if (lines.length > 0 && /<[^/!?][^>]*>$/.test(lines[lines.length - 1])) {
-            lines[lines.length - 1] += trimmed;
-        } else {
-            lines.push(indent.repeat(depth) + trimmed);
-        }
+  const raw = serializeXml(node);
+  // Match either: an XML comment (<!-- ... -->, may contain '>'), any other
+  // tag/decl/PI, or a run of text. The comment branch must come first so
+  // comments containing '>' don't terminate the [^>]+ branch prematurely.
+  const tokens = raw.match(/<(?:!--[\s\S]*?--|[^>]+)>|[^<]+/g) ?? [];
+  let depth = 0;
+  const lines: string[] = [];
+  for (const token of tokens) {
+    if (token.startsWith("<?") || token.startsWith("<!")) {
+      lines.push(indent.repeat(depth) + token);
+      continue;
     }
-    return lines.join("\n");
+    if (token.startsWith("</")) {
+      depth = Math.max(0, depth - 1);
+      lines.push(indent.repeat(depth) + token);
+      continue;
+    }
+    if (token.startsWith("<") && !token.endsWith("/>")) {
+      lines.push(indent.repeat(depth) + token);
+      depth += 1;
+      continue;
+    }
+    if (token.startsWith("<") && token.endsWith("/>")) {
+      lines.push(indent.repeat(depth) + token);
+      continue;
+    }
+    const trimmed = token.replace(/\s+/g, " ").trim();
+    if (trimmed === "") {
+      continue;
+    }
+    if (lines.length > 0 && !lines[lines.length - 1].endsWith(">")) {
+      lines[lines.length - 1] += trimmed;
+    } else if (lines.length > 0 && /<[^/!?][^>]*>$/.test(lines[lines.length - 1])) {
+      lines[lines.length - 1] += trimmed;
+    } else {
+      lines.push(indent.repeat(depth) + trimmed);
+    }
+  }
+  return lines.join("\n");
 };
 
 /**
@@ -141,16 +141,20 @@ export const prettyXml = (node: Node, indent = "  "): string => {
  * Use `"*"` as the namespace to match across all namespaces (mirrors
  * `Document.getElementsByTagName('*')`).
  */
-export const getElementsByTagNameNSAll = (root: Document | Element, namespaceURI: string, localName: string): Element[] => {
-    const list = root.getElementsByTagNameNS(namespaceURI, localName);
-    const out: Element[] = [];
-    for (let i = 0; i < list.length; i += 1) {
-        const item = list.item(i);
-        if (item) {
-            out.push(item);
-        }
+export const getElementsByTagNameNSAll = (
+  root: Document | Element,
+  namespaceURI: string,
+  localName: string,
+): Element[] => {
+  const list = root.getElementsByTagNameNS(namespaceURI, localName);
+  const out: Element[] = [];
+  for (let i = 0; i < list.length; i += 1) {
+    const item = list.item(i);
+    if (item) {
+      out.push(item);
     }
-    return out;
+  }
+  return out;
 };
 
 /**
@@ -164,7 +168,7 @@ export const getElementsByTagNameNSAll = (root: Document | Element, namespaceURI
  *   const paragraphs = $$("//w:p", doc) as Element[];
  */
 export const makeSelect = (extraNamespaces: Record<string, string> = {}): xpath.XPathSelect =>
-    xpath.useNamespaces({ ...XPATH_NS, ...extraNamespaces });
+  xpath.useNamespaces({ ...XPATH_NS, ...extraNamespaces });
 
 /**
  * 1-based source line number for a parsed node, or `0` if the parser did not
@@ -176,11 +180,11 @@ export const makeSelect = (extraNamespaces: Record<string, string> = {}): xpath.
  * cope cleanly with constructed-in-memory nodes (which have no source).
  */
 export const getLineNumber = (node: Node | null | undefined): number => {
-    if (!node) {
-        return 0;
-    }
-    const value = (node as unknown as { lineNumber?: number }).lineNumber;
-    return typeof value === "number" ? value : 0;
+  if (!node) {
+    return 0;
+  }
+  const value = (node as unknown as { lineNumber?: number }).lineNumber;
+  return typeof value === "number" ? value : 0;
 };
 
 /**
@@ -193,6 +197,6 @@ export const getLineNumber = (node: Node | null | undefined): number => {
  * source's `tag.split('}')[-1].lower()` idiom used in unique-ID checks).
  */
 export const getLocalName = (elem: Element, lowercase = false): string => {
-    const name = elem.localName ?? elem.nodeName ?? "";
-    return lowercase ? name.toLowerCase() : name;
+  const name = elem.localName ?? elem.nodeName ?? "";
+  return lowercase ? name.toLowerCase() : name;
 };

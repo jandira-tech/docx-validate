@@ -37,40 +37,49 @@ import { Command } from "commander";
 import JSZip from "jszip";
 
 import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
-import { DEFAULT_PROFILE, mergeResults, type Profile, type ValidationResult } from "../../lib/types";
+import {
+  DEFAULT_PROFILE,
+  mergeResults,
+  type Profile,
+  type ValidationResult,
+} from "../../lib/types";
 import { BaseSchemaValidator } from "./validators/base";
 import { DOCXSchemaValidator } from "./validators/docx";
-import { buildRepairPlanIssues, collectDocxSemanticInventory, compareDocxSemanticInventories } from "./validators/docx-diagnostics";
+import {
+  buildRepairPlanIssues,
+  collectDocxSemanticInventory,
+  compareDocxSemanticInventories,
+} from "./validators/docx-diagnostics";
 import { PPTXSchemaValidator } from "./validators/pptx";
 import { validateRedlining } from "./validators/redlining";
 
 const SUPPORTED_SUFFIXES = new Set([".docm", ".docx", ".pptx", ".xlsx"]);
 
 export interface ValidateOptions {
-    /** Path to the original packed Office file. Required for DOCX redlining. */
-    original?: string;
-    /** Run auto-repair before validating (mirrors `--auto-repair`). */
-    autoRepair?: boolean;
-    /** Author name to use for redlining validation. */
-    author?: string;
-    /** Verbose mode — passes through to subclasses' verbose flags. */
-    verbose?: boolean;
-    /** Override XSD root (defaults to the path used by `BaseSchemaValidator`). */
-    schemasDir?: string;
-    /**
-     * Validation profile. Defaults to `"lenient"` to match real-world
-     * Microsoft Office output. Pass `"strict"` for spec-purist behaviour
-     * (flags BOM-prefixed parts and other tolerated-but-non-canonical
-     * constructs). See {@link Profile}.
-     */
-    profile?: Profile;
+  /** Path to the original packed Office file. Required for DOCX redlining. */
+  original?: string;
+  /** Run auto-repair before validating (mirrors `--auto-repair`). */
+  autoRepair?: boolean;
+  /** Author name to use for redlining validation. */
+  author?: string;
+  /** Verbose mode — passes through to subclasses' verbose flags. */
+  verbose?: boolean;
+  /** Override XSD root (defaults to the path used by `BaseSchemaValidator`). */
+  schemasDir?: string;
+  /**
+   * Validation profile. Defaults to `"lenient"` to match real-world
+   * Microsoft Office output. Pass `"strict"` for spec-purist behaviour
+   * (flags BOM-prefixed parts and other tolerated-but-non-canonical
+   * constructs). See {@link Profile}.
+   */
+  profile?: Profile;
 }
 
 export interface ValidateRunResult extends ValidationResult {
-    /** Number of issues auto-repaired (0 unless `autoRepair` is true). */
-    repairs: number;
-    /** Detected suffix used for dispatch (e.g. ".docx"). */
-    suffix: string;
+  /** Number of issues auto-repaired (0 unless `autoRepair` is true). */
+  repairs: number;
+  /** Detected suffix used for dispatch (e.g. ".docx"). */
+  suffix: string;
 }
 
 /**
@@ -79,296 +88,322 @@ export interface ValidateRunResult extends ValidationResult {
  * this from other TS code; the CLI shim at the bottom of the file just turns
  * argv into options and exits with the right code.
  */
-export async function validate(target: string, opts: ValidateOptions = {}): Promise<ValidateRunResult> {
-    const author = opts.author;
-    const verbose = opts.verbose ?? false;
-    const autoRepair = opts.autoRepair ?? false;
-    const original = opts.original;
-    const profile: Profile = opts.profile ?? DEFAULT_PROFILE;
+export async function validate(
+  target: string,
+  opts: ValidateOptions = {},
+): Promise<ValidateRunResult> {
+  const author = opts.author;
+  const verbose = opts.verbose ?? false;
+  const autoRepair = opts.autoRepair ?? false;
+  const original = opts.original;
+  const profile: Profile = opts.profile ?? DEFAULT_PROFILE;
 
-    await assertExists(target, `Error: ${target} does not exist`);
+  await assertExists(target, `Error: ${target} does not exist`);
 
-    let originalFile: string | null = null;
-    if (original) {
-        await assertIsFile(original, `Error: ${original} is not a file`);
-        const ext = path.extname(original).toLowerCase();
-        if (!SUPPORTED_SUFFIXES.has(ext)) {
-            throw new Error(`Error: ${original} must be a .docx, .docm, .pptx, or .xlsx file`);
-        }
-        originalFile = path.resolve(original);
+  let originalFile: string | null = null;
+  if (original) {
+    await assertIsFile(original, `Error: ${original} is not a file`);
+    const ext = path.extname(original).toLowerCase();
+    if (!SUPPORTED_SUFFIXES.has(ext)) {
+      throw new Error(`Error: ${original} must be a .docx, .docm, .pptx, or .xlsx file`);
     }
+    originalFile = path.resolve(original);
+  }
 
-    const dispatchSuffix = path.extname(originalFile ?? target).toLowerCase();
+  const dispatchSuffix = path.extname(originalFile ?? target).toLowerCase();
 
-    if (!SUPPORTED_SUFFIXES.has(dispatchSuffix)) {
-        throw new Error(`Error: Cannot determine file type from ${target}. Use --original or provide a .docx/.docm/.pptx/.xlsx file.`);
-    }
+  if (!SUPPORTED_SUFFIXES.has(dispatchSuffix)) {
+    throw new Error(
+      `Error: Cannot determine file type from ${target}. Use --original or provide a .docx/.docm/.pptx/.xlsx file.`,
+    );
+  }
 
-    const targetStat = await fs.stat(target);
-    const targetSuffix = path.extname(target).toLowerCase();
-    const targetIsPackedFile = targetStat.isFile() && SUPPORTED_SUFFIXES.has(targetSuffix);
+  const targetStat = await fs.stat(target);
+  const targetSuffix = path.extname(target).toLowerCase();
+  const targetIsPackedFile = targetStat.isFile() && SUPPORTED_SUFFIXES.has(targetSuffix);
 
-    if (!targetIsPackedFile && !targetStat.isDirectory()) {
-        throw new Error(`Error: ${target} is not a directory or Office file`);
-    }
+  if (!targetIsPackedFile && !targetStat.isDirectory()) {
+    throw new Error(`Error: ${target} is not a directory or Office file`);
+  }
 
-    const runWithUnpacked = async (unpackedDir: string): Promise<ValidateRunResult> => {
-        const subclassResult = await runValidators(unpackedDir, {
-            originalFile,
-            suffix: dispatchSuffix,
-            author,
-            verbose,
-            autoRepair,
-            schemasDir: opts.schemasDir,
-            profile,
-        });
-        return { ...subclassResult, suffix: dispatchSuffix };
-    };
+  const runWithUnpacked = async (unpackedDir: string): Promise<ValidateRunResult> => {
+    const subclassResult = await runValidators(unpackedDir, {
+      originalFile,
+      suffix: dispatchSuffix,
+      author,
+      verbose,
+      autoRepair,
+      schemasDir: opts.schemasDir,
+      profile,
+    });
+    return { ...subclassResult, suffix: dispatchSuffix };
+  };
 
-    if (targetIsPackedFile) {
-        return withTempDir(async (tempDir) => {
-            const buf = await fs.readFile(target);
-            const zip = await JSZip.loadAsync(buf);
-            await extractAll(zip, tempDir);
-            return runWithUnpacked(tempDir);
-        });
-    }
+  if (targetIsPackedFile) {
+    return withTempDir(async (tempDir) => {
+      const buf = await fs.readFile(target);
+      const zip = await JSZip.loadAsync(buf);
+      await extractAll(zip, tempDir);
+      return runWithUnpacked(tempDir);
+    });
+  }
 
-    return runWithUnpacked(path.resolve(target));
+  return runWithUnpacked(path.resolve(target));
 }
 
 interface ValidatorRunner {
-    repair(): Promise<number>;
-    validate(): Promise<ValidationResult>;
+  repair(): Promise<number>;
+  validate(): Promise<ValidationResult>;
 }
 
 interface RunValidatorsOptions {
-    originalFile: string | null;
-    suffix: string;
-    /** Required iff `originalFile` is set (DOCX redlining cross-check). */
-    author: string | undefined;
-    verbose: boolean;
-    autoRepair: boolean;
-    schemasDir?: string;
-    profile: Profile;
+  originalFile: string | null;
+  suffix: string;
+  /** Required iff `originalFile` is set (DOCX redlining cross-check). */
+  author: string | undefined;
+  verbose: boolean;
+  autoRepair: boolean;
+  schemasDir?: string;
+  profile: Profile;
 }
 
-async function runValidators(unpackedDir: string, opts: RunValidatorsOptions): Promise<ValidationResult & { repairs: number }> {
-    const validators: ValidatorRunner[] = [];
+async function runValidators(
+  unpackedDir: string,
+  opts: RunValidatorsOptions,
+): Promise<ValidationResult & { repairs: number }> {
+  const validators: ValidatorRunner[] = [];
 
-    if (opts.suffix === ".docx" || opts.suffix === ".docm") {
-        const docx = new DOCXSchemaValidator({
+  if (opts.suffix === ".docx" || opts.suffix === ".docm") {
+    const docx = new DOCXSchemaValidator({
+      unpackedDir,
+      originalFile: opts.originalFile ?? undefined,
+      verbose: opts.verbose,
+      schemasDir: opts.schemasDir,
+      profile: opts.profile,
+    });
+    validators.push(docx);
+    if (opts.originalFile) {
+      if (!opts.author) {
+        throw new Error(
+          "validate(): `author` is required when `original` is provided (used to identify whose tracked changes to verify).",
+        );
+      }
+      const originalDocx = opts.originalFile;
+      const author = opts.author;
+      const verbose = opts.verbose;
+      validators.push({
+        repair: async () => 0,
+        validate: () =>
+          validateRedlining({
             unpackedDir,
-            originalFile: opts.originalFile ?? undefined,
-            verbose: opts.verbose,
-            schemasDir: opts.schemasDir,
-            profile: opts.profile,
-        });
-        validators.push(docx);
-        if (opts.originalFile) {
-            if (!opts.author) {
-                throw new Error(
-                    "validate(): `author` is required when `original` is provided (used to identify whose tracked changes to verify).",
-                );
-            }
-            const originalDocx = opts.originalFile;
-            const author = opts.author;
-            const verbose = opts.verbose;
-            validators.push({
-                repair: async () => 0,
-                validate: () =>
-                    validateRedlining({
-                        unpackedDir,
-                        originalDocx,
-                        author,
-                        verbose,
-                    }),
-            });
-        }
-    } else if (opts.suffix === ".pptx") {
-        const pptx = new PPTXSchemaValidator({
-            unpackedDir,
-            originalFile: opts.originalFile ?? undefined,
-            verbose: opts.verbose,
-            schemasDir: opts.schemasDir,
-            profile: opts.profile,
-        });
-        validators.push(pptx);
-    } else {
-        // Library code is silent (CLAUDE.md: "Validator results are
-        // structured, not printed"). The CLI shim renders this issue via
-        // its general issue-printing path at the bottom of
-        // runValidateFromArgv, so callers driving validate() directly get
-        // the structured error without stderr noise.
-        return {
-            valid: false,
-            issues: [
-                {
-                    severity: "error" as const,
-                    message: `Unsupported file type: ${opts.suffix}`,
-                    code: "unsupported-file-type",
-                },
-            ],
-            repairs: 0,
-        };
+            originalDocx,
+            author,
+            verbose,
+          }),
+      });
     }
+  } else if (opts.suffix === ".pptx") {
+    const pptx = new PPTXSchemaValidator({
+      unpackedDir,
+      originalFile: opts.originalFile ?? undefined,
+      verbose: opts.verbose,
+      schemasDir: opts.schemasDir,
+      profile: opts.profile,
+    });
+    validators.push(pptx);
+  } else {
+    // Library code is silent (CLAUDE.md: "Validator results are
+    // structured, not printed"). The CLI shim renders this issue via
+    // its general issue-printing path at the bottom of
+    // runValidateFromArgv, so callers driving validate() directly get
+    // the structured error without stderr noise.
+    return {
+      valid: false,
+      issues: [
+        {
+          severity: "error" as const,
+          message: `Unsupported file type: ${opts.suffix}`,
+          code: "unsupported-file-type",
+        },
+      ],
+      repairs: 0,
+    };
+  }
 
-    let repairs = 0;
-    let repairDiagnostics: ValidationResult = { valid: true, issues: [] };
-    if (opts.autoRepair) {
-        const beforeInventory =
-            opts.suffix === ".docx" || opts.suffix === ".docm" ? await collectDocxSemanticInventory(unpackedDir, opts.profile) : null;
-        const beforeResults = await Promise.all(validators.map((v) => v.validate()));
-        const repairPlanIssues = buildRepairPlanIssues(mergeResults(...beforeResults).issues);
-        for (const v of validators) {
-            repairs += await v.repair();
-        }
-        const contentIssues =
-            beforeInventory && repairs > 0
-                ? compareDocxSemanticInventories(beforeInventory, await collectDocxSemanticInventory(unpackedDir, opts.profile))
-                : [];
-        repairDiagnostics = mergeResults({
-            valid: [...repairPlanIssues, ...contentIssues].every((i) => i.severity !== "error"),
-            issues: [...repairPlanIssues, ...contentIssues],
-        });
+  let repairs = 0;
+  let repairDiagnostics: ValidationResult = { valid: true, issues: [] };
+  if (opts.autoRepair) {
+    const beforeInventory =
+      opts.suffix === ".docx" || opts.suffix === ".docm"
+        ? await collectDocxSemanticInventory(unpackedDir, opts.profile)
+        : null;
+    const beforeResults = await Promise.all(validators.map((v) => v.validate()));
+    const repairPlanIssues = buildRepairPlanIssues(mergeResults(...beforeResults).issues);
+    for (const v of validators) {
+      repairs += await v.repair();
     }
+    const contentIssues =
+      beforeInventory && repairs > 0
+        ? compareDocxSemanticInventories(
+            beforeInventory,
+            await collectDocxSemanticInventory(unpackedDir, opts.profile),
+          )
+        : [];
+    repairDiagnostics = mergeResults({
+      valid: [...repairPlanIssues, ...contentIssues].every((i) => i.severity !== "error"),
+      issues: [...repairPlanIssues, ...contentIssues],
+    });
+  }
 
-    const results = await Promise.all(validators.map((v) => v.validate()));
-    const merged = mergeResults(...results, repairDiagnostics);
-    return { ...merged, repairs };
+  const results = await Promise.all(validators.map((v) => v.validate()));
+  const merged = mergeResults(...results, repairDiagnostics);
+  return { ...merged, repairs };
 }
 
 async function assertExists(p: string, message: string): Promise<void> {
-    try {
-        await fs.access(p);
-    } catch {
-        throw new Error(message);
-    }
+  try {
+    await fs.access(p);
+  } catch {
+    throw new Error(message);
+  }
 }
 
 async function assertIsFile(p: string, message: string): Promise<void> {
-    let stat: Awaited<ReturnType<typeof fs.stat>>;
-    try {
-        stat = await fs.stat(p);
-    } catch {
-        throw new Error(message);
-    }
-    if (!stat.isFile()) {
-        throw new Error(message);
-    }
+  let stat: Awaited<ReturnType<typeof fs.stat>>;
+  try {
+    stat = await fs.stat(p);
+  } catch {
+    throw new Error(message);
+  }
+  if (!stat.isFile()) {
+    throw new Error(message);
+  }
 }
 
 async function extractAll(zip: JSZip, outputPath: string): Promise<void> {
-    const entries: Array<{ name: string; file: JSZip.JSZipObject }> = [];
-    zip.forEach((relativePath, file) => {
-        entries.push({ name: relativePath, file });
-    });
+  const entries: Array<{ name: string; file: JSZip.JSZipObject }> = [];
+  zip.forEach((relativePath, file) => {
+    entries.push({ name: relativePath, file });
+  });
 
-    for (const { name, file } of entries) {
-        const target = path.join(outputPath, name);
-        const resolved = path.resolve(target);
-        if (!resolved.startsWith(`${outputPath}${path.sep}`) && resolved !== outputPath) {
-            throw new Error(`Refusing to extract entry outside output dir: ${name}`);
-        }
-        if (file.dir) {
-            await fs.mkdir(resolved, { recursive: true });
-            continue;
-        }
-        await fs.mkdir(path.dirname(resolved), { recursive: true });
-        const data = await file.async("nodebuffer");
-        await fs.writeFile(resolved, data);
+  for (const { name, file } of entries) {
+    const target = path.join(outputPath, name);
+    const resolved = path.resolve(target);
+    if (!resolved.startsWith(`${outputPath}${path.sep}`) && resolved !== outputPath) {
+      throw new Error(`Refusing to extract entry outside output dir: ${name}`);
     }
+    if (file.dir) {
+      await fs.mkdir(resolved, { recursive: true });
+      continue;
+    }
+    await fs.mkdir(path.dirname(resolved), { recursive: true });
+    const data = await file.async("nodebuffer");
+    await fs.writeFile(resolved, data);
+  }
 }
 
 interface CliOptions {
-    original?: string;
-    verbose: boolean;
-    autoRepair: boolean;
-    author?: string;
-    profile: Profile;
+  original?: string;
+  verbose: boolean;
+  autoRepair: boolean;
+  author?: string;
+  profile: Profile;
 }
 
 export function buildValidateCommand(): Command {
-    const cmd = new Command();
-    cmd.name("validate")
-        .description("Validate Office document XML files against XSD schemas and tracked changes")
-        .argument("<path>", "Path to unpacked directory or packed Office file (.docx/.docm/.pptx/.xlsx)")
-        .option(
-            "--original <file>",
-            "Path to original file (.docx/.docm/.pptx/.xlsx). If omitted, all XSD errors are reported and redlining validation is skipped.",
-        )
-        .option("-v, --verbose", "Enable verbose output", false)
-        .option("--auto-repair", "Automatically repair common issues (hex IDs, whitespace preservation)", false)
-        .option("--author <name>", "Author name for redlining validation (required when --original is provided)")
-        .option(
-            "--profile <profile>",
-            "Validation profile: 'lenient' (default), 'strict' (spec-purist), or 'word-valid' (Microsoft Word openability)",
-            DEFAULT_PROFILE,
-        );
-    return cmd;
+  const cmd = new Command();
+  cmd
+    .name("validate")
+    .description("Validate Office document XML files against XSD schemas and tracked changes")
+    .argument(
+      "<path>",
+      "Path to unpacked directory or packed Office file (.docx/.docm/.pptx/.xlsx)",
+    )
+    .option(
+      "--original <file>",
+      "Path to original file (.docx/.docm/.pptx/.xlsx). If omitted, all XSD errors are reported and redlining validation is skipped.",
+    )
+    .option("-v, --verbose", "Enable verbose output", false)
+    .option(
+      "--auto-repair",
+      "Automatically repair common issues (hex IDs, whitespace preservation)",
+      false,
+    )
+    .option(
+      "--author <name>",
+      "Author name for redlining validation (required when --original is provided)",
+    )
+    .option(
+      "--profile <profile>",
+      "Validation profile: 'lenient' (default), 'strict' (spec-purist), or 'word-valid' (Microsoft Word openability)",
+      DEFAULT_PROFILE,
+    );
+  return cmd;
 }
 
 export async function runValidateFromArgv(argv: readonly string[]): Promise<number> {
-    // Fail loudly at startup if libxmljs2's native binding is broken — otherwise
-    // the per-file pipeline silently turns the same condition into per-file
-    // "Invalid XSD schema" errors that look like document corruption.
-    try {
-        BaseSchemaValidator.assertLibxmljsAvailable();
-    } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        process.stderr.write(`${message}\n`);
-        return 1;
-    }
+  // Fail loudly at startup if libxmljs2's native binding is broken — otherwise
+  // the per-file pipeline silently turns the same condition into per-file
+  // "Invalid XSD schema" errors that look like document corruption.
+  try {
+    BaseSchemaValidator.assertLibxmljsAvailable();
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    process.stderr.write(`${message}\n`);
+    return 1;
+  }
 
-    const cmd = buildValidateCommand();
-    cmd.exitOverride();
-    // Commander throws CommanderError under exitOverride() for missing args,
-    // invalid options, and --help. Catch here so they bypass the validator
-    // try/catch below (which would otherwise format them as validate() errors).
-    try {
-        cmd.parse(argv as string[], { from: "user" });
-    } catch (err) {
-        return commanderExitCode(err);
-    }
-    const opts = cmd.opts<CliOptions>();
-    const [target] = cmd.args;
+  const cmd = buildValidateCommand();
+  cmd.exitOverride();
+  // Commander throws CommanderError under exitOverride() for missing args,
+  // invalid options, and --help. Catch here so they bypass the validator
+  // try/catch below (which would otherwise format them as validate() errors).
+  try {
+    cmd.parse(argv as string[], { from: "user" });
+  } catch (err) {
+    return commanderExitCode(err);
+  }
+  const opts = cmd.opts<CliOptions>();
+  const [target] = cmd.args;
 
-    if (opts.profile !== "lenient" && opts.profile !== "strict" && opts.profile !== "word-valid") {
-        const bad = String(opts.profile);
-        process.stderr.write(`Invalid --profile: ${bad}. Must be 'lenient', 'strict', or 'word-valid'.\n`);
-        return 1;
-    }
+  if (opts.profile !== "lenient" && opts.profile !== "strict" && opts.profile !== "word-valid") {
+    const bad = String(opts.profile);
+    process.stderr.write(
+      `Invalid --profile: ${bad}. Must be 'lenient', 'strict', or 'word-valid'.\n`,
+    );
+    return 1;
+  }
 
-    let result: ValidateRunResult;
-    try {
-        result = await validate(target, {
-            original: opts.original,
-            autoRepair: opts.autoRepair,
-            author: opts.author,
-            verbose: opts.verbose,
-            profile: opts.profile,
-        });
-    } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        process.stderr.write(`${message}\n`);
-        return 1;
-    }
+  let result: ValidateRunResult;
+  try {
+    result = await validate(target, {
+      original: opts.original,
+      autoRepair: opts.autoRepair,
+      author: opts.author,
+      verbose: opts.verbose,
+      profile: opts.profile,
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    process.stderr.write(`${message}\n`);
+    return 1;
+  }
 
-    if (opts.autoRepair && result.repairs > 0) {
-        process.stdout.write(`Auto-repaired ${result.repairs} issue(s)\n`);
-    }
+  if (opts.autoRepair && result.repairs > 0) {
+    process.stdout.write(`Auto-repaired ${result.repairs} issue(s)\n`);
+  }
 
-    if (result.valid) {
-        process.stdout.write("All validations PASSED!\n");
-    } else {
-        for (const issue of result.issues) {
-            if (issue.severity !== "error") continue;
-            const where = issue.path ? ` [${issue.path}]` : "";
-            process.stderr.write(`${issue.severity.toUpperCase()}${where}: ${issue.message}\n`);
-        }
+  if (result.valid) {
+    process.stdout.write("All validations PASSED!\n");
+  } else {
+    for (const issue of result.issues) {
+      if (issue.severity !== "error") continue;
+      const where = issue.path ? ` [${issue.path}]` : "";
+      process.stderr.write(`${issue.severity.toUpperCase()}${where}: ${issue.message}\n`);
     }
+  }
 
-    return result.valid ? 0 : 1;
+  return result.valid ? 0 : 1;
 }
 
 runCli(import.meta.url, () => runValidateFromArgv(process.argv.slice(2)));

@@ -19,89 +19,106 @@ import { describe, expect, it } from "vitest";
 import { type FingerprintedFile, planMoves } from "../scripts/apply-fixture-names";
 
 const fp = (overrides: Partial<FingerprintedFile["fingerprint"]> = {}) => ({
-    strictErrorCodes: [] as string[],
-    lenientErrorCodes: [] as string[],
-    insCount: 0,
-    delCount: 0,
-    commentCount: 0,
-    firstCommentText: null,
-    tableCount: 0,
-    hasTextBox: false,
-    hasHeaderFooter: false,
-    titleText: null,
-    contentHash: "h0",
-    ...overrides,
+  strictErrorCodes: [] as string[],
+  lenientErrorCodes: [] as string[],
+  insCount: 0,
+  delCount: 0,
+  commentCount: 0,
+  firstCommentText: null,
+  tableCount: 0,
+  hasTextBox: false,
+  hasHeaderFooter: false,
+  titleText: null,
+  contentHash: "h0",
+  ...overrides,
 });
 
 describe("planMoves", () => {
-    it("renames in place (keeps source dir) when intoCategories is false", () => {
-        const moves = planMoves(
-            [{ sourcePath: "tests/fixtures/word-strict/Ouch.docx", fingerprint: fp({ insCount: 1, contentHash: "a" }) }],
-            { intoCategories: false, fixturesRoot: "tests/fixtures" },
-        );
-        expect(moves).toEqual([
-            { from: "tests/fixtures/word-strict/Ouch.docx", to: "tests/fixtures/word-strict/document.suggesting-insertions.docx" },
-        ]);
-    });
+  it("renames in place (keeps source dir) when intoCategories is false", () => {
+    const moves = planMoves(
+      [
+        {
+          sourcePath: "tests/fixtures/word-strict/Ouch.docx",
+          fingerprint: fp({ insCount: 1, contentHash: "a" }),
+        },
+      ],
+      { intoCategories: false, fixturesRoot: "tests/fixtures" },
+    );
+    expect(moves).toEqual([
+      {
+        from: "tests/fixtures/word-strict/Ouch.docx",
+        to: "tests/fixtures/word-strict/document.suggesting-insertions.docx",
+      },
+    ]);
+  });
 
-    it("routes into category dirs when intoCategories is true", () => {
-        const moves = planMoves(
-            [
-                {
-                    sourcePath: "fixtures/eigen-extended/Untitled (1).docx",
-                    fingerprint: fp({ strictErrorCodes: ["x-code"], contentHash: "b" }),
-                },
-            ],
-            { intoCategories: true, fixturesRoot: "tests/fixtures" },
-        );
-        expect(moves[0].to).toBe("tests/fixtures/broken/document.x-code.docx");
-    });
+  it("routes into category dirs when intoCategories is true", () => {
+    const moves = planMoves(
+      [
+        {
+          sourcePath: "fixtures/eigen-extended/Untitled (1).docx",
+          fingerprint: fp({ strictErrorCodes: ["x-code"], contentHash: "b" }),
+        },
+      ],
+      { intoCategories: true, fixturesRoot: "tests/fixtures" },
+    );
+    expect(moves[0].to).toBe("tests/fixtures/broken/document.x-code.docx");
+  });
 
-    it("disambiguates colliding target names with a numeric suffix", () => {
-        const moves = planMoves(
-            [
-                { sourcePath: "a.docx", fingerprint: fp({ insCount: 1, contentHash: "c1" }) },
-                { sourcePath: "b.docx", fingerprint: fp({ insCount: 1, contentHash: "c2" }) },
-            ],
-            { intoCategories: true, fixturesRoot: "tests/fixtures" },
-        );
-        expect(moves.map((m) => m.to)).toEqual([
-            "tests/fixtures/working/document.suggesting-insertions.docx",
-            "tests/fixtures/working/document.suggesting-insertions-2.docx",
-        ]);
-    });
+  it("disambiguates colliding target names with a numeric suffix", () => {
+    const moves = planMoves(
+      [
+        { sourcePath: "a.docx", fingerprint: fp({ insCount: 1, contentHash: "c1" }) },
+        { sourcePath: "b.docx", fingerprint: fp({ insCount: 1, contentHash: "c2" }) },
+      ],
+      { intoCategories: true, fixturesRoot: "tests/fixtures" },
+    );
+    expect(moves.map((m) => m.to)).toEqual([
+      "tests/fixtures/working/document.suggesting-insertions.docx",
+      "tests/fixtures/working/document.suggesting-insertions-2.docx",
+    ]);
+  });
 
-    it("drops content duplicates, keeping the first source path", () => {
-        const moves = planMoves(
-            [
-                { sourcePath: "b.docx", fingerprint: fp({ insCount: 1, contentHash: "dup" }) },
-                { sourcePath: "a.docx", fingerprint: fp({ insCount: 1, contentHash: "dup" }) },
-            ],
-            { intoCategories: true, fixturesRoot: "tests/fixtures", dedup: true },
-        );
-        expect(moves).toHaveLength(1);
-        expect(moves[0].from).toBe("a.docx"); // lexicographically first kept
-    });
+  it("drops content duplicates, keeping the first source path", () => {
+    const moves = planMoves(
+      [
+        { sourcePath: "b.docx", fingerprint: fp({ insCount: 1, contentHash: "dup" }) },
+        { sourcePath: "a.docx", fingerprint: fp({ insCount: 1, contentHash: "dup" }) },
+      ],
+      { intoCategories: true, fixturesRoot: "tests/fixtures", dedup: true },
+    );
+    expect(moves).toHaveLength(1);
+    expect(moves[0].from).toBe("a.docx"); // lexicographically first kept
+  });
 
-    it("routes into a fixed category with content-first naming (eigen import)", () => {
-        const moves = planMoves(
-            [
-                // benign quirk + a table -> content wins, lands in eigen/
-                {
-                    sourcePath: "fixtures/eigen-extended/x.docx",
-                    fingerprint: fp({ strictErrorCodes: ["id-paraid-overflow"], tableCount: 1, contentHash: "e1" }),
-                },
-                // benign quirk, no content -> falls back to the error code
-                {
-                    sourcePath: "fixtures/eigen-extended/y.docx",
-                    fingerprint: fp({ strictErrorCodes: ["id-paraid-overflow"], contentHash: "e2" }),
-                },
-            ],
-            { intoCategories: true, fixturesRoot: "tests/fixtures", descriptorMode: "content-first", fixedCategory: "eigen" },
-        );
-        expect(moves.map((m) => m.to)).toEqual([
-            "tests/fixtures/eigen/document.table.docx",
-            "tests/fixtures/eigen/document.id-paraid-overflow.docx",
-        ]);
-    });
+  it("routes into a fixed category with content-first naming (eigen import)", () => {
+    const moves = planMoves(
+      [
+        // benign quirk + a table -> content wins, lands in eigen/
+        {
+          sourcePath: "fixtures/eigen-extended/x.docx",
+          fingerprint: fp({
+            strictErrorCodes: ["id-paraid-overflow"],
+            tableCount: 1,
+            contentHash: "e1",
+          }),
+        },
+        // benign quirk, no content -> falls back to the error code
+        {
+          sourcePath: "fixtures/eigen-extended/y.docx",
+          fingerprint: fp({ strictErrorCodes: ["id-paraid-overflow"], contentHash: "e2" }),
+        },
+      ],
+      {
+        intoCategories: true,
+        fixturesRoot: "tests/fixtures",
+        descriptorMode: "content-first",
+        fixedCategory: "eigen",
+      },
+    );
+    expect(moves.map((m) => m.to)).toEqual([
+      "tests/fixtures/eigen/document.table.docx",
+      "tests/fixtures/eigen/document.id-paraid-overflow.docx",
+    ]);
+  });
 });

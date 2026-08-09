@@ -38,25 +38,25 @@ import { makeEmptyPlaceholder, TEXTBOX_FIXTURE, unpackDocxFixture } from "./_fix
 const FIXTURE_PRESENT = existsSync(TEXTBOX_FIXTURE);
 
 describe.skipIf(!FIXTURE_PRESENT)("DOCXSchemaValidator text-box paragraph counts", () => {
-    it("does not count text-box inner paragraphs as body paragraphs (unpacked)", async () => {
-        await withTempDir(async (tmp) => {
-            const unpacked = await unpackDocxFixture(TEXTBOX_FIXTURE, tmp);
-            const validator = new DOCXSchemaValidator({
-                unpackedDir: unpacked,
-                originalFile: TEXTBOX_FIXTURE,
-            });
-            expect(validator.countParagraphsInUnpacked()).toBe(1);
-        });
+  it("does not count text-box inner paragraphs as body paragraphs (unpacked)", async () => {
+    await withTempDir(async (tmp) => {
+      const unpacked = await unpackDocxFixture(TEXTBOX_FIXTURE, tmp);
+      const validator = new DOCXSchemaValidator({
+        unpackedDir: unpacked,
+        originalFile: TEXTBOX_FIXTURE,
+      });
+      expect(validator.countParagraphsInUnpacked()).toBe(1);
     });
+  });
 
-    it("does not count text-box inner paragraphs as body paragraphs (original)", async () => {
-        await withTempDir(async (tmp) => {
-            const placeholder = await makeEmptyPlaceholder(tmp);
-            const validator = new DOCXSchemaValidator({
-                unpackedDir: placeholder,
-                originalFile: TEXTBOX_FIXTURE,
-            });
-            expect(await validator.countParagraphsInOriginal()).toBe(1);
-        });
+  it("does not count text-box inner paragraphs as body paragraphs (original)", async () => {
+    await withTempDir(async (tmp) => {
+      const placeholder = await makeEmptyPlaceholder(tmp);
+      const validator = new DOCXSchemaValidator({
+        unpackedDir: placeholder,
+        originalFile: TEXTBOX_FIXTURE,
+      });
+      expect(await validator.countParagraphsInOriginal()).toBe(1);
     });
+  });
 });

@@ -176,12 +176,12 @@ inventory).
 - **Defect 2:** `runDiffDocx` on an input with a malformed part returns a
   non-zero `code` and a report string; does not throw.
 - **Projection:**
-    - A plumbing-only change (add `w14:paraId`, reorder attributes, re-declare a
-      namespace, reflow whitespace) → `diffVisibleProjections` empty.
-    - A visible change (delete a paragraph's text, drop bold, resize a table,
-      swap an image target) → non-empty delta naming the change.
-    - Hidden (`vanish`) text contributes no projected text; `xml:space="preserve"`
-      spacing is retained.
+  - A plumbing-only change (add `w14:paraId`, reorder attributes, re-declare a
+    namespace, reflow whitespace) → `diffVisibleProjections` empty.
+  - A visible change (delete a paragraph's text, drop bold, resize a table,
+    swap an image target) → non-empty delta naming the change.
+  - Hidden (`vanish`) text contributes no projected text; `xml:space="preserve"`
+    spacing is retained.
 - **prove-benign:** a tiny before/after pair with plumbing-only drift → proven
   benign; a pair with a visible change → defect with delta.
 
