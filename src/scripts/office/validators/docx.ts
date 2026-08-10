@@ -334,7 +334,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "xml-syntax":
                 return issue.path?.startsWith("word/") || issue.path === "[Content_Types].xml";
             case "rels-broken":
-                return issue.message.includes("../customXml/") || issue.message.includes("media/") || /\/_rels\/|\.rels$/i.test(issue.message);
+                return (
+                    issue.message.includes("../customXml/") || issue.message.includes("media/") || /\/_rels\/|\.rels$/i.test(issue.message)
+                );
             case "rels-empty-element":
                 return issue.message.includes("missing required attribute");
             case "xsd-error":
@@ -517,7 +519,16 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 continue;
             }
             // <w:t> inside <w:del>
-            const tInDel = $$(".//w:del//w:t", dom) as Node[];
+            const tInDel = new Set<Node>();
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const delElems = dom.getElementsByTagNameNS(ns, "del");
+                for (let i = 0; i < delElems.length; i++) {
+                    const tElems = delElems[i].getElementsByTagNameNS(ns, "t");
+                    for (let j = 0; j < tElems.length; j++) {
+                        tInDel.add(tElems[j]);
+                    }
+                }
+            }
             for (const node of tInDel) {
                 const elem = node as Element;
                 const text = elem.firstChild?.nodeValue ?? "";
