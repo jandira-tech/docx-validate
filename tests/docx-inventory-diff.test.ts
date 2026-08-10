@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { DocxSemanticInventory } from "../src/scripts/office/validators/docx-diagnostics";
 import { diffDocxInventories, formatInventoryDiffMarkdown, inventoryDiffToIssues } from "../src/scripts/office/validators/docx-inventory-diff";
 
-function inv(entries: { path: string; category: string; label: string; unit: string; count: number }[]): DocxSemanticInventory {
+function inv(entries: Array<{ path: string; category: string; label: string; unit: string; count: number }>): DocxSemanticInventory {
     const counters = new Map<string, { path: string; category: string; label: string; unit: string; count: number }>();
     for (const e of entries) counters.set(`${e.path}\u0000${e.category}\u0000${e.label}\u0000${e.unit}`, e);
     return { counters };
