@@ -701,7 +701,7 @@
           "buttons_to_press": [],
           "window": "",
           "subrole": "AXDialog",
-          "text": "Microsoft Word / Word cannot open this file.  The encryption type used is not available, contact the author of the file. / More encryption types are available using the High Encryption Pack. / (/Users/arthrod/Library/Containers/com...)",
+          "text": "Microsoft Word / Word cannot open this file.  The encryption type used is not available, contact the author of the file. / More encryption types are available using the High Encryption Pack. / ($HOME/Library/Containers/com...)",
           "buttons": [
             "OK",
             "OK"
@@ -740,7 +740,7 @@
           "buttons_to_press": [],
           "window": "",
           "subrole": "AXDialog",
-          "text": "Microsoft Word / Word cannot open this file.  The encryption type used is not available, contact the author of the file. / More encryption types are available using the High Encryption Pack. / (/Users/arthrod/Library/Containers/com...)",
+          "text": "Microsoft Word / Word cannot open this file.  The encryption type used is not available, contact the author of the file. / More encryption types are available using the High Encryption Pack. / ($HOME/Library/Containers/com...)",
           "buttons": [
             "OK",
             "OK"

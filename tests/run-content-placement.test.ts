@@ -12,7 +12,7 @@
  * `validateRunContentPlacement`: EG_RunInnerContent (<w:tab>, <w:br>,
  * <w:drawing>, <w:pict>, <w:object>, <w:t>, …) is valid only inside <w:r>. As a
  * direct child of <w:p> it is dropped by Word on open (data loss). The rule
- * reports `run-content-misplaced` at error severity and is Word-blocking.
+ * reports `run-content-misplaced` at error severity, but is not Word-blocking.
  */
 
 import { promises as fs } from "node:fs";
@@ -22,7 +22,10 @@ import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
 
-const NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
+const NS = [
+    'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"',
+    'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"',
+].join(" ");
 
 async function validatorFor(dir: string, bodyXml: string): Promise<DOCXSchemaValidator> {
     await fs.mkdir(path.join(dir, "word"), { recursive: true });
@@ -63,6 +66,14 @@ describe("validateRunContentPlacement", () => {
             const result = await v.validateRunContentPlacement();
             expect(result.valid).toBe(true);
             expect(result.issues).toHaveLength(0);
+        });
+    });
+
+    it("flags a schema EG_RunInnerContent element missed by the original set (annotationRef)", async () => {
+        await withTempDir(async (dir) => {
+            const v = await validatorFor(dir, "<w:p><w:annotationRef/></w:p>");
+            const result = await v.validateRunContentPlacement();
+            expect(result.issues.some((i) => i.code === "run-content-misplaced")).toBe(true);
         });
     });
 

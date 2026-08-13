@@ -89,6 +89,13 @@ const RUN_INNER_CONTENT_LOCALS: ReadonlySet<string> = new Set([
     "dayLong",
     "monthLong",
     "yearLong",
+    "annotationRef",
+    "separator",
+    "continuationSeparator",
+    "footnoteRef",
+    "endnoteRef",
+    "ruby",
+    "contentPart",
 ]);
 const W14_NAMESPACE = "http://schemas.microsoft.com/office/word/2010/wordml";
 const W15_NAMESPACE = "http://schemas.microsoft.com/office/word/2012/wordml";
@@ -303,8 +310,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // `package` rel (embedded packages), so enforcing one type would false-
         // positive. `<a:blip>` uses `r:embed`, not `r:id`, so it is unaffected.
         hyperlink: "hyperlink",
-        headerreference: "header",
-        footerreference: "footer",
+        // headerReference / footerReference are derived by
+        // BaseSchemaValidator._getExpectedRelationshipType (`*Reference` → prefix).
     };
 
     /**
