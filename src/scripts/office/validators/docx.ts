@@ -54,6 +54,13 @@ export const WORD_2006_NAMESPACE = "http://schemas.openxmlformats.org/wordproces
 export const WORD_STRICT_NAMESPACE = "http://purl.oclc.org/ooxml/wordprocessingml/main";
 /** Python: `WORD_PARAGRAPH_NAMESPACES = (WORD_2006_NAMESPACE, WORD_STRICT_NAMESPACE)` */
 export const WORD_PARAGRAPH_NAMESPACES: readonly [string, string] = [WORD_2006_NAMESPACE, WORD_STRICT_NAMESPACE];
+/** OpenXmlPowerTools DocumentBuilder Insert — `PtOpenXml.ptOpenXml` in PtOpenXmlUtil.cs */
+const DOCUMENT_BUILDER_INSERT_NAMESPACE = "http://powertools.codeplex.com/documentbuilder/2011/insert";
+const DOCUMENT_BUILDER_INSERT_NAMESPACES: ReadonlySet<string> = new Set([DOCUMENT_BUILDER_INSERT_NAMESPACE]);
+// xmlns assignment only. Built from the same URI so the prefilter cannot drift from the allowlist.
+const DOCUMENT_BUILDER_INSERT_NS_DECL = new RegExp(
+    String.raw`xmlns(?::[\w.-]+)?\s*=\s*["']` + DOCUMENT_BUILDER_INSERT_NAMESPACE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + String.raw`["']`,
+);
 
 /**
  * Local names of EG_RunInnerContent elements — valid ONLY inside a `<w:r>`,
@@ -939,12 +946,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      */
     async validateDocumentBuilderInserts(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        // OpenXmlPowerTools `PtOpenXml.ptOpenXml` is this one URI. Sibling paths
-        // under `…/documentbuilder/` are not Insert directives.
-        const DOCUMENT_BUILDER_INSERT_NAMESPACES = new Set(["http://powertools.codeplex.com/documentbuilder/2011/insert"]);
-        // xmlns assignment only — do not treat a mention of the URI in text as a hit
-        // (CodeQL: incomplete URL substring sanitization on `.includes(uri)`).
-        const DB_NS_DECL = /xmlns(?::[\w.-]+)?\s*=\s*["']http:\/\/powertools\.codeplex\.com\/documentbuilder\/2011\/insert["']/;
         for (const xmlFile of this.xmlFiles) {
             const rel = this.relPath(xmlFile);
             // WML content parts only; customXml/ legitimately carries foreign content.
@@ -957,7 +958,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             } catch {
                 continue;
             }
-            if (!DB_NS_DECL.test(content)) continue;
+            if (!DOCUMENT_BUILDER_INSERT_NS_DECL.test(content)) continue;
             let dom: Document;
             try {
                 dom = parseXml(content);
