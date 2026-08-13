@@ -15,11 +15,13 @@ const START = "**Desired Conversion Methodology** means";
 const END = "`CLAUDE.md`.";
 
 function dcmSection(file: string): string {
-    const text = readFileSync(path.join(ROOT, file), "utf8");
+    const text = readFileSync(path.join(ROOT, file), "utf8").replace(/\r\n/g, "\n");
     const i = text.indexOf(START);
     expect(i, `${file} must contain the DCM definition`).toBeGreaterThanOrEqual(0);
+    expect(text.lastIndexOf(START), `${file} must contain the DCM start marker exactly once`).toBe(i);
     const j = text.indexOf(END, i);
     expect(j, `${file} DCM definition must end with the clause (ii) sentence`).toBeGreaterThan(i);
+    expect(text.lastIndexOf(END), `${file} must contain the DCM end marker exactly once`).toBe(j);
     return text.slice(i, j + END.length);
 }
 

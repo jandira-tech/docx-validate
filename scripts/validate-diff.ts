@@ -20,6 +20,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { runCli } from "../src/lib/run-cli";
 import { validate } from "../src/scripts/office/validate";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -42,10 +43,21 @@ function loadFixtures(): FixtureEntry[] {
 	return raw.fixtures;
 }
 
+export function parseFlag(argv: string[], name: string): string | undefined {
+	const i = argv.indexOf(name);
+	if (i === -1 || i + 1 >= argv.length) return undefined;
+	const val = argv[i + 1];
+	if (!val || val.startsWith("-")) return undefined;
+	return val;
+}
+
+export function errorMessage(err: unknown): string {
+	return err instanceof Error ? err.message : String(err);
+}
+
 function flag(name: string): string | undefined {
-	const a = process.argv.slice(3);
-	const i = a.indexOf(name);
-	return i !== -1 && i + 1 < a.length ? a[i + 1] : undefined;
+	// Skip the node binary, script path, and subcommand (`build`/`report`).
+	return parseFlag(process.argv.slice(3), name);
 }
 
 async function snapshot(absPath: string): Promise<Snapshot> {
@@ -70,7 +82,7 @@ async function cmdBuild(): Promise<number> {
 		try {
 			snaps[fx.name] = await snapshot(path.resolve(REPO_ROOT, fx.path));
 		} catch (e) {
-			snaps[fx.name] = { error: (e as Error).message };
+			snaps[fx.name] = { error: errorMessage(e) };
 		}
 	}
 	writeFileSync(path.resolve(out), `${JSON.stringify(snaps, null, 2)}\n`);
@@ -156,12 +168,17 @@ async function cmdReport(): Promise<number> {
 	return anyDrift ? 1 : 0;
 }
 
-async function main(): Promise<number> {
-	const cmd = process.argv[2];
-	if (cmd === "build") return cmdBuild();
-	if (cmd === "report") return cmdReport();
-	console.error("Usage: validate-diff.ts <build|report> [flags]");
-	return 2;
+export async function main(argv: string[] = process.argv): Promise<number> {
+	try {
+		const cmd = argv[2];
+		if (cmd === "build") return await cmdBuild();
+		if (cmd === "report") return await cmdReport();
+		console.error("Usage: validate-diff.ts <build|report> [flags]");
+		return 2;
+	} catch (err) {
+		console.error(`Error: ${errorMessage(err)}`);
+		return 1;
+	}
 }
 
-process.exit(await main());
+runCli(import.meta.url, () => main());
