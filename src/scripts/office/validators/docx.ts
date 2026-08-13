@@ -44,6 +44,7 @@
 import { default as JSZip } from "jszip";
 import { promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
+import { nextSecureLongHexNumber } from "../../../lib/secure-id";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
 import { makeSelect, parseXml, serializeXml } from "../../../lib/xml-helpers";
@@ -238,7 +239,6 @@ const TRACKING_TOKEN_REGEX = /\[\[DOCX_(?:INS|DEL|CMT)_(?:START|END):[^\]]*?\]\]
 
 const MAX_PARA_ID = 0x80000000;
 const MAX_DURABLE_ID = 0x7fffffff;
-const MAX_RANDOM_DURABLE = 0x7ffffffe;
 
 export interface ParagraphCounts {
     original: number;
@@ -2615,7 +2615,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     }
 
                     if (needsRepair) {
-                        const value = 1 + Math.floor(Math.random() * MAX_RANDOM_DURABLE);
+                        const value = nextSecureLongHexNumber();
                         const newId = base === "numbering.xml" ? String(value) : value.toString(16).toUpperCase().padStart(8, "0");
                         // setAttributeNS keeps the prefix binding intact.
                         elem.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", newId);

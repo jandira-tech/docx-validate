@@ -48,6 +48,7 @@ import { fileURLToPath } from "node:url";
 
 import { Command } from "commander";
 import { commanderExitCode, runCli } from "../lib/run-cli";
+import { nextSecureLongHexNumber } from "../lib/secure-id";
 import { parseXml, serializeXml } from "../lib/xml-helpers";
 
 const TEMPLATE_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "templates");
@@ -102,8 +103,7 @@ Nest markers inside parent {pid}'s markers (markers must be direct children of w
  * which also clears the tighter durableId cap of 0x7FFFFFFF.
  */
 export function generateHexId(): string {
-    const n = 1 + Math.floor(Math.random() * 0x7ffffffe);
-    return n.toString(16).toUpperCase().padStart(8, "0");
+    return nextSecureLongHexNumber().toString(16).toUpperCase().padStart(8, "0");
 }
 
 const SMART_QUOTE_ENTITIES: Record<string, string> = {
