@@ -95,6 +95,68 @@ describe("DOCXSchemaValidator", () => {
                 expect(result.valid).toBe(true);
             });
         });
+
+        it("does NOT flag <w:t> inside a drawing/text box that is part of the deleted run", async () => {
+            // Deleting a whole drawing (e.g. a text box) wraps the run in <w:del>;
+            // Word keeps the shape's internal txbxContent text as <w:t> (the shape
+            // is one opaque deleted object). That is valid, not run-level deleted
+            // text, so it must not be reported as del-contains-t.
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:del w:id="1"><w:r><w:drawing><w:txbxContent><w:p><w:r><w:t>inside textbox</w:t></w:r></w:p></w:txbxContent></w:drawing></w:r></w:del></w:p>`,
+                    ),
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateDeletions();
+                expect(result.issues.some((i) => i.code === "del-contains-t")).toBe(false);
+            });
+        });
+
+        it("does NOT flag <w:t> inside a VML pict that is part of the deleted run", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:del w:id="1"><w:r><w:pict><w:txbxContent><w:p><w:r><w:t>inside pict</w:t></w:r></w:p></w:txbxContent></w:pict></w:r></w:del></w:p>`,
+                    ),
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateDeletions();
+                expect(result.issues.some((i) => i.code === "del-contains-t")).toBe(false);
+            });
+        });
+
+        it("still flags a genuine textbox-internal deletion (<w:del> inside txbxContent)", async () => {
+            // Here the <w:del> is INSIDE the text box, so the drawing is NOT a
+            // descendant of the del — a real run-level deletion that must be flagged.
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:r><w:drawing><w:txbxContent><w:p><w:del w:id="1"><w:r><w:t>bad</w:t></w:r></w:del></w:p></w:txbxContent></w:drawing></w:r></w:p>`,
+                    ),
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateDeletions();
+                expect(result.issues.some((i) => i.code === "del-contains-t")).toBe(true);
+            });
+        });
+
+        it("does NOT flag <w:instrText> inside a deleted drawing", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:del w:id="1"><w:r><w:drawing><w:txbxContent><w:p><w:r><w:instrText>HYPERLINK</w:instrText></w:r></w:p></w:txbxContent></w:drawing></w:r></w:del></w:p>`,
+                    ),
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateDeletions();
+                expect(result.issues.some((i) => i.code === "del-contains-instrtext")).toBe(false);
+            });
+        });
     });
 
     describe("validateInsertions", () => {
