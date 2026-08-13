@@ -102,7 +102,7 @@ describe("validateDocumentBuilderInserts", () => {
         await withTempDir(async (dir) => {
             await write(
                 path.join(dir, "word", "header1.xml"),
-                `<?xml version="1.0"?><w:hdr ${W_NS}><w:p><w:r><w:t>see http://powertools.codeplex.com/documentbuilder</w:t></w:r></w:p></w:hdr>`,
+                `<?xml version="1.0"?><w:hdr ${W_NS}><w:p><w:r><w:t>see http://powertools.codeplex.com/documentbuilder/2011/insert</w:t></w:r></w:p></w:hdr>`,
             );
             const v = new DOCXSchemaValidator({ unpackedDir: dir });
             const result = await v.validateDocumentBuilderInserts();

@@ -57,10 +57,11 @@ export const WORD_PARAGRAPH_NAMESPACES: readonly [string, string] = [WORD_2006_N
 /** OpenXmlPowerTools DocumentBuilder Insert — `PtOpenXml.ptOpenXml` in PtOpenXmlUtil.cs */
 const DOCUMENT_BUILDER_INSERT_NAMESPACE = "http://powertools.codeplex.com/documentbuilder/2011/insert";
 const DOCUMENT_BUILDER_INSERT_NAMESPACES: ReadonlySet<string> = new Set([DOCUMENT_BUILDER_INSERT_NAMESPACE]);
-// xmlns assignment only. Built from the same URI so the prefilter cannot drift from the allowlist.
-const DOCUMENT_BUILDER_INSERT_NS_DECL = new RegExp(
-    String.raw`xmlns(?::[\w.-]+)?\s*=\s*["']` + DOCUMENT_BUILDER_INSERT_NAMESPACE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + String.raw`["']`,
-);
+
+/** True when `xml` declares the Insert URI as an attribute value (`xmlns` or `xmlns:prefix`). */
+function declaresDocumentBuilderInsertNs(xml: string): boolean {
+    return xml.includes(`="${DOCUMENT_BUILDER_INSERT_NAMESPACE}"`) || xml.includes(`='${DOCUMENT_BUILDER_INSERT_NAMESPACE}'`);
+}
 
 /**
  * Local names of EG_RunInnerContent elements — valid ONLY inside a `<w:r>`,
@@ -958,7 +959,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             } catch {
                 continue;
             }
-            if (!DOCUMENT_BUILDER_INSERT_NS_DECL.test(content)) continue;
+            if (!declaresDocumentBuilderInsertNs(content)) continue;
             let dom: Document;
             try {
                 dom = parseXml(content);
