@@ -74,6 +74,18 @@ describe("validateDocumentBuilderInserts", () => {
         });
     });
 
+    it("does not flag a lookalike namespace that only shares the DocumentBuilder prefix", async () => {
+        await withTempDir(async (dir) => {
+            await write(
+                path.join(dir, "word", "header1.xml"),
+                `<?xml version="1.0"?><w:hdr ${W_NS}><x:Insert xmlns:x="http://powertools.codeplex.com/documentbuilder-evil"/></w:hdr>`,
+            );
+            const v = new DOCXSchemaValidator({ unpackedDir: dir });
+            const result = await v.validateDocumentBuilderInserts();
+            expect(result.valid).toBe(true);
+        });
+    });
+
     it("does not flag the DocumentBuilder URI when it appears only as text, not as a namespace", async () => {
         await withTempDir(async (dir) => {
             await write(

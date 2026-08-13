@@ -938,10 +938,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      */
     async validateDocumentBuilderInserts(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const DB_NS_PREFIX = "http://powertools.codeplex.com/documentbuilder";
+        const DB_NS_PREFIX = "http://powertools.codeplex.com/documentbuilder/";
         // xmlns assignment only — do not treat a mention of the URI in text as a hit
         // (CodeQL: incomplete URL substring sanitization on `.includes(uri)`).
-        const DB_NS_DECL = /xmlns(?::[\w.-]+)?\s*=\s*["']http:\/\/powertools\.codeplex\.com\/documentbuilder/;
+        // Trailing slash so `documentbuilder-evil` is not a hit.
+        const DB_NS_DECL = /xmlns(?::[\w.-]+)?\s*=\s*["']http:\/\/powertools\.codeplex\.com\/documentbuilder\//;
         for (const xmlFile of this.xmlFiles) {
             const rel = this.relPath(xmlFile);
             // WML content parts only; customXml/ legitimately carries foreign content.
