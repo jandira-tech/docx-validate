@@ -86,6 +86,18 @@ describe("validateDocumentBuilderInserts", () => {
         });
     });
 
+    it("does not flag a sibling path under documentbuilder/ that is not the Insert URI", async () => {
+        await withTempDir(async (dir) => {
+            await write(
+                path.join(dir, "word", "header1.xml"),
+                `<?xml version="1.0"?><w:hdr ${W_NS}><x:Insert xmlns:x="http://powertools.codeplex.com/documentbuilder/unrelated-extension"/></w:hdr>`,
+            );
+            const v = new DOCXSchemaValidator({ unpackedDir: dir });
+            const result = await v.validateDocumentBuilderInserts();
+            expect(result.valid).toBe(true);
+        });
+    });
+
     it("does not flag the DocumentBuilder URI when it appears only as text, not as a namespace", async () => {
         await withTempDir(async (dir) => {
             await write(
@@ -118,7 +130,9 @@ describe("validateDocPropsBooleans", () => {
         await withTempDir(async (dir) => {
             await write(
                 path.join(dir, "docProps", "app.xml"),
-                app(`<ScaleCrop>false\n  </ScaleCrop><LinksUpToDate>false\n  </LinksUpToDate><SharedDoc>false\n  </SharedDoc><HyperlinksChanged>false\n  </HyperlinksChanged>`),
+                app(
+                    `<ScaleCrop>false\n  </ScaleCrop><LinksUpToDate>false\n  </LinksUpToDate><SharedDoc>false\n  </SharedDoc><HyperlinksChanged>false\n  </HyperlinksChanged>`,
+                ),
             );
             const v = new DOCXSchemaValidator({ unpackedDir: dir });
             const result = await v.validateDocPropsBooleans();
@@ -131,7 +145,9 @@ describe("validateDocPropsBooleans", () => {
         await withTempDir(async (dir) => {
             await write(
                 path.join(dir, "docProps", "app.xml"),
-                app(`<ScaleCrop>false</ScaleCrop><LinksUpToDate>false</LinksUpToDate><SharedDoc>false</SharedDoc><HyperlinksChanged>true</HyperlinksChanged>`),
+                app(
+                    `<ScaleCrop>false</ScaleCrop><LinksUpToDate>false</LinksUpToDate><SharedDoc>false</SharedDoc><HyperlinksChanged>true</HyperlinksChanged>`,
+                ),
             );
             const v = new DOCXSchemaValidator({ unpackedDir: dir });
             const result = await v.validateDocPropsBooleans();

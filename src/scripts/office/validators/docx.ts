@@ -926,7 +926,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     /**
      * Detect unresolved OpenXmlPowerTools DocumentBuilder `<Insert>` directives
-     * (namespace `http://powertools.codeplex.com/documentbuilder/...`) left in a
+     * (namespace `http://powertools.codeplex.com/documentbuilder/2011/insert`,
+     * the only URI `PtOpenXml.ptOpenXml` publishes) left in a
      * WordprocessingML content part. Word cannot open a document whose
      * header/footer/body content model contains this foreign element — it reports
      * "Word experienced an error trying to open the file" (a hard OPEN_ERROR).
@@ -938,11 +939,12 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      */
     async validateDocumentBuilderInserts(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const DB_NS_PREFIX = "http://powertools.codeplex.com/documentbuilder/";
+        // OpenXmlPowerTools `PtOpenXml.ptOpenXml` is this one URI. Sibling paths
+        // under `…/documentbuilder/` are not Insert directives.
+        const DOCUMENT_BUILDER_INSERT_NAMESPACES = new Set(["http://powertools.codeplex.com/documentbuilder/2011/insert"]);
         // xmlns assignment only — do not treat a mention of the URI in text as a hit
         // (CodeQL: incomplete URL substring sanitization on `.includes(uri)`).
-        // Trailing slash so `documentbuilder-evil` is not a hit.
-        const DB_NS_DECL = /xmlns(?::[\w.-]+)?\s*=\s*["']http:\/\/powertools\.codeplex\.com\/documentbuilder\//;
+        const DB_NS_DECL = /xmlns(?::[\w.-]+)?\s*=\s*["']http:\/\/powertools\.codeplex\.com\/documentbuilder\/2011\/insert["']/;
         for (const xmlFile of this.xmlFiles) {
             const rel = this.relPath(xmlFile);
             // WML content parts only; customXml/ legitimately carries foreign content.
@@ -966,7 +968,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             for (let i = 0; i < all.length; i += 1) {
                 const elem = all.item(i);
                 const ns = elem?.namespaceURI ?? "";
-                if (ns.startsWith(DB_NS_PREFIX)) {
+                if (DOCUMENT_BUILDER_INSERT_NAMESPACES.has(ns)) {
                     issues.push({
                         severity: "error",
                         message:
