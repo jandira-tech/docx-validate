@@ -89,6 +89,55 @@ describe("validate", () => {
         expect(result.issues.some((i) => i.severity === "error")).toBe(true);
     });
 
+    it("does not throw on a non-ZIP / encrypted / corrupted package; returns an error verdict", async () => {
+        await withTempDir(async (dir) => {
+            // Encrypted OOXML is a CFB/OLE compound file (D0CF11E0 magic), not a
+            // ZIP; a truncated/corrupted .docx fails the same way. JSZip throws
+            // "Can't find end of central directory". validate() must surface that
+            // as a structured error issue, never crash — Word rejects these files,
+            // so they must read as invalid (this profile must keep it blocking).
+            const bad = path.join(dir, "encrypted.docx");
+            await fs.writeFile(bad, Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1, 0x00, 0x00, 0x00, 0x00]));
+            const result = await validate(bad, { profile: "word-valid" });
+            expect(result.suffix).toBe(".docx");
+            expect(result.valid).toBe(false);
+            expect(result.issues.some((i) => i.severity === "error" && i.code === "package-open-failed")).toBe(true);
+        });
+    });
+
+    it("does not label a zip-slip extract failure as package-open-failed", async () => {
+        await withTempDir(async (dir) => {
+            const zip = new JSZip();
+            zip.file(
+                "[Content_Types].xml",
+                '<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>',
+            );
+            zip.file("word/document.xml", '<?xml version="1.0"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>');
+            const buf = await zip.generateAsync({ type: "nodebuffer" });
+            const docxPath = path.join(dir, "slip.docx");
+            await fs.writeFile(docxPath, buf);
+
+            const originalLoadAsync = JSZip.loadAsync;
+            JSZip.loadAsync = async function loadAsyncPatched(data, options) {
+                const loaded = await originalLoadAsync.call(this, data, options);
+                loaded.files["../../escaped.txt"] = {
+                    name: "../../escaped.txt",
+                    dir: false,
+                    async: async () => Buffer.from("malicious"),
+                } as unknown as JSZip.JSZipObject;
+                return loaded;
+            };
+            try {
+                const result = await validate(docxPath);
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "package-open-failed")).toBe(false);
+                expect(result.issues.some((i) => i.code === "package-extract-failed")).toBe(true);
+            } finally {
+                JSZip.loadAsync = originalLoadAsync;
+            }
+        });
+    });
+
     it("flags paraId overflow in a packed DOCX (negative case)", async () => {
         const docxPath = path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx");
         const result = await validate(docxPath);
