@@ -54,6 +54,14 @@ export const WORD_2006_NAMESPACE = "http://schemas.openxmlformats.org/wordproces
 export const WORD_STRICT_NAMESPACE = "http://purl.oclc.org/ooxml/wordprocessingml/main";
 /** Python: `WORD_PARAGRAPH_NAMESPACES = (WORD_2006_NAMESPACE, WORD_STRICT_NAMESPACE)` */
 export const WORD_PARAGRAPH_NAMESPACES: readonly [string, string] = [WORD_2006_NAMESPACE, WORD_STRICT_NAMESPACE];
+/** OpenXmlPowerTools DocumentBuilder Insert — `PtOpenXml.ptOpenXml` in PtOpenXmlUtil.cs */
+const DOCUMENT_BUILDER_INSERT_NAMESPACE = "http://powertools.codeplex.com/documentbuilder/2011/insert";
+const DOCUMENT_BUILDER_INSERT_NAMESPACES: ReadonlySet<string> = new Set([DOCUMENT_BUILDER_INSERT_NAMESPACE]);
+
+/** True when `xml` declares the Insert URI as an attribute value (`xmlns` or `xmlns:prefix`). */
+function declaresDocumentBuilderInsertNs(xml: string): boolean {
+    return xml.includes(`="${DOCUMENT_BUILDER_INSERT_NAMESPACE}"`) || xml.includes(`='${DOCUMENT_BUILDER_INSERT_NAMESPACE}'`);
+}
 
 /**
  * Local names of EG_RunInnerContent elements — valid ONLY inside a `<w:r>`,
@@ -926,7 +934,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     /**
      * Detect unresolved OpenXmlPowerTools DocumentBuilder `<Insert>` directives
-     * (namespace `http://powertools.codeplex.com/documentbuilder/...`) left in a
+     * (namespace `http://powertools.codeplex.com/documentbuilder/2011/insert`,
+     * the only URI `PtOpenXml.ptOpenXml` publishes) left in a
      * WordprocessingML content part. Word cannot open a document whose
      * header/footer/body content model contains this foreign element — it reports
      * "Word experienced an error trying to open the file" (a hard OPEN_ERROR).
@@ -938,11 +947,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      */
     async validateDocumentBuilderInserts(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const DB_NS_PREFIX = "http://powertools.codeplex.com/documentbuilder/";
-        // xmlns assignment only — do not treat a mention of the URI in text as a hit
-        // (CodeQL: incomplete URL substring sanitization on `.includes(uri)`).
-        // Trailing slash so `documentbuilder-evil` is not a hit.
-        const DB_NS_DECL = /xmlns(?::[\w.-]+)?\s*=\s*["']http:\/\/powertools\.codeplex\.com\/documentbuilder\//;
         for (const xmlFile of this.xmlFiles) {
             const rel = this.relPath(xmlFile);
             // WML content parts only; customXml/ legitimately carries foreign content.
@@ -955,7 +959,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             } catch {
                 continue;
             }
-            if (!DB_NS_DECL.test(content)) continue;
+            if (!declaresDocumentBuilderInsertNs(content)) continue;
             let dom: Document;
             try {
                 dom = parseXml(content);
@@ -966,7 +970,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             for (let i = 0; i < all.length; i += 1) {
                 const elem = all.item(i);
                 const ns = elem?.namespaceURI ?? "";
-                if (ns.startsWith(DB_NS_PREFIX)) {
+                if (DOCUMENT_BUILDER_INSERT_NAMESPACES.has(ns)) {
                     issues.push({
                         severity: "error",
                         message:
