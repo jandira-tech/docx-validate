@@ -250,40 +250,36 @@ export interface ParagraphCounts {
 const isWordDel = (el: Element): boolean =>
     el.localName === "del" && (el.namespaceURI === WORD_2006_NAMESPACE || el.namespaceURI === WORD_STRICT_NAMESPACE);
 
-const hasWordDelAncestor = (node: Node): boolean => {
-    let curr = node.parentNode;
-    while (curr) {
-        if (curr.nodeType === 1 && isWordDel(curr as Element)) {
-            return true;
-        }
-        curr = curr.parentNode;
-    }
-    return false;
-};
-
 /**
- * True when `node` sits inside a `<w:drawing>`/`<w:pict>` that is itself
- * inside a `<w:del>` — the XPath
- * `ancestor::w:drawing[ancestor::w:del]` / `ancestor::w:pict[ancestor::w:del]`.
+ * One ancestor walk implementing `.//w:del//w:t[not(ancestor::w:drawing[ancestor::w:del])]`.
  */
-const isInsideDeletedDrawingOrPict = (node: Node): boolean => {
+const isDeletedRunText = (node: Node): boolean => {
+    let hasDel = false;
+    let sawDrawingOrPict = false;
+    let drawingHasDelAncestor = false;
     let curr = node.parentNode;
     while (curr) {
         if (curr.nodeType === 1) {
             const el = curr as Element;
-            if ((el.localName === "drawing" || el.localName === "pict") && hasWordDelAncestor(el)) {
-                return true;
+            if (isWordDel(el)) {
+                hasDel = true;
+                if (sawDrawingOrPict) {
+                    drawingHasDelAncestor = true;
+                }
+            }
+            if (el.localName === "drawing" || el.localName === "pict") {
+                sawDrawingOrPict = true;
             }
         }
         curr = curr.parentNode;
     }
-    return false;
+    return hasDel && !drawingHasDelAncestor;
 };
 
 const collectDeletedRunText = (root: Document | Element, ns: string, localName: string): Element[] => {
     const out: Element[] = [];
     for (const el of getElementsByTagNameNSAll(root, ns, localName)) {
-        if (hasWordDelAncestor(el) && !isInsideDeletedDrawingOrPict(el)) {
+        if (isDeletedRunText(el)) {
             out.push(el);
         }
     }
