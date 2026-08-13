@@ -42,6 +42,7 @@
  *   <w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:commentReference w:id="0"/></w:r>
  */
 
+import { randomInt } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -102,7 +103,8 @@ Nest markers inside parent {pid}'s markers (markers must be direct children of w
  * which also clears the tighter durableId cap of 0x7FFFFFFF.
  */
 export function generateHexId(): string {
-    const n = 1 + Math.floor(Math.random() * 0x7ffffffe);
+    // Security: Use cryptographically secure random generation to prevent ID prediction and collisions
+    const n = randomInt(1, 0x7fffffff);
     return n.toString(16).toUpperCase().padStart(8, "0");
 }
 
@@ -122,12 +124,7 @@ function encodeSmartQuotes(text: string): string {
 }
 
 function escapeXml(text: string): string {
-    return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&apos;");
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 }
 
 function formatTemplate(tpl: string, vars: Record<string, string | number>): string {
