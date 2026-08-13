@@ -54,6 +54,50 @@ export const WORD_2006_NAMESPACE = "http://schemas.openxmlformats.org/wordproces
 export const WORD_STRICT_NAMESPACE = "http://purl.oclc.org/ooxml/wordprocessingml/main";
 /** Python: `WORD_PARAGRAPH_NAMESPACES = (WORD_2006_NAMESPACE, WORD_STRICT_NAMESPACE)` */
 export const WORD_PARAGRAPH_NAMESPACES: readonly [string, string] = [WORD_2006_NAMESPACE, WORD_STRICT_NAMESPACE];
+
+/**
+ * Local names of EG_RunInnerContent elements — valid ONLY inside a `<w:r>`,
+ * never as a direct child of `<w:p>` (where they are not in EG_PContent and
+ * Word drops them on open). Used by `validateRunContentPlacement`. Deliberately
+ * excludes elements that ARE valid paragraph-level siblings of runs (w:r,
+ * w:hyperlink, w:fldSimple, w:sdt, w:smartTag, w:bookmarkStart/End,
+ * w:commentRangeStart/End, w:ins, w:del, w:moveFrom/To, math, …).
+ */
+const RUN_INNER_CONTENT_LOCALS: ReadonlySet<string> = new Set([
+    "t",
+    "tab",
+    "br",
+    "cr",
+    "drawing",
+    "pict",
+    "object",
+    "sym",
+    "softHyphen",
+    "noBreakHyphen",
+    "ptab",
+    "fldChar",
+    "instrText",
+    "delText",
+    "delInstrText",
+    "lastRenderedPageBreak",
+    "footnoteReference",
+    "endnoteReference",
+    "commentReference",
+    "pgNum",
+    "dayShort",
+    "monthShort",
+    "yearShort",
+    "dayLong",
+    "monthLong",
+    "yearLong",
+    "annotationRef",
+    "separator",
+    "continuationSeparator",
+    "footnoteRef",
+    "endnoteRef",
+    "ruby",
+    "contentPart",
+]);
 const W14_NAMESPACE = "http://schemas.microsoft.com/office/word/2010/wordml";
 const W15_NAMESPACE = "http://schemas.microsoft.com/office/word/2012/wordml";
 const W16CEX_NAMESPACE = "http://schemas.microsoft.com/office/word/2018/wordml/cex";
@@ -287,7 +331,27 @@ const collectDeletedRunText = (root: Document | Element, ns: string, localName: 
 };
 
 export class DOCXSchemaValidator extends BaseSchemaValidator {
-    protected readonly elementRelationshipTypes: Record<string, string> = {};
+    /**
+     * Element (lower-cased local name) → required `r:id` relationship-type suffix.
+     * Enables the `rels-id-mismatch` check in `validateAllRelationshipIds`: an
+     * `r:id` that RESOLVES in the sidecar but to the WRONG kind of part. The XSD
+     * cannot catch this (rId target semantics are not schema-constrained), yet
+     * real Microsoft Word REFUSES to open such a file ("Word found unreadable
+     * content"). Proven word-first: a redline whose inserted `<w:hyperlink r:id>`
+     * collided with the destination's `header`/`footer`/`fontTable`/`theme`
+     * relationships passed XSD validation with 0 errors but Word rejected it.
+     * Only `r:id`-bearing elements are listed (image `<a:blip>` uses `r:embed`,
+     * which the existence check already covers).
+     */
+    protected readonly elementRelationshipTypes: Record<string, string> = {
+        // Unambiguous `r:id` invariants only. `<o:OLEObject>` is deliberately
+        // omitted: its r:id legitimately targets EITHER an `oleObject` OR a
+        // `package` rel (embedded packages), so enforcing one type would false-
+        // positive. `<a:blip>` uses `r:embed`, not `r:id`, so it is unaffected.
+        hyperlink: "hyperlink",
+        // headerReference / footerReference are derived by
+        // BaseSchemaValidator._getExpectedRelationshipType (`*Reference` → prefix).
+    };
 
     /**
      * Cached parse of `word/document.xml` from the original `.docx` zip.
@@ -323,6 +387,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             this.validateCommentThreading(),
             this.validateNoTrackingTokens(),
             this.validateAllParagraphsHaveParaId(),
+            this.validateRunContentPlacement(),
             this.validateStyleReferences(),
             this.validateStyleDefaults(),
             this.validateNoBom(),
@@ -354,6 +419,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     private isWordBlockingIssue(issue: ValidationIssue): boolean {
         switch (issue.code) {
+            // NB: run-content-misplaced is NOT Word-blocking — a real Word probe
+            // (open -g, no focus steal) opens bare <w:tab>/<w:br>/<w:drawing> under
+            // <w:p> CLEANLY (Word silently relocates/drops the run content). It
+            // stays an error in lenient/strict (structural invalidity + silent
+            // data loss) but the word-valid openability profile tolerates it.
             case "comment-thread-commentid-paraid-orphan":
             case "comment-thread-commentid-missing-paraid":
             case "comment-thread-commentid-missing-durableid":
@@ -368,12 +438,25 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-content-type-invalid":
             case "word-drawing-scalar-whitespace":
                 return true;
+            // NB: comment-orphan-start/end and comment-marker-missing are NOT
+            // promoted here. Empirically Word TOLERATES an orphan comment-range
+            // marker (a commentRangeStart with no End, referencing a missing
+            // comment) — verified: comments.unmatched-comment-marker_from_html.docx
+            // carries the exact same orphan and opens cleanly in real Word. So an
+            // orphan marker does not predict Word rejection; keep it a warning.
             case "rels-missing-sidecar":
                 return !/^word\/(?:header|footer)\d*\.xml$/i.test(issue.path ?? "");
             case "xml-syntax":
                 return issue.path?.startsWith("word/") || issue.path === "[Content_Types].xml";
             case "rels-broken":
-                return issue.message.includes("../customXml/") || issue.message.includes("media/") || /\/_rels\/|\.rels$/i.test(issue.message);
+                // NB: a broken media/ rel (image Target absent) is NOT word-blocking:
+                // real Word shows a missing-image placeholder and opens cleanly
+                // (verified: word-tolerated-broken-media-rel.docx). Broken media alone
+                // does not predict rejection — files unreadable "with" a broken media
+                // ref fail for a separate, undetected reason. Stays an error in
+                // lenient/strict; only the word-valid openability profile tolerates it.
+                // Structural rels (customXml, nested .rels) remain word-blocking.
+                return issue.message.includes("../customXml/") || /\/_rels\/|\.rels$/i.test(issue.message);
             case "rels-empty-element":
                 return issue.message.includes("missing required attribute");
             case "xsd-error":
@@ -972,6 +1055,61 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         path: this.relPath(xmlFile),
                         code: "textid-missing-element",
                     });
+                }
+            }
+        }
+        return finalize(issues);
+    }
+
+    // ----- run-inner content placement ----------------------------------------
+
+    /**
+     * EG_RunInnerContent elements (`<w:t>`, `<w:tab>`, `<w:br>`, `<w:cr>`,
+     * `<w:drawing>`, `<w:pict>`, `<w:object>`, `<w:sym>`, `<w:softHyphen>`,
+     * `<w:noBreakHyphen>`, `<w:ptab>`, `<w:fldChar>`, `<w:instrText>`,
+     * `<w:delText>`, `<w:lastRenderedPageBreak>`, the note/comment references,
+     * …) are valid ONLY inside a `<w:r>`. When emitted as a DIRECT child of
+     * `<w:p>` — a sibling of runs, e.g. `<w:r>…</w:r><w:tab/><w:r>…` produced by
+     * a foreign pipeline that forgot to wrap them — they are not in EG_PContent
+     * (invalid OOXML). A real Word probe shows Word OPENS such files cleanly and
+     * silently relocates/drops the misplaced content — so this is structural
+     * invalidity + silent data loss, NOT a Word-openability failure: an error in
+     * lenient/strict, tolerated by the word-valid profile. The bare XSD
+     * validator surfaces it only generically ("this element is not expected");
+     * this dedicated rule names the misplacement.
+     *
+     * Reports `run-content-misplaced` at "error" severity.
+     */
+    async validateRunContentPlacement(): Promise<ValidationResult> {
+        const issues: ValidationIssue[] = [];
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const paragraphs = dom.getElementsByTagNameNS(ns, "p");
+                for (let i = 0; i < paragraphs.length; i += 1) {
+                    const para = paragraphs.item(i);
+                    if (!para) continue;
+                    for (let child = para.firstChild; child; child = child.nextSibling) {
+                        if (child.nodeType !== 1) continue;
+                        const elem = child as Element;
+                        if (elem.namespaceURI !== ns) continue;
+                        const local = elem.localName || elem.tagName.split(":").pop() || "";
+                        if (!RUN_INNER_CONTENT_LOCALS.has(local)) continue;
+                        issues.push({
+                            severity: "error",
+                            message:
+                                `<w:${local}> is run-inner content (EG_RunInnerContent) placed ` +
+                                `directly under <w:p>; it must sit inside a <w:r>. Word drops ` +
+                                `misplaced run content on open.`,
+                            path: this.relPath(xmlFile),
+                            code: "run-content-misplaced",
+                        });
+                    }
                 }
             }
         }
@@ -2899,9 +3037,43 @@ function finalize(issues: ValidationIssue[]): ValidationResult {
     return { valid: issues.every((i) => i.severity !== "error"), issues };
 }
 
+/**
+ * Element local-names whose XSD "this element is not expected" (content-model)
+ * violation makes real Microsoft Word refuse the file (OPEN_ERROR / unreadable),
+ * as opposed to silently relocating it. Derived empirically from a real-Word
+ * openability probe over a 1300+-file corpus; this set is DISJOINT from the
+ * Word-tolerated misplacements (pgSz, headerReference, uiPriority, link, tr,
+ * hyperlink, duplicate pPr, and EG_RunInnerContent under <w:p>), so promoting
+ * only these keeps the word-valid profile free of false positives.
+ */
+const WORD_BLOCKING_MISPLACED_LOCALS: ReadonlySet<string> = new Set([
+    "r", // a run misplaced (e.g. directly in the body where a sectPr is due)
+    "rPr", // run properties outside a run
+    // NB: pPr is intentionally NOT here. A duplicate <w:pPr> in one paragraph
+    // trips "pPr: not expected", but real Word silently merges/ignores it and
+    // opens cleanly (verified: superdoc exports, word-tolerated-duplicate-ppr.docx).
+    // The narrow line-3002 guard (pPr + "Expected is one of") still covers the
+    // genuinely Word-blocking pPr-misplacement variant.
+    "sectPr", // section properties misplaced
+    "extent", // drawing extent misplaced (corrupt <w:drawing> structure)
+    "tblBorders",
+    "tblCellSpacing", // table-property elements outside <w:tblPr>
+]);
+
 function isWordBlockingXsdIssue(issue: ValidationIssue): boolean {
     if (issue.path && !issue.path.startsWith("word/") && issue.path !== "docProps/custom.xml") return false;
     const msg = issue.message;
+    // Content-model violation ("Element '{ns}local': This element is not expected"):
+    // an element sits where the schema forbids it. Word's loader rejects a specific
+    // family of these (a misplaced run, run/paragraph/section/table-property block,
+    // or drawing extent) with OPEN_ERROR / unreadable; OTHER misplaced elements
+    // (sectPr CHILDREN like pgSz/headerReference, style children like uiPriority/
+    // link, table rows, hyperlinks, and run-inner-content under <w:p>) Word silently
+    // relocates and opens cleanly. The blocking allowlist below is derived
+    // empirically from a real-Word corpus probe (disjoint from the tolerated set);
+    // an allowlist keeps this false-positive-free (unknown elements stay warnings).
+    const notExpected = /Element '\{[^}]*\}([^']+)': This element is not expected/.exec(msg);
+    if (notExpected && WORD_BLOCKING_MISPLACED_LOCALS.has(notExpected[1])) return true;
     return (
         msg.includes("}p2': This element is not expected") ||
         (msg.includes("}pPr': This element is not expected") && msg.includes("Expected is one of")) ||

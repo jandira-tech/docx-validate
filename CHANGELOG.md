@@ -6,6 +6,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.51.0] — 2026-05-30
+
+### Changed
+
+- Version bump to `0.51.0`.
+
 ## [0.5.0] — 2026-05-27
 
 ### Added
@@ -104,6 +110,7 @@ dist/index.mjs` returns zero matches.
 Initial publishable release. See `git log --oneline` for the full set of
 commits — the changelog starts here.
 
+[0.51.0]: https://github.com/jandira-tech/docx-validate/compare/v0.5.0...v0.51.0
 [0.5.0]: https://github.com/jandira-tech/docx-validate/compare/v0.1.3...v0.5.0
 [0.1.3]: https://github.com/jandira-tech/docx-validate/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/jandira-tech/docx-validate/compare/v0.1.1...v0.1.2
