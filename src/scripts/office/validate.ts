@@ -38,6 +38,7 @@ import JSZip from "jszip";
 
 import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
 import { DEFAULT_PROFILE, mergeResults, type Profile, type ValidationResult } from "../../lib/types";
+import { resolveSafeZipEntry } from "../../lib/zip-path";
 import { BaseSchemaValidator } from "./validators/base";
 import { DOCXSchemaValidator } from "./validators/docx";
 import { buildRepairPlanIssues, collectDocxSemanticInventory, compareDocxSemanticInventories } from "./validators/docx-diagnostics";
@@ -264,11 +265,7 @@ async function extractAll(zip: JSZip, outputPath: string): Promise<void> {
     });
 
     for (const { name, file } of entries) {
-        const target = path.join(outputPath, name);
-        const resolved = path.resolve(target);
-        if (!resolved.startsWith(`${outputPath}${path.sep}`) && resolved !== outputPath) {
-            throw new Error(`Refusing to extract entry outside output dir: ${name}`);
-        }
+        const resolved = resolveSafeZipEntry(outputPath, name);
         if (file.dir) {
             await fs.mkdir(resolved, { recursive: true });
             continue;

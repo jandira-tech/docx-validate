@@ -36,6 +36,7 @@ import { withTempDir } from "../../../lib/run-cli";
 import type { ValidationResult } from "../../../lib/types";
 import { NS } from "../../../lib/types";
 import { getElementsByTagNameNSAll, parseXml } from "../../../lib/xml-helpers";
+import { resolveSafeZipEntry } from "../../../lib/zip-path";
 
 const ELEMENT_NODE = 1;
 
@@ -104,14 +105,14 @@ export async function validateRedlining(options: RedliningOptions): Promise<Vali
             const zip = await JSZip.loadAsync(data);
             await Promise.all(
                 Object.values(zip.files).map(async (entry) => {
-                    const target = path.join(tempDir, entry.name);
+                    const resolved = resolveSafeZipEntry(tempDir, entry.name);
                     if (entry.dir) {
-                        await fs.mkdir(target, { recursive: true });
+                        await fs.mkdir(resolved, { recursive: true });
                         return;
                     }
-                    await fs.mkdir(path.dirname(target), { recursive: true });
+                    await fs.mkdir(path.dirname(resolved), { recursive: true });
                     const buf = await entry.async("nodebuffer");
-                    await fs.writeFile(target, buf);
+                    await fs.writeFile(resolved, buf);
                 }),
             );
         } catch (err) {
