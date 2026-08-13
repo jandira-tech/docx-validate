@@ -38,6 +38,7 @@ import JSZip from "jszip";
 
 import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
 import { DEFAULT_PROFILE, mergeResults, type Profile, type ValidationResult } from "../../lib/types";
+import { extractZipEntries } from "../../lib/zip-path";
 import { BaseSchemaValidator } from "./validators/base";
 import { DOCXSchemaValidator } from "./validators/docx";
 import { buildRepairPlanIssues, collectDocxSemanticInventory, compareDocxSemanticInventories } from "./validators/docx-diagnostics";
@@ -257,27 +258,7 @@ async function assertIsFile(p: string, message: string): Promise<void> {
     }
 }
 
-async function extractAll(zip: JSZip, outputPath: string): Promise<void> {
-    const entries: Array<{ name: string; file: JSZip.JSZipObject }> = [];
-    zip.forEach((relativePath, file) => {
-        entries.push({ name: relativePath, file });
-    });
-
-    for (const { name, file } of entries) {
-        const target = path.join(outputPath, name);
-        const resolved = path.resolve(target);
-        if (!resolved.startsWith(`${outputPath}${path.sep}`) && resolved !== outputPath) {
-            throw new Error(`Refusing to extract entry outside output dir: ${name}`);
-        }
-        if (file.dir) {
-            await fs.mkdir(resolved, { recursive: true });
-            continue;
-        }
-        await fs.mkdir(path.dirname(resolved), { recursive: true });
-        const data = await file.async("nodebuffer");
-        await fs.writeFile(resolved, data);
-    }
-}
+const extractAll = (zip: JSZip, outputPath: string): Promise<void> => extractZipEntries(zip, outputPath);
 
 interface CliOptions {
     original?: string;

@@ -188,4 +188,33 @@ describe("unpack", () => {
             expect((docXml.match(/<w:r[ >]/g) ?? []).length).toBe(2);
         });
     });
+
+    it("refuses to extract a zip entry that escapes the output dir", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "slip.docx");
+            await buildDocx(inputFile, { document: "<w:body><w:p><w:r><w:t>x</w:t></w:r></w:p></w:body>" });
+
+            const originalLoadAsync = JSZip.loadAsync;
+            JSZip.loadAsync = async function loadAsyncPatched(data, options) {
+                const zip = await originalLoadAsync.call(this, data, options);
+                zip.files["../../escaped.txt"] = {
+                    name: "../../escaped.txt",
+                    dir: false,
+                    async: async () => Buffer.from("malicious"),
+                } as unknown as JSZip.JSZipObject;
+                return zip;
+            };
+
+            try {
+                const result = await unpack(inputFile, path.join(dir, "out"), {
+                    mergeRuns: false,
+                    simplifyRedlines: false,
+                });
+                expect(result.ok).toBe(false);
+                expect(result.message).toMatch(/Refusing to extract entry outside output dir/);
+            } finally {
+                JSZip.loadAsync = originalLoadAsync;
+            }
+        });
+    });
 });
