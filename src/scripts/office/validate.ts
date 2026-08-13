@@ -132,7 +132,6 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
             let zip: JSZip;
             try {
                 zip = await JSZip.loadAsync(buf);
-                await extractAll(zip, tempDir);
             } catch (err) {
                 // The file is not a readable OPC (zip) package: encrypted OOXML
                 // (a CFB/OLE compound file), or a truncated/corrupted archive.
@@ -150,6 +149,23 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                             severity: "error" as const,
                             message: `Cannot open ${target} as an OPC package (not a valid .docx/zip — encrypted, corrupted, or truncated): ${detail}`,
                             code: "package-open-failed",
+                        },
+                    ],
+                    repairs: 0,
+                    suffix: dispatchSuffix,
+                };
+            }
+            try {
+                await extractAll(zip, tempDir);
+            } catch (err) {
+                const detail = err instanceof Error ? err.message : String(err);
+                return {
+                    valid: false,
+                    issues: [
+                        {
+                            severity: "error" as const,
+                            message: `Cannot extract ${target}: ${detail}`,
+                            code: "package-extract-failed",
                         },
                     ],
                     repairs: 0,

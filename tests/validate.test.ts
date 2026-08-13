@@ -105,6 +105,39 @@ describe("validate", () => {
         });
     });
 
+    it("does not label a zip-slip extract failure as package-open-failed", async () => {
+        await withTempDir(async (dir) => {
+            const zip = new JSZip();
+            zip.file(
+                "[Content_Types].xml",
+                '<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>',
+            );
+            zip.file("word/document.xml", '<?xml version="1.0"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>');
+            const buf = await zip.generateAsync({ type: "nodebuffer" });
+            const docxPath = path.join(dir, "slip.docx");
+            await fs.writeFile(docxPath, buf);
+
+            const originalLoadAsync = JSZip.loadAsync;
+            JSZip.loadAsync = async function loadAsyncPatched(data, options) {
+                const loaded = await originalLoadAsync.call(this, data, options);
+                loaded.files["../../escaped.txt"] = {
+                    name: "../../escaped.txt",
+                    dir: false,
+                    async: async () => Buffer.from("malicious"),
+                } as unknown as JSZip.JSZipObject;
+                return loaded;
+            };
+            try {
+                const result = await validate(docxPath);
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "package-open-failed")).toBe(false);
+                expect(result.issues.some((i) => i.code === "package-extract-failed")).toBe(true);
+            } finally {
+                JSZip.loadAsync = originalLoadAsync;
+            }
+        });
+    });
+
     it("flags paraId overflow in a packed DOCX (negative case)", async () => {
         const docxPath = path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx");
         const result = await validate(docxPath);

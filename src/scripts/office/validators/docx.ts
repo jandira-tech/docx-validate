@@ -939,6 +939,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     async validateDocumentBuilderInserts(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
         const DB_NS_PREFIX = "http://powertools.codeplex.com/documentbuilder";
+        // xmlns assignment only — do not treat a mention of the URI in text as a hit
+        // (CodeQL: incomplete URL substring sanitization on `.includes(uri)`).
+        const DB_NS_DECL = /xmlns(?::[\w.-]+)?\s*=\s*["']http:\/\/powertools\.codeplex\.com\/documentbuilder/;
         for (const xmlFile of this.xmlFiles) {
             const rel = this.relPath(xmlFile);
             // WML content parts only; customXml/ legitimately carries foreign content.
@@ -951,7 +954,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             } catch {
                 continue;
             }
-            if (!content.includes(DB_NS_PREFIX)) continue;
+            if (!DB_NS_DECL.test(content)) continue;
             let dom: Document;
             try {
                 dom = parseXml(content);
