@@ -36,7 +36,7 @@ import { withTempDir } from "../../../lib/run-cli";
 import type { ValidationResult } from "../../../lib/types";
 import { NS } from "../../../lib/types";
 import { getElementsByTagNameNSAll, parseXml } from "../../../lib/xml-helpers";
-import { resolveSafeZipEntry } from "../../../lib/zip-path";
+import { extractZipEntries } from "../../../lib/zip-path";
 
 const ELEMENT_NODE = 1;
 
@@ -103,18 +103,7 @@ export async function validateRedlining(options: RedliningOptions): Promise<Vali
         try {
             const data = await fs.readFile(originalDocx);
             const zip = await JSZip.loadAsync(data);
-            await Promise.all(
-                Object.values(zip.files).map(async (entry) => {
-                    const resolved = resolveSafeZipEntry(tempDir, entry.name);
-                    if (entry.dir) {
-                        await fs.mkdir(resolved, { recursive: true });
-                        return;
-                    }
-                    await fs.mkdir(path.dirname(resolved), { recursive: true });
-                    const buf = await entry.async("nodebuffer");
-                    await fs.writeFile(resolved, buf);
-                }),
-            );
+            await extractZipEntries(zip, tempDir);
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
             return failure(`FAILED - Error unpacking original docx: ${message}`);

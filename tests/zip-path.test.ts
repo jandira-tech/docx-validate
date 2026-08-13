@@ -52,4 +52,9 @@ describe("resolveSafeZipEntry", () => {
         expect(resolved).toBe(path.resolve(out, "word/document.xml"));
         expect(path.isAbsolute(resolved)).toBe(true);
     });
+
+    it("allows a contained entry whose name begins with dots", () => {
+        const out = path.resolve("/tmp/docx-out");
+        expect(resolveSafeZipEntry(out, "..metadata/item.xml")).toBe(path.resolve(out, "..metadata/item.xml"));
+    });
 });
