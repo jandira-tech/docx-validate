@@ -26,16 +26,16 @@ vi.mock("node:crypto", async (importOriginal) => {
     };
 });
 
-import { nextSecureLongHexNumber } from "../src/lib/secure-id";
+import { nextSecureLongHexNumber, SECURE_LONG_HEX_EXCLUSIVE_MAX } from "../src/lib/secure-id";
 
 describe("nextSecureLongHexNumber", () => {
     afterEach(() => {
         vi.mocked(crypto.randomInt).mockReset();
     });
 
-    it("delegates to crypto.randomInt(1, 0x7fffffff)", () => {
-        vi.mocked(crypto.randomInt).mockReturnValue(0x10);
+    it("delegates to crypto.randomInt(1, SECURE_LONG_HEX_EXCLUSIVE_MAX)", () => {
+        vi.mocked(crypto.randomInt).mockImplementation(() => 0x10);
         expect(nextSecureLongHexNumber()).toBe(0x10);
-        expect(crypto.randomInt).toHaveBeenCalledWith(1, 0x7fffffff);
+        expect(crypto.randomInt).toHaveBeenCalledWith(1, SECURE_LONG_HEX_EXCLUSIVE_MAX);
     });
 });

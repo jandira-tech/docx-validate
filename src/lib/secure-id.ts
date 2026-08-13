@@ -16,13 +16,14 @@
 
 import { randomInt } from "node:crypto";
 
+/** Exclusive upper bound for `randomInt` — produced values are `[1, 0x7FFFFFFE]`. */
+export const SECURE_LONG_HEX_EXCLUSIVE_MAX = 0x7fffffff;
+
 /**
  * Cryptographically secure integer in `[1, 0x7FFFFFFE]`.
  *
- * Matches [MS-OI29500] 2.6.2.3 `ST_LongHexNumber` (must be > 0 and < 0x80000000)
- * and the tighter `w16cid:durableId` cap of `0x7FFFFFFF`. Used by comment
- * `paraId`/`durableId` generation and `repairDurableId`.
+ * [MS-OI29500] 2.6.2.3 `ST_LongHexNumber` requires `> 0` and `< 0x80000000`.
+ * `w16cid:durableId` is tighter (`< 0x7FFFFFFF`); we stay strictly below that
+ * cap, so `0x7FFFFFFF` is never generated.
  */
-export function nextSecureLongHexNumber(): number {
-    return randomInt(1, 0x7fffffff);
-}
+export const nextSecureLongHexNumber = (): number => randomInt(1, SECURE_LONG_HEX_EXCLUSIVE_MAX);
