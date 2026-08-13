@@ -14,12 +14,23 @@
  * limitations under the License.
  */
 
+import * as crypto from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("node:crypto", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("node:crypto")>();
+    return {
+        ...actual,
+        randomInt: vi.fn(actual.randomInt),
+    };
+});
+
 import { withTempDir } from "../src/lib/run-cli";
 import { parseXml } from "../src/lib/xml-helpers";
+import { SECURE_LONG_HEX_EXCLUSIVE_MAX } from "../src/lib/secure-id";
 import { addComment, generateHexId } from "../src/scripts/comment";
 
 const RELS_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -41,29 +52,30 @@ async function makeFixture(dir: string): Promise<void> {
 
 describe("generateHexId", () => {
     afterEach(() => {
-        vi.restoreAllMocks();
+        vi.mocked(crypto.randomInt).mockReset();
     });
 
     // [MS-OI29500] 2.6.2.3: paraId is an ST_LongHexNumber whose value MUST be
     // greater than 0 and less than 0x80000000. The generator feeds both w14:paraId
     // and w16cid:durableId, so a zero would be an out-of-spec id we wrote ourselves.
-    it("never emits 0, even when the RNG floors to its minimum", () => {
-        vi.spyOn(Math, "random").mockReturnValue(0);
-        const value = Number.parseInt(generateHexId(), 16);
-        expect(value).toBeGreaterThan(0);
+    it("draws from crypto.randomInt in the ST_LongHexNumber-safe range", () => {
+        vi.mocked(crypto.randomInt).mockImplementation(() => 1);
+        expect(generateHexId()).toBe("00000001");
+        expect(crypto.randomInt).toHaveBeenCalledWith(1, SECURE_LONG_HEX_EXCLUSIVE_MAX);
     });
 
     it("stays below the ST_LongHexNumber cap at the RNG maximum", () => {
-        vi.spyOn(Math, "random").mockReturnValue(0.9999999999);
+        vi.mocked(crypto.randomInt).mockImplementation(() => 0x7ffffffe);
         const value = Number.parseInt(generateHexId(), 16);
+        expect(value).toBe(0x7ffffffe);
         expect(value).toBeGreaterThan(0);
         expect(value).toBeLessThan(0x80000000);
         // Also below the tighter durableId cap, since the same id seeds durableId.
-        expect(value).toBeLessThan(0x7fffffff);
+        expect(value).toBeLessThan(SECURE_LONG_HEX_EXCLUSIVE_MAX);
     });
 
     it("returns a zero-padded 8-digit uppercase hex string", () => {
-        vi.spyOn(Math, "random").mockReturnValue(0);
+        vi.mocked(crypto.randomInt).mockImplementation(() => 1);
         expect(generateHexId()).toMatch(/^[0-9A-F]{8}$/);
     });
 });
