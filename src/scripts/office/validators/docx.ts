@@ -25,8 +25,8 @@
  *   - tracked-changes nesting (no `<w:t>` inside `<w:del>`, no `<w:delText>`
  *     inside `<w:ins>`);
  *   - comment-marker pairing (`commentRangeStart`/`End`/`commentReference`);
- *   - id constraints (paraId < 0x80000000, durableId < 0x7FFFFFFF — plain
- *     32-bit numbers, well inside Number.MAX_SAFE_INTEGER, no BigInt needed);
+ *   - id constraints (0 < paraId/textId < 0x80000000, 0 < durableId < 0x7FFFFFFF
+ *     — plain 32-bit numbers, well inside Number.MAX_SAFE_INTEGER, no BigInt);
  *   - durableId auto-repair when a value blows past the constraint.
  *
  * All `validate*` methods follow the base-class shape: return
@@ -44,9 +44,10 @@
 import { default as JSZip } from "jszip";
 import { promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
+import { nextSecureLongHexNumber } from "../../../lib/secure-id";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
-import { makeSelect, parseXml, serializeXml } from "../../../lib/xml-helpers";
+import { getElementsByTagNameNSAll, parseXml, serializeXml } from "../../../lib/xml-helpers";
 import { BaseSchemaValidator, collectDeclaredPrefixes, PACKAGE_RELATIONSHIPS_NAMESPACE, XML_NAMESPACE } from "./base";
 
 export const WORD_2006_NAMESPACE = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
@@ -282,7 +283,6 @@ const TRACKING_TOKEN_REGEX = /\[\[DOCX_(?:INS|DEL|CMT)_(?:START|END):[^\]]*?\]\]
 
 const MAX_PARA_ID = 0x80000000;
 const MAX_DURABLE_ID = 0x7fffffff;
-const MAX_RANDOM_DURABLE = 0x7ffffffe;
 
 export interface ParagraphCounts {
     original: number;
@@ -290,6 +290,45 @@ export interface ParagraphCounts {
     delta: number;
     originalUsesStrictNamespace: boolean;
 }
+
+const isWordDel = (el: Element): boolean =>
+    el.localName === "del" && (el.namespaceURI === WORD_2006_NAMESPACE || el.namespaceURI === WORD_STRICT_NAMESPACE);
+
+/**
+ * One ancestor walk implementing `.//w:del//w:t[not(ancestor::w:drawing[ancestor::w:del])]`.
+ */
+const isDeletedRunText = (node: Node): boolean => {
+    let hasDel = false;
+    let sawDrawingOrPict = false;
+    let drawingHasDelAncestor = false;
+    let curr = node.parentNode;
+    while (curr) {
+        if (curr.nodeType === 1) {
+            const el = curr as Element;
+            if (isWordDel(el)) {
+                hasDel = true;
+                if (sawDrawingOrPict) {
+                    drawingHasDelAncestor = true;
+                }
+            }
+            if (el.localName === "drawing" || el.localName === "pict") {
+                sawDrawingOrPict = true;
+            }
+        }
+        curr = curr.parentNode;
+    }
+    return hasDel && !drawingHasDelAncestor;
+};
+
+const collectDeletedRunText = (root: Document | Element, ns: string, localName: string): Element[] => {
+    const out: Element[] = [];
+    for (const el of getElementsByTagNameNSAll(root, ns, localName)) {
+        if (isDeletedRunText(el)) {
+            out.push(el);
+        }
+    }
+    return out;
+};
 
 export class DOCXSchemaValidator extends BaseSchemaValidator {
     /**
@@ -585,7 +624,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     async validateDeletions(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const $$ = makeSelect();
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
@@ -599,41 +637,27 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 });
                 continue;
             }
-            // <w:t> inside <w:del> — but NOT text inside a drawing/VML picture that
-            // is itself part of the deleted run. When a whole <w:drawing>/<w:pict>
-            // (e.g. a text box) is deleted, Word keeps the shape's internal
-            // <w:txbxContent> text as <w:t> (the shape is one opaque deleted object,
-            // not run-level deleted text). A genuine textbox-internal deletion has
-            // its <w:del> INSIDE the txbxContent, so the drawing/pict is NOT a
-            // descendant of that <w:del> and is still flagged.
-            const tInDel = $$(
-                ".//w:del//w:t[not(ancestor::w:drawing[ancestor::w:del]) and not(ancestor::w:pict[ancestor::w:del])]",
-                dom,
-            ) as Node[];
-            for (const node of tInDel) {
-                const elem = node as Element;
-                const text = elem.firstChild?.nodeValue ?? "";
-                issues.push({
-                    severity: "error",
-                    message: `<w:t> found within <w:del>: ${previewRepr(text, 50)}`,
-                    path: this.relPath(xmlFile),
-                    code: "del-contains-t",
-                });
-            }
-            // <w:instrText> inside <w:del> — same drawing/pict exclusion as <w:t>.
-            const instrInDel = $$(
-                ".//w:del//w:instrText[not(ancestor::w:drawing[ancestor::w:del]) and not(ancestor::w:pict[ancestor::w:del])]",
-                dom,
-            ) as Node[];
-            for (const node of instrInDel) {
-                const elem = node as Element;
-                const text = elem.firstChild?.nodeValue ?? "";
-                issues.push({
-                    severity: "error",
-                    message: `<w:instrText> found within <w:del> (use <w:delInstrText>): ${previewRepr(text, 50)}`,
-                    path: this.relPath(xmlFile),
-                    code: "del-contains-instrtext",
-                });
+            const rel = this.relPath(xmlFile);
+            // Native DOM walk instead of `.//w:del//w:t` XPath (Jules Bolt). Skip
+            // <w:t>/<w:instrText> whose ancestor drawing/pict is itself inside a
+            // <w:del> — Word treats that shape as one opaque deleted object (#50).
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                for (const t of collectDeletedRunText(dom, ns, "t")) {
+                    issues.push({
+                        severity: "error",
+                        message: `<w:t> found within <w:del>: ${previewRepr(t.firstChild?.nodeValue ?? "", 50)}`,
+                        path: rel,
+                        code: "del-contains-t",
+                    });
+                }
+                for (const instr of collectDeletedRunText(dom, ns, "instrText")) {
+                    issues.push({
+                        severity: "error",
+                        message: `<w:instrText> found within <w:del> (use <w:delInstrText>): ${previewRepr(instr.firstChild?.nodeValue ?? "", 50)}`,
+                        path: rel,
+                        code: "del-contains-instrtext",
+                    });
+                }
             }
         }
         return finalize(issues);
@@ -1542,12 +1566,21 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
                 const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId");
                 if (paraId) {
-                    if (parseIdValue(paraId, 16) >= MAX_PARA_ID) {
+                    const v = parseIdValue(paraId, 16);
+                    if (v >= MAX_PARA_ID) {
                         issues.push({
                             severity: "error",
                             message: `${base}: paraId=${paraId} >= 0x80000000`,
                             path: this.relPath(xmlFile),
                             code: "id-paraid-overflow",
+                        });
+                    } else if (v === 0) {
+                        // [MS-OI29500] 2.6.2.3: paraId MUST be greater than 0.
+                        issues.push({
+                            severity: "error",
+                            message: `${base}: paraId=${paraId} must be > 0`,
+                            path: this.relPath(xmlFile),
+                            code: "id-paraid-zero",
                         });
                     }
                 }
@@ -1562,12 +1595,21 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 // textIds over the cap (every paragraph in the body).
                 const textId = elem.getAttributeNS(W14_NAMESPACE, "textId");
                 if (textId) {
-                    if (parseIdValue(textId, 16) >= MAX_PARA_ID) {
+                    const v = parseIdValue(textId, 16);
+                    if (v >= MAX_PARA_ID) {
                         issues.push({
                             severity: "error",
                             message: `${base}: textId=${textId} >= 0x80000000`,
                             path: this.relPath(xmlFile),
                             code: "id-textid-overflow",
+                        });
+                    } else if (v === 0) {
+                        // textId shares the ST_LongHexNumber type with paraId; same > 0 floor.
+                        issues.push({
+                            severity: "error",
+                            message: `${base}: textId=${textId} must be > 0`,
+                            path: this.relPath(xmlFile),
+                            code: "id-textid-zero",
                         });
                     }
                 }
@@ -1590,14 +1632,31 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                                 path: this.relPath(xmlFile),
                                 code: "id-durable-overflow",
                             });
+                        } else if (v === 0) {
+                            // durableId is a positive id; the repair path seeds it from 1.
+                            issues.push({
+                                severity: "error",
+                                message: `${base}: durableId=${durableId} must be > 0`,
+                                path: this.relPath(xmlFile),
+                                code: "id-durable-zero",
+                            });
                         }
                     } else {
-                        if (parseIdValue(durableId, 16) >= MAX_DURABLE_ID) {
+                        const v = parseIdValue(durableId, 16);
+                        if (v >= MAX_DURABLE_ID) {
                             issues.push({
                                 severity: "error",
                                 message: `${base}: durableId=${durableId} >= 0x7FFFFFFF`,
                                 path: this.relPath(xmlFile),
                                 code: "id-durable-overflow",
+                            });
+                        } else if (v === 0) {
+                            // durableId is a positive id; the repair path seeds it from 1.
+                            issues.push({
+                                severity: "error",
+                                message: `${base}: durableId=${durableId} must be > 0`,
+                                path: this.relPath(xmlFile),
+                                code: "id-durable-zero",
                             });
                         }
                     }
@@ -2730,7 +2789,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     }
 
                     if (needsRepair) {
-                        const value = 1 + Math.floor(Math.random() * MAX_RANDOM_DURABLE);
+                        const value = nextSecureLongHexNumber();
                         const newId = base === "numbering.xml" ? String(value) : value.toString(16).toUpperCase().padStart(8, "0");
                         // setAttributeNS keeps the prefix binding intact.
                         elem.setAttributeNS(W16CID_NAMESPACE, "w16cid:durableId", newId);

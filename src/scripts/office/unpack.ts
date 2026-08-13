@@ -35,6 +35,7 @@ import JSZip from "jszip";
 
 import { commanderExitCode, runCli } from "../../lib/run-cli";
 import { parseXml, prettyXml } from "../../lib/xml-helpers";
+import { extractZipEntries } from "../../lib/zip-path";
 import { mergeRuns } from "./helpers/merge-runs";
 import { simplifyRedlines } from "./helpers/simplify-redlines";
 
@@ -136,27 +137,7 @@ export async function unpack(inputFile: string, outputDir: string, opts: UnpackO
     }
 }
 
-async function extractAll(zip: JSZip, outputPath: string): Promise<void> {
-    const entries: Array<{ name: string; file: JSZip.JSZipObject }> = [];
-    zip.forEach((relativePath, file) => {
-        entries.push({ name: relativePath, file });
-    });
-
-    for (const { name, file } of entries) {
-        const target = path.join(outputPath, name);
-        const resolved = path.resolve(target);
-        if (!resolved.startsWith(`${outputPath}${path.sep}`) && resolved !== outputPath) {
-            throw new Error(`Refusing to extract entry outside output dir: ${name}`);
-        }
-        if (file.dir) {
-            await fs.mkdir(resolved, { recursive: true });
-            continue;
-        }
-        await fs.mkdir(path.dirname(resolved), { recursive: true });
-        const data = await file.async("nodebuffer");
-        await fs.writeFile(resolved, data);
-    }
-}
+const extractAll = (zip: JSZip, outputPath: string): Promise<void> => extractZipEntries(zip, outputPath);
 
 async function collectXmlFiles(root: string): Promise<string[]> {
     const out: string[] = [];

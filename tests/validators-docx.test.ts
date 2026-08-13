@@ -129,6 +129,68 @@ describe("DOCXSchemaValidator", () => {
                 expect(result.valid).toBe(true);
             });
         });
+
+        it("does NOT flag <w:t> inside a drawing/text box that is part of the deleted run", async () => {
+            // Deleting a whole drawing (e.g. a text box) wraps the run in <w:del>;
+            // Word keeps the shape's internal txbxContent text as <w:t> (the shape
+            // is one opaque deleted object). That is valid, not run-level deleted
+            // text, so it must not be reported as del-contains-t.
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:del w:id="1"><w:r><w:drawing><w:txbxContent><w:p><w:r><w:t>inside textbox</w:t></w:r></w:p></w:txbxContent></w:drawing></w:r></w:del></w:p>`,
+                    ),
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateDeletions();
+                expect(result.issues.some((i) => i.code === "del-contains-t")).toBe(false);
+            });
+        });
+
+        it("does NOT flag <w:t> inside a VML pict that is part of the deleted run", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:del w:id="1"><w:r><w:pict><w:txbxContent><w:p><w:r><w:t>inside pict</w:t></w:r></w:p></w:txbxContent></w:pict></w:r></w:del></w:p>`,
+                    ),
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateDeletions();
+                expect(result.issues.some((i) => i.code === "del-contains-t")).toBe(false);
+            });
+        });
+
+        it("still flags a genuine textbox-internal deletion (<w:del> inside txbxContent)", async () => {
+            // Here the <w:del> is INSIDE the text box, so the drawing is NOT a
+            // descendant of the del — a real run-level deletion that must be flagged.
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:r><w:drawing><w:txbxContent><w:p><w:del w:id="1"><w:r><w:t>bad</w:t></w:r></w:del></w:p></w:txbxContent></w:drawing></w:r></w:p>`,
+                    ),
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateDeletions();
+                expect(result.issues.some((i) => i.code === "del-contains-t")).toBe(true);
+            });
+        });
+
+        it("does NOT flag <w:instrText> inside a deleted drawing", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(
+                        `<w:p><w:del w:id="1"><w:r><w:drawing><w:txbxContent><w:p><w:r><w:instrText>HYPERLINK</w:instrText></w:r></w:p></w:txbxContent></w:drawing></w:r></w:del></w:p>`,
+                    ),
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateDeletions();
+                expect(result.issues.some((i) => i.code === "del-contains-instrtext")).toBe(false);
+            });
+        });
     });
 
     describe("validateInsertions", () => {
@@ -301,6 +363,58 @@ describe("DOCXSchemaValidator", () => {
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const result = await v.validateIdConstraints();
                 expect(result.valid).toBe(true);
+            });
+        });
+
+        // [MS-OI29500] 2.6.2.3: paraId/textId (ST_LongHexNumber) MUST be > 0.
+        // The validator already caps the upper bound; these pin the lower bound.
+        it("flags paraId == 0", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "document.xml"), wrapDocument(`<w:p w14:paraId="00000000"/>`, W14_NS));
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateIdConstraints();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "id-paraid-zero")).toBe(true);
+            });
+        });
+
+        it("flags textId == 0", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "document.xml"), wrapDocument(`<w:p w14:paraId="00000001" w14:textId="00000000"/>`, W14_NS));
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateIdConstraints();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "id-textid-zero")).toBe(true);
+            });
+        });
+
+        it("flags durableId == 0 (hex, non-numbering file)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "commentsIds.xml"),
+                    `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>` +
+                        `<w16cid:commentId w16cid:paraId="00000001" w16cid:durableId="00000000"/>` +
+                        `</w16cid:commentsIds>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateIdConstraints();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "id-durable-zero")).toBe(true);
+            });
+        });
+
+        it("flags durableId == 0 (decimal, numbering.xml)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "numbering.xml"),
+                    `<?xml version="1.0"?><w:numbering ${W_NS} ${W16CID_NS}>` +
+                        `<w:abstractNum w16cid:durableId="0"/>` +
+                        `</w:numbering>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateIdConstraints();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "id-durable-zero")).toBe(true);
             });
         });
     });

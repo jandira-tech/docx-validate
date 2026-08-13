@@ -1,0 +1,15 @@
+# jubarte-rust roundtrip harness — keep only the source specimens + the script.
+#
+# Derived/regenerable outputs (produced by the jubarte-rust pipeline and by
+# validate_roundtrips.ts). Not tracked — reproduce by re-running the harness.
+roundtrip_docx/
+html_from_docx/
+html_from_md/
+md_from_html/
+report.json
+validate_report.json
+
+# originals/ is mostly copies of existing tests/fixtures specimens. Ignore the
+# directory wholesale; the 36 genuinely-new specimens are force-added (git add -f)
+# so they stay tracked while the 545 duplicates stay out of the tree.
+originals/
