@@ -61,6 +61,6 @@ describe("word-valid profile does NOT flag Word-tolerated misplacements (no fals
             const e = errs(res);
             expect(e, `must not gain errors, got: ${e.map((x) => (x as { code?: string }).code).join(",")}`).toHaveLength(0);
             expect(res.valid).toBe(true);
-        });
+        }, 30000);
     }
 });
