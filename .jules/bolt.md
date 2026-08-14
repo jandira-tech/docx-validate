@@ -1,7 +1,9 @@
 ## 2026-05-22 - Avoid xpath ancestor:: resolution in @xmldom
+
 **Learning:** Using `xpath` (from the `xpath` NPM package) with `@xmldom/xmldom` is extremely slow when querying with the `ancestor::` axis (e.g., `.//w:p[not(ancestor::w:txbxContent)]`). This causes significant performance bottlenecks for large documents because it traverses the tree for every matched element dynamically instead of just caching parent lookups.
 **Action:** When complex ancestor exclusions are needed on large node lists, rely on native DOM APIs (`getElementsByTagNameNS`) combined with a fast `parentNode` while loop in JavaScript. This simple rewrite improved paragraph counting performance by nearly 100x.
 
 ## 2026-05-22 - Avoid full-tree nested descendant searches
+
 **Learning:** Calling `getElementsByTagNameNSAll` across the entire document for a tag (e.g., `<w:t>`), then filtering for parents (e.g., `<w:del>`), causes significant performance bottlenecks for large documents because it iterates over the entire tree.
-**Action:** When finding specific child tags inside a known parent tag, first find all parent tags (e.g. `<w:del>`), and then use `getElementsByTagNameNSAll` scoped *only to that parent element*. Additionally, instead of iterating from the node all the way to the root via `parentNode`, iterate only up to the matched parent. This simple rewrite improved text collection performance by up to 25%.
+**Action:** When finding specific child tags inside a known parent tag, first find all parent tags (e.g. `<w:del>`), and then use `getElementsByTagNameNSAll` scoped _only to that parent element_. Additionally, instead of iterating from the node all the way to the root via `parentNode`, iterate only up to the matched parent. This simple rewrite improved text collection performance by up to 25%.

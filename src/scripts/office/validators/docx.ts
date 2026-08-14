@@ -299,9 +299,6 @@ export interface ParagraphCounts {
     originalUsesStrictNamespace: boolean;
 }
 
-const isWordDel = (el: Element): boolean =>
-    el.localName === "del" && (el.namespaceURI === WORD_2006_NAMESPACE || el.namespaceURI === WORD_STRICT_NAMESPACE);
-
 /**
  * One ancestor walk implementing `.//w:del//w:t[not(ancestor::w:drawing[ancestor::w:del])]`.
  */
