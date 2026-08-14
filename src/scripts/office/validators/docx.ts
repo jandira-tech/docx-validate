@@ -305,37 +305,29 @@ const isWordDel = (el: Element): boolean =>
 /**
  * One ancestor walk implementing `.//w:del//w:t[not(ancestor::w:drawing[ancestor::w:del])]`.
  */
-const isDeletedRunText = (node: Node): boolean => {
-    let hasDel = false;
-    let sawDrawingOrPict = false;
-    let drawingHasDelAncestor = false;
-    let curr = node.parentNode;
-    while (curr) {
-        if (curr.nodeType === 1) {
-            const el = curr as Element;
-            if (isWordDel(el)) {
-                hasDel = true;
-                if (sawDrawingOrPict) {
-                    drawingHasDelAncestor = true;
-                }
-            }
-            if (el.localName === "drawing" || el.localName === "pict") {
-                sawDrawingOrPict = true;
-            }
-        }
-        curr = curr.parentNode;
-    }
-    return hasDel && !drawingHasDelAncestor;
-};
-
 const collectDeletedRunText = (root: Document | Element, ns: string, localName: string): Element[] => {
-    const out: Element[] = [];
-    for (const el of getElementsByTagNameNSAll(root, ns, localName)) {
-        if (isDeletedRunText(el)) {
-            out.push(el);
+    const out = new Set<Element>();
+    for (const del of getElementsByTagNameNSAll(root, ns, "del")) {
+        for (const el of getElementsByTagNameNSAll(del, ns, localName)) {
+            let sawDrawingOrPict = false;
+            let curr = el.parentNode;
+            // Walk up to the <w:del> element to see if a drawing/pict is in between
+            while (curr && curr !== del) {
+                if (curr.nodeType === 1) {
+                    const name = (curr as Element).localName;
+                    if (name === "drawing" || name === "pict") {
+                        sawDrawingOrPict = true;
+                        break;
+                    }
+                }
+                curr = curr.parentNode;
+            }
+            if (!sawDrawingOrPict) {
+                out.add(el);
+            }
         }
     }
-    return out;
+    return Array.from(out);
 };
 
 export class DOCXSchemaValidator extends BaseSchemaValidator {
