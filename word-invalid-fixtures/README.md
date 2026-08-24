@@ -1,6 +1,6 @@
 # word-invalid-fixtures — files real Microsoft Word refuses to open
 
-A **Word-labeled regression corpus**: every `.docx` here was opened in *real*
+A **Word-labeled regression corpus**: every `.docx` here was opened in _real_
 Microsoft Word (macOS) by `scripts/word_oracle.py` and classified by the dialog
 Word showed. These are the ground-truth negatives for the "word-valid"
 openability bar — if a conversion/redline pipeline produces a file like one of
@@ -13,11 +13,11 @@ exactly.
 
 ## Layout (by Word's verdict)
 
-| dir | meaning | count |
-|-----|---------|-------|
-| `OPEN_ERROR/` | "Word experienced an error trying to open the file." (Word cannot load it at all) | 31 |
-| `UNREADABLE_CONTENT/` | "Word found unreadable content in X. Do you want to recover…" (repair prompt) | 43 |
-| `PASSWORD/` | Word prompts for a password (encrypted package, key required to open) | 2 |
+| dir                   | meaning                                                                           | count |
+| --------------------- | --------------------------------------------------------------------------------- | ----- |
+| `OPEN_ERROR/`         | "Word experienced an error trying to open the file." (Word cannot load it at all) | 31    |
+| `UNREADABLE_CONTENT/` | "Word found unreadable content in X. Do you want to recover…" (repair prompt)     | 43    |
+| `PASSWORD/`           | Word prompts for a password (encrypted package, key required to open)             | 2     |
 
 Total: **76** files. None open cleanly in real Word.
 
