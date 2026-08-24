@@ -3341,33 +3341,34 @@ function parseIdValue(val: string, base: number): number {
 
 function countParagraphsInRoot(doc: Document): number {
     let count = 0;
+    const root = doc.documentElement;
+    if (!root) return 0;
 
-    const isInsideTextBox = (node: Node | null): boolean => {
-        let curr = node?.parentNode;
-        while (curr) {
-            if (curr.nodeType === 1) {
-                // ELEMENT_NODE
-                const elem = curr as Element;
-                const localName = elem.localName;
-                const ns = elem.namespaceURI;
-                if (localName === "txbxContent" && (ns === WORD_2006_NAMESPACE || ns === WORD_STRICT_NAMESPACE)) {
-                    return true;
-                }
-                if (localName === "textbox" && ns === VML_NAMESPACE) {
-                    return true;
-                }
+    const stack: Node[] = [root];
+
+    while (stack.length > 0) {
+        const node = stack.pop()!;
+        if (node.nodeType === 1) {
+            const elem = node as Element;
+            const localName = elem.localName;
+            const ns = elem.namespaceURI;
+            if (
+                (localName === "txbxContent" && (ns === WORD_2006_NAMESPACE || ns === WORD_STRICT_NAMESPACE)) ||
+                (localName === "textbox" && ns === VML_NAMESPACE)
+            ) {
+                continue;
             }
-            curr = curr.parentNode;
-        }
-        return false;
-    };
-
-    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-        const ps = doc.getElementsByTagNameNS(ns, "p");
-        for (let i = 0; i < ps.length; i++) {
-            if (!isInsideTextBox(ps.item(i))) {
+            if (localName === "p" && ns && WORD_PARAGRAPH_NAMESPACES.includes(ns as any)) {
                 count++;
             }
+        }
+
+        let child = node.lastChild;
+        while (child) {
+            if (child.nodeType === 1) {
+                stack.push(child);
+            }
+            child = child.previousSibling;
         }
     }
 
