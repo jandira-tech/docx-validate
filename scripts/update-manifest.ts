@@ -89,11 +89,7 @@ function readProbeResults(): Map<string, ProbeRecord> {
  * Keeps regen idempotent w.r.t. Word-probe metadata when the probe JSONL is
  * absent (no LibreOffice in CI).
  */
-export function resolveWordOutcome(
-    relativePath: string,
-    probeOutcome: string | undefined,
-    priorWord: Map<string, string>,
-): string {
+export function resolveWordOutcome(relativePath: string, probeOutcome: string | undefined, priorWord: Map<string, string>): string {
     return probeOutcome ?? priorWord.get(relativePath) ?? "unknown";
 }
 
@@ -110,7 +106,6 @@ function readPriorManifestWord(): Map<string, string> {
     }
     return map;
 }
-
 
 async function main(): Promise<void> {
     const files: string[] = [];
