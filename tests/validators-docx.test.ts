@@ -2521,7 +2521,8 @@ describe("DOCXSchemaValidator", () => {
                         `</Relationships>`,
                 );
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
-                v.xmlFiles = ["word/_rels/document.xml.rels"];
+                // Cannot set read-only xmlFiles, use reflection or ignore it.
+Object.defineProperty(v, "xmlFiles", { value: ["word/_rels/document.xml.rels"] });
                 const result = await v.validateOrphanedRelationships();
                 // Should not report it missing since it's dropped due to traversal (returns null)
                 expect(result.issues.length).toBe(0);
