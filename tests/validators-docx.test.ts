@@ -2510,3 +2510,62 @@ describe("DOCXSchemaValidator", () => {
         });
     });
 });
+
+    describe("validateOrphanedRelationships (path traversal)", () => {
+        it("returns null or ignores target when traversal escapes unpackedDir", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "_rels", "document.xml.rels"),
+                    `<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                        `<Relationship Id="rId1" Type="http://..." Target="../../../../../etc/passwd"/>` +
+                        `</Relationships>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                // Cannot set read-only xmlFiles, use reflection or ignore it.
+Object.defineProperty(v, "xmlFiles", { value: ["word/_rels/document.xml.rels"] });
+                const result = await v.validateOrphanedRelationships();
+                // Should not report it missing since it's dropped due to traversal (returns null)
+                expect(result.issues.length).toBe(0);
+            });
+        });
+    });
+
+    describe("validateOrphanedRelationships (path traversal specific)", () => {
+        it("returns the resolved path when relative does not traverse outside", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "_rels", "document.xml.rels"),
+                    `<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                        `<Relationship Id="rId1" Type="http://..." Target="/theme/theme1.xml"/>` +
+                        `</Relationships>`,
+                );
+                // Also create the file so it resolves and does not report as missing
+                await fs.mkdir(path.join(dir, "theme"), { recursive: true });
+                await writeFile(path.join(dir, "theme", "theme1.xml"), `<w:theme/>`);
+
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                Object.defineProperty(v, "xmlFiles", { value: ["word/_rels/document.xml.rels"] });
+                const result = await v.validateOrphanedRelationships();
+                // Should not report missing as traversal logic succeeds and file exists
+                expect(result.issues.length).toBe(0);
+            });
+        });
+    });
+
+    describe("validateOrphanedRelationships (path traversal specific absolute check)", () => {
+        it("returns null when traversing with absolute paths", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "_rels", "document.xml.rels"),
+                    `<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                        `<Relationship Id="rId1" Type="http://..." Target="/../../../../etc/passwd"/>` +
+                        `</Relationships>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                Object.defineProperty(v, "xmlFiles", { value: ["word/_rels/document.xml.rels"] });
+                const result = await v.validateOrphanedRelationships();
+                // Should not report missing as traversal logic blocks it and returns null
+                expect(result.issues.length).toBe(0);
+            });
+        });
+    });

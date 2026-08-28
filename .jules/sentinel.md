@@ -15,3 +15,9 @@
 **Vulnerability:** While fixing the Insecure Temporary File vulnerability with `mkdtempSync`, assigning the result of `mkdtempSync` to an exported constant executed the synchronous I/O operations directly at module load time.
 **Learning:** Performing side effects like file I/O (e.g., creating temporary directories) directly inside the module scope introduces architectural flaws. It means importing the file anywhere (like in test suites or other tools) inadvertently triggers directory creation, leading to orphaned files and unintended side effects, even if the target CLI function is never run.
 **Prevention:** Always encapsulate file system interactions, including the generation of temporary directories or profiles, inside functions (e.g., lazy getters) rather than static module-level initialization.
+
+## 2026-05-19 - Path Traversal in Relationship Target Resolution
+
+**Vulnerability:** The `resolveRelationshipTargetPath` function dynamically resolved XML relationship targets (`Target` attribute) against the base directory without verifying if the resulting absolute path escaped the intended `unpackedDir`. A maliciously crafted `.docx` file could use `Target="../../../../../etc/passwd"` to read arbitrary files on the host file system when the validator checked the target's existence.
+**Learning:** Resolving relative paths from untrusted input (like XML attributes) using `path.resolve` is inherently unsafe unless the result is explicitly bounds-checked against the intended root directory.
+**Prevention:** Always validate resolved paths derived from untrusted input against the intended root directory using `path.relative` and ensure the result does not equal `..`, start with `../`, or resolve to an absolute path.
