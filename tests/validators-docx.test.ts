@@ -2510,3 +2510,21 @@ describe("DOCXSchemaValidator", () => {
         });
     });
 });
+
+    describe("validateOrphanedRelationships (path traversal)", () => {
+        it("returns null or ignores target when traversal escapes unpackedDir", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "_rels", "document.xml.rels"),
+                    `<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                        `<Relationship Id="rId1" Type="http://..." Target="../../../../../etc/passwd"/>` +
+                        `</Relationships>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                v.xmlFiles = ["word/_rels/document.xml.rels"];
+                const result = await v.validateOrphanedRelationships();
+                // Should not report it missing since it's dropped due to traversal (returns null)
+                expect(result.issues.length).toBe(0);
+            });
+        });
+    });
