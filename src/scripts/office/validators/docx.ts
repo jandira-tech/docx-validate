@@ -3234,13 +3234,22 @@ function isExternalRelationship(rel: Element, target: string): boolean {
 function resolveRelationshipTargetPath(unpackedDir: string, relsFile: string, target: string): string | null {
     const targetWithoutFragment = target.split("#", 1)[0];
     if (!targetWithoutFragment) return null;
+
+    let resolvedPath: string;
     if (targetWithoutFragment.startsWith("/")) {
-        return path.resolve(unpackedDir, targetWithoutFragment.replace(/^\/+/, ""));
+        resolvedPath = path.resolve(unpackedDir, targetWithoutFragment.replace(/^\/+/, ""));
+    } else {
+        const relsDir = path.dirname(relsFile);
+        const baseDir = path.basename(relsDir) === "_rels" ? path.dirname(relsDir) : relsDir;
+        resolvedPath = path.resolve(baseDir, targetWithoutFragment);
     }
 
-    const relsDir = path.dirname(relsFile);
-    const baseDir = path.basename(relsDir) === "_rels" ? path.dirname(relsDir) : relsDir;
-    return path.resolve(baseDir, targetWithoutFragment);
+    const relative = path.relative(unpackedDir, resolvedPath);
+    if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+        return null;
+    }
+
+    return resolvedPath;
 }
 
 function borderSignature(borders: Element | null, namespaceURI: string): BorderSignature | null {
