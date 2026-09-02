@@ -720,13 +720,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     const ins = insNodes.item(i);
                     if (!ins) continue;
 
-                    for (const nsDel of WORD_PARAGRAPH_NAMESPACES) {
-                        const delTexts = ins.getElementsByTagNameNS(nsDel, "delText");
-                        for (let j = 0; j < delTexts.length; j++) {
-                            const delText = delTexts.item(j);
-                            if (delText && !isInsideDel(delText)) {
-                                invalid.push(delText);
-                            }
+                    const delTexts = ins.getElementsByTagNameNS(ns, "delText");
+                    for (let j = 0; j < delTexts.length; j++) {
+                        const delText = delTexts.item(j);
+                        if (delText && !isInsideDel(delText)) {
+                            invalid.push(delText);
                         }
                     }
                 }
