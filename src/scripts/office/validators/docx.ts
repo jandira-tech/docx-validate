@@ -3240,7 +3240,13 @@ function resolveRelationshipTargetPath(unpackedDir: string, relsFile: string, ta
 
     const relsDir = path.dirname(relsFile);
     const baseDir = path.basename(relsDir) === "_rels" ? path.dirname(relsDir) : relsDir;
-    return path.resolve(baseDir, targetWithoutFragment);
+    const resolved = path.resolve(baseDir, targetWithoutFragment);
+
+    const rel = path.relative(unpackedDir, resolved);
+    if (rel === ".." || rel.startsWith(`..${path.sep}`) || path.isAbsolute(rel)) {
+        return null;
+    }
+    return resolved;
 }
 
 function borderSignature(borders: Element | null, namespaceURI: string): BorderSignature | null {
