@@ -366,6 +366,30 @@ describe("word-valid profile — applyWordValidProfile coverage", () => {
         });
     });
 
+    it("flags path traversal attempts (Zip Slip) in relationship targets as rels-broken", async () => {
+        await withTempDir(async (dir) => {
+            const unpacked = path.join(dir, "unpacked");
+            await writeMinimalDocxDir(unpacked, "<w:body><w:p/></w:body>");
+            await fs.mkdir(path.join(unpacked, "word", "_rels"), { recursive: true });
+            await fs.writeFile(
+                path.join(unpacked, "word", "_rels", "document.xml.rels"),
+                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+                    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+                    '<Relationship Id="rIdMalicious" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="../../../../../etc/passwd"/>' +
+                    "</Relationships>",
+                "utf8",
+            );
+            const result = await validate(unpacked, {
+                profile: "word-valid",
+                original: path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx"),
+                author: "Test",
+            });
+            const relsIssue = result.issues.find((i) => i.code === "rels-broken" && i.message.includes("../../../../../etc/passwd"));
+            expect(relsIssue).toBeDefined();
+            expect(relsIssue?.severity).toBe("warning");
+        });
+    });
+
     it("keeps rels-broken error for ../customXml/ targets under word-valid profile (Issue K)", async () => {
         // rels-broken referencing ../customXml/ is Word-blocking (custom XML parts
         // cause Word to refuse the file), so it must stay as an error under word-valid.
