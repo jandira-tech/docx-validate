@@ -2057,6 +2057,22 @@ describe("DOCXSchemaValidator", () => {
             });
         });
 
+        it("ignores targets trying to path-traverse outside the unpacked directory (Zip Slip variant)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "_rels", "document.xml.rels"),
+                    `<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                        `<Relationship Id="rId1" Type="http://..." Target="../../../../../etc/passwd"/>` +
+                        `</Relationships>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateOrphanedRelationships();
+                // Because of our path traversal defense, the target resolves to `null` and is skipped,
+                // instead of attempting to fs.stat() it and throwing an error, or emitting a missing target issue.
+                expect(result.valid).toBe(true);
+            });
+        });
+
         it("passes when all .rels targets exist", async () => {
             await withTempDir(async (dir) => {
                 await writeFile(
