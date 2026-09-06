@@ -15,17 +15,18 @@
 
 ## File structure
 
-| File | Responsibility |
-|------|----------------|
-| `src/scripts/office/validators/docx.ts` | **(modify)** Fix `repairMissingParaIds` existence check (Commit 1). |
-| `scripts/diff-docx.ts` | **(modify)** Catch per-input failures; report instead of throw (Commit 2). |
+| File                                                       | Responsibility                                                              |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `src/scripts/office/validators/docx.ts`                    | **(modify)** Fix `repairMissingParaIds` existence check (Commit 1).         |
+| `scripts/diff-docx.ts`                                     | **(modify)** Catch per-input failures; report instead of throw (Commit 2).  |
 | `src/scripts/office/validators/docx-visible-projection.ts` | **(new)** `collectVisibleProjection` + `diffVisibleProjections` (Commit 3). |
-| `scripts/prove-benign.ts` | **(new)** Repair-and-project survey → `BENIGN_PROOF.md` (Commit 4). |
-| `tests/validators-docx.test.ts` | paraId regression test (Commit 1). |
-| `tests/diff-docx.cli.test.ts` | hardening test (Commit 2). |
-| `tests/docx-visible-projection.test.ts` | **(new)** projection unit tests (Commit 3). |
+| `scripts/prove-benign.ts`                                  | **(new)** Repair-and-project survey → `BENIGN_PROOF.md` (Commit 4).         |
+| `tests/validators-docx.test.ts`                            | paraId regression test (Commit 1).                                          |
+| `tests/diff-docx.cli.test.ts`                              | hardening test (Commit 2).                                                  |
+| `tests/docx-visible-projection.test.ts`                    | **(new)** projection unit tests (Commit 3).                                 |
 
 ## Reference — existing helpers (reuse, do not reinvent)
+
 From `src/lib/xml-helpers.ts`: `parseXml`, `serializeXml`.
 From `src/scripts/office/validators/docx-diagnostics.ts` patterns (replicate the same style if you need them locally): word-namespace iteration via a `WORD_NAMESPACES` set, `directWordChild`, `wordChildAttr`. The two transitional/strict word namespaces are:
 `http://schemas.openxmlformats.org/wordprocessingml/2006/main` and `http://purl.oclc.org/ooxml/wordprocessingml/main`.
@@ -39,6 +40,7 @@ From `src/scripts/office/validators/docx-diagnostics.ts` patterns (replicate the
 **Root cause:** In `repairMissingParaIds` (`src/scripts/office/validators/docx.ts` ~lines 2413–2414) the existence check is `elem.getAttributeNS(W14_NAMESPACE, "paraId")` where `W14_NAMESPACE = "http://schemas.microsoft.com/office/word/2010/wordml"`. Documents authored against the **older** `w14` namespace (`http://schemas.microsoft.com/office/word/2008/9/12/wordml`, e.g. `external/open-xml-sdk/mcdoc.docx`) bind `w14:paraId` to that older URI, so the 2010-namespace lookup returns `""`. Repair then stamps a second `w14:paraId` via `setAttributeNS(W14_NAMESPACE, "w14:paraId", …)`, producing **two** `w14:paraId` attributes (duplicate qualified name) → invalid XML Word cannot open.
 
 **Files:**
+
 - Modify: `src/scripts/office/validators/docx.ts` (`repairMissingParaIds`, ~lines 2413–2414)
 - Test: `tests/validators-docx.test.ts`
 
@@ -69,11 +71,13 @@ it("does not duplicate w14:paraId when the doc binds w14 to the legacy 2008 name
 ```
 
 Ensure these imports exist at the top of the test file (add any that are missing):
+
 ```ts
 import { promises as fsp } from "node:fs";
 const { readFile } = fsp;
 import { parseXml } from "../src/lib/xml-helpers";
 ```
+
 (If the file already has a `writeFile` helper that creates parent dirs, reuse it; otherwise use `fsp.mkdir(path.dirname(p), {recursive:true})` then `fsp.writeFile`.)
 
 - [ ] **Step 2: Run it, verify failure**
@@ -86,10 +90,8 @@ Expected: FAIL — two `w14:paraId=` matches and/or `parseXml` throws `Attribute
 In `repairMissingParaIds`, change the two existence reads to add a qualified-name fallback:
 
 ```ts
-                            const paraId =
-                                elem.getAttributeNS(W14_NAMESPACE, "paraId") || elem.getAttribute("w14:paraId");
-                            const textId =
-                                elem.getAttributeNS(W14_NAMESPACE, "textId") || elem.getAttribute("w14:textId");
+const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId") || elem.getAttribute("w14:paraId");
+const textId = elem.getAttributeNS(W14_NAMESPACE, "textId") || elem.getAttribute("w14:textId");
 ```
 
 (`getAttribute("w14:paraId")` matches by serialized qualified name regardless of which URI `w14` is bound to, so an existing paraId is detected and the element falls into the no-op Case 4.)
@@ -125,6 +127,7 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
 ## Task 2: report per-input failures instead of throwing
 
 **Files:**
+
 - Modify: `scripts/diff-docx.ts` (`runDiffDocx`)
 - Test: `tests/diff-docx.cli.test.ts`
 
@@ -160,25 +163,25 @@ Expected: FAIL — `runDiffDocx` throws (unhandled) instead of returning a code.
 In `scripts/diff-docx.ts`, replace the two `inventoryOf` calls in `runDiffDocx` with guarded collection. Find:
 
 ```ts
-    const diff = diffDocxInventories(await inventoryOf(a, profile), await inventoryOf(b, profile));
+const diff = diffDocxInventories(await inventoryOf(a, profile), await inventoryOf(b, profile));
 ```
 
 Replace with:
 
 ```ts
-    let invA: Awaited<ReturnType<typeof inventoryOf>>;
-    let invB: Awaited<ReturnType<typeof inventoryOf>>;
-    try {
-        invA = await inventoryOf(a, profile);
-    } catch (err) {
-        return { code: 1, markdown: `Error: could not read '${a}': ${err instanceof Error ? err.message : String(err)}` };
-    }
-    try {
-        invB = await inventoryOf(b, profile);
-    } catch (err) {
-        return { code: 1, markdown: `Error: could not read '${b}': ${err instanceof Error ? err.message : String(err)}` };
-    }
-    const diff = diffDocxInventories(invA, invB);
+let invA: Awaited<ReturnType<typeof inventoryOf>>;
+let invB: Awaited<ReturnType<typeof inventoryOf>>;
+try {
+    invA = await inventoryOf(a, profile);
+} catch (err) {
+    return { code: 1, markdown: `Error: could not read '${a}': ${err instanceof Error ? err.message : String(err)}` };
+}
+try {
+    invB = await inventoryOf(b, profile);
+} catch (err) {
+    return { code: 1, markdown: `Error: could not read '${b}': ${err instanceof Error ? err.message : String(err)}` };
+}
+const diff = diffDocxInventories(invA, invB);
 ```
 
 - [ ] **Step 4: Run it, verify pass + no regression**
@@ -208,6 +211,7 @@ Build the module incrementally (one visible dimension per sub-task, each TDD). A
 ## Task 3a: module scaffold + paragraph text (final view) + block order
 
 **Files:**
+
 - Create: `src/scripts/office/validators/docx-visible-projection.ts`
 - Create: `tests/docx-visible-projection.test.ts`
 
@@ -243,11 +247,7 @@ describe("collectVisibleProjection", () => {
                     `<w:p><w:r><w:br/><w:t>after-break</w:t></w:r></w:p>`,
             );
             const proj = await collectVisibleProjection(dir, "strict");
-            expect(proj.parts["word/document.xml"].blocks.map((b: any) => b.text)).toEqual([
-                "One\tTwo",
-                "kept",
-                "¶after-break",
-            ]);
+            expect(proj.parts["word/document.xml"].blocks.map((b: any) => b.text)).toEqual(["One\tTwo", "kept", "¶after-break"]);
         });
     });
 });
@@ -587,10 +587,10 @@ Add to the module and wire into `projectBody`:
 ```ts
 function projectTable(tbl: Element): VisibleBlock {
     const tblPr = wChild(tbl, "tblPr");
-    const style = tblPr ? (wChild(tblPr, "tblStyle") ? wAttr(wChild(tblPr, "tblStyle")!, "val") ?? undefined : undefined) : undefined;
+    const style = tblPr ? (wChild(tblPr, "tblStyle") ? (wAttr(wChild(tblPr, "tblStyle")!, "val") ?? undefined) : undefined) : undefined;
     const rows = wChildren(tbl, "tr");
     const grid = wChild(tbl, "tblGrid");
-    const cols = grid ? wChildren(grid, "gridCol").length : (rows[0] ? wChildren(rows[0], "tc").length : 0);
+    const cols = grid ? wChildren(grid, "gridCol").length : rows[0] ? wChildren(rows[0], "tc").length : 0;
     const cells: VisibleBlock[][] = rows.map((tr) =>
         wChildren(tr, "tc").map((tc) => {
             const inner: VisibleBlock[] = [];
@@ -601,7 +601,11 @@ function projectTable(tbl: Element): VisibleBlock {
                 else if (local(el) === "tbl") inner.push(projectTable(el));
             }
             // flatten cell text for convenient assertions
-            return { kind: "paragraph", text: inner.map((b) => b.text).join("\n"), runs: inner.flatMap((b) => b.runs ?? []) } as VisibleBlock;
+            return {
+                kind: "paragraph",
+                text: inner.map((b) => b.text).join("\n"),
+                runs: inner.flatMap((b) => b.runs ?? []),
+            } as VisibleBlock;
         }),
     );
     return { kind: "table", text: "", style, grid: { rows: rows.length, cols, cells } };
@@ -611,8 +615,8 @@ function projectTable(tbl: Element): VisibleBlock {
 In `projectBody`, inside the loop, after the `p` branch add:
 
 ```ts
-        if (ln === "p") blocks.push(projectParagraph(el));
-        else if (ln === "tbl") blocks.push(projectTable(el));
+if (ln === "p") blocks.push(projectParagraph(el));
+else if (ln === "tbl") blocks.push(projectTable(el));
 ```
 
 - [ ] **Step 4: Run it, verify pass**
@@ -724,8 +728,8 @@ function projectParagraph(p: Element, rels: Map<string, string>): VisibleBlock {
 Update all `projectParagraph(...)` / `projectTable(...)` call sites to pass `rels` (table cells call `projectParagraph(el, rels)`; `projectTable(tbl, rels)`), and in `collectVisibleProjection` load rels once:
 
 ```ts
-        const rels = await loadRels(unpackedDir, "word/document.xml");
-        proj.parts["word/document.xml"] = { blocks: projectBody(dom, rels) };
+const rels = await loadRels(unpackedDir, "word/document.xml");
+proj.parts["word/document.xml"] = { blocks: projectBody(dom, rels) };
 ```
 
 - [ ] **Step 4: Run it, verify pass**
@@ -768,38 +772,41 @@ Expected: FAIL — `pageGeometry`/`comments` empty.
 Add to `collectVisibleProjection`, after building `parts["word/document.xml"]`:
 
 ```ts
-        // Page geometry (all sectPr in document order).
-        for (const ns of WORD_NAMESPACES) {
-            const sects = dom.getElementsByTagNameNS(ns, "sectPr");
-            for (let i = 0; i < sects.length; i += 1) {
-                const sect = sects.item(i)!;
-                const sig: string[] = [];
-                const pgSz = wChild(sect, "pgSz");
-                if (pgSz) sig.push(`${wAttr(pgSz, "orient") ?? "portrait"} ${wAttr(pgSz, "w") ?? "?"}x${wAttr(pgSz, "h") ?? "?"}`);
-                const pgMar = wChild(sect, "pgMar");
-                if (pgMar) sig.push(`mar ${wAttr(pgMar, "top") ?? "?"},${wAttr(pgMar, "right") ?? "?"},${wAttr(pgMar, "bottom") ?? "?"},${wAttr(pgMar, "left") ?? "?"}`);
-                const cols = wChild(sect, "cols");
-                sig.push(`cols=${cols ? (wAttr(cols, "num") ?? "1") : "1"}`);
-                proj.pageGeometry.push(sig.join(" "));
-            }
-        }
+// Page geometry (all sectPr in document order).
+for (const ns of WORD_NAMESPACES) {
+    const sects = dom.getElementsByTagNameNS(ns, "sectPr");
+    for (let i = 0; i < sects.length; i += 1) {
+        const sect = sects.item(i)!;
+        const sig: string[] = [];
+        const pgSz = wChild(sect, "pgSz");
+        if (pgSz) sig.push(`${wAttr(pgSz, "orient") ?? "portrait"} ${wAttr(pgSz, "w") ?? "?"}x${wAttr(pgSz, "h") ?? "?"}`);
+        const pgMar = wChild(sect, "pgMar");
+        if (pgMar)
+            sig.push(
+                `mar ${wAttr(pgMar, "top") ?? "?"},${wAttr(pgMar, "right") ?? "?"},${wAttr(pgMar, "bottom") ?? "?"},${wAttr(pgMar, "left") ?? "?"}`,
+            );
+        const cols = wChild(sect, "cols");
+        sig.push(`cols=${cols ? (wAttr(cols, "num") ?? "1") : "1"}`);
+        proj.pageGeometry.push(sig.join(" "));
+    }
+}
 ```
 
 And a comments collector (after the try for document.xml):
 
 ```ts
-    try {
-        const cdom = parseXml(await fs.readFile(path.join(unpackedDir, "word", "comments.xml"), "utf-8"));
-        for (const ns of WORD_NAMESPACES) {
-            const cs = cdom.getElementsByTagNameNS(ns, "comment");
-            for (let i = 0; i < cs.length; i += 1) {
-                const paras = wChildren(cs.item(i)!, "p");
-                proj.comments.push(paras.map((p) => paragraphText(p)).join("\n"));
-            }
+try {
+    const cdom = parseXml(await fs.readFile(path.join(unpackedDir, "word", "comments.xml"), "utf-8"));
+    for (const ns of WORD_NAMESPACES) {
+        const cs = cdom.getElementsByTagNameNS(ns, "comment");
+        for (let i = 0; i < cs.length; i += 1) {
+            const paras = wChildren(cs.item(i)!, "p");
+            proj.comments.push(paras.map((p) => paragraphText(p)).join("\n"));
         }
-    } catch {
-        // no comments part
     }
+} catch {
+    // no comments part
+}
 ```
 
 - [ ] **Step 4: Run it, verify pass**
@@ -836,31 +843,31 @@ Expected: FAIL — `parts["word/header1.xml"]` undefined.
 In `collectVisibleProjection`, after the document.xml block, scan the `word/` dir for header*/footer* parts and project their bodies (they contain `w:p`/`w:tbl` directly under `w:hdr`/`w:ftr`):
 
 ```ts
-    try {
-        const wordDir = path.join(unpackedDir, "word");
-        for (const name of await fs.readdir(wordDir)) {
-            if (!/^(header|footer)\d*\.xml$/i.test(name)) continue;
-            const rel = `word/${name}`;
-            try {
-                const hdom = parseXml(await fs.readFile(path.join(wordDir, name), "utf-8"));
-                const rels = await loadRels(unpackedDir, rel);
-                // root is w:hdr/w:ftr — reuse projectBody by treating root's children
-                const blocks: VisibleBlock[] = [];
-                const root = hdom.documentElement;
-                for (let c = root.firstChild; c; c = c.nextSibling) {
-                    if (!isWordEl(c)) continue;
-                    const el = c as Element;
-                    if (local(el) === "p") blocks.push(projectParagraph(el, rels));
-                    else if (local(el) === "tbl") blocks.push(projectTable(el, rels));
-                }
-                proj.parts[rel] = { blocks };
-            } catch {
-                // skip unreadable header/footer
+try {
+    const wordDir = path.join(unpackedDir, "word");
+    for (const name of await fs.readdir(wordDir)) {
+        if (!/^(header|footer)\d*\.xml$/i.test(name)) continue;
+        const rel = `word/${name}`;
+        try {
+            const hdom = parseXml(await fs.readFile(path.join(wordDir, name), "utf-8"));
+            const rels = await loadRels(unpackedDir, rel);
+            // root is w:hdr/w:ftr — reuse projectBody by treating root's children
+            const blocks: VisibleBlock[] = [];
+            const root = hdom.documentElement;
+            for (let c = root.firstChild; c; c = c.nextSibling) {
+                if (!isWordEl(c)) continue;
+                const el = c as Element;
+                if (local(el) === "p") blocks.push(projectParagraph(el, rels));
+                else if (local(el) === "tbl") blocks.push(projectTable(el, rels));
             }
+            proj.parts[rel] = { blocks };
+        } catch {
+            // skip unreadable header/footer
         }
-    } catch {
-        // no word dir
     }
+} catch {
+    // no word dir
+}
 ```
 
 - [ ] **Step 4: Run it, verify pass**
@@ -868,7 +875,7 @@ In `collectVisibleProjection`, after the document.xml block, scan the `word/` di
 Run: `bunx vitest run tests/docx-visible-projection.test.ts -t "header and footer part"`
 Expected: PASS.
 
-> **Numbering note:** `numId`/`ilvl` are already captured in each paragraph's `pPr` signature (Task 3b), so a numbering *reference* change is visible. Resolving `numbering.xml` to concrete number *formats* is deferred as a documented projection limitation (a format-only change with an unchanged `numId` is rare and low-visibility); if `prove-benign` later surfaces a numbering-format false-negative, extend here.
+> **Numbering note:** `numId`/`ilvl` are already captured in each paragraph's `pPr` signature (Task 3b), so a numbering _reference_ change is visible. Resolving `numbering.xml` to concrete number _formats_ is deferred as a documented projection limitation (a format-only change with an unchanged `numId` is rare and low-visibility); if `prove-benign` later surfaces a numbering-format false-negative, extend here.
 
 ## Task 3g: deterministic serialization for comparison
 
@@ -987,6 +994,7 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
 ## Task 4: prove projection invariance under repair across fixtures
 
 **Files:**
+
 - Create: `scripts/prove-benign.ts`
 - Output: `.drift-run/BENIGN_PROOF.md` (committed as the deliverable)
 
@@ -1033,7 +1041,11 @@ async function extract(buf: Buffer, outDir: string): Promise<void> {
     }
 }
 
-interface Row { rel: string; verdict: "proven-benign" | "defect" | "errored"; detail: string }
+interface Row {
+    rel: string;
+    verdict: "proven-benign" | "defect" | "errored";
+    detail: string;
+}
 
 async function main(): Promise<void> {
     const profile: Profile = "strict";
@@ -1078,13 +1090,22 @@ async function main(): Promise<void> {
         `- Could not process (encrypted/corrupt): ${errored.length}`,
         "",
         ...(defects.length
-            ? ["## Repair defects — visible change detected", "", "| Fixture | visible delta |", "|---|---|", ...defects.map((r) => `| \`${r.rel}\` | ${r.detail} |`), ""]
+            ? [
+                  "## Repair defects — visible change detected",
+                  "",
+                  "| Fixture | visible delta |",
+                  "|---|---|",
+                  ...defects.map((r) => `| \`${r.rel}\` | ${r.detail} |`),
+                  "",
+              ]
             : ["_No repair defects: every processable fixture's visible projection was invariant under repair._", ""]),
         ...(errored.length ? ["## Could not process", "", ...errored.map((r) => `- \`${r.rel}\`: ${r.detail}`), ""] : []),
     ].join("\n");
     await fs.mkdir(out, { recursive: true });
     await fs.writeFile(path.join(out, "BENIGN_PROOF.md"), md, "utf-8");
-    process.stdout.write(`\nproven=${proven.length} defects=${defects.length} errored=${errored.length}\nReport: ${path.join(out, "BENIGN_PROOF.md")}\n`);
+    process.stdout.write(
+        `\nproven=${proven.length} defects=${defects.length} errored=${errored.length}\nReport: ${path.join(out, "BENIGN_PROOF.md")}\n`,
+    );
 }
 main().catch((e: unknown) => {
     process.stderr.write(`${e instanceof Error ? (e.stack ?? e.message) : String(e)}\n`);
@@ -1104,7 +1125,7 @@ Expected: completes; prints `proven=… defects=… errored=…`. The `mcdoc.doc
 
 - [ ] **Step 4: Review defects**
 
-Open `.drift-run/BENIGN_PROOF.md`. For each defect, inspect the visible delta. If a delta is actually a *projection-model gap* (a plumbing change the projection wrongly treats as visible), fix `docx-visible-projection.ts` (add a focused test first) and re-run. If a delta is a real user-visible repair change, record it as a follow-up repair defect.
+Open `.drift-run/BENIGN_PROOF.md`. For each defect, inspect the visible delta. If a delta is actually a _projection-model gap_ (a plumbing change the projection wrongly treats as visible), fix `docx-visible-projection.ts` (add a focused test first) and re-run. If a delta is a real user-visible repair change, record it as a follow-up repair defect.
 
 - [ ] **Step 5: Commit the proof**
 
@@ -1139,6 +1160,7 @@ git push origin feat/inventory-fingerprint
 - [ ] Do NOT run `bun run fmt:fix` (repo-wide). Restrict formatting to changed files; `git checkout -- <file>` any unrelated reformatting.
 
 ## Notes / limitations
-- Projection is the *final* tracked-changes view; hidden (`vanish`) text excluded; `xml:space="preserve"` significant; comments included — per approved spec.
+
+- Projection is the _final_ tracked-changes view; hidden (`vanish`) text excluded; `xml:space="preserve"` significant; comments included — per approved spec.
 - Numbering-format resolution from `numbering.xml` is deferred (numId/ilvl reference is captured); extend only if `prove-benign` surfaces a numbering false-negative.
 - Render-diff validation against real Word/LibreOffice (`SOFFICE_AVAILABLE`) is deferred future work to validate the projection model.
