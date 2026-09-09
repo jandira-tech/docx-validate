@@ -112,6 +112,28 @@ describe("BaseSchemaValidator", () => {
             });
         });
 
+        it("prevents path traversal outside unpackedDir by treating as a broken reference", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
+                await writeFile(
+                    path.join(dir, "_rels", ".rels"),
+                    `${RELS_HEADER}
+            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+              <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="../../../../../../etc/passwd"/>
+              <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="/etc/passwd"/>
+            </Relationships>`,
+                );
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateFileReferences();
+                expect(result.valid).toBe(false);
+
+                const broken = result.issues.filter((i) => i.code === "rels-broken");
+                expect(broken).toHaveLength(2);
+                expect(broken[0].message).toContain("../../../../../../etc/passwd");
+                expect(broken[1].message).toContain("/etc/passwd");
+            });
+        });
+
         it("passes when all references resolve and no orphan files exist", async () => {
             await withTempDir(async (dir) => {
                 await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
