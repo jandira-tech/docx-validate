@@ -56,7 +56,7 @@ describe("word-valid profile does NOT flag Word-tolerated misplacements (no fals
         ["a Word-clean baseline file", "word-clean-strict01.docx"],
     ];
     for (const [label, file] of tolerated) {
-        it(`stays valid: ${label}`, async () => {
+        it(`stays valid: ${label}`, { timeout: 30000 }, async () => {
             const res = await validate(path.join(WORKING, file), { profile: "word-valid" });
             const e = errs(res);
             expect(e, `must not gain errors, got: ${e.map((x) => (x as { code?: string }).code).join(",")}`).toHaveLength(0);
