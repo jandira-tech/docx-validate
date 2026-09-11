@@ -89,6 +89,26 @@ describe("BaseSchemaValidator", () => {
                 expect(result.valid).toBe(true);
             });
         });
+
+        it("detects path traversal attempts as broken Target references", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
+                await writeFile(
+                    path.join(dir, "_rels", ".rels"),
+                    `${RELS_HEADER}
+            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+              <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+              <Relationship Id="rId2" Type="http://example.com/custom" Target="../../../../../../../etc/passwd"/>
+            </Relationships>`,
+                );
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateFileReferences();
+                expect(result.valid).toBe(false);
+                const broken = result.issues.find((i) => i.code === "rels-broken");
+                expect(broken).toBeDefined();
+                expect(broken!.message).toContain("../../../../../../../etc/passwd");
+            });
+        });
     });
 
     describe("validateFileReferences", () => {
