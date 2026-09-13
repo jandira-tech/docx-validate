@@ -112,6 +112,25 @@ describe("BaseSchemaValidator", () => {
             });
         });
 
+        it("rejects path traversal attempts in Target references", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
+                await writeFile(
+                    path.join(dir, "_rels", ".rels"),
+                    `${RELS_HEADER}
+            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+              <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="../../../../../etc/passwd"/>
+            </Relationships>`,
+                );
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateFileReferences();
+                expect(result.valid).toBe(false);
+                const broken = result.issues.find((i) => i.code === "rels-broken");
+                expect(broken).toBeDefined();
+                expect(broken!.message).toContain("../../../../../etc/passwd");
+            });
+        });
+
         it("passes when all references resolve and no orphan files exist", async () => {
             await withTempDir(async (dir) => {
                 await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
