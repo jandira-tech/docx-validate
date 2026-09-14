@@ -329,13 +329,15 @@ const isDeletedRunText = (node: Node): boolean => {
 };
 
 const collectDeletedRunText = (root: Document | Element, ns: string, localName: string): Element[] => {
-    const out: Element[] = [];
-    for (const el of getElementsByTagNameNSAll(root, ns, localName)) {
-        if (isDeletedRunText(el)) {
-            out.push(el);
+    const out = new Set<Element>();
+    for (const del of getElementsByTagNameNSAll(root, ns, "del")) {
+        for (const el of getElementsByTagNameNSAll(del, ns, localName)) {
+            if (isDeletedRunText(el)) {
+                out.add(el);
+            }
         }
     }
-    return out;
+    return Array.from(out);
 };
 
 export class DOCXSchemaValidator extends BaseSchemaValidator {
