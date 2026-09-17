@@ -329,13 +329,19 @@ const isDeletedRunText = (node: Node): boolean => {
 };
 
 const collectDeletedRunText = (root: Document | Element, ns: string, localName: string): Element[] => {
-    const out: Element[] = [];
-    for (const el of getElementsByTagNameNSAll(root, ns, localName)) {
-        if (isDeletedRunText(el)) {
-            out.push(el);
+    // ⚡ Bolt: Optimize by only querying descendants within <w:del> instead of entire document,
+    // reusing the namespace, and deduplicating nested matches with a Set.
+    const out = new Set<Element>();
+    for (const del of getElementsByTagNameNSAll(root, ns, "del")) {
+        const elems = del.getElementsByTagNameNS(ns, localName);
+        for (let i = 0; i < elems.length; i++) {
+            const el = elems.item(i);
+            if (el && isDeletedRunText(el)) {
+                out.add(el);
+            }
         }
     }
-    return out;
+    return Array.from(out);
 };
 
 export class DOCXSchemaValidator extends BaseSchemaValidator {
@@ -713,7 +719,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 continue;
             }
 
-            const invalid: Element[] = [];
+            // ⚡ Bolt: Use a Set to deduplicate nested matches while iterating over elements
+            const invalidSet = new Set<Element>();
             for (const ns of WORD_PARAGRAPH_NAMESPACES) {
                 const insNodes = dom.getElementsByTagNameNS(ns, "ins");
                 for (let i = 0; i < insNodes.length; i++) {
@@ -725,14 +732,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         for (let j = 0; j < delTexts.length; j++) {
                             const delText = delTexts.item(j);
                             if (delText && !isInsideDel(delText)) {
-                                invalid.push(delText);
+                                invalidSet.add(delText);
                             }
                         }
                     }
                 }
             }
 
-            for (const elem of invalid) {
+            for (const elem of invalidSet) {
                 const text = elem.firstChild?.nodeValue ?? "";
                 issues.push({
                     severity: "error",
