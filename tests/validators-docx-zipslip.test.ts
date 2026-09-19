@@ -19,9 +19,17 @@ describe("DOCXSchemaValidator relationship target path traversal", () => {
 </Relationships>`;
             await fs.writeFile(path.join(wordRelsDir, "document.xml.rels"), relsContent, "utf8");
 
-            await fs.writeFile(path.join(unpackedDir, "word", "document.xml"), `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"></w:document>`, "utf8");
+            await fs.writeFile(
+                path.join(unpackedDir, "word", "document.xml"),
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"></w:document>`,
+                "utf8",
+            );
 
-            await fs.writeFile(path.join(unpackedDir, "[Content_Types].xml"), `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`, "utf8");
+            await fs.writeFile(
+                path.join(unpackedDir, "[Content_Types].xml"),
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`,
+                "utf8",
+            );
 
             await fs.mkdir(path.join(unpackedDir, "_rels"), { recursive: true });
             const rootRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -30,17 +38,16 @@ describe("DOCXSchemaValidator relationship target path traversal", () => {
 </Relationships>`;
             await fs.writeFile(path.join(unpackedDir, "_rels", ".rels"), rootRels, "utf8");
 
-
             const validator = new DOCXSchemaValidator({
                 unpackedDir,
                 originalFile: path.join(dir, "foo.docx"),
-                author: "author",
+
                 verbose: false,
             });
 
             const result = await validator.validate();
             // It drops the relationship so we don't read /etc/passwd or report /etc/passwd missing
-            expect(result.issues.some(issue => issue.message.includes("/etc/passwd"))).toBe(false);
+            expect(result.issues.some((issue) => issue.message.includes("/etc/passwd"))).toBe(false);
         });
     });
 });
