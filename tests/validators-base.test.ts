@@ -1,3 +1,5 @@
+import { extractZipEntries } from "../src/lib/zip-path";
+import JSZip from "jszip";
 /*
  * Copyright 2026 Jandira Technologies, LLC
  *
@@ -87,6 +89,44 @@ describe("BaseSchemaValidator", () => {
                 const v = new HarnessValidator({ unpackedDir: dir });
                 const result = await v.validateUniqueIds();
                 expect(result.valid).toBe(true);
+            });
+        });
+    });
+
+    describe("validateFileReferences path traversal prevention", () => {
+        it("flags targets escaping the unpackedDir", async () => {
+            await withTempDir(async (dir) => {
+                const docx = new JSZip();
+                docx.file(
+                    "word/_rels/document.xml.rels",
+                    '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../../../../../etc/passwd"/></Relationships>',
+                );
+                await docx.generateAsync({ type: "nodebuffer" }).then((b) => fs.writeFile(path.join(dir, "malicious.docx"), b));
+                const unpacked = path.join(dir, "unpacked");
+                await extractZipEntries(docx, unpacked);
+
+                const validator = new BaseSchemaValidator({ unpackedDir: unpacked, verbose: false });
+                const result = await validator.validateFileReferences();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "rels-broken" && i.message.includes("../../../../../etc/passwd"))).toBe(true);
+            });
+        });
+
+        it("flags absolute path targets", async () => {
+            await withTempDir(async (dir) => {
+                const docx = new JSZip();
+                docx.file(
+                    "word/_rels/document.xml.rels",
+                    '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="/etc/passwd"/></Relationships>',
+                );
+                await docx.generateAsync({ type: "nodebuffer" }).then((b) => fs.writeFile(path.join(dir, "malicious.docx"), b));
+                const unpacked = path.join(dir, "unpacked");
+                await extractZipEntries(docx, unpacked);
+
+                const validator = new BaseSchemaValidator({ unpackedDir: unpacked, verbose: false });
+                const result = await validator.validateFileReferences();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "rels-broken" && i.message.includes("/etc/passwd"))).toBe(true);
             });
         });
     });

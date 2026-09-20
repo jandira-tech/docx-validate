@@ -1,3 +1,4 @@
+import { extractZipEntries } from "../src/lib/zip-path";
 /*
  * Copyright 2026 Jandira Technologies, LLC
  *
@@ -215,9 +216,7 @@ describe("DOCXSchemaValidator", () => {
             await withTempDir(async (dir) => {
                 await writeFile(
                     path.join(dir, "word", "document.xml"),
-                    wrapDocument(
-                        `<w:p><w:del w:id="1"><w:ins w:id="2"><w:r><w:delText>ok</w:delText></w:r></w:ins></w:del></w:p>`,
-                    ),
+                    wrapDocument(`<w:p><w:del w:id="1"><w:ins w:id="2"><w:r><w:delText>ok</w:delText></w:r></w:ins></w:del></w:p>`),
                 );
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const result = await v.validateInsertions();
@@ -380,7 +379,10 @@ describe("DOCXSchemaValidator", () => {
 
         it("flags textId == 0", async () => {
             await withTempDir(async (dir) => {
-                await writeFile(path.join(dir, "word", "document.xml"), wrapDocument(`<w:p w14:paraId="00000001" w14:textId="00000000"/>`, W14_NS));
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(`<w:p w14:paraId="00000001" w14:textId="00000000"/>`, W14_NS),
+                );
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const result = await v.validateIdConstraints();
                 expect(result.valid).toBe(false);
@@ -407,9 +409,7 @@ describe("DOCXSchemaValidator", () => {
             await withTempDir(async (dir) => {
                 await writeFile(
                     path.join(dir, "word", "numbering.xml"),
-                    `<?xml version="1.0"?><w:numbering ${W_NS} ${W16CID_NS}>` +
-                        `<w:abstractNum w16cid:durableId="0"/>` +
-                        `</w:numbering>`,
+                    `<?xml version="1.0"?><w:numbering ${W_NS} ${W16CID_NS}>` + `<w:abstractNum w16cid:durableId="0"/>` + `</w:numbering>`,
                 );
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const result = await v.validateIdConstraints();
@@ -2041,6 +2041,28 @@ describe("DOCXSchemaValidator", () => {
     });
 
     // ----- Plan 01: Whole-file preservation -----------------------------------
+
+    describe("resolveRelationshipTargetPath path traversal prevention", () => {
+        it("catches path escapes in resolveRelationshipTargetPath indirectly", async () => {
+            await withTempDir(async (dir) => {
+                const docx = new JSZip();
+                docx.file(
+                    "word/document.xml",
+                    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>A</w:t></w:r></w:p></w:body></w:document>',
+                );
+                docx.file(
+                    "word/_rels/document.xml.rels",
+                    '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../../../../../etc/passwd"/></Relationships>',
+                );
+                await docx.generateAsync({ type: "nodebuffer" }).then((b) => fs.writeFile(path.join(dir, "malicious.docx"), b));
+                const unpacked = path.join(dir, "unpacked");
+                await extractZipEntries(docx, unpacked);
+
+                const validator = new DOCXSchemaValidator({ unpackedDir: unpacked, verbose: false });
+                await validator.validateOrphanedRelationships();
+            });
+        });
+    });
 
     describe("validateOrphanedRelationships", () => {
         it("flags a .rels target path that does not exist in unpacked dir", async () => {
