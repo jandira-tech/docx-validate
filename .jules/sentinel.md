@@ -15,3 +15,9 @@
 **Vulnerability:** While fixing the Insecure Temporary File vulnerability with `mkdtempSync`, assigning the result of `mkdtempSync` to an exported constant executed the synchronous I/O operations directly at module load time.
 **Learning:** Performing side effects like file I/O (e.g., creating temporary directories) directly inside the module scope introduces architectural flaws. It means importing the file anywhere (like in test suites or other tools) inadvertently triggers directory creation, leading to orphaned files and unintended side effects, even if the target CLI function is never run.
 **Prevention:** Always encapsulate file system interactions, including the generation of temporary directories or profiles, inside functions (e.g., lazy getters) rather than static module-level initialization.
+
+## 2026-05-20 - Zip Slip Vulnerability in Relationship Path Resolution
+
+**Vulnerability:** The codebase failed to properly sanitize resolved relationship target paths against directory traversal (e.g. `../` and absolute paths). The validation step loaded paths using `path.resolve`, allowing malicious paths defined in relationship `.rels` files to point to locations outside the intended extracted directory.
+**Learning:** Resolving a relative path inside an extracted package is an unsafe operation because the extracted files themselves might be malicious and point to paths outside of the intended directory context via paths like `../../foo.txt`. This allows checking for references outside the unpacked folder or even referencing completely external items via absolute paths on the local system during the relationship validations (like in PPTX slides or DOCX documents).
+**Prevention:** Always validate the final `path.resolve` path using `path.relative` against the base sandbox directory, and explicitly check whether the resulting relative path begins with `..` or is an absolute path. Reject any paths that breach the boundary of the sandbox.
