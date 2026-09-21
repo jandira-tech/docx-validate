@@ -215,9 +215,7 @@ describe("DOCXSchemaValidator", () => {
             await withTempDir(async (dir) => {
                 await writeFile(
                     path.join(dir, "word", "document.xml"),
-                    wrapDocument(
-                        `<w:p><w:del w:id="1"><w:ins w:id="2"><w:r><w:delText>ok</w:delText></w:r></w:ins></w:del></w:p>`,
-                    ),
+                    wrapDocument(`<w:p><w:del w:id="1"><w:ins w:id="2"><w:r><w:delText>ok</w:delText></w:r></w:ins></w:del></w:p>`),
                 );
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const result = await v.validateInsertions();
@@ -380,7 +378,10 @@ describe("DOCXSchemaValidator", () => {
 
         it("flags textId == 0", async () => {
             await withTempDir(async (dir) => {
-                await writeFile(path.join(dir, "word", "document.xml"), wrapDocument(`<w:p w14:paraId="00000001" w14:textId="00000000"/>`, W14_NS));
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    wrapDocument(`<w:p w14:paraId="00000001" w14:textId="00000000"/>`, W14_NS),
+                );
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const result = await v.validateIdConstraints();
                 expect(result.valid).toBe(false);
@@ -407,9 +408,7 @@ describe("DOCXSchemaValidator", () => {
             await withTempDir(async (dir) => {
                 await writeFile(
                     path.join(dir, "word", "numbering.xml"),
-                    `<?xml version="1.0"?><w:numbering ${W_NS} ${W16CID_NS}>` +
-                        `<w:abstractNum w16cid:durableId="0"/>` +
-                        `</w:numbering>`,
+                    `<?xml version="1.0"?><w:numbering ${W_NS} ${W16CID_NS}>` + `<w:abstractNum w16cid:durableId="0"/>` + `</w:numbering>`,
                 );
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const result = await v.validateIdConstraints();
@@ -2506,6 +2505,29 @@ describe("DOCXSchemaValidator", () => {
                 const result = await v.validateRedundantRunProperties();
                 expect(result.valid).toBe(true);
                 expect(result.issues.some((i) => i.code === "run-props-redundant" && i.path === "word/header1.xml")).toBe(true);
+            });
+        });
+    });
+
+    describe("checkMediaReferences path traversal mitigation", () => {
+        it("flags media targets escaping unpackedDir as missing", async () => {
+            const REL_NS = `xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"`;
+            const DRAWING_NS = `xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"`;
+            await withTempDir(async (dir) => {
+                await fs.mkdir(path.join(dir, "word", "_rels"), { recursive: true });
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    `<?xml version="1.0"?><w:document ${W_NS}><w:body><w:p><w:r><w:drawing><a:blip r:embed="rId1" ${REL_NS} ${DRAWING_NS}/></w:drawing></w:r></w:p></w:body></w:document>`,
+                );
+                await writeFile(
+                    path.join(dir, "word", "_rels", "document.xml.rels"),
+                    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../../../../etc/passwd"/></Relationships>`,
+                );
+
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateOrphanedRelationships();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "rels-target-missing" && i.message.includes("escapes the unpacked directory"))).toBe(true);
             });
         });
     });
