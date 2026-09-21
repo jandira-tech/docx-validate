@@ -686,4 +686,24 @@ describe("BaseSchemaValidator", () => {
             });
         });
     });
+
+    describe("validateRels path traversal mitigation", () => {
+        const PR_NS = `xmlns="http://schemas.openxmlformats.org/package/2006/relationships"`;
+        it("rejects Target paths that traverse outside the unpacked directory", async () => {
+            await withTempDir(async (dir) => {
+                const relsFile = path.join(dir, "word", "_rels", "document.xml.rels");
+                const content =
+                    `${RELS_HEADER}\n<Relationships ${PR_NS}>` +
+                    `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="../../../../etc/passwd"/>` +
+                    `</Relationships>`;
+                await writeFile(relsFile, content);
+                const v = new HarnessValidator({ unpackedDir: dir, profile: "strict" });
+                const result = await v.validateFileReferences();
+                expect(result.valid).toBe(false);
+                expect(
+                    result.issues.some((i) => i.code === "rels-broken" && i.message.includes("Broken reference to ../../../../etc/passwd")),
+                ).toBe(true);
+            });
+        });
+    });
 });

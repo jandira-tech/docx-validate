@@ -1884,7 +1884,15 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 if (!target) continue;
                 if (isExternalRelationship(elem, target)) continue;
                 const resolved = resolveRelationshipTargetPath(this.unpackedDir, xmlFile, target);
-                if (!resolved) continue;
+                if (!resolved) {
+                    issues.push({
+                        severity: "error",
+                        message: `Relationship target '${target}' escapes the unpacked directory or is invalid`,
+                        path: this.relPath(xmlFile),
+                        code: "rels-target-missing",
+                    });
+                    continue;
+                }
                 try {
                     const stat = await fs.stat(resolved);
                     if (!stat.isFile()) throw new Error("Target is not a file");
