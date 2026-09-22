@@ -67,7 +67,6 @@ export function severityClassFor(category: string): InventorySeverityClass {
     return SEVERITY_CLASS_BY_CATEGORY[category] ?? "content";
 }
 
-
 interface RepairPlanGroup {
     path?: string;
     code: string;
@@ -419,7 +418,7 @@ function collectSectionGeometry(rel: string, dom: Document, inventory: MutableDo
                 addCounter(inventory, rel, "section geometry", `section margins T${t} R${r} B${b} L${l}`, "section(s)", 1);
             }
             const cols = directWordChild(sect, "cols");
-            const num = cols ? wordChildAttrSelf(cols, "num") ?? "1" : "1";
+            const num = cols ? (wordChildAttrSelf(cols, "num") ?? "1") : "1";
             addCounter(inventory, rel, "section geometry", `section columns=${num}`, "section(s)", 1);
         }
     }
@@ -450,7 +449,6 @@ function roundEmu(raw: string | null): number {
 function wordChildAttrSelf(elem: Element, attr: string): string | null {
     return elem.getAttributeNS(wordNamespace(elem), attr) ?? elem.getAttribute(`w:${attr}`) ?? elem.getAttribute(attr);
 }
-
 
 function collectStyles(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
     if (!rel.endsWith("/styles.xml") && rel !== "word/styles.xml") return;

@@ -19,6 +19,7 @@ from the paragraph/character style. The diff shows:
    added to runs that inherit these from the paragraph style's `<w:rPr>`.
 
 These redundant properties:
+
 - Inflate file size (minor issue).
 - Make the document harder to re-style: changing the style's font only
   affects paragraphs/runs that do NOT have the explicit override. Explicit
@@ -64,8 +65,8 @@ Add `validateRedundantRunProperties()` to `DOCXSchemaValidator`:
 
 1. Parse `word/styles.xml` to build the default run property chain.
 2. For each `<w:r>` in `word/document.xml` that has an explicit `<w:rFonts>`:
-   - If the font values match the document default (`<w:docDefaults>/<w:rPrDefault>`),
-     emit `run-props-redundant` at `"info"` severity.
+    - If the font values match the document default (`<w:docDefaults>/<w:rPrDefault>`),
+      emit `run-props-redundant` at `"info"` severity.
 
 Limit to `<w:rFonts>` initially (highest signal-to-noise) before expanding to
 other properties.

@@ -99,9 +99,7 @@ describe("BaseSchemaValidator XsdValidator injection", () => {
         try {
             const fakeValidator: XsdValidator = {
                 async validate(): Promise<ValidationIssue[]> {
-                    return [
-                        { severity: "info", code: "xsd-schema-load-skipped", message: "schema not found" },
-                    ];
+                    return [{ severity: "info", code: "xsd-schema-load-skipped", message: "schema not found" }];
                 },
             };
             const v = new BaseSchemaValidator({

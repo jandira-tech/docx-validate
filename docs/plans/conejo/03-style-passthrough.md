@@ -17,6 +17,7 @@ instead of preserving the input styles. The diff shows:
    heading and footnote styles.
 
 This causes:
+
 - Comment-related styles missing → `style-default-missing` error (currently
   detected by the validator — `REQUIRED_DEFAULT_STYLES` in `docx.ts`).
 - Custom styles lost → `style-ref-missing` warnings for any paragraph/run

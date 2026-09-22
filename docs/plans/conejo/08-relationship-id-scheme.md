@@ -7,6 +7,7 @@ The repairer reassigns `Id` attributes on `<Relationship>` elements in both
 with a fresh sequential set starting at `rId1`.
 
 The diff shows:
+
 - Working `_rels/.rels`: `rId1`, `rId2`, `rId3` (3 relationships)
 - Broken `_rels/.rels`: `rId1`, `rId2`, `rId3`, `rId4` (4 relationships,
   including a new `custom-properties` entry)
@@ -45,12 +46,13 @@ as stable references.
    relationship whose `Target` is unchanged.
 4. For new relationships introduced by the repairer, allocate IDs that are
    above the existing maximum:
-   ```typescript
-   const existingIds = Array.from(rels.values()).map(id =>
-     parseInt(id.replace(/^rId/, ""), 10)
-   ).filter(n => !isNaN(n));
-   let nextId = Math.max(0, ...existingIds) + 1;
-   ```
+
+    ```typescript
+    const existingIds = Array.from(rels.values())
+        .map((id) => parseInt(id.replace(/^rId/, ""), 10))
+        .filter((n) => !isNaN(n));
+    let nextId = Math.max(0, ...existingIds) + 1;
+    ```
 
 5. Apply the same strategy to `word/_rels/document.xml.rels`.
 

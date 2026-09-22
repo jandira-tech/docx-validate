@@ -7,7 +7,7 @@
 ## Problem
 
 A repair-drift survey over 416 `.docx` fixtures (strict profile) found: 410
-processed, 57 drifted after repair, of which 56 were *classified* benign by the
+processed, 57 drifted after repair, of which 56 were _classified_ benign by the
 severity model and 1 showed content loss (`external/open-xml-sdk/mcdoc.docx`).
 Investigation revealed two defects and one trust gap:
 
@@ -19,7 +19,7 @@ Investigation revealed two defects and one trust gap:
 2. **`diff-docx` crashes** on malformed input (`Attribute w14:paraId redefined`)
    instead of reporting it.
 3. **"Benign" is asserted, not proven.** The 56 non-loss drifters are labeled
-   benign by a category-based severity classifier. We must *prove* each is
+   benign by a category-based severity classifier. We must _prove_ each is
    genuinely invisible to an ordinary end-user (the Springfield-Illinois
    reasonable-person standard) — no user-visible change to the rendered document.
 
@@ -27,8 +27,8 @@ Investigation revealed two defects and one trust gap:
 
 - Fix defect (1): repair must never emit a duplicate `w14:paraId`/`w14:textId`.
 - Fix defect (2): `diff-docx` reports unparseable parts as a finding, never throws.
-- Establish a **strict, testable invariant** — *repair must not change the
-  visible projection of a document* — and prove every non-loss drifter satisfies
+- Establish a **strict, testable invariant** — _repair must not change the
+  visible projection of a document_ — and prove every non-loss drifter satisfies
   it. Any violation is a repair defect.
 
 ## Non-goals (this iteration)
@@ -44,12 +44,13 @@ Investigation revealed two defects and one trust gap:
 ## The core abstraction: `collectVisibleProjection`
 
 The "ordinary Word user" is operationalized as an explicit, **ordered,
-normalized** projection of a document containing *only what a reader perceives on
-the page*. A repair-drift is **proven benign iff the projection is unchanged**.
+normalized** projection of a document containing _only what a reader perceives on
+the page_. A repair-drift is **proven benign iff the projection is unchanged**.
 
 ### INCLUDE — user-visible
+
 - **Body block sequence** (paragraphs and tables) **in document order**.
-- **Per paragraph:** final rendered text (tracked-changes *final* view —
+- **Per paragraph:** final rendered text (tracked-changes _final_ view —
   insertions in, deletions out), with `<w:tab/>` → `\t` and `<w:br>` → `¶`;
   `pStyle` value; visible `pPr` — alignment (`jc`), indentation (`ind`), spacing
   (`spacing`), numbering (`numPr` → `numId`/`ilvl`), borders/shading.
@@ -60,7 +61,7 @@ the page*. A repair-drift is **proven benign iff the projection is unchanged**.
 - **Tables:** rows × columns, merges (`gridSpan`/`vMerge`), visible cell
   properties (borders, shading, width), and recursively projected cell content.
 - **Images/drawings:** extent (bucketed to nearest 1000 EMU) + the **resolved
-  relationship target** (the image part name), *not* the `rId` string.
+  relationship target** (the image part name), _not_ the `rId` string.
 - **Hyperlinks:** display text + **resolved target**.
 - **Headers/footers:** projected content + which section references them.
 - **Page geometry:** size, orientation, margins, columns, section breaks.
@@ -69,13 +70,15 @@ the page*. A repair-drift is **proven benign iff the projection is unchanged**.
   marks/bubbles).
 
 ### EXCLUDE — invisible plumbing
+
 `w14`/`w15`/`w16cid`/`w16cex` `paraId`/`textId`/`durableId`; all `rsid*`;
-relationship `Id` strings (the *target* is captured, the id is not); content-type
+relationship `Id` strings (the _target_ is captured, the id is not); content-type
 declarations; namespace declarations; attribute order and the element order of
 property containers; XML indentation and insignificant inter-element whitespace;
 `docProps` metadata (not rendered on the page).
 
 ### Tricky-case decisions (approved)
+
 - **Tracked changes:** projection is the **final** rendered view — accept
   insertions, drop deletions.
 - **Hidden text (`w:vanish`):** excluded (not rendered).
@@ -84,6 +87,7 @@ property containers; XML indentation and insignificant inter-element whitespace;
 - **Comments:** included as visible.
 
 ### Determinism
+
 The projection is a deterministic, order-preserving structure (nested arrays /
 plain objects) suitable for deep-equality and for a readable delta. Insignificant
 whitespace and excluded attributes are normalized away so that a
@@ -103,7 +107,7 @@ provenBenign  ⇔  deepEqual(collectVisibleProjection(before),
 - **Non-empty delta → repair DEFECT** (per the approved "any visible change =
   bug" rule), recorded with the exact visible delta (which block/paragraph/run
   changed, before→after). These escalate as defects to fix in the repairer; this
-  iteration *reports* them rigorously (fixing each is follow-up work, except the
+  iteration _reports_ them rigorously (fixing each is follow-up work, except the
   already-known paraId defect which is fixed here).
 
 The known content-loss case (`mcdoc.docx`) is expected to fail the proof until
@@ -128,7 +132,7 @@ hasParaId = elem.getAttributeNS(W14_NAMESPACE, "paraId") || elem.getAttribute("w
 hasTextId = elem.getAttributeNS(W14_NAMESPACE, "textId") || elem.getAttribute("w14:textId")
 ```
 
-When an existing paraId/textId is detected by *either* form, the element falls
+When an existing paraId/textId is detected by _either_ form, the element falls
 into the no-op case and is not re-stamped — eliminating the duplicate.
 
 ## Defect (2) fix — `diff-docx` hardening
@@ -142,12 +146,12 @@ reports it.
 
 ## Architecture / modules
 
-| File | Change | Responsibility |
-|------|--------|----------------|
-| `src/scripts/office/validators/docx.ts` | modify | Fix `repairMissingParaIds` existence check (defect 1). |
-| `scripts/diff-docx.ts` | modify | Catch unparseable parts; report instead of throw (defect 2). |
-| `src/scripts/office/validators/docx-visible-projection.ts` | new | `collectVisibleProjection(unpackedDir, profile)` + `diffVisibleProjections(before, after)` returning a structured, readable delta. |
-| `scripts/prove-benign.ts` | new | Over a `.drift-run`-style copies/repaired tree (or fresh from fixtures): run projection-invariance per non-loss drifter, emit `BENIGN_PROOF.md`. |
+| File                                                       | Change | Responsibility                                                                                                                                   |
+| ---------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/scripts/office/validators/docx.ts`                    | modify | Fix `repairMissingParaIds` existence check (defect 1).                                                                                           |
+| `scripts/diff-docx.ts`                                     | modify | Catch unparseable parts; report instead of throw (defect 2).                                                                                     |
+| `src/scripts/office/validators/docx-visible-projection.ts` | new    | `collectVisibleProjection(unpackedDir, profile)` + `diffVisibleProjections(before, after)` returning a structured, readable delta.               |
+| `scripts/prove-benign.ts`                                  | new    | Over a `.drift-run`-style copies/repaired tree (or fresh from fixtures): run projection-invariance per non-loss drifter, emit `BENIGN_PROOF.md`. |
 
 `collectVisibleProjection` reuses `src/lib/xml-helpers.ts` and the same
 namespace/`directWordChild`/`wordChildAttr` helper style as the inventory; it is
@@ -157,6 +161,7 @@ inventory).
 ## Output
 
 `BENIGN_PROOF.md`:
+
 - Aggregate: N proven benign (empty projection delta), M defects (non-empty
   delta), with the strict invariant stated.
 - Proven-benign table: fixture + "visible projection identical".
@@ -171,12 +176,12 @@ inventory).
 - **Defect 2:** `runDiffDocx` on an input with a malformed part returns a
   non-zero `code` and a report string; does not throw.
 - **Projection:**
-  - A plumbing-only change (add `w14:paraId`, reorder attributes, re-declare a
-    namespace, reflow whitespace) → `diffVisibleProjections` empty.
-  - A visible change (delete a paragraph's text, drop bold, resize a table,
-    swap an image target) → non-empty delta naming the change.
-  - Hidden (`vanish`) text contributes no projected text; `xml:space="preserve"`
-    spacing is retained.
+    - A plumbing-only change (add `w14:paraId`, reorder attributes, re-declare a
+      namespace, reflow whitespace) → `diffVisibleProjections` empty.
+    - A visible change (delete a paragraph's text, drop bold, resize a table,
+      swap an image target) → non-empty delta naming the change.
+    - Hidden (`vanish`) text contributes no projected text; `xml:space="preserve"`
+      spacing is retained.
 - **prove-benign:** a tiny before/after pair with plumbing-only drift → proven
   benign; a pair with a visible change → defect with delta.
 
@@ -194,5 +199,5 @@ inventory).
   per-page image hash) to validate the projection model against real Word/
   LibreOffice output. Run on a Word machine; if render-diff and projection ever
   disagree, the projection model has a gap to close.
-- Fixing any *new* repair defects surfaced by `prove-benign` (beyond paraId) is
+- Fixing any _new_ repair defects surfaced by `prove-benign` (beyond paraId) is
   follow-up work, one fix per defect, each TDD.

@@ -13,12 +13,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { Repair } from "../src/repair";
 
-const WORKING_FIXTURE = path.resolve(
-    __dirname,
-    "fixtures",
-    "working",
-    "sample-document.afterword-repaired-word-repaired.docx",
-);
+const WORKING_FIXTURE = path.resolve(__dirname, "fixtures", "working", "sample-document.afterword-repaired-word-repaired.docx");
 
 describe("Repair class (PR C task C.2)", () => {
     it("instantiates with no options", () => {
