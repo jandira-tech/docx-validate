@@ -18,7 +18,10 @@ describe("diff-docx CLI", () => {
             const a = path.join(dir, "a");
             const b = path.join(dir, "b");
             await writeUnpacked(a, `<w:tbl><w:tblGrid><w:gridCol/><w:gridCol/></w:tblGrid><w:tr><w:tc/><w:tc/></w:tr></w:tbl>`);
-            await writeUnpacked(b, `<w:tbl><w:tblGrid><w:gridCol/><w:gridCol/><w:gridCol/></w:tblGrid><w:tr><w:tc/><w:tc/><w:tc/></w:tr></w:tbl>`);
+            await writeUnpacked(
+                b,
+                `<w:tbl><w:tblGrid><w:gridCol/><w:gridCol/><w:gridCol/></w:tblGrid><w:tr><w:tc/><w:tc/><w:tc/></w:tr></w:tbl>`,
+            );
             const { code, markdown } = await runDiffDocx([a, b]);
             expect(code).toBe(0);
             expect(markdown).toContain("## Added");

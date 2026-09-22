@@ -37,10 +37,7 @@ import JSZip from "jszip";
 
 import { withTempDir } from "../src/lib/run-cli";
 import type { Profile } from "../src/lib/types";
-import {
-    collectDocxSemanticInventory,
-    type DocxSemanticInventory,
-} from "../src/scripts/office/validators/docx-diagnostics";
+import { collectDocxSemanticInventory, type DocxSemanticInventory } from "../src/scripts/office/validators/docx-diagnostics";
 import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
 import { diffDocxInventories, inventoryDiffToIssues } from "../src/scripts/office/validators/docx-inventory-diff";
 

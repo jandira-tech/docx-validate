@@ -31,16 +31,7 @@ describe("src/ segregation: no node:* imports outside src/node/ (PR C un-skips t
     it.skip("zero src/ files outside src/node/ import from node:*", () => {
         const result = spawnSync(
             "rg",
-            [
-                "-n",
-                "--type",
-                "ts",
-                "-e",
-                String.raw`^import .* from ['"]node:`,
-                "src/",
-                "--glob",
-                "!src/node/**",
-            ],
+            ["-n", "--type", "ts", "-e", String.raw`^import .* from ['"]node:`, "src/", "--glob", "!src/node/**"],
             { encoding: "utf-8" },
         );
 

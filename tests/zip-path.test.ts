@@ -33,7 +33,9 @@ describe("resolveSafeZipEntry", () => {
 
     it("rejects parent-directory traversal", () => {
         const out = path.resolve("/tmp/docx-out");
-        expect(() => resolveSafeZipEntry(out, "../../etc/passwd")).toThrow(/Refusing to extract entry outside output dir: \.\.\/\.\.\/etc\/passwd/);
+        expect(() => resolveSafeZipEntry(out, "../../etc/passwd")).toThrow(
+            /Refusing to extract entry outside output dir: \.\.\/\.\.\/etc\/passwd/,
+        );
     });
 
     it("rejects a sibling directory that shares a prefix (startsWith trap)", () => {
