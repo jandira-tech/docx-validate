@@ -687,3 +687,24 @@ describe("BaseSchemaValidator", () => {
         });
     });
 });
+
+describe("BaseSchemaValidator.validateFileReferences (path traversal)", () => {
+    it("flags path traversal in _rels target as broken without checking existsSync", async () => {
+        await withTempDir(async (tmpDir) => {
+            const relsDir = path.join(tmpDir, "word", "_rels");
+            await fs.mkdir(relsDir, { recursive: true });
+
+            const docXmlRels = `${RELS_HEADER}
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../../../../../../../../../../../../etc/passwd" />
+</Relationships>`;
+            await fs.writeFile(path.join(relsDir, "document.xml.rels"), docXmlRels);
+            await fs.writeFile(path.join(tmpDir, "[Content_Types].xml"), `<Types/>`);
+            const v = new HarnessValidator({ unpackedDir: tmpDir });
+            const res = await v.validateFileReferences();
+            const relsIssues = res.issues.filter(i => i.code === "rels-broken");
+            expect(relsIssues).toHaveLength(1);
+            expect(relsIssues[0].message).toContain("Broken reference to ../../../../../../../../../../../../etc/passwd");
+        });
+    });
+});
