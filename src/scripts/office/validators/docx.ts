@@ -3343,7 +3343,7 @@ function countParagraphsInRoot(doc: Document): number {
     let count = 0;
     if (!doc.documentElement) return 0;
 
-    const stack = [doc.documentElement];
+    const stack: Element[] = [doc.documentElement];
     while (stack.length > 0) {
         const node = stack.pop();
         if (!node) continue;
