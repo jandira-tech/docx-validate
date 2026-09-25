@@ -15,3 +15,8 @@
 **Vulnerability:** While fixing the Insecure Temporary File vulnerability with `mkdtempSync`, assigning the result of `mkdtempSync` to an exported constant executed the synchronous I/O operations directly at module load time.
 **Learning:** Performing side effects like file I/O (e.g., creating temporary directories) directly inside the module scope introduces architectural flaws. It means importing the file anywhere (like in test suites or other tools) inadvertently triggers directory creation, leading to orphaned files and unintended side effects, even if the target CLI function is never run.
 **Prevention:** Always encapsulate file system interactions, including the generation of temporary directories or profiles, inside functions (e.g., lazy getters) rather than static module-level initialization.
+
+## 2026-05-20 - Unvalidated Relationship Target Resolution
+**Vulnerability:** The package relationship targets in `.rels` files were resolved and validated using `existsSync` and `statSync` without checking if the target escaped the intended unpacked directory. This could result in Path Traversal vulnerabilities when unzipping malformed packages.
+**Learning:** Even internal relationship validations that only check if a file exists (instead of reading contents) should ensure paths are bounded. Resolving an untrusted path using `path.resolve()` without comparing it against the intended root via `path.relative()` can permit escape sequences.
+**Prevention:** Always validate resolved paths against the intended extraction root directory using `path.relative(root, resolved)` and check that the relative path does not equal `..`, start with `..${path.sep}`, or resolve as an absolute path.
