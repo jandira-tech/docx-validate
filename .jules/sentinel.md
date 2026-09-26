@@ -15,3 +15,8 @@
 **Vulnerability:** While fixing the Insecure Temporary File vulnerability with `mkdtempSync`, assigning the result of `mkdtempSync` to an exported constant executed the synchronous I/O operations directly at module load time.
 **Learning:** Performing side effects like file I/O (e.g., creating temporary directories) directly inside the module scope introduces architectural flaws. It means importing the file anywhere (like in test suites or other tools) inadvertently triggers directory creation, leading to orphaned files and unintended side effects, even if the target CLI function is never run.
 **Prevention:** Always encapsulate file system interactions, including the generation of temporary directories or profiles, inside functions (e.g., lazy getters) rather than static module-level initialization.
+
+## 2026-09-26 - Fix Path Traversal in Office Relationship Targets
+**Vulnerability:** Path Traversal (Zip Slip variant) in Office relationship resolution. Untrusted `Target` attributes in `.rels` files could resolve to arbitrary system files via `path.resolve`.
+**Learning:** When resolving relative paths provided by untrusted sources, `path.resolve` alone is insufficient to prevent traversal out of the intended directory.
+**Prevention:** Always use `path.relative` in conjunction with `path.resolve` to validate that the resolved absolute path resides strictly within the intended base directory. Check that the relative path does not equal `..`, start with `..${path.sep}`, or is absolute.
