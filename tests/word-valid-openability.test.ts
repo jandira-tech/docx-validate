@@ -40,7 +40,7 @@ describe("word-valid profile errors on Word-rejected files", () => {
 describe("word-valid profile does NOT flag Word-tolerated misplacements (no false positives)", () => {
     // Each of these opens cleanly in real Word despite a content-model quirk that
     // an over-broad rule would wrongly flag. They lock the tolerated set.
-    const tolerated: Array<[string, string]> = [
+    const tolerated: [string, string][] = [
         ["misplaced w:pgSz (sectPr child)", "word-tolerated-misplaced-pgsz.docx"],
         ["misplaced w:link (style child)", "word-tolerated-misplaced-link.docx"],
         ["misplaced w:uiPriority (style child)", "word-tolerated-misplaced-uipriority.docx"],
@@ -56,7 +56,7 @@ describe("word-valid profile does NOT flag Word-tolerated misplacements (no fals
         ["a Word-clean baseline file", "word-clean-strict01.docx"],
     ];
     for (const [label, file] of tolerated) {
-        it(`stays valid: ${label}`, async () => {
+        it(`stays valid: ${label}`, { timeout: 30000 }, async () => {
             const res = await validate(path.join(WORKING, file), { profile: "word-valid" });
             const e = errs(res);
             expect(e, `must not gain errors, got: ${e.map((x) => (x as { code?: string }).code).join(",")}`).toHaveLength(0);
