@@ -672,7 +672,10 @@ export class BaseSchemaValidator {
 
                 try {
                     targetPath = path.resolve(targetPath);
-                    if (existsSync(targetPath) && statSync(targetPath).isFile()) {
+                    const relative = path.relative(this.unpackedDir, targetPath);
+                    if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+                        broken.push(target);
+                    } else if (existsSync(targetPath) && statSync(targetPath).isFile()) {
                         referenced.push(targetPath);
                         allReferenced.add(targetPath);
                     } else {
@@ -1199,10 +1202,7 @@ export class BaseSchemaValidator {
         }
     }
 
-    private async _validateSingleFileXsdViaInjected(
-        xmlFile: string,
-        schemaPath: string,
-    ): Promise<XsdValidationOutcome> {
+    private async _validateSingleFileXsdViaInjected(xmlFile: string, schemaPath: string): Promise<XsdValidationOutcome> {
         try {
             const xmlContent = readFileSync(xmlFile, "utf-8");
             const cleanedString = this._preprocessXmlForXsd(xmlContent, xmlFile);

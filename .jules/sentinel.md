@@ -15,3 +15,9 @@
 **Vulnerability:** While fixing the Insecure Temporary File vulnerability with `mkdtempSync`, assigning the result of `mkdtempSync` to an exported constant executed the synchronous I/O operations directly at module load time.
 **Learning:** Performing side effects like file I/O (e.g., creating temporary directories) directly inside the module scope introduces architectural flaws. It means importing the file anywhere (like in test suites or other tools) inadvertently triggers directory creation, leading to orphaned files and unintended side effects, even if the target CLI function is never run.
 **Prevention:** Always encapsulate file system interactions, including the generation of temporary directories or profiles, inside functions (e.g., lazy getters) rather than static module-level initialization.
+
+## 2026-05-19 - Path Traversal Oracle in Validation Phase
+
+**Vulnerability:** In the file references validation, relationship targets (e.g., from `.rels` files) were resolved to absolute paths and checked for existence via `existsSync` without boundary validation. Since this validation result dictates whether a `rels-broken` issue is emitted or suppressed, an attacker could supply out-of-bounds paths (like `../../../../etc/passwd`) and deduce whether a file exists on the host machine based on the presence of the validation error.
+**Learning:** Even if a file is only being read/checked for existence (and not written/executed), failing to validate its path boundaries against the intended sandbox root creates a path traversal oracle, exposing the host filesystem layout.
+**Prevention:** Always validate resolved targets derived from untrusted inputs by computing the relative path against the intended root directory (e.g., `path.relative(rootDir, targetPath)`) and ensuring the result does not traverse upwards (`..`).
