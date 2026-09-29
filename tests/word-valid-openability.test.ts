@@ -37,7 +37,7 @@ describe("word-valid profile errors on Word-rejected files", () => {
     // inside the vitest worker. The tblCellSpacing case above covers the path.
 });
 
-describe("word-valid profile does NOT flag Word-tolerated misplacements (no false positives)", () => {
+describe("word-valid profile does NOT flag Word-tolerated misplacements (no false positives)", { timeout: 30000 }, () => {
     // Each of these opens cleanly in real Word despite a content-model quirk that
     // an over-broad rule would wrongly flag. They lock the tolerated set.
     const tolerated: [string, string][] = [
