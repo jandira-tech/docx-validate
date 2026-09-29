@@ -3342,34 +3342,32 @@ function parseIdValue(val: string, base: number): number {
 function countParagraphsInRoot(doc: Document): number {
     let count = 0;
 
-    const isInsideTextBox = (node: Node | null): boolean => {
-        let curr = node?.parentNode;
-        while (curr) {
-            if (curr.nodeType === 1) {
-                // ELEMENT_NODE
-                const elem = curr as Element;
+    // OPTIMIZATION: Replacing O(N*D) bottom-up parentNode lookups for every w:p
+    // with a top-down O(N) tree walk. This prunes entire textbox subtrees
+    // proactively, avoiding redundant ancestor checks and preventing unnecessary traversal.
+    const countParagraphsOutsideTextBox = (node: Node) => {
+        let child = node.firstChild;
+        while (child) {
+            if (child.nodeType === 1) {
+                const elem = child as Element;
                 const localName = elem.localName;
                 const ns = elem.namespaceURI;
-                if (localName === "txbxContent" && (ns === WORD_2006_NAMESPACE || ns === WORD_STRICT_NAMESPACE)) {
-                    return true;
+                if (
+                    (localName === "txbxContent" && (ns === WORD_2006_NAMESPACE || ns === WORD_STRICT_NAMESPACE)) ||
+                    (localName === "textbox" && ns === VML_NAMESPACE)
+                ) {
+                    child = child.nextSibling;
+                    continue;
                 }
-                if (localName === "textbox" && ns === VML_NAMESPACE) {
-                    return true;
+                if (localName === "p" && (ns === WORD_2006_NAMESPACE || ns === WORD_STRICT_NAMESPACE)) {
+                    count++;
                 }
+                countParagraphsOutsideTextBox(child);
             }
-            curr = curr.parentNode;
+            child = child.nextSibling;
         }
-        return false;
     };
 
-    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-        const ps = doc.getElementsByTagNameNS(ns, "p");
-        for (let i = 0; i < ps.length; i++) {
-            if (!isInsideTextBox(ps.item(i))) {
-                count++;
-            }
-        }
-    }
-
+    countParagraphsOutsideTextBox(doc);
     return count;
 }

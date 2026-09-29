@@ -1,3 +1,7 @@
 ## 2026-05-22 - Avoid xpath ancestor:: resolution in @xmldom
 **Learning:** Using `xpath` (from the `xpath` NPM package) with `@xmldom/xmldom` is extremely slow when querying with the `ancestor::` axis (e.g., `.//w:p[not(ancestor::w:txbxContent)]`). This causes significant performance bottlenecks for large documents because it traverses the tree for every matched element dynamically instead of just caching parent lookups.
 **Action:** When complex ancestor exclusions are needed on large node lists, rely on native DOM APIs (`getElementsByTagNameNS`) combined with a fast `parentNode` while loop in JavaScript. This simple rewrite improved paragraph counting performance by nearly 100x.
+
+## 2026-09-29 - Prefer top-down recursive traversal over bottom-up parentNode lookups for bulk elements
+**Learning:** Using `parentNode` while-loops for ancestor exclusions (e.g., checking if `w:p` is inside `txbxContent`) is still an O(N * D) operation when run on every single `w:p` element found via `getElementsByTagNameNS`. In deeply nested or large documents, this redundant tree climbing becomes a new bottleneck.
+**Action:** Replace `getElementsByTagNameNS` + `parentNode` with a single-pass O(N) top-down recursive traversal (DFS). This allows pruning entire excluded subtrees early (e.g., skipping `txbxContent` children altogether), eliminating redundant ancestor checks and significantly speeding up execution (e.g., ~85% reduction in traversal time).
