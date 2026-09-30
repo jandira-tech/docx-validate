@@ -1,3 +1,6 @@
 ## 2026-05-22 - Avoid xpath ancestor:: resolution in @xmldom
 **Learning:** Using `xpath` (from the `xpath` NPM package) with `@xmldom/xmldom` is extremely slow when querying with the `ancestor::` axis (e.g., `.//w:p[not(ancestor::w:txbxContent)]`). This causes significant performance bottlenecks for large documents because it traverses the tree for every matched element dynamically instead of just caching parent lookups.
 **Action:** When complex ancestor exclusions are needed on large node lists, rely on native DOM APIs (`getElementsByTagNameNS`) combined with a fast `parentNode` while loop in JavaScript. This simple rewrite improved paragraph counting performance by nearly 100x.
+## 2026-06-03 - O(N) targeted querying for redlining stripping
+**Learning:** In large documents, stripping tracked changes using \`collectAllElements\` (which does a deep \`getElementsByTagName('*')\`) and iterating child-by-child is O(N²) and extremely slow.
+**Action:** Replace the custom full-tree collection and child filtering with direct, targeted native \`getElementsByTagNameNSAll(root, NS.W, 'ins')\` / \`del\` queries. Processing them in a single pass is O(N) and resulted in a 2x-5x speed improvement.
