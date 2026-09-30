@@ -112,12 +112,14 @@ const buildWasmValidator = async (): Promise<XsdValidator> => {
             // The bundled OOXML schemas may have unresolvable imports; surface
             // as info-level diagnostic (preserves CLAUDE.md note 4's spirit).
             const message = loadErr instanceof Error ? loadErr.message : String(loadErr);
-            return [{
-                severity: "info",
-                code: "xsd-schema-load-skipped",
-                message: `Schema load failed (${schemaPath}): ${message}`,
-                path: schemaPath,
-            }];
+            return [
+                {
+                    severity: "info",
+                    code: "xsd-schema-load-skipped",
+                    message: `Schema load failed (${schemaPath}): ${message}`,
+                    path: schemaPath,
+                },
+            ];
         }
 
         let xmlDoc;

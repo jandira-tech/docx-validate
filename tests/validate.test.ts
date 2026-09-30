@@ -112,7 +112,10 @@ describe("validate", () => {
                 "[Content_Types].xml",
                 '<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>',
             );
-            zip.file("word/document.xml", '<?xml version="1.0"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>');
+            zip.file(
+                "word/document.xml",
+                '<?xml version="1.0"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>',
+            );
             const buf = await zip.generateAsync({ type: "nodebuffer" });
             const docxPath = path.join(dir, "slip.docx");
             await fs.writeFile(docxPath, buf);
@@ -465,11 +468,7 @@ describe("word-valid profile — applyWordValidProfile coverage", () => {
             const unpacked = path.join(dir, "unpacked");
             await writeMinimalDocxDir(unpacked, "<w:body><w:p/></w:body>");
             // Replace document.xml with content that cannot be parsed as XML.
-            await fs.writeFile(
-                path.join(unpacked, "word", "document.xml"),
-                "this is definitely <<< not valid XML >>>",
-                "utf8",
-            );
+            await fs.writeFile(path.join(unpacked, "word", "document.xml"), "this is definitely <<< not valid XML >>>", "utf8");
             const result = await validate(unpacked, {
                 profile: "word-valid",
                 original: path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx"),
@@ -490,19 +489,13 @@ describe("word-valid profile — applyWordValidProfile coverage", () => {
             const unpacked = path.join(dir, "unpacked");
             await writeMinimalDocxDir(unpacked, "<w:body><w:p/></w:body>");
             // Write an unparseable word/styles.xml so validateXml emits xml-syntax for it.
-            await fs.writeFile(
-                path.join(unpacked, "word", "styles.xml"),
-                "this is <definitely not valid xml",
-                "utf8",
-            );
+            await fs.writeFile(path.join(unpacked, "word", "styles.xml"), "this is <definitely not valid xml", "utf8");
             const result = await validate(unpacked, {
                 profile: "word-valid",
                 original: path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx"),
                 author: "Test",
             });
-            const xmlSyntaxIssue = result.issues.find(
-                (i) => i.code === "xml-syntax" && (i.path?.startsWith("word/") ?? false),
-            );
+            const xmlSyntaxIssue = result.issues.find((i) => i.code === "xml-syntax" && (i.path?.startsWith("word/") ?? false));
             expect(xmlSyntaxIssue).toBeDefined();
             expect(xmlSyntaxIssue?.severity).toBe("error");
         });
@@ -516,19 +509,13 @@ describe("word-valid profile — applyWordValidProfile coverage", () => {
             await writeMinimalDocxDir(unpacked, "<w:body><w:p/></w:body>");
             // Write unparseable XML in docProps/ (outside word/) to trigger xml-syntax there.
             await fs.mkdir(path.join(unpacked, "docProps"), { recursive: true });
-            await fs.writeFile(
-                path.join(unpacked, "docProps", "app.xml"),
-                "this is <definitely not valid xml",
-                "utf8",
-            );
+            await fs.writeFile(path.join(unpacked, "docProps", "app.xml"), "this is <definitely not valid xml", "utf8");
             const result = await validate(unpacked, {
                 profile: "word-valid",
                 original: path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx"),
                 author: "Test",
             });
-            const xmlSyntaxIssue = result.issues.find(
-                (i) => i.code === "xml-syntax" && (i.path?.startsWith("docProps/") ?? false),
-            );
+            const xmlSyntaxIssue = result.issues.find((i) => i.code === "xml-syntax" && (i.path?.startsWith("docProps/") ?? false));
             expect(xmlSyntaxIssue).toBeDefined();
             expect(xmlSyntaxIssue?.severity).toBe("warning");
             // word-valid remains valid because the only error was downgraded.

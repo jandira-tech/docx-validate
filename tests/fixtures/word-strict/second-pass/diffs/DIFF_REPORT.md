@@ -13,18 +13,18 @@ All 16 common XML files differ. 2 files are broken-only; 3 files are working-onl
 
 ## Files only in BROKEN
 
-| File | Note |
-|------|------|
-| `docProps/custom.xml` | Custom properties part added by repairer |
+| File                          | Note                                            |
+| ----------------------------- | ----------------------------------------------- |
+| `docProps/custom.xml`         | Custom properties part added by repairer        |
 | `word/commentsExtensible.xml` | Comment extensible part with durableId mismatch |
 
 ## Files only in WORKING
 
-| File | Note |
-|------|------|
-| `word/endnotes.xml` | Endnotes part dropped by repairer |
-| `word/theme/theme1.xml` | Theme part dropped by repairer |
-| `word/webSettings.xml` | Web settings part dropped by repairer |
+| File                    | Note                                  |
+| ----------------------- | ------------------------------------- |
+| `word/endnotes.xml`     | Endnotes part dropped by repairer     |
+| `word/theme/theme1.xml` | Theme part dropped by repairer        |
+| `word/webSettings.xml`  | Web settings part dropped by repairer |
 
 ---
 
@@ -179,23 +179,23 @@ a `style-default-missing` error.**
 
 18 sub-groups of differences:
 
-| Sub-group | Description |
-|-----------|-------------|
-| 18a | rsid attributes removed from all paragraphs and runs |
-| 18b | `w14:textId` removed from paragraphs that had it |
-| 18c | Explicit `<w:rFonts>` injected on runs that inherited font from style |
-| 18d | Explicit `<w:sz>` and `<w:szCs>` injected on runs |
-| 18e | Explicit `<w:spacing>` injected on paragraphs |
-| 18f | `<w:tblLook>` removed from `<w:tblPr>` on tables |
-| 18g | `<w:tblCellSpacing>` removed from `<w:tblPr>` |
-| 18h | `<w:jc>` removed from `<w:tblPr>` |
-| 18i | `<w:tblInd>` removed from `<w:tblPr>` |
-| 18j | `<w:shd>` removed from cell properties |
-| 18k | `<w:tcBorders>` added to every cell (was inherited from style) |
-| 18l | Tracked-change `w:id` values regenerated from 1 |
-| 18m | Comment-range `w:id` values changed (4→100 on commentRangeStart/End) |
-| 18n | Hyperlink `r:id` values changed due to relationship renumbering |
-| 18o | `w:numId` references updated to match renumbered `<w:num>` elements |
-| 18p | Whitespace reformatting within XML text nodes |
-| 18q | `w:color w:val="auto"` removed from some runs |
-| 18r | `<w:lang>` removed from default run properties in styles |
+| Sub-group | Description                                                           |
+| --------- | --------------------------------------------------------------------- |
+| 18a       | rsid attributes removed from all paragraphs and runs                  |
+| 18b       | `w14:textId` removed from paragraphs that had it                      |
+| 18c       | Explicit `<w:rFonts>` injected on runs that inherited font from style |
+| 18d       | Explicit `<w:sz>` and `<w:szCs>` injected on runs                     |
+| 18e       | Explicit `<w:spacing>` injected on paragraphs                         |
+| 18f       | `<w:tblLook>` removed from `<w:tblPr>` on tables                      |
+| 18g       | `<w:tblCellSpacing>` removed from `<w:tblPr>`                         |
+| 18h       | `<w:jc>` removed from `<w:tblPr>`                                     |
+| 18i       | `<w:tblInd>` removed from `<w:tblPr>`                                 |
+| 18j       | `<w:shd>` removed from cell properties                                |
+| 18k       | `<w:tcBorders>` added to every cell (was inherited from style)        |
+| 18l       | Tracked-change `w:id` values regenerated from 1                       |
+| 18m       | Comment-range `w:id` values changed (4→100 on commentRangeStart/End)  |
+| 18n       | Hyperlink `r:id` values changed due to relationship renumbering       |
+| 18o       | `w:numId` references updated to match renumbered `<w:num>` elements   |
+| 18p       | Whitespace reformatting within XML text nodes                         |
+| 18q       | `w:color w:val="auto"` removed from some runs                         |
+| 18r       | `<w:lang>` removed from default run properties in styles              |
