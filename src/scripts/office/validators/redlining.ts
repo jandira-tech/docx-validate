@@ -312,18 +312,6 @@ function filterDiffContent(stdout: string): string {
     return contentLines.join("\n");
 }
 
-function collectAllElements(root: Element): Element[] {
-    const out: Element[] = [root];
-    const list = root.getElementsByTagName("*");
-    for (let i = 0; i < list.length; i += 1) {
-        const item = list.item(i);
-        if (item) {
-            out.push(item as Element);
-        }
-    }
-    return out;
-}
-
 /**
  * `@xmldom` does not allow live re-tagging of an element, so swap in a fresh
  * one carrying the same attributes and children. Used to convert
