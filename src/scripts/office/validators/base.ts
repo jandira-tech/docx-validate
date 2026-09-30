@@ -1199,10 +1199,7 @@ export class BaseSchemaValidator {
         }
     }
 
-    private async _validateSingleFileXsdViaInjected(
-        xmlFile: string,
-        schemaPath: string,
-    ): Promise<XsdValidationOutcome> {
+    private async _validateSingleFileXsdViaInjected(xmlFile: string, schemaPath: string): Promise<XsdValidationOutcome> {
         try {
             const xmlContent = readFileSync(xmlFile, "utf-8");
             const cleanedString = this._preprocessXmlForXsd(xmlContent, xmlFile);

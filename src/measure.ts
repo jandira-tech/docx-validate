@@ -93,17 +93,14 @@ export class Measure {
         const writeBytes = await this.opts.astAdapter.write(inputView.ast);
         const outputView = await this.opts.astAdapter.read(writeBytes);
 
-        const isByteEquivalent = bytes.length === writeBytes.length
-            && bytes.every((b, i) => b === writeBytes[i]);
+        const isByteEquivalent = bytes.length === writeBytes.length && bytes.every((b, i) => b === writeBytes[i]);
 
         const metrics: MeasureMetrics = {
             bodyBailoutCount: inputView.bodyBailoutCount,
             t2ElementCarrierCount: outputView.t2ElementCarrierCount,
         };
 
-        const classification: MeasureClassification = isByteEquivalent
-            ? "byte-equivalent"
-            : "ast-equivalent-byte-differs";
+        const classification: MeasureClassification = isByteEquivalent ? "byte-equivalent" : "ast-equivalent-byte-differs";
 
         return {
             classification,

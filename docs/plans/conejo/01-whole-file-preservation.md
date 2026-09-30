@@ -33,15 +33,15 @@ check never fires.
    part whose path matches the allowlist below directly to the output, without
    further processing, unless the repairer explicitly needs to modify it.
 
-   Allowlist (parts to preserve verbatim unless the repairer modifies them):
-   - `word/endnotes.xml`
-   - `word/theme/theme1.xml`
-   - `word/webSettings.xml`
-   - `word/glossary/` subtree
-   - `word/charts/` subtree
-   - `word/embeddings/` subtree
-   - `docProps/` subtree (except `docProps/core.xml` which the repairer may
-     update for author/timestamp)
+    Allowlist (parts to preserve verbatim unless the repairer modifies them):
+    - `word/endnotes.xml`
+    - `word/theme/theme1.xml`
+    - `word/webSettings.xml`
+    - `word/glossary/` subtree
+    - `word/charts/` subtree
+    - `word/embeddings/` subtree
+    - `docProps/` subtree (except `docProps/core.xml` which the repairer may
+      update for author/timestamp)
 
 2. **Relationship preservation**: When a part is preserved via copy-through,
    its relationship entry in `word/_rels/document.xml.rels` and its

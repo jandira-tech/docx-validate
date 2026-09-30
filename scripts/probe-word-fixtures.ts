@@ -156,16 +156,16 @@ function readCompleted(outFile: string, currentProfile: Profile): Set<string> {
             if (lineProfile !== undefined && lineProfile !== currentProfile) {
                 throw new Error(
                     `Profile mismatch in JSONL output: found record with profile "${lineProfile}" ` +
-                    `but current profile is "${currentProfile}". ` +
-                    `Resume with the same profile (--profile ${lineProfile}) or delete the output file to start fresh: ${outFile}`,
+                        `but current profile is "${currentProfile}". ` +
+                        `Resume with the same profile (--profile ${lineProfile}) or delete the output file to start fresh: ${outFile}`,
                 );
             }
             if (parsed.relativePath) {
                 if (lineProfile === undefined) {
                     throw new Error(
                         `Legacy JSONL record detected without profile field for completed fixture: ${parsed.relativePath}. ` +
-                        `This indicates a mixed/legacy resume state. ` +
-                        `Delete the output file to start fresh: ${outFile}`,
+                            `This indicates a mixed/legacy resume state. ` +
+                            `Delete the output file to start fresh: ${outFile}`,
                     );
                 }
                 done.add(`${currentProfile}::${parsed.relativePath}`);
@@ -473,16 +473,12 @@ async function run(argv: readonly string[]): Promise<number> {
             await sleep(1500);
             const postQuitWindows = await wordWindowCount();
             if (postQuitWindows > 0) {
-                process.stderr.write(
-                    `    Word still has ${postQuitWindows} window(s) after graceful quit; force-killing...\n`,
-                );
+                process.stderr.write(`    Word still has ${postQuitWindows} window(s) after graceful quit; force-killing...\n`);
                 await forceQuitWord();
                 await sleep(1500);
                 const postForceWindows = await wordWindowCount();
                 if (postForceWindows > 0) {
-                    throw new Error(
-                        `Microsoft Word still has ${postForceWindows} window(s) after force quit. Aborting probe.`,
-                    );
+                    throw new Error(`Microsoft Word still has ${postForceWindows} window(s) after force quit. Aborting probe.`);
                 }
             }
         }
