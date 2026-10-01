@@ -92,6 +92,26 @@ describe("BaseSchemaValidator", () => {
     });
 
     describe("validateFileReferences", () => {
+        it("detects and blocks path traversal attempts in .rels", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
+                await writeFile(
+                    path.join(dir, "_rels", ".rels"),
+                    `${RELS_HEADER}
+            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+              <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+              <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="../../escaped.txt"/>
+            </Relationships>`,
+                );
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateFileReferences();
+                expect(result.valid).toBe(false);
+                const broken = result.issues.find((i) => i.code === "rels-broken");
+                expect(broken).toBeDefined();
+                expect(broken!.message).toContain("../../escaped.txt");
+            });
+        });
+
         it("detects broken Target references in .rels", async () => {
             await withTempDir(async (dir) => {
                 await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
