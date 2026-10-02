@@ -10,12 +10,12 @@
 
 import { describe, it, expect, beforeAll } from "vitest";
 import path from "node:path";
-import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { writeFileSync } from "node:fs";
 import {
     createXsdValidator,
     type XsdValidator,
 } from "../src/lib/xsd-validator";
+import { withTempDir } from "../src/lib/run-cli";
 
 // Self-contained XSD with no imports — proves the validator core works.
 // The bundled OOXML schemas have unresolved imports (CLAUDE.md note 4); they
@@ -48,14 +48,9 @@ const OOXML_WML_SCHEMA = path.resolve(
 
 describe("xsd-validator", () => {
     let validator: XsdValidator;
-    let tempDir: string;
-    let inlineSchemaPath: string;
 
     beforeAll(async () => {
         validator = await createXsdValidator();
-        tempDir = mkdtempSync(path.join(tmpdir(), "xsd-validator-test-"));
-        inlineSchemaPath = path.join(tempDir, "self-contained.xsd");
-        writeFileSync(inlineSchemaPath, SELF_CONTAINED_XSD, "utf-8");
     });
 
     it("createXsdValidator returns an object with an async validate()", () => {
@@ -69,25 +64,37 @@ describe("xsd-validator", () => {
     });
 
     it("validates a known-good document with zero issues (self-contained XSD)", async () => {
-        const issues = await validator.validate(VALID_XML, inlineSchemaPath);
-        expect(issues).toEqual([]);
+        await withTempDir(async (tempDir) => {
+            const inlineSchemaPath = path.join(tempDir, "self-contained.xsd");
+            writeFileSync(inlineSchemaPath, SELF_CONTAINED_XSD, "utf-8");
+            const issues = await validator.validate(VALID_XML, inlineSchemaPath);
+            expect(issues).toEqual([]);
+        });
     });
 
     it("reports a structured ValidationIssue on schema-invalid input", async () => {
-        const issues = await validator.validate(SCHEMA_INVALID_XML, inlineSchemaPath);
-        expect(issues.length).toBeGreaterThan(0);
-        const first = issues[0]!;
-        expect(first.severity).toBe("error");
-        expect(first.code).toBe("xsd-validation-failed");
-        expect(typeof first.message).toBe("string");
-        expect(first.message.length).toBeGreaterThan(0);
+        await withTempDir(async (tempDir) => {
+            const inlineSchemaPath = path.join(tempDir, "self-contained.xsd");
+            writeFileSync(inlineSchemaPath, SELF_CONTAINED_XSD, "utf-8");
+            const issues = await validator.validate(SCHEMA_INVALID_XML, inlineSchemaPath);
+            expect(issues.length).toBeGreaterThan(0);
+            const first = issues[0]!;
+            expect(first.severity).toBe("error");
+            expect(first.code).toBe("xsd-validation-failed");
+            expect(typeof first.message).toBe("string");
+            expect(first.message.length).toBeGreaterThan(0);
+        });
     });
 
     it("reports xml-parse-error on malformed XML (not XSD failure)", async () => {
-        const issues = await validator.validate(NOT_XML, inlineSchemaPath);
-        expect(issues.length).toBe(1);
-        expect(issues[0]!.code).toBe("xml-parse-error");
-        expect(issues[0]!.severity).toBe("error");
+        await withTempDir(async (tempDir) => {
+            const inlineSchemaPath = path.join(tempDir, "self-contained.xsd");
+            writeFileSync(inlineSchemaPath, SELF_CONTAINED_XSD, "utf-8");
+            const issues = await validator.validate(NOT_XML, inlineSchemaPath);
+            expect(issues.length).toBe(1);
+            expect(issues[0]!.code).toBe("xml-parse-error");
+            expect(issues[0]!.severity).toBe("error");
+        });
     });
 
     it("loads the bundled OOXML wml.xsd cleanly (fs input providers resolve imports)", async () => {
@@ -112,9 +119,5 @@ describe("xsd-validator", () => {
         expect(issues.length).toBe(1);
         expect(issues[0]!.code).toBe("xsd-schema-load-skipped");
         expect(issues[0]!.severity).toBe("info");
-    });
-
-    it("cleanup", () => {
-        rmSync(tempDir, { recursive: true, force: true });
     });
 });
