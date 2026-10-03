@@ -92,20 +92,20 @@ describe("BaseSchemaValidator", () => {
     });
 
     describe("validateFileReferences", () => {
-        it("flags path traversal attempts with absolute paths as broken", async () => {
+        it("flags path traversal attempts with relative paths ascending from root as broken", async () => {
             await withTempDir(async (dir) => {
                 await writeFile(
                     path.join(dir, "_rels", ".rels"),
                     `<?xml version="1.0" encoding="UTF-8"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="/etc/passwd"/>
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="../../etc/passwd"/>
 </Relationships>`,
                 );
                 const v = new BaseSchemaValidator({ unpackedDir: dir });
                 const result = await v.validateFileReferences();
                 expect(result.valid).toBe(false);
                 const broken = result.issues.find((i) => i.code === "rels-broken");
-                expect(broken?.message).toMatch(/Broken reference to \/etc\/passwd/);
+                expect(broken?.message).toMatch(/Broken reference to \.\.\/\.\.\/etc\/passwd/);
             });
         });
 
