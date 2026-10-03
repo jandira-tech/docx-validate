@@ -30,7 +30,7 @@ jobs:
         env:
           ALIBABA_CODING_PLAN_API_KEY: ${{ secrets.ALIBABA_CODING_PLAN }}
         with:
-          model: alibaba-coding-plan/qwen3.7-max
+          model: alibaba-coding-plan/qwen3-coder-next
 
   opencode-minimax:
     if: |
