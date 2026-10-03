@@ -2043,6 +2043,21 @@ describe("DOCXSchemaValidator", () => {
     // ----- Plan 01: Whole-file preservation -----------------------------------
 
     describe("validateOrphanedRelationships", () => {
+        it("silently ignores (does not resolve) path traversal targets in rels files", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "_rels", "document.xml.rels"),
+                    `<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://..." Target="/../../../etc/passwd"/></Relationships>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateOrphanedRelationships();
+                // Because the resolver returns null for path traversal, it continues silently
+                // and does NOT attempt to stat or flag 'rels-target-missing' for the malicious path.
+                const missing = result.issues.find((i) => i.code === "rels-target-missing");
+                expect(missing).toBeUndefined();
+            });
+        });
+
         it("flags a .rels target path that does not exist in unpacked dir", async () => {
             await withTempDir(async (dir) => {
                 await writeFile(
