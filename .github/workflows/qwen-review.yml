@@ -34,10 +34,14 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
+      - name: Free up disk space
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY" || true
+
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
           version: latest
+          enable-cache: false
 
       - name: Install bun
         uses: oven-sh/setup-bun@v2
@@ -101,10 +105,10 @@ jobs:
       - name: Run opencode
         uses: anomalyco/opencode/github@latest
         env:
-          DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+          ALIBABA_CODING_PLAN_API_KEY: ${{ secrets.ALIBABA_CODING_PLAN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          model: dashscope/qwen3.6-plus
+          model: alibaba-coding-plan/qwen3-coder-next
           use_github_token: true
           share: "false"
           prompt: |

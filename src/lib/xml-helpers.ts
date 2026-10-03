@@ -141,6 +141,40 @@ export const prettyXml = (node: Node, indent = "  "): string => {
  * Use `"*"` as the namespace to match across all namespaces (mirrors
  * `Document.getElementsByTagName('*')`).
  */
+
+/**
+ * Fast, non-recursive generator of all descendant elements.
+ * Avoids the live NodeList overhead of `getElementsByTagName('*')`.
+ */
+export const getElementsByTagNameAll = (root: Document | Element): Element[] => {
+    const out: Element[] = [];
+    let current = root.firstChild;
+    while (current) {
+        if (current.nodeType === 1) {
+            // ELEMENT_NODE
+            out.push(current as Element);
+            if (current.firstChild) {
+                current = current.firstChild;
+                continue;
+            }
+        } else if (current.firstChild) {
+            current = current.firstChild;
+            continue;
+        }
+
+        while (current && !current.nextSibling) {
+            current = current.parentNode as ChildNode | null;
+            if (current === root) {
+                current = null;
+            }
+        }
+        if (current) {
+            current = current.nextSibling;
+        }
+    }
+    return out;
+};
+
 export const getElementsByTagNameNSAll = (root: Document | Element, namespaceURI: string, localName: string): Element[] => {
     const list = root.getElementsByTagNameNS(namespaceURI, localName);
     const out: Element[] = [];

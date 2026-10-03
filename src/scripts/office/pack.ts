@@ -34,7 +34,7 @@ import JSZip from "jszip";
 
 import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
 import type { ValidationResult } from "../../lib/types";
-import { parseXml, serializeXml } from "../../lib/xml-helpers";
+import { parseXml, serializeXml, getElementsByTagNameAll } from "../../lib/xml-helpers";
 import { inferAuthor } from "./helpers/simplify-redlines";
 import { DOCXSchemaValidator } from "./validators/docx";
 import { PPTXSchemaValidator } from "./validators/pptx";
@@ -315,9 +315,9 @@ async function condenseXml(xmlFile: string): Promise<void> {
         throw err;
     }
 
-    const all = dom.getElementsByTagName("*");
+    const all = getElementsByTagNameAll(dom);
     for (let i = 0; i < all.length; i += 1) {
-        const element = all.item(i);
+        const element = all[i];
         if (!element) continue;
         // Preserve text-bearing <t> elements regardless of prefix; unprefixed
         // <t> is common in SpreadsheetML, and stripping whitespace-only text

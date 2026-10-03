@@ -35,7 +35,7 @@ import JSZip from "jszip";
 import { withTempDir } from "../../../lib/run-cli";
 import type { ValidationResult } from "../../../lib/types";
 import { NS } from "../../../lib/types";
-import { getElementsByTagNameNSAll, parseXml } from "../../../lib/xml-helpers";
+import { getElementsByTagNameAll, getElementsByTagNameNSAll, parseXml } from "../../../lib/xml-helpers";
 import { extractZipEntries } from "../../../lib/zip-path";
 
 const ELEMENT_NODE = 1;
@@ -331,9 +331,9 @@ function filterDiffContent(stdout: string): string {
 
 function collectAllElements(root: Element): Element[] {
     const out: Element[] = [root];
-    const list = root.getElementsByTagName("*");
+    const list = getElementsByTagNameAll(root);
     for (let i = 0; i < list.length; i += 1) {
-        const item = list.item(i);
+        const item = list[i];
         if (item) {
             out.push(item as Element);
         }

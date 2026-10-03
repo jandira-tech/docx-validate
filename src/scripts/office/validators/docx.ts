@@ -47,7 +47,7 @@ import path from "node:path";
 import { nextSecureLongHexNumber } from "../../../lib/secure-id";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
-import { getElementsByTagNameNSAll, parseXml, serializeXml } from "../../../lib/xml-helpers";
+import { getElementsByTagNameAll, getElementsByTagNameNSAll, parseXml, serializeXml } from "../../../lib/xml-helpers";
 import { BaseSchemaValidator, collectDeclaredPrefixes, PACKAGE_RELATIONSHIPS_NAMESPACE, XML_NAMESPACE } from "./base";
 
 export const WORD_2006_NAMESPACE = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
@@ -966,9 +966,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             } catch {
                 continue;
             }
-            const all = dom.getElementsByTagName("*");
+            const all = getElementsByTagNameAll(dom);
             for (let i = 0; i < all.length; i += 1) {
-                const elem = all.item(i);
+                const elem = all[i];
                 const ns = elem?.namespaceURI ?? "";
                 if (DOCUMENT_BUILDER_INSERT_NAMESPACES.has(ns)) {
                     issues.push({
@@ -1011,9 +1011,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         }
         const BOOLEAN_PROPS = new Set(["ScaleCrop", "LinksUpToDate", "SharedDoc", "HyperlinksChanged"]);
         const CANONICAL = new Set(["true", "false", "0", "1"]);
-        const all = dom.getElementsByTagName("*");
+        const all = getElementsByTagNameAll(dom);
         for (let i = 0; i < all.length; i += 1) {
-            const elem = all.item(i);
+            const elem = all[i];
             if (!elem || !BOOLEAN_PROPS.has(elem.localName ?? "")) continue;
             const raw = elem.textContent ?? "";
             if (raw === raw.trim() && CANONICAL.has(raw)) continue;
@@ -1672,10 +1672,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 // Mirrors Python's bare except — silently skip.
                 continue;
             }
-            const all = dom.getElementsByTagName("*");
+            const all = getElementsByTagNameAll(dom);
             const base = baseName(xmlFile);
             for (let i = 0; i < all.length; i += 1) {
-                const elem = all.item(i);
+                const elem = all[i];
                 if (!elem) continue;
 
                 const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId");
@@ -2464,9 +2464,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         }
 
         let repairs = 0;
-        const all = dom.getElementsByTagName("*");
+        const all = getElementsByTagNameAll(dom);
         for (let i = 0; i < all.length; i += 1) {
-            const elem = all.item(i);
+            const elem = all[i];
             if (!elem) continue;
             for (let child = elem.firstChild; child; child = child.nextSibling) {
                 if (child.nodeType !== 3) continue;
@@ -2494,9 +2494,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         const trimFields = new Set(["lastModifiedBy", "revision", "created", "modified"]);
         let repairs = 0;
-        const all = dom.getElementsByTagName("*");
+        const all = getElementsByTagNameAll(dom);
         for (let i = 0; i < all.length; i += 1) {
-            const elem = all.item(i);
+            const elem = all[i];
             if (!elem) continue;
             const localName = elem.localName || elem.tagName.split(":").pop() || elem.tagName;
             if (!trimFields.has(localName)) continue;
@@ -2726,9 +2726,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             try {
                 const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
                 domByFile.set(xmlFile, dom);
-                const all = dom.getElementsByTagName("*");
+                const all = getElementsByTagNameAll(dom);
                 for (let i = 0; i < all.length; i += 1) {
-                    const elem = all.item(i);
+                    const elem = all[i];
                     if (!elem) continue;
                     const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId");
                     if (paraId) usedParaIds.add(paraId.toUpperCase());
@@ -2886,9 +2886,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 const dom = parseXml(content);
                 let modified = false;
                 const base = baseName(xmlFile);
-                const all = dom.getElementsByTagName("*");
+                const all = getElementsByTagNameAll(dom);
                 for (let i = 0; i < all.length; i += 1) {
-                    const elem = all.item(i);
+                    const elem = all[i];
                     if (!elem) continue;
                     const durableId = elem.getAttributeNS(W16CID_NAMESPACE, "durableId");
                     if (!durableId) continue;
@@ -2989,9 +2989,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             try {
                 const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
                 parsedDoms.set(xmlFile, dom);
-                const all = dom.getElementsByTagName("*");
+                const all = getElementsByTagNameAll(dom);
                 for (let i = 0; i < all.length; i += 1) {
-                    const elem = all.item(i);
+                    const elem = all[i];
                     if (!elem) continue;
                     const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId");
                     if (paraId && !remap.has(paraId)) {
@@ -3048,9 +3048,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const [xmlFile, dom] of parsedDoms) {
             try {
                 let modified = false;
-                const all = dom.getElementsByTagName("*");
+                const all = getElementsByTagNameAll(dom);
                 for (let i = 0; i < all.length; i += 1) {
-                    const elem = all.item(i);
+                    const elem = all[i];
                     if (!elem) continue;
                     const w14Para = elem.getAttributeNS(W14_NAMESPACE, "paraId");
                     if (w14Para && remap.has(w14Para)) {
