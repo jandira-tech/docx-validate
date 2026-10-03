@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 
 import type { Profile, ValidationIssue } from "../../../lib/types";
-import { parseXml } from "../../../lib/xml-helpers";
+import { parseXml, getElementsByTagNameAll } from "../../../lib/xml-helpers";
 
 const WORD_NAMESPACES = new Set([
     "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
@@ -66,7 +66,6 @@ const SEVERITY_CLASS_BY_CATEGORY: Record<string, InventorySeverityClass> = {
 export function severityClassFor(category: string): InventorySeverityClass {
     return SEVERITY_CLASS_BY_CATEGORY[category] ?? "content";
 }
-
 
 interface RepairPlanGroup {
     path?: string;
@@ -240,9 +239,9 @@ function collectDocumentStructure(rel: string, dom: Document, inventory: Mutable
 }
 
 function collectText(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
-    const all = dom.getElementsByTagName("*");
+    const all = getElementsByTagNameAll(dom);
     for (let i = 0; i < all.length; i += 1) {
-        const elem = all.item(i);
+        const elem = all[i];
         if (!elem || !isWordElement(elem)) continue;
         const local = localName(elem);
         if (local === "fldSimple") {
@@ -419,7 +418,7 @@ function collectSectionGeometry(rel: string, dom: Document, inventory: MutableDo
                 addCounter(inventory, rel, "section geometry", `section margins T${t} R${r} B${b} L${l}`, "section(s)", 1);
             }
             const cols = directWordChild(sect, "cols");
-            const num = cols ? wordChildAttrSelf(cols, "num") ?? "1" : "1";
+            const num = cols ? (wordChildAttrSelf(cols, "num") ?? "1") : "1";
             addCounter(inventory, rel, "section geometry", `section columns=${num}`, "section(s)", 1);
         }
     }
@@ -450,7 +449,6 @@ function roundEmu(raw: string | null): number {
 function wordChildAttrSelf(elem: Element, attr: string): string | null {
     return elem.getAttributeNS(wordNamespace(elem), attr) ?? elem.getAttribute(`w:${attr}`) ?? elem.getAttribute(attr);
 }
-
 
 function collectStyles(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
     if (!rel.endsWith("/styles.xml") && rel !== "word/styles.xml") return;
@@ -539,9 +537,9 @@ function textLabel(elem: Element, local: string): string {
 
 function runTextLength(run: Element): number {
     let length = 0;
-    const all = run.getElementsByTagName("*");
+    const all = getElementsByTagNameAll(run);
     for (let i = 0; i < all.length; i += 1) {
-        const elem = all.item(i);
+        const elem = all[i];
         if (!elem || !isWordElement(elem)) continue;
         const local = localName(elem);
         if (local === "t" || local === "delText" || local === "instrText" || local === "delInstrText") {
