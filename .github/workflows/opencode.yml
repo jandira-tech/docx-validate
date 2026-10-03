@@ -20,9 +20,6 @@ jobs:
       pull-requests: read
       issues: read
     steps:
-      - name: Free up disk space
-        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY" || true
-
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
