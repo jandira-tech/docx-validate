@@ -141,6 +141,28 @@ export const prettyXml = (node: Node, indent = "  "): string => {
  * Use `"*"` as the namespace to match across all namespaces (mirrors
  * `Document.getElementsByTagName('*')`).
  */
+export const getElementsByTagNameAll = (root: Document | Element): Element[] => {
+    const out: Element[] = [];
+    const stack: Node[] = [root];
+
+    // Reverse iteration to maintain document order
+    while (stack.length > 0) {
+        const node = stack.pop()!;
+        if (node !== root && node.nodeType === 1) { // 1 === Node.ELEMENT_NODE
+            out.push(node as Element);
+        }
+
+        let child = node.lastChild;
+        while (child) {
+            if (child.nodeType === 1) {
+                stack.push(child);
+            }
+            child = child.previousSibling;
+        }
+    }
+    return out;
+};
+
 export const getElementsByTagNameNSAll = (root: Document | Element, namespaceURI: string, localName: string): Element[] => {
     const list = root.getElementsByTagNameNS(namespaceURI, localName);
     const out: Element[] = [];
