@@ -672,6 +672,11 @@ export class BaseSchemaValidator {
 
                 try {
                     targetPath = path.resolve(targetPath);
+                    const relToUnpacked = path.relative(this.unpackedDir, targetPath);
+                    if (relToUnpacked === ".." || relToUnpacked.startsWith(`..${path.sep}`) || path.isAbsolute(relToUnpacked)) {
+                        broken.push(target);
+                        continue;
+                    }
                     if (existsSync(targetPath) && statSync(targetPath).isFile()) {
                         referenced.push(targetPath);
                         allReferenced.add(targetPath);

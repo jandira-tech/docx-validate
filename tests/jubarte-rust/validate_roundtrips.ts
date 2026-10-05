@@ -19,13 +19,13 @@ const ROOT = path.dirname(new URL(import.meta.url).pathname);
 const ROUNDTRIP_DIR = path.join(ROOT, "roundtrip_docx");
 const REPORT_PATH = path.join(ROOT, "validate_report.json");
 
-type StagedResult = {
+interface StagedResult {
     name: string;
     lenient_ok: boolean;
     lenient_error?: string;
     word_valid_ok: boolean;
     word_valid_error?: string;
-};
+}
 
 async function listDocx(dir: string): Promise<string[]> {
     const entries = await fs.readdir(dir);
@@ -36,11 +36,11 @@ function summarize(res: { valid?: boolean; issues?: { severity?: string; message
     ok: boolean;
     error?: string;
 } {
-    if (!res) return { ok: false, error: "no result" };
-    if (res.valid === true) return { ok: true };
+    if (!res) return { ok: false, error: "no result" }
+    if (res.valid === true) return { ok: true }
     const issues = res.issues ?? [];
     if (issues.length === 0 && typeof res.error === "string") {
-        return { ok: false, error: res.error };
+        return { ok: false, error: res.error }
     }
     // Keep just the first 3 issue messages for the report; full detail is on disk.
     const top = issues
@@ -48,7 +48,7 @@ function summarize(res: { valid?: boolean; issues?: { severity?: string; message
         .slice(0, 3)
         .map((i) => i.message ?? "")
         .join(" | ");
-    return { ok: false, error: top || `${issues.length} issues` };
+    return { ok: false, error: top || `${issues.length} issues` }
 }
 
 async function main() {
@@ -70,7 +70,7 @@ async function main() {
         try {
             lenientResult = (await validate(target, { profile: "lenient" })) as never;
         } catch (e) {
-            lenientResult = { ok: false, error: (e as Error).message };
+            lenientResult = { ok: false, error: (e as Error).message }
         }
         const lenient = summarize(lenientResult);
 
@@ -78,7 +78,7 @@ async function main() {
         try {
             wordResult = (await validate(target, { profile: "word-valid" })) as never;
         } catch (e) {
-            wordResult = { ok: false, error: (e as Error).message };
+            wordResult = { ok: false, error: (e as Error).message }
         }
         const word = summarize(wordResult);
 
@@ -99,7 +99,7 @@ async function main() {
         lenient_ok,
         word_valid_ok,
         results,
-    };
+    }
     await fs.writeFile(REPORT_PATH, JSON.stringify(report, null, 2));
 
     console.log("");

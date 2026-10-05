@@ -15,3 +15,8 @@
 **Vulnerability:** While fixing the Insecure Temporary File vulnerability with `mkdtempSync`, assigning the result of `mkdtempSync` to an exported constant executed the synchronous I/O operations directly at module load time.
 **Learning:** Performing side effects like file I/O (e.g., creating temporary directories) directly inside the module scope introduces architectural flaws. It means importing the file anywhere (like in test suites or other tools) inadvertently triggers directory creation, leading to orphaned files and unintended side effects, even if the target CLI function is never run.
 **Prevention:** Always encapsulate file system interactions, including the generation of temporary directories or profiles, inside functions (e.g., lazy getters) rather than static module-level initialization.
+
+## 2026-10-05 - Zip Slip (Path Traversal) in XML Relationship Targets
+**Vulnerability:** Path traversal vulnerability in `.rels` file processing inside unpacked `.docx`/`.pptx` zip documents. An attacker could supply `Target="../../../../etc/passwd"` to escape the unpacked directory.
+**Learning:** Parsing zip document metadata XML files can introduce path traversal, because `Target` paths are resolved against the unpacked directory.
+**Prevention:** Always validate resolved targets using `path.relative(unpackedDir, resolved)` to ensure they don't begin with `..` or equal `..` and are not absolute.
