@@ -17,7 +17,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-      pull-requests: write
+      pull-requests: read
       issues: read
     steps:
       - name: Checkout repository
@@ -42,7 +42,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-      pull-requests: write
+      pull-requests: read
       issues: read
     steps:
       - name: Checkout repository
