@@ -21,8 +21,6 @@ jobs:
                   cache: pnpm
 
             - uses: pnpm/action-setup@v4
-              with:
-                  version: 12.8.2
               # version comes from the packageManager field in package.json
 
             - name: Install dependencies
