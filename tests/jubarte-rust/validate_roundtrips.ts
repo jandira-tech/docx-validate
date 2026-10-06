@@ -4,7 +4,7 @@
  * harness style used by tests/probe-all-fixtures.ts in the upstream repo.
  *
  * Usage:
- *   bun run validate_roundtrips.ts
+ *   pnpm exec tsx validate_roundtrips.ts
  *
  * Output:
  *   - validate_report.json  (per-file results + aggregate)

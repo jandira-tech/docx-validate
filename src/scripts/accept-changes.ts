@@ -21,7 +21,7 @@
  * (task #14). Requires LibreOffice (`soffice`) to be installed.
  *
  * Usage:
- *   bunx tsx scripts/accept-changes.ts <input.docx> <output.docx>
+ *   pnpm exec tsx scripts/accept-changes.ts <input.docx> <output.docx>
  */
 
 import { existsSync, mkdtempSync, promises as fs } from "node:fs";

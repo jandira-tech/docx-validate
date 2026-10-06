@@ -46,7 +46,7 @@ export default defineConfig({
         coverage: {
             provider: "v8",
             // lcov is required for codecov upload in ci.yml; text/html keep
-            // the local `bun run test --coverage` workflow human-readable.
+            // the local `pnpm test --coverage` workflow human-readable.
             reporter: ["text", "html", "lcov"],
             include: ["src/**/*.ts"],
             exclude: ["src/**/*.d.ts", "tests/**", "dist/**", "docx/**", "docx-templates/**", "dotgithubtoport/**"],

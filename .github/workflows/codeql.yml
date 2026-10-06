@@ -10,7 +10,7 @@ on:
             - "**.mjs"
             - "**.cjs"
             - "package.json"
-            - "bun.lock"
+            - "pnpm-lock.yaml"
             - ".github/workflows/codeql.yml"
     pull_request:
         branches: [main]
@@ -21,7 +21,7 @@ on:
             - "**.mjs"
             - "**.cjs"
             - "package.json"
-            - "bun.lock"
+            - "pnpm-lock.yaml"
             - ".github/workflows/codeql.yml"
 
 permissions:

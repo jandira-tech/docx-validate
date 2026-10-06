@@ -19,7 +19,7 @@
  * `git mv` them — either in place (rename only) or sorted into
  * tests/fixtures/<category>/. Dedups by content hash. Supports --dry-run.
  *
- *   bunx tsx scripts/apply-fixture-names.ts [--into-categories] [--dedup] \
+ *   pnpm exec tsx scripts/apply-fixture-names.ts [--into-categories] [--dedup] \
  *     [--dry-run] [--fixtures-root tests/fixtures] \
  *     [--descriptor error-first|content-first] [--category <dir>] <path>...
  *

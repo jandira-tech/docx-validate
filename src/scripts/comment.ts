@@ -29,8 +29,8 @@
  * `tracking.ts` if you want a structured API instead.
  *
  * Usage:
- *   bunx tsx scripts/comment.ts unpacked/ 0 "Comment text"
- *   bunx tsx scripts/comment.ts unpacked/ 1 "Reply text" --parent 0
+ *   pnpm exec tsx scripts/comment.ts unpacked/ 0 "Comment text"
+ *   pnpm exec tsx scripts/comment.ts unpacked/ 1 "Reply text" --parent 0
  *
  * Text should be pre-escaped XML (e.g., &amp; for &, &#x2019; for smart
  * quotes).

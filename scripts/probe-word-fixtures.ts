@@ -7,7 +7,7 @@
  * running this script.
  *
  * Run with:
- *   bunx tsx scripts/probe-word-fixtures.ts \
+ *   pnpm exec tsx scripts/probe-word-fixtures.ts \
  *     --profile word-valid \
  *     --out /tmp/docx-word-probe-results.jsonl \
  *     --force-close-existing-word

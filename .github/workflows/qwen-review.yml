@@ -22,11 +22,11 @@ concurrency:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # Static analysis — quick tools only (uv / bun / cargo). Advisory: every step
+  # Static analysis — quick tools only (uv / pnpm / cargo). Advisory: every step
   # is `|| true` so this job is informational and can never block the LLM review.
   # ---------------------------------------------------------------------------
   static:
-    name: Static analysis (uv / bun / cargo)
+    name: Static analysis (uv / pnpm / cargo)
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v6
@@ -39,8 +39,8 @@ jobs:
         with:
           version: latest
 
-      - name: Install bun
-        uses: oven-sh/setup-bun@v2
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
 
       - name: Python — ruff (lint + format check)
         run: |
@@ -59,11 +59,11 @@ jobs:
         run: |
           if git ls-files '*.ts' '*.tsx' '*.js' '*.jsx' '*.mjs' '*.cjs' | grep -q .; then
             echo "::group::biome ci"
-            bunx --bun @biomejs/biome ci --diagnostic-level=error . || true
+            pnpm dlx @biomejs/biome ci --diagnostic-level=error . || true
             echo "::endgroup::"
             if [ -f tsconfig.json ]; then
               echo "::group::tsc --noEmit"
-              bunx --bun typescript tsc --noEmit || true
+              pnpm dlx -p typescript tsc --noEmit || true
               echo "::endgroup::"
             fi
           else

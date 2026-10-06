@@ -131,7 +131,7 @@ describe("all fixtures — lenient profile", () => {
         lines.push("");
         lines.push(banner);
         lines.push(`⚠  ${strictGaps.length} fixture(s) pass LENIENT but would fail STRICT validation.`);
-        lines.push("   Run `bun run test:strict` to see the failure detail.");
+        lines.push("   Run `pnpm run test:strict` to see the failure detail.");
         lines.push(banner);
         for (const gap of strictGaps) {
             const codes = gap.warningCodes.length === 0 ? "(no warnings emitted — investigate)" : gap.warningCodes.join(", ");

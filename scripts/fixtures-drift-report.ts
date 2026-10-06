@@ -26,7 +26,7 @@
  * Writes <out>/DRIFT_REPORT.md and prints a summary.
  *
  * Usage:
- *   bunx tsx scripts/fixtures-drift-report.ts [--out <dir>] [--limit <n>] [--profile strict|lenient]
+ *   pnpm exec tsx scripts/fixtures-drift-report.ts [--out <dir>] [--limit <n>] [--profile strict|lenient]
  */
 
 import { promises as fs } from "node:fs";

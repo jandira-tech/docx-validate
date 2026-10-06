@@ -1,7 +1,7 @@
 name: Publish to npm
 
 # Triggers on a GitHub Release being published. Recommended flow:
-#   1. Bump version: `bunx bumpp` (updates package.json + creates git tag)
+#   1. Bump version: `pnpm exec bumpp` (updates package.json + creates git tag)
 #   2. Push the tag: `git push --follow-tags`
 #   3. Create a GitHub Release for that tag → this workflow runs.
 #
@@ -31,12 +31,12 @@ jobs:
 
             - uses: actions/setup-node@v5
               with:
-                  node-version: "20"
+                  node-version: "24"
+                  cache: pnpm
                   registry-url: "https://registry.npmjs.org"
 
-            - uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: latest
+            - uses: pnpm/action-setup@v4
+              # version comes from the packageManager field in package.json
 
             # Trusted Publishing requires npm CLI ≥ 11.5.1. Node 20 ships with an
             # older npm; pin a recent one explicitly.
@@ -44,17 +44,17 @@ jobs:
               run: npm install -g npm@latest
 
             - name: Install dependencies
-              run: bun install --frozen-lockfile
+              run: pnpm install --frozen-lockfile
 
             - name: Type-check
-              run: bunx tsc --noEmit
+              run: pnpm exec tsc --noEmit
 
             - name: Test
               # libxmljs2 is a native Node addon; tests must run under Node, not Bun.
               run: npx vitest run
 
             - name: Build
-              run: bun run build
+              run: pnpm run build
 
             - name: Publish to npm
               # No NODE_AUTH_TOKEN: npm CLI auto-detects the GitHub OIDC token via

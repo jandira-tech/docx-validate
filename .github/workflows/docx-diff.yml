@@ -30,9 +30,8 @@ jobs:
           path: current
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
+        uses: pnpm/action-setup@v4
+        # version comes from the packageManager field in package.json
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -41,11 +40,11 @@ jobs:
 
       - name: Install dependencies (baseline)
         working-directory: baseline
-        run: bun install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Install dependencies (current)
         working-directory: current
-        run: bun install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       # The harness is new in the PR; seed it into the base checkout so the SAME
       # fixtures run against base's validator source. (The fixtures themselves are
