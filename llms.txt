@@ -18,12 +18,13 @@ XSD validation is backed by `libxml2-wasm` (WASM build of libxml2, via the swapp
 
 - [`src/index.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/index.ts): public barrel; re-exports the validate entry point, validator classes, side helpers, CLI builders, and shared types
 - [`src/lib/types.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/lib/types.ts): `ValidationResult`, `ValidationIssue`, `Profile`, `NS` (runtime namespace lookup table), `XPATH_NS`
-- [`src/lib/xml-helpers.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/lib/xml-helpers.ts): `parseXml`, `serializeXml`, `prettyXml`, `getElementsByTagNameNSAll`, `makeSelect`, `getLineNumber`, `getLocalName`
+- [`src/lib/xml-helpers.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/lib/xml-helpers.ts): `parseXml`, `serializeXml`, `prettyXml`, `getElementsByTagNameNSAll`, `getElementsByTagNameAll`, `makeSelect`, `getLineNumber`, `getLocalName`
 - [`src/lib/run-cli.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/lib/run-cli.ts): `runCli`, `withTempDir`
 - [`src/scripts/office/validate.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/scripts/office/validate.ts): top-level `validate()` and CLI
 - [`src/scripts/office/validators/base.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/scripts/office/validators/base.ts): `BaseSchemaValidator`, `defaultSchemasDir`, `XsdValidationOutcome`
 - [`src/scripts/office/validators/docx.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/scripts/office/validators/docx.ts): `DOCXSchemaValidator`, `WORD_2006_NAMESPACE`, `WORD_STRICT_NAMESPACE`, `WORD_PARAGRAPH_NAMESPACES`, `ParagraphCounts`
 - [`src/scripts/office/validators/pptx.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/scripts/office/validators/pptx.ts): `PPTXSchemaValidator`, `PRESENTATIONML_NAMESPACE`
+- [`src/scripts/office/validators/word-error-explanations.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/scripts/office/validators/word-error-explanations.ts): `WORD_ERROR_EXPLANATIONS`, `explainWordError` — plain-language, Word-probe-grounded explanations for the issue codes the `word-valid` profile treats as Word-blocking; surfaced by the CLI as the `↳ …` line under each error
 - [`src/scripts/office/validators/redlining.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/scripts/office/validators/redlining.ts): `RedliningValidator`, `validateRedlining`, `RedliningOptions`
 - [`src/scripts/office/pack.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/scripts/office/pack.ts): `pack`, `PackOptions`, `PackResult`
 - [`src/scripts/office/unpack.ts`](https://github.com/jandira-tech/docx-validate/blob/main/src/scripts/office/unpack.ts): `unpack`, `UnpackOptions`, `UnpackResult`

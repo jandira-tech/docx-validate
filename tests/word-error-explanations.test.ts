@@ -40,7 +40,16 @@ describe("word error explanations — CLI wiring", () => {
         const { execFile } = await import("node:child_process");
         const { promisify } = await import("node:util");
         const execFileAsync = promisify(execFile);
-        const fixture = path.join(import.meta.dirname, "fixtures", "word-regenerate-invalid", "original", "external", "superdoc", "super-editor", "annotations_import.docx");
+        const fixture = path.join(
+            import.meta.dirname,
+            "fixtures",
+            "word-regenerate-invalid",
+            "original",
+            "external",
+            "superdoc",
+            "super-editor",
+            "annotations_import.docx",
+        );
         const proc = await execFileAsync("node", [
             "--import",
             "tsx",

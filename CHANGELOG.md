@@ -6,6 +6,43 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.52.0] — 2026-10-06
+
+Breaking under `0.x` conventions: the native `libxmljs2` addon is replaced by
+`libxml2-wasm` and schema-load failures change severity — see `MIGRATION.md`.
+
+### Added
+
+- **`word-error-explanations` public module.** `WORD_ERROR_EXPLANATIONS` / `explainWordError` — plain-language, real-Word-probing-grounded explanations for the 19 issue codes the `word-valid` profile treats as Word-blocking. The CLI prints them as a `↳ …` line under each error when running `--profile word-valid`. Re-exported from the package root.
+- **`ct-uncovered-part` OPC coverage check.** Parts matched by no `<Override PartName>` and no `<Default Extension>` in `[Content_Types].xml` are now flagged (previously only declarable XML roots and known media extensions were checked — extensionless media slipped through). `PartName`s are URI-decoded before comparison, and media-extension matching uses own-property checks only (`x.constructor` is not a media type).
+- **`getElementsByTagNameAll`** — stack-based DFS walker replacing quadratic live-`NodeList` iteration for wildcard collection; `getElementsByTagNameNSAll` now uses the same O(N) traversal (one shared implementation, two entry points). New `tests/xml-helpers.test.ts` pins the contract, including the native root semantics (Document root ⇒ `documentElement` included; Element root ⇒ self excluded).
+- **`MIGRATION.md`** with per-version breaking-change notes.
+- CI runs a Node 24 + 26 matrix.
+
+### Changed
+
+- **XSD engine: `libxmljs2` → `libxml2-wasm`.** The native addon ships no Node 26 / ABI-147 prebuild and no longer compiles against Node's V8 headers; the wasm build has identical libxml2 semantics with no native compilation step. Compiled schema validators are cached per schema path (the cache stores in-flight load promises, so concurrent first loads compile exactly one validator; failed loads evict and retry; source documents are disposed even when compilation throws).
+- **Schema-load failures are errors, not info.** Unloadable schemas now produce `severity: "error"`, `code: "xsd-schema-load-failed"` (was `info` / `xsd-schema-load-skipped`). A validator must not call a document valid against a schema it could not load. The known-noisy Dublin Core import in `opc-coreProperties.xsd` stays suppressed via `IGNORED_VALIDATION_ERRORS`.
+- `BaseSchemaValidator.assertLibxmljsAvailable()` → **async** `assertXsdValidationAvailable()` (wasm initialises asynchronously); error prefix is now `XSD engine unavailable (libxml2-wasm)`.
+- **Toolchain: `pnpm` replaces `bun`** (`packageManager: pnpm@12.8.2`); all dependencies updated to latest.
+- **`src/index.ts` is hand-maintained.** barrelsby could not reproduce the curated named exports and silently destroyed them on regeneration; the `barrel` / `barrel:check` scripts are gone and the barrel is edited by hand.
+- **Format settings moved** from `.oxfmtrc.json` into `vite.config.ts`'s `fmt` block so `vp check` and `pnpm run fmt` cannot desync; `fmt` / `fmt:fix` now go through `vp fmt`.
+
+### Fixed
+
+- **CI workflows actually run again.** `pnpm/action-setup` now executes before `actions/setup-node`'s `cache: pnpm` resolution (the old order failed every pnpm job with "Unable to locate executable file: pnpm" — CI had not run green on `main` since 2026-06-02). The validator-diff workflow resolves pnpm via `package_json_file` (its path-scoped checkouts leave no root `package.json`).
+- Validator performance on large documents: del-first `collectDeletedRunText` with Set dedup across both Word namespaces, native-DOM `validateDeletions` (no `xpath` descendant queries), O(N) paragraph counting that skips text-box subtrees during traversal, single-pass redlining stripping.
+
+### Security
+
+- **Zip Slip** blocked at extraction (`resolveSafeZipEntry`: `path.relative` containment, prefix-slip-safe).
+- **Path traversal in relationship targets** contained lexically and via realpath-based symlink-escape detection (`containRelationshipTarget`), for both absolute and relative targets.
+- **Document IDs use `crypto.randomInt`** instead of predictable `Math.random`-derived identifiers.
+
+### Removed
+
+- `libxmljs2` (runtime + `allowBuilds` entry), `barrelsby` (dev), `.oxfmtrc.json`, the `barrel` / `barrel:check` scripts.
+
 ## [0.51.0] — 2026-05-30
 
 ### Changed
@@ -110,6 +147,7 @@ dist/index.mjs` returns zero matches.
 Initial publishable release. See `git log --oneline` for the full set of
 commits — the changelog starts here.
 
+[0.52.0]: https://github.com/jandira-tech/docx-validate/compare/v0.51.0...v0.52.0
 [0.51.0]: https://github.com/jandira-tech/docx-validate/compare/v0.5.0...v0.51.0
 [0.5.0]: https://github.com/jandira-tech/docx-validate/compare/v0.1.3...v0.5.0
 [0.1.3]: https://github.com/jandira-tech/docx-validate/compare/v0.1.2...v0.1.3
