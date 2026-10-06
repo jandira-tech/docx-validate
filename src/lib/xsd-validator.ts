@@ -99,29 +99,44 @@ const buildWasmValidator = async (): Promise<XsdValidator> => {
     // Cache of compiled schema validators, mirroring the libxmljs2-era
     // `_xsdCache` in validators/base.ts: the OOXML schema bundle is ~1.1 MB
     // and every XML part in a package reuses the same handful of schemas, so
-    // recompiling per file would dominate runtime. Entries live for the
-    // process lifetime (a handful of schemas; each holds its compiled form
-    // in the wasm heap) and are dropped wholesale by
-    // `_resetXsdValidatorMemo`, which discards this closure.
-    const validatorCache = new Map<string, InstanceType<typeof WasmXsdValidator>>();
+    // recompiling per file would dominate runtime. The cache stores the
+    // in-flight load PROMISE: concurrent first-loads of the same schema then
+    // compile exactly one validator instead of racing to overwrite the entry
+    // (each race loser would hold a compiled validator that is never
+    // disposed — a wasm-heap leak). A failed load evicts its entry so the
+    // next call retries fresh. Entries live for the process lifetime (a
+    // handful of schemas; each holds its compiled form in the wasm heap) and
+    // are dropped wholesale by `_resetXsdValidatorMemo`, which discards this
+    // closure.
+    const validatorCache = new Map<string, Promise<InstanceType<typeof WasmXsdValidator>>>();
 
-    const loadValidator = async (schemaPath: string): Promise<InstanceType<typeof WasmXsdValidator>> => {
+    const loadValidator = (schemaPath: string): Promise<InstanceType<typeof WasmXsdValidator>> => {
         const cached = validatorCache.get(schemaPath);
         if (cached) {
             return cached;
         }
-        // Read schema file directly, parse with fromString. fsInputProviders
-        // resolves any relative <xs:import schemaLocation="..."/> references
-        // encountered during the parse, allowing OOXML schemas with imports
-        // to load cleanly when they're all present on disk. The document base
-        // URL makes those imports resolve against the schema file's
-        // directory, not the process cwd.
-        const schemaSource = await readFile(schemaPath, "utf-8");
-        const schemaDoc = XmlDocument.fromString(schemaSource, { url: schemaPath });
-        const compiled = WasmXsdValidator.fromDoc(schemaDoc);
-        schemaDoc.dispose();
-        validatorCache.set(schemaPath, compiled);
-        return compiled;
+        const load = (async () => {
+            // Read schema file directly, parse with fromString. fsInputProviders
+            // resolves any relative <xs:import schemaLocation="..."/> references
+            // encountered during the parse, allowing OOXML schemas with imports
+            // to load cleanly when they're all present on disk. The document base
+            // URL makes those imports resolve against the schema file's
+            // directory, not the process cwd.
+            const schemaSource = await readFile(schemaPath, "utf-8");
+            const schemaDoc = XmlDocument.fromString(schemaSource, { url: schemaPath });
+            try {
+                return WasmXsdValidator.fromDoc(schemaDoc);
+            } finally {
+                // Dispose even when compilation throws — an undisposed source
+                // doc stays resident in the wasm heap.
+                schemaDoc.dispose();
+            }
+        })().catch((err: unknown) => {
+            validatorCache.delete(schemaPath);
+            throw err;
+        });
+        validatorCache.set(schemaPath, load);
+        return load;
     };
 
     const validate = async (xml: string, schemaPath: string): Promise<ValidationIssue[]> => {

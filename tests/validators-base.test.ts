@@ -397,6 +397,46 @@ describe("BaseSchemaValidator", () => {
             });
         });
 
+        it("flags a part whose extension shadows an Object.prototype property ('constructor' is not media)", async () => {
+            await withTempDir(async (dir) => {
+                // `"constructor" in {}` is true — an own-property check is
+                // required or evil.constructor sails past the media-extension
+                // lookup AND gets suggested with ContentType="undefined".
+                await writeFile(
+                    path.join(dir, "[Content_Types].xml"),
+                    `<?xml version="1.0"?>` +
+                        `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+                        `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+                        `</Types>`,
+                );
+                await writeFile(path.join(dir, "word", "media", "evil.constructor"), "not media");
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateContentTypes();
+                expect(result.issues.some((i) => i.code === "ct-uncovered-part" && i.path === "word/media/evil.constructor")).toBe(true);
+                expect(result.issues.some((i) => i.code === "ct-undeclared-ext" && i.message.includes("undefined"))).toBe(false);
+            });
+        });
+
+        it("matches URI-escaped Override PartNames against decoded package paths", async () => {
+            await withTempDir(async (dir) => {
+                // OPC PartName is a URI; the on-disk path is its decoded form.
+                // The comparison must normalize both sides or a validly
+                // declared part is flagged ct-uncovered-part.
+                await writeFile(
+                    path.join(dir, "[Content_Types].xml"),
+                    `<?xml version="1.0"?>` +
+                        `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+                        `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+                        `<Override PartName="/word/document%20with%20space.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>` +
+                        `</Types>`,
+                );
+                await writeFile(path.join(dir, "word", "document with space.xml"), "<document/>");
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateContentTypes();
+                expect(result.issues.some((i) => i.code === "ct-uncovered-part" && i.path === "word/document with space.xml")).toBe(false);
+            });
+        });
+
         it("treats _rels/.rels as extension 'rels' (OPC last-dot rule, not POSIX dotfile)", async () => {
             await withTempDir(async (dir) => {
                 // POSIX path.extname('.rels') is '' — a naive implementation

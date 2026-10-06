@@ -1023,7 +1023,20 @@ export class BaseSchemaValidator {
             const o = overrides.item(i);
             if (!o) continue;
             const partName = o.getAttribute("PartName");
-            if (partName) declaredParts.add(partName.replace(/^\/+/, ""));
+            // OPC PartName is a package-relative URI; the on-disk path is its
+            // decoded form, so decode before storing or an escaped PartName
+            // (%20 et al.) never matches the walked file list. Fall back to
+            // the raw value on malformed escapes — the lookup then simply
+            // misses and the residual pass reports the part.
+            if (partName) {
+                let decoded = partName.replace(/^\/+/, "");
+                try {
+                    decoded = decodeURIComponent(decoded);
+                } catch {
+                    // keep raw
+                }
+                declaredParts.add(decoded);
+            }
         }
 
         const defaults = dom.getElementsByTagNameNS(CONTENT_TYPES_NAMESPACE, "Default");
@@ -1087,7 +1100,11 @@ export class BaseSchemaValidator {
             if (parts.includes("_rels") || parts.includes("docProps")) continue;
 
             const extension = ext.replace(/^\./, "");
-            if (extension && !declaredExtensions.has(extension) && extension in mediaExtensions) {
+            // Object.hasOwn, not `in`: mediaExtensions is a plain object, so
+            // `"constructor" in mediaExtensions` is true and a part named
+            // x.constructor would sail past the check (and be "suggested"
+            // with ContentType="undefined").
+            if (extension && !declaredExtensions.has(extension) && Object.hasOwn(mediaExtensions, extension)) {
                 const rel = this.relPath(filePath);
                 issues.push({
                     severity: "error",
@@ -1119,7 +1136,7 @@ export class BaseSchemaValidator {
             // last segment — unlike POSIX, `_rels/.rels` has extension "rels".
             const extension = dot >= 0 ? base.slice(dot + 1).toLowerCase() : "";
             if (extension !== "" && declaredExtensions.has(extension)) continue;
-            if (extension in mediaExtensions) continue;
+            if (Object.hasOwn(mediaExtensions, extension)) continue;
             issues.push({
                 severity: "error",
                 message:
