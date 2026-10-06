@@ -12,7 +12,7 @@
 <h1>Interface PackOptions</h1></div>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">PackOptions</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#author">author</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#inferauthorfunc">inferAuthorFunc</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><br/>        <span class="tsd-kind-parameter">unpackedDir</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>        <span class="tsd-kind-parameter">originalDocx</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#original">original</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#validate">validate</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/55d2b354b21f55ebca0fef919eed7d635dc2690f/src/scripts/office/pack.ts#L47">scripts/office/pack.ts:47</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/ada6e68e5f8a57978289fa322395831ea7969363/src/scripts/office/pack.ts#L47">scripts/office/pack.ts:47</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -37,24 +37,24 @@ when <code>validate !== false</code> and <code>original</code> is provided, unle
 cannot deduce a single new author from the diff.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/55d2b354b21f55ebca0fef919eed7d635dc2690f/src/scripts/office/pack.ts#L56">scripts/office/pack.ts:56</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/ada6e68e5f8a57978289fa322395831ea7969363/src/scripts/office/pack.ts#L56">scripts/office/pack.ts:56</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="inferauthorfunc"><code class="tsd-tag">Optional</code><span>infer<wbr/>Author<wbr/>Func</span><a href="#inferauthorfunc" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">inferAuthorFunc</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">unpackedDir</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">originalDocx</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></div>
 <div class="tsd-comment tsd-typography"><p>Custom author-inference callback. When provided, replaces the default <code>inferAuthor</code>. Receives (unpackedDir, originalDocx) and returns the author string.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/55d2b354b21f55ebca0fef919eed7d635dc2690f/src/scripts/office/pack.ts#L58">scripts/office/pack.ts:58</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/ada6e68e5f8a57978289fa322395831ea7969363/src/scripts/office/pack.ts#L58">scripts/office/pack.ts:58</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="original"><code class="tsd-tag">Optional</code><span>original</span><a href="#original" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">original</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/55d2b354b21f55ebca0fef919eed7d635dc2690f/src/scripts/office/pack.ts#L48">scripts/office/pack.ts:48</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/ada6e68e5f8a57978289fa322395831ea7969363/src/scripts/office/pack.ts#L48">scripts/office/pack.ts:48</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="validate"><code class="tsd-tag">Optional</code><span>validate</span><a href="#validate" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">validate</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/55d2b354b21f55ebca0fef919eed7d635dc2690f/src/scripts/office/pack.ts#L49">scripts/office/pack.ts:49</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/ada6e68e5f8a57978289fa322395831ea7969363/src/scripts/office/pack.ts#L49">scripts/office/pack.ts:49</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
