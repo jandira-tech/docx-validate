@@ -15,3 +15,8 @@
 **Vulnerability:** While fixing the Insecure Temporary File vulnerability with `mkdtempSync`, assigning the result of `mkdtempSync` to an exported constant executed the synchronous I/O operations directly at module load time.
 **Learning:** Performing side effects like file I/O (e.g., creating temporary directories) directly inside the module scope introduces architectural flaws. It means importing the file anywhere (like in test suites or other tools) inadvertently triggers directory creation, leading to orphaned files and unintended side effects, even if the target CLI function is never run.
 **Prevention:** Always encapsulate file system interactions, including the generation of temporary directories or profiles, inside functions (e.g., lazy getters) rather than static module-level initialization.
+
+## 2026-09-21 - Path Traversal (Zip Slip variant) in Relationship Resolution
+**Vulnerability:** The XML validation parsing resolved OOXML relationship Target attributes blindly using `path.resolve()`. A malicious document with crafted relative traversal targets (like `../../../../etc/passwd`) could trick the validator into inspecting files outside the unpacked archive boundary, posing an arbitrary file read/existence disclosure vulnerability on the host.
+**Learning:** Relying solely on `path.resolve()` when combining untrusted file path attributes with a root extraction directory is dangerous. A subsequent containment check is mandatory to ensure the resolved path hasn't "escaped" the intended root.
+**Prevention:** Always validate resolved target paths by calculating the relative path back to the root directory (`path.relative(root, resolvedPath)`) and ensuring it doesn't equal `..`, start with `.. + path.sep`, or become an absolute path.
