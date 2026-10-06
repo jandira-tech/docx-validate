@@ -30,10 +30,10 @@
 
 import { describe, it, expect, beforeAll } from "vitest";
 import path from "node:path";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
 import { createXsdValidator, type XsdValidator } from "../src/lib/xsd-validator";
 import { unpack } from "../src/scripts/office/unpack";
+import { withTempDir } from "../src/lib/run-cli";
 
 const SCHEMAS_DIR = path.resolve(__dirname, "..", "src", "scripts", "office", "schemas");
 const WML_SCHEMA = path.join(SCHEMAS_DIR, "ISO-IEC29500-4_2016", "wml.xsd");
@@ -47,36 +47,32 @@ const SMOKE_FIXTURES = [
 
 describe("xsd-validator wasm engine corpus smoke", () => {
     let validator: XsdValidator;
-    let scratchDir: string;
 
     beforeAll(async () => {
         validator = await createXsdValidator();
-        scratchDir = mkdtempSync(path.join(tmpdir(), "xsd-corpus-smoke-"));
     });
 
     it.each(SMOKE_FIXTURES)(
         "wasm validator does not throw on %s",
         async (fixturePath) => {
-            const unpackedDir = path.join(scratchDir, path.basename(fixturePath));
-            await unpack(fixturePath, unpackedDir);
+            await withTempDir(async (scratchDir) => {
+                const unpackedDir = path.join(scratchDir, path.basename(fixturePath));
+                await unpack(fixturePath, unpackedDir);
 
-            const documentXmlPath = path.join(unpackedDir, "word", "document.xml");
-            const documentXml = readFileSync(documentXmlPath, "utf-8");
+                const documentXmlPath = path.join(unpackedDir, "word", "document.xml");
+                const documentXml = readFileSync(documentXmlPath, "utf-8");
 
-            // The contract: validate returns an array, regardless of what's in
-            // it. The wasm engine should never throw on real DOCX content.
-            const issues = await validator.validate(documentXml, WML_SCHEMA);
-            expect(Array.isArray(issues)).toBe(true);
-            for (const issue of issues) {
-                expect(issue.severity).toMatch(/^(error|warning|info)$/);
-                expect(typeof issue.message).toBe("string");
-                expect(issue.message.length).toBeGreaterThan(0);
-            }
+                // The contract: validate returns an array, regardless of what's in
+                // it. The wasm engine should never throw on real DOCX content.
+                const issues = await validator.validate(documentXml, WML_SCHEMA);
+                expect(Array.isArray(issues)).toBe(true);
+                for (const issue of issues) {
+                    expect(issue.severity).toMatch(/^(error|warning|info)$/);
+                    expect(typeof issue.message).toBe("string");
+                    expect(issue.message.length).toBeGreaterThan(0);
+                }
+            });
         },
         30_000,
     );
-
-    it("cleanup", () => {
-        rmSync(scratchDir, { recursive: true, force: true });
-    });
 });
