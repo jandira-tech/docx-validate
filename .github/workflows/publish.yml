@@ -36,6 +36,8 @@ jobs:
                   registry-url: "https://registry.npmjs.org"
 
             - uses: pnpm/action-setup@v4
+              with:
+                  version: 12.8.2
               # version comes from the packageManager field in package.json
 
             # Trusted Publishing requires npm CLI ≥ 11.5.1. Node 20 ships with an
