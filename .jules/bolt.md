@@ -5,3 +5,7 @@
 ## 2026-05-22 - Optimize DOM element counting with exclusion rules
 **Learning:** When needing to count elements (like `<w:p>`) while excluding those nested inside specific ancestors (like `<w:txbxContent>` or `<v:textbox>`), iterating over all elements and walking up the `parentNode` chain for each is an O(N*D) operation that performs poorly on deeply nested or large documents.
 **Action:** Use a stack-based tree traversal starting from the root. This inherently skips descending into excluded branches (by simply not pushing their children to the stack), completely eliminating the need for `parentNode` checks and dropping execution time drastically (from ~318ms to ~2.5ms in extreme cases).
+
+## 2026-06-03 - O(N) targeted querying for redlining stripping
+**Learning:** In large documents, stripping tracked changes using `collectAllElements` (which does a deep `getElementsByTagName('*')`) and iterating child-by-child is O(N²) and extremely slow.
+**Action:** Replace the custom full-tree collection and child filtering with direct, targeted native `getElementsByTagNameNSAll(root, NS.W, 'ins')` / `del` queries. Processing them in a single pass is O(N) and resulted in a 2x-5x speed improvement.

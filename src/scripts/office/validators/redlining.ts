@@ -173,36 +173,19 @@ export async function validateRedlining(options: RedliningOptions): Promise<Vali
  * being unwrapped into the surrounding paragraph.
  */
 export function removeAuthorTrackedChanges(root: Element, author: string): void {
-    const allElements = collectAllElements(root);
-    for (const parent of allElements) {
-        const toRemove: Element[] = [];
-        for (let child = parent.firstChild; child; child = child.nextSibling) {
-            if (
-                child.nodeType === ELEMENT_NODE &&
-                (child as Element).namespaceURI === NS.W &&
-                (child as Element).localName === "ins" &&
-                (child as Element).getAttributeNS(NS.W, "author") === author
-            ) {
-                toRemove.push(child as Element);
-            }
-        }
-        for (const elem of toRemove) {
-            parent.removeChild(elem);
+    const insElements = getElementsByTagNameNSAll(root, NS.W, "ins");
+    for (const ins of insElements) {
+        if (ins.getAttributeNS(NS.W, "author") === author) {
+            ins.parentNode?.removeChild(ins);
         }
     }
 
-    const remaining = collectAllElements(root);
-    for (const parent of remaining) {
-        const children: Element[] = [];
-        for (let child = parent.firstChild; child; child = child.nextSibling) {
-            if (child.nodeType === ELEMENT_NODE) {
-                children.push(child as Element);
-            }
-        }
-        const targets: Element[] = children.filter(
-            (el) => el.namespaceURI === NS.W && el.localName === "del" && el.getAttributeNS(NS.W, "author") === author,
-        );
-        for (const delElem of targets.slice().reverse()) {
+    const delElements = getElementsByTagNameNSAll(root, NS.W, "del");
+    for (const delElem of delElements.slice().reverse()) {
+        if (delElem.getAttributeNS(NS.W, "author") === author) {
+            const parent = delElem.parentNode;
+            if (!parent) continue;
+
             const delTexts = getElementsByTagNameNSAll(delElem, NS.W, "delText");
             for (const dt of delTexts) {
                 renameElement(dt, "w:t");
@@ -327,18 +310,6 @@ function filterDiffContent(stdout: string): string {
         }
     }
     return contentLines.join("\n");
-}
-
-function collectAllElements(root: Element): Element[] {
-    const out: Element[] = [root];
-    const list = root.getElementsByTagName("*");
-    for (let i = 0; i < list.length; i += 1) {
-        const item = list.item(i);
-        if (item) {
-            out.push(item as Element);
-        }
-    }
-    return out;
 }
 
 /**
