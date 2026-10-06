@@ -2690,7 +2690,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // Two sources of "needs to be defined": styles referenced by
         // document XML, and the four ECMA-376 implied-defaults — Word
         // looks these up implicitly so they must always be present.
-        const needed = new Set<string>([...referenced]);
+        const needed = new Set<string>(referenced);
         for (const def of REQUIRED_DEFAULT_STYLES) needed.add(def.styleId);
 
         const missing = [...needed].filter((id) => !defined.has(id));

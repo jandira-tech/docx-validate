@@ -331,11 +331,11 @@ export function buildValidateCommand(): Command {
 }
 
 export async function runValidateFromArgv(argv: readonly string[]): Promise<number> {
-    // Fail loudly at startup if libxmljs2's native binding is broken — otherwise
+    // Fail loudly at startup if the wasm-backed XSD engine is broken — otherwise
     // the per-file pipeline silently turns the same condition into per-file
-    // "Invalid XSD schema" errors that look like document corruption.
+    // "xsd-validation-failed" errors that look like document corruption.
     try {
-        BaseSchemaValidator.assertLibxmljsAvailable();
+        await BaseSchemaValidator.assertXsdValidationAvailable();
     } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         process.stderr.write(`${message}\n`);

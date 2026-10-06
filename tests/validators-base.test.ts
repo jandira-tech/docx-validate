@@ -225,11 +225,9 @@ describe("BaseSchemaValidator", () => {
         it("turns missing-XSD-on-disk into a per-file validation error (Python parity)", async () => {
             // Per Python's bare-except behaviour, schema-load issues surface as a
             // per-file error rather than throwing — that lets the
-            // IGNORED_VALIDATION_ERRORS list filter out known-noisy schemas like
-            // docProps/core.xml whose `dcterms` import libxmljs2 cannot fully
-            // resolve. For loud failure on a broken libxmljs2 binding, callers
-            // should invoke BaseSchemaValidator.assertLibxmljsAvailable() at
-            // startup.
+            // IGNORED_VALIDATION_ERRORS list filter out known-noisy schemas.
+            // For loud failure on a broken engine, callers should invoke
+            // BaseSchemaValidator.assertXsdValidationAvailable() at startup.
             await withTempDir(async (dir) => {
                 await writeFile(
                     path.join(dir, "_rels", ".rels"),
@@ -249,9 +247,9 @@ describe("BaseSchemaValidator", () => {
         });
     });
 
-    describe("assertLibxmljsAvailable", () => {
-        it("returns silently when libxmljs2 + XSD validation work on this host", () => {
-            expect(() => BaseSchemaValidator.assertLibxmljsAvailable()).not.toThrow();
+    describe("assertXsdValidationAvailable", () => {
+        it("returns silently when the wasm-backed XSD engine works on this host", async () => {
+            await expect(BaseSchemaValidator.assertXsdValidationAvailable()).resolves.toBeUndefined();
         });
     });
 
@@ -357,6 +355,68 @@ describe("BaseSchemaValidator", () => {
                 const result = await v.validateContentTypes();
                 expect(result.valid).toBe(false);
                 expect(result.issues[0].code).toBe("ct-missing");
+            });
+        });
+
+        it("flags a part covered by neither Override nor Default (ct-uncovered-part)", async () => {
+            await withTempDir(async (dir) => {
+                // Extensionless media — the recurring real-world case
+                // (superdoc editors emit word/media/image_3094991244).
+                await writeFile(
+                    path.join(dir, "[Content_Types].xml"),
+                    `<?xml version="1.0"?>` +
+                        `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+                        `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+                        `</Types>`,
+                );
+                await writeFile(path.join(dir, "word", "media", "image_3094991244"), "\x89PNG-blob");
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateContentTypes();
+                expect(result.valid).toBe(false);
+                const hits = result.issues.filter((i) => i.code === "ct-uncovered-part");
+                expect(hits.length).toBe(1);
+                expect(hits[0].path).toBe("word/media/image_3094991244");
+            });
+        });
+
+        it("does not double-flag uncovered known media extensions (ct-undeclared-ext owns those)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "[Content_Types].xml"),
+                    `<?xml version="1.0"?>` +
+                        `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+                        `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+                        `</Types>`,
+                );
+                await writeFile(path.join(dir, "word", "media", "x.png"), "\x89PNG-blob");
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateContentTypes();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "ct-undeclared-ext")).toBe(true);
+                expect(result.issues.some((i) => i.code === "ct-uncovered-part")).toBe(false);
+            });
+        });
+
+        it("treats _rels/.rels as extension 'rels' (OPC last-dot rule, not POSIX dotfile)", async () => {
+            await withTempDir(async (dir) => {
+                // POSIX path.extname('.rels') is '' — a naive implementation
+                // would call the part extensionless and flag it. OPC derives
+                // the extension from the last dot, so the Default covers it.
+                await writeFile(
+                    path.join(dir, "[Content_Types].xml"),
+                    `<?xml version="1.0"?>` +
+                        `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+                        `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+                        `<Default Extension="xml" ContentType="application/xml"/>` +
+                        `</Types>`,
+                );
+                await writeFile(
+                    path.join(dir, "_rels", ".rels"),
+                    `${RELS_HEADER}` + `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>`,
+                );
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateContentTypes();
+                expect(result.valid).toBe(true);
             });
         });
     });

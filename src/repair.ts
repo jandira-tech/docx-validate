@@ -34,7 +34,7 @@ import { withTempDir } from "./lib/run-cli";
 export type RepairOptions = {
     /**
      * Override the XSD engine used internally (PR B's injection mechanism).
-     * Defaults to the legacy libxmljs2 path until the cutover lands.
+     * Defaults to the wasm-backed validator from `src/lib/xsd-validator.ts`.
      */
     xsdValidator?: XsdValidator;
     /** Override the bundled XSD schemas directory. */

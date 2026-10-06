@@ -52,7 +52,7 @@ src/
         merge-runs.ts            — merge adjacent w:r runs
         simplify-redlines.ts     — collapse/clean tracked changes
       validators/
-        base.ts                  — XSD schema loader (libxmljs2)
+        base.ts                  — XSD schema dispatch (libxml2-wasm via lib/xsd-validator.ts)
         docx.ts                  — DOCX validator
         pptx.ts                  — PPTX validator
         redlining.ts             — w:ins / w:del / w:moveTo etc. validator
@@ -74,7 +74,7 @@ tests/                           — vitest specs
 - File names: kebab-case (`merge-runs.ts`, not `merge_runs.ts` or `mergeRuns.ts`).
 - Modules: ES modules (`import`/`export`), no CommonJS.
 - Imports: relative paths between sibling modules; no path aliases.
-- XSD validation goes through `libxmljs2` (it ships its own types).
+- XSD validation goes through `libxml2-wasm` behind the `XsdValidator` interface (`src/lib/xsd-validator.ts`).
 - DOM work goes through `@xmldom/xmldom` + `xpath` via `lib/xml-helpers.ts` (`parseXml`, `serializeXml`, `prettyXml`, `getElementsByTagNameNSAll`) — do NOT call `DOMParser` directly so the implementation stays swappable.
 - Temp dirs use the `tmp` package via `withTempDir(async (dir) => { ... })` (see `lib/run-cli.ts`).
 - CLIs use `commander`. Wire each script with `runCli(...)` from `lib/run-cli.ts`.
@@ -88,7 +88,7 @@ Runtime:
 - `jszip` — Zip read/write
 - `@xmldom/xmldom` — DOM API
 - `xpath` — XPath queries against `@xmldom`
-- `libxmljs2` — XSD validation
+- `libxml2-wasm` — XSD validation (WASM libxml2; replaced the native `libxmljs2` addon, which cannot build on Node 26)
 - `commander` — CLI argument parsing
 - `tmp` — temp directory lifecycle
 
@@ -109,9 +109,10 @@ pnpm exec tsx src/scripts/comment.ts <path>
 ## Programmatic use
 
 Everything the CLIs do is also available as plain function/class imports — no
-shell required. The package's barrel (`src/index.ts`) is auto-generated from
-the source tree, so anything exported by a `src/**` file is reachable from
-the package root.
+shell required. The package's barrel (`src/index.ts`) is hand-maintained (the
+`export *` section mirrors the source tree; the four-class surface and
+`jubarte` helpers are curated), so anything exported by a `src/**` file is
+reachable from the package root.
 
 ### Validate a `.docx` / `.pptx`
 
@@ -275,8 +276,8 @@ a registry of every namespace that exists in OOXML.
 
 The bundled XSDs declare ~30 `targetNamespace` values; `NS` currently
 exposes 13. The other 17 are unused at call sites, so adding them would
-just be dead surface area. XSD validation is independent: `libxmljs2`
-reads the `.xsd` files directly, so `NS` membership has no effect on
+just be dead surface area. XSD validation is independent: the wasm
+engine reads the `.xsd` files directly, so `NS` membership has no effect on
 what gets validated.
 
 When a future validator needs `c:chart` (DrawingML chart) or `v:shape`

@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-06-26T06:06:16.892Z",
+    "generatedAt": "2026-10-06T15:38:41.722Z",
     "totalFixtures": 619,
     "entries": [
         {
@@ -18,13 +18,13 @@
             "relativePath": "broken/empty.missing-content-type.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "style-default-missing"]
+                "errorCodes": ["ct-uncovered-part", "paraid-missing-element", "style-default-missing"]
             },
             "lenient": {
-                "valid": true,
-                "errorCodes": []
+                "valid": false,
+                "errorCodes": ["ct-uncovered-part"]
             },
-            "word": "clean-open"
+            "word": "unknown"
         },
         {
             "relativePath": "broken/endnotes.paraid-overflow.docx",
@@ -243,9 +243,7 @@
                     "comment-marker-missing",
                     "comment-orphan-start",
                     "comment-thread-count-mismatch",
-                    "docprops-boolean-invalid",
-                    "xsd-error",
-                    "xsd-summary"
+                    "docprops-boolean-invalid"
                 ]
             },
             "lenient": {
@@ -254,9 +252,7 @@
                     "comment-marker-missing",
                     "comment-orphan-start",
                     "comment-thread-count-mismatch",
-                    "docprops-boolean-invalid",
-                    "xsd-error",
-                    "xsd-summary"
+                    "docprops-boolean-invalid"
                 ]
             },
             "word": "unknown"
@@ -5613,11 +5609,11 @@
             "relativePath": "external/superdoc/super-editor/invalid-underline.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": ["ct-uncovered-part", "paraid-missing-element", "rels-unreferenced", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
-                "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": ["ct-uncovered-part", "rels-unreferenced", "xsd-error", "xsd-summary"]
             },
             "word": "unreadable-content-warning"
         },
@@ -6560,9 +6556,7 @@
                     "comment-marker-missing",
                     "comment-orphan-start",
                     "comment-thread-count-mismatch",
-                    "docprops-boolean-invalid",
-                    "xsd-error",
-                    "xsd-summary"
+                    "docprops-boolean-invalid"
                 ]
             },
             "lenient": {
@@ -6571,9 +6565,7 @@
                     "comment-marker-missing",
                     "comment-orphan-start",
                     "comment-thread-count-mismatch",
-                    "docprops-boolean-invalid",
-                    "xsd-error",
-                    "xsd-summary"
+                    "docprops-boolean-invalid"
                 ]
             },
             "word": "open-error"
@@ -6581,24 +6573,24 @@
         {
             "relativePath": "unknown/unknown/empty.missing-content-type.docx",
             "strict": {
-                "valid": false,
-                "errorCodes": ["xsd-error", "xsd-summary"]
+                "valid": true,
+                "errorCodes": []
             },
             "lenient": {
-                "valid": false,
-                "errorCodes": ["xsd-error", "xsd-summary"]
+                "valid": true,
+                "errorCodes": []
             },
             "word": "clean-open"
         },
         {
             "relativePath": "unknown/unknown/endnotes.paraid-overflow.docx",
             "strict": {
-                "valid": false,
-                "errorCodes": ["xsd-error", "xsd-summary"]
+                "valid": true,
+                "errorCodes": []
             },
             "lenient": {
-                "valid": false,
-                "errorCodes": ["xsd-error", "xsd-summary"]
+                "valid": true,
+                "errorCodes": []
             },
             "word": "clean-open"
         },
@@ -6606,11 +6598,11 @@
             "relativePath": "unknown/unknown/footnotes.duplicate-paraid.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["docprops-boolean-invalid", "xsd-error", "xsd-summary"]
+                "errorCodes": ["docprops-boolean-invalid"]
             },
             "lenient": {
                 "valid": false,
-                "errorCodes": ["docprops-boolean-invalid", "xsd-error", "xsd-summary"]
+                "errorCodes": ["docprops-boolean-invalid"]
             },
             "word": "unreadable-content-warning"
         },
@@ -6726,11 +6718,11 @@
             "relativePath": "unknown/unknown/tiny-picture.broken-rels.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["docprops-boolean-invalid", "rels-broken", "rels-target-missing", "xsd-error", "xsd-summary"]
+                "errorCodes": ["docprops-boolean-invalid", "rels-broken", "rels-target-missing"]
             },
             "lenient": {
                 "valid": false,
-                "errorCodes": ["docprops-boolean-invalid", "rels-broken", "rels-target-missing", "xsd-error", "xsd-summary"]
+                "errorCodes": ["docprops-boolean-invalid", "rels-broken", "rels-target-missing"]
             },
             "word": "unreadable-content-warning"
         },
@@ -7007,11 +6999,11 @@
             "relativePath": "word-regenerate-invalid/original/external/superdoc/super-editor/invalid-underline.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": ["ct-uncovered-part", "paraid-missing-element", "rels-unreferenced", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
-                "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": ["ct-uncovered-part", "rels-unreferenced", "xsd-error", "xsd-summary"]
             },
             "word": "unreadable-content-warning"
         },
@@ -7035,9 +7027,7 @@
                     "comment-marker-missing",
                     "comment-orphan-start",
                     "comment-thread-count-mismatch",
-                    "docprops-boolean-invalid",
-                    "xsd-error",
-                    "xsd-summary"
+                    "docprops-boolean-invalid"
                 ]
             },
             "lenient": {
@@ -7046,9 +7036,7 @@
                     "comment-marker-missing",
                     "comment-orphan-start",
                     "comment-thread-count-mismatch",
-                    "docprops-boolean-invalid",
-                    "xsd-error",
-                    "xsd-summary"
+                    "docprops-boolean-invalid"
                 ]
             },
             "word": "unreadable-content-warning"
@@ -7057,11 +7045,11 @@
             "relativePath": "word-regenerate-invalid/original/unknown/unknown/footnotes.duplicate-paraid.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["docprops-boolean-invalid", "xsd-error", "xsd-summary"]
+                "errorCodes": ["docprops-boolean-invalid"]
             },
             "lenient": {
                 "valid": false,
-                "errorCodes": ["docprops-boolean-invalid", "xsd-error", "xsd-summary"]
+                "errorCodes": ["docprops-boolean-invalid"]
             },
             "word": "unreadable-content-warning"
         },
@@ -7093,11 +7081,11 @@
             "relativePath": "word-regenerate-invalid/original/unknown/unknown/tiny-picture.broken-rels.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["docprops-boolean-invalid", "rels-broken", "rels-target-missing", "xsd-error", "xsd-summary"]
+                "errorCodes": ["docprops-boolean-invalid", "rels-broken", "rels-target-missing"]
             },
             "lenient": {
                 "valid": false,
-                "errorCodes": ["docprops-boolean-invalid", "rels-broken", "rels-target-missing", "xsd-error", "xsd-summary"]
+                "errorCodes": ["docprops-boolean-invalid", "rels-broken", "rels-target-missing"]
             },
             "word": "unreadable-content-warning"
         },
@@ -7279,11 +7267,11 @@
             "relativePath": "word-regenerate-invalid/regenerated/external/superdoc/super-editor/invalid-underline.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": ["ct-uncovered-part", "rels-unreferenced", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
-                "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": ["ct-uncovered-part", "rels-unreferenced", "xsd-error", "xsd-summary"]
             },
             "word": "unreadable-content-warning"
         },

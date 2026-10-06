@@ -99,10 +99,10 @@ describe("xsd-validator", () => {
         expect(issues[0]!.code).toBe("xsd-validation-failed");
     });
 
-    it("gracefully degrades on a non-existent schema path", async () => {
+    it("surfaces a non-existent schema path as an error (never silently valid)", async () => {
         const issues = await validator.validate(VALID_XML, "/tmp/this-schema-does-not-exist.xsd");
         expect(issues.length).toBe(1);
-        expect(issues[0]!.code).toBe("xsd-schema-load-skipped");
-        expect(issues[0]!.severity).toBe("info");
+        expect(issues[0]!.code).toBe("xsd-schema-load-failed");
+        expect(issues[0]!.severity).toBe("error");
     });
 });

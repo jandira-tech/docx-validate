@@ -31,7 +31,7 @@ jobs:
 
             - uses: actions/setup-node@v5
               with:
-                  node-version: "24"
+                  node-version: "26"
                   cache: pnpm
                   registry-url: "https://registry.npmjs.org"
 
@@ -50,7 +50,8 @@ jobs:
               run: pnpm exec tsc --noEmit
 
             - name: Test
-              # libxmljs2 is a native Node addon; tests must run under Node, not Bun.
+              # The XSD engine registers libxml2-wasm's Node-side fs input
+              # providers, so tests must run under Node, not Bun.
               run: npx vitest run
 
             - name: Build
