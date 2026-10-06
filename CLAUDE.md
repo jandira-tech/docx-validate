@@ -15,7 +15,7 @@ OOXML validators and redline/comment helpers for `.docx` and `.pptx` files.
 - File names: kebab-case (`merge-runs.ts`).
 - ES modules only; no CommonJS.
 - Relative imports between siblings; no path aliases.
-- XSD validation: `libxmljs2`.
+- XSD validation: `libxml2-wasm` (via the `XsdValidator` interface in `src/lib/xsd-validator.ts`; the native `libxmljs2` addon was dropped — it ships no Node 26/ABI-147 prebuild and no longer compiles against Node's V8 headers).
 - DOM work: `@xmldom/xmldom` + `xpath`, always via `src/lib/xml-helpers.ts`. Do NOT call `DOMParser` directly.
 - Temp dirs: `tmp` via `withTempDir(async (dir) => { ... })` (`src/lib/run-cli.ts`). Don't ad-hoc `os.tmpdir()` + `mkdtempSync`.
 - CLIs: `commander`, wired via `runCli(...)`.
@@ -62,7 +62,7 @@ These are intentional behaviours of the implementation, documented at the call s
 
 3. **`unpack`/`pack` byte parity is best-effort.** JSZip emits ZIP entries deflated with its own compression settings, so byte-for-byte round-trips against external tools are not guaranteed. XML pretty-printing/indentation is preserved so contents round-trip identically; the outer ZIP envelope can differ. This affects file-checksum equality, not logical-equivalence checks.
 
-4. **`IGNORED_VALIDATION_ERRORS` includes `"Invalid XSD schema"` and `"purl.org/dc/terms"`.** libxmljs2 swallows underlying schema-load failures (e.g. unresolved `<xs:import namespace=".../dc/terms"/>` in `opc-coreProperties.xsd`) into a single opaque error string. Both strings are filtered so the docProps/core.xml false-positive stays suppressed.
+4. **`IGNORED_VALIDATION_ERRORS` includes `"Invalid XSD schema"`, `"purl.org/dc/terms"`, and `"dublincore.org"`.** `opc-coreProperties.xsd` imports the Dublin Core schema from a remote HTTP URL that is not bundled; libxml2-wasm reports the failed fetch with the `dublincore.org` host in the message (lxml emitted the `purl.org/dc/terms` namespace; libxmljs2 collapsed everything into `Invalid XSD schema`). All three strings are filtered so the docProps/core.xml false-positive stays suppressed. Schema-load failures otherwise surface as error-severity `xsd-schema-load-failed` issues — never silently valid.
 
 5. **`compareParagraphCounts` returns a structured result.** `{ original, modified, delta, originalUsesStrictNamespace }`. With `verbose: true`, also prints `Paragraphs: N → M (+K)` to stdout before returning.
 

@@ -1,9 +1,8 @@
 /**
  * Batch word-validity validator — validates many .docx files in ONE process.
  *
- * Loads the libxmljs2 native binding exactly once and validates a list of
- * files sequentially. This avoids the per-file `npx tsx` spawning that races
- * npm's node_modules self-repair and wipes the native binding under load.
+ * Initialises the wasm-backed XSD engine exactly once and validates a list of
+ * files sequentially (plus one `npx tsx` spawn per file, which is slow).
  *
  * Usage (run with the local tsx, NOT npx):
  *   node_modules/.bin/tsx scripts/batch-validate.ts <list.json> <out.json> [profile]

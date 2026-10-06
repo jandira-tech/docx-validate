@@ -169,28 +169,12 @@ export const getElementsByTagNameNSAll = (root: Document | Element, namespaceURI
  * Stack-based DFS replacement for `getElementsByTagName('*')`. `@xmldom`'s
  * live `NodeList` makes `.item(i)` iteration quadratic; this returns a flat
  * array of every descendant element (root excluded) in document order.
+ *
+ * Thin wrapper over `getElementsByTagNameNSAll(root, "*", "*")` so the two
+ * entry points share one traversal implementation — the wildcard form and
+ * the NS-filtered form must never drift apart.
  */
-export const getElementsByTagNameAll = (root: Document | Element): Element[] => {
-    const out: Element[] = [];
-    const stack: Node[] = [root];
-
-    while (stack.length > 0) {
-        const node = stack.pop()!;
-        if (node !== root && node.nodeType === 1) {
-            // 1 === Node.ELEMENT_NODE
-            out.push(node as Element);
-        }
-
-        let child = node.lastChild;
-        while (child) {
-            if (child.nodeType === 1) {
-                stack.push(child);
-            }
-            child = child.previousSibling;
-        }
-    }
-    return out;
-};
+export const getElementsByTagNameAll = (root: Document | Element): Element[] => getElementsByTagNameNSAll(root, "*", "*");
 
 /**
  * Build a namespace-aware xpath selector pre-bound to the OOXML prefixes in

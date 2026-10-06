@@ -22,7 +22,10 @@
  *
  *   - `defusedxml.minidom` / `lxml.etree` → `@xmldom/xmldom` + `xpath` via
  *     `lib/xml-helpers.ts`.
- *   - `lxml.etree.XMLSchema` → `libxmljs2`'s `parseXml` + `Document.validate`.
+ *   - `lxml.etree.XMLSchema` → `libxml2-wasm` via the `XsdValidator`
+ *     interface from `lib/xsd-validator.ts`. (Earlier: the native
+ *     `libxmljs2` addon — dropped when it stopped building against
+ *     Node 26's V8 headers and shipped no ABI-147 prebuild.)
  *   - `pathlib.Path.rglob` → custom recursive walk in `walkFiles` since the
  *     Node `fs` module has no built-in recursive glob with patterns.
  *   - Each `validate_*` method that returned `bool` + side-effecting `print`
@@ -39,8 +42,6 @@
 import { existsSync, promises as fs, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-
-import * as libxmljs from "libxmljs2";
 
 import { withTempDir } from "../../../lib/run-cli";
 import type { Profile, ValidationIssue, ValidationResult } from "../../../lib/types";
@@ -77,11 +78,19 @@ const SCHEMA_MAPPINGS: Record<string, string> = {
 const IGNORED_VALIDATION_ERRORS: readonly string[] = [
     "hyphenationZone",
     "purl.org/dc/terms",
-    // libxmljs2 swallows the underlying schema-load failure (e.g. unresolved
-    // <xs:import namespace="purl.org/dc/terms"/> in opc-coreProperties.xsd)
-    // into a single "Invalid XSD schema" string. lxml emits the actual import
-    // error which the entry above already filters, so this keeps parity with
-    // the Python validator's behaviour for the same broken-XSD-import case.
+    // opc-coreProperties.xsd imports the Dublin Core schema from a remote
+    // HTTP URL that is not (and should not be) bundled; libxml2-wasm reports
+    // the failed fetch with the dublincore.org host in the message. Python's
+    // lxml hit the same wall with the purl.org/dc/terms namespace — both
+    // strings are filtered so the docProps/core.xml false-positive stays
+    // suppressed (AGENTS.md behavioural note 4).
+    "dublincore.org",
+    // Legacy defence from the libxmljs2 era, kept because the filter is
+    // engine-agnostic string matching: libxmljs2 swallowed schema-load
+    // failures into one opaque "Invalid XSD schema" error. libxml2-wasm
+    // surfaces load failures as explicit `xsd-schema-load-failed` issues, so
+    // this string should no longer occur — but a schema regression would
+    // otherwise resurrect the false-positive this list exists to suppress.
     "Invalid XSD schema",
 ];
 
@@ -175,9 +184,9 @@ export interface BaseSchemaValidatorOptions {
      * `src/lib/xsd-validator.ts`. Test code may inject a fake; consumer
      * code may swap in a different engine.
      *
-     * Part of the four-class architecture cutover (PR B). The default-wasm
-     * behaviour is strictly stronger than the pre-cutover libxmljs2 path —
-     * see CLAUDE.md note 4 + PR A's commit message for context.
+     * Part of the four-class architecture cutover (PR B). The wasm default
+     * replaced the retired libxmljs2 path outright (PR B Task B.2) — the
+     * native addon cannot build against Node 26.
      */
     xsdValidator?: XsdValidator;
 }
@@ -308,8 +317,9 @@ export class BaseSchemaValidator {
      * `xsdValidator`, that wins. Otherwise the wasm default is lazily
      * created (and memoised across calls within this instance).
      *
-     * Part of the four-class architecture cutover (PR B). When PR B Task B.2
-     * drops libxmljs2, this factory becomes the single XSD entrypoint.
+     * The single XSD entrypoint since the libxmljs2 → libxml2-wasm cutover
+     * (PR B Task B.2): the native addon neither ships an ABI-147 prebuild
+     * nor compiles against Node 26's V8 headers, so it was removed.
      */
     protected async _getXsdValidator(): Promise<XsdValidator> {
         if (this.xsdValidatorRef) {
@@ -1013,7 +1023,20 @@ export class BaseSchemaValidator {
             const o = overrides.item(i);
             if (!o) continue;
             const partName = o.getAttribute("PartName");
-            if (partName) declaredParts.add(partName.replace(/^\/+/, ""));
+            // OPC PartName is a package-relative URI; the on-disk path is its
+            // decoded form, so decode before storing or an escaped PartName
+            // (%20 et al.) never matches the walked file list. Fall back to
+            // the raw value on malformed escapes — the lookup then simply
+            // misses and the residual pass reports the part.
+            if (partName) {
+                let decoded = partName.replace(/^\/+/, "");
+                try {
+                    decoded = decodeURIComponent(decoded);
+                } catch {
+                    // keep raw
+                }
+                declaredParts.add(decoded);
+            }
         }
 
         const defaults = dom.getElementsByTagNameNS(CONTENT_TYPES_NAMESPACE, "Default");
@@ -1077,7 +1100,11 @@ export class BaseSchemaValidator {
             if (parts.includes("_rels") || parts.includes("docProps")) continue;
 
             const extension = ext.replace(/^\./, "");
-            if (extension && !declaredExtensions.has(extension) && extension in mediaExtensions) {
+            // Object.hasOwn, not `in`: mediaExtensions is a plain object, so
+            // `"constructor" in mediaExtensions` is true and a part named
+            // x.constructor would sail past the check (and be "suggested"
+            // with ContentType="undefined").
+            if (extension && !declaredExtensions.has(extension) && Object.hasOwn(mediaExtensions, extension)) {
                 const rel = this.relPath(filePath);
                 issues.push({
                     severity: "error",
@@ -1088,6 +1115,37 @@ export class BaseSchemaValidator {
                     code: "ct-undeclared-ext",
                 });
             }
+        }
+
+        // Residual OPC-coverage pass. The two checks above are Word-behaviour
+        // heuristics — declarable XML roots (ct-undeclared-part) and known
+        // media extensions (ct-undeclared-ext) — and deliberately skip what
+        // they don't recognise. This pass enforces the underlying spec
+        // invariant instead: every part must be matched by an
+        // <Override PartName> or a <Default Extension> in [Content_Types].xml.
+        // The recurring real-world case is extensionless media
+        // (word/media/image_3094991244). Known media extensions are left to
+        // ct-undeclared-ext above, which reports them with a fix-it message.
+        for (const filePath of allFiles) {
+            if (path.basename(filePath) === "[Content_Types].xml") continue;
+            const rel = this.relPath(filePath).replace(/\\/g, "/");
+            if (declaredParts.has(rel)) continue;
+            const base = rel.slice(rel.lastIndexOf("/") + 1);
+            const dot = base.lastIndexOf(".");
+            // OPC extension = substring after the last dot of the part name's
+            // last segment — unlike POSIX, `_rels/.rels` has extension "rels".
+            const extension = dot >= 0 ? base.slice(dot + 1).toLowerCase() : "";
+            if (extension !== "" && declaredExtensions.has(extension)) continue;
+            if (Object.hasOwn(mediaExtensions, extension)) continue;
+            issues.push({
+                severity: "error",
+                message:
+                    `Part '${rel}' has no content type: matched by no <Override PartName> and no ` +
+                    `<Default Extension> in [Content_Types].xml. OPC requires a content type for every ` +
+                    `part; Word prompts to repair such packages.`,
+                path: rel,
+                code: "ct-uncovered-part",
+            });
         }
 
         return finalize(issues);
@@ -1183,29 +1241,34 @@ export class BaseSchemaValidator {
     }
 
     /**
-     * Eagerly verify that `libxmljs2` is loadable and that XSD validation is
-     * available on this host. Call this once at program startup if you want
-     * loud failures when the native binding is missing — otherwise the per-file
-     * pipeline silently turns the same conditions into per-file validation
-     * errors (matching Python's bare-`except` behavior, which is needed for
-     * known-noisy schemas like `docProps/core.xml` that depend on `dcterms`
-     * imports the libxmljs2 build cannot fully resolve).
+     * Eagerly verify that the wasm-backed XSD engine is loadable and that XSD
+     * validation is available on this host. Call this once at program startup
+     * if you want loud failures when the engine is broken — otherwise the
+     * per-file pipeline silently turns the same condition into per-file
+     * validation errors that look like document corruption.
      *
-     * Throws an Error prefixed with `libxmljs2 required` when validation
+     * Throws an Error prefixed with `XSD engine unavailable` when validation
      * cannot be performed. Returns silently on success.
+     *
+     * Successor of the libxmljs2-era `assertLibxmljsAvailable`, retired with
+     * the native addon (no Node 26 / ABI-147 prebuild, no source build).
      */
-    static assertLibxmljsAvailable(): void {
+    static async assertXsdValidationAvailable(): Promise<void> {
         try {
-            const xsd = '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="r" type="xs:string"/></xs:schema>';
-            const xsdDoc = libxmljs.parseXml(xsd);
-            const doc = libxmljs.parseXml("<r>ok</r>");
-            const ok = doc.validate(xsdDoc);
-            if (ok !== true) {
-                throw new Error(`validate() returned ${String(ok)} on a known-good doc`);
-            }
+            const validator = await createXsdValidator();
+            await withTempDir(async (dir) => {
+                const schemaPath = path.join(dir, "smoke.xsd");
+                const xsd = '<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="r" type="xs:string"/></xs:schema>';
+                await fs.writeFile(schemaPath, xsd, "utf-8");
+                const issues = await validator.validate("<r>ok</r>", schemaPath);
+                const errors = issues.filter((i) => i.severity === "error");
+                if (errors.length > 0) {
+                    throw new Error(`validate() flagged a known-good doc: ${errors[0]?.message ?? "(no message)"}`);
+                }
+            });
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
-            throw new Error(`libxmljs2 required for XSD validation: ${message}`);
+            throw new Error(`XSD engine unavailable (libxml2-wasm): ${message}`);
         }
     }
 
@@ -1213,47 +1276,6 @@ export class BaseSchemaValidator {
         const schemaPath = this._getSchemaPath(xmlFile);
         if (!schemaPath) return { valid: null, errors: new Set() };
 
-        // PR B Task B.1: dual-path. If a wasm-backed (or other) XsdValidator
-        // was injected via constructor, delegate to it. Otherwise stay on the
-        // legacy libxmljs2 path so existing fixture-corpus tests pin their
-        // expected error shapes (the engines have semantic differences in
-        // both directions — see the PR B commit message). The actual default
-        // cutover to wasm happens in a follow-up commit alongside test
-        // updates for the ~20 fixtures whose expected error shape changes.
-        if (this.xsdValidatorRef !== undefined) {
-            return this._validateSingleFileXsdViaInjected(xmlFile, schemaPath);
-        }
-
-        // --- legacy libxmljs2 path (unchanged from pre-cutover) ---
-        try {
-            const xsdDoc = BaseSchemaValidator._loadXsd(schemaPath);
-
-            const xmlContent = readFileSync(xmlFile, "utf-8");
-            const cleanedString = this._preprocessXmlForXsd(xmlContent, xmlFile);
-            const xmlLibDoc = libxmljs.parseXml(cleanedString);
-
-            const valid = xmlLibDoc.validate(xsdDoc);
-            if (valid) {
-                return { valid: true, errors: new Set() };
-            }
-            const errors = new Set<string>();
-            const errs =
-                (
-                    xmlLibDoc as unknown as {
-                        validationErrors?: { message: string }[];
-                    }
-                ).validationErrors ?? [];
-            for (const e of errs) {
-                errors.add((e.message ?? "").trim());
-            }
-            return { valid: false, errors };
-        } catch (err) {
-            const message = err instanceof Error ? err.message : String(err);
-            return { valid: false, errors: new Set([message]) };
-        }
-    }
-
-    private async _validateSingleFileXsdViaInjected(xmlFile: string, schemaPath: string): Promise<XsdValidationOutcome> {
         try {
             const xmlContent = readFileSync(xmlFile, "utf-8");
             const cleanedString = this._preprocessXmlForXsd(xmlContent, xmlFile);
@@ -1261,8 +1283,9 @@ export class BaseSchemaValidator {
             const validator = await this._getXsdValidator();
             const issues = await validator.validate(cleanedString, schemaPath);
 
-            // info-level issues (e.g. `xsd-schema-load-skipped`) are non-fatal,
-            // preserving the spirit of CLAUDE.md note 4.
+            // Non-error issues from the engine stay non-fatal; schema-load
+            // failures arrive as errors and are string-filtered by
+            // IGNORED_VALIDATION_ERRORS in `validateFileAgainstXsd`.
             const errorIssues = issues.filter((i) => i.severity === "error");
             if (errorIssues.length === 0) {
                 return { valid: true, errors: new Set() };
@@ -1276,22 +1299,6 @@ export class BaseSchemaValidator {
             const message = err instanceof Error ? err.message : String(err);
             return { valid: false, errors: new Set([message]) };
         }
-    }
-
-    // Process-wide cache of parsed XSDs. The OOXML schema bundle is ~1.1 MB and
-    // gets re-used across every file in a package; without this every file
-    // validation re-parses the same XSD.
-    private static readonly _xsdCache = new Map<string, libxmljs.Document>();
-
-    private static _loadXsd(schemaPath: string): libxmljs.Document {
-        const abs = path.resolve(schemaPath);
-        const hit = BaseSchemaValidator._xsdCache.get(abs);
-        if (hit) return hit;
-        const content = readFileSync(abs, "utf-8");
-        // baseUrl lets `<xs:include>` / `<xs:import>` resolve siblings.
-        const doc = libxmljs.parseXml(content, { baseUrl: abs });
-        BaseSchemaValidator._xsdCache.set(abs, doc);
-        return doc;
     }
 
     /**

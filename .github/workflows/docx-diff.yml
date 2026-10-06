@@ -29,14 +29,19 @@ jobs:
               with:
                   path: current
 
-            - name: Setup Bun
+            - name: Setup pnpm
               uses: pnpm/action-setup@v4
-              # version comes from the packageManager field in package.json
+              with:
+                  # The checkouts above are path-scoped (baseline/ + current/),
+                  # so there is no package.json at the workspace root for the
+                  # action's default packageManager resolution — point it at
+                  # the PR checkout explicitly.
+                  package_json_file: current/package.json
 
             - name: Setup Node
               uses: actions/setup-node@v4
               with:
-                  node-version: "22"
+                  node-version: "26"
 
             - name: Install dependencies (baseline)
               working-directory: baseline

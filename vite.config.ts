@@ -22,6 +22,20 @@ const copySchemasPlugin = {
 };
 
 export default defineConfig({
+    // Format settings live here — NOT in `.oxfmtrc.json`. vite-plus's oxfmt
+    // invocation (vp fmt / vp check) only reads the `fmt` block and ignores
+    // `.oxfmtrc.json`, so a standalone rc file silently desyncs `vp check`
+    // from `pnpm run fmt` (they formatted with different settings). These
+    // values are the historical `.oxfmtrc.json` contents, verbatim.
+    fmt: {
+        trailingComma: "all",
+        printWidth: 140,
+        tabWidth: 4,
+        arrowParens: "always",
+        bracketSpacing: true,
+        proseWrap: "preserve",
+        sortPackageJson: false,
+    },
     pack: {
         // Emit dist/index.d.mts so consumers get the full TypeScript surface
         // (every public re-export from src/index.ts is fully typed). The

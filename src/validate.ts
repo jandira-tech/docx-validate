@@ -36,9 +36,9 @@ import { withTempDir } from "./lib/run-cli";
 export type ValidateOptions = {
     /**
      * Override the XSD engine. When omitted, BaseSchemaValidator uses its
-     * legacy libxmljs2 path (the dual-path injection mechanism landed in
-     * PR B). PR C wires this option end-to-end so consumers can opt into
-     * the wasm validator without modifying BaseSchemaValidator construction.
+     * default wasm-backed validator (the libxmljs2 legacy path was retired
+     * with the libxml2-wasm cutover — the native addon cannot build on
+     * Node 26).
      */
     xsdValidator?: XsdValidator;
     /**
