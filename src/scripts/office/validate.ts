@@ -40,6 +40,7 @@ import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
 import { DEFAULT_PROFILE, mergeResults, type Profile, type ValidationResult } from "../../lib/types";
 import { extractZipEntries } from "../../lib/zip-path";
 import { BaseSchemaValidator } from "./validators/base";
+import { explainWordError } from "./validators/word-error-explanations";
 import { DOCXSchemaValidator } from "./validators/docx";
 import { buildRepairPlanIssues, collectDocxSemanticInventory, compareDocxSemanticInventories } from "./validators/docx-diagnostics";
 import { PPTXSchemaValidator } from "./validators/pptx";
@@ -387,6 +388,10 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
             if (issue.severity !== "error") continue;
             const where = issue.path ? ` [${issue.path}]` : "";
             process.stderr.write(`${issue.severity.toUpperCase()}${where}: ${issue.message}\n`);
+            if (opts.profile === "word-valid") {
+                const explanation = explainWordError(issue.code);
+                if (explanation) process.stderr.write(`  ↳ ${explanation}\n`);
+            }
         }
     }
 
