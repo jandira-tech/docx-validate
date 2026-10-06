@@ -142,12 +142,24 @@ export const prettyXml = (node: Node, indent = "  "): string => {
  * `Document.getElementsByTagName('*')`).
  */
 export const getElementsByTagNameNSAll = (root: Document | Element, namespaceURI: string, localName: string): Element[] => {
-    const list = root.getElementsByTagNameNS(namespaceURI, localName);
     const out: Element[] = [];
-    for (let i = 0; i < list.length; i += 1) {
-        const item = list.item(i);
-        if (item) {
-            out.push(item);
+    const stack: Node[] = [root];
+
+    while (stack.length > 0) {
+        const node = stack.pop()!;
+        if (node !== root && node.nodeType === 1) {
+            const elem = node as Element;
+            if ((namespaceURI === "*" || elem.namespaceURI === namespaceURI) && (localName === "*" || elem.localName === localName)) {
+                out.push(elem);
+            }
+        }
+
+        let child = node.lastChild;
+        while (child) {
+            if (child.nodeType === 1) {
+                stack.push(child);
+            }
+            child = child.previousSibling;
         }
     }
     return out;
