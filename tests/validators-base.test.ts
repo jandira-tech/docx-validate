@@ -689,6 +689,47 @@ describe("BaseSchemaValidator", () => {
 
     describe("validateRels path traversal mitigation", () => {
         const PR_NS = `xmlns="http://schemas.openxmlformats.org/package/2006/relationships"`;
+        it("closes the existence oracle: an escaping target that EXISTS on disk is still broken", async () => {
+            await withTempDir(async (dir) => {
+                // A real file outside the unpacked dir — pre-containment code
+                // would count it as "referenced" (the oracle leak).
+                await fs.writeFile(path.join(dir, "outside-secret.txt"), "secret", "utf-8");
+                const relsFile = path.join(dir, "word", "_rels", "document.xml.rels");
+                const content =
+                    `${RELS_HEADER}\n<Relationships ${PR_NS}>` +
+                    `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="../../outside-secret.txt"/>` +
+                    `</Relationships>`;
+                await writeFile(relsFile, content);
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateFileReferences();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "rels-broken" && i.message.includes("../../outside-secret.txt"))).toBe(true);
+            });
+        });
+
+        it("rejects targets routed through a symlink that escapes the unpacked directory", async () => {
+            await withTempDir(async (dir) => {
+                // outside/secret.txt exists beyond the unpacked root; the
+                // symlink inside the root makes "link/secret.txt" lexically
+                // contained while really escaping it.
+                const unpacked = path.join(dir, "unpacked");
+                await fs.mkdir(path.join(dir, "outside"), { recursive: true });
+                await fs.mkdir(path.join(unpacked, "_rels"), { recursive: true });
+                await fs.writeFile(path.join(dir, "outside", "secret.txt"), "secret", "utf-8");
+                await fs.symlink(path.join(dir, "outside"), path.join(unpacked, "link"));
+                const relsFile = path.join(unpacked, "_rels", ".rels");
+                const content =
+                    `${RELS_HEADER}\n<Relationships ${PR_NS}>` +
+                    `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="link/secret.txt"/>` +
+                    `</Relationships>`;
+                await fs.writeFile(relsFile, content, "utf-8");
+                const v = new HarnessValidator({ unpackedDir: unpacked });
+                const result = await v.validateFileReferences();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "rels-broken" && i.message.includes("link/secret.txt"))).toBe(true);
+            });
+        });
+
         it("rejects Target paths that traverse outside the unpacked directory", async () => {
             await withTempDir(async (dir) => {
                 const relsFile = path.join(dir, "word", "_rels", "document.xml.rels");

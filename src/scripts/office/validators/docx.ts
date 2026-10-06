@@ -48,7 +48,7 @@ import { nextSecureLongHexNumber } from "../../../lib/secure-id";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
 import { getElementsByTagNameAll, getElementsByTagNameNSAll, parseXml, serializeXml } from "../../../lib/xml-helpers";
-import { BaseSchemaValidator, collectDeclaredPrefixes, PACKAGE_RELATIONSHIPS_NAMESPACE, XML_NAMESPACE } from "./base";
+import { BaseSchemaValidator, collectDeclaredPrefixes, containRelationshipTarget, PACKAGE_RELATIONSHIPS_NAMESPACE, XML_NAMESPACE } from "./base";
 
 export const WORD_2006_NAMESPACE = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 export const WORD_STRICT_NAMESPACE = "http://purl.oclc.org/ooxml/wordprocessingml/main";
@@ -328,14 +328,28 @@ const isDeletedRunText = (node: Node): boolean => {
     return hasDel && !drawingHasDelAncestor;
 };
 
-const collectDeletedRunText = (root: Document | Element, ns: string, localName: string): Element[] => {
-    const out: Element[] = [];
-    for (const el of getElementsByTagNameNSAll(root, ns, localName)) {
-        if (isDeletedRunText(el)) {
-            out.push(el);
+/**
+ * Del-first collection for `.//w:del//w:t`-style queries: seed from `w:del`
+ * elements (either Word namespace) and collect matching descendants of each,
+ * instead of walking every `w:t` ancestor chain. Preserves the
+ * cross-namespace semantics of the ancestor-walk version (a Strict-namespace
+ * `w:del` wrapping a 2006-namespace `w:t` still counts); the `Set` dedupes
+ * del-ins-del overlaps in document order.
+ */
+const collectDeletedRunText = (root: Document | Element, localName: string): Element[] => {
+    const out = new Set<Element>();
+    for (const delNs of WORD_PARAGRAPH_NAMESPACES) {
+        for (const del of getElementsByTagNameNSAll(root, delNs, "del")) {
+            for (const textNs of WORD_PARAGRAPH_NAMESPACES) {
+                for (const el of getElementsByTagNameNSAll(del, textNs, localName)) {
+                    if (isDeletedRunText(el)) {
+                        out.add(el);
+                    }
+                }
+            }
         }
     }
-    return out;
+    return Array.from(out);
 };
 
 export class DOCXSchemaValidator extends BaseSchemaValidator {
@@ -657,23 +671,21 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             // Native DOM walk instead of `.//w:del//w:t` XPath (Jules Bolt). Skip
             // <w:t>/<w:instrText> whose ancestor drawing/pict is itself inside a
             // <w:del> — Word treats that shape as one opaque deleted object (#50).
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                for (const t of collectDeletedRunText(dom, ns, "t")) {
-                    issues.push({
-                        severity: "error",
-                        message: `<w:t> found within <w:del>: ${previewRepr(t.firstChild?.nodeValue ?? "", 50)}`,
-                        path: rel,
-                        code: "del-contains-t",
-                    });
-                }
-                for (const instr of collectDeletedRunText(dom, ns, "instrText")) {
-                    issues.push({
-                        severity: "error",
-                        message: `<w:instrText> found within <w:del> (use <w:delInstrText>): ${previewRepr(instr.firstChild?.nodeValue ?? "", 50)}`,
-                        path: rel,
-                        code: "del-contains-instrtext",
-                    });
-                }
+            for (const t of collectDeletedRunText(dom, "t")) {
+                issues.push({
+                    severity: "error",
+                    message: `<w:t> found within <w:del>: ${previewRepr(t.firstChild?.nodeValue ?? "", 50)}`,
+                    path: rel,
+                    code: "del-contains-t",
+                });
+            }
+            for (const instr of collectDeletedRunText(dom, "instrText")) {
+                issues.push({
+                    severity: "error",
+                    message: `<w:instrText> found within <w:del> (use <w:delInstrText>): ${previewRepr(instr.firstChild?.nodeValue ?? "", 50)}`,
+                    path: rel,
+                    code: "del-contains-instrtext",
+                });
             }
         }
         return finalize(issues);
@@ -3252,11 +3264,7 @@ function resolveRelationshipTargetPath(unpackedDir: string, relsFile: string, ta
         resolved = path.resolve(baseDir, targetWithoutFragment);
     }
 
-    const relative = path.relative(unpackedDir, resolved);
-    if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
-        return null;
-    }
-    return resolved;
+    return containRelationshipTarget(unpackedDir, resolved);
 }
 
 function borderSignature(borders: Element | null, namespaceURI: string): BorderSignature | null {

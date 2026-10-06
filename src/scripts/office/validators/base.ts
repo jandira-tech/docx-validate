@@ -36,7 +36,7 @@
  * `validate()` and merge the per-check results with `mergeResults`.
  */
 
-import { existsSync, promises as fs, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, promises as fs, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -206,6 +206,56 @@ export function defaultSchemasDir(): string {
         }
     }
     return candidates[0];
+}
+
+/**
+ * Containment check for relationship targets resolved from untrusted OOXML
+ * parts (CWE-22). Two layers:
+ *
+ * 1. Lexical: the resolved path must stay under `unpackedDir`
+ *    (`path.relative` must not escape via `..` or go absolute).
+ * 2. Symlinks: a purely lexical check is defeated by a symlink inside the
+ *    unpacked tree pointing outward (`link/secret` where `link` → `/etc`).
+ *    The deepest EXISTING ancestor of the target is resolved with
+ *    `realpathSync` and re-checked; non-existent trailing components cannot
+ *    change the verdict (callers report missing targets as broken anyway).
+ *
+ * Returns the original resolved path when contained, `null` on escape.
+ * Not race-resistant across the check and a later open — acceptable for a
+ * validator scanning an unpacked tree it controls; flagged for any future
+ * fd-based (`O_NOFOLLOW`) hardening.
+ */
+export function containRelationshipTarget(unpackedDir: string, resolvedPath: string): string | null {
+    const root = path.resolve(unpackedDir);
+    const target = path.resolve(resolvedPath);
+    const rel = path.relative(root, target);
+    if (rel === ".." || rel.startsWith(`..${path.sep}`) || path.isAbsolute(rel)) return null;
+
+    let realRoot = root;
+    try {
+        realRoot = realpathSync(root);
+    } catch {
+        // Root itself unreachable — the lexical verdict stands.
+        return target;
+    }
+    let probe = target;
+    for (;;) {
+        let real: string | null = null;
+        try {
+            real = realpathSync(probe);
+        } catch {
+            real = null;
+        }
+        if (real !== null) {
+            const realRel = path.relative(realRoot, real);
+            if (realRel === ".." || realRel.startsWith(`..${path.sep}`) || path.isAbsolute(realRel)) return null;
+            break;
+        }
+        const parent = path.dirname(probe);
+        if (parent === probe) break;
+        probe = parent;
+    }
+    return target;
 }
 
 interface IdHit {
@@ -672,8 +722,7 @@ export class BaseSchemaValidator {
 
                 try {
                     targetPath = path.resolve(targetPath);
-                    const relative = path.relative(this.unpackedDir, targetPath);
-                    if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+                    if (containRelationshipTarget(this.unpackedDir, targetPath) === null) {
                         broken.push(target);
                         continue;
                     }
