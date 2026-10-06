@@ -202,6 +202,26 @@ describe("removeAuthorTrackedChanges", () => {
         expect(after).toContain("alice-ins");
         expect(after).toContain("alice-del");
     });
+
+    it("unwraps nested same-author w:del wrappers completely (regression for the pre-#174 snapshot scan)", () => {
+        const xml = wrapDoc(
+            "<w:body><w:p>" +
+                '<w:del w:author="Ritapolis"><w:r><w:delText>outer </w:delText></w:r>' +
+                '<w:del w:author="Ritapolis"><w:r><w:delText>inner</w:delText></w:r></w:del>' +
+                "</w:del>" +
+                "</w:p></w:body>",
+        );
+        const doc = parseXml(xml);
+        const root = doc.documentElement;
+        if (!root) throw new Error("parseXml returned no root");
+        removeAuthorTrackedChanges(root, "Ritapolis");
+        const after = serializeXml(doc);
+        // Both wrappers must be gone and both delTexts restored as w:t.
+        expect(after).not.toMatch(/<w:del[^a-zA-Z]/);
+        expect(after).not.toMatch(/<w:delText/);
+        expect(after).toMatch(/<w:t[^>]*>outer <\/w:t>/);
+        expect(after).toMatch(/<w:t[^>]*>inner<\/w:t>/);
+    });
 });
 
 describe("extractTextContent", () => {
