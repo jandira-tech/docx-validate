@@ -60,10 +60,10 @@ dist/index.mjs` returns zero matches.
 - The source files in `src/scripts/office/soffice.ts` and
   `src/scripts/accept-changes.ts` ship in the GitHub repo for
   developers and CI users who run the CLI scripts directly via
-  `bunx tsx src/scripts/...`.
+  `pnpm exec tsx src/scripts/...`.
 - They are also exercised by `tests/soffice.test.ts` and
   `tests/accept-changes.test.ts` under
-  `SOFFICE_AVAILABLE=1 bun run test`.
+  `SOFFICE_AVAILABLE=1 pnpm test`.
 
 ### If your scanner still flags the package
 
