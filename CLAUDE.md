@@ -8,7 +8,7 @@ OOXML validators and redline/comment helpers for `.docx` and `.pptx` files.
 - Runtime: Node + Bun
 - Build: `vite-plus`
 - Tests: `vitest`
-- Package manager: `bun`
+- Package manager: `pnpm`
 
 ## Code conventions
 
@@ -98,23 +98,23 @@ The `STRICT_OOXML_NAMESPACES` constant in `validators/base.ts` and the `WORD_STR
 
 ## Known gaps
 
-- **soffice end-to-end tests are gated on `process.env.SOFFICE_AVAILABLE`.** Both `tests/accept-changes.test.ts` and `tests/soffice.test.ts` skip real-LibreOffice invocations unless that env var is set; CI images typically don't include LibreOffice. Run with `SOFFICE_AVAILABLE=1 bun run test` locally to exercise them.
+- **soffice end-to-end tests are gated on `process.env.SOFFICE_AVAILABLE`.** Both `tests/accept-changes.test.ts` and `tests/soffice.test.ts` skip real-LibreOffice invocations unless that env var is set; CI images typically don't include LibreOffice. Run with `SOFFICE_AVAILABLE=1 pnpm test` locally to exercise them.
 
 - **Three `eslint-plugin-functional` rules are disabled in `.oxlintrc.json`:** `functional/immutable-data`, `functional/no-mixed-types`, `functional/prefer-readonly-type`. All three are type-aware and call `getParserServices()`, but oxlint's JS-plugin runtime hard-codes `parserServices: ObjectFreeze({})` (see `node_modules/oxlint/dist/lint.js:13580`), so they crash the AST walker on any file containing a type alias / interface or an `arr.push(...)` call. `prefer-property-signatures` is the only functional rule left enabled because it's syntactic-only. Re-enable the three when oxlint either provides parser services to JS plugins or honors `requiresTypeChecking: true` for skip.
 
 ## Verification
 
 ```bash
-bun install
-bunx tsc --noEmit       # type-check
-bun run test            # vitest
-bun run check           # vite-plus check
-bun run build           # produce dist/
+pnpm install
+pnpm exec tsc --noEmit  # type-check
+pnpm test               # vitest
+pnpm run check          # vite-plus check
+pnpm run build          # produce dist/
 ```
 
 ## Tooling preferences
 
-- Frontend tooling preference order: bun, biome, elysia (over npm/pnpm/eslint/prettier).
+- Frontend tooling preference order: pnpm, biome, elysia (over npm/yarn/eslint/prettier).
 - Favor Rust-backed tools.
 - Async-first when writing supporting Python (uv, httpx, uvloop, pydantic, polars, pydantic_ai).
 

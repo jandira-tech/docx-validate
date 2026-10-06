@@ -164,7 +164,8 @@ export const getElementsByTagNameAll = (root: Document | Element): Element[] => 
 
     while (stack.length > 0) {
         const node = stack.pop()!;
-        if (node !== root && node.nodeType === 1) { // 1 === Node.ELEMENT_NODE
+        if (node !== root && node.nodeType === 1) {
+            // 1 === Node.ELEMENT_NODE
             out.push(node as Element);
         }
 

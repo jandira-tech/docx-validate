@@ -25,7 +25,7 @@
  * — so a *change* in validator behaviour shows up as a CI red, not a
  * silent drift in coverage. The manifest of expected outcomes lives in
  * `tests/fixtures-all.manifest.json`, regenerated via
- * `bunx tsx scripts/probe-all-fixtures.ts`.
+ * `pnpm run test:fixtures:refresh` (`tsx scripts/probe-all-fixtures.ts`).
  *
  * The lenient counterpart of this suite is `fixtures-all-lenient.test.ts`.
  */

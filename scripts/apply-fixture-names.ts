@@ -19,7 +19,7 @@
  * `git mv` them — either in place (rename only) or sorted into
  * tests/fixtures/<category>/. Dedups by content hash. Supports --dry-run.
  *
- *   bunx tsx scripts/apply-fixture-names.ts [--into-categories] [--dedup] \
+ *   pnpm exec tsx scripts/apply-fixture-names.ts [--into-categories] [--dedup] \
  *     [--dry-run] [--fixtures-root tests/fixtures] \
  *     [--descriptor error-first|content-first] [--category <dir>] <path>...
  *
@@ -74,9 +74,7 @@ export function planMoves(files: FingerprintedFile[], opts: PlanOptions): Move[]
             descriptorMode: opts.descriptorMode,
             fixedCategory: opts.fixedCategory,
         });
-        const dir = opts.intoCategories
-            ? path.join(opts.fixturesRoot, derived.category)
-            : path.dirname(file.sourcePath);
+        const dir = opts.intoCategories ? path.join(opts.fixturesRoot, derived.category) : path.dirname(file.sourcePath);
 
         let candidate = path.join(dir, derived.fileName);
         let n = 2;

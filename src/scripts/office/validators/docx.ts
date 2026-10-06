@@ -48,7 +48,13 @@ import { nextSecureLongHexNumber } from "../../../lib/secure-id";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
 import { getElementsByTagNameAll, getElementsByTagNameNSAll, parseXml, serializeXml } from "../../../lib/xml-helpers";
-import { BaseSchemaValidator, collectDeclaredPrefixes, containRelationshipTarget, PACKAGE_RELATIONSHIPS_NAMESPACE, XML_NAMESPACE } from "./base";
+import {
+    BaseSchemaValidator,
+    collectDeclaredPrefixes,
+    containRelationshipTarget,
+    PACKAGE_RELATIONSHIPS_NAMESPACE,
+    XML_NAMESPACE,
+} from "./base";
 
 export const WORD_2006_NAMESPACE = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 export const WORD_STRICT_NAMESPACE = "http://purl.oclc.org/ooxml/wordprocessingml/main";

@@ -14,12 +14,7 @@ import path from "node:path";
 import { Measure } from "../src/measure";
 import type { AstAdapter } from "../src/measure";
 
-const WORKING_FIXTURE = path.resolve(
-    __dirname,
-    "fixtures",
-    "working",
-    "sample-document.afterword-repaired-word-repaired.docx",
-);
+const WORKING_FIXTURE = path.resolve(__dirname, "fixtures", "working", "sample-document.afterword-repaired-word-repaired.docx");
 
 describe("Measure class (PR C task C.4)", () => {
     it("returns 'no-ast-adapter' classification when no adapter is injected", async () => {

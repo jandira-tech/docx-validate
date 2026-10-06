@@ -21,10 +21,10 @@
  * any extra args.
  *
  * Usage:
- *   bun run release                  # interactive prompts + interactive bumpp
- *   bun run release 0.1.2            # interactive prompts + bumpp 0.1.2
- *   bun run release patch            # interactive prompts + bumpp patch
- *   bun run release --yes 0.1.2      # skip prompts (CI), bumpp 0.1.2
+ *   pnpm run release                  # interactive prompts + interactive bumpp
+ *   pnpm run release 0.1.2            # interactive prompts + bumpp 0.1.2
+ *   pnpm run release patch            # interactive prompts + bumpp patch
+ *   pnpm run release --yes 0.1.2      # skip prompts (CI), bumpp 0.1.2
  *
  * Aborts (exit 1) on the first "no" answer. Unrecognised answer = "no".
  *
@@ -91,7 +91,7 @@ async function confirmEach(items: readonly string[]): Promise<void> {
 
 function runBumpp(args: readonly string[]): Promise<number> {
     return new Promise((resolve, reject) => {
-        const child = spawn("bunx", ["bumpp", ...args], { stdio: "inherit", cwd: REPO });
+        const child = spawn("pnpm", ["exec", "bumpp", ...args], { stdio: "inherit", cwd: REPO });
         child.on("error", reject);
         child.on("close", (code) => resolve(code ?? 0));
     });

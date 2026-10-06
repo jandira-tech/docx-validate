@@ -13,12 +13,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { jubarte, Validate, Repair, Normalize, Measure } from "../src/index";
 
-const WORKING_FIXTURE = path.resolve(
-    __dirname,
-    "fixtures",
-    "working",
-    "sample-document.afterword-repaired-word-repaired.docx",
-);
+const WORKING_FIXTURE = path.resolve(__dirname, "fixtures", "working", "sample-document.afterword-repaired-word-repaired.docx");
 
 describe("jubarte namespace (PR C task C.5)", () => {
     it("exposes validate / repair / normalize / measure as functions", () => {

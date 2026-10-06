@@ -2527,7 +2527,9 @@ describe("DOCXSchemaValidator", () => {
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const result = await v.validateOrphanedRelationships();
                 expect(result.valid).toBe(false);
-                expect(result.issues.some((i) => i.code === "rels-target-missing" && i.message.includes("escapes the unpacked directory"))).toBe(true);
+                expect(
+                    result.issues.some((i) => i.code === "rels-target-missing" && i.message.includes("escapes the unpacked directory")),
+                ).toBe(true);
             });
         });
 
@@ -2552,7 +2554,9 @@ describe("DOCXSchemaValidator", () => {
                 const v = new DOCXSchemaValidator({ unpackedDir: unpacked });
                 const result = await v.validateOrphanedRelationships();
                 expect(result.valid).toBe(false);
-                expect(result.issues.some((i) => i.code === "rels-target-missing" && i.message.includes("escapes the unpacked directory"))).toBe(true);
+                expect(
+                    result.issues.some((i) => i.code === "rels-target-missing" && i.message.includes("escapes the unpacked directory")),
+                ).toBe(true);
             });
         });
 
@@ -2566,7 +2570,9 @@ describe("DOCXSchemaValidator", () => {
                 const result = await v.validate();
                 expect(result.issues.some((i) => i.code === "rels-broken" && i.message.includes("../../../secret.txt"))).toBe(true);
                 expect(result.issues.some((i) => i.code === "rels-broken" && i.message.includes("/../../../secret2.txt"))).toBe(true);
-                expect(result.issues.some((i) => i.code === "rels-target-missing" && i.message.includes("escapes the unpacked directory"))).toBe(true);
+                expect(
+                    result.issues.some((i) => i.code === "rels-target-missing" && i.message.includes("escapes the unpacked directory")),
+                ).toBe(true);
             });
         });
     });

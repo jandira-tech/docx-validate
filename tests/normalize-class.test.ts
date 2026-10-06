@@ -13,12 +13,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { Normalize } from "../src/normalize";
 
-const WORKING_FIXTURE = path.resolve(
-    __dirname,
-    "fixtures",
-    "working",
-    "sample-document.afterword-repaired-word-repaired.docx",
-);
+const WORKING_FIXTURE = path.resolve(__dirname, "fixtures", "working", "sample-document.afterword-repaired-word-repaired.docx");
 
 describe("Normalize class (PR C task C.3)", () => {
     it("returns a NormalizeResult shape (bytes + changed + passes)", async () => {

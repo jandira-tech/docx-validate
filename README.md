@@ -15,7 +15,7 @@
 [![node](https://badgen.net/badge/node/%3E%3D20/green)](./package.json)
 [![github](https://badgen.net/badge/icon/jandira-tech%2Fdocx-validate?icon=github&label)](https://github.com/jandira-tech/docx-validate)
 
-OOXML validators and redline/comment helpers for `.docx` and `.pptx` files. XSD-backed, TypeScript, ESM, runs under Node and Bun for the neurotic developer.
+OOXML validators and redline/comment helpers for `.docx` and `.pptx` files. XSD-backed, TypeScript, ESM, runs under Node (managed with pnpm) for the neurotic developer.
 
 - Repo: [jandira-tech/docx-validate](https://github.com/jandira-tech/docx-validate)
 - npm: `docx-validate`
@@ -99,11 +99,11 @@ Dev:
 ## Running CLIs
 
 ```bash
-bunx tsx src/scripts/office/validate.ts <path>
-bunx tsx src/scripts/office/unpack.ts <path>
-bunx tsx src/scripts/office/pack.ts <dir>
-bunx tsx src/scripts/accept-changes.ts <path>
-bunx tsx src/scripts/comment.ts <path>
+pnpm exec tsx src/scripts/office/validate.ts <path>
+pnpm exec tsx src/scripts/office/unpack.ts <path>
+pnpm exec tsx src/scripts/office/pack.ts <dir>
+pnpm exec tsx src/scripts/accept-changes.ts <path>
+pnpm exec tsx src/scripts/comment.ts <path>
 ```
 
 ## Programmatic use
@@ -211,7 +211,7 @@ genuinely matches the shape, even though the use is benign — see
 [SECURITY.md](./SECURITY.md)).
 
 To use those helpers, run the scripts directly from a checkout
-(`bunx tsx src/scripts/accept-changes.ts <input> <output>`) rather than
+(`pnpm exec tsx src/scripts/accept-changes.ts <input> <output>`) rather than
 importing from the published package.
 
 ### Result shape — `ValidationResult`
@@ -236,10 +236,10 @@ interface ValidationResult {
 ## Development
 
 ```bash
-bun install
-bun run test       # vitest
-bun run check      # type-check
-bun run build      # vite-plus build
+pnpm install
+pnpm test          # vitest
+pnpm run check     # vite-plus check
+pnpm run build     # vite-plus build
 ```
 
 ## Acknowledgments

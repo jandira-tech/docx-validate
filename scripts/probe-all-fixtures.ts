@@ -4,7 +4,7 @@
  * per-fixture outcomes. The manifest is consumed by the two
  * `tests/fixtures-all-*.test.ts` suites, which use it as a regression pin.
  *
- * Run with: bunx tsx scripts/probe-all-fixtures.ts > tests/fixtures-all.manifest.json
+ * Run with: pnpm exec tsx scripts/probe-all-fixtures.ts > tests/fixtures-all.manifest.json
  */
 import { readdirSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";

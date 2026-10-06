@@ -8,34 +8,34 @@ implementation plans are under `docs/plans/conejo/`.
 
 ## Section 1 — What the Repairer Added
 
-| Category | Details |
-|----------|---------|
-| New files | `docProps/custom.xml`, `word/commentsExtensible.xml` |
-| Namespace reductions | Removed unused `xmlns:am3d`, `xmlns:v`, and others from root elements |
-| Explicit run fonts | `<w:rFonts w:ascii="Inter" …/>` injected on header/footer runs |
-| Explicit paragraph spacing | `<w:spacing w:line="276" w:lineRule="auto"/>` added to paragraph properties |
-| Explicit cell borders | Full `<w:tcBorders>` block added to every table cell |
-| Comment renumbering | `w:id` on `<w:comment>` changed from `4` to `100` |
-| New content types | Image defaults (`png`, `jpeg`, `jpg`, `bmp`, `gif`, `svg`) added to `[Content_Types].xml` |
-| Relationship additions | `custom-properties` relationship added to `_rels/.rels` |
-| Relationship renumbering | All `<Relationship Id="…">` reassigned from `rId1` sequentially |
+| Category                   | Details                                                                                   |
+| -------------------------- | ----------------------------------------------------------------------------------------- |
+| New files                  | `docProps/custom.xml`, `word/commentsExtensible.xml`                                      |
+| Namespace reductions       | Removed unused `xmlns:am3d`, `xmlns:v`, and others from root elements                     |
+| Explicit run fonts         | `<w:rFonts w:ascii="Inter" …/>` injected on header/footer runs                            |
+| Explicit paragraph spacing | `<w:spacing w:line="276" w:lineRule="auto"/>` added to paragraph properties               |
+| Explicit cell borders      | Full `<w:tcBorders>` block added to every table cell                                      |
+| Comment renumbering        | `w:id` on `<w:comment>` changed from `4` to `100`                                         |
+| New content types          | Image defaults (`png`, `jpeg`, `jpg`, `bmp`, `gif`, `svg`) added to `[Content_Types].xml` |
+| Relationship additions     | `custom-properties` relationship added to `_rels/.rels`                                   |
+| Relationship renumbering   | All `<Relationship Id="…">` reassigned from `rId1` sequentially                           |
 
 ---
 
 ## Section 2 — What the Repairer Removed
 
-| Category | Details |
-|----------|---------|
-| Whole parts removed | `word/endnotes.xml`, `word/theme/theme1.xml`, `word/webSettings.xml` |
-| Font table emptied | All `<w:font>` entries removed from `word/fontTable.xml` |
-| `<w:latentStyles>` block | Entire block (~150 lsdException entries) removed from `word/styles.xml` |
-| Comment-related styles | `CommentText`, `CommentTextChar` style definitions removed from styles (the still-referenced `CommentReference` style is left undefined) |
-| Table structural properties | `<w:tblLook>`, `<w:tblCellSpacing>`, `<w:jc>`, `<w:tblInd>`, `<w:shd>` removed |
-| Settings content | Most of `word/settings.xml` removed (rsids, math props, docId, etc.) |
-| Revision session IDs | `w:rsid*` attributes stripped from all paragraphs and runs |
-| Tracked-change IDs | `w:id` on `<w:ins>` and `<w:del>` regenerated from 1 |
-| Numbering durable IDs | `w16cid:durableId` removed from `<w:num>` in `word/numbering.xml` |
-| Heading style metadata | `uiPriority` and outline level removed from heading styles |
+| Category                    | Details                                                                                                                                  |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Whole parts removed         | `word/endnotes.xml`, `word/theme/theme1.xml`, `word/webSettings.xml`                                                                     |
+| Font table emptied          | All `<w:font>` entries removed from `word/fontTable.xml`                                                                                 |
+| `<w:latentStyles>` block    | Entire block (~150 lsdException entries) removed from `word/styles.xml`                                                                  |
+| Comment-related styles      | `CommentText`, `CommentTextChar` style definitions removed from styles (the still-referenced `CommentReference` style is left undefined) |
+| Table structural properties | `<w:tblLook>`, `<w:tblCellSpacing>`, `<w:jc>`, `<w:tblInd>`, `<w:shd>` removed                                                           |
+| Settings content            | Most of `word/settings.xml` removed (rsids, math props, docId, etc.)                                                                     |
+| Revision session IDs        | `w:rsid*` attributes stripped from all paragraphs and runs                                                                               |
+| Tracked-change IDs          | `w:id` on `<w:ins>` and `<w:del>` regenerated from 1                                                                                     |
+| Numbering durable IDs       | `w16cid:durableId` removed from `<w:num>` in `word/numbering.xml`                                                                        |
+| Heading style metadata      | `uiPriority` and outline level removed from heading styles                                                                               |
 
 ---
 
