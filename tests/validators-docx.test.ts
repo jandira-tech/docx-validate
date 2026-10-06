@@ -2530,5 +2530,65 @@ describe("DOCXSchemaValidator", () => {
                 expect(result.issues.some((i) => i.code === "rels-target-missing" && i.message.includes("escapes the unpacked directory"))).toBe(true);
             });
         });
+
+        it("flags media targets routed through an escaping symlink as missing", async () => {
+            const REL_NS = `xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"`;
+            const DRAWING_NS = `xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"`;
+            await withTempDir(async (dir) => {
+                const unpacked = path.join(dir, "unpacked");
+                await fs.mkdir(path.join(unpacked, "word", "_rels"), { recursive: true });
+                await fs.mkdir(path.join(dir, "outside"), { recursive: true });
+                await fs.writeFile(path.join(dir, "outside", "image1.png"), "png", "utf-8");
+                await fs.symlink(path.join(dir, "outside"), path.join(unpacked, "word", "link"));
+                await writeFile(
+                    path.join(unpacked, "word", "document.xml"),
+                    `<?xml version="1.0"?><w:document ${W_NS}><w:body><w:p><w:r><w:drawing><a:blip r:embed="rId1" ${REL_NS} ${DRAWING_NS}/></w:drawing></w:r></w:p></w:body></w:document>`,
+                );
+                await writeFile(
+                    path.join(unpacked, "word", "_rels", "document.xml.rels"),
+                    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="link/image1.png"/></Relationships>`,
+                );
+
+                const v = new DOCXSchemaValidator({ unpackedDir: unpacked });
+                const result = await v.validateOrphanedRelationships();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "rels-target-missing" && i.message.includes("escapes the unpacked directory"))).toBe(true);
+            });
+        });
+
+        it("end-to-end: full validate() reports traversal rels through both resolution paths", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word", "_rels", "document.xml.rels"),
+                    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../../../secret.txt"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="/../../../secret2.txt"/></Relationships>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
+                const result = await v.validate();
+                expect(result.issues.some((i) => i.code === "rels-broken" && i.message.includes("../../../secret.txt"))).toBe(true);
+                expect(result.issues.some((i) => i.code === "rels-broken" && i.message.includes("/../../../secret2.txt"))).toBe(true);
+                expect(result.issues.some((i) => i.code === "rels-target-missing" && i.message.includes("escapes the unpacked directory"))).toBe(true);
+            });
+        });
+    });
+
+    describe("validateDeletions cross-namespace containment", () => {
+        it("flags a 2006-namespace w:t inside a Strict-namespace w:del (mixed-namespace redline)", async () => {
+            await withTempDir(async (dir) => {
+                // Strict-ns w:del wrapping a run whose w:t was authored in the
+                // 2006 namespace (mixed-namespace documents occur in Strict
+                // conversions). The del-first collection must still flag it.
+                await writeFile(
+                    path.join(dir, "word", "document.xml"),
+                    `<?xml version="1.0"?>` +
+                        `<w:document ${W_NS} xmlns:w2="http://purl.oclc.org/ooxml/wordprocessingml/main">` +
+                        `<w:body><w:p><w2:del w:id="1"><w:r><w:t>leaked</w:t></w:r></w2:del></w:p></w:body>` +
+                        `</w:document>`,
+                );
+                const v = new DOCXSchemaValidator({ unpackedDir: dir });
+                const result = await v.validateDeletions();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "del-contains-t")).toBe(true);
+            });
+        });
     });
 });
