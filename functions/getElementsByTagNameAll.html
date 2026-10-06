@@ -18,6 +18,9 @@
 <div class="tsd-comment tsd-typography"><p>Stack-based DFS replacement for <code>getElementsByTagName('*')</code>. <code>@xmldom</code>'s
 live <code>NodeList</code> makes <code>.item(i)</code> iteration quadratic; this returns a flat
 array of every descendant element (root excluded) in document order.</p>
+<p>Thin wrapper over <code>getElementsByTagNameNSAll(root, &quot;*&quot;, &quot;*&quot;)</code> so the two
+entry points share one traversal implementation — the wildcard form and
+the NS-filtered form must never drift apart.</p>
 </div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
@@ -25,7 +28,7 @@ array of every descendant element (root excluded) in document order.</p>
 <li><span><span class="tsd-kind-parameter">root</span>: <span class="tsd-signature-type">Document</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">Element</span></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Element</span><span class="tsd-signature-symbol">[]</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/aea2f8358e960f2bc31fd3dfeb1fe7a5a680dadb/src/lib/xml-helpers.ts#L173">lib/xml-helpers.ts:173</a></li></ul></aside></div></li></ul></section></div>
+<li>Defined in <a href="https://github.com/jandira-tech/docx-validate/blob/6f82fd0327b228b38abb3cec9105a1fc065fef5d/src/lib/xml-helpers.ts#L177">lib/xml-helpers.ts:177</a></li></ul></aside></div></li></ul></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
