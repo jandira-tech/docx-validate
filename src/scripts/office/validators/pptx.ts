@@ -374,7 +374,7 @@ function looksLikeUuid(value: string): boolean {
         const isAlnum =
             (code >= 0x30 && code <= 0x39) /* 0-9 */ ||
             (code >= 0x41 && code <= 0x5a) /* A-Z */ ||
-            (code >= 0x61 && code <= 0x7a) /* a-z */;
+            (code >= 0x61 && code <= 0x7a); /* a-z */
         if (!isAlnum) return false;
     }
     return true;

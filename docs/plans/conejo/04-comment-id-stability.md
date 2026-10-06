@@ -16,14 +16,15 @@ discards the comment.
 
 Additionally, the comment para identity chain across extension files is broken:
 
-| File | Attribute | Working value | Broken value |
-|------|-----------|---------------|--------------|
-| `comments.xml` | `w14:paraId` on `<w:p>` inside comment | `456E2E6B` | `456E2E6B` (same) |
-| `commentsExtended.xml` | `w15:paraId` | `456E2E6B` | `456E2E6B` (same) |
-| `commentsIds.xml` | `w16cid:paraId` | `456E2E6B` | `B68569E0` (**different**) |
-| `commentsExtensible.xml` | `w16cex:durableId` | (absent in working) | `8A13236F` (**orphaned**) |
+| File                     | Attribute                              | Working value       | Broken value               |
+| ------------------------ | -------------------------------------- | ------------------- | -------------------------- |
+| `comments.xml`           | `w14:paraId` on `<w:p>` inside comment | `456E2E6B`          | `456E2E6B` (same)          |
+| `commentsExtended.xml`   | `w15:paraId`                           | `456E2E6B`          | `456E2E6B` (same)          |
+| `commentsIds.xml`        | `w16cid:paraId`                        | `456E2E6B`          | `B68569E0` (**different**) |
+| `commentsExtensible.xml` | `w16cex:durableId`                     | (absent in working) | `8A13236F` (**orphaned**)  |
 
 This mismatch is now detected by:
+
 - `comment-thread-commentid-paraid-orphan` — `commentsIds.xml` paraId not
   found in any `<w:comment>` paragraph
 - `comment-thread-durableid-orphan` — `commentsExtensible.xml` durableId not
@@ -51,21 +52,21 @@ full comment identity chain across all four comment XML parts.
 
 2. When the repairer must create a new comment (not repair an existing one),
    assign IDs that do not collide with existing IDs:
-   ```typescript
-   const existingIds = new Set(
-     comments.map(c => parseInt(c.getAttribute("w:id") ?? "0", 10))
-   );
-   const nextId = Math.max(0, ...existingIds) + 1;
-   ```
+
+    ```typescript
+    const existingIds = new Set(comments.map((c) => parseInt(c.getAttribute("w:id") ?? "0", 10)));
+    const nextId = Math.max(0, ...existingIds) + 1;
+    ```
 
 3. **Para-ID chain consistency**: When the repairer copies or rewrites
    `commentsIds.xml`, it must use the `w14:paraId` value from the `<w:p>`
    inside the corresponding `<w:comment>`, not generate a new random value.
    The mapping is:
-   ```text
-   comments.xml  →  w:comment[w:id=X]/w:p[w14:paraId=Y]
-   commentsIds.xml → w16cid:commentId[w16cid:paraId=Y]
-   ```
+
+    ```text
+    comments.xml  →  w:comment[w:id=X]/w:p[w14:paraId=Y]
+    commentsIds.xml → w16cid:commentId[w16cid:paraId=Y]
+    ```
 
 4. If `commentsExtensible.xml` is preserved (copy-through per Plan 01), its
    `w16cex:durableId` values must match the `w16cid:durableId` values in
@@ -75,6 +76,7 @@ full comment identity chain across all four comment XML parts.
 ### Validator side (already implemented)
 
 The `validateCommentThreading()` method added in this PR covers:
+
 - `comment-thread-commentid-paraid-orphan`
 - `comment-thread-durableid-orphan`
 - `comment-thread-count-mismatch`
@@ -93,7 +95,7 @@ No additional validator changes needed beyond what this PR adds.
   `comment-thread-commentid-paraid-orphan` or `comment-thread-durableid-orphan`
   errors.
 - Existing test `"word-valid profile keeps commentsIds/commentsExtensible
-  mismatches fatal"` in `tests/validate.test.ts` continues to pass against
+mismatches fatal"` in `tests/validate.test.ts` continues to pass against
   the broken fixture and the fixed output passes.
 
 ## Test fixture reference

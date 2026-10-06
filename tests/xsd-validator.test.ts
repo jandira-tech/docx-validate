@@ -11,10 +11,7 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import path from "node:path";
 import { writeFileSync } from "node:fs";
-import {
-    createXsdValidator,
-    type XsdValidator,
-} from "../src/lib/xsd-validator";
+import { createXsdValidator, type XsdValidator } from "../src/lib/xsd-validator";
 import { withTempDir } from "../src/lib/run-cli";
 
 // Self-contained XSD with no imports — proves the validator core works.
@@ -35,16 +32,7 @@ const VALID_XML = `<?xml version="1.0"?><root><child>hello</child></root>`;
 const SCHEMA_INVALID_XML = `<?xml version="1.0"?><root><wrong/></root>`;
 const NOT_XML = "this is not xml at all";
 
-const OOXML_WML_SCHEMA = path.resolve(
-    __dirname,
-    "..",
-    "src",
-    "scripts",
-    "office",
-    "schemas",
-    "ISO-IEC29500-4_2016",
-    "wml.xsd",
-);
+const OOXML_WML_SCHEMA = path.resolve(__dirname, "..", "src", "scripts", "office", "schemas", "ISO-IEC29500-4_2016", "wml.xsd");
 
 describe("xsd-validator", () => {
     let validator: XsdValidator;
@@ -112,10 +100,7 @@ describe("xsd-validator", () => {
     });
 
     it("gracefully degrades on a non-existent schema path", async () => {
-        const issues = await validator.validate(
-            VALID_XML,
-            "/tmp/this-schema-does-not-exist.xsd",
-        );
+        const issues = await validator.validate(VALID_XML, "/tmp/this-schema-does-not-exist.xsd");
         expect(issues.length).toBe(1);
         expect(issues[0]!.code).toBe("xsd-schema-load-skipped");
         expect(issues[0]!.severity).toBe("info");

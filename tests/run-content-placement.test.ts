@@ -59,10 +59,7 @@ describe("validateRunContentPlacement", () => {
 
     it("accepts run-inner content correctly wrapped in <w:r>", async () => {
         await withTempDir(async (dir) => {
-            const v = await validatorFor(
-                dir,
-                "<w:p><w:r><w:t>a</w:t></w:r><w:r><w:tab/></w:r><w:r><w:drawing/></w:r></w:p>",
-            );
+            const v = await validatorFor(dir, "<w:p><w:r><w:t>a</w:t></w:r><w:r><w:tab/></w:r><w:r><w:drawing/></w:r></w:p>");
             const result = await v.validateRunContentPlacement();
             expect(result.valid).toBe(true);
             expect(result.issues).toHaveLength(0);

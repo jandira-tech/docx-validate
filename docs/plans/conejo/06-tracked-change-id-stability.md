@@ -9,12 +9,14 @@ The repairer regenerates `w:id` on tracked-change elements (`<w:ins>`,
 monotonically-assigned sequence starting at 1.
 
 Also affected:
+
 - `w:id` on `<w:commentRangeStart>` and `<w:commentRangeEnd>` (handled in
   Plan 04, but ID stability applies equally here).
 - `w16cid:durableId` on `<w:num>` elements in `word/numbering.xml`
   (the repairer removes `w16cid:durableId` from numbering definitions).
 
 Changing tracked-change IDs:
+
 1. Breaks external references (collaborative editing tools that track change
    IDs across sessions).
 2. Can invalidate co-authoring session state stored in `word/settings.xml`
@@ -43,14 +45,15 @@ applies to tracked-change IDs but is not currently implemented.
 2. **Collision avoidance**: If the repairer must inject a new tracked change
    (e.g., it is itself making a tracked insertion), allocate IDs above the
    maximum existing ID:
-   ```typescript
-   const maxExistingId = Math.max(
-     0,
-     ...insElements.map(el => parseInt(el.getAttribute("w:id") ?? "0", 10)),
-     ...delElements.map(el => parseInt(el.getAttribute("w:id") ?? "0", 10)),
-   );
-   let nextId = maxExistingId + 1;
-   ```
+
+    ```typescript
+    const maxExistingId = Math.max(
+        0,
+        ...insElements.map((el) => parseInt(el.getAttribute("w:id") ?? "0", 10)),
+        ...delElements.map((el) => parseInt(el.getAttribute("w:id") ?? "0", 10)),
+    );
+    let nextId = maxExistingId + 1;
+    ```
 
 3. **Preserve `w:rsid*` attributes**: Do not strip revision session IDs from
    paragraphs and runs. These are informational but removing them silently

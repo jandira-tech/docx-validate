@@ -17,11 +17,13 @@
 **Prevention:** Always encapsulate file system interactions, including the generation of temporary directories or profiles, inside functions (e.g., lazy getters) rather than static module-level initialization.
 
 ## 2026-09-21 - Path Traversal (Zip Slip variant) in Relationship Resolution
+
 **Vulnerability:** The XML validation parsing resolved OOXML relationship Target attributes blindly using `path.resolve()`. A malicious document with crafted relative traversal targets (like `../../../../etc/passwd`) could trick the validator into inspecting files outside the unpacked archive boundary, posing an arbitrary file read/existence disclosure vulnerability on the host.
 **Learning:** Relying solely on `path.resolve()` when combining untrusted file path attributes with a root extraction directory is dangerous. A subsequent containment check is mandatory to ensure the resolved path hasn't "escaped" the intended root.
 **Prevention:** Always validate resolved target paths by calculating the relative path back to the root directory (`path.relative(root, resolvedPath)`) and ensuring it doesn't equal `..`, start with `.. + path.sep`, or become an absolute path.
 
 ## 2026-10-02 - Unsafe Synchronous Temporary Directory Creation in Tests
+
 **Vulnerability:** Test suites were using synchronous `fs.mkdtempSync` combined with manual `try...finally` blocks and `rmSync` to clean up temporary directories. When an error or unexpected exit (like a test runner crash) occurred before the cleanup logic, orphaned temporary directories were left on the disk, potentially leading to resource exhaustion or shared environment contamination.
 **Learning:** Relying on manual cleanup for temporary directories is error-prone, especially in test environments where failures are frequent and execution flow can be abruptly halted. Safe test teardown requires managed abstractions that guarantee cleanup independently of the test flow.
 **Prevention:** Replace direct calls to `mkdtempSync` and manual `rmSync` with a managed closure like `withTempDir` (which leverages `tmp.dirSync({ unsafeCleanup: true })`), ensuring that temporary directories are removed when the callback completes or throws. Note the guarantee does not cover abrupt termination (SIGKILL, crash): cleanup cannot run in those cases, so process-level temp-directory hygiene is still needed for dirs left behind by killed runs.

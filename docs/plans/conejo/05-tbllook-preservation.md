@@ -13,6 +13,7 @@ than a compatibility error — Word opens the file without warning — but it
 causes visible rendering differences in styled tables.
 
 The diff also shows the repairer removes:
+
 - `w:tblCellSpacing` (cell spacing within tables)
 - `w:jc` alignment on tables (table-level justification)
 - `w:tblInd` (table indent from margin)
@@ -47,8 +48,8 @@ Add `validateTableLook()` to `DOCXSchemaValidator`:
 1. Parse `word/document.xml`.
 2. For each `<w:tbl>` that has a `<w:tblStyle>` reference (meaning it uses
    a named style with conditional formatting bands):
-   - If `<w:tblPr>` contains no `<w:tblLook>`, emit `tbl-look-missing` at
-     `"info"` severity.
+    - If `<w:tblPr>` contains no `<w:tblLook>`, emit `tbl-look-missing` at
+      `"info"` severity.
 3. Under `profile: "word-valid"`, keep as `"info"` (not Word-blocking).
 
 **Code location**: new method `validateTableLook()` in `DOCXSchemaValidator`
