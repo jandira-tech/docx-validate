@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 
 import type { Profile, ValidationIssue } from "../../../lib/types";
-import { parseXml } from "../../../lib/xml-helpers";
+import { getElementsByTagNameAll, parseXml } from "../../../lib/xml-helpers";
 
 const WORD_NAMESPACES = new Set([
     "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
@@ -240,9 +240,9 @@ function collectDocumentStructure(rel: string, dom: Document, inventory: Mutable
 }
 
 function collectText(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
-    const all = dom.getElementsByTagName("*");
+    const all = getElementsByTagNameAll(dom);
     for (let i = 0; i < all.length; i += 1) {
-        const elem = all.item(i);
+        const elem = all[i];
         if (!elem || !isWordElement(elem)) continue;
         const local = localName(elem);
         if (local === "fldSimple") {
@@ -539,9 +539,9 @@ function textLabel(elem: Element, local: string): string {
 
 function runTextLength(run: Element): number {
     let length = 0;
-    const all = run.getElementsByTagName("*");
+    const all = getElementsByTagNameAll(run);
     for (let i = 0; i < all.length; i += 1) {
-        const elem = all.item(i);
+        const elem = all[i];
         if (!elem || !isWordElement(elem)) continue;
         const local = localName(elem);
         if (local === "t" || local === "delText" || local === "instrText" || local === "delInstrText") {

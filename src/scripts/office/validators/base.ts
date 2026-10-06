@@ -46,7 +46,7 @@ import { withTempDir } from "../../../lib/run-cli";
 import type { Profile, ValidationIssue, ValidationResult } from "../../../lib/types";
 import { DEFAULT_PROFILE, OK_RESULT } from "../../../lib/types";
 import { createXsdValidator, type XsdValidator } from "../../../lib/xsd-validator";
-import { parseXml, serializeXml } from "../../../lib/xml-helpers";
+import { getElementsByTagNameAll, parseXml, serializeXml } from "../../../lib/xml-helpers";
 
 /**
  * Schema mapping table — file basename / suffix → relative path inside the
@@ -448,9 +448,9 @@ export class BaseSchemaValidator {
                 const dom = parseXml(content);
                 let modified = false;
 
-                const all = dom.getElementsByTagName("*");
+                const all = getElementsByTagNameAll(dom);
                 for (let i = 0; i < all.length; i += 1) {
-                    const elem = all.item(i);
+                    const elem = all[i];
                     if (!elem) continue;
                     if (!elem.tagName.endsWith(":t")) continue;
                     const first = elem.firstChild;
