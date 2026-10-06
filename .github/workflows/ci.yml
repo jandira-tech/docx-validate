@@ -23,13 +23,16 @@ jobs:
         steps:
             - uses: actions/checkout@v5
 
+            # pnpm MUST be on PATH before setup-node resolves `cache: pnpm`
+            # (it shells out to `pnpm store path`), otherwise the job dies
+            # with "Unable to locate executable file: pnpm".
+            - uses: pnpm/action-setup@v4
+              # version comes from the packageManager field in package.json
+
             - uses: actions/setup-node@v5
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: pnpm
-
-            - uses: pnpm/action-setup@v4
-              # version comes from the packageManager field in package.json
 
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
