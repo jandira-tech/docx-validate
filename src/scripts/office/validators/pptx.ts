@@ -362,7 +362,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
         if (!relType.includes("notesSlide")) continue;
         const target = rel.getAttribute("Target");
         if (!target) continue;
-        const normalizedTarget = target.replace(/\.\.\//g, "");
+        const normalizedTarget = path.posix.join(...target.split(/[\\/]/).filter((p) => p !== ".." && p !== "."));
         // Python: rels_file.stem (foo.xml.rels → foo.xml) then .replace(".xml", "") → foo
         const baseStem = path.basename(relsFile, ".rels"); // "foo.xml"
         const slideName = baseStem.replace(/\.xml$/i, "");
