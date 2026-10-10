@@ -1399,8 +1399,14 @@ export class BaseSchemaValidator {
             return new Set();
         }
         const zip = await JSZip.loadAsync(zipContent);
-        const entry = zip.file(rel.replace(/\\/g, "/"));
+        const entryName = rel.replace(/\\/g, "/");
+        const entry = zip.file(entryName);
         if (!entry) return new Set();
+
+        // Before extracting the zip entry to disk, check for zip slip path traversal
+        if (entryName === ".." || entryName.startsWith("../") || entryName.startsWith("..\\") || path.isAbsolute(entryName)) {
+            throw new Error(`Refusing to extract entry outside output dir: ${entryName}`);
+        }
 
         return withTempDir(async (tmpDir) => {
             // Preserve the relative path so `_validateSingleFileXsd()` can still
@@ -1409,7 +1415,14 @@ export class BaseSchemaValidator {
             // tmpDir/<basename> alone drops that scope and reports unchanged
             // errors as new on every diff.
             const relPosix = rel.split(path.sep).join("/");
-            const tmpFile = path.join(tmpDir, relPosix);
+
+            const resolvedOut = path.resolve(tmpDir);
+            const tmpFile = path.resolve(resolvedOut, relPosix);
+            const relative = path.relative(resolvedOut, tmpFile);
+            if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+                throw new Error(`Refusing to extract entry outside output dir: ${relPosix}`);
+            }
+
             await fs.mkdir(path.dirname(tmpFile), { recursive: true });
             await fs.writeFile(tmpFile, await entry.async("nodebuffer"));
             // Reuse the same single-file XSD validator — we do NOT diff again here
