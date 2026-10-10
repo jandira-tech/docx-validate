@@ -1,29 +1,4 @@
-## 2026-05-19 - Predictable Path Vulnerability in LD_PRELOAD Shim
-
-**Vulnerability:** The LibreOffice shim compiled to a predictable path `/tmp/lo_socket_shim.so`. Since `/tmp` is world-writable, a local attacker could pre-create this file or overwrite it with a malicious shared object. When `soffice` executed with `LD_PRELOAD=/tmp/lo_socket_shim.so`, it would execute arbitrary code as the user running the process.
-**Learning:** Hardcoding paths in `/tmp` for temporary files, especially executable code like shared objects used in `LD_PRELOAD`, creates critical security risks (e.g., race conditions, local privilege escalation). This is a unique pattern since this library generates and runs native code at runtime.
-**Prevention:** Always use secure temporary directories (e.g., `fs.mkdtempSync` with a specific prefix) for generating dynamic content, especially native code. Ensure file permissions restrict access to the user creating the file.
-
-## 2026-05-19 - Predictable LibreOffice Profile Temporary Directory
-
-**Vulnerability:** The LibreOffice macros were written into a globally shared directory: `/tmp/libreoffice_docx_profile`. Because `/tmp/` is world-writable and the path was completely static across users, a local attacker (on a shared machine or sandbox) could pre-create this directory or overwrite the `Module1.xba` macro file with malicious payloads. When LibreOffice is invoked by a higher-privileged user or automated service, it would load and execute the injected malicious StarBasic macros, leading to Local Privilege Escalation (CWE-377).
-**Learning:** Hardcoded temporary paths in `/tmp/` for executing code (like scripts or Office macros) break user isolation and open pathways to injection attacks.
-**Prevention:** Never use hardcoded strings under `/tmp/`. Always derive secure temporary paths dynamically using the OS's safe tempdir utilities (`os.tmpdir()`) combined with secure random tokens (`fs.mkdtempSync`), ensuring uniqueness and proper permissions to prevent concurrent users or attackers from meddling with execution profiles.
-
-## 2026-05-19 - Side Effects from File I/O on Module Import
-
-**Vulnerability:** While fixing the Insecure Temporary File vulnerability with `mkdtempSync`, assigning the result of `mkdtempSync` to an exported constant executed the synchronous I/O operations directly at module load time.
-**Learning:** Performing side effects like file I/O (e.g., creating temporary directories) directly inside the module scope introduces architectural flaws. It means importing the file anywhere (like in test suites or other tools) inadvertently triggers directory creation, leading to orphaned files and unintended side effects, even if the target CLI function is never run.
-**Prevention:** Always encapsulate file system interactions, including the generation of temporary directories or profiles, inside functions (e.g., lazy getters) rather than static module-level initialization.
-
-## 2026-09-21 - Path Traversal (Zip Slip variant) in Relationship Resolution
-
-**Vulnerability:** The XML validation parsing resolved OOXML relationship Target attributes blindly using `path.resolve()`. A malicious document with crafted relative traversal targets (like `../../../../etc/passwd`) could trick the validator into inspecting files outside the unpacked archive boundary, posing an arbitrary file read/existence disclosure vulnerability on the host.
-**Learning:** Relying solely on `path.resolve()` when combining untrusted file path attributes with a root extraction directory is dangerous. A subsequent containment check is mandatory to ensure the resolved path hasn't "escaped" the intended root.
-**Prevention:** Always validate resolved target paths by calculating the relative path back to the root directory (`path.relative(root, resolvedPath)`) and ensuring it doesn't equal `..`, start with `.. + path.sep`, or become an absolute path.
-
-## 2026-10-02 - Unsafe Synchronous Temporary Directory Creation in Tests
-
-**Vulnerability:** Test suites were using synchronous `fs.mkdtempSync` combined with manual `try...finally` blocks and `rmSync` to clean up temporary directories. When an error or unexpected exit (like a test runner crash) occurred before the cleanup logic, orphaned temporary directories were left on the disk, potentially leading to resource exhaustion or shared environment contamination.
-**Learning:** Relying on manual cleanup for temporary directories is error-prone, especially in test environments where failures are frequent and execution flow can be abruptly halted. Safe test teardown requires managed abstractions that guarantee cleanup independently of the test flow.
-**Prevention:** Replace direct calls to `mkdtempSync` and manual `rmSync` with a managed closure like `withTempDir` (which leverages `tmp.dirSync({ unsafeCleanup: true })`), ensuring that temporary directories are removed when the callback completes or throws. Note the guarantee does not cover abrupt termination (SIGKILL, crash): cleanup cannot run in those cases, so process-level temp-directory hygiene is still needed for dirs left behind by killed runs.
+## 2025-02-09 - Prevent Zip Slip during original file error resolution
+**Vulnerability:** Path traversal (Zip Slip) vulnerability in `_getOriginalFileErrors` when extracting files from the original `.docx`. A malicious ZIP could include an entry name like `../../evil.xml`, which bypasses the extraction root directory limit during standalone error resolution checking, writing files anywhere on the system (or overwriting files).
+**Learning:** Even single file extractions using `zip.file(name)` followed by writing to disk must have path validation on `name`. `extractZipEntries` was safely doing this, but the ad-hoc single file extraction in `BaseSchemaValidator` was not.
+**Prevention:** Always validate zip entries (or any resolved path from an untrusted archive) against traversal patterns (`..`, absolute paths) before writing to disk.
