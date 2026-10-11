@@ -15,10 +15,15 @@
 
 ## 2026-10-06 - Avoid .item(i) on getElementsByTagNameNS in @xmldom
 
-**Learning:** Using `getElementsByTagNameNS` and iterating the resulting `NodeList` with `.item(i)` in `@xmldom/xmldom` is extremely slow (O(N²)) because `NodeList` is live and recalculates heavily on each access, especially on large documents.
+**Learning:** `@xmldom/xmldom`'s live `NodeList` caches its contents until the document changes (`_updateLiveList` compares the document's `_inc`). A read-only `.item(i)` loop is therefore O(N): measured on 10k-80k `w:r` elements it scales linearly, and the flat array is only 1.7-3x faster. A loop that edits the DOM while iterating (even `setAttribute`) refreshes the whole list after every edit: 2000 `setAttribute` calls over an 80k-run document took 62 s. That is the quadratic case.
 **Action:** Implement `getElementsByTagNameNSAll` with a stack-based DFS traversal. This processes the DOM in a single O(N) pass, completely eliminating `.item(i)` and providing nearly a 50% speedup on large document iterations.
 
 ## 2026-10-06 - Optimize DOM collection in docx insertions/deletions validation
 
 **Learning:** `getElementsByTagNameNSAll` iterates through the whole document to find matching tags. When looking for nested matching tags in `collectDeletedRunText` and `validateInsertions`, it is more performant to retrieve the parent first (e.g., `<w:del>` or `<w:ins>`) and then query the descendants directly inside that node, rather than query the whole document and then check if it's inside the parent node. Using a `Set` handles potential deduplication.
 **Action:** Always optimize nested tag lookups by utilizing parent queries directly instead of checking parents of all document-wide elements. (Ported from the rejected bolt-optimize-xml-lookups PR — the code landed via the del-first `collectDeletedRunText`, this entry preserves the learning.)
+
+## 2026-10-11 - Do not re-propose .item(i) rewrites as O(N²) fixes
+
+**Learning:** PRs #188 and #190 proposed the same `getElementsByTagNameNSAll` rewrite; #190 landed. Read-only loops gain a constant factor only; repair loops that mutate while iterating are where the snapshot matters, and only when the mutation does not add or remove matching nodes (collect first, then remove, as `removeMcAlternateContent` does).
+**Action:** Before claiming a complexity win, measure at two sizes and say which loops mutate. Do not reformat files in a performance PR (#188 rewrote 5,900 lines to two-space indentation).

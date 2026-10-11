@@ -27,3 +27,9 @@
 **Vulnerability:** Test suites were using synchronous `fs.mkdtempSync` combined with manual `try...finally` blocks and `rmSync` to clean up temporary directories. When an error or unexpected exit (like a test runner crash) occurred before the cleanup logic, orphaned temporary directories were left on the disk, potentially leading to resource exhaustion or shared environment contamination.
 **Learning:** Relying on manual cleanup for temporary directories is error-prone, especially in test environments where failures are frequent and execution flow can be abruptly halted. Safe test teardown requires managed abstractions that guarantee cleanup independently of the test flow.
 **Prevention:** Replace direct calls to `mkdtempSync` and manual `rmSync` with a managed closure like `withTempDir` (which leverages `tmp.dirSync({ unsafeCleanup: true })`), ensuring that temporary directories are removed when the callback completes or throws. Note the guarantee does not cover abrupt termination (SIGKILL, crash): cleanup cannot run in those cases, so process-level temp-directory hygiene is still needed for dirs left behind by killed runs.
+
+## 2026-10-11 - JSZip already resolves traversal entry names
+
+**Learning:** JSZip 3.8+ (we pin 3.10.2) stores every entry under `utils.resolve(name)` on load and keeps the raw name in `unsafeOriginalName`: `../../evil.xml` loads as `evil.xml`, and `zip.file("../../evil.xml")` returns null. `_getOriginalFileErrors` looks entries up by name and returns before writing when the lookup fails, so the zip slip reported in PR #189 is unreachable; its test had to monkeypatch JSZip to recreate it. An absolute name (`/abs.xml`) is kept as is, but `path.join(tmpDir, rel)` cannot leave `tmpDir` with it.
+**Prevention:** Code that iterates `zip.files` or reads `unsafeOriginalName` to write files must still check containment with `path.relative`, as `extractZipEntries` does.
+
