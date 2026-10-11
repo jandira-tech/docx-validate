@@ -30,7 +30,7 @@ import path from "node:path";
 
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
-import { parseXml } from "../../../lib/xml-helpers";
+import { getElementsByTagNameNSAll, parseXml } from "../../../lib/xml-helpers";
 import type { BaseSchemaValidatorOptions } from "./base";
 import { BaseSchemaValidator, OFFICE_RELATIONSHIPS_NAMESPACE, PACKAGE_RELATIONSHIPS_NAMESPACE, walkFiles } from "./base";
 
@@ -112,7 +112,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
             for (const elem of iterElements(root)) {
                 const attrs = elem.attributes;
                 for (let i = 0; i < attrs.length; i += 1) {
-                    const attr = attrs.item(i);
+                    const attr = attrs[i];
                     if (!attr) continue;
                     const attrLocal = attr.name.split("}").pop()?.toLowerCase() ?? "";
                     if (attrLocal !== "id" && !attrLocal.endsWith("id")) continue;
@@ -198,9 +198,9 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
             }
 
             const validLayoutRids = new Set<string>();
-            const rels = relsDom.getElementsByTagNameNS(PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const rels = getElementsByTagNameNSAll(relsDom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
             for (let i = 0; i < rels.length; i += 1) {
-                const rel = rels.item(i);
+                const rel = rels[i];
                 if (!rel) continue;
                 const relType = rel.getAttribute("Type") ?? "";
                 if (relType.includes("slideLayout")) {
@@ -209,9 +209,9 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
                 }
             }
 
-            const sldLayoutIds = masterDom.getElementsByTagNameNS(PRESENTATIONML_NAMESPACE, "sldLayoutId");
+            const sldLayoutIds = getElementsByTagNameNSAll(masterDom, PRESENTATIONML_NAMESPACE, "sldLayoutId");
             for (let i = 0; i < sldLayoutIds.length; i += 1) {
-                const sli = sldLayoutIds.item(i);
+                const sli = sldLayoutIds[i];
                 if (!sli) continue;
                 const rId = sli.getAttributeNS(OFFICE_RELATIONSHIPS_NAMESPACE, "id");
                 const layoutId = sli.getAttribute("id");
@@ -265,10 +265,10 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
                 continue;
             }
 
-            const rels = dom.getElementsByTagNameNS(PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
             let layoutCount = 0;
             for (let i = 0; i < rels.length; i += 1) {
-                const rel = rels.item(i);
+                const rel = rels[i];
                 if (!rel) continue;
                 const relType = rel.getAttribute("Type") ?? "";
                 if (relType.includes("slideLayout")) layoutCount += 1;
@@ -326,15 +326,15 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
                 continue;
             }
 
-            const rels = dom.getElementsByTagNameNS(PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
             for (let i = 0; i < rels.length; i += 1) {
-                const rel = rels.item(i);
+                const rel = rels[i];
                 if (!rel) continue;
                 const relType = rel.getAttribute("Type") ?? "";
                 if (!relType.includes("notesSlide")) continue;
                 const target = rel.getAttribute("Target");
                 if (!target) continue;
-                const normalizedTarget = target.replace(/\.\.\//g, "");
+                const normalizedTarget = target.split("/").filter((p) => p !== ".." && p !== ".").join("/");
                 // Python: rels_file.stem (foo.xml.rels → foo.xml) then .replace(".xml", "") → foo
                 const baseStem = path.basename(relsFile, ".rels"); // "foo.xml"
                 const slideName = baseStem.replace(/\.xml$/i, "");
@@ -388,7 +388,7 @@ function* iterElements(root: Element | null): IterableIterator<Element> {
         const node = stack.pop()!;
         const children = node.childNodes;
         for (let i = children.length - 1; i >= 0; i -= 1) {
-            const child = children.item(i);
+            const child = children[i];
             if (child && child.nodeType === 1) {
                 yield child as Element;
                 stack.push(child as Element);

@@ -47,7 +47,7 @@ import { withTempDir } from "../../../lib/run-cli";
 import type { Profile, ValidationIssue, ValidationResult } from "../../../lib/types";
 import { DEFAULT_PROFILE, OK_RESULT } from "../../../lib/types";
 import { createXsdValidator, type XsdValidator } from "../../../lib/xsd-validator";
-import { getElementsByTagNameAll, parseXml, serializeXml } from "../../../lib/xml-helpers";
+import { getElementsByTagNameNSAll, getElementsByTagNameAll, parseXml, serializeXml } from "../../../lib/xml-helpers";
 
 /**
  * Schema mapping table — file basename / suffix → relative path inside the
@@ -405,7 +405,7 @@ export class BaseSchemaValidator {
             }
             const root = dom.documentElement;
             if (!root) continue;
-            const rels = root.getElementsByTagNameNS("http://schemas.openxmlformats.org/package/2006/relationships", "Relationship");
+            const rels = getElementsByTagNameNSAll(root, "http://schemas.openxmlformats.org/package/2006/relationships", "Relationship");
             if (rels.length === 0) {
                 // Additional check: only report as empty if the root also has no
                 // element children. Malformed rels files with Relationship elements
@@ -464,9 +464,8 @@ export class BaseSchemaValidator {
                 const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
                 const root = dom.documentElement;
                 if (root) {
-                    const rels = root.getElementsByTagNameNS(
-                        "http://schemas.openxmlformats.org/package/2006/relationships",
-                        "Relationship",
+                    const rels = getElementsByTagNameNSAll(root,
+                        "http://schemas.openxmlformats.org/package/2006/relationships", "Relationship",
                     );
                     if (rels.length === 0) {
                         // Additional check: only mark as empty if the root also has no
@@ -581,7 +580,7 @@ export class BaseSchemaValidator {
 
             const attrs = root.attributes;
             for (let i = 0; i < attrs.length; i += 1) {
-                const attr = attrs.item(i);
+                const attr = attrs[i];
                 if (!attr) continue;
                 if (!attr.name.endsWith("Ignorable")) continue;
                 const tokens = attr.value.split(/\s+/).filter(Boolean);
@@ -713,9 +712,9 @@ export class BaseSchemaValidator {
             const referenced: string[] = [];
             const broken: string[] = [];
 
-            const rels = dom.getElementsByTagNameNS(PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
             for (let i = 0; i < rels.length; i += 1) {
-                const rel = rels.item(i);
+                const rel = rels[i];
                 if (!rel) continue;
                 const target = rel.getAttribute("Target");
                 if (!target) continue;
@@ -782,9 +781,9 @@ export class BaseSchemaValidator {
                 continue;
             }
 
-            const rels = dom.getElementsByTagNameNS(PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
             for (let i = 0; i < rels.length; i += 1) {
-                const rel = rels.item(i);
+                const rel = rels[i];
                 if (!rel) continue;
 
                 const rid = rel.getAttribute("Id");
@@ -886,9 +885,9 @@ export class BaseSchemaValidator {
             }
 
             const ridToType = new Map<string, string>();
-            const rels = relsDom.getElementsByTagNameNS(PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const rels = getElementsByTagNameNSAll(relsDom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
             for (let i = 0; i < rels.length; i += 1) {
-                const rel = rels.item(i);
+                const rel = rels[i];
                 if (!rel) continue;
                 const rid = rel.getAttribute("Id");
                 const relType = rel.getAttribute("Type") ?? "";
@@ -1018,9 +1017,9 @@ export class BaseSchemaValidator {
         const declaredParts = new Set<string>();
         const declaredExtensions = new Set<string>();
 
-        const overrides = dom.getElementsByTagNameNS(CONTENT_TYPES_NAMESPACE, "Override");
+        const overrides = getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Override");
         for (let i = 0; i < overrides.length; i += 1) {
-            const o = overrides.item(i);
+            const o = overrides[i];
             if (!o) continue;
             const partName = o.getAttribute("PartName");
             // OPC PartName is a package-relative URI; the on-disk path is its
@@ -1039,9 +1038,9 @@ export class BaseSchemaValidator {
             }
         }
 
-        const defaults = dom.getElementsByTagNameNS(CONTENT_TYPES_NAMESPACE, "Default");
+        const defaults = getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Default");
         for (let i = 0; i < defaults.length; i += 1) {
-            const d = defaults.item(i);
+            const d = defaults[i];
             if (!d) continue;
             const ext = d.getAttribute("Extension");
             if (ext) declaredExtensions.add(ext.toLowerCase());
@@ -1319,7 +1318,7 @@ export class BaseSchemaValidator {
             if (tag === "t" || tag.endsWith(":t") || tag.endsWith("}t")) continue;
             const children = elem.childNodes;
             for (let i = 0; i < children.length; i += 1) {
-                const child = children.item(i);
+                const child = children[i];
                 if (!child) continue;
                 if (child.nodeType === 3 /* TEXT_NODE */) {
                     const textNode = child as Text;
@@ -1338,7 +1337,7 @@ export class BaseSchemaValidator {
         if (root) {
             const attrs = root.attributes;
             for (let i = attrs.length - 1; i >= 0; i -= 1) {
-                const attr = attrs.item(i);
+                const attr = attrs[i];
                 if (!attr) continue;
                 if (attr.namespaceURI === MC_NAMESPACE && localName(attr.name) === "Ignorable") {
                     root.removeAttributeNode(attr);
@@ -1477,7 +1476,7 @@ function* iterElements(root: Element | null): IterableIterator<Element> {
         if (node === undefined) break;
         const children = node.childNodes;
         for (let i = children.length - 1; i >= 0; i -= 1) {
-            const child = children.item(i);
+            const child = children[i];
             if (child && child.nodeType === 1 /* ELEMENT_NODE */) {
                 yield child as Element;
                 stack.push(child as Element);
@@ -1497,7 +1496,7 @@ export function collectDeclaredPrefixes(root: Element): Set<string> {
         if (elem === undefined) break;
         const attrs = elem.attributes;
         for (let i = 0; i < attrs.length; i += 1) {
-            const attr = attrs.item(i);
+            const attr = attrs[i];
             if (!attr) continue;
             if (attr.name.startsWith("xmlns:")) {
                 declared.add(attr.name.slice("xmlns:".length));
@@ -1505,7 +1504,7 @@ export function collectDeclaredPrefixes(root: Element): Set<string> {
         }
         const children = elem.childNodes;
         for (let i = 0; i < children.length; i += 1) {
-            const child = children.item(i);
+            const child = children[i];
             if (child && child.nodeType === 1 /* ELEMENT_NODE */) {
                 stack.push(child as Element);
             }
@@ -1515,10 +1514,10 @@ export function collectDeclaredPrefixes(root: Element): Set<string> {
 }
 
 function removeMcAlternateContent(dom: Document): void {
-    const list = dom.getElementsByTagNameNS(MC_NAMESPACE, "AlternateContent");
+    const list = getElementsByTagNameNSAll(dom, MC_NAMESPACE, "AlternateContent");
     const items: Element[] = [];
     for (let i = 0; i < list.length; i += 1) {
-        const e = list.item(i);
+        const e = list[i];
         if (e) items.push(e);
     }
     for (const elem of items) {
@@ -1539,7 +1538,7 @@ function hasExcludedAncestor(elem: Element): boolean {
 function findIdAttribute(elem: Element, attrName: string): string | null {
     const attrs = elem.attributes;
     for (let i = 0; i < attrs.length; i += 1) {
-        const attr = attrs.item(i);
+        const attr = attrs[i];
         if (!attr) continue;
         const local = localName(attr.name).toLowerCase();
         if (local === attrName) return attr.value;
@@ -1552,7 +1551,7 @@ function stripNonOoxmlAttributes(root: Element): void {
         const attrs = elem.attributes;
         const toRemove: Attr[] = [];
         for (let i = 0; i < attrs.length; i += 1) {
-            const attr = attrs.item(i);
+            const attr = attrs[i];
             if (!attr) continue;
             const ns = attr.namespaceURI;
             if (ns && !OOXML_NAMESPACES.has(ns)) {
@@ -1574,7 +1573,7 @@ function removeNonOoxmlElements(root: Element): void {
         const children = node.childNodes;
         const toRemove: Element[] = [];
         for (let i = 0; i < children.length; i += 1) {
-            const child = children.item(i);
+            const child = children[i];
             if (!child || child.nodeType !== 1) continue;
             const elem = child as Element;
             const ns = elem.namespaceURI;
@@ -1595,7 +1594,7 @@ function finalize(issues: ValidationIssue[]): ValidationResult {
 /** Return true if `node` has at least one Element-type child node. */
 export function hasAnyElementChild(node: Node): boolean {
     for (let i = 0; i < node.childNodes.length; i += 1) {
-        const child = node.childNodes.item(i);
+        const child = node.childNodes[i];
         if (child && child.nodeType === 1 /* ELEMENT_NODE */) return true;
     }
     return false;

@@ -167,8 +167,9 @@ export const getElementsByTagNameNSAll = (root: Document | Element, namespaceURI
 
 /**
  * Stack-based DFS replacement for `getElementsByTagName('*')`. `@xmldom`'s
- * live `NodeList` makes `.item(i)` iteration quadratic; this returns a flat
- * array of every descendant element (root excluded) in document order.
+ * live `NodeList` re-traverses the tree after every DOM change, so a loop
+ * that edits while it iterates is quadratic; this returns a flat array of
+ * every descendant element (root excluded) in document order.
  *
  * Thin wrapper over `getElementsByTagNameNSAll(root, "*", "*")` so the two
  * entry points share one traversal implementation — the wildcard form and

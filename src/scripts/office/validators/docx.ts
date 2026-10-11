@@ -526,7 +526,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         let body: Element | null = null;
         for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-            const node = dom.getElementsByTagNameNS(ns, "body").item(0);
+            const node = getElementsByTagNameNSAll(dom, ns, "body")[0];
             if (node) {
                 body = node;
                 break;
@@ -534,12 +534,12 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         }
         if (!body) return finalize(issues);
         for (let i = 0; i < body.childNodes.length; i += 1) {
-            const node = body.childNodes.item(i);
+            const node = body.childNodes[i];
             if (!node || node.nodeType !== 1) continue;
             const elem = node as Element;
             const tagName = elem.localName || elem.tagName.split(":").pop() || elem.tagName;
             if (elem.namespaceURI !== MATH_NAMESPACE || tagName !== "oMathPara") continue;
-            if (elem.getElementsByTagNameNS(MATH_NAMESPACE, "sPre").length === 0) continue;
+            if (getElementsByTagNameNSAll(elem, MATH_NAMESPACE, "sPre").length === 0) continue;
             issues.push({
                 severity: "error",
                 message:
@@ -572,14 +572,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             });
         };
 
-        const overrides = dom.getElementsByTagNameNS(CONTENT_TYPES_NAMESPACE, "Override");
+        const overrides = getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Override");
         for (let i = 0; i < overrides.length; i += 1) {
-            const elem = overrides.item(i);
+            const elem = overrides[i];
             if (elem) check(elem, "PartName");
         }
-        const defaults = dom.getElementsByTagNameNS(CONTENT_TYPES_NAMESPACE, "Default");
+        const defaults = getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Default");
         for (let i = 0; i < defaults.length; i += 1) {
-            const elem = defaults.item(i);
+            const elem = defaults[i];
             if (elem) check(elem, "Extension");
         }
     }
@@ -593,9 +593,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 continue;
             }
             for (const { namespace, localName } of WORD_DRAWING_SCALAR_TEXT_ELEMENTS) {
-                const elems = dom.getElementsByTagNameNS(namespace, localName);
+                const elems = getElementsByTagNameNSAll(dom, namespace, localName);
                 for (let i = 0; i < elems.length; i += 1) {
-                    const elem = elems.item(i);
+                    const elem = elems[i];
                     if (!elem) continue;
                     for (let child = elem.firstChild; child; child = child.nextSibling) {
                         if (child.nodeType !== 3) continue;
@@ -633,9 +633,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 });
                 continue;
             }
-            const tElems = dom.getElementsByTagNameNS(WORD_2006_NAMESPACE, "t");
+            const tElems = getElementsByTagNameNSAll(dom, WORD_2006_NAMESPACE, "t");
             for (let i = 0; i < tElems.length; i += 1) {
-                const elem = tElems.item(i);
+                const elem = tElems[i];
                 if (!elem) continue;
                 const first = elem.firstChild;
                 if (!first || first.nodeType !== 3 /* TEXT_NODE */) continue;
@@ -733,15 +733,15 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
             const invalid: Element[] = [];
             for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const insNodes = dom.getElementsByTagNameNS(ns, "ins");
+                const insNodes = getElementsByTagNameNSAll(dom, ns, "ins");
                 for (let i = 0; i < insNodes.length; i++) {
-                    const ins = insNodes.item(i);
+                    const ins = insNodes[i];
                     if (!ins) continue;
 
                     for (const nsDel of WORD_PARAGRAPH_NAMESPACES) {
-                        const delTexts = ins.getElementsByTagNameNS(nsDel, "delText");
+                        const delTexts = getElementsByTagNameNSAll(ins, nsDel, "delText");
                         for (let j = 0; j < delTexts.length; j++) {
-                            const delText = delTexts.item(j);
+                            const delText = delTexts[j];
                             if (delText && !isInsideDel(delText)) {
                                 invalid.push(delText);
                             }
@@ -799,9 +799,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         const collectIds = (localName: string): Set<string> => {
             const out = new Set<string>();
-            const list = docDom.getElementsByTagNameNS(WORD_2006_NAMESPACE, localName);
+            const list = getElementsByTagNameNSAll(docDom, WORD_2006_NAMESPACE, localName);
             for (let i = 0; i < list.length; i += 1) {
-                const elem = list.item(i);
+                const elem = list[i];
                 if (!elem) continue;
                 const id = elem.getAttributeNS(WORD_2006_NAMESPACE, "id");
                 out.add(id ?? "");
@@ -847,9 +847,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 return finalize(issues);
             }
             const commentIds = new Set<string>();
-            const list = commentsDom.getElementsByTagNameNS(WORD_2006_NAMESPACE, "comment");
+            const list = getElementsByTagNameNSAll(commentsDom, WORD_2006_NAMESPACE, "comment");
             for (let i = 0; i < list.length; i += 1) {
-                const elem = list.item(i);
+                const elem = list[i];
                 if (!elem) continue;
                 const id = elem.getAttributeNS(WORD_2006_NAMESPACE, "id");
                 if (id) commentIds.add(id);
@@ -925,9 +925,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         }
         const defined = new Set<string>();
         for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-            const list = dom.getElementsByTagNameNS(ns, "style");
+            const list = getElementsByTagNameNSAll(dom, ns, "style");
             for (let i = 0; i < list.length; i += 1) {
-                const elem = list.item(i);
+                const elem = list[i];
                 if (!elem) continue;
                 const id = elem.getAttributeNS(ns, "styleId");
                 if (id) defined.add(id);
@@ -1064,9 +1064,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             try {
                 const dom = parseXml(await fs.readFile(stylesPath, "utf-8"));
                 for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                    const list = dom.getElementsByTagNameNS(ns, "style");
+                    const list = getElementsByTagNameNSAll(dom, ns, "style");
                     for (let i = 0; i < list.length; i += 1) {
-                        const elem = list.item(i);
+                        const elem = list[i];
                         if (!elem) continue;
                         const id = elem.getAttributeNS(ns, "styleId");
                         if (id) defined.add(id);
@@ -1091,9 +1091,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
             for (const tag of refTags) {
                 for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                    const list = dom.getElementsByTagNameNS(ns, tag);
+                    const list = getElementsByTagNameNSAll(dom, ns, tag);
                     for (let i = 0; i < list.length; i += 1) {
-                        const elem = list.item(i);
+                        const elem = list[i];
                         if (!elem) continue;
                         const val = elem.getAttributeNS(ns, "val");
                         if (!val) continue;
@@ -1155,9 +1155,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 let missingParaId = 0;
                 let asymmetric = 0;
                 for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                    const list = dom.getElementsByTagNameNS(ns, local);
+                    const list = getElementsByTagNameNSAll(dom, ns, local);
                     for (let i = 0; i < list.length; i += 1) {
-                        const elem = list.item(i);
+                        const elem = list[i];
                         if (!elem) continue;
                         const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId");
                         const textId = elem.getAttributeNS(W14_NAMESPACE, "textId");
@@ -1222,9 +1222,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 continue;
             }
             for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const paragraphs = dom.getElementsByTagNameNS(ns, "p");
+                const paragraphs = getElementsByTagNameNSAll(dom, ns, "p");
                 for (let i = 0; i < paragraphs.length; i += 1) {
-                    const para = paragraphs.item(i);
+                    const para = paragraphs[i];
                     if (!para) continue;
                     for (let child = para.firstChild; child; child = child.nextSibling) {
                         if (child.nodeType !== 1) continue;
@@ -1341,16 +1341,16 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // already supports both.
         const commentParaIds = new Map<string, string[]>();
         for (const wNs of WORD_PARAGRAPH_NAMESPACES) {
-            const commentList = commentsDom.getElementsByTagNameNS(wNs, "comment");
+            const commentList = getElementsByTagNameNSAll(commentsDom, wNs, "comment");
             for (let i = 0; i < commentList.length; i += 1) {
-                const elem = commentList.item(i);
+                const elem = commentList[i];
                 if (!elem) continue;
                 const id = elem.getAttributeNS(wNs, "id");
                 if (!id) continue;
-                const ps = elem.getElementsByTagNameNS(wNs, "p");
+                const ps = getElementsByTagNameNSAll(elem, wNs, "p");
                 const paraIds: string[] = [];
                 for (let j = 0; j < ps.length; j += 1) {
-                    const p = ps.item(j);
+                    const p = ps[j];
                     if (!p) continue;
                     const paraId = p.getAttributeNS(W14_NAMESPACE, "paraId");
                     if (paraId) paraIds.push(paraId);
@@ -1370,7 +1370,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 const counts = (local: string): number => {
                     let total = 0;
                     for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                        total += docDom.getElementsByTagNameNS(ns, local).length;
+                        total += getElementsByTagNameNSAll(docDom, ns, local).length;
                     }
                     return total;
                 };
@@ -1422,11 +1422,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 return finalize(issues);
             }
 
-            const commentIds = idsDom.getElementsByTagNameNS(W16CID_NAMESPACE, "commentId");
+            const commentIds = getElementsByTagNameNSAll(idsDom, W16CID_NAMESPACE, "commentId");
             const paraIdCounts = new Map<string, number>();
             const durableIdCounts = new Map<string, number>();
             for (let i = 0; i < commentIds.length; i += 1) {
-                const elem = commentIds.item(i);
+                const elem = commentIds[i];
                 if (!elem) continue;
                 const paraId = elem.getAttributeNS(W16CID_NAMESPACE, "paraId");
                 const durableId = elem.getAttributeNS(W16CID_NAMESPACE, "durableId");
@@ -1500,10 +1500,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 return finalize(issues);
             }
 
-            const extensibleEntries = cexDom.getElementsByTagNameNS(W16CEX_NAMESPACE, "commentExtensible");
+            const extensibleEntries = getElementsByTagNameNSAll(cexDom, W16CEX_NAMESPACE, "commentExtensible");
             const durableIdCounts = new Map<string, number>();
             for (let i = 0; i < extensibleEntries.length; i += 1) {
-                const elem = extensibleEntries.item(i);
+                const elem = extensibleEntries[i];
                 if (!elem) continue;
                 const durableId = elem.getAttributeNS(W16CEX_NAMESPACE, "durableId");
                 if (!durableId) {
@@ -1555,11 +1555,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             return finalize(issues);
         }
 
-        const extEntries = extDom.getElementsByTagNameNS(W15_NAMESPACE, "commentEx");
+        const extEntries = getElementsByTagNameNSAll(extDom, W15_NAMESPACE, "commentEx");
         const extByParaId = new Map<string, number>();
         const extParents: string[] = [];
         for (let i = 0; i < extEntries.length; i += 1) {
-            const elem = extEntries.item(i);
+            const elem = extEntries[i];
             if (!elem) continue;
             const paraId = elem.getAttributeNS(W15_NAMESPACE, "paraId");
             const parent = elem.getAttributeNS(W15_NAMESPACE, "paraIdParent");
@@ -1894,9 +1894,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             } catch {
                 continue;
             }
-            const list = dom.getElementsByTagNameNS(PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const list = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
             for (let i = 0; i < list.length; i += 1) {
-                const elem = list.item(i);
+                const elem = list[i];
                 if (!elem) continue;
                 const target = elem.getAttribute("Target");
                 if (!target) continue;
@@ -1952,9 +1952,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         }
         const fontList: Element[] = [];
         for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-            const list = dom.getElementsByTagNameNS(ns, "font");
+            const list = getElementsByTagNameNSAll(dom, ns, "font");
             for (let i = 0; i < list.length; i += 1) {
-                const elem = list.item(i);
+                const elem = list[i];
                 if (elem) fontList.push(elem);
             }
         }
@@ -1996,7 +1996,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         }
         let hasLatentStyles = false;
         for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-            if (dom.getElementsByTagNameNS(ns, "latentStyles").length > 0) {
+            if (getElementsByTagNameNSAll(dom, ns, "latentStyles").length > 0) {
                 hasLatentStyles = true;
                 break;
             }
@@ -2034,9 +2034,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 continue;
             }
             for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const tbls = dom.getElementsByTagNameNS(ns, "tbl");
+                const tbls = getElementsByTagNameNSAll(dom, ns, "tbl");
                 for (let i = 0; i < tbls.length; i += 1) {
-                    const tbl = tbls.item(i);
+                    const tbl = tbls[i];
                     if (!tbl) continue;
                     const tblPr = directChild(tbl, ns, "tblPr");
                     if (!tblPr) continue;
@@ -2081,9 +2081,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             let hasUnparseableId = false;
             for (const ns of WORD_PARAGRAPH_NAMESPACES) {
                 for (const tag of TRACKED_CHANGE_ID_TAGS) {
-                    const list = dom.getElementsByTagNameNS(ns, tag);
+                    const list = getElementsByTagNameNSAll(dom, ns, tag);
                     for (let j = 0; j < list.length; j += 1) {
-                        const elem = list.item(j);
+                        const elem = list[j];
                         if (!elem) continue;
                         const id = elem.getAttributeNS(ns, "id");
                         if (!id) continue;
@@ -2133,9 +2133,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 continue;
             }
             for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const tbls = dom.getElementsByTagNameNS(ns, "tbl");
+                const tbls = getElementsByTagNameNSAll(dom, ns, "tbl");
                 for (let i = 0; i < tbls.length; i += 1) {
-                    const tbl = tbls.item(i);
+                    const tbl = tbls[i];
                     if (!tbl) continue;
                     const tblPr = directChild(tbl, ns, "tblPr");
                     if (!tblPr) continue;
@@ -2187,11 +2187,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             } catch {
                 continue;
             }
-            const relsList = dom.getElementsByTagNameNS(PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const relsList = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
             const ids: number[] = [];
             let allIdsUseRidPattern = true;
             for (let i = 0; i < relsList.length; i += 1) {
-                const elem = relsList.item(i);
+                const elem = relsList[i];
                 if (!elem) continue;
                 const id = elem.getAttribute("Id");
                 if (!id) continue;
@@ -2250,21 +2250,21 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         let defaultHAnsi = "";
         let defaultCs = "";
         for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-            const ddList = stylesDom.getElementsByTagNameNS(ns, "docDefaults");
+            const ddList = getElementsByTagNameNSAll(stylesDom, ns, "docDefaults");
             if (ddList.length === 0) continue;
-            const dd = ddList.item(0);
+            const dd = ddList[0];
             if (!dd) continue;
-            const rPrDefaultList = dd.getElementsByTagNameNS(ns, "rPrDefault");
+            const rPrDefaultList = getElementsByTagNameNSAll(dd, ns, "rPrDefault");
             if (rPrDefaultList.length === 0) continue;
-            const rPrDefault = rPrDefaultList.item(0);
+            const rPrDefault = rPrDefaultList[0];
             if (!rPrDefault) continue;
-            const rPrList = rPrDefault.getElementsByTagNameNS(ns, "rPr");
+            const rPrList = getElementsByTagNameNSAll(rPrDefault, ns, "rPr");
             if (rPrList.length === 0) continue;
-            const rPr = rPrList.item(0);
+            const rPr = rPrList[0];
             if (!rPr) continue;
-            const rFontsList = rPr.getElementsByTagNameNS(ns, "rFonts");
+            const rFontsList = getElementsByTagNameNSAll(rPr, ns, "rFonts");
             if (rFontsList.length === 0) continue;
-            const rFonts = rFontsList.item(0);
+            const rFonts = rFontsList[0];
             if (!rFonts) continue;
             defaultAscii = rFonts.getAttributeNS(ns, "ascii") ?? "";
             defaultHAnsi = rFonts.getAttributeNS(ns, "hAnsi") ?? "";
@@ -2284,9 +2284,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 continue;
             }
             for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const runs = dom.getElementsByTagNameNS(ns, "r");
+                const runs = getElementsByTagNameNSAll(dom, ns, "r");
                 for (let i = 0; i < runs.length; i += 1) {
-                    const run = runs.item(i);
+                    const run = runs[i];
                     if (!run) continue;
                     const rPr = directChild(run, ns, "rPr");
                     if (!rPr) continue;
@@ -2352,9 +2352,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
             let modified = false;
             for (const { namespace, localName } of WORD_DRAWING_SCALAR_TEXT_ELEMENTS) {
-                const elems = dom.getElementsByTagNameNS(namespace, localName);
+                const elems = getElementsByTagNameNSAll(dom, namespace, localName);
                 for (let i = 0; i < elems.length; i += 1) {
-                    const elem = elems.item(i);
+                    const elem = elems[i];
                     if (!elem) continue;
                     for (let child = elem.firstChild; child; child = child.nextSibling) {
                         if (child.nodeType !== 3) continue;
@@ -2394,9 +2394,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 return String(candidate);
             };
 
-            const inlines = dom.getElementsByTagNameNS(WP_NAMESPACE, "inline");
+            const inlines = getElementsByTagNameNSAll(dom, WP_NAMESPACE, "inline");
             for (let i = 0; i < inlines.length; i += 1) {
-                const inline = inlines.item(i);
+                const inline = inlines[i];
                 if (!inline) continue;
                 const graphic = directChild(inline, DRAWINGML_NAMESPACE, "graphic");
                 if (!graphic) continue;
@@ -2419,9 +2419,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     modified = true;
                 }
 
-                const pictures = inline.getElementsByTagNameNS(PICTURE_NAMESPACE, "pic");
+                const pictures = getElementsByTagNameNSAll(inline, PICTURE_NAMESPACE, "pic");
                 for (let j = 0; j < pictures.length; j += 1) {
-                    const pic = pictures.item(j);
+                    const pic = pictures[j];
                     if (!pic) continue;
                     const blipFill = directChild(pic, PICTURE_NAMESPACE, "blipFill");
 
@@ -2564,13 +2564,13 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         const commentParaIds = new Set<string>();
         for (const wNs of WORD_PARAGRAPH_NAMESPACES) {
-            const comments = commentsDom.getElementsByTagNameNS(wNs, "comment");
+            const comments = getElementsByTagNameNSAll(commentsDom, wNs, "comment");
             for (let i = 0; i < comments.length; i += 1) {
-                const comment = comments.item(i);
+                const comment = comments[i];
                 if (!comment) continue;
-                const paragraphs = comment.getElementsByTagNameNS(wNs, "p");
+                const paragraphs = getElementsByTagNameNSAll(comment, wNs, "p");
                 for (let j = 0; j < paragraphs.length; j += 1) {
-                    const paragraph = paragraphs.item(j);
+                    const paragraph = paragraphs[j];
                     const paraId = paragraph?.getAttributeNS(W14_NAMESPACE, "paraId");
                     if (paraId) commentParaIds.add(paraId);
                 }
@@ -2580,11 +2580,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         let repairs = 0;
         let idsModified = false;
         let canonicalDurableId: string | null = null;
-        const commentIds = idsDom.getElementsByTagNameNS(W16CID_NAMESPACE, "commentId");
+        const commentIds = getElementsByTagNameNSAll(idsDom, W16CID_NAMESPACE, "commentId");
         if (commentParaIds.size === 1 && commentIds.length === 1) {
             const targetParaId = [...commentParaIds][0];
             canonicalDurableId = targetParaId;
-            const commentId = commentIds.item(0);
+            const commentId = commentIds[0];
             const currentParaId = commentId?.getAttributeNS(W16CID_NAMESPACE, "paraId");
             if (commentId && currentParaId && currentParaId !== targetParaId && !commentParaIds.has(currentParaId)) {
                 commentId.setAttributeNS(W16CID_NAMESPACE, "w16cid:paraId", targetParaId);
@@ -2601,7 +2601,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         const durableIds = new Set<string>();
         for (let i = 0; i < commentIds.length; i += 1) {
-            const commentId = commentIds.item(i);
+            const commentId = commentIds[i];
             const durableId = commentId?.getAttributeNS(W16CID_NAMESPACE, "durableId");
             if (durableId) durableIds.add(durableId);
         }
@@ -2614,10 +2614,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         try {
             const cexDom = parseXml(await fs.readFile(commentsExtensibleXml, "utf-8"));
-            const entries = cexDom.getElementsByTagNameNS(W16CEX_NAMESPACE, "commentExtensible");
+            const entries = getElementsByTagNameNSAll(cexDom, W16CEX_NAMESPACE, "commentExtensible");
             if (entries.length !== 1) return repairs;
             const targetDurableId = [...durableIds][0];
-            const entry = entries.item(0);
+            const entry = entries[0];
             const currentDurableId = entry?.getAttributeNS(W16CEX_NAMESPACE, "durableId");
             if (entry && currentDurableId && currentDurableId !== targetDurableId && !durableIds.has(currentDurableId)) {
                 entry.setAttributeNS(W16CEX_NAMESPACE, "w16cex:durableId", targetDurableId);
@@ -2656,9 +2656,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         const defined = new Set<string>();
         for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-            const list = stylesDom.getElementsByTagNameNS(ns, "style");
+            const list = getElementsByTagNameNSAll(stylesDom, ns, "style");
             for (let i = 0; i < list.length; i += 1) {
-                const elem = list.item(i);
+                const elem = list[i];
                 if (!elem) continue;
                 const id = elem.getAttributeNS(ns, "styleId");
                 if (id) defined.add(id);
@@ -2673,9 +2673,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
                 for (const tag of refTags) {
                     for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                        const list = dom.getElementsByTagNameNS(ns, tag);
+                        const list = getElementsByTagNameNSAll(dom, ns, tag);
                         for (let i = 0; i < list.length; i += 1) {
-                            const elem = list.item(i);
+                            const elem = list[i];
                             if (!elem) continue;
                             const val = elem.getAttributeNS(ns, "val");
                             if (val) referenced.add(val);
@@ -2784,9 +2784,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 let modified = false;
                 for (const local of ["p", "tr"] as const) {
                     for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                        const list = dom.getElementsByTagNameNS(ns, local);
+                        const list = getElementsByTagNameNSAll(dom, ns, local);
                         for (let i = 0; i < list.length; i += 1) {
-                            const elem = list.item(i);
+                            const elem = list[i];
                             if (!elem) continue;
                             const paraId = elem.getAttributeNS(W14_NAMESPACE, "paraId");
                             const textId = elem.getAttributeNS(W14_NAMESPACE, "textId");
@@ -2854,7 +2854,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 const attrs = root.attributes;
                 const ignorableAttrs: Array<{ name: string; value: string }> = [];
                 for (let i = 0; i < attrs.length; i += 1) {
-                    const attr = attrs.item(i);
+                    const attr = attrs[i];
                     if (!attr) continue;
                     if (!attr.name.endsWith("Ignorable")) continue;
                     ignorableAttrs.push({ name: attr.name, value: attr.value });
@@ -3050,9 +3050,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // self-consistent.
         for (const [xmlFile, dom] of parsedDoms) {
             if (baseName(xmlFile) !== "commentsExtended.xml") continue;
-            const exts = dom.getElementsByTagNameNS(W15_NAMESPACE, "commentEx");
+            const exts = getElementsByTagNameNSAll(dom, W15_NAMESPACE, "commentEx");
             for (let i = 0; i < exts.length; i += 1) {
-                const elem = exts.item(i);
+                const elem = exts[i];
                 if (!elem) continue;
                 for (const attr of ["paraId", "paraIdParent"] as const) {
                     const val = elem.getAttributeNS(W15_NAMESPACE, attr);
@@ -3152,9 +3152,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         }
 
         for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-            const styles = dom.getElementsByTagNameNS(ns, "style");
+            const styles = getElementsByTagNameNSAll(dom, ns, "style");
             for (let i = 0; i < styles.length; i += 1) {
-                const style = styles.item(i);
+                const style = styles[i];
                 if (!style) continue;
                 if (style.getAttributeNS(ns, "type") !== "table") continue;
                 const styleId = style.getAttributeNS(ns, "styleId");
@@ -3306,9 +3306,9 @@ function borderSignaturesEqual(a: BorderSignature, b: BorderSignature): boolean 
 
 function collectNumericAttributeValues(dom: Document, namespaceURI: string, local: string, attr: string): Set<number> {
     const out = new Set<number>();
-    const elems = dom.getElementsByTagNameNS(namespaceURI, local);
+    const elems = getElementsByTagNameNSAll(dom, namespaceURI, local);
     for (let i = 0; i < elems.length; i += 1) {
-        const elem = elems.item(i);
+        const elem = elems[i];
         if (!elem) continue;
         const value = Number.parseInt(elem.getAttribute(attr) ?? "", 10);
         if (Number.isFinite(value)) out.add(value);

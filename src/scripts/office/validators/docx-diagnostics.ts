@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 
 import type { Profile, ValidationIssue } from "../../../lib/types";
-import { getElementsByTagNameAll, parseXml } from "../../../lib/xml-helpers";
+import { getElementsByTagNameNSAll, getElementsByTagNameAll, parseXml } from "../../../lib/xml-helpers";
 
 const WORD_NAMESPACES = new Set([
     "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
@@ -180,9 +180,9 @@ function collectXmlPart(rel: string, dom: Document, inventory: MutableDocxSemant
 }
 
 function collectRelationships(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
-    const rels = dom.getElementsByTagNameNS(PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+    const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
     for (let i = 0; i < rels.length; i += 1) {
-        const elem = rels.item(i);
+        const elem = rels[i];
         if (!elem) continue;
         const type = elem.getAttribute("Type") ?? "unknown";
         const targetMode = elem.getAttribute("TargetMode") ?? "Internal";
@@ -192,15 +192,15 @@ function collectRelationships(rel: string, dom: Document, inventory: MutableDocx
 }
 
 function collectContentTypes(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
-    const overrides = dom.getElementsByTagNameNS(CONTENT_TYPES_NAMESPACE, "Override");
+    const overrides = getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Override");
     for (let i = 0; i < overrides.length; i += 1) {
-        const elem = overrides.item(i);
+        const elem = overrides[i];
         if (!elem) continue;
         addCounter(inventory, rel, "content type", `override '${elem.getAttribute("ContentType") ?? "unknown"}'`, "declaration(s)", 1);
     }
-    const defaults = dom.getElementsByTagNameNS(CONTENT_TYPES_NAMESPACE, "Default");
+    const defaults = getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Default");
     for (let i = 0; i < defaults.length; i += 1) {
-        const elem = defaults.item(i);
+        const elem = defaults[i];
         if (!elem) continue;
         addCounter(inventory, rel, "content type", `default '${elem.getAttribute("ContentType") ?? "unknown"}'`, "declaration(s)", 1);
     }
@@ -225,16 +225,16 @@ function collectDocumentStructure(rel: string, dom: Document, inventory: Mutable
     ]);
     for (const [local, label] of structure) {
         let count = 0;
-        for (const ns of WORD_NAMESPACES) count += dom.getElementsByTagNameNS(ns, local).length;
+        for (const ns of WORD_NAMESPACES) count += getElementsByTagNameNSAll(dom, ns, local).length;
         if (count > 0) addCounter(inventory, rel, "document structure", label, "element(s)", count);
     }
     const mathElements =
-        dom.getElementsByTagNameNS(MATH_NAMESPACE, "oMath").length + dom.getElementsByTagNameNS(MATH_NAMESPACE, "oMathPara").length;
+        getElementsByTagNameNSAll(dom, MATH_NAMESPACE, "oMath").length + getElementsByTagNameNSAll(dom, MATH_NAMESPACE, "oMathPara").length;
     if (mathElements > 0) addCounter(inventory, rel, "document structure", "math object", "element(s)", mathElements);
     const drawingElements =
-        dom.getElementsByTagNameNS(WP_NAMESPACE, "inline").length + dom.getElementsByTagNameNS(WP_NAMESPACE, "anchor").length;
+        getElementsByTagNameNSAll(dom, WP_NAMESPACE, "inline").length + getElementsByTagNameNSAll(dom, WP_NAMESPACE, "anchor").length;
     if (drawingElements > 0) addCounter(inventory, rel, "document structure", "DrawingML placement", "element(s)", drawingElements);
-    const pictures = dom.getElementsByTagNameNS(PICTURE_NAMESPACE, "pic").length;
+    const pictures = getElementsByTagNameNSAll(dom, PICTURE_NAMESPACE, "pic").length;
     if (pictures > 0) addCounter(inventory, rel, "document structure", "DrawingML picture", "element(s)", pictures);
 }
 
@@ -258,9 +258,9 @@ function collectText(rel: string, dom: Document, inventory: MutableDocxSemanticI
 
 function collectFormatting(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
     for (const ns of WORD_NAMESPACES) {
-        const runs = dom.getElementsByTagNameNS(ns, "r");
+        const runs = getElementsByTagNameNSAll(dom, ns, "r");
         for (let i = 0; i < runs.length; i += 1) {
-            const run = runs.item(i);
+            const run = runs[i];
             if (!run) continue;
             const chars = runTextLength(run);
             if (chars === 0) continue;
@@ -291,9 +291,9 @@ function collectFormatting(rel: string, dom: Document, inventory: MutableDocxSem
             if (rStyle) addCounter(inventory, rel, "style reference", `run style '${rStyle}'`, "styled character(s)", chars);
         }
 
-        const paragraphs = dom.getElementsByTagNameNS(ns, "p");
+        const paragraphs = getElementsByTagNameNSAll(dom, ns, "p");
         for (let i = 0; i < paragraphs.length; i += 1) {
-            const paragraph = paragraphs.item(i);
+            const paragraph = paragraphs[i];
             if (!paragraph) continue;
             const pPr = directWordChild(paragraph, "pPr");
             if (!pPr) continue;
@@ -308,9 +308,9 @@ function collectFormatting(rel: string, dom: Document, inventory: MutableDocxSem
             }
         }
 
-        const tables = dom.getElementsByTagNameNS(ns, "tbl");
+        const tables = getElementsByTagNameNSAll(dom, ns, "tbl");
         for (let i = 0; i < tables.length; i += 1) {
-            const table = tables.item(i);
+            const table = tables[i];
             if (!table) continue;
             const tblPr = directWordChild(table, "tblPr");
             if (!tblPr) continue;
@@ -322,9 +322,9 @@ function collectFormatting(rel: string, dom: Document, inventory: MutableDocxSem
 
 function collectInlineMarks(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
     for (const ns of WORD_NAMESPACES) {
-        const brs = dom.getElementsByTagNameNS(ns, "br");
+        const brs = getElementsByTagNameNSAll(dom, ns, "br");
         for (let i = 0; i < brs.length; i += 1) {
-            const br = brs.item(i);
+            const br = brs[i];
             if (!br) continue;
             const type = br.getAttributeNS(ns, "type") ?? br.getAttribute("w:type") ?? br.getAttribute("type") ?? "textWrapping";
             if (type === "separator" || type === "continuationSeparator") continue;
@@ -333,10 +333,10 @@ function collectInlineMarks(rel: string, dom: Document, inventory: MutableDocxSe
         }
         // <w:tab/> as a direct child of <w:r> is a tab CHARACTER; <w:tab> inside
         // <w:tabs> (paragraph properties) is a tab-STOP definition — exclude those.
-        const tabEls = dom.getElementsByTagNameNS(ns, "tab");
+        const tabEls = getElementsByTagNameNSAll(dom, ns, "tab");
         let tabs = 0;
         for (let i = 0; i < tabEls.length; i += 1) {
-            const el = tabEls.item(i);
+            const el = tabEls[i];
             if (!el) continue;
             const parent = el.parentNode;
             if (parent && parent.nodeType === 1 && isWordElement(parent as Element) && localName(parent as Element) === "r") tabs += 1;
@@ -349,7 +349,7 @@ function collectInlineMarks(rel: string, dom: Document, inventory: MutableDocxSe
             ["noBreakHyphen", "non-breaking hyphen"],
         ];
         for (const [local, label] of simple) {
-            const count = dom.getElementsByTagNameNS(ns, local).length;
+            const count = getElementsByTagNameNSAll(dom, ns, local).length;
             if (count > 0) addCounter(inventory, rel, "inline mark", label, "occurrence(s)", count);
         }
     }
@@ -357,9 +357,9 @@ function collectInlineMarks(rel: string, dom: Document, inventory: MutableDocxSe
 
 function collectTableShape(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
     for (const ns of WORD_NAMESPACES) {
-        const tables = dom.getElementsByTagNameNS(ns, "tbl");
+        const tables = getElementsByTagNameNSAll(dom, ns, "tbl");
         for (let i = 0; i < tables.length; i += 1) {
-            const tbl = tables.item(i);
+            const tbl = tables[i];
             if (!tbl) continue;
             const rows = directWordChildren(tbl, "tr");
             const rowCount = rows.length;
@@ -378,9 +378,9 @@ function collectTableShape(rel: string, dom: Document, inventory: MutableDocxSem
             }
             addCounter(inventory, rel, "table shape", `table ${rowCount}×${cols}`, "table(s)", 1);
         }
-        const cells = dom.getElementsByTagNameNS(ns, "tc");
+        const cells = getElementsByTagNameNSAll(dom, ns, "tc");
         for (let i = 0; i < cells.length; i += 1) {
-            const tc = cells.item(i);
+            const tc = cells[i];
             if (!tc) continue;
             const tcPr = directWordChild(tc, "tcPr");
             if (!tcPr) continue;
@@ -398,9 +398,9 @@ function collectTableShape(rel: string, dom: Document, inventory: MutableDocxSem
 
 function collectSectionGeometry(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
     for (const ns of WORD_NAMESPACES) {
-        const sects = dom.getElementsByTagNameNS(ns, "sectPr");
+        const sects = getElementsByTagNameNSAll(dom, ns, "sectPr");
         for (let i = 0; i < sects.length; i += 1) {
-            const sect = sects.item(i);
+            const sect = sects[i];
             if (!sect) continue;
             const pgSz = directWordChild(sect, "pgSz");
             if (pgSz) {
@@ -425,9 +425,9 @@ function collectSectionGeometry(rel: string, dom: Document, inventory: MutableDo
 }
 
 function collectImageShape(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
-    const extents = dom.getElementsByTagNameNS(WP_NAMESPACE, "extent");
+    const extents = getElementsByTagNameNSAll(dom, WP_NAMESPACE, "extent");
     for (let i = 0; i < extents.length; i += 1) {
-        const ext = extents.item(i);
+        const ext = extents[i];
         if (!ext) continue;
         const parent = ext.parentNode;
         if (!parent || parent.nodeType !== 1) continue;
@@ -453,9 +453,9 @@ function wordChildAttrSelf(elem: Element, attr: string): string | null {
 function collectStyles(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
     if (!rel.endsWith("/styles.xml") && rel !== "word/styles.xml") return;
     for (const ns of WORD_NAMESPACES) {
-        const styles = dom.getElementsByTagNameNS(ns, "style");
+        const styles = getElementsByTagNameNSAll(dom, ns, "style");
         for (let i = 0; i < styles.length; i += 1) {
-            const style = styles.item(i);
+            const style = styles[i];
             if (!style) continue;
             const styleId =
                 style.getAttributeNS(ns, "styleId") ?? style.getAttribute("w:styleId") ?? style.getAttribute("styleId") ?? "unknown";
@@ -475,24 +475,24 @@ function collectStyles(rel: string, dom: Document, inventory: MutableDocxSemanti
 
 function collectComments(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
     for (const ns of WORD_NAMESPACES) {
-        const comments = dom.getElementsByTagNameNS(ns, "comment");
+        const comments = getElementsByTagNameNSAll(dom, ns, "comment");
         for (let i = 0; i < comments.length; i += 1) {
-            const comment = comments.item(i);
+            const comment = comments[i];
             if (!comment) continue;
             addCounter(inventory, rel, "comment", "comment entry", "comment(s)", 1);
             const author = comment.getAttributeNS(ns, "author") ?? comment.getAttribute("w:author") ?? comment.getAttribute("author");
             if (author) addCounter(inventory, rel, "comment", `comment by '${author}'`, "comment(s)", 1);
         }
         for (const local of ["commentRangeStart", "commentRangeEnd", "commentReference"] as const) {
-            const count = dom.getElementsByTagNameNS(ns, local).length;
+            const count = getElementsByTagNameNSAll(dom, ns, local).length;
             if (count > 0) addCounter(inventory, rel, "comment marker", local, "marker(s)", count);
         }
     }
-    const commentEx = dom.getElementsByTagNameNS(W15_NAMESPACE, "commentEx").length;
+    const commentEx = getElementsByTagNameNSAll(dom, W15_NAMESPACE, "commentEx").length;
     if (commentEx > 0) addCounter(inventory, rel, "comment thread", "commentsExtended entry", "entry(s)", commentEx);
-    const commentIds = dom.getElementsByTagNameNS(W16CID_NAMESPACE, "commentId").length;
+    const commentIds = getElementsByTagNameNSAll(dom, W16CID_NAMESPACE, "commentId").length;
     if (commentIds > 0) addCounter(inventory, rel, "comment thread", "commentsIds entry", "entry(s)", commentIds);
-    const commentExtensible = dom.getElementsByTagNameNS(W16CEX_NAMESPACE, "commentExtensible").length;
+    const commentExtensible = getElementsByTagNameNSAll(dom, W16CEX_NAMESPACE, "commentExtensible").length;
     if (commentExtensible > 0) addCounter(inventory, rel, "comment thread", "commentsExtensible entry", "entry(s)", commentExtensible);
 }
 
@@ -511,10 +511,10 @@ function collectTrackedChanges(rel: string, dom: Document, inventory: MutableDoc
     ] as const;
     for (const ns of WORD_NAMESPACES) {
         for (const local of tracked) {
-            const elems = dom.getElementsByTagNameNS(ns, local);
+            const elems = getElementsByTagNameNSAll(dom, ns, local);
             if (elems.length > 0) addCounter(inventory, rel, "tracked change", local, "element(s)", elems.length);
             for (let i = 0; i < elems.length; i += 1) {
-                const elem = elems.item(i);
+                const elem = elems[i];
                 if (!elem) continue;
                 const author = elem.getAttributeNS(ns, "author") ?? elem.getAttribute("w:author") ?? elem.getAttribute("author");
                 if (author) addCounter(inventory, rel, "tracked change", `${local} by '${author}'`, "element(s)", 1);
