@@ -22,8 +22,3 @@
 
 **Learning:** `getElementsByTagNameNSAll` iterates through the whole document to find matching tags. When looking for nested matching tags in `collectDeletedRunText` and `validateInsertions`, it is more performant to retrieve the parent first (e.g., `<w:del>` or `<w:ins>`) and then query the descendants directly inside that node, rather than query the whole document and then check if it's inside the parent node. Using a `Set` handles potential deduplication.
 **Action:** Always optimize nested tag lookups by utilizing parent queries directly instead of checking parents of all document-wide elements. (Ported from the rejected bolt-optimize-xml-lookups PR — the code landed via the del-first `collectDeletedRunText`, this entry preserves the learning.)
-
-## 2026-10-06 - Avoid .item(i) on getElementsByTagNameNS in @xmldom for pptx and docx-diagnostics
-
-**Learning:** `NodeList` returned by `getElementsByTagNameNS` is live, meaning `.item(i)` access recalculates the DOM traversal on every call. This causes quadratic O(N²) iteration times.
-**Action:** Replaced remaining `getElementsByTagNameNS` and `.item(i)` calls with the O(N) `getElementsByTagNameNSAll` returning a flat array, extending this optimization to the `pptx`, `base`, and `docx-diagnostics` validators.
