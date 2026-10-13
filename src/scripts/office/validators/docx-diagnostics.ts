@@ -697,6 +697,8 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
             return "keep a single font table relationship in the part's .rels file";
         case "word-duplicate-web-settings-relationship":
             return "keep a single web settings relationship in the part's .rels file";
+        case "word-duplicate-settings-relationship":
+            return "keep a single settings relationship in the part's .rels file";
         default:
             return xsdRepairAction(issue);
     }

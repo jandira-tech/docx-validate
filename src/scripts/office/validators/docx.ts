@@ -494,6 +494,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-duplicate-theme-relationship":
             case "word-duplicate-font-table-relationship":
             case "word-duplicate-web-settings-relationship":
+            // Two settings relationships in one .rels part make Word offer
+            // recovery (fixture 0689). A second relationship that targets
+            // the same settings.xml still warns. One settings relationship
+            // opens clean.
+            case "word-duplicate-settings-relationship":
             // Both root-caused against real Word (minimal-repair + re-probe) and
             // verified disjoint from the Word-clean corpus (0/350): an unresolved
             // DocumentBuilder <Insert> directive -> OPEN_ERROR; a docProps boolean
@@ -542,6 +547,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         await this.validateDuplicateThemeRelationships(issues);
         await this.validateDuplicateFontTableRelationships(issues);
         await this.validateDuplicateWebSettingsRelationships(issues);
+        await this.validateDuplicateSettingsRelationships(issues);
         await this.validateChoiceRequiresPrefixes(issues);
         const documentXml = this.xmlFiles.find(
             (xmlFile) => baseName(xmlFile) === "document.xml" && this.relPath(xmlFile).startsWith("word/"),
@@ -1036,6 +1042,42 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     `(${webIds.join(", ")}). Microsoft Word offers to recover the file. Keep one web settings relationship.`,
                 path: this.relPath(relsFile),
                 code: "word-duplicate-web-settings-relationship",
+            });
+        }
+    }
+
+    /**
+     * Two `settings` relationships in one `.rels` part make Word offer to
+     * recover the file. A second relationship that targets the same
+     * `settings.xml` as the first still warns. One settings relationship
+     * opens clean. The extra part is not required for the warning.
+     */
+    private async validateDuplicateSettingsRelationships(issues: ValidationIssue[]): Promise<void> {
+        for (const relsFile of this.xmlFiles) {
+            if (!relsFile.endsWith(".rels")) continue;
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(relsFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const settingsIds: string[] = [];
+            for (let i = 0; i < rels.length; i += 1) {
+                const rel = rels[i];
+                if (!rel) continue;
+                const type = rel.getAttribute("Type") ?? "";
+                if (!type.endsWith("/settings")) continue;
+                settingsIds.push(rel.getAttribute("Id") ?? "");
+            }
+            if (settingsIds.length < 2) continue;
+            issues.push({
+                severity: "error",
+                message:
+                    `${this.relPath(relsFile)} contains ${settingsIds.length} settings relationships ` +
+                    `(${settingsIds.join(", ")}). Microsoft Word offers to recover the file. Keep one settings relationship.`,
+                path: this.relPath(relsFile),
+                code: "word-duplicate-settings-relationship",
             });
         }
     }
