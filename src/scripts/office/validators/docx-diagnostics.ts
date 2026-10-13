@@ -679,6 +679,8 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
             return "replace non-integer a:arcTo wR and hR radii with integers";
         case "word-empty-drawing":
             return "remove the empty w:drawing or give it a wp:anchor or wp:inline child";
+        case "ct-uncovered-part":
+            return "remove the part or add a Default or Override that gives it a content type";
         case "word-text-contains-paragraph":
             return "move w:p elements out of the w:t text run that contains them";
         case "word-hyperlink-relationship":

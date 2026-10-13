@@ -467,6 +467,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-math-parse":
             case "word-math-spre-body":
             case "word-content-type-invalid":
+            // A part with no Override and no Default makes Word offer recovery
+            // ([trash]/0000.dat). A part that has a content type but no
+            // relationship is tolerated, so rels-unreferenced stays a warning.
+            case "ct-uncovered-part":
             case "word-drawing-scalar-whitespace":
             case "word-drawing-arc-radius":
             case "word-empty-drawing":

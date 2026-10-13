@@ -25,6 +25,8 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
         "word/document.xml is not well-formed XML, so Word reports unreadable content. Fix the XML syntax error in the document body.",
     "word-content-type-invalid":
         "A part's content type in [Content_Types].xml is missing or wrong, so Word cannot load that part. Add the correct <Override>/<Default> content-type entry.",
+    "ct-uncovered-part":
+        "A package part has no content type in [Content_Types].xml. Word offers to recover the file. Remove the part, or add a Default or Override that covers it.",
     "word-drawing-scalar-whitespace":
         "A DrawingML numeric value (e.g. <wp:posOffset>, <wp14:pctWidth>) contains whitespace, which Word rejects as an invalid number. Trim the value so it is digits only.",
     "word-text-contains-paragraph":
