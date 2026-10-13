@@ -677,6 +677,8 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
             return "trim leading and trailing whitespace around scalar DrawingML values";
         case "word-drawing-arc-radius":
             return "replace non-integer a:arcTo wR and hR radii with integers";
+        case "word-text-contains-paragraph":
+            return "move w:p elements out of the w:t text run that contains them";
         default:
             return xsdRepairAction(issue);
     }

@@ -468,6 +468,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-content-type-invalid":
             case "word-drawing-scalar-whitespace":
             case "word-drawing-arc-radius":
+            case "word-text-contains-paragraph":
             // Both root-caused against real Word (minimal-repair + re-probe) and
             // verified disjoint from the Word-clean corpus (0/350): an unresolved
             // DocumentBuilder <Insert> directive -> OPEN_ERROR; a docProps boolean
@@ -508,6 +509,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         await this.validateWordContentTypes(issues);
         await this.validateDrawingScalarTextWhitespace(issues);
         await this.validateDrawingArcRadii(issues);
+        await this.validateTextContainsParagraph(issues);
         const documentXml = this.xmlFiles.find(
             (xmlFile) => baseName(xmlFile) === "document.xml" && this.relPath(xmlFile).startsWith("word/"),
         );
@@ -640,6 +642,34 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                             "Microsoft Word cannot open the file. Use an integer radius.",
                         path: this.relPath(xmlFile),
                         code: "word-drawing-arc-radius",
+                    });
+                }
+            }
+        }
+    }
+
+    private async validateTextContainsParagraph(issues: ValidationIssue[]): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const texts = getElementsByTagNameNSAll(dom, ns, "t");
+                for (let i = 0; i < texts.length; i += 1) {
+                    const text = texts[i];
+                    if (!text) continue;
+                    const nested = getElementsByTagNameNSAll(text, ns, "p");
+                    if (nested.length === 0) continue;
+                    issues.push({
+                        severity: "error",
+                        message:
+                            `A <w:t> element contains ${nested.length} <w:p> element(s). ` +
+                            "Microsoft Word cannot open the file. Move the paragraph out of the text run.",
+                        path: this.relPath(xmlFile),
+                        code: "word-text-contains-paragraph",
                     });
                 }
             }
