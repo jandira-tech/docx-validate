@@ -33,6 +33,8 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
         "A w:hyperlink r:id does not reference a Relationship whose Type ends in /hyperlink and whose TargetMode is External. Word offers to recover the file. Add that relationship, or remove the r:id.",
     "word-duplicate-theme-relationship":
         "A relationships part lists more than one theme. Word offers to recover the file. Keep a single theme relationship.",
+    "word-duplicate-font-table-relationship":
+        "A relationships part lists more than one font table. Word offers to recover the file. Keep a single font table relationship.",
     "word-drawing-arc-radius":
         "An a:arcTo radius (wR or hR) is not an integer. Word cannot open the file. Replace the radius with an integer.",
     "id-durable-overflow": "A w16cid durableId exceeds the value range Word accepts. Regenerate the durableId within range.",

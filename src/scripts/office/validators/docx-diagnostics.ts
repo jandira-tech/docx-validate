@@ -683,6 +683,8 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
             return "point the w:hyperlink r:id at an external hyperlink relationship, or remove the r:id";
         case "word-duplicate-theme-relationship":
             return "keep a single theme relationship in the part's .rels file";
+        case "word-duplicate-font-table-relationship":
+            return "keep a single font table relationship in the part's .rels file";
         default:
             return xsdRepairAction(issue);
     }

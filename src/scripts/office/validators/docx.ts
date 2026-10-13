@@ -472,6 +472,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-text-contains-paragraph":
             case "word-hyperlink-relationship":
             case "word-duplicate-theme-relationship":
+            case "word-duplicate-font-table-relationship":
             // Both root-caused against real Word (minimal-repair + re-probe) and
             // verified disjoint from the Word-clean corpus (0/350): an unresolved
             // DocumentBuilder <Insert> directive -> OPEN_ERROR; a docProps boolean
@@ -515,6 +516,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         await this.validateTextContainsParagraph(issues);
         await this.validateHyperlinkRelationships(issues);
         await this.validateDuplicateThemeRelationships(issues);
+        await this.validateDuplicateFontTableRelationships(issues);
         const documentXml = this.xmlFiles.find(
             (xmlFile) => baseName(xmlFile) === "document.xml" && this.relPath(xmlFile).startsWith("word/"),
         );
@@ -750,6 +752,44 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     `(${themeIds.join(", ")}). Microsoft Word offers to recover the file. Keep one theme relationship.`,
                 path: this.relPath(relsFile),
                 code: "word-duplicate-theme-relationship",
+            });
+        }
+    }
+
+    /**
+     * Two `fontTable` relationships in one `.rels` part make Word offer to
+     * recover the file. A second relationship that targets the same
+     * `fontTable.xml` as the first still warns. Rewriting an absolute
+     * `/word/...` target to a relative path still warns. One font table
+     * relationship opens clean. The extra part and its content type are
+     * not required for the warning.
+     */
+    private async validateDuplicateFontTableRelationships(issues: ValidationIssue[]): Promise<void> {
+        for (const relsFile of this.xmlFiles) {
+            if (!relsFile.endsWith(".rels")) continue;
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(relsFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const fontIds: string[] = [];
+            for (let i = 0; i < rels.length; i += 1) {
+                const rel = rels[i];
+                if (!rel) continue;
+                const type = rel.getAttribute("Type") ?? "";
+                if (!type.endsWith("/fontTable")) continue;
+                fontIds.push(rel.getAttribute("Id") ?? "");
+            }
+            if (fontIds.length < 2) continue;
+            issues.push({
+                severity: "error",
+                message:
+                    `${this.relPath(relsFile)} contains ${fontIds.length} font table relationships ` +
+                    `(${fontIds.join(", ")}). Microsoft Word offers to recover the file. Keep one font table relationship.`,
+                path: this.relPath(relsFile),
+                code: "word-duplicate-font-table-relationship",
             });
         }
     }
