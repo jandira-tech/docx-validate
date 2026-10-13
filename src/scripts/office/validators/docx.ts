@@ -474,6 +474,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-drawing-scalar-whitespace":
             case "word-drawing-arc-radius":
             case "word-empty-drawing":
+            // A w:tr with no w:tc makes Word report an open error (fixture 1993).
+            // Removing w:gridBefore and leaving the row still errors. One cell
+            // opens clean, so gridBefore is not the cause.
+            case "word-row-without-cell":
             case "word-text-contains-paragraph":
             case "word-hyperlink-relationship":
             case "word-duplicate-theme-relationship":
@@ -520,6 +524,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         await this.validateDrawingScalarTextWhitespace(issues);
         await this.validateDrawingArcRadii(issues);
         await this.validateEmptyDrawings(issues);
+        await this.validateRowsWithoutCells(issues);
         await this.validateTextContainsParagraph(issues);
         await this.validateHyperlinkRelationships(issues);
         await this.validateDuplicateThemeRelationships(issues);
@@ -706,6 +711,40 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                             "Remove the drawing, or give it a wp:anchor or wp:inline child.",
                         path: this.relPath(xmlFile),
                         code: "word-empty-drawing",
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * A `w:tr` with no `w:tc` descendant makes Word report an open error.
+     * One such row is enough. Removing `w:gridBefore` and leaving the row
+     * still errors. Inserting one `w:tc` opens clean. A cell inside
+     * `w:ins`, `w:del`, `w:sdt`, or a nested table still counts, because
+     * it is a descendant of that row.
+     */
+    private async validateRowsWithoutCells(issues: ValidationIssue[]): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const rows = getElementsByTagNameNSAll(dom, ns, "tr");
+                for (let i = 0; i < rows.length; i += 1) {
+                    const row = rows[i];
+                    if (!row) continue;
+                    if (getElementsByTagNameNSAll(row, ns, "tc").length > 0) continue;
+                    issues.push({
+                        severity: "error",
+                        message:
+                            "A table row contains no w:tc cell. Microsoft Word cannot open the file. " +
+                            "Remove the row or add a cell.",
+                        path: this.relPath(xmlFile),
+                        code: "word-row-without-cell",
                     });
                 }
             }
