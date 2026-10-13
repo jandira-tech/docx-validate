@@ -478,9 +478,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             // Removing w:gridBefore and leaving the row still errors. One cell
             // opens clean, so gridBefore is not the cause.
             case "word-row-without-cell":
-            // w:delText or w:delInstrText inside a VML text box makes Word
-            // offer recovery (fixture 0011 footer1). The same elements in the
-            // document body are tolerated, so this is not every deleted run.
+            // w:delText or w:delInstrText inside w:txbxContent makes Word
+            // offer recovery. That content sits in a VML text box (fixture
+            // 0011) or a drawingML wps:txbx (fixture 0044). The same elements
+            // in the document body are tolerated.
             case "word-textbox-deleted-text":
             case "word-text-contains-paragraph":
             case "word-hyperlink-relationship":
@@ -757,10 +758,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     }
 
     /**
-     * `w:delText` or `w:delInstrText` inside a VML `v:textbox` makes Word
-     * offer to recover the file. One such element is enough. The same
-     * elements in the document body are tolerated, and a text box that
-     * contains only field characters opens clean.
+     * `w:delText` or `w:delInstrText` inside `w:txbxContent` makes Word offer
+     * to recover the file. One such element is enough. The text box may be a
+     * VML `v:textbox` or a drawingML `wps:txbx`. The same elements in the
+     * document body are tolerated, and a text box that contains only field
+     * characters opens clean.
      */
     private async validateTextBoxDeletedText(issues: ValidationIssue[]): Promise<void> {
         for (const xmlFile of this.userTextXmlFiles()) {
@@ -775,11 +777,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     const nodes = getElementsByTagNameNSAll(dom, ns, local);
                     for (let i = 0; i < nodes.length; i += 1) {
                         const node = nodes[i];
-                        if (!node || !this.hasVmlTextBoxAncestor(node)) continue;
+                        if (!node || !this.hasTextBoxContentAncestor(node)) continue;
                         issues.push({
                             severity: "error",
                             message:
-                                "A VML text box contains deleted text. Microsoft Word offers to recover the file. " +
+                                "A text box contains deleted text. Microsoft Word offers to recover the file. " +
                                 "Remove the w:delText or w:delInstrText from the text box.",
                             path: this.relPath(xmlFile),
                             code: "word-textbox-deleted-text",
@@ -790,12 +792,12 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         }
     }
 
-    private hasVmlTextBoxAncestor(node: Node): boolean {
+    private hasTextBoxContentAncestor(node: Node): boolean {
         let parent = node.parentNode;
         while (parent && parent.nodeType === 1) {
             const elem = parent as Element;
             const local = elem.localName || elem.tagName.split(":").pop() || "";
-            if (local === "textbox" && elem.namespaceURI === VML_NAMESPACE) return true;
+            if (local === "txbxContent" && WORD_PARAGRAPH_NAMESPACES.includes(elem.namespaceURI ?? "")) return true;
             parent = parent.parentNode;
         }
         return false;

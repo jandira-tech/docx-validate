@@ -682,7 +682,7 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
         case "word-row-without-cell":
             return "remove the table row that has no w:tc, or add a cell to it";
         case "word-textbox-deleted-text":
-            return "remove w:delText and w:delInstrText from the VML text box";
+            return "remove w:delText and w:delInstrText from the text box";
         case "ct-uncovered-part":
             return "remove the part or add a Default or Override that gives it a content type";
         case "word-text-contains-paragraph":

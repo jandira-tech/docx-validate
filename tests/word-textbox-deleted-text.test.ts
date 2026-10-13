@@ -13,9 +13,11 @@ import { validate } from "../src/scripts/office/validate";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DEL_TEXT = path.join(HERE, "fixtures", "broken", "package.word-textbox-deleted-text.docx");
 const DEL_INSTR = path.join(HERE, "fixtures", "broken", "package.word-textbox-deleted-instruction.docx");
+const DEL_SHAPE = path.join(HERE, "fixtures", "broken", "package.word-textbox-deleted-text-shape.docx");
 const CLEAN = path.join(HERE, "fixtures", "working", "package.word-textbox-deleted-text-removed.docx");
+const SHAPE_CLEAN = path.join(HERE, "fixtures", "working", "package.word-textbox-deleted-text-shape-repaired.docx");
 
-describe("word-valid deleted text in a VML text box", { timeout: 30000 }, () => {
+describe("word-valid deleted text in a text box", { timeout: 30000 }, () => {
     it("rejects w:delText inside a VML text box", async () => {
         const result = await validate(DEL_TEXT, { profile: "word-valid" });
         expect(result.valid).toBe(false);
@@ -24,6 +26,22 @@ describe("word-valid deleted text in a VML text box", { timeout: 30000 }, () => 
                 (issue) => issue.severity === "error" && issue.code === "word-textbox-deleted-text",
             ),
         ).toBe(true);
+    });
+
+    it("rejects w:delText inside a drawingML text box", async () => {
+        const result = await validate(DEL_SHAPE, { profile: "word-valid" });
+        expect(result.valid).toBe(false);
+        expect(
+            result.issues.some(
+                (issue) => issue.severity === "error" && issue.code === "word-textbox-deleted-text",
+            ),
+        ).toBe(true);
+    });
+
+    it("does not reject that drawing once the deleted text is ordinary text", async () => {
+        const result = await validate(SHAPE_CLEAN, { profile: "word-valid" });
+        expect(result.issues.some((issue) => issue.code === "word-textbox-deleted-text")).toBe(false);
+        expect(result.valid).toBe(true);
     });
 
     it("rejects w:delInstrText inside a VML text box", async () => {
