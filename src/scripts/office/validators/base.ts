@@ -44,7 +44,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { withTempDir } from "../../../lib/run-cli";
-import type { Profile, ValidationIssue, ValidationResult } from "../../../lib/types";
+import type { Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
 import { DEFAULT_PROFILE, OK_RESULT } from "../../../lib/types";
 import { createXsdValidator, type XsdValidator } from "../../../lib/xsd-validator";
 import { getElementsByTagNameNSAll, getElementsByTagNameAll, parseXml, serializeXml } from "../../../lib/xml-helpers";
@@ -285,6 +285,12 @@ export class BaseSchemaValidator {
     readonly schemasDir: string;
     readonly xmlFiles: string[];
     readonly profile: Profile;
+    /**
+     * Engine trace for the most recent `validateAgainstXsd` on this instance.
+     * `DOCXSchemaValidator.validate` resets it at entry. `mergeResults` drops
+     * it, so the public `validate()` copies it off the instance afterwards.
+     */
+    xsdWalk: XsdWalkTrace = { started: false, parts: [], eligible: 0 };
 
     /**
      * Subclasses override to map an element name → expected relationship type
@@ -1152,30 +1158,55 @@ export class BaseSchemaValidator {
 
     // ----- XSD validation -----------------------------------------------------
 
+    /**
+     * Word-valid override stops after the first Word-blocking `xsd-error`.
+     * Lenient and strict keep the default: never stop.
+     */
+    protected shouldStopXsdWalk(_rel: string, _errors: ReadonlySet<string>): boolean {
+        return false;
+    }
+
     async validateAgainstXsd(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
         let strictSkipped = false;
+        this.xsdWalk.started = true;
+        this.xsdWalk.parts = [];
+        this.xsdWalk.eligible = 0;
 
-        for (const xmlFile of this.xmlFiles) {
+        const noteStrict = (): void => {
+            if (strictSkipped) return;
+            strictSkipped = true;
+            issues.push({
+                severity: "info",
+                message:
+                    "Document uses ISO OOXML Strict conformance class namespace URIs; " +
+                    "XSD validation skipped (only Transitional schemas are bundled). " +
+                    "See PORT_NOTES.md § 'ISO OOXML Strict XSD validation'.",
+                code: "xsd-strict-skipped",
+            });
+        };
+
+        const countEligible = (xmlFile: string): boolean => {
             if (this._isStrictXmlFile(xmlFile)) {
-                if (!strictSkipped) {
-                    strictSkipped = true;
-                    issues.push({
-                        severity: "info",
-                        message:
-                            "Document uses ISO OOXML Strict conformance class namespace URIs; " +
-                            "XSD validation skipped (only Transitional schemas are bundled). " +
-                            "See PORT_NOTES.md § 'ISO OOXML Strict XSD validation'.",
-                        code: "xsd-strict-skipped",
-                    });
-                }
-                continue;
+                noteStrict();
+                return false;
             }
+            if (!this._getSchemaPath(xmlFile)) return false;
+            this.xsdWalk.eligible += 1;
+            return true;
+        };
+
+        const files = this.xmlFiles;
+        for (let i = 0; i < files.length; i += 1) {
+            const xmlFile = files[i];
+            if (!xmlFile) continue;
+            if (!countEligible(xmlFile)) continue;
 
             const outcome = await this.validateFileAgainstXsd(xmlFile);
-            if (outcome.valid === null) continue;
-            if (outcome.valid) continue;
             const rel = this.relPath(xmlFile);
+            this.xsdWalk.parts.push(rel);
+            if (outcome.valid === null || outcome.valid) continue;
+
             issues.push({
                 severity: "error",
                 message: `${rel}: ${outcome.errors.size} new error(s)`,
@@ -1192,6 +1223,14 @@ export class BaseSchemaValidator {
                     code: "xsd-error",
                 });
             }
+            if (!this.shouldStopXsdWalk(rel, outcome.errors)) continue;
+
+            for (let j = i + 1; j < files.length; j += 1) {
+                const rest = files[j];
+                if (!rest) continue;
+                countEligible(rest);
+            }
+            break;
         }
 
         return finalize(issues);
