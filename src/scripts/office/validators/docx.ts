@@ -484,6 +484,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             // 0011) or a drawingML wps:txbx (fixture 0044). The same elements
             // in the document body are tolerated.
             case "word-textbox-deleted-text":
+            // w:delText inside w:moveFrom makes Word offer recovery (fixture
+            // 0726). One such element is enough. w:t inside w:moveFrom opens
+            // clean, and w:delText in the document body is tolerated.
+            case "word-move-from-deleted-text":
             // mc:Choice @Requires names a prefix that is not declared on
             // that element or an ancestor (fixture 0508). Word offers
             // recovery. A declaration on a descendant, or on the fallback
@@ -542,6 +546,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         await this.validateEmptyDrawings(issues);
         await this.validateRowsWithoutCells(issues);
         await this.validateTextBoxDeletedText(issues);
+        await this.validateMoveFromDeletedText(issues);
         await this.validateTextContainsParagraph(issues);
         await this.validateHyperlinkRelationships(issues);
         await this.validateDuplicateThemeRelationships(issues);
@@ -803,6 +808,48 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 }
             }
         }
+    }
+
+    /**
+     * `w:delText` inside `w:moveFrom` makes Word offer to recover the file.
+     * One such element is enough. `w:t` inside `w:moveFrom` opens clean.
+     * `w:delText` in the document body is tolerated.
+     */
+    private async validateMoveFromDeletedText(issues: ValidationIssue[]): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const nodes = getElementsByTagNameNSAll(dom, ns, "delText");
+                for (let i = 0; i < nodes.length; i += 1) {
+                    const node = nodes[i];
+                    if (!node || !this.hasMoveFromAncestor(node)) continue;
+                    issues.push({
+                        severity: "error",
+                        message:
+                            "A move source contains deleted text. Microsoft Word offers to recover the file. " +
+                            "Use w:t inside w:moveFrom, not w:delText.",
+                        path: this.relPath(xmlFile),
+                        code: "word-move-from-deleted-text",
+                    });
+                }
+            }
+        }
+    }
+
+    private hasMoveFromAncestor(node: Node): boolean {
+        let parent = node.parentNode;
+        while (parent && parent.nodeType === 1) {
+            const elem = parent as Element;
+            const local = elem.localName || elem.tagName.split(":").pop() || "";
+            if (local === "moveFrom" && WORD_PARAGRAPH_NAMESPACES.includes(elem.namespaceURI ?? "")) return true;
+            parent = parent.parentNode;
+        }
+        return false;
     }
 
     /**

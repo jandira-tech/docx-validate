@@ -683,6 +683,8 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
             return "remove the table row that has no w:tc, or add a cell to it";
         case "word-textbox-deleted-text":
             return "remove w:delText and w:delInstrText from the text box";
+        case "word-move-from-deleted-text":
+            return "use w:t inside w:moveFrom instead of w:delText";
         case "word-choice-requires-undeclared":
             return "declare the mc:Choice Requires prefix on that element or an ancestor";
         case "ct-uncovered-part":

@@ -49,6 +49,8 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
         "A table row contains no w:tc cell. Word cannot open the file. Remove the row or add a cell.",
     "word-textbox-deleted-text":
         "A text box contains w:delText or w:delInstrText. Word offers to recover the file. Remove that deleted text from the text box.",
+    "word-move-from-deleted-text":
+        "A w:moveFrom element contains w:delText. Word offers to recover the file. Use w:t for the moved text. Deleted text outside a move source is not this defect.",
     "word-choice-requires-undeclared":
         "mc:Choice Requires names a namespace prefix that is not declared on that element or an ancestor. Word offers to recover the file. Declare the prefix there. A declaration on a descendant, or only on the fallback, does not count.",
     "id-durable-overflow": "A w16cid durableId exceeds the value range Word accepts. Regenerate the durableId within range.",
