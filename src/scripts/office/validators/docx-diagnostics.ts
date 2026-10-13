@@ -681,6 +681,8 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
             return "move w:p elements out of the w:t text run that contains them";
         case "word-hyperlink-relationship":
             return "point the w:hyperlink r:id at an external hyperlink relationship, or remove the r:id";
+        case "word-duplicate-theme-relationship":
+            return "keep a single theme relationship in the part's .rels file";
         default:
             return xsdRepairAction(issue);
     }

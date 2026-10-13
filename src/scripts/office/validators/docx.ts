@@ -471,6 +471,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-drawing-arc-radius":
             case "word-text-contains-paragraph":
             case "word-hyperlink-relationship":
+            case "word-duplicate-theme-relationship":
             // Both root-caused against real Word (minimal-repair + re-probe) and
             // verified disjoint from the Word-clean corpus (0/350): an unresolved
             // DocumentBuilder <Insert> directive -> OPEN_ERROR; a docProps boolean
@@ -513,6 +514,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         await this.validateDrawingArcRadii(issues);
         await this.validateTextContainsParagraph(issues);
         await this.validateHyperlinkRelationships(issues);
+        await this.validateDuplicateThemeRelationships(issues);
         const documentXml = this.xmlFiles.find(
             (xmlFile) => baseName(xmlFile) === "document.xml" && this.relPath(xmlFile).startsWith("word/"),
         );
@@ -716,6 +718,42 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * reports that). An absent sidecar is an empty map: every `r:id` is
      * unresolved.
      */
+    /**
+     * Two `theme` relationships in one `.rels` part make Word offer to
+     * recover the file. Either theme part alone opens clean. A second theme
+     * whose target is rewritten from `/word/theme/...` to a relative path
+     * still warns.
+     */
+    private async validateDuplicateThemeRelationships(issues: ValidationIssue[]): Promise<void> {
+        for (const relsFile of this.xmlFiles) {
+            if (!relsFile.endsWith(".rels")) continue;
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(relsFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const themeIds: string[] = [];
+            for (let i = 0; i < rels.length; i += 1) {
+                const rel = rels[i];
+                if (!rel) continue;
+                const type = rel.getAttribute("Type") ?? "";
+                if (!type.endsWith("/theme")) continue;
+                themeIds.push(rel.getAttribute("Id") ?? "");
+            }
+            if (themeIds.length < 2) continue;
+            issues.push({
+                severity: "error",
+                message:
+                    `${this.relPath(relsFile)} contains ${themeIds.length} theme relationships ` +
+                    `(${themeIds.join(", ")}). Microsoft Word offers to recover the file. Keep one theme relationship.`,
+                path: this.relPath(relsFile),
+                code: "word-duplicate-theme-relationship",
+            });
+        }
+    }
+
     private async externalHyperlinkRelationshipIds(
         xmlFile: string,
     ): Promise<Map<string, { type: string; targetMode: string; externalHyperlink: boolean }> | null> {
