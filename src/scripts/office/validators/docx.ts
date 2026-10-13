@@ -444,16 +444,32 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         return mergeResults(xmlOk, ...(await Promise.all(checks)));
     }
 
-    /** Stop the word-valid walk at the first Word-blocking schema error. */
+    /**
+     * Stop only when a Word-blocking schema error is one of the issues this
+     * part will actually return. The three-message cap used to stop on a
+     * later blocking error while emitting only tolerated ones, and the
+     * profile then downgraded those to warnings.
+     */
     protected override shouldStopXsdWalk(rel: string, errors: ReadonlySet<string>): boolean {
         if (this.profile !== "word-valid") return false;
-        for (const error of errors) {
-            const truncated = error.length > 250 ? `${error.slice(0, 250)}...` : error;
-            const message = `  - ${truncated}`;
-            if (message.includes("Schema load failed")) return true;
-            if (isWordBlockingXsdIssue({ severity: "error", message, path: rel, code: "xsd-error" })) return true;
-        }
-        return false;
+        return this.xsdErrorsToReport(rel, errors).some((error) => this.wordBlocksXsdError(rel, error));
+    }
+
+    protected override xsdErrorsToReport(rel: string, errors: ReadonlySet<string>): readonly string[] {
+        const all = [...errors];
+        const reported = all.slice(0, 3);
+        if (this.profile !== "word-valid") return reported;
+        if (reported.some((error) => this.wordBlocksXsdError(rel, error))) return reported;
+        const hidden = all.slice(3).find((error) => this.wordBlocksXsdError(rel, error));
+        if (hidden !== undefined) reported.push(hidden);
+        return reported;
+    }
+
+    private wordBlocksXsdError(rel: string, error: string): boolean {
+        const truncated = error.length > 250 ? `${error.slice(0, 250)}...` : error;
+        const message = `  - ${truncated}`;
+        if (message.includes("Schema load failed")) return true;
+        return isWordBlockingXsdIssue({ severity: "error", message, path: rel, code: "xsd-error" });
     }
 
     private applyWordValidProfile(result: ValidationResult): ValidationResult {

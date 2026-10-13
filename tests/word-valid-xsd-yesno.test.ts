@@ -37,6 +37,22 @@ const CUSTOM_XML = path.join(
     "UNREADABLE_CONTENT/tests__fixtures__external__superdoc__layout-engine__shapes__vectors.docx",
 );
 
+const CAP_PART = "word/aa-cap.xml";
+// libxml2 reports the seven missing pgMar attributes before tblCellSpacing.
+// The first three strings are tolerated. The blocking error is later in the
+// same part, so a cap of three must not hide it.
+const CAP_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:sectPr>
+      <w:pgSz/>
+      <w:pgMar/>
+      <w:cols/>
+      <w:tblCellSpacing w:w="10" w:type="dxa"/>
+    </w:sectPr>
+  </w:body>
+</w:document>
+`;
 const TAIL_PART = "word/zz-tail.xml";
 const TAIL_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
@@ -61,6 +77,15 @@ const statsOf = (): { statusOnlyPasses: number; messageCollections: number } | u
 
 const errorCodes = (result: ValidateRunResult): string[] =>
     result.issues.filter((issue) => issue.severity === "error").map((issue) => issue.code ?? "");
+
+const withCapAndTail = async (src: string, dir: string): Promise<string> => {
+    const zip = await JSZip.loadAsync(await readFile(src));
+    zip.file(CAP_PART, CAP_XML);
+    zip.file(TAIL_PART, TAIL_XML);
+    const out = path.join(dir, "cap-then-block.docx");
+    await writeFile(out, await zip.generateAsync({ type: "nodebuffer" }));
+    return out;
+};
 
 const withTailPart = async (src: string, dir: string): Promise<string> => {
     const zip = await JSZip.loadAsync(await readFile(src));
@@ -105,6 +130,28 @@ describe("word-valid XSD yes/no walk", { timeout: 120_000 }, () => {
             const stats = statsOf();
             expect(stats, "shipped validator exports xsdValidateStats").toBeDefined();
             expect(stats?.messageCollections ?? 0).toBeGreaterThan(before);
+        });
+    });
+
+    it("surfaces a Word-blocking xsd-error that comes after three tolerated errors in the same part", async () => {
+        await withTempDir(async (dir) => {
+            const docxPath = await withCapAndTail(PGSZ, dir);
+            const result = await validate(docxPath, { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            const blocking = result.issues.filter(
+                (issue) =>
+                    issue.severity === "error" &&
+                    issue.code === "xsd-error" &&
+                    issue.message.includes("tblCellSpacing") &&
+                    issue.message.includes("not expected"),
+            );
+            expect(blocking.length).toBeGreaterThan(0);
+            const walk = walkOf(result);
+            expect(walk.started).toBe(true);
+            expect(walk.parts.map(norm)).toContain(CAP_PART);
+            expect(walk.parts.map(norm)).not.toContain(TAIL_PART);
+            expect(walk.parts.length).toBeGreaterThan(0);
+            expect(walk.parts.length).toBeLessThan(walk.eligible);
         });
     });
 

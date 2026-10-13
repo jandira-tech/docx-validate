@@ -1166,6 +1166,15 @@ export class BaseSchemaValidator {
         return false;
     }
 
+    /**
+     * `xsd-error` strings kept from one part. The default cap is three.
+     * A profile that stops the walk has to override this when a blocking
+     * error sits past that cap, or the stop hides the only failing issue.
+     */
+    protected xsdErrorsToReport(_rel: string, errors: ReadonlySet<string>): readonly string[] {
+        return [...errors].slice(0, 3);
+    }
+
     async validateAgainstXsd(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
         let strictSkipped = false;
@@ -1213,7 +1222,7 @@ export class BaseSchemaValidator {
                 path: rel,
                 code: "xsd-summary",
             });
-            const list = [...outcome.errors].slice(0, 3);
+            const list = this.xsdErrorsToReport(rel, outcome.errors);
             for (const e of list) {
                 const truncated = e.length > 250 ? `${e.slice(0, 250)}...` : e;
                 issues.push({

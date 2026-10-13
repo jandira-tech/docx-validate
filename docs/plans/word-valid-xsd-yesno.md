@@ -22,6 +22,7 @@ Tests call `validate(path, { profile })` from `src/scripts/office/validate.ts`. 
 - Comment-thread orphans (`sample-document.empty-rels.docx`) are a no, and XSD does not start.
 - `xsd-error`-only (`header-with-rid-no-sidecar.docx`) still starts XSD.
 - A later part added after a Word-blocking misplaced element is not sent to the engine on word-valid. Lenient and strict still send it, and still return `xsd-error` messages.
+- A single part whose first three schema strings are tolerated (`pgMar` missing attributes) and whose later string is Word-blocking (`tblCellSpacing`) still returns invalid. That blocking string is one of the emitted `xsd-error` issues, and the walk still stops before a later part. Stopping on an unsurfaced error used to leave only warnings.
 - `word-tolerated-misplaced-pgsz.docx` stays valid, starts XSD, and finishes the walk (`parts.length === eligible`).
 - `word-clean-strict01.docx` mixes a strict `word/document.xml` with transitional package parts. The walk records `xsd-strict-skipped`, does not send `word/document.xml`, may send the transitional parts, finishes that eligible set (`parts.length === eligible`), and stays valid. Strict skip is per file, not a whole-package skip.
 - Ignore-list needles do not turn that passing file (it has `docProps/core.xml`) into a failure.
