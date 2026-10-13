@@ -473,6 +473,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-hyperlink-relationship":
             case "word-duplicate-theme-relationship":
             case "word-duplicate-font-table-relationship":
+            case "word-duplicate-web-settings-relationship":
             // Both root-caused against real Word (minimal-repair + re-probe) and
             // verified disjoint from the Word-clean corpus (0/350): an unresolved
             // DocumentBuilder <Insert> directive -> OPEN_ERROR; a docProps boolean
@@ -517,6 +518,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         await this.validateHyperlinkRelationships(issues);
         await this.validateDuplicateThemeRelationships(issues);
         await this.validateDuplicateFontTableRelationships(issues);
+        await this.validateDuplicateWebSettingsRelationships(issues);
         const documentXml = this.xmlFiles.find(
             (xmlFile) => baseName(xmlFile) === "document.xml" && this.relPath(xmlFile).startsWith("word/"),
         );
@@ -790,6 +792,42 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     `(${fontIds.join(", ")}). Microsoft Word offers to recover the file. Keep one font table relationship.`,
                 path: this.relPath(relsFile),
                 code: "word-duplicate-font-table-relationship",
+            });
+        }
+    }
+
+    /**
+     * Two `webSettings` relationships in one `.rels` part make Word offer to
+     * recover the file. A second relationship that targets the same
+     * `webSettings.xml` as the first still warns. One web settings
+     * relationship opens clean. The extra part is not required for the warning.
+     */
+    private async validateDuplicateWebSettingsRelationships(issues: ValidationIssue[]): Promise<void> {
+        for (const relsFile of this.xmlFiles) {
+            if (!relsFile.endsWith(".rels")) continue;
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(relsFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const webIds: string[] = [];
+            for (let i = 0; i < rels.length; i += 1) {
+                const rel = rels[i];
+                if (!rel) continue;
+                const type = rel.getAttribute("Type") ?? "";
+                if (!type.endsWith("/webSettings")) continue;
+                webIds.push(rel.getAttribute("Id") ?? "");
+            }
+            if (webIds.length < 2) continue;
+            issues.push({
+                severity: "error",
+                message:
+                    `${this.relPath(relsFile)} contains ${webIds.length} web settings relationships ` +
+                    `(${webIds.join(", ")}). Microsoft Word offers to recover the file. Keep one web settings relationship.`,
+                path: this.relPath(relsFile),
+                code: "word-duplicate-web-settings-relationship",
             });
         }
     }
