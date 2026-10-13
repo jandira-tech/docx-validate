@@ -478,6 +478,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             // Removing w:gridBefore and leaving the row still errors. One cell
             // opens clean, so gridBefore is not the cause.
             case "word-row-without-cell":
+            // w:delText or w:delInstrText inside a VML text box makes Word
+            // offer recovery (fixture 0011 footer1). The same elements in the
+            // document body are tolerated, so this is not every deleted run.
+            case "word-textbox-deleted-text":
             case "word-text-contains-paragraph":
             case "word-hyperlink-relationship":
             case "word-duplicate-theme-relationship":
@@ -525,6 +529,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         await this.validateDrawingArcRadii(issues);
         await this.validateEmptyDrawings(issues);
         await this.validateRowsWithoutCells(issues);
+        await this.validateTextBoxDeletedText(issues);
         await this.validateTextContainsParagraph(issues);
         await this.validateHyperlinkRelationships(issues);
         await this.validateDuplicateThemeRelationships(issues);
@@ -749,6 +754,51 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 }
             }
         }
+    }
+
+    /**
+     * `w:delText` or `w:delInstrText` inside a VML `v:textbox` makes Word
+     * offer to recover the file. One such element is enough. The same
+     * elements in the document body are tolerated, and a text box that
+     * contains only field characters opens clean.
+     */
+    private async validateTextBoxDeletedText(issues: ValidationIssue[]): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                for (const local of ["delText", "delInstrText"] as const) {
+                    const nodes = getElementsByTagNameNSAll(dom, ns, local);
+                    for (let i = 0; i < nodes.length; i += 1) {
+                        const node = nodes[i];
+                        if (!node || !this.hasVmlTextBoxAncestor(node)) continue;
+                        issues.push({
+                            severity: "error",
+                            message:
+                                "A VML text box contains deleted text. Microsoft Word offers to recover the file. " +
+                                "Remove the w:delText or w:delInstrText from the text box.",
+                            path: this.relPath(xmlFile),
+                            code: "word-textbox-deleted-text",
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    private hasVmlTextBoxAncestor(node: Node): boolean {
+        let parent = node.parentNode;
+        while (parent && parent.nodeType === 1) {
+            const elem = parent as Element;
+            const local = elem.localName || elem.tagName.split(":").pop() || "";
+            if (local === "textbox" && elem.namespaceURI === VML_NAMESPACE) return true;
+            parent = parent.parentNode;
+        }
+        return false;
     }
 
     /**

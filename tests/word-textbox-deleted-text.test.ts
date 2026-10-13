@@ -1,0 +1,51 @@
+/*
+ * Copyright 2026 Jandira Technologies, LLC
+ * Licensed under the Apache License, Version 2.0.
+ */
+
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { describe, expect, it } from "vitest";
+
+import { validate } from "../src/scripts/office/validate";
+
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const DEL_TEXT = path.join(HERE, "fixtures", "broken", "package.word-textbox-deleted-text.docx");
+const DEL_INSTR = path.join(HERE, "fixtures", "broken", "package.word-textbox-deleted-instruction.docx");
+const CLEAN = path.join(HERE, "fixtures", "working", "package.word-textbox-deleted-text-removed.docx");
+
+describe("word-valid deleted text in a VML text box", { timeout: 30000 }, () => {
+    it("rejects w:delText inside a VML text box", async () => {
+        const result = await validate(DEL_TEXT, { profile: "word-valid" });
+        expect(result.valid).toBe(false);
+        expect(
+            result.issues.some(
+                (issue) => issue.severity === "error" && issue.code === "word-textbox-deleted-text",
+            ),
+        ).toBe(true);
+    });
+
+    it("rejects w:delInstrText inside a VML text box", async () => {
+        const result = await validate(DEL_INSTR, { profile: "word-valid" });
+        expect(result.valid).toBe(false);
+        expect(
+            result.issues.some(
+                (issue) => issue.severity === "error" && issue.code === "word-textbox-deleted-text",
+            ),
+        ).toBe(true);
+    });
+
+    it("does not reject the text box once that deleted text is removed", async () => {
+        const result = await validate(CLEAN, { profile: "word-valid" });
+        expect(result.issues.some((issue) => issue.code === "word-textbox-deleted-text")).toBe(false);
+        expect(result.valid).toBe(true);
+    });
+
+    it("does not report the cause on lenient or strict", async () => {
+        for (const profile of ["lenient", "strict"] as const) {
+            const result = await validate(DEL_TEXT, { profile });
+            expect(result.issues.some((issue) => issue.code === "word-textbox-deleted-text")).toBe(false);
+        }
+    });
+});
