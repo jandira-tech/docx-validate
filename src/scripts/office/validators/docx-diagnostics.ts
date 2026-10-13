@@ -679,6 +679,8 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
             return "replace non-integer a:arcTo wR and hR radii with integers";
         case "word-text-contains-paragraph":
             return "move w:p elements out of the w:t text run that contains them";
+        case "word-hyperlink-relationship":
+            return "point the w:hyperlink r:id at an external hyperlink relationship, or remove the r:id";
         default:
             return xsdRepairAction(issue);
     }
