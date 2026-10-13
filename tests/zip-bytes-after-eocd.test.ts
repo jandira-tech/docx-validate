@@ -15,6 +15,8 @@ import { validate } from "../src/scripts/office/validate";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const BROKEN = path.join(HERE, "fixtures", "broken", "package.zip-bytes-after-eocd.docx");
 const CLEAN = path.join(HERE, "fixtures", "working", "package.zip-no-bytes-after-eocd.docx");
+const CONCATENATED = path.join(HERE, "fixtures", "broken", "package.zip-concatenated-copy.docx");
+const CONCATENATED_REMOVED = path.join(HERE, "fixtures", "working", "package.zip-concatenated-copy-removed.docx");
 
 describe("word-valid ZIP bytes after the end of central directory", () => {
     it("rejects the package Word recovers", async () => {
@@ -42,6 +44,27 @@ describe("word-valid ZIP bytes after the end of central directory", () => {
             expect(result.issues.some((issue) => issue.code === "zip-bytes-after-eocd")).toBe(false);
             expect(result.valid).toBe(true);
         });
+    });
+
+    it("rejects a second copy of the archive appended after the end-of-central-directory record", async () => {
+        const result = await validate(CONCATENATED, { profile: "word-valid" });
+        expect(result.valid).toBe(false);
+        expect(
+            result.issues.some((issue) => issue.severity === "error" && issue.code === "zip-bytes-after-eocd"),
+        ).toBe(true);
+    });
+
+    it("does not reject that package once the appended copy is deleted", async () => {
+        const result = await validate(CONCATENATED_REMOVED, { profile: "word-valid" });
+        expect(result.issues.some((issue) => issue.code === "zip-bytes-after-eocd")).toBe(false);
+        expect(result.valid).toBe(true);
+    });
+
+    it("does not report the concatenated copy on lenient or strict", async () => {
+        for (const profile of ["lenient", "strict"] as const) {
+            const result = await validate(CONCATENATED, { profile });
+            expect(result.issues.some((issue) => issue.code === "zip-bytes-after-eocd")).toBe(false);
+        }
     });
 
     it("does not report the cause on lenient or strict", async () => {
