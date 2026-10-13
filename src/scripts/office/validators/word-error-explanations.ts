@@ -27,6 +27,8 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
         "A part's content type in [Content_Types].xml is missing or wrong, so Word cannot load that part. Add the correct <Override>/<Default> content-type entry.",
     "word-drawing-scalar-whitespace":
         "A DrawingML numeric value (e.g. <wp:posOffset>, <wp14:pctWidth>) contains whitespace, which Word rejects as an invalid number. Trim the value so it is digits only.",
+    "word-drawing-arc-radius":
+        "An a:arcTo radius (wR or hR) is not an integer. Word cannot open the file. Replace the radius with an integer.",
     "id-durable-overflow": "A w16cid durableId exceeds the value range Word accepts. Regenerate the durableId within range.",
     "comment-thread-commentid-paraid-orphan":
         "The comment threading metadata is inconsistent: a commentsIds paraId does not resolve to a real comment. Word refuses the file. Rebuild word/commentsIds.xml / commentsExtended.xml so every reference resolves.",
@@ -51,6 +53,10 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
     "xml-syntax": "An XML part is not well-formed, so Word reports unreadable content. Fix the XML syntax error in the named part.",
     "xsd-error":
         "An element or attribute is not allowed in this context per the schema, and Word rejects it (not all schema violations block Word — this one does). Correct the offending element/attribute shown in the message.",
+    "zip-bytes-after-eocd":
+        "Bytes follow the ZIP end-of-central-directory record beyond the comment length that record declares. Word offers to recover the document. Delete those bytes. A ZIP comment whose length is declared in the record is not this defect.",
+    "zip-eocd-comment-overrun":
+        "The ZIP end-of-central-directory comment length claims more bytes than remain in the file. Word offers to recover the document. Set that length to the number of bytes actually present after the record.",
 });
 
 /** Human explanation for an issue `code`, if one is known. */

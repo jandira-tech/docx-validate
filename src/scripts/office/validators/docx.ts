@@ -467,6 +467,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-math-spre-body":
             case "word-content-type-invalid":
             case "word-drawing-scalar-whitespace":
+            case "word-drawing-arc-radius":
             // Both root-caused against real Word (minimal-repair + re-probe) and
             // verified disjoint from the Word-clean corpus (0/350): an unresolved
             // DocumentBuilder <Insert> directive -> OPEN_ERROR; a docProps boolean
@@ -506,6 +507,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const issues: ValidationIssue[] = [];
         await this.validateWordContentTypes(issues);
         await this.validateDrawingScalarTextWhitespace(issues);
+        await this.validateDrawingArcRadii(issues);
         const documentXml = this.xmlFiles.find(
             (xmlFile) => baseName(xmlFile) === "document.xml" && this.relPath(xmlFile).startsWith("word/"),
         );
@@ -611,6 +613,34 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                             code: "word-drawing-scalar-whitespace",
                         });
                     }
+                }
+            }
+        }
+    }
+
+    private async validateDrawingArcRadii(issues: ValidationIssue[]): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            const arcs = getElementsByTagNameNSAll(dom, DRAWINGML_NAMESPACE, "arcTo");
+            for (let i = 0; i < arcs.length; i += 1) {
+                const arc = arcs[i];
+                if (!arc) continue;
+                for (const attr of ["wR", "hR"] as const) {
+                    const value = arc.getAttribute(attr);
+                    if (value === null || /^[0-9]+$/.test(value)) continue;
+                    issues.push({
+                        severity: "error",
+                        message:
+                            `<a:arcTo> ${attr}="${value}" is not an integer. ` +
+                            "Microsoft Word cannot open the file. Use an integer radius.",
+                        path: this.relPath(xmlFile),
+                        code: "word-drawing-arc-radius",
+                    });
                 }
             }
         }

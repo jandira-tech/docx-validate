@@ -39,12 +39,13 @@ import JSZip from "jszip";
 import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
 import { DEFAULT_PROFILE, mergeResults, type Profile, type ValidationResult } from "../../lib/types";
 import { extractZipEntries } from "../../lib/zip-path";
+import { countZipBytesAfterEocd, zipEocdCommentOverrun } from "./zip-bytes-after-eocd";
 import { BaseSchemaValidator } from "./validators/base";
-import { explainWordError } from "./validators/word-error-explanations";
 import { DOCXSchemaValidator } from "./validators/docx";
 import { buildRepairPlanIssues, collectDocxSemanticInventory, compareDocxSemanticInventories } from "./validators/docx-diagnostics";
 import { PPTXSchemaValidator } from "./validators/pptx";
 import { validateRedlining } from "./validators/redlining";
+import { explainWordError } from "./validators/word-error-explanations";
 
 const SUPPORTED_SUFFIXES = new Set([".docm", ".docx", ".pptx", ".xlsx"]);
 
@@ -130,6 +131,23 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     if (targetIsPackedFile) {
         return withTempDir(async (tempDir) => {
             const buf = await fs.readFile(target);
+            if (profile === "word-valid") {
+                const overrun = zipEocdCommentOverrun(buf);
+                if (overrun) {
+                    return {
+                        valid: false,
+                        issues: [
+                            {
+                                severity: "error" as const,
+                                code: "zip-eocd-comment-overrun",
+                                message: `ZIP end-of-central-directory comment length is ${overrun.declared}, but only ${overrun.remaining} byte(s) remain in the file. Word offers to recover the document. Set the comment length to the bytes that are present.`,
+                            },
+                        ],
+                        repairs: 0,
+                        suffix: dispatchSuffix,
+                    };
+                }
+            }
             let zip: JSZip;
             try {
                 zip = await JSZip.loadAsync(buf);
@@ -173,7 +191,22 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                     suffix: dispatchSuffix,
                 };
             }
-            return runWithUnpacked(tempDir);
+            const unpacked = await runWithUnpacked(tempDir);
+            if (profile !== "word-valid") return unpacked;
+            const trailing = countZipBytesAfterEocd(buf);
+            if (trailing === 0) return unpacked;
+            return {
+                ...unpacked,
+                valid: false,
+                issues: [
+                    ...unpacked.issues,
+                    {
+                        severity: "error" as const,
+                        code: "zip-bytes-after-eocd",
+                        message: `ZIP end of central directory is followed by ${trailing} undeclared byte(s). Word offers to recover the document. Remove the bytes after that record; a comment whose length is declared in the record is not this defect.`,
+                    },
+                ],
+            };
         });
     }
 

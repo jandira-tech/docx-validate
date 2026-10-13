@@ -675,6 +675,8 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
             return "align commentsIds/commentsExtensible IDs with comments.xml when the target comment thread is unambiguous";
         case "word-drawing-scalar-whitespace":
             return "trim leading and trailing whitespace around scalar DrawingML values";
+        case "word-drawing-arc-radius":
+            return "replace non-integer a:arcTo wR and hR radii with integers";
         default:
             return xsdRepairAction(issue);
     }
