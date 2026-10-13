@@ -677,6 +677,8 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
             return "trim leading and trailing whitespace around scalar DrawingML values";
         case "word-drawing-arc-radius":
             return "replace non-integer a:arcTo wR and hR radii with integers";
+        case "word-empty-drawing":
+            return "remove the empty w:drawing or give it a wp:anchor or wp:inline child";
         case "word-text-contains-paragraph":
             return "move w:p elements out of the w:t text run that contains them";
         case "word-hyperlink-relationship":

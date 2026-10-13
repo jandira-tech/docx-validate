@@ -469,6 +469,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-content-type-invalid":
             case "word-drawing-scalar-whitespace":
             case "word-drawing-arc-radius":
+            case "word-empty-drawing":
             case "word-text-contains-paragraph":
             case "word-hyperlink-relationship":
             case "word-duplicate-theme-relationship":
@@ -514,6 +515,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         await this.validateWordContentTypes(issues);
         await this.validateDrawingScalarTextWhitespace(issues);
         await this.validateDrawingArcRadii(issues);
+        await this.validateEmptyDrawings(issues);
         await this.validateTextContainsParagraph(issues);
         await this.validateHyperlinkRelationships(issues);
         await this.validateDuplicateThemeRelationships(issues);
@@ -651,6 +653,55 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                             "Microsoft Word cannot open the file. Use an integer radius.",
                         path: this.relPath(xmlFile),
                         code: "word-drawing-arc-radius",
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * An empty `w:drawing` (no element child) is not a drawing Word can load.
+     * Inside `mc:Choice Requires="wps"` Word reports an open error. Inside a
+     * `w:r` Word offers to recover the file. One such element is enough.
+     * A drawing placed directly under `w:p` is a different case: Word drops
+     * that misplaced run content and opens clean, so it is not flagged here.
+     */
+    private async validateEmptyDrawings(issues: ValidationIssue[]): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const drawings = getElementsByTagNameNSAll(dom, ns, "drawing");
+                for (let i = 0; i < drawings.length; i += 1) {
+                    const drawing = drawings[i];
+                    if (!drawing) continue;
+                    let hasElementChild = false;
+                    for (let child = drawing.firstChild; child; child = child.nextSibling) {
+                        if (child.nodeType === 1) {
+                            hasElementChild = true;
+                            break;
+                        }
+                    }
+                    if (hasElementChild) continue;
+                    const parent = drawing.parentNode;
+                    if (parent && parent.nodeType === 1) {
+                        const parentElem = parent as Element;
+                        const parentLocal = parentElem.localName || parentElem.tagName.split(":").pop() || "";
+                        if (parentLocal === "p" && WORD_PARAGRAPH_NAMESPACES.includes(parentElem.namespaceURI ?? "")) {
+                            continue;
+                        }
+                    }
+                    issues.push({
+                        severity: "error",
+                        message:
+                            "An empty <w:drawing> has no child element. Microsoft Word does not open the file cleanly. " +
+                            "Remove the drawing, or give it a wp:anchor or wp:inline child.",
+                        path: this.relPath(xmlFile),
+                        code: "word-empty-drawing",
                     });
                 }
             }
