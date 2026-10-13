@@ -49,6 +49,8 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
         "A table row contains no w:tc cell. Word cannot open the file. Remove the row or add a cell.",
     "word-numbering-picture-bullet":
         "A numbering level's w:lvlPicBulletId does not match a w:numPicBullet in that numbering part. Word offers to recover the file. Remove the w:lvlPicBulletId, or add the picture bullet it names.",
+    "word-footnote-reference-missing":
+        "A w:footnoteReference id does not match a w:footnote in the footnotes part. Word offers to recover the file. Remove the reference, or add the footnote it names.",
     "word-textbox-deleted-text":
         "A text box contains w:delText or w:delInstrText. Word offers to recover the file. Remove that deleted text from the text box.",
     "word-move-from-deleted-text":

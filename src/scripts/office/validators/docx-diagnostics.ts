@@ -683,6 +683,8 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
             return "remove the table row that has no w:tc, or add a cell to it";
         case "word-numbering-picture-bullet":
             return "remove the w:lvlPicBulletId that names no w:numPicBullet, or add that picture bullet";
+        case "word-footnote-reference-missing":
+            return "remove the w:footnoteReference whose id matches no w:footnote, or add that footnote";
         case "word-textbox-deleted-text":
             return "remove w:delText and w:delInstrText from the text box";
         case "word-move-from-deleted-text":

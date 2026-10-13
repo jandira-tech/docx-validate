@@ -508,6 +508,12 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             // Removing that element opens clean. The p16 restart and durableId
             // attributes on the same part stayed, and Word still opened clean.
             case "word-numbering-picture-bullet":
+            // A w:footnoteReference whose w:id is not a w:footnote w:id makes
+            // Word offer recovery (fixture 1829). One such reference is enough.
+            // Removing it opens clean once text-box deleted text is also gone.
+            // A reference that names a present footnote opens clean. Duplicate
+            // footnote ids are not this defect.
+            case "word-footnote-reference-missing":
             // Both root-caused against real Word (minimal-repair + re-probe) and
             // verified disjoint from the Word-clean corpus (0/350): an unresolved
             // DocumentBuilder <Insert> directive -> OPEN_ERROR; a docProps boolean
@@ -560,6 +566,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         await this.validateDuplicateSettingsRelationships(issues);
         await this.validateChoiceRequiresPrefixes(issues);
         await this.validateNumberingPictureBullets(issues);
+        await this.validateDanglingFootnoteReferences(issues);
         const documentXml = this.xmlFiles.find(
             (xmlFile) => baseName(xmlFile) === "document.xml" && this.relPath(xmlFile).startsWith("word/"),
         );
@@ -782,6 +789,57 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                             "Remove the w:lvlPicBulletId, or add the matching picture bullet.",
                         path: this.relPath(xmlFile),
                         code: "word-numbering-picture-bullet",
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * A `w:footnoteReference` whose `w:id` is not the `w:id` of a `w:footnote`
+     * makes Word offer to recover the file. One such reference is enough.
+     * Removing the reference opens clean. A reference that names a footnote
+     * present in the footnotes part, including a separator, is not this defect.
+     * Two footnotes that share an id are not this defect.
+     */
+    private async validateDanglingFootnoteReferences(issues: ValidationIssue[]): Promise<void> {
+        const defined = new Set<string>();
+        for (const xmlFile of this.xmlFiles) {
+            if (baseName(xmlFile) !== "footnotes.xml") continue;
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const notes = getElementsByTagNameNSAll(dom, ns, "footnote");
+                for (let i = 0; i < notes.length; i += 1) {
+                    const id = notes[i]?.getAttributeNS(ns, "id");
+                    if (id) defined.add(id);
+                }
+            }
+        }
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const refs = getElementsByTagNameNSAll(dom, ns, "footnoteReference");
+                for (let i = 0; i < refs.length; i += 1) {
+                    const id = refs[i]?.getAttributeNS(ns, "id");
+                    if (!id || defined.has(id)) continue;
+                    issues.push({
+                        severity: "error",
+                        message:
+                            `A footnote reference uses id ${id}, and this package has no w:footnote with that id. ` +
+                            "Microsoft Word offers to recover the file. " +
+                            "Remove the w:footnoteReference, or add the matching footnote.",
+                        path: this.relPath(xmlFile),
+                        code: "word-footnote-reference-missing",
                     });
                 }
             }
