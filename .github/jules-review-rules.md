@@ -1,3 +1,1 @@
-# PR Review Rules
-
-- Review code for security best practices.
+Avoid path traversal vulnerabilities.
