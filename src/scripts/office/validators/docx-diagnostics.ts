@@ -679,6 +679,8 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
             return "replace non-integer a:arcTo wR and hR radii with integers";
         case "word-empty-drawing":
             return "remove the empty w:drawing or give it a wp:anchor or wp:inline child";
+        case "word-drawing-extent-negative":
+            return "replace each negative wp:extent cx or cy with a positive integer";
         case "word-anchor-missing-attribute":
             return "add the missing locked, layoutInCell, or allowOverlap attribute on wp:anchor";
         case "word-position-offset-and-align":

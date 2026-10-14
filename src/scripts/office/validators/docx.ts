@@ -475,6 +475,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-drawing-scalar-whitespace":
             case "word-drawing-arc-radius":
             case "word-empty-drawing":
+            // A wp:extent cx or cy that is a negative integer makes Word
+            // report an open error (fixture 2213). One negative attribute
+            // is enough. The same drawings with positive extents open clean.
+            // Zero and positive extents are not this defect.
+            case "word-drawing-extent-negative":
             // A wp:anchor missing locked, layoutInCell, or allowOverlap makes
             // Word refuse the file (fixture 1061). One missing attribute on
             // one anchor is enough. Adding that attribute opens clean.
@@ -584,6 +589,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         await this.validateWordContentTypes(issues);
         await this.validateDrawingScalarTextWhitespace(issues);
         await this.validateDrawingArcRadii(issues);
+        await this.validateDrawingExtentSigns(issues);
         await this.validateEmptyDrawings(issues);
         await this.validateAnchorRequiredAttributes(issues);
         await this.validatePositionOffsetAndAlign(issues);
@@ -734,6 +740,40 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                             "Microsoft Word cannot open the file. Use an integer radius.",
                         path: this.relPath(xmlFile),
                         code: "word-drawing-arc-radius",
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * A `wp:extent` whose `cx` or `cy` is a negative integer makes Word
+     * report an open error (fixture 2213). One negative attribute is enough.
+     * The same drawing with a positive extent opens clean. Zero and positive
+     * extents are not this defect.
+     */
+    private async validateDrawingExtentSigns(issues: ValidationIssue[]): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            const extents = getElementsByTagNameNSAll(dom, WP_NAMESPACE, "extent");
+            for (let i = 0; i < extents.length; i += 1) {
+                const extent = extents[i];
+                if (!extent) continue;
+                for (const attr of ["cx", "cy"] as const) {
+                    const value = extent.getAttribute(attr);
+                    if (value === null || !/^-\d+$/.test(value)) continue;
+                    issues.push({
+                        severity: "error",
+                        message:
+                            `<wp:extent> ${attr}="${value}" is negative. ` +
+                            "Microsoft Word cannot open the file. Use a positive extent.",
+                        path: this.relPath(xmlFile),
+                        code: "word-drawing-extent-negative",
                     });
                 }
             }
