@@ -45,6 +45,10 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
         "An a:arcTo radius (wR or hR) is not an integer. Word cannot open the file. Replace the radius with an integer.",
     "word-empty-drawing":
         "A w:drawing element has no child element. Word does not open the file cleanly. Remove the drawing, or give it a wp:anchor or wp:inline child.",
+    "word-anchor-missing-attribute":
+        "A wp:anchor is missing locked, layoutInCell, or allowOverlap. Word cannot open the file. Add the missing attribute.",
+    "word-position-offset-and-align":
+        "A wp:positionH or wp:positionV contains both wp:posOffset and wp:align. Word cannot open the file. Keep only one of those children.",
     "word-row-without-cell":
         "A table row contains no w:tc cell. Word cannot open the file. Remove the row or add a cell.",
     "word-cell-ends-with-table":

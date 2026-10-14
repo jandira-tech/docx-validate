@@ -475,6 +475,16 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-drawing-scalar-whitespace":
             case "word-drawing-arc-radius":
             case "word-empty-drawing":
+            // A wp:anchor missing locked, layoutInCell, or allowOverlap makes
+            // Word refuse the file (fixture 1061). One missing attribute on
+            // one anchor is enough. Adding that attribute opens clean.
+            // simplePos, relativeHeight, and the wrap distances are not this
+            // defect.
+            case "word-anchor-missing-attribute":
+            // A wp:positionH or wp:positionV that contains both wp:posOffset
+            // and wp:align makes Word refuse the file (fixture 1061). One
+            // such element is enough. Either child alone opens clean.
+            case "word-position-offset-and-align":
             // A w:tr with no w:tc makes Word report an open error (fixture 1993).
             // Removing w:gridBefore and leaving the row still errors. One cell
             // opens clean, so gridBefore is not the cause.
@@ -563,6 +573,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         await this.validateDrawingScalarTextWhitespace(issues);
         await this.validateDrawingArcRadii(issues);
         await this.validateEmptyDrawings(issues);
+        await this.validateAnchorRequiredAttributes(issues);
+        await this.validatePositionOffsetAndAlign(issues);
         await this.validateRowsWithoutCells(issues);
         await this.validateCellsEndingWithTable(issues);
         await this.validateTextBoxDeletedText(issues);
@@ -883,6 +895,83 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                             "Remove the row or add a cell.",
                         path: this.relPath(xmlFile),
                         code: "word-row-without-cell",
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * A `wp:anchor` missing `locked`, `layoutInCell`, or `allowOverlap` makes
+     * Word refuse to open the file. One missing attribute on one anchor is
+     * enough. Adding that attribute opens clean. `simplePos`, `relativeHeight`,
+     * and the wrap distances are not this defect.
+     */
+    private async validateAnchorRequiredAttributes(issues: ValidationIssue[]): Promise<void> {
+        const required = ["locked", "layoutInCell", "allowOverlap"] as const;
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            const anchors = getElementsByTagNameNSAll(dom, WP_NAMESPACE, "anchor");
+            for (let i = 0; i < anchors.length; i += 1) {
+                const anchor = anchors[i];
+                if (!anchor) continue;
+                for (const attr of required) {
+                    if (anchor.getAttribute(attr) !== null) continue;
+                    issues.push({
+                        severity: "error",
+                        message:
+                            `A wp:anchor is missing ${attr}. ` +
+                            "Microsoft Word cannot open the file. Add that attribute.",
+                        path: this.relPath(xmlFile),
+                        code: "word-anchor-missing-attribute",
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * `wp:positionH` or `wp:positionV` containing both `wp:posOffset` and
+     * `wp:align` makes Word refuse to open the file. One such element is
+     * enough. Either child alone opens clean.
+     */
+    private async validatePositionOffsetAndAlign(issues: ValidationIssue[]): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            for (const localName of ["positionH", "positionV"] as const) {
+                const positions = getElementsByTagNameNSAll(dom, WP_NAMESPACE, localName);
+                for (let i = 0; i < positions.length; i += 1) {
+                    const position = positions[i];
+                    if (!position) continue;
+                    let hasOffset = false;
+                    let hasAlign = false;
+                    for (let j = 0; j < position.childNodes.length; j += 1) {
+                        const child = position.childNodes[j];
+                        if (!child || child.nodeType !== 1) continue;
+                        const element = child as Element;
+                        if (element.namespaceURI !== WP_NAMESPACE) continue;
+                        const local = element.localName || element.tagName.split(":").pop() || "";
+                        if (local === "posOffset") hasOffset = true;
+                        if (local === "align") hasAlign = true;
+                    }
+                    if (!hasOffset || !hasAlign) continue;
+                    issues.push({
+                        severity: "error",
+                        message:
+                            `A wp:${localName} contains both wp:posOffset and wp:align. ` +
+                            "Microsoft Word cannot open the file. Keep only one of those children.",
+                        path: this.relPath(xmlFile),
+                        code: "word-position-offset-and-align",
                     });
                 }
             }
