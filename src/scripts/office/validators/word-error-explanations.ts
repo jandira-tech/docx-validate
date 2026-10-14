@@ -49,6 +49,8 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
         "A wp:anchor is missing locked, layoutInCell, or allowOverlap. Word cannot open the file. Add the missing attribute.",
     "word-position-offset-and-align":
         "A wp:positionH or wp:positionV contains both wp:posOffset and wp:align. Word cannot open the file. Keep only one of those children.",
+    "word-sdt-id-empty":
+        'A w:sdt has w:id w:val="". Word cannot open the file. Set w:val to a number.',
     "word-row-without-cell":
         "A table row contains no w:tc cell. Word cannot open the file. Remove the row or add a cell.",
     "word-cell-ends-with-table":

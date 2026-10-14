@@ -485,6 +485,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             // and wp:align makes Word refuse the file (fixture 1061). One
             // such element is enough. Either child alone opens clean.
             case "word-position-offset-and-align":
+            // A w:sdtPr/w:id with w:val="" makes Word refuse the file (fixture
+            // 1830). Setting that value to a number opens clean.
+            case "word-sdt-id-empty":
             // A w:tr with no w:tc makes Word report an open error (fixture 1993).
             // Removing w:gridBefore and leaving the row still errors. One cell
             // opens clean, so gridBefore is not the cause.
@@ -586,6 +589,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         await this.validateDuplicateWebSettingsRelationships(issues);
         await this.validateDuplicateSettingsRelationships(issues);
         await this.validateChoiceRequiresPrefixes(issues);
+        await this.validateSdtIdEmpty(issues);
         await this.validateNumberingPictureBullets(issues);
         await this.validateDanglingFootnoteReferences(issues);
         const documentXml = this.xmlFiles.find(
@@ -1136,6 +1140,43 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     path: this.relPath(xmlFile),
                     code: "word-choice-requires-undeclared",
                 });
+            }
+        }
+    }
+
+    /**
+     * A `w:sdtPr`/`w:id` whose `w:val` is empty makes Word refuse to open
+     * the file. Setting that value to a number opens clean.
+     */
+    private async validateSdtIdEmpty(issues: ValidationIssue[]): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const ids = getElementsByTagNameNSAll(dom, ns, "id");
+                for (let i = 0; i < ids.length; i += 1) {
+                    const id = ids[i];
+                    if (!id) continue;
+                    const parent = id.parentNode;
+                    if (!parent || parent.nodeType !== 1) continue;
+                    const parentElem = parent as Element;
+                    const parentLocal = parentElem.localName || parentElem.tagName.split(":").pop() || "";
+                    if (parentLocal !== "sdtPr" || !WORD_PARAGRAPH_NAMESPACES.includes(parentElem.namespaceURI ?? "")) {
+                        continue;
+                    }
+                    if (id.getAttributeNS(ns, "val") !== "") continue;
+                    issues.push({
+                        severity: "error",
+                        message:
+                            'A w:sdt has w:id w:val="". Microsoft Word cannot open the file. Set w:val to a number.',
+                        path: this.relPath(xmlFile),
+                        code: "word-sdt-id-empty",
+                    });
+                }
             }
         }
     }
