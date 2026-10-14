@@ -488,6 +488,13 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             // A w:sdtPr/w:id with w:val="" makes Word refuse the file (fixture
             // 1830). Setting that value to a number opens clean.
             case "word-sdt-id-empty":
+            // word/attachedToolbars.bin referenced by wne:toolbarData contains
+            // the UTF-8 replacement sequence EF BF BD (fixture 2130). One
+            // sequence is enough. The same bytes in a part toolbarData does
+            // not reference are tolerated. A toolbar whose sequences have
+            // been replaced, including button-flag bytes set to 0x10, opens
+            // clean.
+            case "word-attached-toolbar-utf8":
             // A w:tr with no w:tc makes Word report an open error (fixture 1993).
             // Removing w:gridBefore and leaving the row still errors. One cell
             // opens clean, so gridBefore is not the cause.
@@ -590,6 +597,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         await this.validateDuplicateSettingsRelationships(issues);
         await this.validateChoiceRequiresPrefixes(issues);
         await this.validateSdtIdEmpty(issues);
+        await this.validateAttachedToolbarUtf8(issues);
         await this.validateNumberingPictureBullets(issues);
         await this.validateDanglingFootnoteReferences(issues);
         const documentXml = this.xmlFiles.find(
@@ -1177,6 +1185,84 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         code: "word-sdt-id-empty",
                     });
                 }
+            }
+        }
+    }
+
+    /**
+     * `wne:toolbarData` points at an attached-toolbar part that contains the
+     * UTF-8 replacement sequence EF BF BD. One sequence makes Word offer to
+     * recover the file, or report that the custom toolbars are unsupported.
+     * Replacing the sequences opens clean. The same bytes in a part that
+     * `toolbarData` does not reference are left alone.
+     */
+    private async validateAttachedToolbarUtf8(issues: ValidationIssue[]): Promise<void> {
+        const wordmlNs = "http://schemas.microsoft.com/office/word/2006/wordml";
+        const relationshipNamespaces = [
+            OFFICE_RELATIONSHIPS_NAMESPACE,
+            "http://purl.oclc.org/ooxml/officeDocument/relationships",
+        ];
+        const needle = Buffer.from([0xef, 0xbf, 0xbd]);
+        for (const xmlFile of this.xmlFiles) {
+            if (!xmlFile.endsWith(".xml")) continue;
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            const toolbarData = getElementsByTagNameNSAll(dom, wordmlNs, "toolbarData");
+            if (toolbarData.length === 0) continue;
+            const relsFile = path.join(path.dirname(xmlFile), "_rels", `${path.basename(xmlFile)}.rels`);
+            let relDom: Document;
+            try {
+                relDom = parseXml(await fs.readFile(relsFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            const relationships = getElementsByTagNameNSAll(relDom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            for (let i = 0; i < toolbarData.length; i += 1) {
+                const elem = toolbarData[i];
+                if (!elem) continue;
+                let rid: string | null = null;
+                for (const relNs of relationshipNamespaces) {
+                    const value = elem.getAttributeNS(relNs, "id");
+                    if (value) {
+                        rid = value;
+                        break;
+                    }
+                }
+                if (!rid) rid = elem.getAttribute("r:id");
+                if (!rid) continue;
+                let target: string | null = null;
+                for (let r = 0; r < relationships.length; r += 1) {
+                    const rel = relationships[r];
+                    if (!rel || rel.getAttribute("Id") !== rid) continue;
+                    const type = rel.getAttribute("Type") ?? "";
+                    if (!type.endsWith("/attachedToolbars")) continue;
+                    target = rel.getAttribute("Target");
+                    break;
+                }
+                if (!target) continue;
+                const resolved = resolveRelationshipTargetPath(this.unpackedDir, relsFile, target);
+                if (!resolved) continue;
+                let bytes: Buffer;
+                try {
+                    bytes = await fs.readFile(resolved);
+                } catch {
+                    continue;
+                }
+                if (!bytes.includes(needle)) continue;
+                issues.push({
+                    severity: "error",
+                    message:
+                        `${this.relPath(resolved)} is referenced by wne:toolbarData and contains the UTF-8 replacement sequence EF BF BD. ` +
+                        "Microsoft Word offers to recover the file. One sequence is enough. " +
+                        "Replace each sequence with the original byte.",
+                    path: this.relPath(resolved),
+                    code: "word-attached-toolbar-utf8",
+                });
+                return;
             }
         }
     }

@@ -685,6 +685,8 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
             return "keep only wp:posOffset or only wp:align inside wp:positionH and wp:positionV";
         case "word-sdt-id-empty":
             return 'set the empty w:sdtPr/w:id w:val to a number';
+        case "word-attached-toolbar-utf8":
+            return "replace each EF BF BD sequence in the attached toolbar that wne:toolbarData references";
         case "word-row-without-cell":
             return "remove the table row that has no w:tc, or add a cell to it";
         case "word-cell-ends-with-table":
