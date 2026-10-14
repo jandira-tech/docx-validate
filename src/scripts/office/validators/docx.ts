@@ -482,7 +482,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             // w:delText or w:delInstrText inside w:txbxContent makes Word
             // offer recovery. That content sits in a VML text box (fixture
             // 0011) or a drawingML wps:txbx (fixture 0044). The same elements
-            // in the document body are tolerated.
+            // in the document body are tolerated. The same elements inside
+            // an mc:Fallback text box are tolerated (fixture 2054): Word
+            // uses the sibling mc:Choice.
             case "word-textbox-deleted-text":
             // w:delText inside w:moveFrom makes Word offer recovery (fixture
             // 0726). One such element is enough. w:t inside w:moveFrom opens
@@ -885,7 +887,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * to recover the file. One such element is enough. The text box may be a
      * VML `v:textbox` or a drawingML `wps:txbx`. The same elements in the
      * document body are tolerated, and a text box that contains only field
-     * characters opens clean.
+     * characters opens clean. Deleted text whose text box sits inside
+     * `mc:Fallback` is not this defect: Word uses the sibling `mc:Choice`.
      */
     private async validateTextBoxDeletedText(issues: ValidationIssue[]): Promise<void> {
         for (const xmlFile of this.userTextXmlFiles()) {
@@ -901,6 +904,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     for (let i = 0; i < nodes.length; i += 1) {
                         const node = nodes[i];
                         if (!node || !this.hasTextBoxContentAncestor(node)) continue;
+                        if (this.hasMarkupCompatibilityFallbackAncestor(node)) continue;
                         issues.push({
                             severity: "error",
                             message:
@@ -1018,6 +1022,18 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             const elem = parent as Element;
             const local = elem.localName || elem.tagName.split(":").pop() || "";
             if (local === "txbxContent" && WORD_PARAGRAPH_NAMESPACES.includes(elem.namespaceURI ?? "")) return true;
+            parent = parent.parentNode;
+        }
+        return false;
+    }
+
+    /** True when an ancestor is `mc:Fallback`. Word ignores that branch. */
+    private hasMarkupCompatibilityFallbackAncestor(node: Node): boolean {
+        let parent = node.parentNode;
+        while (parent && parent.nodeType === 1) {
+            const elem = parent as Element;
+            const local = elem.localName || elem.tagName.split(":").pop() || "";
+            if (local === "Fallback" && elem.namespaceURI === MC_NAMESPACE) return true;
             parent = parent.parentNode;
         }
         return false;

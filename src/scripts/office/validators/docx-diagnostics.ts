@@ -686,7 +686,7 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
         case "word-footnote-reference-missing":
             return "remove the w:footnoteReference whose id matches no w:footnote, or add that footnote";
         case "word-textbox-deleted-text":
-            return "remove w:delText and w:delInstrText from the text box";
+            return "remove w:delText and w:delInstrText from the text box; mc:Fallback text boxes are not this defect";
         case "word-move-from-deleted-text":
             return "use w:t inside w:moveFrom instead of w:delText";
         case "word-choice-requires-undeclared":

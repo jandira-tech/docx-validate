@@ -16,6 +16,8 @@ const DEL_INSTR = path.join(HERE, "fixtures", "broken", "package.word-textbox-de
 const DEL_SHAPE = path.join(HERE, "fixtures", "broken", "package.word-textbox-deleted-text-shape.docx");
 const CLEAN = path.join(HERE, "fixtures", "working", "package.word-textbox-deleted-text-removed.docx");
 const SHAPE_CLEAN = path.join(HERE, "fixtures", "working", "package.word-textbox-deleted-text-shape-repaired.docx");
+const CHOICE_DEL = path.join(HERE, "fixtures", "broken", "package.word-textbox-choice-deleted-text.docx");
+const FALLBACK_ONLY = path.join(HERE, "fixtures", "working", "package.word-textbox-fallback-deleted-text.docx");
 
 describe("word-valid deleted text in a text box", { timeout: 30000 }, () => {
     it("rejects w:delText inside a VML text box", async () => {
@@ -63,6 +65,29 @@ describe("word-valid deleted text in a text box", { timeout: 30000 }, () => {
     it("does not report the cause on lenient or strict", async () => {
         for (const profile of ["lenient", "strict"] as const) {
             const result = await validate(DEL_TEXT, { profile });
+            expect(result.issues.some((issue) => issue.code === "word-textbox-deleted-text")).toBe(false);
+        }
+    });
+
+    it("rejects w:delText inside an mc:Choice text box", async () => {
+        const result = await validate(CHOICE_DEL, { profile: "word-valid" });
+        expect(result.valid).toBe(false);
+        expect(
+            result.issues.some(
+                (issue) => issue.severity === "error" && issue.code === "word-textbox-deleted-text",
+            ),
+        ).toBe(true);
+    });
+
+    it("does not reject w:delText that remains only inside mc:Fallback", async () => {
+        const result = await validate(FALLBACK_ONLY, { profile: "word-valid" });
+        expect(result.issues.some((issue) => issue.code === "word-textbox-deleted-text")).toBe(false);
+        expect(result.valid).toBe(true);
+    });
+
+    it("does not report the choice-box cause on lenient or strict", async () => {
+        for (const profile of ["lenient", "strict"] as const) {
+            const result = await validate(CHOICE_DEL, { profile });
             expect(result.issues.some((issue) => issue.code === "word-textbox-deleted-text")).toBe(false);
         }
     });
