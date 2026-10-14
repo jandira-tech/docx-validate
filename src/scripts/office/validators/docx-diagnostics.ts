@@ -681,6 +681,8 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
             return "remove the empty w:drawing or give it a wp:anchor or wp:inline child";
         case "word-row-without-cell":
             return "remove the table row that has no w:tc, or add a cell to it";
+        case "word-cell-ends-with-table":
+            return "add a w:p after the w:tbl that is the table cell's last child";
         case "word-numbering-picture-bullet":
             return "remove the w:lvlPicBulletId that names no w:numPicBullet, or add that picture bullet";
         case "word-footnote-reference-missing":

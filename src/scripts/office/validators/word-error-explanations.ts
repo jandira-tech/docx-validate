@@ -47,6 +47,8 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
         "A w:drawing element has no child element. Word does not open the file cleanly. Remove the drawing, or give it a wp:anchor or wp:inline child.",
     "word-row-without-cell":
         "A table row contains no w:tc cell. Word cannot open the file. Remove the row or add a cell.",
+    "word-cell-ends-with-table":
+        "A table cell ends with w:tbl and has no following w:p. Word offers to recover the file. Add a w:p after that table.",
     "word-numbering-picture-bullet":
         "A numbering level's w:lvlPicBulletId does not match a w:numPicBullet in that numbering part. Word offers to recover the file. Remove the w:lvlPicBulletId, or add the picture bullet it names.",
     "word-footnote-reference-missing":

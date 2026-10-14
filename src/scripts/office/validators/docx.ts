@@ -479,6 +479,12 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             // Removing w:gridBefore and leaving the row still errors. One cell
             // opens clean, so gridBefore is not the cause.
             case "word-row-without-cell":
+            // A w:tc whose last element child is w:tbl makes Word offer
+            // recovery (fixture 0792). One such cell is enough. Inserting
+            // an empty w:p after that table opens clean. Removing the
+            // trailing w:p from a cell Word opened clean makes it warn.
+            // A cell that already ends with w:p is not this defect.
+            case "word-cell-ends-with-table":
             // w:delText or w:delInstrText inside w:txbxContent makes Word
             // offer recovery. That content sits in a VML text box (fixture
             // 0011) or a drawingML wps:txbx (fixture 0044). The same elements
@@ -558,6 +564,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         await this.validateDrawingArcRadii(issues);
         await this.validateEmptyDrawings(issues);
         await this.validateRowsWithoutCells(issues);
+        await this.validateCellsEndingWithTable(issues);
         await this.validateTextBoxDeletedText(issues);
         await this.validateMoveFromDeletedText(issues);
         await this.validateTextContainsParagraph(issues);
@@ -876,6 +883,48 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                             "Remove the row or add a cell.",
                         path: this.relPath(xmlFile),
                         code: "word-row-without-cell",
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * A `w:tc` whose last element child is `w:tbl` makes Word offer to
+     * recover the file. One such cell is enough. The cell may contain a
+     * paragraph before that table. Inserting an empty `w:p` after the
+     * table opens clean. A cell that already ends with `w:p` is not this
+     * defect.
+     */
+    private async validateCellsEndingWithTable(issues: ValidationIssue[]): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const cells = getElementsByTagNameNSAll(dom, ns, "tc");
+                for (let i = 0; i < cells.length; i += 1) {
+                    const cell = cells[i];
+                    if (!cell) continue;
+                    let last: Element | null = null;
+                    for (let j = 0; j < cell.childNodes.length; j += 1) {
+                        const child = cell.childNodes[j];
+                        if (!child || child.nodeType !== 1) continue;
+                        last = child as Element;
+                    }
+                    if (!last) continue;
+                    const local = last.localName || last.tagName.split(":").pop() || "";
+                    if (local !== "tbl" || last.namespaceURI !== ns) continue;
+                    issues.push({
+                        severity: "error",
+                        message:
+                            "A table cell ends with w:tbl and has no following w:p. " +
+                            "Microsoft Word offers to recover the file. Add a w:p after that table.",
+                        path: this.relPath(xmlFile),
+                        code: "word-cell-ends-with-table",
                     });
                 }
             }
