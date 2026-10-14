@@ -506,11 +506,13 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             // A cell that already ends with w:p is not this defect.
             case "word-cell-ends-with-table":
             // w:delText or w:delInstrText inside w:txbxContent makes Word
-            // offer recovery. That content sits in a VML text box (fixture
-            // 0011) or a drawingML wps:txbx (fixture 0044). The same elements
-            // in the document body are tolerated. The same elements inside
-            // an mc:Fallback text box are tolerated (fixture 2054): Word
-            // uses the sibling mc:Choice.
+            // offer recovery when no w:del inside that text box wraps it.
+            // That content sits in a VML text box (fixture 0011) or a
+            // drawingML wps:txbx (fixture 0044). The same elements in the
+            // document body are tolerated. An mc:Fallback text box is
+            // tolerated (fixture 2054): Word uses the sibling mc:Choice.
+            // A w:del inside the text box is tolerated (fixture 0948).
+            // A w:del outside the text box does not cover the text-box story.
             case "word-textbox-deleted-text":
             // w:delText inside w:moveFrom makes Word offer recovery (fixture
             // 0726). One such element is enough. w:t inside w:moveFrom opens
@@ -1034,11 +1036,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     /**
      * `w:delText` or `w:delInstrText` inside `w:txbxContent` makes Word offer
-     * to recover the file. One such element is enough. The text box may be a
-     * VML `v:textbox` or a drawingML `wps:txbx`. The same elements in the
-     * document body are tolerated, and a text box that contains only field
-     * characters opens clean. Deleted text whose text box sits inside
-     * `mc:Fallback` is not this defect: Word uses the sibling `mc:Choice`.
+     * to recover the file when that text is not inside a `w:del` in the text
+     * box. One such element is enough. The text box may be a VML `v:textbox`
+     * or a drawingML `wps:txbx`. The same elements in the document body are
+     * tolerated, and a text box that contains only field characters opens
+     * clean. Deleted text whose text box sits inside `mc:Fallback` is not
+     * this defect: Word uses the sibling `mc:Choice`. A `w:del` that wraps
+     * the text inside the text box is not this defect either. A `w:del`
+     * outside the text box does not cover `w:delText` in the text-box story.
      */
     private async validateTextBoxDeletedText(issues: ValidationIssue[]): Promise<void> {
         for (const xmlFile of this.userTextXmlFiles()) {
@@ -1055,6 +1060,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                         const node = nodes[i];
                         if (!node || !this.hasTextBoxContentAncestor(node)) continue;
                         if (this.hasMarkupCompatibilityFallbackAncestor(node)) continue;
+                        if (this.hasTextBoxDeletionAncestor(node)) continue;
                         issues.push({
                             severity: "error",
                             message:
@@ -1287,6 +1293,24 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             const elem = parent as Element;
             const local = elem.localName || elem.tagName.split(":").pop() || "";
             if (local === "txbxContent" && WORD_PARAGRAPH_NAMESPACES.includes(elem.namespaceURI ?? "")) return true;
+            parent = parent.parentNode;
+        }
+        return false;
+    }
+
+    /**
+     * True when a `w:del` sits between this node and its `w:txbxContent`.
+     * Word accepts that deletion. A `w:del` outside the text box does not
+     * count, because the text-box story still contains bare `w:delText`.
+     */
+    private hasTextBoxDeletionAncestor(node: Node): boolean {
+        let parent = node.parentNode;
+        while (parent && parent.nodeType === 1) {
+            const elem = parent as Element;
+            const local = elem.localName || elem.tagName.split(":").pop() || "";
+            const ns = elem.namespaceURI ?? "";
+            if (local === "txbxContent" && WORD_PARAGRAPH_NAMESPACES.includes(ns)) return false;
+            if (local === "del" && WORD_PARAGRAPH_NAMESPACES.includes(ns)) return true;
             parent = parent.parentNode;
         }
         return false;

@@ -18,6 +18,7 @@ const CLEAN = path.join(HERE, "fixtures", "working", "package.word-textbox-delet
 const SHAPE_CLEAN = path.join(HERE, "fixtures", "working", "package.word-textbox-deleted-text-shape-repaired.docx");
 const CHOICE_DEL = path.join(HERE, "fixtures", "broken", "package.word-textbox-choice-deleted-text.docx");
 const FALLBACK_ONLY = path.join(HERE, "fixtures", "working", "package.word-textbox-fallback-deleted-text.docx");
+const INNER_DEL = path.join(HERE, "fixtures", "working", "package.word-textbox-inner-deletion.docx");
 
 describe("word-valid deleted text in a text box", { timeout: 30000 }, () => {
     it("rejects w:delText inside a VML text box", async () => {
@@ -77,6 +78,12 @@ describe("word-valid deleted text in a text box", { timeout: 30000 }, () => {
                 (issue) => issue.severity === "error" && issue.code === "word-textbox-deleted-text",
             ),
         ).toBe(true);
+    });
+
+    it("does not reject w:delText wrapped in a w:del inside the text box", async () => {
+        const result = await validate(INNER_DEL, { profile: "word-valid" });
+        expect(result.issues.some((issue) => issue.code === "word-textbox-deleted-text")).toBe(false);
+        expect(result.valid).toBe(true);
     });
 
     it("does not reject w:delText that remains only inside mc:Fallback", async () => {

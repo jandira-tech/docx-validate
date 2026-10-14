@@ -62,7 +62,7 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
     "word-footnote-reference-missing":
         "A w:footnoteReference id does not match a w:footnote in the footnotes part. Word offers to recover the file. Remove the reference, or add the footnote it names.",
     "word-textbox-deleted-text":
-        "A text box contains w:delText or w:delInstrText. Word offers to recover the file. Remove that deleted text from the text box. Deleted text inside an mc:Fallback text box is not this defect.",
+        "A text box contains w:delText or w:delInstrText that is not inside a w:del in that text box. Word offers to recover the file. Remove that deleted text from the text box. Deleted text inside an mc:Fallback text box, or inside a w:del in the text box, is not this defect. A w:del outside the text box does not cover it.",
     "word-move-from-deleted-text":
         "A w:moveFrom element contains w:delText. Word offers to recover the file. Use w:t for the moved text. Deleted text outside a move source is not this defect.",
     "word-choice-requires-undeclared":
