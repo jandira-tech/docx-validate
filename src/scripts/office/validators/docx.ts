@@ -388,6 +388,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * does not affect the merged validity.
      */
     async validate(): Promise<ValidationResult> {
+        this.xsdWalk = { started: false, parts: [], eligible: 0 };
         const xmlOk = await this.validateXml();
         if (!xmlOk.valid && this.profile !== "word-valid") return xmlOk;
 
@@ -397,7 +398,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             this.validateFileReferences(),
             this.validateRelationshipElements(),
             this.validateContentTypes(),
-            this.validateAgainstXsd(),
             this.validateWhitespacePreservation(),
             this.validateDeletions(),
             this.validateInsertions(),
@@ -424,11 +424,44 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             this.validateRedundantRunProperties(),
         ];
         if (this.profile === "word-valid") {
+            // Non-XSD checks first. A blocking no returns before XSD starts.
             checks.push(this.validateWordOpenCompatibility());
+            const profiled = this.applyWordValidProfile(mergeResults(xmlOk, ...(await Promise.all(checks))));
+            if (!profiled.valid) return profiled;
+            const xsd = await this.validateAgainstXsd();
+            return this.applyWordValidProfile(mergeResults(profiled, xsd));
         }
 
-        const merged = mergeResults(xmlOk, ...(await Promise.all(checks)));
-        return this.profile === "word-valid" ? this.applyWordValidProfile(merged) : merged;
+        checks.push(this.validateAgainstXsd());
+        return mergeResults(xmlOk, ...(await Promise.all(checks)));
+    }
+
+    /**
+     * Stop only when a Word-blocking schema error is one of the issues this
+     * part will actually return. The three-message cap used to stop on a
+     * later blocking error while emitting only tolerated ones, and the
+     * profile then downgraded those to warnings.
+     */
+    protected override shouldStopXsdWalk(rel: string, errors: ReadonlySet<string>): boolean {
+        if (this.profile !== "word-valid") return false;
+        return this.xsdErrorsToReport(rel, errors).some((error) => this.wordBlocksXsdError(rel, error));
+    }
+
+    protected override xsdErrorsToReport(rel: string, errors: ReadonlySet<string>): readonly string[] {
+        const all = [...errors];
+        const reported = all.slice(0, 3);
+        if (this.profile !== "word-valid") return reported;
+        if (reported.some((error) => this.wordBlocksXsdError(rel, error))) return reported;
+        const hidden = all.slice(3).find((error) => this.wordBlocksXsdError(rel, error));
+        if (hidden !== undefined) reported.push(hidden);
+        return reported;
+    }
+
+    private wordBlocksXsdError(rel: string, error: string): boolean {
+        const truncated = error.length > 250 ? `${error.slice(0, 250)}...` : error;
+        const message = `  - ${truncated}`;
+        if (message.includes("Schema load failed") || message.includes("XSD engine failed:")) return true;
+        return isWordBlockingXsdIssue({ severity: "error", message, path: rel, code: "xsd-error" });
     }
 
     private applyWordValidProfile(result: ValidationResult): ValidationResult {
@@ -488,6 +521,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "rels-empty-element":
                 return issue.message.includes("missing required attribute");
             case "xsd-error":
+                // A schema the engine could not load is not a Word-tolerated
+                // quirk. The ignore list already dropped the Dublin Core
+                // false positive before this issue was built.
+                if (issue.message.includes("Schema load failed") || issue.message.includes("XSD engine failed:")) return true;
                 return isWordBlockingXsdIssue(issue);
             default:
                 return false;

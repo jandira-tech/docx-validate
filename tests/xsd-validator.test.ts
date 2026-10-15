@@ -8,10 +8,10 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import path from "node:path";
 import { writeFileSync } from "node:fs";
-import { createXsdValidator, type XsdValidator } from "../src/lib/xsd-validator";
+import { createXsdValidator, _resetXsdValidatorMemo, type XsdValidator } from "../src/lib/xsd-validator";
 import { withTempDir } from "../src/lib/run-cli";
 
 // Self-contained XSD with no imports — proves the validator core works.
@@ -72,6 +72,36 @@ describe("xsd-validator", () => {
             expect(typeof first.message).toBe("string");
             expect(first.message.length).toBeGreaterThan(0);
         });
+    });
+
+    it("falls back to public validation when private WASM pointers are unavailable", async () => {
+        const { XsdValidator: WasmValidator } = await import("libxml2-wasm");
+        const fromDoc = WasmValidator.fromDoc.bind(WasmValidator);
+        const factory = vi.spyOn(WasmValidator, "fromDoc").mockImplementation((...args) => {
+            const instance = fromDoc(...args);
+            return new Proxy(instance, {
+                get(target, property, receiver) {
+                    if (property === "_ptr") return undefined;
+                    const value: unknown = Reflect.get(target, property, receiver);
+                    return typeof value === "function" ? value.bind(target) : value;
+                },
+            });
+        });
+        _resetXsdValidatorMemo();
+        try {
+            const fallback = await createXsdValidator();
+            await withTempDir(async (dir) => {
+                const schema = path.join(dir, "fallback.xsd");
+                writeFileSync(schema, SELF_CONTAINED_XSD, "utf-8");
+                expect(await fallback.validate(VALID_XML, schema)).toEqual([]);
+                const issues = await fallback.validate(SCHEMA_INVALID_XML, schema);
+                expect(issues[0]?.code).toBe("xsd-validation-failed");
+                expect(issues[0]?.message).toContain("wrong");
+            });
+        } finally {
+            factory.mockRestore();
+            _resetXsdValidatorMemo();
+        }
     });
 
     it("reports xml-parse-error on malformed XML (not XSD failure)", async () => {

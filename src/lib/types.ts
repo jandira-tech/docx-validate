@@ -51,6 +51,23 @@ export type ValidationResult = {
     issues: ValidationIssue[];
 };
 
+/**
+ * What the XSD walk actually did. `mergeResults` keeps only `valid` and
+ * `issues`, so `validate()` attaches this after the merge.
+ *
+ * `started` is true once `validateAgainstXsd` is entered. `parts` are the
+ * relative paths sent to the engine. `eligible` is how many parts a full
+ * walk would send (a schema is mapped and the root is not Strict OOXML).
+ */
+export type XsdWalkTrace = {
+    started: boolean;
+    parts: string[];
+    eligible: number;
+};
+
+/** Walk trace for a path that never entered `validateAgainstXsd`. */
+export const xsdWalkNotStarted = (): XsdWalkTrace => ({ started: false, parts: [], eligible: 0 });
+
 /** Empty success result (zero issues, valid). */
 export const OK_RESULT: ValidationResult = Object.freeze({
     valid: true,

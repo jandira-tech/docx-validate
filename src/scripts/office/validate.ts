@@ -37,7 +37,7 @@ import { Command } from "commander";
 import JSZip from "jszip";
 
 import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
-import { DEFAULT_PROFILE, mergeResults, type Profile, type ValidationResult } from "../../lib/types";
+import { DEFAULT_PROFILE, mergeResults, xsdWalkNotStarted, type Profile, type ValidationResult, type XsdWalkTrace } from "../../lib/types";
 import { extractZipEntries } from "../../lib/zip-path";
 import { BaseSchemaValidator } from "./validators/base";
 import { explainWordError } from "./validators/word-error-explanations";
@@ -73,6 +73,11 @@ export interface ValidateRunResult extends ValidationResult {
     repairs: number;
     /** Detected suffix used for dispatch (e.g. ".docx"). */
     suffix: string;
+    /**
+     * XSD engine trace. Attached here, after `mergeResults`, because the
+     * merge keeps only `valid` and `issues`.
+     */
+    xsdWalk: XsdWalkTrace;
 }
 
 /**
@@ -154,6 +159,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                     ],
                     repairs: 0,
                     suffix: dispatchSuffix,
+                    xsdWalk: xsdWalkNotStarted(),
                 };
             }
             try {
@@ -171,6 +177,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                     ],
                     repairs: 0,
                     suffix: dispatchSuffix,
+                    xsdWalk: xsdWalkNotStarted(),
                 };
             }
             return runWithUnpacked(tempDir);
@@ -196,8 +203,12 @@ interface RunValidatorsOptions {
     profile: Profile;
 }
 
-async function runValidators(unpackedDir: string, opts: RunValidatorsOptions): Promise<ValidationResult & { repairs: number }> {
+async function runValidators(
+    unpackedDir: string,
+    opts: RunValidatorsOptions,
+): Promise<ValidationResult & { repairs: number; xsdWalk: XsdWalkTrace }> {
     const validators: ValidatorRunner[] = [];
+    let schemaValidator: BaseSchemaValidator | undefined;
 
     if (opts.suffix === ".docx" || opts.suffix === ".docm") {
         const docx = new DOCXSchemaValidator({
@@ -207,6 +218,7 @@ async function runValidators(unpackedDir: string, opts: RunValidatorsOptions): P
             schemasDir: opts.schemasDir,
             profile: opts.profile,
         });
+        schemaValidator = docx;
         validators.push(docx);
         if (opts.originalFile) {
             if (!opts.author) {
@@ -236,6 +248,7 @@ async function runValidators(unpackedDir: string, opts: RunValidatorsOptions): P
             schemasDir: opts.schemasDir,
             profile: opts.profile,
         });
+        schemaValidator = pptx;
         validators.push(pptx);
     } else {
         // Library code is silent (CLAUDE.md: "Validator results are
@@ -253,6 +266,7 @@ async function runValidators(unpackedDir: string, opts: RunValidatorsOptions): P
                 },
             ],
             repairs: 0,
+            xsdWalk: xsdWalkNotStarted(),
         };
     }
 
@@ -278,7 +292,9 @@ async function runValidators(unpackedDir: string, opts: RunValidatorsOptions): P
 
     const results = await Promise.all(validators.map((v) => v.validate()));
     const merged = mergeResults(...results, repairDiagnostics);
-    return { ...merged, repairs };
+    // mergeResults drops xsdWalk. Copy the trace off the schema validator
+    // after the walk, including the word-valid path that never started XSD.
+    return { ...merged, repairs, xsdWalk: schemaValidator?.xsdWalk ?? xsdWalkNotStarted() };
 }
 
 async function assertExists(p: string, message: string): Promise<void> {

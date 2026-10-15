@@ -49,6 +49,63 @@ export type XsdValidator = {
     readonly validate: (xml: string, schemaPath: string) => Promise<ValidationIssue[]>;
 };
 
+/**
+ * Counts how the shipped engine handled a part. `statusOnlyPasses` is a
+ * libxml2 status of 0 with no structured error object. `messageCollections`
+ * is a non-zero status (or an internal failure) that still built messages.
+ * Tests read this off the real `validate()` path.
+ */
+export const xsdValidateStats = {
+    statusOnlyPasses: 0,
+    messageCollections: 0,
+};
+
+// The optional status probe uses private fields from the pinned WASM release.
+// Check them before entering C; fall back to the public API if they change.
+const wasmPointer = (value: unknown): number | undefined => {
+    if (typeof value !== "object" || value === null || !("_ptr" in value)) {
+        return undefined;
+    }
+    const pointer = value._ptr;
+    return typeof pointer === "number" && Number.isSafeInteger(pointer) && pointer > 0 ? pointer : undefined;
+};
+
+// Function-table callbacks live as long as the WASM module. Reuse this entry
+// across factory resets instead of allocating an entry for each new factory.
+let silentSchemaErrors: number | undefined;
+
+/**
+ * `xmlSchemaValidateDoc` status. A no-op structured callback stops libxml2's
+ * default stderr writer. The callback does not build an error object.
+ */
+const schemaValidateStatus = (
+    schema: unknown,
+    doc: unknown,
+    newCtxt: (schemaPtr: number) => number,
+    freeCtxt: (ctx: number) => void,
+    validateDoc: (ctx: number, docPtr: number) => number,
+    silence: (ctx: number, fn: number, data: number) => void,
+    silentFn: number,
+): number | undefined => {
+    const schemaPtr = wasmPointer(schema);
+    const docPtr = wasmPointer(doc);
+    if (schemaPtr === undefined || docPtr === undefined) {
+        return undefined;
+    }
+    const ctx = newCtxt(schemaPtr);
+    if (!ctx) {
+        return -1;
+    }
+    try {
+        // Default libxml2 handler writes schema errors to stderr. A no-op
+        // keeps the status call quiet and does not build an error object.
+        silence(ctx, silentFn, 0);
+        return validateDoc(ctx, docPtr);
+    } finally {
+        freeCtxt(ctx);
+    }
+};
+
 let memoizedValidator: Promise<XsdValidator> | undefined;
 
 /**
@@ -93,6 +150,11 @@ const ensureFsProviders = async (): Promise<void> => {
 
 const buildWasmValidator = async (): Promise<XsdValidator> => {
     const { XmlDocument, XsdValidator: WasmXsdValidator, XmlValidateError } = await import("libxml2-wasm");
+    const libxml2 = await import("libxml2-wasm/lib/libxml2.mjs");
+    const { xmlSchemaFreeValidCtxt, xmlSchemaNewValidCtxt, xmlSchemaSetValidStructuredErrors, xmlSchemaValidateDoc } = libxml2;
+    // addFunction is exported by the ESM build and missing from the .d.mts.
+    const { addFunction } = libxml2 as unknown as { addFunction: (fn: () => void, signature: string) => number };
+    const silentFn = typeof addFunction === "function" ? (silentSchemaErrors ??= addFunction(() => undefined, "vii")) : undefined;
     const { readFile } = await import("node:fs/promises");
     await ensureFsProviders();
 
@@ -170,20 +232,48 @@ const buildWasmValidator = async (): Promise<XsdValidator> => {
         }
 
         try {
-            validator.validate(xmlDoc);
-            return [];
-        } catch (err) {
-            if (err instanceof XmlValidateError) {
-                return err.details.map((d) => ({
-                    severity: "error" as const,
-                    code: "xsd-validation-failed",
-                    message: d.message,
-                    ...(d.file !== undefined ? { path: d.file } : {}),
-                    ...(d.line !== undefined ? { line: d.line } : {}),
-                }));
+            // Status 0 is a pass: the integer is enough, and building
+            // XmlValidateError would throw away an empty detail list.
+            // Status > 0 still collects messages — the ignore list and
+            // isWordBlockingXsdIssue both match text the integer does not carry.
+            const status =
+                silentFn === undefined
+                    ? undefined
+                    : schemaValidateStatus(
+                          validator,
+                          xmlDoc,
+                          xmlSchemaNewValidCtxt,
+                          xmlSchemaFreeValidCtxt,
+                          xmlSchemaValidateDoc,
+                          xmlSchemaSetValidStructuredErrors,
+                          silentFn,
+                      );
+            if (status === 0) {
+                xsdValidateStats.statusOnlyPasses += 1;
+                return [];
             }
-            const message = err instanceof Error ? err.message : String(err);
-            return [{ severity: "error", code: "xsd-validation-failed", message }];
+            xsdValidateStats.messageCollections += 1;
+            if (status !== undefined && status < 0) {
+                return [
+                    { severity: "error", code: "xsd-validation-failed", message: "XSD engine failed: invalid input or internal error" },
+                ];
+            }
+            try {
+                validator.validate(xmlDoc);
+                return [];
+            } catch (err) {
+                if (err instanceof XmlValidateError) {
+                    return err.details.map((d) => ({
+                        severity: "error" as const,
+                        code: "xsd-validation-failed",
+                        message: d.message,
+                        ...(d.file !== undefined ? { path: d.file } : {}),
+                        ...(d.line !== undefined ? { line: d.line } : {}),
+                    }));
+                }
+                const message = err instanceof Error ? err.message : String(err);
+                return [{ severity: "error", code: "xsd-validation-failed", message: `XSD engine failed: ${message}` }];
+            }
         } finally {
             xmlDoc.dispose();
         }
