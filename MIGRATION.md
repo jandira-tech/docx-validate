@@ -4,7 +4,7 @@ Notes for upgrading between breaking releases of `docx-validate`.
 The project follows [SemVer](https://semver.org/spec/v2.0.0.html); under `0.x`,
 minor versions carry breaking changes.
 
-## 0.53.0-rc.0
+## 0.53.0-rc.1
 
 The low-level `validate()` result now requires `xsdWalk: { started, parts, eligible }`. Callers reading existing result fields keep working; typed test doubles or manually constructed `ValidateRunResult` objects must include the trace. `started: false, parts: [], eligible: 0` represents a path that did not enter XSD.
 

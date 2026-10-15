@@ -6,7 +6,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [0.53.0-rc.0] — 2026-10-15
+## [0.53.0-rc.1] — 2026-10-15
 
 Changes since the latest GitHub release, `v0.52.0` (2026-10-06), through 2026-10-15. This prerelease is published under npm's `next` tag; it does not advance `latest`.
 
@@ -25,6 +25,7 @@ Changes since the latest GitHub release, `v0.52.0` (2026-10-06), through 2026-10
 
 ### Fixed
 
+- Accept both npm 11 array metadata and npm 12 package-keyed metadata in the prerelease package guard. The initial GitHub candidate, `v0.53.0-rc.0`, stopped at this check and was never published to npm.
 - Guard temporary original-part extraction with the shared path-containment resolver and retain nested paths for schema selection ([#193](https://github.com/jandira-tech/docx-validate/pull/193)). This hardens the boundary; a critical exploit through normal JSZip loading was not demonstrated.
 - Use stable DOM snapshots in mutation-sensitive loops and normalize PowerPoint notes relationship targets ([#190](https://github.com/jandira-tech/docx-validate/pull/190)).
 - Preserve Word-blocking XSD errors beyond the reporting cap; keep schema/engine failures blocking; guard private WASM pointers, reuse callbacks, and fall back to public validation when the fast path is unavailable.
@@ -182,5 +183,5 @@ commits — the changelog starts here.
 [0.1.3]: https://github.com/jandira-tech/docx-validate/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/jandira-tech/docx-validate/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/jandira-tech/docx-validate/releases/tag/v0.1.1
-[0.53.0-rc.0]: https://github.com/jandira-tech/docx-validate/compare/v0.52.0...v0.53.0-rc.0
-[Unreleased]: https://github.com/jandira-tech/docx-validate/compare/v0.53.0-rc.0...HEAD
+[0.53.0-rc.1]: https://github.com/jandira-tech/docx-validate/compare/v0.52.0...v0.53.0-rc.1
+[Unreleased]: https://github.com/jandira-tech/docx-validate/compare/v0.53.0-rc.1...HEAD
