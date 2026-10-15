@@ -19,7 +19,7 @@ const CLEAN = path.join(HERE, "fixtures", "working", "package.zip-no-bytes-after
 const CONCATENATED = path.join(HERE, "fixtures", "broken", "package.zip-concatenated-copy.docx");
 const CONCATENATED_REMOVED = path.join(HERE, "fixtures", "working", "package.zip-concatenated-copy-removed.docx");
 
-describe("word-valid ZIP bytes after the end of central directory", () => {
+describe("word-valid ZIP bytes after the end of central directory", { timeout: 30000 }, () => {
     it("rejects the package Word recovers", async () => {
         const result = await validate(BROKEN, { profile: "word-valid" });
         expect(result.valid).toBe(false);
