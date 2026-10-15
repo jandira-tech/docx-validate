@@ -254,7 +254,9 @@ const buildWasmValidator = async (): Promise<XsdValidator> => {
             }
             xsdValidateStats.messageCollections += 1;
             if (status !== undefined && status < 0) {
-                return [{ severity: "error", code: "xsd-validation-failed", message: "Invalid input or internal error" }];
+                return [
+                    { severity: "error", code: "xsd-validation-failed", message: "XSD engine failed: invalid input or internal error" },
+                ];
             }
             try {
                 validator.validate(xmlDoc);
@@ -270,7 +272,7 @@ const buildWasmValidator = async (): Promise<XsdValidator> => {
                     }));
                 }
                 const message = err instanceof Error ? err.message : String(err);
-                return [{ severity: "error", code: "xsd-validation-failed", message }];
+                return [{ severity: "error", code: "xsd-validation-failed", message: `XSD engine failed: ${message}` }];
             }
         } finally {
             xmlDoc.dispose();

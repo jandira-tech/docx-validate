@@ -468,7 +468,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     private wordBlocksXsdError(rel: string, error: string): boolean {
         const truncated = error.length > 250 ? `${error.slice(0, 250)}...` : error;
         const message = `  - ${truncated}`;
-        if (message.includes("Schema load failed")) return true;
+        if (message.includes("Schema load failed") || message.includes("XSD engine failed:")) return true;
         return isWordBlockingXsdIssue({ severity: "error", message, path: rel, code: "xsd-error" });
     }
 
@@ -532,7 +532,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 // A schema the engine could not load is not a Word-tolerated
                 // quirk. The ignore list already dropped the Dublin Core
                 // false positive before this issue was built.
-                if (issue.message.includes("Schema load failed")) return true;
+                if (issue.message.includes("Schema load failed") || issue.message.includes("XSD engine failed:")) return true;
                 return isWordBlockingXsdIssue(issue);
             default:
                 return false;

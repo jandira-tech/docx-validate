@@ -14,7 +14,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import JSZip from "jszip";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import * as xsdMod from "../src/lib/xsd-validator";
 import { validate, type ValidateRunResult } from "../src/scripts/office/validate";
@@ -97,6 +97,21 @@ const withTailPart = async (src: string, dir: string): Promise<string> => {
 };
 
 describe("word-valid XSD yes/no walk", { timeout: 120_000 }, () => {
+    it("does not downgrade an XSD engine failure to a Word-tolerated warning", async () => {
+        const factory = vi.spyOn(xsdMod, "createXsdValidator").mockResolvedValue({
+            validate: async () => [
+                { severity: "error", code: "xsd-validation-failed", message: "XSD engine failed: invalid input or internal error" },
+            ],
+        });
+        try {
+            const result = await validate(PGSZ, { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            expect(result.issues.some((issue) => issue.severity === "error" && issue.message.includes("XSD engine failed:"))).toBe(true);
+        } finally {
+            factory.mockRestore();
+        }
+    });
+
     it("returns no on a blocking non-XSD defect before XSD starts", async () => {
         const result = await validate(EMPTY_RELS, { profile: "word-valid" });
         expect(result.valid).toBe(false);
