@@ -1,3 +1,8 @@
+/*
+ * Copyright 2026 Jandira Technologies, LLC
+ * Licensed under the Apache License, Version 2.0.
+ */
+
 import { describe, expect, it } from "vitest";
 import { publicationPlan, verifyPackedFiles } from "../scripts/prerelease";
 

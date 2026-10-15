@@ -183,3 +183,4 @@ commits — the changelog starts here.
 [0.1.2]: https://github.com/jandira-tech/docx-validate/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/jandira-tech/docx-validate/releases/tag/v0.1.1
 [0.53.0-rc.0]: https://github.com/jandira-tech/docx-validate/compare/v0.52.0...v0.53.0-rc.0
+[Unreleased]: https://github.com/jandira-tech/docx-validate/compare/v0.53.0-rc.0...HEAD

@@ -84,13 +84,15 @@ These are intentional behaviours of the implementation, documented at the call s
 
 14. **`pack()` accepts an `inferAuthorFunc` callback.** `inferAuthorFunc?: (unpackedDir: string, originalDocx: string) => Promise<string> | string`. When omitted, the default `inferAuthor` from `simplify-redlines.ts` is used.
 
+15. **`validate()` exposes `xsdWalk`.** `{ started, parts, eligible }` records the schema walk. Word-valid skips XSD after a blocking non-XSD defect, or stops at the first surfaced blocking schema error. Lenient and strict complete their eligible-part walks. Schema/engine failures stay blocking on Word-valid.
+
 ## ISO OOXML Strict XSD validation
 
 ISO OOXML defines two conformance classes: **Transitional** (backward-compatible, widely used) and **Strict** (pure ISO, uses different namespace URIs under `purl.oclc.org/ooxml/` instead of `schemas.openxmlformats.org/…`). Example: Strict WML uses `http://purl.oclc.org/ooxml/wordprocessingml/main` vs Transitional's `http://schemas.openxmlformats.org/wordprocessingml/2006/main`.
 
 The bundled XSD schemas under `src/scripts/office/schemas/` are Transitional-only. Applying them to Strict documents produces ~30 false-positive `xsd-*` errors per file (every element is flagged as from an unknown namespace).
 
-**Current behaviour:** `validateAgainstXsd` in `validators/base.ts` detects Strict conformance by checking each XML file's root element `namespaceURI` against `STRICT_OOXML_NAMESPACES`. When detected, XSD validation is skipped for the entire document and a single `info`-severity `xsd-strict-skipped` issue is recorded. This keeps `result.valid === true` for structurally well-formed Strict documents while being honest about the gap.
+**Current behaviour:** `validateAgainstXsd` in `validators/base.ts` detects Strict conformance by checking each XML file's root element `namespaceURI` against `STRICT_OOXML_NAMESPACES`. When detected, XSD validation is skipped for that XML part and an `info`-severity `xsd-strict-skipped` issue is recorded. Eligible Transitional parts in the same package are still validated. This avoids namespace false positives while making the schema coverage gap visible.
 
 **Future improvement:** Ship the ISO OOXML Strict XSD schemas alongside the Transitional ones and add a second dispatch path in `_getSchemaPath` / `_validateSingleFileXsd`. Deferred — requires bundling ~50 MB of additional schema files and building a Strict-aware preprocessing pipeline.
 

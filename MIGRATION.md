@@ -4,6 +4,14 @@ Notes for upgrading between breaking releases of `docx-validate`.
 The project follows [SemVer](https://semver.org/spec/v2.0.0.html); under `0.x`,
 minor versions carry breaking changes.
 
+## 0.53.0-rc.0
+
+The low-level `validate()` result now requires `xsdWalk: { started, parts, eligible }`. Callers reading existing result fields keep working; typed test doubles or manually constructed `ValidateRunResult` objects must include the trace. `started: false, parts: [], eligible: 0` represents a path that did not enter XSD.
+
+The `word-valid` profile adds checks grounded in recorded Word recovery cases, so documents previously accepted may now return blocking issue codes. Some markup-compatibility and undeclared-part edge cases remain under investigation; see `docs/really-broken/README.md`.
+
+If upgrading from npm's prior `latest` version `0.5.0`, also read the `0.52.0` migration below: the intervening GitHub release changed the XSD engine and schema-load failure handling.
+
 ## 0.51.x → 0.52.0
 
 ### XSD engine: `libxmljs2` → `libxml2-wasm`

@@ -1,3 +1,4 @@
+// cspell:words Ctxt
 /*
  * Copyright 2026 Jandira Technologies, LLC
  *

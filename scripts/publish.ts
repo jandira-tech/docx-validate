@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+/*
+ * Copyright 2026 Jandira Technologies, LLC
+ * Licensed under the Apache License, Version 2.0.
+ */
 
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";

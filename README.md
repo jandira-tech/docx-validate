@@ -146,6 +146,15 @@ const result = await validate("./redlined.docx", {
 });
 ```
 
+Word-openability checks use the `word-valid` profile. The result includes an XSD walk trace:
+
+```ts
+const result = await validate("./contract.docx", { profile: "word-valid" });
+console.log(result.xsdWalk); // { started, parts, eligible }
+```
+
+A blocking non-XSD check can return before XSD starts; otherwise Word-valid stops at the first surfaced blocking schema error. Lenient and strict still complete their XSD walks. The trace reports engine work, not a Microsoft Word invocation. Strict OOXML parts skip the bundled Transitional schemas while eligible Transitional parts still run.
+
 ### Compose individual checks with the validator classes
 
 ```ts
@@ -286,6 +295,24 @@ don't pre-populate speculatively. The schemas under
 `src/scripts/office/schemas/` remain the source of truth for _element
 definitions_; `NS` is the source of truth for _namespace URIs the TS
 code references at runtime_.
+
+## Releases and trusted publishing
+
+`pnpm run release:check` runs the prerelease preflight: type-check, type-aware lint, formatting, spelling, coverage tests, build, bundle inspection, and an npm pack dry run. It verifies that the package contains its ESM entry, declarations, and bundled Word schema. It publishes nothing.
+
+Update `package.json` and `CHANGELOG.md`, run the preflight, commit, and tag the tested commit. Create a GitHub release for that tag; mark versions such as `0.53.0-rc.0` as prereleases. Publishing uses [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/) from `publish.yml`, with the existing `npm-publish` environment, `id-token: write`, a GitHub-hosted Node 24 runner, and no dependency caches or npm publish token.
+
+The npm trusted publisher must authorize organization `jandira-tech`, repository `docx-validate`, workflow filename `publish.yml`, environment `npm-publish`, and direct `npm publish`. Package ownership and the trusted-publisher configuration are separate settings.
+
+The workflow checks out the exact release tag, verifies its package version and GitHub prerelease status, runs the preflight again, and publishes with provenance. Prerelease versions go to `next`; stable versions go to `latest`.
+
+To retry publishing an existing tag through the same GitHub workflow:
+
+```sh
+pnpm run release:publish v0.53.0-rc.0
+```
+
+This dispatches Actions; it does not use local npm credentials. Monitor the [publish workflow](https://github.com/jandira-tech/docx-validate/actions/workflows/publish.yml) for the registry result. An npm version already published cannot be overwritten.
 
 ## License
 
