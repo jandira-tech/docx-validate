@@ -17,12 +17,15 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-import { describe, expect, it } from "vitest";
+import JSZip from "jszip";
+import { describe, expect, it, vi } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
 
 class HarnessValidator extends BaseSchemaValidator {
-    // Subclass concrete-only so we can instantiate.
+    originalErrors(xmlFile: string): Promise<Set<string>> {
+        return this._getOriginalFileErrors(xmlFile);
+    }
 }
 
 const RELS_HEADER = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`;
@@ -34,6 +37,44 @@ async function writeFile(p: string, content: string): Promise<void> {
 }
 
 describe("BaseSchemaValidator", () => {
+    describe("original-file extraction", () => {
+        it("rejects an out-of-root part before reading or writing its ZIP payload", async () => {
+            await withTempDir(async (dir) => {
+                const originalFile = path.join(dir, "original.docx");
+                await fs.writeFile(originalFile, await new JSZip().generateAsync({ type: "nodebuffer" }));
+                const readPayload = vi.fn().mockResolvedValue(Buffer.from("malicious"));
+                const zip = new JSZip();
+                // JSZip normally sanitizes traversal names. Model a ZIP provider
+                // returning one so this extraction boundary is tested directly.
+                const entry = { async: readPayload } as unknown as JSZip.JSZipObject;
+                zip.files["../escaped.xml"] = entry;
+                const load = vi.spyOn(JSZip, "loadAsync").mockResolvedValue(zip);
+                const escaped = path.join(dir, "escaped.xml");
+                const validator = new HarnessValidator({ unpackedDir: path.join(dir, "unpacked"), originalFile });
+                try {
+                    await expect(validator.originalErrors(escaped)).rejects.toThrow("Refusing to extract entry outside output dir");
+                    expect(readPayload).not.toHaveBeenCalled();
+                    await expect(fs.access(escaped)).rejects.toThrow();
+                } finally {
+                    load.mockRestore();
+                }
+            });
+        });
+
+        it("keeps nested part paths for schema selection", async () => {
+            await withTempDir(async (dir) => {
+                const originalFile = path.join(dir, "original.docx");
+                const zip = new JSZip();
+                zip.file("word/theme/theme1.xml", '<a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"/>');
+                await fs.writeFile(originalFile, await zip.generateAsync({ type: "nodebuffer" }));
+                const validator = new HarnessValidator({ unpackedDir: path.join(dir, "unpacked"), originalFile });
+                const errors = await validator.originalErrors(path.join(dir, "unpacked/word/theme/theme1.xml"));
+                expect(errors.size).toBeGreaterThan(0);
+                expect([...errors].some((message) => message.includes("themeElements"))).toBe(true);
+            });
+        });
+    });
+
     describe("validateXml", () => {
         it("flags malformed XML", async () => {
             await withTempDir(async (dir) => {
