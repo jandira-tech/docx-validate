@@ -465,8 +465,10 @@ export class BaseSchemaValidator {
                 const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
                 const root = dom.documentElement;
                 if (root) {
-                    const rels = getElementsByTagNameNSAll(root,
-                        "http://schemas.openxmlformats.org/package/2006/relationships", "Relationship",
+                    const rels = getElementsByTagNameNSAll(
+                        root,
+                        "http://schemas.openxmlformats.org/package/2006/relationships",
+                        "Relationship",
                     );
                     if (rels.length === 0) {
                         // Additional check: only mark as empty if the root also has no
