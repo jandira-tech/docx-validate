@@ -1,6 +1,9 @@
+import { execFile } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 import { describe, expect, it } from "vitest";
 
-import { getElementsByTagNameAll, getElementsByTagNameNSAll, parseXml } from "../src/lib/xml-helpers";
+import { getElementsByTagNameAll, getElementsByTagNameNSAll, parseXml, prettyXml } from "../src/lib/xml-helpers";
 
 const DOC = `<?xml version="1.0"?>
 <pkg:document xmlns:pkg="urn:root" xmlns:pkga="urn:a" xmlns:pkgb="urn:b">
@@ -54,4 +57,31 @@ describe("xml-helpers element collectors", () => {
         // 3 = x:a + x:b + nested x:a; the starting element itself is excluded.
         expect(getElementsByTagNameAll(aRoot)).toHaveLength(3);
     });
+});
+
+describe("prettyXml", () => {
+    it("preserves inline text after opening and empty tags", () => {
+        expect(prettyXml(parseXml("<r><a>text</a><empty/>tail</r>"))).toBe("<r>\n  <a>text\n  </a>\n  <empty/>tail\n</r>");
+    });
+
+    it("preserves formatting around comments, processing instructions, and CDATA", () => {
+        expect(prettyXml(parseXml("<r><!-- <a -->tail<?pi?><![CDATA[<a>]]>text</r>"))).toBe(
+            "<r>\n  <!-- <a -->tail\n  <?pi ?>\n  <![CDATA[<a>]]>text\n</r>",
+        );
+    });
+
+    it("handles repeated tag starts in a comment within a bounded child process", async () => {
+        const moduleUrl = new URL("../src/lib/xml-helpers.ts", import.meta.url).href;
+        const script = `
+            import { strict as assert } from "node:assert";
+            import { parseXml, prettyXml } from ${JSON.stringify(moduleUrl)};
+            const comment = "<!-- " + "< ".repeat(200_000) + "> trailing -->";
+            const xml = "<root>" + comment + "tail</root>";
+            assert.equal(prettyXml(parseXml(xml)), "<root>\\n  " + comment + "\\n  tail\\n</root>");
+        `;
+        await promisify(execFile)(process.execPath, ["--import", "tsx", "--input-type=module", "--eval", script], {
+            cwd: fileURLToPath(new URL("..", import.meta.url)),
+            timeout: 5_000,
+        });
+    }, 10_000);
 });
