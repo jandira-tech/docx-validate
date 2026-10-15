@@ -76,6 +76,25 @@ export const serializeXml = (node: Node, encoding?: string): string => {
     return xml;
 };
 
+// Match the former /<[^/!?][^>]*>$/ suffix check in one backward scan.
+// Retrying the regex at each '<' made comments with repeated '< ' quadratic.
+const hasOpeningTagSuffix = (line: string): boolean => {
+    const end = line.length - 1;
+    if (line[end] !== ">") {
+        return false;
+    }
+    for (let i = end - 1; i >= 0; i -= 1) {
+        // An earlier '>' can only be consumed as the tag's second character.
+        if (line[i] === ">") {
+            return i > 0 && line[i - 1] === "<";
+        }
+        if (i < end - 1 && line[i] === "<" && !"/!?".includes(line[i + 1])) {
+            return true;
+        }
+    }
+    return false;
+};
+
 /**
  * Pretty-print a DOM `Document` with the given indent (default two spaces).
  * Mirrors Python's `doc.toprettyxml(indent="  ")`.
@@ -119,7 +138,7 @@ export const prettyXml = (node: Node, indent = "  "): string => {
         }
         if (lines.length > 0 && !lines[lines.length - 1].endsWith(">")) {
             lines[lines.length - 1] += trimmed;
-        } else if (lines.length > 0 && /<[^/!?][^>]*>$/.test(lines[lines.length - 1])) {
+        } else if (lines.length > 0 && hasOpeningTagSuffix(lines[lines.length - 1])) {
             lines[lines.length - 1] += trimmed;
         } else {
             lines.push(indent.repeat(depth) + trimmed);
