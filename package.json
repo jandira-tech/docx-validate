@@ -1,6 +1,6 @@
 {
     "name": "docx-validate",
-    "version": "0.52.0",
+    "version": "0.53.0-rc.0",
     "description": "OOXML validators and redline/comment helpers for .docx and .pptx files. XSD-backed, TypeScript, ESM, for the neurotic developer.",
     "homepage": "https://github.com/jandira-tech/docx-validate#readme",
     "bugs": {
@@ -70,7 +70,8 @@
         "cspell": "cspell \"{src,tests}/**/*.{ts,md}\" && cspell \"./*.*\"",
         "docs": "typedoc src/index.ts --tsconfig tsconfig.typedoc.json",
         "release": "tsx scripts/release.ts",
-        "release:publish": "git push --follow-tags && npm publish --access public",
+        "release:check": "tsx scripts/prerelease.ts",
+        "release:publish": "tsx scripts/publish.ts",
         "prepublishOnly": "vp run build"
     },
     "devDependencies": {
