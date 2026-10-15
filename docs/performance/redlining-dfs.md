@@ -10,9 +10,9 @@ pnpm exec tsx scripts/bench-redlining.ts /path/to/parent/src/scripts/office/vali
 
 The synthetic input has one insertion, nested content controls, a deletion, and equally many deleted/inserted text runs. Depth and run count both scale with `size`. Each row is the mean of five runs after one warmup, including file reading, XML parsing, both validators, and diagnostic construction. Both implementations return identical counts on this input.
 
-| Size | Parent | DFS |
-| --- | ---: | ---: |
-| 200 | 22.97 ms | 17.46 ms |
-| 800 | 60.90 ms | 67.71 ms |
+| Size |   Parent |      DFS |
+| ---- | -------: | -------: |
+| 200  | 22.97 ms | 17.46 ms |
+| 800  | 60.90 ms | 67.71 ms |
 
 These local results are noisy and do **not** establish a consistent end-to-end speedup. Other runs on the same machine favored DFS at both sizes; XML parsing, allocation, and concurrent work affect the total. The implementation removes repeated ancestor walks and descendant scans, but this is an algorithmic change, not evidence for a fixed product-level speedup. Benchmark representative real documents before making stronger performance claims.
