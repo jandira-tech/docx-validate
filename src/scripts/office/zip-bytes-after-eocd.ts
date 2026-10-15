@@ -108,7 +108,7 @@ const bytesHiddenByLaterEocd = (buf: Uint8Array): number => {
     for (let offset = bytes.indexOf(EOCD_BYTES); offset >= 0 && offset < lastStart; offset = bytes.indexOf(EOCD_BYTES, offset + 1)) {
         if (offset + EOCD_FIXED_LENGTH > buf.length) continue;
         const end = recordEnd(buf, offset);
-        if (end > buf.length || end === buf.length) continue;
+        if (end >= buf.length) continue;
         if (!isStructuralEocd(buf, offset)) continue;
         if (!abutsCentralDirectory(buf, offset)) continue;
         return buf.length - end;
