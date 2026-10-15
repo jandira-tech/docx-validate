@@ -35,7 +35,7 @@ describe("word error explanations", () => {
     });
 });
 
-describe("word error explanations — CLI wiring", { timeout: 30000 }, () => {
+describe("word error explanations — CLI wiring", () => {
     it("prints the explanation line under --profile word-valid for a mapped code", async () => {
         const { execFile } = await import("node:child_process");
         const { promisify } = await import("node:util");
