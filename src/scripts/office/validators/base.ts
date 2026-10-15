@@ -48,6 +48,7 @@ import type { Profile, ValidationIssue, ValidationResult } from "../../../lib/ty
 import { DEFAULT_PROFILE, OK_RESULT } from "../../../lib/types";
 import { createXsdValidator, type XsdValidator } from "../../../lib/xsd-validator";
 import { getElementsByTagNameNSAll, getElementsByTagNameAll, parseXml, serializeXml } from "../../../lib/xml-helpers";
+import { resolveSafeZipEntry } from "../../../lib/zip-path";
 
 /**
  * Schema mapping table — file basename / suffix → relative path inside the
@@ -464,8 +465,10 @@ export class BaseSchemaValidator {
                 const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
                 const root = dom.documentElement;
                 if (root) {
-                    const rels = getElementsByTagNameNSAll(root,
-                        "http://schemas.openxmlformats.org/package/2006/relationships", "Relationship",
+                    const rels = getElementsByTagNameNSAll(
+                        root,
+                        "http://schemas.openxmlformats.org/package/2006/relationships",
+                        "Relationship",
                     );
                     if (rels.length === 0) {
                         // Additional check: only mark as empty if the root also has no
@@ -1408,7 +1411,7 @@ export class BaseSchemaValidator {
             // tmpDir/<basename> alone drops that scope and reports unchanged
             // errors as new on every diff.
             const relPosix = rel.split(path.sep).join("/");
-            const tmpFile = path.join(tmpDir, relPosix);
+            const tmpFile = resolveSafeZipEntry(tmpDir, relPosix);
             await fs.mkdir(path.dirname(tmpFile), { recursive: true });
             await fs.writeFile(tmpFile, await entry.async("nodebuffer"));
             // Reuse the same single-file XSD validator — we do NOT diff again here
