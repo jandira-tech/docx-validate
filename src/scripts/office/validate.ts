@@ -37,7 +37,7 @@ import { Command } from "commander";
 import JSZip from "jszip";
 
 import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
-import { DEFAULT_PROFILE, mergeResults, type Profile, type ValidationIssue, type ValidationResult } from "../../lib/types";
+import { DEFAULT_PROFILE, mergeResults, type Profile, type ValidationResult } from "../../lib/types";
 import { extractZipEntries } from "../../lib/zip-path";
 import { countZipBytesAfterEocd, zipEocdCommentOverrun } from "./zip-bytes-after-eocd";
 import { BaseSchemaValidator } from "./validators/base";
@@ -132,7 +132,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         return withTempDir(async (tempDir) => {
             const buf = await fs.readFile(target);
             const overrun = profile === "word-valid" ? zipEocdCommentOverrun(buf) : undefined;
-            const envelopeIssues: ValidationIssue[] = overrun
+            const envelopeIssues: ValidationResult["issues"] = overrun
                 ? [
                       {
                           severity: "error",
