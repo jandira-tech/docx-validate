@@ -675,6 +675,48 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
             return "align commentsIds/commentsExtensible IDs with comments.xml when the target comment thread is unambiguous";
         case "word-drawing-scalar-whitespace":
             return "trim leading and trailing whitespace around scalar DrawingML values";
+        case "word-drawing-arc-radius":
+            return "replace non-integer a:arcTo wR and hR radii with integers";
+        case "word-empty-drawing":
+            return "remove the empty w:drawing or give it a wp:anchor or wp:inline child";
+        case "word-drawing-extent-negative":
+            return "replace each negative wp:extent cx or cy with a positive integer";
+        case "word-anchor-missing-attribute":
+            return "add the missing locked, layoutInCell, or allowOverlap attribute on wp:anchor";
+        case "word-position-offset-and-align":
+            return "keep only wp:posOffset or only wp:align inside wp:positionH and wp:positionV";
+        case "word-sdt-id-empty":
+            return "set the empty w:sdtPr/w:id w:val to a number";
+        case "word-attached-toolbar-utf8":
+            return "replace each EF BF BD sequence in the attached toolbar that wne:toolbarData references";
+        case "word-row-without-cell":
+            return "remove the table row that has no w:tc, or add a cell to it";
+        case "word-cell-ends-with-table":
+            return "add a w:p after the w:tbl that is the table cell's last child";
+        case "word-numbering-picture-bullet":
+            return "remove the w:lvlPicBulletId that names no w:numPicBullet, or add that picture bullet";
+        case "word-footnote-reference-missing":
+            return "remove the w:footnoteReference whose id matches no w:footnote, or add that footnote";
+        case "word-textbox-deleted-text":
+            return "remove w:delText and w:delInstrText that sit in the text box outside a w:del; mc:Fallback text boxes and a w:del inside the text box are not this defect";
+        case "word-move-from-deleted-text":
+            return "use w:t inside w:moveFrom instead of w:delText";
+        case "word-choice-requires-undeclared":
+            return "declare the mc:Choice Requires prefix on that element or an ancestor";
+        case "ct-uncovered-part":
+            return "remove the part or add a Default or Override that gives it a content type";
+        case "word-text-contains-paragraph":
+            return "move w:p elements out of the w:t text run that contains them";
+        case "word-hyperlink-relationship":
+            return "point the w:hyperlink r:id at an external hyperlink relationship, or remove the r:id";
+        case "word-duplicate-theme-relationship":
+            return "keep a single theme relationship in the part's .rels file";
+        case "word-duplicate-font-table-relationship":
+            return "keep a single font table relationship in the part's .rels file";
+        case "word-duplicate-web-settings-relationship":
+            return "keep a single web settings relationship in the part's .rels file";
+        case "word-duplicate-settings-relationship":
+            return "keep a single settings relationship in the part's .rels file";
         default:
             return xsdRepairAction(issue);
     }

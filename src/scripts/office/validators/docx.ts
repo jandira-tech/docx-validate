@@ -52,6 +52,7 @@ import {
     BaseSchemaValidator,
     collectDeclaredPrefixes,
     containRelationshipTarget,
+    OFFICE_RELATIONSHIPS_NAMESPACE,
     PACKAGE_RELATIONSHIPS_NAMESPACE,
     XML_NAMESPACE,
 } from "./base";
@@ -117,6 +118,7 @@ const W15_NAMESPACE = "http://schemas.microsoft.com/office/word/2012/wordml";
 const W16CEX_NAMESPACE = "http://schemas.microsoft.com/office/word/2018/wordml/cex";
 const W16CID_NAMESPACE = "http://schemas.microsoft.com/office/word/2016/wordml/cid";
 const MATH_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/math";
+const MC_NAMESPACE = "http://schemas.openxmlformats.org/markup-compatibility/2006";
 const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types";
 const VML_NAMESPACE = "urn:schemas-microsoft-com:vml";
 const WP_NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
@@ -491,7 +493,87 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-math-parse":
             case "word-math-spre-body":
             case "word-content-type-invalid":
+            // A part with no Override and no Default makes Word offer recovery
+            // ([trash]/0000.dat). A part that has a content type but no
+            // relationship is tolerated, so rels-unreferenced stays a warning.
+            case "ct-uncovered-part":
             case "word-drawing-scalar-whitespace":
+            case "word-drawing-arc-radius":
+            case "word-empty-drawing":
+            // A wp:extent cx or cy that is a negative integer makes Word
+            // report an open error (fixture 2213). One negative attribute
+            // is enough. The same drawings with positive extents open clean.
+            // Zero and positive extents are not this defect.
+            case "word-drawing-extent-negative":
+            // A wp:anchor missing locked, layoutInCell, or allowOverlap makes
+            // Word refuse the file (fixture 1061). One missing attribute on
+            // one anchor is enough. Adding that attribute opens clean.
+            // simplePos, relativeHeight, and the wrap distances are not this
+            // defect.
+            case "word-anchor-missing-attribute":
+            // A wp:positionH or wp:positionV that contains both wp:posOffset
+            // and wp:align makes Word refuse the file (fixture 1061). One
+            // such element is enough. Either child alone opens clean.
+            case "word-position-offset-and-align":
+            // A w:sdtPr/w:id with w:val="" makes Word refuse the file (fixture
+            // 1830). Setting that value to a number opens clean.
+            case "word-sdt-id-empty":
+            // word/attachedToolbars.bin referenced by wne:toolbarData contains
+            // the UTF-8 replacement sequence EF BF BD (fixture 2130). One
+            // sequence is enough. The same bytes in a part toolbarData does
+            // not reference are tolerated. A toolbar whose sequences have
+            // been replaced, including button-flag bytes set to 0x10, opens
+            // clean.
+            case "word-attached-toolbar-utf8":
+            // A w:tr with no w:tc makes Word report an open error (fixture 1993).
+            // Removing w:gridBefore and leaving the row still errors. One cell
+            // opens clean, so gridBefore is not the cause.
+            case "word-row-without-cell":
+            // A w:tc whose last element child is w:tbl makes Word offer
+            // recovery (fixture 0792). One such cell is enough. Inserting
+            // an empty w:p after that table opens clean. Removing the
+            // trailing w:p from a cell Word opened clean makes it warn.
+            // A cell that already ends with w:p is not this defect.
+            case "word-cell-ends-with-table":
+            // w:delText or w:delInstrText inside w:txbxContent makes Word
+            // offer recovery when no w:del inside that text box wraps it.
+            // That content sits in a VML text box (fixture 0011) or a
+            // drawingML wps:txbx (fixture 0044). The same elements in the
+            // document body are tolerated. An mc:Fallback text box is
+            // tolerated (fixture 2054): Word uses the sibling mc:Choice.
+            // A w:del inside the text box is tolerated (fixture 0948).
+            // A w:del outside the text box does not cover the text-box story.
+            case "word-textbox-deleted-text":
+            // w:delText inside w:moveFrom makes Word offer recovery (fixture
+            // 0726). One such element is enough. w:t inside w:moveFrom opens
+            // clean, and w:delText in the document body is tolerated.
+            case "word-move-from-deleted-text":
+            // mc:Choice @Requires names a prefix that is not declared on
+            // that element or an ancestor (fixture 0508). Word offers
+            // recovery. A declaration on a descendant, or on the fallback
+            // sibling, does not put the prefix in scope.
+            case "word-choice-requires-undeclared":
+            case "word-text-contains-paragraph":
+            case "word-hyperlink-relationship":
+            case "word-duplicate-theme-relationship":
+            case "word-duplicate-font-table-relationship":
+            case "word-duplicate-web-settings-relationship":
+            // Two settings relationships in one .rels part make Word offer
+            // recovery (fixture 0689). A second relationship that targets
+            // the same settings.xml still warns. One settings relationship
+            // opens clean.
+            case "word-duplicate-settings-relationship":
+            // w:lvlPicBulletId whose value is not a w:numPicBullet id in the
+            // same numbering part makes Word offer recovery (fixture 1541).
+            // Removing that element opens clean. The p16 restart and durableId
+            // attributes on the same part stayed, and Word still opened clean.
+            case "word-numbering-picture-bullet":
+            // A w:footnoteReference whose w:id is not a w:footnote w:id makes
+            // Word offer recovery (fixture 1829). One such reference is enough.
+            // Removing it opens clean once text-box deleted text is also gone.
+            // A reference that names a present footnote opens clean. Duplicate
+            // footnote ids are not this defect.
+            case "word-footnote-reference-missing":
             // Both root-caused against real Word (minimal-repair + re-probe) and
             // verified disjoint from the Word-clean corpus (0/350): an unresolved
             // DocumentBuilder <Insert> directive -> OPEN_ERROR; a docProps boolean
@@ -533,8 +615,37 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     private async validateWordOpenCompatibility(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        await this.validateWordContentTypes(issues);
-        await this.validateDrawingScalarTextWhitespace(issues);
+        const documents = new Map<string, Promise<Document>>();
+        const readXml = (xmlFile: string): Promise<Document> => {
+            let document = documents.get(xmlFile);
+            if (!document) {
+                document = fs.readFile(xmlFile, "utf-8").then((source) => parseXml(source));
+                documents.set(xmlFile, document);
+            }
+            return document;
+        };
+        await this.validateWordContentTypes(issues, readXml);
+        await this.validateDrawingScalarTextWhitespace(issues, readXml);
+        await this.validateDrawingArcRadii(issues, readXml);
+        await this.validateDrawingExtentSigns(issues, readXml);
+        await this.validateEmptyDrawings(issues, readXml);
+        await this.validateAnchorRequiredAttributes(issues, readXml);
+        await this.validatePositionOffsetAndAlign(issues, readXml);
+        await this.validateRowsWithoutCells(issues, readXml);
+        await this.validateCellsEndingWithTable(issues, readXml);
+        await this.validateTextBoxDeletedText(issues, readXml);
+        await this.validateMoveFromDeletedText(issues, readXml);
+        await this.validateTextContainsParagraph(issues, readXml);
+        await this.validateHyperlinkRelationships(issues, readXml);
+        await this.validateDuplicateThemeRelationships(issues, readXml);
+        await this.validateDuplicateFontTableRelationships(issues, readXml);
+        await this.validateDuplicateWebSettingsRelationships(issues, readXml);
+        await this.validateDuplicateSettingsRelationships(issues, readXml);
+        await this.validateChoiceRequiresPrefixes(issues, readXml);
+        await this.validateSdtIdEmpty(issues, readXml);
+        await this.validateAttachedToolbarUtf8(issues, readXml);
+        await this.validateNumberingPictureBullets(issues, readXml);
+        await this.validateDanglingFootnoteReferences(issues, readXml);
         const documentXml = this.xmlFiles.find(
             (xmlFile) => baseName(xmlFile) === "document.xml" && this.relPath(xmlFile).startsWith("word/"),
         );
@@ -542,7 +653,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(documentXml, "utf-8"));
+            dom = await readXml(documentXml);
         } catch (err) {
             issues.push({
                 severity: "error",
@@ -581,11 +692,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         return finalize(issues);
     }
 
-    private async validateWordContentTypes(issues: ValidationIssue[]): Promise<void> {
+    private async validateWordContentTypes(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
         const contentTypesFile = path.join(this.unpackedDir, "[Content_Types].xml");
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(contentTypesFile, "utf-8"));
+            dom = await readXml(contentTypesFile);
         } catch {
             return;
         }
@@ -613,11 +724,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         }
     }
 
-    private async validateDrawingScalarTextWhitespace(issues: ValidationIssue[]): Promise<void> {
+    private async validateDrawingScalarTextWhitespace(
+        issues: ValidationIssue[],
+        readXml: (xmlFile: string) => Promise<Document>,
+    ): Promise<void> {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await readXml(xmlFile);
             } catch {
                 continue;
             }
@@ -640,6 +754,950 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                             code: "word-drawing-scalar-whitespace",
                         });
                     }
+                }
+            }
+        }
+    }
+
+    private async validateDrawingArcRadii(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = await readXml(xmlFile);
+            } catch {
+                continue;
+            }
+            const arcs = getElementsByTagNameNSAll(dom, DRAWINGML_NAMESPACE, "arcTo");
+            for (let i = 0; i < arcs.length; i += 1) {
+                const arc = arcs[i];
+                if (!arc) continue;
+                for (const attr of ["wR", "hR"] as const) {
+                    const value = arc.getAttribute(attr);
+                    if (value === null || /^[0-9]+$/.test(value)) continue;
+                    issues.push({
+                        severity: "error",
+                        message:
+                            `<a:arcTo> ${attr}="${value}" is not an integer. ` +
+                            "Microsoft Word cannot open the file. Use an integer radius.",
+                        path: this.relPath(xmlFile),
+                        code: "word-drawing-arc-radius",
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * A `wp:extent` whose `cx` or `cy` is a negative integer makes Word
+     * report an open error (fixture 2213). One negative attribute is enough.
+     * The same drawing with a positive extent opens clean. Zero and positive
+     * extents are not this defect.
+     */
+    private async validateDrawingExtentSigns(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = await readXml(xmlFile);
+            } catch {
+                continue;
+            }
+            const extents = getElementsByTagNameNSAll(dom, WP_NAMESPACE, "extent");
+            for (let i = 0; i < extents.length; i += 1) {
+                const extent = extents[i];
+                if (!extent) continue;
+                for (const attr of ["cx", "cy"] as const) {
+                    const value = extent.getAttribute(attr);
+                    if (value === null || !/^-\d+$/.test(value)) continue;
+                    issues.push({
+                        severity: "error",
+                        message:
+                            `<wp:extent> ${attr}="${value}" is negative. ` + "Microsoft Word cannot open the file. Use a positive extent.",
+                        path: this.relPath(xmlFile),
+                        code: "word-drawing-extent-negative",
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * An empty `w:drawing` (no element child) is not a drawing Word can load.
+     * Inside `mc:Choice Requires="wps"` Word reports an open error. Inside a
+     * `w:r` Word offers to recover the file. One such element is enough.
+     * A drawing placed directly under `w:p` is a different case: Word drops
+     * that misplaced run content and opens clean, so it is not flagged here.
+     */
+    private async validateEmptyDrawings(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = await readXml(xmlFile);
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const drawings = getElementsByTagNameNSAll(dom, ns, "drawing");
+                for (let i = 0; i < drawings.length; i += 1) {
+                    const drawing = drawings[i];
+                    if (!drawing) continue;
+                    let hasElementChild = false;
+                    for (let child = drawing.firstChild; child; child = child.nextSibling) {
+                        if (child.nodeType === 1) {
+                            hasElementChild = true;
+                            break;
+                        }
+                    }
+                    if (hasElementChild) continue;
+                    const parent = drawing.parentNode;
+                    if (parent && parent.nodeType === 1) {
+                        const parentElem = parent as Element;
+                        const parentLocal = parentElem.localName || parentElem.tagName.split(":").pop() || "";
+                        if (parentLocal === "p" && WORD_PARAGRAPH_NAMESPACES.includes(parentElem.namespaceURI ?? "")) {
+                            continue;
+                        }
+                    }
+                    issues.push({
+                        severity: "error",
+                        message:
+                            "An empty <w:drawing> has no child element. Microsoft Word does not open the file cleanly. " +
+                            "Remove the drawing, or give it a wp:anchor or wp:inline child.",
+                        path: this.relPath(xmlFile),
+                        code: "word-empty-drawing",
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * A `w:lvlPicBulletId` whose `w:val` is not the `w:numPicBulletId` of a
+     * `w:numPicBullet` in the same numbering part makes Word offer to recover
+     * the file. One such reference is enough. Removing the reference opens
+     * clean. The check does not flag a reference that names a picture bullet
+     * present in that part.
+     */
+    private async validateNumberingPictureBullets(
+        issues: ValidationIssue[],
+        readXml: (xmlFile: string) => Promise<Document>,
+    ): Promise<void> {
+        for (const xmlFile of this.xmlFiles) {
+            if (baseName(xmlFile) !== "numbering.xml") continue;
+            let dom: Document;
+            try {
+                dom = await readXml(xmlFile);
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const defined = new Set<string>();
+                const bullets = getElementsByTagNameNSAll(dom, ns, "numPicBullet");
+                for (let i = 0; i < bullets.length; i += 1) {
+                    const id = bullets[i]?.getAttributeNS(ns, "numPicBulletId");
+                    if (id) defined.add(id);
+                }
+                const refs = getElementsByTagNameNSAll(dom, ns, "lvlPicBulletId");
+                for (let i = 0; i < refs.length; i += 1) {
+                    const val = refs[i]?.getAttributeNS(ns, "val");
+                    if (!val || defined.has(val)) continue;
+                    issues.push({
+                        severity: "error",
+                        message:
+                            `A numbering level references picture bullet ${val}, and this part has no w:numPicBullet with that id. ` +
+                            "Microsoft Word offers to recover the file. " +
+                            "Remove the w:lvlPicBulletId, or add the matching picture bullet.",
+                        path: this.relPath(xmlFile),
+                        code: "word-numbering-picture-bullet",
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * A `w:footnoteReference` whose `w:id` is not the `w:id` of a `w:footnote`
+     * makes Word offer to recover the file. One such reference is enough.
+     * Removing the reference opens clean. A reference that names a footnote
+     * present in the footnotes part, including a separator, is not this defect.
+     * Two footnotes that share an id are not this defect.
+     */
+    private async validateDanglingFootnoteReferences(
+        issues: ValidationIssue[],
+        readXml: (xmlFile: string) => Promise<Document>,
+    ): Promise<void> {
+        const defined = new Set<string>();
+        for (const xmlFile of this.xmlFiles) {
+            if (baseName(xmlFile) !== "footnotes.xml") continue;
+            let dom: Document;
+            try {
+                dom = await readXml(xmlFile);
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const notes = getElementsByTagNameNSAll(dom, ns, "footnote");
+                for (let i = 0; i < notes.length; i += 1) {
+                    const id = notes[i]?.getAttributeNS(ns, "id");
+                    if (id) defined.add(id);
+                }
+            }
+        }
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = await readXml(xmlFile);
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const refs = getElementsByTagNameNSAll(dom, ns, "footnoteReference");
+                for (let i = 0; i < refs.length; i += 1) {
+                    const id = refs[i]?.getAttributeNS(ns, "id");
+                    if (!id || defined.has(id)) continue;
+                    issues.push({
+                        severity: "error",
+                        message:
+                            `A footnote reference uses id ${id}, and this package has no w:footnote with that id. ` +
+                            "Microsoft Word offers to recover the file. " +
+                            "Remove the w:footnoteReference, or add the matching footnote.",
+                        path: this.relPath(xmlFile),
+                        code: "word-footnote-reference-missing",
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * A `w:tr` with no `w:tc` descendant makes Word report an open error.
+     * One such row is enough. Removing `w:gridBefore` and leaving the row
+     * still errors. Inserting one `w:tc` opens clean. A cell inside
+     * `w:ins`, `w:del`, `w:sdt`, or a nested table still counts, because
+     * it is a descendant of that row.
+     */
+    private async validateRowsWithoutCells(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = await readXml(xmlFile);
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const rows = getElementsByTagNameNSAll(dom, ns, "tr");
+                for (let i = 0; i < rows.length; i += 1) {
+                    const row = rows[i];
+                    if (!row) continue;
+                    if (getElementsByTagNameNSAll(row, ns, "tc").length > 0) continue;
+                    issues.push({
+                        severity: "error",
+                        message:
+                            "A table row contains no w:tc cell. Microsoft Word cannot open the file. " + "Remove the row or add a cell.",
+                        path: this.relPath(xmlFile),
+                        code: "word-row-without-cell",
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * A `wp:anchor` missing `locked`, `layoutInCell`, or `allowOverlap` makes
+     * Word refuse to open the file. One missing attribute on one anchor is
+     * enough. Adding that attribute opens clean. `simplePos`, `relativeHeight`,
+     * and the wrap distances are not this defect.
+     */
+    private async validateAnchorRequiredAttributes(
+        issues: ValidationIssue[],
+        readXml: (xmlFile: string) => Promise<Document>,
+    ): Promise<void> {
+        const required = ["locked", "layoutInCell", "allowOverlap"] as const;
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = await readXml(xmlFile);
+            } catch {
+                continue;
+            }
+            const anchors = getElementsByTagNameNSAll(dom, WP_NAMESPACE, "anchor");
+            for (let i = 0; i < anchors.length; i += 1) {
+                const anchor = anchors[i];
+                if (!anchor) continue;
+                for (const attr of required) {
+                    if (anchor.getAttribute(attr) !== null) continue;
+                    issues.push({
+                        severity: "error",
+                        message: `A wp:anchor is missing ${attr}. ` + "Microsoft Word cannot open the file. Add that attribute.",
+                        path: this.relPath(xmlFile),
+                        code: "word-anchor-missing-attribute",
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * `wp:positionH` or `wp:positionV` containing both `wp:posOffset` and
+     * `wp:align` makes Word refuse to open the file. One such element is
+     * enough. Either child alone opens clean.
+     */
+    private async validatePositionOffsetAndAlign(
+        issues: ValidationIssue[],
+        readXml: (xmlFile: string) => Promise<Document>,
+    ): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = await readXml(xmlFile);
+            } catch {
+                continue;
+            }
+            for (const localName of ["positionH", "positionV"] as const) {
+                const positions = getElementsByTagNameNSAll(dom, WP_NAMESPACE, localName);
+                for (let i = 0; i < positions.length; i += 1) {
+                    const position = positions[i];
+                    if (!position) continue;
+                    let hasOffset = false;
+                    let hasAlign = false;
+                    for (let j = 0; j < position.childNodes.length; j += 1) {
+                        const child = position.childNodes[j];
+                        if (!child || child.nodeType !== 1) continue;
+                        const element = child as Element;
+                        if (element.namespaceURI !== WP_NAMESPACE) continue;
+                        const local = element.localName || element.tagName.split(":").pop() || "";
+                        if (local === "posOffset") hasOffset = true;
+                        if (local === "align") hasAlign = true;
+                    }
+                    if (!hasOffset || !hasAlign) continue;
+                    issues.push({
+                        severity: "error",
+                        message:
+                            `A wp:${localName} contains both wp:posOffset and wp:align. ` +
+                            "Microsoft Word cannot open the file. Keep only one of those children.",
+                        path: this.relPath(xmlFile),
+                        code: "word-position-offset-and-align",
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * A `w:tc` whose last element child is `w:tbl` makes Word offer to
+     * recover the file. One such cell is enough. The cell may contain a
+     * paragraph before that table. Inserting an empty `w:p` after the
+     * table opens clean. A cell that already ends with `w:p` is not this
+     * defect.
+     */
+    private async validateCellsEndingWithTable(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = await readXml(xmlFile);
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const cells = getElementsByTagNameNSAll(dom, ns, "tc");
+                for (let i = 0; i < cells.length; i += 1) {
+                    const cell = cells[i];
+                    if (!cell) continue;
+                    let last: Element | null = null;
+                    for (let j = 0; j < cell.childNodes.length; j += 1) {
+                        const child = cell.childNodes[j];
+                        if (!child || child.nodeType !== 1) continue;
+                        last = child as Element;
+                    }
+                    if (!last) continue;
+                    const local = last.localName || last.tagName.split(":").pop() || "";
+                    if (local !== "tbl" || last.namespaceURI !== ns) continue;
+                    issues.push({
+                        severity: "error",
+                        message:
+                            "A table cell ends with w:tbl and has no following w:p. " +
+                            "Microsoft Word offers to recover the file. Add a w:p after that table.",
+                        path: this.relPath(xmlFile),
+                        code: "word-cell-ends-with-table",
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * `w:delText` or `w:delInstrText` inside `w:txbxContent` makes Word offer
+     * to recover the file when that text is not inside a `w:del` in the text
+     * box. One such element is enough. The text box may be a VML `v:textbox`
+     * or a drawingML `wps:txbx`. The same elements in the document body are
+     * tolerated, and a text box that contains only field characters opens
+     * clean. Deleted text whose text box sits inside `mc:Fallback` is not
+     * this defect: Word uses the sibling `mc:Choice`. A `w:del` that wraps
+     * the text inside the text box is not this defect either. A `w:del`
+     * outside the text box does not cover `w:delText` in the text-box story.
+     */
+    private async validateTextBoxDeletedText(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = await readXml(xmlFile);
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                for (const local of ["delText", "delInstrText"] as const) {
+                    const nodes = getElementsByTagNameNSAll(dom, ns, local);
+                    for (let i = 0; i < nodes.length; i += 1) {
+                        const node = nodes[i];
+                        if (!node || !this.hasTextBoxContentAncestor(node)) continue;
+                        if (this.hasMarkupCompatibilityFallbackAncestor(node)) continue;
+                        if (this.hasTextBoxDeletionAncestor(node)) continue;
+                        issues.push({
+                            severity: "error",
+                            message:
+                                "A text box contains deleted text. Microsoft Word offers to recover the file. " +
+                                "Remove the w:delText or w:delInstrText from the text box.",
+                            path: this.relPath(xmlFile),
+                            code: "word-textbox-deleted-text",
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * `w:delText` inside `w:moveFrom` makes Word offer to recover the file.
+     * One such element is enough. `w:t` inside `w:moveFrom` opens clean.
+     * `w:delText` in the document body is tolerated.
+     */
+    private async validateMoveFromDeletedText(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = await readXml(xmlFile);
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const nodes = getElementsByTagNameNSAll(dom, ns, "delText");
+                for (let i = 0; i < nodes.length; i += 1) {
+                    const node = nodes[i];
+                    if (!node || !this.hasMoveFromAncestor(node)) continue;
+                    issues.push({
+                        severity: "error",
+                        message:
+                            "A move source contains deleted text. Microsoft Word offers to recover the file. " +
+                            "Use w:t inside w:moveFrom, not w:delText.",
+                        path: this.relPath(xmlFile),
+                        code: "word-move-from-deleted-text",
+                    });
+                }
+            }
+        }
+    }
+
+    private hasMoveFromAncestor(node: Node): boolean {
+        let parent = node.parentNode;
+        while (parent && parent.nodeType === 1) {
+            const elem = parent as Element;
+            const local = elem.localName || elem.tagName.split(":").pop() || "";
+            if (local === "moveFrom" && WORD_PARAGRAPH_NAMESPACES.includes(elem.namespaceURI ?? "")) return true;
+            parent = parent.parentNode;
+        }
+        return false;
+    }
+
+    /**
+     * `mc:Choice` `@Requires` names a prefix that is not declared on that
+     * element or an ancestor. One such prefix makes Word offer to recover
+     * the file. Declaring the prefix on a descendant of the choice, or only
+     * on the fallback sibling, still warns. Declaring it on the choice or
+     * on an ancestor opens clean.
+     */
+    private async validateChoiceRequiresPrefixes(
+        issues: ValidationIssue[],
+        readXml: (xmlFile: string) => Promise<Document>,
+    ): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = await readXml(xmlFile);
+            } catch {
+                continue;
+            }
+            const choices = getElementsByTagNameNSAll(dom, MC_NAMESPACE, "Choice");
+            for (let i = 0; i < choices.length; i += 1) {
+                const choice = choices[i];
+                if (!choice) continue;
+                const requires = choice.getAttribute("Requires");
+                if (requires === null) continue;
+                const missing: string[] = [];
+                for (const prefix of requires.split(/\s+/)) {
+                    if (prefix.length === 0) continue;
+                    if (this.prefixDeclaredInScope(choice, prefix)) continue;
+                    missing.push(prefix);
+                }
+                if (missing.length === 0) continue;
+                issues.push({
+                    severity: "error",
+                    message:
+                        `mc:Choice Requires lists undeclared prefix ${missing.join(", ")}. ` +
+                        "Microsoft Word offers to recover the file. " +
+                        "Declare the prefix on the Choice element or an ancestor.",
+                    path: this.relPath(xmlFile),
+                    code: "word-choice-requires-undeclared",
+                });
+            }
+        }
+    }
+
+    /**
+     * A `w:sdtPr`/`w:id` whose `w:val` is empty makes Word refuse to open
+     * the file. Setting that value to a number opens clean.
+     */
+    private async validateSdtIdEmpty(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = await readXml(xmlFile);
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const ids = getElementsByTagNameNSAll(dom, ns, "id");
+                for (let i = 0; i < ids.length; i += 1) {
+                    const id = ids[i];
+                    if (!id) continue;
+                    const parent = id.parentNode;
+                    if (!parent || parent.nodeType !== 1) continue;
+                    const parentElem = parent as Element;
+                    const parentLocal = parentElem.localName || parentElem.tagName.split(":").pop() || "";
+                    if (parentLocal !== "sdtPr" || !WORD_PARAGRAPH_NAMESPACES.includes(parentElem.namespaceURI ?? "")) {
+                        continue;
+                    }
+                    if (id.getAttributeNS(ns, "val") !== "") continue;
+                    issues.push({
+                        severity: "error",
+                        message: 'A w:sdt has w:id w:val="". Microsoft Word cannot open the file. Set w:val to a number.',
+                        path: this.relPath(xmlFile),
+                        code: "word-sdt-id-empty",
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * `wne:toolbarData` points at an attached-toolbar part that contains the
+     * UTF-8 replacement sequence EF BF BD. One sequence makes Word offer to
+     * recover the file, or report that the custom toolbars are unsupported.
+     * Replacing the sequences opens clean. The same bytes in a part that
+     * `toolbarData` does not reference are left alone.
+     */
+    private async validateAttachedToolbarUtf8(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
+        const wordmlNs = "http://schemas.microsoft.com/office/word/2006/wordml";
+        const relationshipNamespaces = [OFFICE_RELATIONSHIPS_NAMESPACE, "http://purl.oclc.org/ooxml/officeDocument/relationships"];
+        const needle = Buffer.from([0xef, 0xbf, 0xbd]);
+        for (const xmlFile of this.xmlFiles) {
+            if (!xmlFile.endsWith(".xml")) continue;
+            let dom: Document;
+            try {
+                dom = await readXml(xmlFile);
+            } catch {
+                continue;
+            }
+            const toolbarData = getElementsByTagNameNSAll(dom, wordmlNs, "toolbarData");
+            if (toolbarData.length === 0) continue;
+            const relsFile = path.join(path.dirname(xmlFile), "_rels", `${path.basename(xmlFile)}.rels`);
+            let relDom: Document;
+            try {
+                relDom = await readXml(relsFile);
+            } catch {
+                continue;
+            }
+            const relationships = getElementsByTagNameNSAll(relDom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            for (let i = 0; i < toolbarData.length; i += 1) {
+                const elem = toolbarData[i];
+                if (!elem) continue;
+                let rid: string | null = null;
+                for (const relNs of relationshipNamespaces) {
+                    const value = elem.getAttributeNS(relNs, "id");
+                    if (value) {
+                        rid = value;
+                        break;
+                    }
+                }
+                if (!rid) rid = elem.getAttribute("r:id");
+                if (!rid) continue;
+                let target: string | null = null;
+                for (let r = 0; r < relationships.length; r += 1) {
+                    const rel = relationships[r];
+                    if (!rel || rel.getAttribute("Id") !== rid) continue;
+                    const type = rel.getAttribute("Type") ?? "";
+                    if (!type.endsWith("/attachedToolbars")) continue;
+                    target = rel.getAttribute("Target");
+                    break;
+                }
+                if (!target) continue;
+                const resolved = resolveRelationshipTargetPath(this.unpackedDir, relsFile, target);
+                if (!resolved) continue;
+                let bytes: Buffer;
+                try {
+                    bytes = await fs.readFile(resolved);
+                } catch {
+                    continue;
+                }
+                if (!bytes.includes(needle)) continue;
+                issues.push({
+                    severity: "error",
+                    message:
+                        `${this.relPath(resolved)} is referenced by wne:toolbarData and contains the UTF-8 replacement sequence EF BF BD. ` +
+                        "Microsoft Word offers to recover the file. One sequence is enough. " +
+                        "Replace each sequence with the original byte.",
+                    path: this.relPath(resolved),
+                    code: "word-attached-toolbar-utf8",
+                });
+                return;
+            }
+        }
+    }
+
+    private prefixDeclaredInScope(elem: Element, prefix: string): boolean {
+        // XML Namespaces predefines this binding, even without xmlns:xml.
+        if (prefix === "xml") return true;
+        const attrName = `xmlns:${prefix}`;
+        let current: Node | null = elem;
+        while (current && current.nodeType === 1) {
+            const attrs = (current as Element).attributes;
+            for (let i = 0; i < attrs.length; i += 1) {
+                const attr = attrs[i];
+                if (attr && attr.name === attrName) return true;
+            }
+            current = current.parentNode;
+        }
+        return false;
+    }
+
+    private hasTextBoxContentAncestor(node: Node): boolean {
+        let parent = node.parentNode;
+        while (parent && parent.nodeType === 1) {
+            const elem = parent as Element;
+            const local = elem.localName || elem.tagName.split(":").pop() || "";
+            if (local === "txbxContent" && WORD_PARAGRAPH_NAMESPACES.includes(elem.namespaceURI ?? "")) return true;
+            parent = parent.parentNode;
+        }
+        return false;
+    }
+
+    /**
+     * True when a `w:del` sits between this node and its `w:txbxContent`.
+     * Word accepts that deletion. A `w:del` outside the text box does not
+     * count, because the text-box story still contains bare `w:delText`.
+     */
+    private hasTextBoxDeletionAncestor(node: Node): boolean {
+        let parent = node.parentNode;
+        while (parent && parent.nodeType === 1) {
+            const elem = parent as Element;
+            const local = elem.localName || elem.tagName.split(":").pop() || "";
+            const ns = elem.namespaceURI ?? "";
+            if (local === "txbxContent" && WORD_PARAGRAPH_NAMESPACES.includes(ns)) return false;
+            if (local === "del" && WORD_PARAGRAPH_NAMESPACES.includes(ns)) return true;
+            parent = parent.parentNode;
+        }
+        return false;
+    }
+
+    /** True when an ancestor is `mc:Fallback`. Word ignores that branch. */
+    private hasMarkupCompatibilityFallbackAncestor(node: Node): boolean {
+        let parent = node.parentNode;
+        while (parent && parent.nodeType === 1) {
+            const elem = parent as Element;
+            const local = elem.localName || elem.tagName.split(":").pop() || "";
+            if (local === "Fallback" && elem.namespaceURI === MC_NAMESPACE) return true;
+            parent = parent.parentNode;
+        }
+        return false;
+    }
+
+    /**
+     * A `w:hyperlink` whose `r:id` does not name an external hyperlink
+     * relationship makes Word offer to recover the file. One such element is
+     * enough. Removing the `r:id`, or adding a Relationship with Type ending
+     * in `/hyperlink` and TargetMode `External`, opens clean. A hyperlink
+     * relationship without TargetMode, and an external relationship of
+     * another type, still warn. A hyperlink with no `r:id` is left alone.
+     */
+    private async validateHyperlinkRelationships(
+        issues: ValidationIssue[],
+        readXml: (xmlFile: string) => Promise<Document>,
+    ): Promise<void> {
+        const relationshipNamespaces = [OFFICE_RELATIONSHIPS_NAMESPACE, "http://purl.oclc.org/ooxml/officeDocument/relationships"];
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = await readXml(xmlFile);
+            } catch {
+                continue;
+            }
+            const rels = await this.externalHyperlinkRelationshipIds(xmlFile);
+            if (!rels) continue;
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const links = getElementsByTagNameNSAll(dom, ns, "hyperlink");
+                for (let i = 0; i < links.length; i += 1) {
+                    const link = links[i];
+                    if (!link) continue;
+                    let rid: string | null = null;
+                    for (const relNs of relationshipNamespaces) {
+                        const value = link.getAttributeNS(relNs, "id");
+                        if (value) {
+                            rid = value;
+                            break;
+                        }
+                    }
+                    if (!rid) continue;
+                    const rel = rels.get(rid);
+                    if (rel?.externalHyperlink) continue;
+                    let why: string;
+                    if (!rel) {
+                        why = `no Relationship with Id '${rid}'`;
+                    } else if (!rel.type.endsWith("/hyperlink")) {
+                        why = `Relationship '${rid}' has Type '${rel.type || "(none)"}'`;
+                    } else {
+                        why = `Relationship '${rid}' has TargetMode '${rel.targetMode || "(none)"}'`;
+                    }
+                    issues.push({
+                        severity: "error",
+                        message:
+                            `<w:hyperlink> r:id="${rid}" does not reference an external hyperlink relationship (${why}). ` +
+                            "Microsoft Word offers to recover the file. " +
+                            "Use a Relationship whose Type ends in /hyperlink and whose TargetMode is External, or remove the r:id.",
+                        path: this.relPath(xmlFile),
+                        code: "word-hyperlink-relationship",
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * `null` when the sidecar exists but cannot be parsed (another check
+     * reports that). An absent sidecar is an empty map: every `r:id` is
+     * unresolved.
+     */
+    /**
+     * Two `theme` relationships in one `.rels` part make Word offer to
+     * recover the file. Either theme part alone opens clean. A second theme
+     * whose target is rewritten from `/word/theme/...` to a relative path
+     * still warns.
+     */
+    private async validateDuplicateThemeRelationships(
+        issues: ValidationIssue[],
+        readXml: (xmlFile: string) => Promise<Document>,
+    ): Promise<void> {
+        for (const relsFile of this.xmlFiles) {
+            if (!relsFile.endsWith(".rels")) continue;
+            let dom: Document;
+            try {
+                dom = await readXml(relsFile);
+            } catch {
+                continue;
+            }
+            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const themeIds: string[] = [];
+            for (let i = 0; i < rels.length; i += 1) {
+                const rel = rels[i];
+                if (!rel) continue;
+                const type = rel.getAttribute("Type") ?? "";
+                if (!type.endsWith("/theme")) continue;
+                themeIds.push(rel.getAttribute("Id") ?? "");
+            }
+            if (themeIds.length < 2) continue;
+            issues.push({
+                severity: "error",
+                message:
+                    `${this.relPath(relsFile)} contains ${themeIds.length} theme relationships ` +
+                    `(${themeIds.join(", ")}). Microsoft Word offers to recover the file. Keep one theme relationship.`,
+                path: this.relPath(relsFile),
+                code: "word-duplicate-theme-relationship",
+            });
+        }
+    }
+
+    /**
+     * Two `fontTable` relationships in one `.rels` part make Word offer to
+     * recover the file. A second relationship that targets the same
+     * `fontTable.xml` as the first still warns. Rewriting an absolute
+     * `/word/...` target to a relative path still warns. One font table
+     * relationship opens clean. The extra part and its content type are
+     * not required for the warning.
+     */
+    private async validateDuplicateFontTableRelationships(
+        issues: ValidationIssue[],
+        readXml: (xmlFile: string) => Promise<Document>,
+    ): Promise<void> {
+        for (const relsFile of this.xmlFiles) {
+            if (!relsFile.endsWith(".rels")) continue;
+            let dom: Document;
+            try {
+                dom = await readXml(relsFile);
+            } catch {
+                continue;
+            }
+            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const fontIds: string[] = [];
+            for (let i = 0; i < rels.length; i += 1) {
+                const rel = rels[i];
+                if (!rel) continue;
+                const type = rel.getAttribute("Type") ?? "";
+                if (!type.endsWith("/fontTable")) continue;
+                fontIds.push(rel.getAttribute("Id") ?? "");
+            }
+            if (fontIds.length < 2) continue;
+            issues.push({
+                severity: "error",
+                message:
+                    `${this.relPath(relsFile)} contains ${fontIds.length} font table relationships ` +
+                    `(${fontIds.join(", ")}). Microsoft Word offers to recover the file. Keep one font table relationship.`,
+                path: this.relPath(relsFile),
+                code: "word-duplicate-font-table-relationship",
+            });
+        }
+    }
+
+    /**
+     * Two `webSettings` relationships in one `.rels` part make Word offer to
+     * recover the file. A second relationship that targets the same
+     * `webSettings.xml` as the first still warns. One web settings
+     * relationship opens clean. The extra part is not required for the warning.
+     */
+    private async validateDuplicateWebSettingsRelationships(
+        issues: ValidationIssue[],
+        readXml: (xmlFile: string) => Promise<Document>,
+    ): Promise<void> {
+        for (const relsFile of this.xmlFiles) {
+            if (!relsFile.endsWith(".rels")) continue;
+            let dom: Document;
+            try {
+                dom = await readXml(relsFile);
+            } catch {
+                continue;
+            }
+            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const webIds: string[] = [];
+            for (let i = 0; i < rels.length; i += 1) {
+                const rel = rels[i];
+                if (!rel) continue;
+                const type = rel.getAttribute("Type") ?? "";
+                if (!type.endsWith("/webSettings")) continue;
+                webIds.push(rel.getAttribute("Id") ?? "");
+            }
+            if (webIds.length < 2) continue;
+            issues.push({
+                severity: "error",
+                message:
+                    `${this.relPath(relsFile)} contains ${webIds.length} web settings relationships ` +
+                    `(${webIds.join(", ")}). Microsoft Word offers to recover the file. Keep one web settings relationship.`,
+                path: this.relPath(relsFile),
+                code: "word-duplicate-web-settings-relationship",
+            });
+        }
+    }
+
+    /**
+     * Two `settings` relationships in one `.rels` part make Word offer to
+     * recover the file. A second relationship that targets the same
+     * `settings.xml` as the first still warns. One settings relationship
+     * opens clean. The extra part is not required for the warning.
+     */
+    private async validateDuplicateSettingsRelationships(
+        issues: ValidationIssue[],
+        readXml: (xmlFile: string) => Promise<Document>,
+    ): Promise<void> {
+        for (const relsFile of this.xmlFiles) {
+            if (!relsFile.endsWith(".rels")) continue;
+            let dom: Document;
+            try {
+                dom = await readXml(relsFile);
+            } catch {
+                continue;
+            }
+            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const settingsIds: string[] = [];
+            for (let i = 0; i < rels.length; i += 1) {
+                const rel = rels[i];
+                if (!rel) continue;
+                const type = rel.getAttribute("Type") ?? "";
+                if (!type.endsWith("/settings")) continue;
+                settingsIds.push(rel.getAttribute("Id") ?? "");
+            }
+            if (settingsIds.length < 2) continue;
+            issues.push({
+                severity: "error",
+                message:
+                    `${this.relPath(relsFile)} contains ${settingsIds.length} settings relationships ` +
+                    `(${settingsIds.join(", ")}). Microsoft Word offers to recover the file. Keep one settings relationship.`,
+                path: this.relPath(relsFile),
+                code: "word-duplicate-settings-relationship",
+            });
+        }
+    }
+
+    private async externalHyperlinkRelationshipIds(
+        xmlFile: string,
+    ): Promise<Map<string, { type: string; targetMode: string; externalHyperlink: boolean }> | null> {
+        const relsFile = path.join(path.dirname(xmlFile), "_rels", `${path.basename(xmlFile)}.rels`);
+        let text: string;
+        try {
+            text = await fs.readFile(relsFile, "utf-8");
+        } catch {
+            return new Map();
+        }
+        let dom: Document;
+        try {
+            dom = parseXml(text);
+        } catch {
+            return null;
+        }
+        const out = new Map<string, { type: string; targetMode: string; externalHyperlink: boolean }>();
+        const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+        for (let i = 0; i < rels.length; i += 1) {
+            const rel = rels[i];
+            if (!rel) continue;
+            const id = rel.getAttribute("Id");
+            if (!id) continue;
+            const type = rel.getAttribute("Type") ?? "";
+            const targetMode = rel.getAttribute("TargetMode") ?? "";
+            out.set(id, {
+                type,
+                targetMode,
+                externalHyperlink: type.endsWith("/hyperlink") && targetMode === "External",
+            });
+        }
+        return out;
+    }
+
+    private async validateTextContainsParagraph(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
+        for (const xmlFile of this.userTextXmlFiles()) {
+            let dom: Document;
+            try {
+                dom = await readXml(xmlFile);
+            } catch {
+                continue;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const texts = getElementsByTagNameNSAll(dom, ns, "t");
+                for (let i = 0; i < texts.length; i += 1) {
+                    const text = texts[i];
+                    if (!text) continue;
+                    const nested = getElementsByTagNameNSAll(text, ns, "p");
+                    if (nested.length === 0) continue;
+                    issues.push({
+                        severity: "error",
+                        message:
+                            `A <w:t> element contains ${nested.length} <w:p> element(s). ` +
+                            "Microsoft Word cannot open the file. Move the paragraph out of the text run.",
+                        path: this.relPath(xmlFile),
+                        code: "word-text-contains-paragraph",
+                    });
                 }
             }
         }
