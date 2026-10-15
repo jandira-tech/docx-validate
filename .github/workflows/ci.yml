@@ -21,15 +21,18 @@ jobs:
                 # cutover removed that constraint.
                 node-version: ["24", "26"]
         steps:
-            - uses: actions/checkout@v5
+            - uses: actions/checkout@v4
 
             # pnpm MUST be on PATH before setup-node resolves `cache: pnpm`
             # (it shells out to `pnpm store path`), otherwise the job dies
             # with "Unable to locate executable file: pnpm".
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
             - uses: pnpm/action-setup@v4
               # version comes from the packageManager field in package.json
 
-            - uses: actions/setup-node@v5
+            - uses: actions/setup-node@v4
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: pnpm
@@ -50,7 +53,7 @@ jobs:
               run: pnpm exec vitest run --coverage
 
             - name: Upload coverage to Codecov
-              uses: codecov/codecov-action@v5
+              uses: codecov/codecov-action@v4
               with:
                   token: ${{ secrets.CODECOV_TOKEN }}
                   files: ./coverage/lcov.info
