@@ -18,9 +18,7 @@ describe("word-valid non-integer DrawingML arc radius", () => {
     it("rejects an a:arcTo radius Word cannot open", async () => {
         const result = await validate(BROKEN, { profile: "word-valid" });
         expect(result.valid).toBe(false);
-        expect(
-            result.issues.some((issue) => issue.severity === "error" && issue.code === "word-drawing-arc-radius"),
-        ).toBe(true);
+        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "word-drawing-arc-radius")).toBe(true);
     });
 
     it("does not reject the same document once every arc radius is an integer", async () => {

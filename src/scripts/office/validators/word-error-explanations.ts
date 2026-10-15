@@ -51,12 +51,10 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
         "A wp:anchor is missing locked, layoutInCell, or allowOverlap. Word cannot open the file. Add the missing attribute.",
     "word-position-offset-and-align":
         "A wp:positionH or wp:positionV contains both wp:posOffset and wp:align. Word cannot open the file. Keep only one of those children.",
-    "word-sdt-id-empty":
-        'A w:sdt has w:id w:val="". Word cannot open the file. Set w:val to a number.',
+    "word-sdt-id-empty": 'A w:sdt has w:id w:val="". Word cannot open the file. Set w:val to a number.',
     "word-attached-toolbar-utf8":
         "An attached toolbar referenced by wne:toolbarData contains the UTF-8 replacement sequence EF BF BD. Word offers to recover the file. Replace each sequence with the original byte. The same bytes in a part that toolbarData does not reference are not this defect.",
-    "word-row-without-cell":
-        "A table row contains no w:tc cell. Word cannot open the file. Remove the row or add a cell.",
+    "word-row-without-cell": "A table row contains no w:tc cell. Word cannot open the file. Remove the row or add a cell.",
     "word-cell-ends-with-table":
         "A table cell ends with w:tbl and has no following w:p. Word offers to recover the file. Add a w:p after that table.",
     "word-numbering-picture-bullet":
