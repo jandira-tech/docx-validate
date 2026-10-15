@@ -586,28 +586,37 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     private async validateWordOpenCompatibility(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        await this.validateWordContentTypes(issues);
-        await this.validateDrawingScalarTextWhitespace(issues);
-        await this.validateDrawingArcRadii(issues);
-        await this.validateDrawingExtentSigns(issues);
-        await this.validateEmptyDrawings(issues);
-        await this.validateAnchorRequiredAttributes(issues);
-        await this.validatePositionOffsetAndAlign(issues);
-        await this.validateRowsWithoutCells(issues);
-        await this.validateCellsEndingWithTable(issues);
-        await this.validateTextBoxDeletedText(issues);
-        await this.validateMoveFromDeletedText(issues);
-        await this.validateTextContainsParagraph(issues);
-        await this.validateHyperlinkRelationships(issues);
-        await this.validateDuplicateThemeRelationships(issues);
-        await this.validateDuplicateFontTableRelationships(issues);
-        await this.validateDuplicateWebSettingsRelationships(issues);
-        await this.validateDuplicateSettingsRelationships(issues);
-        await this.validateChoiceRequiresPrefixes(issues);
-        await this.validateSdtIdEmpty(issues);
-        await this.validateAttachedToolbarUtf8(issues);
-        await this.validateNumberingPictureBullets(issues);
-        await this.validateDanglingFootnoteReferences(issues);
+        const documents = new Map<string, Promise<Document>>();
+        const readXml = (xmlFile: string): Promise<Document> => {
+            let document = documents.get(xmlFile);
+            if (!document) {
+                document = fs.readFile(xmlFile, "utf-8").then((source) => parseXml(source));
+                documents.set(xmlFile, document);
+            }
+            return document;
+        };
+        await this.validateWordContentTypes(issues, readXml);
+        await this.validateDrawingScalarTextWhitespace(issues, readXml);
+        await this.validateDrawingArcRadii(issues, readXml);
+        await this.validateDrawingExtentSigns(issues, readXml);
+        await this.validateEmptyDrawings(issues, readXml);
+        await this.validateAnchorRequiredAttributes(issues, readXml);
+        await this.validatePositionOffsetAndAlign(issues, readXml);
+        await this.validateRowsWithoutCells(issues, readXml);
+        await this.validateCellsEndingWithTable(issues, readXml);
+        await this.validateTextBoxDeletedText(issues, readXml);
+        await this.validateMoveFromDeletedText(issues, readXml);
+        await this.validateTextContainsParagraph(issues, readXml);
+        await this.validateHyperlinkRelationships(issues, readXml);
+        await this.validateDuplicateThemeRelationships(issues, readXml);
+        await this.validateDuplicateFontTableRelationships(issues, readXml);
+        await this.validateDuplicateWebSettingsRelationships(issues, readXml);
+        await this.validateDuplicateSettingsRelationships(issues, readXml);
+        await this.validateChoiceRequiresPrefixes(issues, readXml);
+        await this.validateSdtIdEmpty(issues, readXml);
+        await this.validateAttachedToolbarUtf8(issues, readXml);
+        await this.validateNumberingPictureBullets(issues, readXml);
+        await this.validateDanglingFootnoteReferences(issues, readXml);
         const documentXml = this.xmlFiles.find(
             (xmlFile) => baseName(xmlFile) === "document.xml" && this.relPath(xmlFile).startsWith("word/"),
         );
@@ -615,7 +624,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(documentXml, "utf-8"));
+            dom = await readXml(documentXml);
         } catch (err) {
             issues.push({
                 severity: "error",
@@ -654,11 +663,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         return finalize(issues);
     }
 
-    private async validateWordContentTypes(issues: ValidationIssue[]): Promise<void> {
+    private async validateWordContentTypes(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
         const contentTypesFile = path.join(this.unpackedDir, "[Content_Types].xml");
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(contentTypesFile, "utf-8"));
+            dom = await readXml(contentTypesFile);
         } catch {
             return;
         }
@@ -686,11 +695,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         }
     }
 
-    private async validateDrawingScalarTextWhitespace(issues: ValidationIssue[]): Promise<void> {
+    private async validateDrawingScalarTextWhitespace(
+        issues: ValidationIssue[],
+        readXml: (xmlFile: string) => Promise<Document>,
+    ): Promise<void> {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await readXml(xmlFile);
             } catch {
                 continue;
             }
@@ -718,11 +730,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         }
     }
 
-    private async validateDrawingArcRadii(issues: ValidationIssue[]): Promise<void> {
+    private async validateDrawingArcRadii(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await readXml(xmlFile);
             } catch {
                 continue;
             }
@@ -752,11 +764,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * The same drawing with a positive extent opens clean. Zero and positive
      * extents are not this defect.
      */
-    private async validateDrawingExtentSigns(issues: ValidationIssue[]): Promise<void> {
+    private async validateDrawingExtentSigns(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await readXml(xmlFile);
             } catch {
                 continue;
             }
@@ -770,8 +782,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     issues.push({
                         severity: "error",
                         message:
-                            `<wp:extent> ${attr}="${value}" is negative. ` +
-                            "Microsoft Word cannot open the file. Use a positive extent.",
+                            `<wp:extent> ${attr}="${value}" is negative. ` + "Microsoft Word cannot open the file. Use a positive extent.",
                         path: this.relPath(xmlFile),
                         code: "word-drawing-extent-negative",
                     });
@@ -787,11 +798,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * A drawing placed directly under `w:p` is a different case: Word drops
      * that misplaced run content and opens clean, so it is not flagged here.
      */
-    private async validateEmptyDrawings(issues: ValidationIssue[]): Promise<void> {
+    private async validateEmptyDrawings(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await readXml(xmlFile);
             } catch {
                 continue;
             }
@@ -836,12 +847,15 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * clean. The check does not flag a reference that names a picture bullet
      * present in that part.
      */
-    private async validateNumberingPictureBullets(issues: ValidationIssue[]): Promise<void> {
+    private async validateNumberingPictureBullets(
+        issues: ValidationIssue[],
+        readXml: (xmlFile: string) => Promise<Document>,
+    ): Promise<void> {
         for (const xmlFile of this.xmlFiles) {
             if (baseName(xmlFile) !== "numbering.xml") continue;
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await readXml(xmlFile);
             } catch {
                 continue;
             }
@@ -877,13 +891,16 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * present in the footnotes part, including a separator, is not this defect.
      * Two footnotes that share an id are not this defect.
      */
-    private async validateDanglingFootnoteReferences(issues: ValidationIssue[]): Promise<void> {
+    private async validateDanglingFootnoteReferences(
+        issues: ValidationIssue[],
+        readXml: (xmlFile: string) => Promise<Document>,
+    ): Promise<void> {
         const defined = new Set<string>();
         for (const xmlFile of this.xmlFiles) {
             if (baseName(xmlFile) !== "footnotes.xml") continue;
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await readXml(xmlFile);
             } catch {
                 continue;
             }
@@ -898,7 +915,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await readXml(xmlFile);
             } catch {
                 continue;
             }
@@ -928,11 +945,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * `w:ins`, `w:del`, `w:sdt`, or a nested table still counts, because
      * it is a descendant of that row.
      */
-    private async validateRowsWithoutCells(issues: ValidationIssue[]): Promise<void> {
+    private async validateRowsWithoutCells(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await readXml(xmlFile);
             } catch {
                 continue;
             }
@@ -945,8 +962,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     issues.push({
                         severity: "error",
                         message:
-                            "A table row contains no w:tc cell. Microsoft Word cannot open the file. " +
-                            "Remove the row or add a cell.",
+                            "A table row contains no w:tc cell. Microsoft Word cannot open the file. " + "Remove the row or add a cell.",
                         path: this.relPath(xmlFile),
                         code: "word-row-without-cell",
                     });
@@ -961,12 +977,15 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * enough. Adding that attribute opens clean. `simplePos`, `relativeHeight`,
      * and the wrap distances are not this defect.
      */
-    private async validateAnchorRequiredAttributes(issues: ValidationIssue[]): Promise<void> {
+    private async validateAnchorRequiredAttributes(
+        issues: ValidationIssue[],
+        readXml: (xmlFile: string) => Promise<Document>,
+    ): Promise<void> {
         const required = ["locked", "layoutInCell", "allowOverlap"] as const;
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await readXml(xmlFile);
             } catch {
                 continue;
             }
@@ -978,9 +997,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     if (anchor.getAttribute(attr) !== null) continue;
                     issues.push({
                         severity: "error",
-                        message:
-                            `A wp:anchor is missing ${attr}. ` +
-                            "Microsoft Word cannot open the file. Add that attribute.",
+                        message: `A wp:anchor is missing ${attr}. ` + "Microsoft Word cannot open the file. Add that attribute.",
                         path: this.relPath(xmlFile),
                         code: "word-anchor-missing-attribute",
                     });
@@ -994,11 +1011,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * `wp:align` makes Word refuse to open the file. One such element is
      * enough. Either child alone opens clean.
      */
-    private async validatePositionOffsetAndAlign(issues: ValidationIssue[]): Promise<void> {
+    private async validatePositionOffsetAndAlign(
+        issues: ValidationIssue[],
+        readXml: (xmlFile: string) => Promise<Document>,
+    ): Promise<void> {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await readXml(xmlFile);
             } catch {
                 continue;
             }
@@ -1039,11 +1059,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * table opens clean. A cell that already ends with `w:p` is not this
      * defect.
      */
-    private async validateCellsEndingWithTable(issues: ValidationIssue[]): Promise<void> {
+    private async validateCellsEndingWithTable(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await readXml(xmlFile);
             } catch {
                 continue;
             }
@@ -1085,11 +1105,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * the text inside the text box is not this defect either. A `w:del`
      * outside the text box does not cover `w:delText` in the text-box story.
      */
-    private async validateTextBoxDeletedText(issues: ValidationIssue[]): Promise<void> {
+    private async validateTextBoxDeletedText(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await readXml(xmlFile);
             } catch {
                 continue;
             }
@@ -1120,11 +1140,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * One such element is enough. `w:t` inside `w:moveFrom` opens clean.
      * `w:delText` in the document body is tolerated.
      */
-    private async validateMoveFromDeletedText(issues: ValidationIssue[]): Promise<void> {
+    private async validateMoveFromDeletedText(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await readXml(xmlFile);
             } catch {
                 continue;
             }
@@ -1164,11 +1184,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * on the fallback sibling, still warns. Declaring it on the choice or
      * on an ancestor opens clean.
      */
-    private async validateChoiceRequiresPrefixes(issues: ValidationIssue[]): Promise<void> {
+    private async validateChoiceRequiresPrefixes(
+        issues: ValidationIssue[],
+        readXml: (xmlFile: string) => Promise<Document>,
+    ): Promise<void> {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await readXml(xmlFile);
             } catch {
                 continue;
             }
@@ -1202,11 +1225,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * A `w:sdtPr`/`w:id` whose `w:val` is empty makes Word refuse to open
      * the file. Setting that value to a number opens clean.
      */
-    private async validateSdtIdEmpty(issues: ValidationIssue[]): Promise<void> {
+    private async validateSdtIdEmpty(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await readXml(xmlFile);
             } catch {
                 continue;
             }
@@ -1225,8 +1248,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     if (id.getAttributeNS(ns, "val") !== "") continue;
                     issues.push({
                         severity: "error",
-                        message:
-                            'A w:sdt has w:id w:val="". Microsoft Word cannot open the file. Set w:val to a number.',
+                        message: 'A w:sdt has w:id w:val="". Microsoft Word cannot open the file. Set w:val to a number.',
                         path: this.relPath(xmlFile),
                         code: "word-sdt-id-empty",
                     });
@@ -1242,18 +1264,15 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * Replacing the sequences opens clean. The same bytes in a part that
      * `toolbarData` does not reference are left alone.
      */
-    private async validateAttachedToolbarUtf8(issues: ValidationIssue[]): Promise<void> {
+    private async validateAttachedToolbarUtf8(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
         const wordmlNs = "http://schemas.microsoft.com/office/word/2006/wordml";
-        const relationshipNamespaces = [
-            OFFICE_RELATIONSHIPS_NAMESPACE,
-            "http://purl.oclc.org/ooxml/officeDocument/relationships",
-        ];
+        const relationshipNamespaces = [OFFICE_RELATIONSHIPS_NAMESPACE, "http://purl.oclc.org/ooxml/officeDocument/relationships"];
         const needle = Buffer.from([0xef, 0xbf, 0xbd]);
         for (const xmlFile of this.xmlFiles) {
             if (!xmlFile.endsWith(".xml")) continue;
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await readXml(xmlFile);
             } catch {
                 continue;
             }
@@ -1262,7 +1281,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             const relsFile = path.join(path.dirname(xmlFile), "_rels", `${path.basename(xmlFile)}.rels`);
             let relDom: Document;
             try {
-                relDom = parseXml(await fs.readFile(relsFile, "utf-8"));
+                relDom = await readXml(relsFile);
             } catch {
                 continue;
             }
@@ -1314,6 +1333,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     }
 
     private prefixDeclaredInScope(elem: Element, prefix: string): boolean {
+        // XML Namespaces predefines this binding, even without xmlns:xml.
+        if (prefix === "xml") return true;
         const attrName = `xmlns:${prefix}`;
         let current: Node | null = elem;
         while (current && current.nodeType === 1) {
@@ -1376,15 +1397,15 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * relationship without TargetMode, and an external relationship of
      * another type, still warn. A hyperlink with no `r:id` is left alone.
      */
-    private async validateHyperlinkRelationships(issues: ValidationIssue[]): Promise<void> {
-        const relationshipNamespaces = [
-            OFFICE_RELATIONSHIPS_NAMESPACE,
-            "http://purl.oclc.org/ooxml/officeDocument/relationships",
-        ];
+    private async validateHyperlinkRelationships(
+        issues: ValidationIssue[],
+        readXml: (xmlFile: string) => Promise<Document>,
+    ): Promise<void> {
+        const relationshipNamespaces = [OFFICE_RELATIONSHIPS_NAMESPACE, "http://purl.oclc.org/ooxml/officeDocument/relationships"];
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await readXml(xmlFile);
             } catch {
                 continue;
             }
@@ -1439,12 +1460,15 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * whose target is rewritten from `/word/theme/...` to a relative path
      * still warns.
      */
-    private async validateDuplicateThemeRelationships(issues: ValidationIssue[]): Promise<void> {
+    private async validateDuplicateThemeRelationships(
+        issues: ValidationIssue[],
+        readXml: (xmlFile: string) => Promise<Document>,
+    ): Promise<void> {
         for (const relsFile of this.xmlFiles) {
             if (!relsFile.endsWith(".rels")) continue;
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(relsFile, "utf-8"));
+                dom = await readXml(relsFile);
             } catch {
                 continue;
             }
@@ -1477,12 +1501,15 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * relationship opens clean. The extra part and its content type are
      * not required for the warning.
      */
-    private async validateDuplicateFontTableRelationships(issues: ValidationIssue[]): Promise<void> {
+    private async validateDuplicateFontTableRelationships(
+        issues: ValidationIssue[],
+        readXml: (xmlFile: string) => Promise<Document>,
+    ): Promise<void> {
         for (const relsFile of this.xmlFiles) {
             if (!relsFile.endsWith(".rels")) continue;
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(relsFile, "utf-8"));
+                dom = await readXml(relsFile);
             } catch {
                 continue;
             }
@@ -1513,12 +1540,15 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * `webSettings.xml` as the first still warns. One web settings
      * relationship opens clean. The extra part is not required for the warning.
      */
-    private async validateDuplicateWebSettingsRelationships(issues: ValidationIssue[]): Promise<void> {
+    private async validateDuplicateWebSettingsRelationships(
+        issues: ValidationIssue[],
+        readXml: (xmlFile: string) => Promise<Document>,
+    ): Promise<void> {
         for (const relsFile of this.xmlFiles) {
             if (!relsFile.endsWith(".rels")) continue;
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(relsFile, "utf-8"));
+                dom = await readXml(relsFile);
             } catch {
                 continue;
             }
@@ -1549,12 +1579,15 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * `settings.xml` as the first still warns. One settings relationship
      * opens clean. The extra part is not required for the warning.
      */
-    private async validateDuplicateSettingsRelationships(issues: ValidationIssue[]): Promise<void> {
+    private async validateDuplicateSettingsRelationships(
+        issues: ValidationIssue[],
+        readXml: (xmlFile: string) => Promise<Document>,
+    ): Promise<void> {
         for (const relsFile of this.xmlFiles) {
             if (!relsFile.endsWith(".rels")) continue;
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(relsFile, "utf-8"));
+                dom = await readXml(relsFile);
             } catch {
                 continue;
             }
@@ -1613,11 +1646,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         return out;
     }
 
-    private async validateTextContainsParagraph(issues: ValidationIssue[]): Promise<void> {
+    private async validateTextContainsParagraph(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = await readXml(xmlFile);
             } catch {
                 continue;
             }

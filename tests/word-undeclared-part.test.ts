@@ -18,9 +18,7 @@ describe("word-valid part with no content type", { timeout: 30000 }, () => {
     it("rejects a package part that [Content_Types].xml does not declare", async () => {
         const result = await validate(BROKEN, { profile: "word-valid" });
         expect(result.valid).toBe(false);
-        expect(
-            result.issues.some((issue) => issue.severity === "error" && issue.code === "ct-uncovered-part"),
-        ).toBe(true);
+        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "ct-uncovered-part")).toBe(true);
     });
 
     it("does not reject the document once that part is removed", async () => {

@@ -29,6 +29,7 @@
  */
 
 const EOCD_SIGNATURE = 0x06054b50;
+const EOCD_BYTES = Buffer.from([0x50, 0x4b, 0x05, 0x06]);
 const CENTRAL_DIRECTORY_SIGNATURE = 0x02014b50;
 const ZIP64_LOCATOR_SIGNATURE = 0x07064b50;
 const EOCD_FIXED_LENGTH = 22;
@@ -82,8 +83,7 @@ export const zipEocdCommentOverrun = (buf: Uint8Array): ZipEocdCommentOverrun | 
     return undefined;
 };
 
-const recordEnd = (buf: Uint8Array, offset: number): number =>
-    offset + EOCD_FIXED_LENGTH + readU16(buf, offset + 20);
+const recordEnd = (buf: Uint8Array, offset: number): number => offset + EOCD_FIXED_LENGTH + readU16(buf, offset + 20);
 
 /** The central directory ends where this end-of-central-directory record begins. */
 const abutsCentralDirectory = (buf: Uint8Array, offset: number): boolean => {
@@ -101,8 +101,11 @@ const abutsCentralDirectory = (buf: Uint8Array, offset: number): boolean => {
  */
 const bytesHiddenByLaterEocd = (buf: Uint8Array): number => {
     const lastStart = buf.length - EOCD_FIXED_LENGTH;
-    for (let offset = 0; offset < lastStart; offset += 1) {
-        if (readU32(buf, offset) !== EOCD_SIGNATURE) continue;
+    // Search signatures in native code rather than reading every byte in JS.
+    // Keep checking earlier records even when the last EOCD ends at EOF:
+    // concatenated archives have that layout too (Word still recovers them).
+    const bytes = Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength);
+    for (let offset = bytes.indexOf(EOCD_BYTES); offset >= 0 && offset < lastStart; offset = bytes.indexOf(EOCD_BYTES, offset + 1)) {
         if (offset + EOCD_FIXED_LENGTH > buf.length) continue;
         const end = recordEnd(buf, offset);
         if (end > buf.length || end === buf.length) continue;

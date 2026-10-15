@@ -28,10 +28,8 @@ describe("word-valid attached toolbar UTF-8 replacement", { timeout: 30000 }, ()
         expect(result.valid).toBe(true);
     });
 
-    it("does not report the cause on lenient or strict", async () => {
-        for (const profile of ["lenient", "strict"] as const) {
-            const result = await validate(BROKEN, { profile });
-            expect(result.issues.some((issue) => issue.code === "word-attached-toolbar-utf8")).toBe(false);
-        }
+    it.each(["lenient", "strict"] as const)("does not report the cause on %s", async (profile) => {
+        const result = await validate(BROKEN, { profile });
+        expect(result.issues.some((issue) => issue.code === "word-attached-toolbar-utf8")).toBe(false);
     });
 });

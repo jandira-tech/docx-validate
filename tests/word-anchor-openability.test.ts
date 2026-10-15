@@ -35,11 +35,9 @@ describe("word-valid anchor attributes and position choice", { timeout: 30000 },
         expect(result.valid).toBe(true);
     });
 
-    it("does not report the causes on lenient or strict", async () => {
-        for (const profile of ["lenient", "strict"] as const) {
-            const result = await validate(BROKEN, { profile });
-            expect(result.issues.some((issue) => issue.code === "word-anchor-missing-attribute")).toBe(false);
-            expect(result.issues.some((issue) => issue.code === "word-position-offset-and-align")).toBe(false);
-        }
+    it.each(["lenient", "strict"] as const)("does not report the causes on %s", async (profile) => {
+        const result = await validate(BROKEN, { profile });
+        expect(result.issues.some((issue) => issue.code === "word-anchor-missing-attribute")).toBe(false);
+        expect(result.issues.some((issue) => issue.code === "word-position-offset-and-align")).toBe(false);
     });
 });

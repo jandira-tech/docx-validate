@@ -18,9 +18,7 @@ describe("word-valid cell that ends with a table", { timeout: 30000 }, () => {
     it("rejects a table cell whose last child is w:tbl", async () => {
         const result = await validate(BROKEN, { profile: "word-valid" });
         expect(result.valid).toBe(false);
-        expect(
-            result.issues.some((issue) => issue.severity === "error" && issue.code === "word-cell-ends-with-table"),
-        ).toBe(true);
+        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "word-cell-ends-with-table")).toBe(true);
     });
 
     it("does not reject the document once that cell ends with w:p", async () => {
@@ -29,10 +27,8 @@ describe("word-valid cell that ends with a table", { timeout: 30000 }, () => {
         expect(result.valid).toBe(true);
     });
 
-    it("does not report the cause on lenient or strict", async () => {
-        for (const profile of ["lenient", "strict"] as const) {
-            const result = await validate(BROKEN, { profile });
-            expect(result.issues.some((issue) => issue.code === "word-cell-ends-with-table")).toBe(false);
-        }
+    it.each(["lenient", "strict"] as const)("does not report the cause on %s", async (profile) => {
+        const result = await validate(BROKEN, { profile });
+        expect(result.issues.some((issue) => issue.code === "word-cell-ends-with-table")).toBe(false);
     });
 });

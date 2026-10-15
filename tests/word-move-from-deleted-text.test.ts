@@ -18,11 +18,7 @@ describe("word-valid move source deleted text", { timeout: 30000 }, () => {
     it("rejects one w:delText inside w:moveFrom", async () => {
         const result = await validate(BROKEN, { profile: "word-valid" });
         expect(result.valid).toBe(false);
-        expect(
-            result.issues.some(
-                (issue) => issue.severity === "error" && issue.code === "word-move-from-deleted-text",
-            ),
-        ).toBe(true);
+        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "word-move-from-deleted-text")).toBe(true);
     });
 
     it("does not reject w:t inside w:moveFrom", async () => {
@@ -31,10 +27,8 @@ describe("word-valid move source deleted text", { timeout: 30000 }, () => {
         expect(result.valid).toBe(true);
     });
 
-    it("does not report the cause on lenient or strict", async () => {
-        for (const profile of ["lenient", "strict"] as const) {
-            const result = await validate(BROKEN, { profile });
-            expect(result.issues.some((issue) => issue.code === "word-move-from-deleted-text")).toBe(false);
-        }
+    it.each(["lenient", "strict"] as const)("does not report the cause on %s", async (profile) => {
+        const result = await validate(BROKEN, { profile });
+        expect(result.issues.some((issue) => issue.code === "word-move-from-deleted-text")).toBe(false);
     });
 });

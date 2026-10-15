@@ -24,21 +24,13 @@ describe("word-valid deleted text in a text box", { timeout: 30000 }, () => {
     it("rejects w:delText inside a VML text box", async () => {
         const result = await validate(DEL_TEXT, { profile: "word-valid" });
         expect(result.valid).toBe(false);
-        expect(
-            result.issues.some(
-                (issue) => issue.severity === "error" && issue.code === "word-textbox-deleted-text",
-            ),
-        ).toBe(true);
+        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "word-textbox-deleted-text")).toBe(true);
     });
 
     it("rejects w:delText inside a drawingML text box", async () => {
         const result = await validate(DEL_SHAPE, { profile: "word-valid" });
         expect(result.valid).toBe(false);
-        expect(
-            result.issues.some(
-                (issue) => issue.severity === "error" && issue.code === "word-textbox-deleted-text",
-            ),
-        ).toBe(true);
+        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "word-textbox-deleted-text")).toBe(true);
     });
 
     it("does not reject that drawing once the deleted text is ordinary text", async () => {
@@ -50,11 +42,7 @@ describe("word-valid deleted text in a text box", { timeout: 30000 }, () => {
     it("rejects w:delInstrText inside a VML text box", async () => {
         const result = await validate(DEL_INSTR, { profile: "word-valid" });
         expect(result.valid).toBe(false);
-        expect(
-            result.issues.some(
-                (issue) => issue.severity === "error" && issue.code === "word-textbox-deleted-text",
-            ),
-        ).toBe(true);
+        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "word-textbox-deleted-text")).toBe(true);
     });
 
     it("does not reject the text box once that deleted text is removed", async () => {
@@ -63,21 +51,15 @@ describe("word-valid deleted text in a text box", { timeout: 30000 }, () => {
         expect(result.valid).toBe(true);
     });
 
-    it("does not report the cause on lenient or strict", async () => {
-        for (const profile of ["lenient", "strict"] as const) {
-            const result = await validate(DEL_TEXT, { profile });
-            expect(result.issues.some((issue) => issue.code === "word-textbox-deleted-text")).toBe(false);
-        }
+    it.each(["lenient", "strict"] as const)("does not report the cause on %s", async (profile) => {
+        const result = await validate(DEL_TEXT, { profile });
+        expect(result.issues.some((issue) => issue.code === "word-textbox-deleted-text")).toBe(false);
     });
 
     it("rejects w:delText inside an mc:Choice text box", async () => {
         const result = await validate(CHOICE_DEL, { profile: "word-valid" });
         expect(result.valid).toBe(false);
-        expect(
-            result.issues.some(
-                (issue) => issue.severity === "error" && issue.code === "word-textbox-deleted-text",
-            ),
-        ).toBe(true);
+        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "word-textbox-deleted-text")).toBe(true);
     });
 
     it("does not reject w:delText wrapped in a w:del inside the text box", async () => {
@@ -92,10 +74,8 @@ describe("word-valid deleted text in a text box", { timeout: 30000 }, () => {
         expect(result.valid).toBe(true);
     });
 
-    it("does not report the choice-box cause on lenient or strict", async () => {
-        for (const profile of ["lenient", "strict"] as const) {
-            const result = await validate(CHOICE_DEL, { profile });
-            expect(result.issues.some((issue) => issue.code === "word-textbox-deleted-text")).toBe(false);
-        }
+    it.each(["lenient", "strict"] as const)("does not report the choice-box cause on %s", async (profile) => {
+        const result = await validate(CHOICE_DEL, { profile });
+        expect(result.issues.some((issue) => issue.code === "word-textbox-deleted-text")).toBe(false);
     });
 });

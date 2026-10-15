@@ -18,11 +18,9 @@ describe("word-valid duplicate font table relationship", () => {
     it("rejects a document relationships part with two font table relationships", async () => {
         const result = await validate(BROKEN, { profile: "word-valid" });
         expect(result.valid).toBe(false);
-        expect(
-            result.issues.some(
-                (issue) => issue.severity === "error" && issue.code === "word-duplicate-font-table-relationship",
-            ),
-        ).toBe(true);
+        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "word-duplicate-font-table-relationship")).toBe(
+            true,
+        );
     });
 
     it("does not reject the document once only one font table relationship remains", async () => {
@@ -31,10 +29,8 @@ describe("word-valid duplicate font table relationship", () => {
         expect(result.valid).toBe(true);
     });
 
-    it("does not report the cause on lenient or strict", async () => {
-        for (const profile of ["lenient", "strict"] as const) {
-            const result = await validate(BROKEN, { profile });
-            expect(result.issues.some((issue) => issue.code === "word-duplicate-font-table-relationship")).toBe(false);
-        }
+    it.each(["lenient", "strict"] as const)("does not report the cause on %s", async (profile) => {
+        const result = await validate(BROKEN, { profile });
+        expect(result.issues.some((issue) => issue.code === "word-duplicate-font-table-relationship")).toBe(false);
     });
 });

@@ -18,11 +18,9 @@ describe("word-valid duplicate settings relationship", { timeout: 30000 }, () =>
     it("rejects a document relationships part with two settings relationships", async () => {
         const result = await validate(BROKEN, { profile: "word-valid" });
         expect(result.valid).toBe(false);
-        expect(
-            result.issues.some(
-                (issue) => issue.severity === "error" && issue.code === "word-duplicate-settings-relationship",
-            ),
-        ).toBe(true);
+        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "word-duplicate-settings-relationship")).toBe(
+            true,
+        );
     });
 
     it("does not reject the document once only one settings relationship remains", async () => {
@@ -31,10 +29,8 @@ describe("word-valid duplicate settings relationship", { timeout: 30000 }, () =>
         expect(result.valid).toBe(true);
     });
 
-    it("does not report the cause on lenient or strict", async () => {
-        for (const profile of ["lenient", "strict"] as const) {
-            const result = await validate(BROKEN, { profile });
-            expect(result.issues.some((issue) => issue.code === "word-duplicate-settings-relationship")).toBe(false);
-        }
+    it.each(["lenient", "strict"] as const)("does not report the cause on %s", async (profile) => {
+        const result = await validate(BROKEN, { profile });
+        expect(result.issues.some((issue) => issue.code === "word-duplicate-settings-relationship")).toBe(false);
     });
 });

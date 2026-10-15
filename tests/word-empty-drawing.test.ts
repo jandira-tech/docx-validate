@@ -4,10 +4,13 @@
  */
 
 import path from "node:path";
+import { promises as fs } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
+import { withTempDir } from "../src/lib/run-cli";
+import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
 import { validate } from "../src/scripts/office/validate";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -18,9 +21,7 @@ describe("word-valid empty drawing", { timeout: 30000 }, () => {
     it("rejects an empty w:drawing inside a markup-compatibility choice", async () => {
         const result = await validate(BROKEN, { profile: "word-valid" });
         expect(result.valid).toBe(false);
-        expect(
-            result.issues.some((issue) => issue.severity === "error" && issue.code === "word-empty-drawing"),
-        ).toBe(true);
+        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "word-empty-drawing")).toBe(true);
     });
 
     it("does not reject the document once that empty drawing is removed", async () => {
@@ -29,10 +30,27 @@ describe("word-valid empty drawing", { timeout: 30000 }, () => {
         expect(result.valid).toBe(true);
     });
 
-    it("does not report the cause on lenient or strict", async () => {
-        for (const profile of ["lenient", "strict"] as const) {
-            const result = await validate(BROKEN, { profile });
-            expect(result.issues.some((issue) => issue.code === "word-empty-drawing")).toBe(false);
-        }
+    it("rereads modified XML when validating the same instance again", async () => {
+        await withTempDir(async (dir) => {
+            await fs.mkdir(path.join(dir, "word"));
+            const file = path.join(dir, "word/document.xml");
+            const document = (content: string): string =>
+                '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+                "<w:body><w:p><w:r>" +
+                content +
+                "</w:r></w:p></w:body></w:document>";
+            await fs.writeFile(file, document("<w:drawing/>"));
+            const validator = new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" });
+            const before = await validator.validate();
+            expect(before.issues.some((issue) => issue.code === "word-empty-drawing")).toBe(true);
+            await fs.writeFile(file, document("<w:t>repaired</w:t>"));
+            const after = await validator.validate();
+            expect(after.issues.some((issue) => issue.code === "word-empty-drawing")).toBe(false);
+        });
+    });
+
+    it.each(["lenient", "strict"] as const)("does not report the cause on %s", async (profile) => {
+        const result = await validate(BROKEN, { profile });
+        expect(result.issues.some((issue) => issue.code === "word-empty-drawing")).toBe(false);
     });
 });

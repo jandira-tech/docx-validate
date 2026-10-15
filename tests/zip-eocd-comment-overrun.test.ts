@@ -18,9 +18,7 @@ describe("word-valid ZIP comment length past the end of the file", () => {
     it("rejects a comment length the file does not contain", async () => {
         const result = await validate(BROKEN, { profile: "word-valid" });
         expect(result.valid).toBe(false);
-        expect(
-            result.issues.some((issue) => issue.severity === "error" && issue.code === "zip-eocd-comment-overrun"),
-        ).toBe(true);
+        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "zip-eocd-comment-overrun")).toBe(true);
     });
 
     it("does not reject the same package once the comment length matches the bytes present", async () => {
@@ -29,10 +27,8 @@ describe("word-valid ZIP comment length past the end of the file", () => {
         expect(result.valid).toBe(true);
     });
 
-    it("does not report the cause on lenient or strict", async () => {
-        for (const profile of ["lenient", "strict"] as const) {
-            const result = await validate(BROKEN, { profile });
-            expect(result.issues.some((issue) => issue.code === "zip-eocd-comment-overrun")).toBe(false);
-        }
+    it.each(["lenient", "strict"] as const)("does not report the cause on %s", async (profile) => {
+        const result = await validate(BROKEN, { profile });
+        expect(result.issues.some((issue) => issue.code === "zip-eocd-comment-overrun")).toBe(false);
     });
 });

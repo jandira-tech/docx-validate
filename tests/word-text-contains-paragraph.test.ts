@@ -18,11 +18,7 @@ describe("word-valid paragraph nested inside a text run", () => {
     it("rejects a w:t that contains a w:p", async () => {
         const result = await validate(BROKEN, { profile: "word-valid" });
         expect(result.valid).toBe(false);
-        expect(
-            result.issues.some(
-                (issue) => issue.severity === "error" && issue.code === "word-text-contains-paragraph",
-            ),
-        ).toBe(true);
+        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "word-text-contains-paragraph")).toBe(true);
     });
 
     it("does not reject the same document once those paragraphs sit outside the text run", async () => {
@@ -31,10 +27,8 @@ describe("word-valid paragraph nested inside a text run", () => {
         expect(result.valid).toBe(true);
     });
 
-    it("does not report the cause on lenient or strict", async () => {
-        for (const profile of ["lenient", "strict"] as const) {
-            const result = await validate(BROKEN, { profile });
-            expect(result.issues.some((issue) => issue.code === "word-text-contains-paragraph")).toBe(false);
-        }
+    it.each(["lenient", "strict"] as const)("does not report the cause on %s", async (profile) => {
+        const result = await validate(BROKEN, { profile });
+        expect(result.issues.some((issue) => issue.code === "word-text-contains-paragraph")).toBe(false);
     });
 });
