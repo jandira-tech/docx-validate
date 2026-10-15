@@ -21,6 +21,11 @@ describe("word-valid ZIP comment length past the end of the file", () => {
         expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "zip-eocd-comment-overrun")).toBe(true);
     });
 
+    it("keeps the specific envelope defect alongside a ZIP-load failure", async () => {
+        const result = await validate(BROKEN, { profile: "word-valid" });
+        expect(result.issues.map((issue) => issue.code)).toEqual(["zip-eocd-comment-overrun", "package-open-failed"]);
+    });
+
     it("does not reject the same package once the comment length matches the bytes present", async () => {
         const result = await validate(CLEAN, { profile: "word-valid" });
         expect(result.issues.some((issue) => issue.code === "zip-eocd-comment-overrun")).toBe(false);
