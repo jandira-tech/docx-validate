@@ -9,7 +9,7 @@ import { promisify } from "node:util";
 import { publicationPlan } from "./prerelease";
 
 const [tag, ...extra] = process.argv.slice(2);
-if (!tag || extra.length > 0) throw new Error("Usage: pnpm run release:publish v0.53.0-rc.0");
+if (!tag || extra.length > 0) throw new Error("Usage: pnpm run release:publish v0.53.0-rc.1");
 publicationPlan(tag.slice(1), tag);
 await promisify(execFile)("gh", [
     "workflow",

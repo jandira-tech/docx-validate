@@ -40,6 +40,17 @@ export function verifyPackedFiles(files: readonly string[]): void {
     }
 }
 
+export function verifyPackedPackage(json: string, name: string, version: string): void {
+    type PackedPackage = { name: string; version: string; files: { path: string }[] };
+    const parsed = JSON.parse(json) as PackedPackage[] | Record<string, PackedPackage>;
+    // npm 11 returns an array; npm 12 keys the same metadata by package name.
+    const packages = Array.isArray(parsed) ? parsed : Object.values(parsed);
+    const tarball = packages[0];
+    if (packages.length !== 1 || tarball?.name !== name || tarball.version !== version)
+        throw new Error("Packed package identity does not match package.json");
+    verifyPackedFiles(tarball.files.map((file) => file.path));
+}
+
 async function run(command: string, args: readonly string[]): Promise<void> {
     process.stdout.write(`\n> ${command} ${args.join(" ")}\n`);
     await new Promise<void>((resolve, reject) => {
@@ -71,11 +82,7 @@ export async function prerelease(): Promise<void> {
     if (/LD_PRELOAD|SHIM_SOURCE|RTLD_NEXT|dlsym/.test(bundle))
         throw new Error("LibreOffice shim unexpectedly appears in the package bundle");
     const packed = await exec("npm", ["pack", "--dry-run", "--json", "--ignore-scripts"], { cwd: REPO, maxBuffer: 4 * 1024 * 1024 });
-    const metadata = JSON.parse(packed.stdout) as { name: string; version: string; files: { path: string }[] }[];
-    const tarball = metadata[0];
-    if (metadata.length !== 1 || tarball?.name !== pkg.name || tarball.version !== pkg.version)
-        throw new Error("Packed package identity does not match package.json");
-    verifyPackedFiles(tarball.files.map((file) => file.path));
+    verifyPackedPackage(packed.stdout, pkg.name, pkg.version);
     if (process.env.GITHUB_OUTPUT) {
         await fs.appendFile(process.env.GITHUB_OUTPUT, `version=${plan.version}\ndist_tag=${plan.distTag}\n`);
     }
