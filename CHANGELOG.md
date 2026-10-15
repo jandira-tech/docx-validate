@@ -6,6 +6,35 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.53.0-rc.0] — 2026-10-15
+
+Changes since the latest GitHub release, `v0.52.0` (2026-10-06), through 2026-10-15. This prerelease is published under npm's `next` tag; it does not advance `latest`.
+
+### Added
+
+- Word-valid diagnostics for ZIP trailing bytes and EOCD comment overruns; malformed drawing radii, extents, anchors, and empty drawings; malformed text, table rows/cells, and content-control IDs; hyperlink and duplicate singleton-part relationships; undeclared markup-compatibility prefixes; numbering picture-bullet and footnote references; and attached-toolbar corruption. Broken/clean fixture pairs and 144 recorded Word assessments document the evidence ([#192](https://github.com/jandira-tech/docx-validate/pull/192)).
+- `validate()` results expose an `xsdWalk` trace showing whether XSD started, which parts reached the engine, and how many parts were eligible ([#191](https://github.com/jandira-tech/docx-validate/pull/191)).
+- `pnpm run release:check` validates versions, types, lint/format, coverage tests, build output, and packed entry points/declarations/schemas. `pnpm run release:publish <tag>` dispatches GitHub Actions rather than publishing with local npm credentials.
+
+### Changed
+
+- Word-valid skips XSD when a cheaper check already rejects a document, and otherwise stops at the first surfaced Word-blocking schema error. Lenient and strict retain complete XSD walks. Schema-valid parts use a status-only WASM path; failures retain messages ([#191](https://github.com/jandira-tech/docx-validate/pull/191)).
+- Redlining validation uses iterative DFS with mixed-namespace containment and drawing exclusions. Nested insertions emit one diagnostic per offending text node. End-to-end benchmark results are mixed; no fixed speedup is promised ([#194](https://github.com/jandira-tech/docx-validate/pull/194)).
+- New Word-openability checks share read-only XML parses within each validation run. ZIP record searches use native signature scanning while retaining concatenated-archive detection.
+- Publishing uses the existing `publish.yml` / `npm-publish` OIDC identity on a GitHub-hosted runner, without dependency caches. The workflow verifies the release tag against the package and chooses `next` for prereleases or `latest` for stable releases.
+
+### Fixed
+
+- Guard temporary original-part extraction with the shared path-containment resolver and retain nested paths for schema selection ([#193](https://github.com/jandira-tech/docx-validate/pull/193)). This hardens the boundary; a critical exploit through normal JSZip loading was not demonstrated.
+- Use stable DOM snapshots in mutation-sensitive loops and normalize PowerPoint notes relationship targets ([#190](https://github.com/jandira-tech/docx-validate/pull/190)).
+- Preserve Word-blocking XSD errors beyond the reporting cap; keep schema/engine failures blocking; guard private WASM pointers, reuse callbacks, and fall back to public validation when the fast path is unavailable.
+- Recognize the implicit `xml` prefix, refresh XML parses between validation runs, and preserve ZIP-envelope findings alongside package loading failures.
+- Restore type-aware lint startup by declaring `oxlint-tsgolint`; align Vitest and coverage 5.0.1 with Vite+ 1.0.0; give cold-start fixture tests appropriate timeout budgets.
+
+### Known limitations
+
+- Word compatibility for some uncovered package parts and unselected markup-compatibility branches still needs targeted Word A/B evidence; see [the inspection notes](docs/really-broken/README.md). Recorded Word observations were preserved; this release review did not perform new Word opens.
+
 ## [0.52.0] — 2026-10-06
 
 Breaking under `0.x` conventions: the native `libxmljs2` addon is replaced by
@@ -153,3 +182,5 @@ commits — the changelog starts here.
 [0.1.3]: https://github.com/jandira-tech/docx-validate/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/jandira-tech/docx-validate/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/jandira-tech/docx-validate/releases/tag/v0.1.1
+[0.53.0-rc.0]: https://github.com/jandira-tech/docx-validate/compare/v0.52.0...v0.53.0-rc.0
+[Unreleased]: https://github.com/jandira-tech/docx-validate/compare/v0.53.0-rc.0...HEAD

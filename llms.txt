@@ -6,6 +6,8 @@ The library exposes both a programmatic `validate()` entry point that returns a 
 
 XSD validation is backed by `libxml2-wasm` (WASM build of libxml2, via the swappable `XsdValidator` interface in `src/lib/xsd-validator.ts`) against the bundled ISO/IEC 29500-4 (Transitional), ECMA OPC, MCE, and Microsoft schemas under `src/scripts/office/schemas/`. DOM work goes through `@xmldom/xmldom` + `xpath` via `src/lib/xml-helpers.ts` so the implementation stays swappable. ISO OOXML Strict documents are detected at the namespace level and skip XSD validation with a single info-severity `xsd-strict-skipped` issue rather than emitting ~30 false-positive `xsd-*` errors.
 
+`ValidateRunResult` also includes `repairs`, `suffix`, and `xsdWalk: { started, parts, eligible }`. The word-valid profile can reject a blocking non-XSD defect before XSD starts, or stop at the first surfaced Word-blocking schema error. Lenient and strict retain complete eligible-part walks; Strict-namespace parts are skipped per part.
+
 ## Docs
 
 - [README](https://github.com/jandira-tech/docx-validate#readme): install, layout, conventions, runtime/dev dependencies, CLI usage, development workflow, and the "Validators (etc.) for the neurotic developer" FAQ
@@ -44,3 +46,5 @@ XSD validation is backed by `libxml2-wasm` (WASM build of libxml2, via the swapp
 - [Maintainer — jandira.tech](https://www.jandira.tech): Jandira Technologies, the studio behind Cicero (legal workbench), PT-BR PII redaction models, and AI/contract-drafting benchmarks
 - [Cicero](https://www.cicero.im): legal workbench that turns messy inputs into redlines, issue lists, and memos
 - [GitHub Issues](https://github.com/jandira-tech/docx-validate/issues): bugs and feature requests
+
+Release preflight: `pnpm run release:check`. Publishing is GitHub Actions OIDC through `publish.yml` and environment `npm-publish`; `pnpm run release:publish <tag>` dispatches that workflow. Prereleases use npm `next`, stable releases use `latest`.

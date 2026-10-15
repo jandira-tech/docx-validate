@@ -29,7 +29,11 @@ describe("word-valid profile errors on Word-rejected files", { timeout: 30000 },
     it("misplaced table property (tblCellSpacing outside tblPr) — Word unreadable", async () => {
         const res = await validate(path.join(BROKEN, "word-rejects-table-cellspacing.docx"), { profile: "word-valid" });
         expect(res.valid).toBe(false);
-        expect(res.issues.some((i) => i.severity === "error" && /is not expected/.test(i.message))).toBe(true);
+        // This Word-rejected fixture also has a cell ending with a nested
+        // table. Word-valid can reject that cheaper cause before XSD starts.
+        expect(
+            res.issues.some((i) => i.severity === "error" && (i.code === "word-cell-ends-with-table" || /is not expected/.test(i.message))),
+        ).toBe(true);
     });
     // NB: `word-rejects-misplaced-run.docx` (a misplaced <w:r>, Word OPEN_ERROR)
     // exercises the same allowlist path and is `valid:false` standalone, but is

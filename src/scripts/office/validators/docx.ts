@@ -310,7 +310,7 @@ export interface ParagraphCounts {
 /**
  * Single-pass DFS collection for `.//w:del//w:t`-style queries: tracks
  * nesting context instead of checking `.parentNode` for every element,
- * eliminating O(N*D) worst-case scaling. Prunes drawings inside dels.
+ * eliminating O(N*D) worst-case scaling. Prunes drawings inside deletions.
  */
 const collectDeletedRunText = (root: Document | Element, localName: string): Element[] => {
     const out: Element[] = [];
@@ -330,7 +330,7 @@ const collectDeletedRunText = (root: Document | Element, localName: string): Ele
         if (name === "del" && (ns === WORD_2006_NAMESPACE || ns === WORD_STRICT_NAMESPACE)) {
             nextInDel = true;
         } else if (inDel && (name === "drawing" || name === "pict")) {
-            // Prune drawings inside dels
+            // Prune drawings inside deletions
             continue;
         }
 

@@ -1,66 +1,59 @@
 name: Publish to npm
 
-# Triggers on a GitHub Release being published. Recommended flow:
-#   1. Bump version: `pnpm exec bumpp` (updates package.json + creates git tag)
-#   2. Push the tag: `git push --follow-tags`
-#   3. Create a GitHub Release for that tag → this workflow runs.
-#
-# Manual dispatch is also wired up so you can re-run a publish without a new tag.
-#
-# Auth: npm Trusted Publishing (OIDC). No NPM_TOKEN secret involved — npm's
-# registry verifies a short-lived OIDC token minted by GitHub for this exact
-# repo + workflow + environment. Configured at:
-#   https://www.npmjs.com/package/docx-validate/access
 on:
     release:
         types: [published]
     workflow_dispatch:
+        inputs:
+            tag:
+                description: "Existing release tag matching package.json, for example v0.53.0-rc.0"
+                required: true
+                type: string
 
 permissions:
     contents: read
-    # Required for npm Trusted Publishing — lets the workflow request an OIDC
-    # token from GitHub that npm will accept.
-    id-token: write
+
+concurrency:
+    group: npm-publish-${{ github.event.release.tag_name || inputs.tag }}
+    cancel-in-progress: false
 
 jobs:
     publish:
         runs-on: ubuntu-latest
         environment: npm-publish
+        permissions:
+            contents: read
+            id-token: write
+        env:
+            RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+            RELEASE_KIND: ${{ github.event_name == 'release' && (github.event.release.prerelease && 'prerelease' || 'stable') || '' }}
         steps:
-            - uses: actions/checkout@v5
-
-            # pnpm MUST be on PATH before setup-node resolves `cache: pnpm`.
-            - uses: pnpm/action-setup@v4
-              # version comes from the packageManager field in package.json
-
-            - uses: actions/setup-node@v5
+            - uses: actions/checkout@v6
               with:
-                  node-version: "26"
-                  cache: pnpm
+                  ref: ${{ github.event.release.tag_name || inputs.tag }}
+                  persist-credentials: false
+
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: "24"
                   registry-url: "https://registry.npmjs.org"
+                  package-manager-cache: false
 
-            # Trusted Publishing requires npm CLI ≥ 11.5.1. Node 20 ships with an
-            # older npm; pin a recent one explicitly.
-            - name: Use modern npm
-              run: npm install -g npm@latest
+            - uses: pnpm/action-setup@v4
+              with:
+                  cache: false
 
-            - name: Install dependencies
+            - name: Use npm with trusted publishing support
+              run: npm install --global npm@latest
+
+            - name: Install dependencies without a release cache
               run: pnpm install --frozen-lockfile
 
-            - name: Type-check
-              run: pnpm exec tsc --noEmit
+            - name: Verify version, tests, build, and package contents
+              id: preflight
+              run: pnpm run release:check
 
-            - name: Test
-              # The XSD engine registers libxml2-wasm's Node-side fs input
-              # providers, so tests must run under Node, not Bun.
-              run: npx vitest run
-
-            - name: Build
-              run: pnpm run build
-
-            - name: Publish to npm
-              # No NODE_AUTH_TOKEN: npm CLI auto-detects the GitHub OIDC token via
-              # ACTIONS_ID_TOKEN_REQUEST_URL/TOKEN env vars and exchanges it for a
-              # short-lived publish token. `--provenance` is implicit under OIDC but
-              # left explicit for clarity.
-              run: npm publish --provenance --access public
+            - name: Publish through npm trusted publishing
+              env:
+                  NPM_DIST_TAG: ${{ steps.preflight.outputs.dist_tag }}
+              run: npm publish --provenance --access public --tag "$NPM_DIST_TAG"
