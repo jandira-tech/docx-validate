@@ -225,6 +225,53 @@ describe("DOCXSchemaValidator", () => {
         });
     });
 
+    describe("redlining DFS context", () => {
+        it("deduplicates nested deletions, preserves text order, and prunes deleted shapes", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word/document.xml"),
+                    wrapDocument(
+                        "<w:del><s:del><s:r><s:t>first</s:t></s:r></s:del>" +
+                            "<w:r><w:pict><w:del><w:r><w:t>hidden</w:t></w:r></w:del></w:pict></w:r>" +
+                            "<w:r><w:t>second</w:t><w:instrText>field</w:instrText></w:r></w:del>" +
+                            "<w:r><w:drawing><s:del><w:r><w:t>third</w:t></w:r></s:del></w:drawing></w:r>" +
+                            "<w:r><w:t>outside</w:t></w:r>",
+                        `xmlns:s="${WORD_STRICT_NAMESPACE}"`,
+                    ),
+                );
+                const result = await new DOCXSchemaValidator({ unpackedDir: dir }).validateDeletions();
+                const text = result.issues.filter((issue) => issue.code === "del-contains-t");
+                expect(text).toHaveLength(3);
+                expect(text.map((issue) => issue.message)).toEqual([
+                    expect.stringContaining("first"),
+                    expect.stringContaining("second"),
+                    expect.stringContaining("third"),
+                ]);
+                expect(result.issues.filter((issue) => issue.code === "del-contains-instrtext")).toHaveLength(1);
+            });
+        });
+
+        it("reports each nested insertion text once and restores context at siblings", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "word/document.xml"),
+                    wrapDocument(
+                        "<s:ins><w:ins><w:r><s:delText>first</s:delText></w:r></w:ins>" +
+                            "<w:del><w:ins><w:r><w:delText>hidden</w:delText></w:r></w:ins></w:del>" +
+                            "<w:r><w:delText>second</w:delText></w:r></s:ins>" +
+                            "<w:r><w:delText>outside</w:delText></w:r>",
+                        `xmlns:s="${WORD_STRICT_NAMESPACE}"`,
+                    ),
+                );
+                const result = await new DOCXSchemaValidator({ unpackedDir: dir }).validateInsertions();
+                expect(result.issues.map((issue) => issue.message)).toEqual([
+                    expect.stringContaining("first"),
+                    expect.stringContaining("second"),
+                ]);
+            });
+        });
+    });
+
     describe("validateCommentMarkers", () => {
         it("detects orphaned commentRangeEnd", async () => {
             await withTempDir(async (dir) => {

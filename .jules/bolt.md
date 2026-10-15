@@ -27,3 +27,8 @@
 
 **Learning:** PRs #188 and #190 proposed the same `getElementsByTagNameNSAll` rewrite; #190 landed. Read-only loops gain a constant factor only; repair loops that mutate while iterating are where the snapshot matters, and only when the mutation does not add or remove matching nodes (collect first, then remove, as `removeMcAlternateContent` does).
 **Action:** Before claiming a complexity win, measure at two sizes and say which loops mutate. Do not reformat files in a performance PR (#188 rewrote 5,900 lines to two-space indentation).
+
+## 2026-10-15 - Single-pass DFS traversal over post-filtered DOM querying
+
+**Learning:** Parent traversal (`parentNode` loops) for every matched node in a deep document is O(N*D). Combining this with querying all elements leads to huge performance degradation.
+**Action:** Implement an integrated top-down DFS traversal instead of querying all elements and then checking their parent chains. This removes redundant parent tree traversals and prunes excluded subtrees. End-to-end timings can still be dominated by XML parsing and allocation; see `docs/performance/redlining-dfs.md` for mixed local measurements.
