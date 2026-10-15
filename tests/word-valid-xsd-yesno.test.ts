@@ -15,6 +15,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import JSZip from "jszip";
 import { describe, expect, it, vi } from "vitest";
+import { parseXml, serializeXml } from "../src/lib/xml-helpers";
 import { withTempDir } from "../src/lib/run-cli";
 import * as xsdMod from "../src/lib/xsd-validator";
 import { validate, type ValidateRunResult } from "../src/scripts/office/validate";
@@ -79,10 +80,26 @@ const statsOf = (): { statusOnlyPasses: number; messageCollections: number } | u
 const errorCodes = (result: ValidateRunResult): string[] =>
     result.issues.filter((issue) => issue.severity === "error").map((issue) => issue.code ?? "");
 
+// Synthetic parts need content types too, otherwise #192 correctly rejects
+// them before XSD starts and these tests stop exercising the intended path.
+const declareXmlParts = async (zip: JSZip, parts: readonly string[]): Promise<void> => {
+    const entry = zip.file("[Content_Types].xml");
+    if (!entry) throw new Error("Fixture has no content-types part");
+    const dom = parseXml(await entry.async("string"));
+    for (const part of parts) {
+        const override = dom.createElementNS("http://schemas.openxmlformats.org/package/2006/content-types", "Override");
+        override.setAttribute("PartName", `/${part}`);
+        override.setAttribute("ContentType", "application/xml");
+        dom.documentElement?.appendChild(override);
+    }
+    zip.file("[Content_Types].xml", serializeXml(dom));
+};
+
 const withCapAndTail = async (src: string, dir: string): Promise<string> => {
     const zip = await JSZip.loadAsync(await readFile(src));
     zip.file(CAP_PART, CAP_XML);
     zip.file(TAIL_PART, TAIL_XML);
+    await declareXmlParts(zip, [CAP_PART, TAIL_PART]);
     const out = path.join(dir, "cap-then-block.docx");
     await writeFile(out, await zip.generateAsync({ type: "nodebuffer" }));
     return out;
@@ -91,6 +108,7 @@ const withCapAndTail = async (src: string, dir: string): Promise<string> => {
 const withTailPart = async (src: string, dir: string): Promise<string> => {
     const zip = await JSZip.loadAsync(await readFile(src));
     zip.file(TAIL_PART, TAIL_XML);
+    await declareXmlParts(zip, [TAIL_PART]);
     const out = path.join(dir, "with-tail.docx");
     await writeFile(out, await zip.generateAsync({ type: "nodebuffer" }));
     return out;
@@ -133,7 +151,7 @@ describe("word-valid XSD yes/no walk", { timeout: 120_000 }, () => {
 
     it("stops the word-valid XSD walk before a part that sorts after the blocking error", async () => {
         await withTempDir(async (dir) => {
-            const docxPath = await withTailPart(CELLSPACING, dir);
+            const docxPath = await withTailPart(HEADER_XSD, dir);
             const before = statsOf()?.messageCollections ?? 0;
             const result = await validate(docxPath, { profile: "word-valid" });
             expect(result.valid).toBe(false);
