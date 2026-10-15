@@ -39,12 +39,13 @@ import JSZip from "jszip";
 import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
 import { DEFAULT_PROFILE, mergeResults, xsdWalkNotStarted, type Profile, type ValidationResult, type XsdWalkTrace } from "../../lib/types";
 import { extractZipEntries } from "../../lib/zip-path";
+import { countZipBytesAfterEocd, zipEocdCommentOverrun } from "./zip-bytes-after-eocd";
 import { BaseSchemaValidator } from "./validators/base";
-import { explainWordError } from "./validators/word-error-explanations";
 import { DOCXSchemaValidator } from "./validators/docx";
 import { buildRepairPlanIssues, collectDocxSemanticInventory, compareDocxSemanticInventories } from "./validators/docx-diagnostics";
 import { PPTXSchemaValidator } from "./validators/pptx";
 import { validateRedlining } from "./validators/redlining";
+import { explainWordError } from "./validators/word-error-explanations";
 
 const SUPPORTED_SUFFIXES = new Set([".docm", ".docx", ".pptx", ".xlsx"]);
 
@@ -135,6 +136,16 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     if (targetIsPackedFile) {
         return withTempDir(async (tempDir) => {
             const buf = await fs.readFile(target);
+            const overrun = profile === "word-valid" ? zipEocdCommentOverrun(buf) : undefined;
+            const envelopeIssues: ValidationResult["issues"] = overrun
+                ? [
+                      {
+                          severity: "error",
+                          code: "zip-eocd-comment-overrun",
+                          message: `ZIP end-of-central-directory comment length is ${overrun.declared}, but only ${overrun.remaining} byte(s) remain in the file. Word offers to recover the document. Set the comment length to the bytes that are present.`,
+                      },
+                  ]
+                : [];
             let zip: JSZip;
             try {
                 zip = await JSZip.loadAsync(buf);
@@ -151,6 +162,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                 return {
                     valid: false,
                     issues: [
+                        ...envelopeIssues,
                         {
                             severity: "error" as const,
                             message: `Cannot open ${target} as an OPC package (not a valid .docx/zip — encrypted, corrupted, or truncated): ${detail}`,
@@ -169,6 +181,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                 return {
                     valid: false,
                     issues: [
+                        ...envelopeIssues,
                         {
                             severity: "error" as const,
                             message: `Cannot extract ${target}: ${detail}`,
@@ -180,7 +193,27 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                     xsdWalk: xsdWalkNotStarted(),
                 };
             }
-            return runWithUnpacked(tempDir);
+            const unpacked = await runWithUnpacked(tempDir);
+            if (profile !== "word-valid") return unpacked;
+            const trailing = countZipBytesAfterEocd(buf);
+            if (trailing === 0 && envelopeIssues.length === 0) return unpacked;
+            return {
+                ...unpacked,
+                valid: false,
+                issues: [
+                    ...unpacked.issues,
+                    ...envelopeIssues,
+                    ...(trailing > 0
+                        ? [
+                              {
+                                  severity: "error" as const,
+                                  code: "zip-bytes-after-eocd",
+                                  message: `ZIP end of central directory is followed by ${trailing} undeclared byte(s). Word offers to recover the document. Remove the bytes after that record; a comment whose length is declared in the record is not this defect.`,
+                              },
+                          ]
+                        : []),
+                ],
+            };
         });
     }
 
