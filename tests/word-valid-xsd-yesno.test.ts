@@ -32,10 +32,7 @@ const CELLSPACING = path.join(BROKEN, "word-rejects-table-cellspacing.docx");
 const EMPTY_RELS = path.join(INVALID, "OPEN_ERROR/tests__fixtures__broken__sample-document.empty-rels.docx");
 const HEADER_XSD = path.join(INVALID, "OPEN_ERROR/tests__fixtures__broken__header-with-rid-no-sidecar.docx");
 const MATH_BODY = path.join(INVALID, "OPEN_ERROR/tests__fixtures__math-body-level.docx");
-const CUSTOM_XML = path.join(
-    INVALID,
-    "UNREADABLE_CONTENT/tests__fixtures__external__superdoc__layout-engine__shapes__vectors.docx",
-);
+const CUSTOM_XML = path.join(INVALID, "UNREADABLE_CONTENT/tests__fixtures__external__superdoc__layout-engine__shapes__vectors.docx");
 
 const CAP_PART = "word/aa-cap.xml";
 // libxml2 reports the seven missing pgMar attributes before tblCellSpacing.
@@ -62,7 +59,11 @@ const TAIL_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
 const SPRE_INSIDE_PARAGRAPH = `<m:oMathPara xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"><m:oMath><m:sPre><m:sPrePr><m:ctrlPr><w:rPr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/></m:ctrlPr></m:sPrePr><m:sub><m:r><m:t>1</m:t></m:r></m:sub><m:sup><m:r><m:t>2</m:t></m:r></m:sup><m:e><m:r><m:t>Z</m:t></m:r></m:e></m:sPre></m:oMath></m:oMathPara>`;
 
-type XsdWalk = { started: boolean; parts: readonly string[]; eligible: number };
+interface XsdWalk {
+    started: boolean;
+    parts: readonly string[];
+    eligible: number;
+}
 
 const norm = (p: string): string => p.split(/[\\/]/).join("/");
 
@@ -207,9 +208,7 @@ describe("word-valid XSD yes/no walk", { timeout: 120_000 }, () => {
         await withTempDir(async (dir) => {
             const result = await validate(PGSZ, { profile: "word-valid", schemasDir: dir });
             expect(result.valid).toBe(false);
-            expect(result.issues.some((issue) => issue.severity === "error" && issue.message.includes("Schema load failed"))).toBe(
-                true,
-            );
+            expect(result.issues.some((issue) => issue.severity === "error" && issue.message.includes("Schema load failed"))).toBe(true);
         });
     });
 
