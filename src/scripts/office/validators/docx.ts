@@ -305,57 +305,49 @@ export interface ParagraphCounts {
     originalUsesStrictNamespace: boolean;
 }
 
-const isWordDel = (el: Element): boolean =>
-    el.localName === "del" && (el.namespaceURI === WORD_2006_NAMESPACE || el.namespaceURI === WORD_STRICT_NAMESPACE);
-
 /**
- * One ancestor walk implementing `.//w:del//w:t[not(ancestor::w:drawing[ancestor::w:del])]`.
- */
-const isDeletedRunText = (node: Node): boolean => {
-    let hasDel = false;
-    let sawDrawingOrPict = false;
-    let drawingHasDelAncestor = false;
-    let curr = node.parentNode;
-    while (curr) {
-        if (curr.nodeType === 1) {
-            const el = curr as Element;
-            if (isWordDel(el)) {
-                hasDel = true;
-                if (sawDrawingOrPict) {
-                    drawingHasDelAncestor = true;
-                }
-            }
-            if (el.localName === "drawing" || el.localName === "pict") {
-                sawDrawingOrPict = true;
-            }
-        }
-        curr = curr.parentNode;
-    }
-    return hasDel && !drawingHasDelAncestor;
-};
-
-/**
- * Del-first collection for `.//w:del//w:t`-style queries: seed from `w:del`
- * elements (either Word namespace) and collect matching descendants of each,
- * instead of walking every `w:t` ancestor chain. Preserves the
- * cross-namespace semantics of the ancestor-walk version (a Strict-namespace
- * `w:del` wrapping a 2006-namespace `w:t` still counts); the `Set` dedupes
- * del-ins-del overlaps in document order.
+ * Single-pass DFS collection for `.//w:del//w:t`-style queries: tracks
+ * nesting context instead of checking `.parentNode` for every element,
+ * eliminating O(N*D) worst-case scaling. Prunes drawings inside dels.
  */
 const collectDeletedRunText = (root: Document | Element, localName: string): Element[] => {
-    const out = new Set<Element>();
-    for (const delNs of WORD_PARAGRAPH_NAMESPACES) {
-        for (const del of getElementsByTagNameNSAll(root, delNs, "del")) {
-            for (const textNs of WORD_PARAGRAPH_NAMESPACES) {
-                for (const el of getElementsByTagNameNSAll(del, textNs, localName)) {
-                    if (isDeletedRunText(el)) {
-                        out.add(el);
-                    }
-                }
+    const out: Element[] = [];
+    const stack: { node: Element; inDel: boolean }[] = [];
+
+    const rootElem = root.nodeType === 9 ? (root as Document).documentElement : (root as Element);
+    if (rootElem) {
+        stack.push({ node: rootElem, inDel: false });
+    }
+
+    while (stack.length > 0) {
+        const { node, inDel } = stack.pop()!;
+        const ns = node.namespaceURI;
+        const name = node.localName;
+
+        let nextInDel = inDel;
+        if (name === "del" && (ns === WORD_2006_NAMESPACE || ns === WORD_STRICT_NAMESPACE)) {
+            nextInDel = true;
+        } else if (inDel && (name === "drawing" || name === "pict")) {
+            // Prune drawings inside dels
+            continue;
+        }
+
+        if (name === localName && (ns === WORD_2006_NAMESPACE || ns === WORD_STRICT_NAMESPACE)) {
+            if (nextInDel) {
+                out.push(node);
             }
         }
+
+        let child = node.lastChild;
+        while (child) {
+            if (child.nodeType === 1) {
+                stack.push({ node: child as Element, inDel: nextInDel });
+            }
+            child = child.previousSibling;
+        }
     }
-    return Array.from(out);
+
+    return out;
 };
 
 export class DOCXSchemaValidator extends BaseSchemaValidator {
@@ -700,23 +692,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     async validateInsertions(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
 
-        const isInsideDel = (node: Node | null): boolean => {
-            let curr = node?.parentNode;
-            while (curr) {
-                if (curr.nodeType === 1) {
-                    // ELEMENT_NODE
-                    const elem = curr as Element;
-                    const localName = elem.localName;
-                    const ns = elem.namespaceURI;
-                    if (localName === "del" && (ns === WORD_2006_NAMESPACE || ns === WORD_STRICT_NAMESPACE)) {
-                        return true;
-                    }
-                }
-                curr = curr.parentNode;
-            }
-            return false;
-        };
-
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
@@ -732,21 +707,38 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
 
             const invalid: Element[] = [];
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const insNodes = getElementsByTagNameNSAll(dom, ns, "ins");
-                for (let i = 0; i < insNodes.length; i++) {
-                    const ins = insNodes[i];
-                    if (!ins) continue;
+            const stack: { node: Element; inDel: boolean; inIns: boolean }[] = [];
 
-                    for (const nsDel of WORD_PARAGRAPH_NAMESPACES) {
-                        const delTexts = getElementsByTagNameNSAll(ins, nsDel, "delText");
-                        for (let j = 0; j < delTexts.length; j++) {
-                            const delText = delTexts[j];
-                            if (delText && !isInsideDel(delText)) {
-                                invalid.push(delText);
-                            }
-                        }
+            if (dom.documentElement) {
+                stack.push({ node: dom.documentElement, inDel: false, inIns: false });
+            }
+
+            while (stack.length > 0) {
+                const { node, inDel, inIns } = stack.pop()!;
+                const ns = node.namespaceURI;
+                const name = node.localName;
+
+                let nextInDel = inDel;
+                let nextInIns = inIns;
+
+                if (name === "del" && (ns === WORD_2006_NAMESPACE || ns === WORD_STRICT_NAMESPACE)) {
+                    nextInDel = true;
+                } else if (name === "ins" && (ns === WORD_2006_NAMESPACE || ns === WORD_STRICT_NAMESPACE)) {
+                    nextInIns = true;
+                }
+
+                if (name === "delText" && (ns === WORD_2006_NAMESPACE || ns === WORD_STRICT_NAMESPACE)) {
+                    if (inIns && !nextInDel) {
+                        invalid.push(node);
                     }
+                }
+
+                let child = node.lastChild;
+                while (child) {
+                    if (child.nodeType === 1) {
+                        stack.push({ node: child as Element, inDel: nextInDel, inIns: nextInIns });
+                    }
+                    child = child.previousSibling;
                 }
             }
 
