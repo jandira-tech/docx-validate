@@ -32,3 +32,13 @@
 
 **Learning:** Parent traversal (`parentNode` loops) for every matched node in a deep document is O(N*D). Combining this with querying all elements leads to huge performance degradation.
 **Action:** Implement an integrated top-down DFS traversal instead of querying all elements and then checking their parent chains. This removes redundant parent tree traversals and prunes excluded subtrees. End-to-end timings can still be dominated by XML parsing and allocation; see `docs/performance/redlining-dfs.md` for mixed local measurements.
+
+## 2026-10-16 - Avoid redundant DOM lookups inside getElementsByTagNameAll iteration
+
+**Learning:** Finding and iterating all text elements using `getElementsByTagNameAll(dom)` and then using `hasWordAncestor` to search upwards via `parentNode` up to the root element for every matched text element leads to O(N*D) complexity, where N is the total matching elements and D is tree depth. This dramatically tanks performance on large or heavily nested documents.
+**Action:** Replace `getElementsByTagNameAll` with an integrated single-pass Depth-First Search (DFS) stack that maintains states like `inDel` or `inIns` as it traverses down the tree. This achieves true O(N) complexity and significantly reduces execution time by half.
+
+## 2026-10-16 - Node.js version conflict for pnpm/action-setup in GitHub Actions
+
+**Learning:** When using `pnpm/action-setup@v4` in GitHub Actions workflows, the runner's default Node.js version might be too old (e.g. Node 20 or earlier), leading to `SyntaxError: Unexpected identifier` when parsing ES modules (like `import console from 'node:console'`). This causes the self-installer to fail with exit code 1.
+**Action:** Always inject an `actions/setup-node@v4` step (e.g. `node-version: 22`) *before* the `pnpm/action-setup@v4` step in CI workflows to ensure the environment has a modern Node.js runtime capable of executing the pnpm installation script.

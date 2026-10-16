@@ -232,4 +232,48 @@ describe("docx diagnostics", () => {
         expect(issues[1].message).toContain("Before repair found 2 [ws-missing-preserve] issue(s)");
         expect(issues[1].message).toContain("add xml:space='preserve'");
     });
+
+    it("emits repair plan for known xsd errors", () => {
+        const issues = buildRepairPlanIssues([
+            { severity: "error", path: "word/document.xml", code: "xsd-error", message: "}graphic': This element is not expected" },
+            { severity: "error", path: "word/document.xml", code: "xsd-error", message: "Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/picture}spPr" },
+            { severity: "error", path: "word/document.xml", code: "xsd-error", message: "}filetime': '' is not a valid value" },
+        ]);
+
+        expect(issues).toHaveLength(3);
+        expect(issues[0]).toMatchObject({ code: "repair-plan", path: "word/document.xml" });
+        expect(issues[0].message).toContain("insert missing inline-picture scaffolding");
+        expect(issues[1]).toMatchObject({ code: "repair-plan", path: "word/document.xml" });
+        expect(issues[1].message).toContain("insert missing picture shape properties");
+        expect(issues[2]).toMatchObject({ code: "repair-plan", path: "word/document.xml" });
+        expect(issues[2].message).toContain("trim invalid whitespace from core document properties");
+    });
+
+    it("evaluates coverage of edge text branches in DFS", async () => {
+        await withTempDir(async (dir) => {
+            const root = path.join(dir, "u");
+            await writeXml(
+                path.join(root, "word", "document.xml"),
+                doc(
+                    `<w:p>` +
+                        `<w:fldSimple w:instr="PAGE"/>` +
+                        `<w:fldSimple/>` +
+                        `<w:del><w:r><w:instrText>deleted field</w:instrText></w:r></w:del>` +
+                        `<w:r><w:instrText>visible field</w:instrText></w:r>` +
+                        `<w:r><w:delInstrText>delInstrText</w:delInstrText></w:r>` +
+                        `<w:moveFrom><w:r><w:t>moveFrom</w:t></w:r></w:moveFrom>` +
+                        `<w:moveTo><w:r><w:t>moveTo</w:t></w:r></w:moveTo>` +
+                    `</w:p>`,
+                ),
+            );
+            const inv = await collectDocxSemanticInventory(root);
+            const counts = [...inv.counters.values()].filter(c => c.category === "text");
+            const countFor = (label: string) => counts.find(c => c.label === label)?.count ?? 0;
+
+            expect(countFor("field instruction")).toBe(17); // PAGE(4) + visible field(13)
+            expect(countFor("deleted field instruction")).toBe(25); // deleted field(13) + delInstrText(12)
+            expect(countFor("moved-from text")).toBe(8); // moveFrom(8)
+            expect(countFor("moved-to text")).toBe(6); // moveTo(6)
+        });
+    });
 });
