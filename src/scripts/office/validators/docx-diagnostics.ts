@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 
 import type { Profile, ValidationIssue } from "../../../lib/types";
-import { getElementsByTagNameNSAll, getElementsByTagNameAll, parseXml } from "../../../lib/xml-helpers";
+import { getElementsByTagNameNSAll, parseXml } from "../../../lib/xml-helpers";
 
 const WORD_NAMESPACES = new Set([
     "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
@@ -562,18 +562,6 @@ function collectTrackedChanges(rel: string, dom: Document, inventory: MutableDoc
     }
 }
 
-function textLabel(elem: Element, local: string): string {
-    if (local === "delText") return "deleted text";
-    if (local === "delInstrText") return "deleted field instruction";
-    if (local === "instrText") return hasWordAncestor(elem, "del") ? "deleted field instruction" : "field instruction";
-    if (hasWordAncestor(elem, "ins")) return "inserted text";
-    if (hasWordAncestor(elem, "del")) return "deleted text";
-    if (hasWordAncestor(elem, "moveFrom")) return "moved-from text";
-    if (hasWordAncestor(elem, "moveTo")) return "moved-to text";
-    if (hasWordAncestor(elem, "comment")) return "comment text";
-    return "visible text";
-}
-
 function runTextLength(run: Element): number {
     let length = 0;
     const stack: Node[] = [run];
@@ -632,15 +620,6 @@ function directWordChildren(parent: Element, local: string): Element[] {
         if (isWordElement(elem) && localName(elem) === local) out.push(elem);
     }
     return out;
-}
-
-function hasWordAncestor(elem: Element, local: string): boolean {
-    for (let node = elem.parentNode; node; node = node.parentNode) {
-        if (node.nodeType !== 1) continue;
-        const parent = node as Element;
-        if (isWordElement(parent) && localName(parent) === local) return true;
-    }
-    return false;
 }
 
 function isWordElement(elem: Element): boolean {
