@@ -37,3 +37,8 @@
 
 **Learning:** Finding and iterating all text elements using `getElementsByTagNameAll(dom)` and then using `hasWordAncestor` to search upwards via `parentNode` up to the root element for every matched text element leads to O(N*D) complexity, where N is the total matching elements and D is tree depth. This dramatically tanks performance on large or heavily nested documents.
 **Action:** Replace `getElementsByTagNameAll` with an integrated single-pass Depth-First Search (DFS) stack that maintains states like `inDel` or `inIns` as it traverses down the tree. This achieves true O(N) complexity and significantly reduces execution time by half.
+
+## 2026-10-16 - Node.js version conflict for pnpm/action-setup in GitHub Actions
+
+**Learning:** When using `pnpm/action-setup@v4` in GitHub Actions workflows, the runner's default Node.js version might be too old (e.g. Node 20 or earlier), leading to `SyntaxError: Unexpected identifier` when parsing ES modules (like `import console from 'node:console'`). This causes the self-installer to fail with exit code 1.
+**Action:** Always inject an `actions/setup-node@v4` step (e.g. `node-version: 22`) *before* the `pnpm/action-setup@v4` step in CI workflows to ensure the environment has a modern Node.js runtime capable of executing the pnpm installation script.
