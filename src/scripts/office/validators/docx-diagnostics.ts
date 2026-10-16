@@ -238,21 +238,60 @@ function collectDocumentStructure(rel: string, dom: Document, inventory: Mutable
     if (pictures > 0) addCounter(inventory, rel, "document structure", "DrawingML picture", "element(s)", pictures);
 }
 
+type DomState = { node: Node; inDel: boolean; inIns: boolean; inMoveFrom: boolean; inMoveTo: boolean; inComment: boolean };
+
 function collectText(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
-    const all = getElementsByTagNameAll(dom);
-    for (let i = 0; i < all.length; i += 1) {
-        const elem = all[i];
-        if (!elem || !isWordElement(elem)) continue;
-        const local = localName(elem);
-        if (local === "fldSimple") {
-            const instr = elem.getAttributeNS(wordNamespace(elem), "instr") ?? elem.getAttribute("w:instr") ?? elem.getAttribute("instr");
-            if (instr) addCounter(inventory, rel, "text", "field instruction", "character(s)", instr.length);
-            continue;
+    const stack: DomState[] = [
+        { node: dom, inDel: false, inIns: false, inMoveFrom: false, inMoveTo: false, inComment: false }
+    ];
+
+    while (stack.length > 0) {
+        const { node, inDel: pDel, inIns: pIns, inMoveFrom: pMoveFrom, inMoveTo: pMoveTo, inComment: pComment } = stack.pop()!;
+
+        let inDel = pDel;
+        let inIns = pIns;
+        let inMoveFrom = pMoveFrom;
+        let inMoveTo = pMoveTo;
+        let inComment = pComment;
+
+        if (node !== dom && node.nodeType === 1) {
+            const elem = node as Element;
+            if (isWordElement(elem)) {
+                const local = localName(elem);
+                if (local === "del") inDel = true;
+                else if (local === "ins") inIns = true;
+                else if (local === "moveFrom") inMoveFrom = true;
+                else if (local === "moveTo") inMoveTo = true;
+                else if (local === "comment") inComment = true;
+                else if (local === "fldSimple") {
+                    const instr = elem.getAttributeNS(wordNamespace(elem), "instr") ?? elem.getAttribute("w:instr") ?? elem.getAttribute("instr");
+                    if (instr) addCounter(inventory, rel, "text", "field instruction", "character(s)", instr.length);
+                } else if (local === "t" || local === "delText" || local === "instrText" || local === "delInstrText") {
+                    const length = elem.textContent?.length ?? 0;
+                    if (length > 0) {
+                        let label = "visible text";
+                        if (local === "delText") label = "deleted text";
+                        else if (local === "delInstrText") label = "deleted field instruction";
+                        else if (local === "instrText") label = inDel ? "deleted field instruction" : "field instruction";
+                        else if (inIns) label = "inserted text";
+                        else if (inDel) label = "deleted text";
+                        else if (inMoveFrom) label = "moved-from text";
+                        else if (inMoveTo) label = "moved-to text";
+                        else if (inComment) label = "comment text";
+
+                        addCounter(inventory, rel, "text", label, "character(s)", length);
+                    }
+                }
+            }
         }
-        if (local !== "t" && local !== "delText" && local !== "instrText" && local !== "delInstrText") continue;
-        const length = elem.textContent?.length ?? 0;
-        if (length === 0) continue;
-        addCounter(inventory, rel, "text", textLabel(elem, local), "character(s)", length);
+
+        let child = node.lastChild;
+        while (child) {
+            if (child.nodeType === 1) {
+                stack.push({ node: child, inDel, inIns, inMoveFrom, inMoveTo, inComment });
+            }
+            child = child.previousSibling;
+        }
     }
 }
 
@@ -537,13 +576,26 @@ function textLabel(elem: Element, local: string): string {
 
 function runTextLength(run: Element): number {
     let length = 0;
-    const all = getElementsByTagNameAll(run);
-    for (let i = 0; i < all.length; i += 1) {
-        const elem = all[i];
-        if (!elem || !isWordElement(elem)) continue;
-        const local = localName(elem);
-        if (local === "t" || local === "delText" || local === "instrText" || local === "delInstrText") {
-            length += elem.textContent?.length ?? 0;
+    const stack: Node[] = [run];
+
+    while (stack.length > 0) {
+        const node = stack.pop()!;
+        if (node !== run && node.nodeType === 1) {
+            const elem = node as Element;
+            if (isWordElement(elem)) {
+                const local = localName(elem);
+                if (local === "t" || local === "delText" || local === "instrText" || local === "delInstrText") {
+                    length += elem.textContent?.length ?? 0;
+                }
+            }
+        }
+
+        let child = node.lastChild;
+        while (child) {
+            if (child.nodeType === 1) {
+                stack.push(child);
+            }
+            child = child.previousSibling;
         }
     }
     return length;

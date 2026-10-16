@@ -32,3 +32,8 @@
 
 **Learning:** Parent traversal (`parentNode` loops) for every matched node in a deep document is O(N*D). Combining this with querying all elements leads to huge performance degradation.
 **Action:** Implement an integrated top-down DFS traversal instead of querying all elements and then checking their parent chains. This removes redundant parent tree traversals and prunes excluded subtrees. End-to-end timings can still be dominated by XML parsing and allocation; see `docs/performance/redlining-dfs.md` for mixed local measurements.
+
+## 2026-10-16 - Avoid redundant DOM lookups inside getElementsByTagNameAll iteration
+
+**Learning:** Finding and iterating all text elements using `getElementsByTagNameAll(dom)` and then using `hasWordAncestor` to search upwards via `parentNode` up to the root element for every matched text element leads to O(N*D) complexity, where N is the total matching elements and D is tree depth. This dramatically tanks performance on large or heavily nested documents.
+**Action:** Replace `getElementsByTagNameAll` with an integrated single-pass Depth-First Search (DFS) stack that maintains states like `inDel` or `inIns` as it traverses down the tree. This achieves true O(N) complexity and significantly reduces execution time by half.
