@@ -232,4 +232,20 @@ describe("docx diagnostics", () => {
         expect(issues[1].message).toContain("Before repair found 2 [ws-missing-preserve] issue(s)");
         expect(issues[1].message).toContain("add xml:space='preserve'");
     });
+
+    it("emits repair plan for known xsd errors", () => {
+        const issues = buildRepairPlanIssues([
+            { severity: "error", path: "word/document.xml", code: "xsd-error", message: "}graphic': This element is not expected" },
+            { severity: "error", path: "word/document.xml", code: "xsd-error", message: "Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/picture}spPr" },
+            { severity: "error", path: "word/document.xml", code: "xsd-error", message: "}filetime': '' is not a valid value" },
+        ]);
+
+        expect(issues).toHaveLength(3);
+        expect(issues[0]).toMatchObject({ code: "repair-plan", path: "word/document.xml" });
+        expect(issues[0].message).toContain("insert missing inline-picture scaffolding");
+        expect(issues[1]).toMatchObject({ code: "repair-plan", path: "word/document.xml" });
+        expect(issues[1].message).toContain("insert missing picture shape properties");
+        expect(issues[2]).toMatchObject({ code: "repair-plan", path: "word/document.xml" });
+        expect(issues[2].message).toContain("trim invalid whitespace from core document properties");
+    });
 });
