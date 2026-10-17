@@ -26,7 +26,7 @@
         "typescript"
     ],
     "engines": {
-        "node": ">=20"
+        "node": ">=26"
     },
     "repository": {
         "type": "git",
@@ -38,9 +38,6 @@
     "type": "module",
     "sideEffects": false,
     "types": "./dist/index.d.mts",
-    "attw": {
-        "profile": "esm-only"
-    },
     "exports": {
         ".": {
             "types": "./dist/index.d.mts",
@@ -52,48 +49,46 @@
         "access": "public"
     },
     "scripts": {
-        "build": "vp pack",
-        "dev": "vp pack --watch",
+        "build": "vite build",
+        "dev": "vite build --watch",
         "test": "vitest",
         "test:strict": "vitest run tests/fixtures-all-strict.test.ts",
         "test:lenient": "vitest run tests/fixtures-all-lenient.test.ts",
         "test:fixtures:refresh": "tsx scripts/probe-all-fixtures.ts",
         "test:fixtures:word": "tsx scripts/probe-word-fixtures.ts",
         "test:fixtures:regenerate-word-invalid": "tsx scripts/regenerate-word-invalid-fixtures.ts",
-        "vp": "vitest",
-        "check": "vp check",
-        "check:tsgo": "tsgo --noEmit",
+        "check": "tsc --noEmit && oxlint --type-aware --type-check && oxfmt --check .",
         "lint": "oxlint --type-aware --type-check",
         "lint:fix": "oxlint --type-aware --type-check --fix",
-        "fmt": "vp fmt --check",
-        "fmt:fix": "vp fmt",
+        "fmt": "oxfmt --check .",
+        "fmt:fix": "oxfmt .",
         "cspell": "cspell \"{src,tests}/**/*.{ts,md}\" && cspell \"./*.*\"",
         "docs": "typedoc src/index.ts --tsconfig tsconfig.typedoc.json",
         "release": "tsx scripts/release.ts",
         "release:publish": "git push --follow-tags && npm publish --access public",
-        "prepublishOnly": "vp run build"
+        "prepublishOnly": "pnpm run build && publint && attw --pack --profile esm-only"
     },
     "devDependencies": {
         "@arethetypeswrong/cli": "^0.18.5",
         "@types/node": "^26.6.4",
         "@types/tmp": "^0.2.6",
-        "@typescript/native-preview": "7.0.0-dev.20260707.2",
         "@vitest/coverage-v8": "^5.0.3",
         "bumpp": "^12.3.0",
         "cspell": "^10.3.6",
         "eslint-plugin-functional": "^10.0.1",
         "eslint-plugin-jsdoc": "^65.1.0",
         "eslint-plugin-prefer-arrow": "^1.2.3",
-        "oxfmt": "^0.71.0",
-        "oxlint": "^1.86.0",
+        "oxfmt": "^0.72.0",
+        "oxlint": "^1.87.0",
         "publint": "^0.3.25",
+        "rolldown-plugin-dts": "0.28.6",
         "tsx": "^4.23.15",
         "typedoc": "^0.28.20",
-        "typescript": "^6.0.3",
-        "vite-plus": "^1.0.0",
+        "typescript": "^7.0.2",
+        "vite": "^8.3.4",
         "vitest": "^5.0.3"
     },
-    "packageManager": "pnpm@12.8.2",
+    "packageManager": "pnpm@12.11.2",
     "dependencies": {
         "@xmldom/xmldom": "^0.9.12",
         "commander": "^15.0.0",
