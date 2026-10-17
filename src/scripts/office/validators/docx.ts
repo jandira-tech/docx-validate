@@ -1142,22 +1142,73 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             } catch {
                 continue;
             }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                for (const local of ["delText", "delInstrText"] as const) {
-                    const nodes = getElementsByTagNameNSAll(dom, ns, local);
-                    for (let i = 0; i < nodes.length; i += 1) {
-                        const node = nodes[i];
-                        if (!node || !this.hasTextBoxContentAncestor(node)) continue;
-                        if (this.hasMarkupCompatibilityFallbackAncestor(node)) continue;
-                        if (this.hasTextBoxDeletionAncestor(node)) continue;
-                        issues.push({
-                            severity: "error",
-                            message:
-                                "A text box contains deleted text. Microsoft Word offers to recover the file. " +
-                                "Remove the w:delText or w:delInstrText from the text box.",
-                            path: this.relPath(xmlFile),
-                            code: "word-textbox-deleted-text",
+            // ⚡ Bolt: Replace O(N*D) parentNode loops over getElementsByTagNameNSAll
+            // with a single O(N) stack-based DFS traversal. This skips descending
+            // into excluded subtrees and perfectly mimics the logic for `inTextBox`,
+            // `inFallback`, and `inDel` without any duplicate parent chain walking.
+            interface StackFrame {
+                node: Node;
+                inTextBox: boolean;
+                inFallback: boolean;
+                inDel: boolean;
+            }
+            const stack: StackFrame[] = [{ node: dom, inTextBox: false, inFallback: false, inDel: false }];
+
+            while (stack.length > 0) {
+                const { node, inTextBox, inFallback, inDel } = stack.pop()!;
+
+                if (node.nodeType === 1) { // Element
+                    const elem = node as Element;
+                    const local = elem.localName || elem.tagName.split(":").pop() || "";
+                    const ns = elem.namespaceURI ?? "";
+
+                    let newInTextBox = inTextBox;
+                    let newInFallback = inFallback;
+                    let newInDel = inDel;
+
+                    if (local === "txbxContent" && WORD_PARAGRAPH_NAMESPACES.includes(ns)) {
+                        newInTextBox = true;
+                        newInDel = false; // "A w:del outside the text box does not count"
+                    } else if (local === "del" && WORD_PARAGRAPH_NAMESPACES.includes(ns)) {
+                        // "A w:del that wraps the text inside the text box is not this defect either"
+                        newInDel = true;
+                    } else if (local === "Fallback" && ns === MC_NAMESPACE) {
+                        newInFallback = true;
+                    }
+
+                    if ((local === "delText" || local === "delInstrText") && WORD_PARAGRAPH_NAMESPACES.includes(ns)) {
+                        if (newInTextBox && !newInFallback && !newInDel) {
+                            issues.push({
+                                severity: "error",
+                                message:
+                                    "A text box contains deleted text. Microsoft Word offers to recover the file. " +
+                                    "Remove the w:delText or w:delInstrText from the text box.",
+                                path: this.relPath(xmlFile),
+                                code: "word-textbox-deleted-text",
+                            });
+                        }
+                    }
+
+                    const children = node.childNodes;
+                    for (let i = children.length - 1; i >= 0; i--) {
+                        stack.push({
+                            node: children[i],
+                            inTextBox: newInTextBox,
+                            inFallback: newInFallback,
+                            inDel: newInDel,
                         });
+                    }
+                } else {
+                    const children = node.childNodes;
+                    if (children) {
+                        for (let i = children.length - 1; i >= 0; i--) {
+                            stack.push({
+                                node: children[i],
+                                inTextBox,
+                                inFallback,
+                                inDel,
+                            });
+                        }
                     }
                 }
             }
@@ -1377,46 +1428,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         return false;
     }
 
-    private hasTextBoxContentAncestor(node: Node): boolean {
-        let parent = node.parentNode;
-        while (parent && parent.nodeType === 1) {
-            const elem = parent as Element;
-            const local = elem.localName || elem.tagName.split(":").pop() || "";
-            if (local === "txbxContent" && WORD_PARAGRAPH_NAMESPACES.includes(elem.namespaceURI ?? "")) return true;
-            parent = parent.parentNode;
-        }
-        return false;
-    }
-
-    /**
-     * True when a `w:del` sits between this node and its `w:txbxContent`.
-     * Word accepts that deletion. A `w:del` outside the text box does not
-     * count, because the text-box story still contains bare `w:delText`.
-     */
-    private hasTextBoxDeletionAncestor(node: Node): boolean {
-        let parent = node.parentNode;
-        while (parent && parent.nodeType === 1) {
-            const elem = parent as Element;
-            const local = elem.localName || elem.tagName.split(":").pop() || "";
-            const ns = elem.namespaceURI ?? "";
-            if (local === "txbxContent" && WORD_PARAGRAPH_NAMESPACES.includes(ns)) return false;
-            if (local === "del" && WORD_PARAGRAPH_NAMESPACES.includes(ns)) return true;
-            parent = parent.parentNode;
-        }
-        return false;
-    }
-
-    /** True when an ancestor is `mc:Fallback`. Word ignores that branch. */
-    private hasMarkupCompatibilityFallbackAncestor(node: Node): boolean {
-        let parent = node.parentNode;
-        while (parent && parent.nodeType === 1) {
-            const elem = parent as Element;
-            const local = elem.localName || elem.tagName.split(":").pop() || "";
-            if (local === "Fallback" && elem.namespaceURI === MC_NAMESPACE) return true;
-            parent = parent.parentNode;
-        }
-        return false;
-    }
 
     /**
      * A `w:hyperlink` whose `r:id` does not name an external hyperlink
