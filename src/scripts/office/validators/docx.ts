@@ -1152,21 +1152,23 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     for (let j = 0; j < txbxContents.length; j += 1) {
                         const txbx = txbxContents[j];
                         if (!txbx) continue;
-                        const nodes = getElementsByTagNameNSAll(txbx, ns, local);
-                        for (let i = 0; i < nodes.length; i += 1) {
-                            const node = nodes[i];
-                            if (!node || seen.has(node)) continue;
-                            seen.add(node);
-                            if (this.hasMarkupCompatibilityFallbackAncestor(node)) continue;
-                            if (this.hasTextBoxDeletionAncestor(node)) continue;
-                            issues.push({
-                                severity: "error",
-                                message:
-                                    "A text box contains deleted text. Microsoft Word offers to recover the file. " +
-                                    "Remove the w:delText or w:delInstrText from the text box.",
-                                path: this.relPath(xmlFile),
-                                code: "word-textbox-deleted-text",
-                            });
+                        for (const childNs of WORD_PARAGRAPH_NAMESPACES) {
+                            const nodes = getElementsByTagNameNSAll(txbx, childNs, local);
+                            for (let i = 0; i < nodes.length; i += 1) {
+                                const node = nodes[i];
+                                if (!node || seen.has(node)) continue;
+                                seen.add(node);
+                                if (this.hasMarkupCompatibilityFallbackAncestor(node)) continue;
+                                if (this.hasTextBoxDeletionAncestor(node)) continue;
+                                issues.push({
+                                    severity: "error",
+                                    message:
+                                        "A text box contains deleted text. Microsoft Word offers to recover the file. " +
+                                        "Remove the w:delText or w:delInstrText from the text box.",
+                                    path: this.relPath(xmlFile),
+                                    code: "word-textbox-deleted-text",
+                                });
+                            }
                         }
                     }
                 }
@@ -1195,19 +1197,21 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 for (let j = 0; j < moveFroms.length; j += 1) {
                     const moveFrom = moveFroms[j];
                     if (!moveFrom) continue;
-                    const nodes = getElementsByTagNameNSAll(moveFrom, ns, "delText");
-                    for (let i = 0; i < nodes.length; i += 1) {
-                        const node = nodes[i];
-                        if (!node || seen.has(node)) continue;
-                        seen.add(node);
-                        issues.push({
-                            severity: "error",
-                            message:
-                                "A move source contains deleted text. Microsoft Word offers to recover the file. " +
-                                "Use w:t inside w:moveFrom, not w:delText.",
-                            path: this.relPath(xmlFile),
-                            code: "word-move-from-deleted-text",
-                        });
+                    for (const childNs of WORD_PARAGRAPH_NAMESPACES) {
+                        const nodes = getElementsByTagNameNSAll(moveFrom, childNs, "delText");
+                        for (let i = 0; i < nodes.length; i += 1) {
+                            const node = nodes[i];
+                            if (!node || seen.has(node)) continue;
+                            seen.add(node);
+                            issues.push({
+                                severity: "error",
+                                message:
+                                    "A move source contains deleted text. Microsoft Word offers to recover the file. " +
+                                    "Use w:t inside w:moveFrom, not w:delText.",
+                                path: this.relPath(xmlFile),
+                                code: "word-move-from-deleted-text",
+                            });
+                        }
                     }
                 }
             }
