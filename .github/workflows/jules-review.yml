@@ -30,8 +30,11 @@ jobs:
             pull-requests: write
             checks: write
         steps:
-            # No checkout: the action reads the diff and rules through the GitHub API,
-            # so no token is persisted to disk in the workspace.
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
             - name: Jules review
               uses: arthrod/jules-pr-reviewer@de95c2cb6820df8b0e562d77f1f758d71b14b974
               with:
