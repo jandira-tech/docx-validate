@@ -32,3 +32,8 @@
 
 **Learning:** Parent traversal (`parentNode` loops) for every matched node in a deep document is O(N*D). Combining this with querying all elements leads to huge performance degradation.
 **Action:** Implement an integrated top-down DFS traversal instead of querying all elements and then checking their parent chains. This removes redundant parent tree traversals and prunes excluded subtrees. End-to-end timings can still be dominated by XML parsing and allocation; see `docs/performance/redlining-dfs.md` for mixed local measurements.
+
+## 2026-10-18 - Optimize DOM collection in docx insertions/deletions validation
+
+**Learning:** `getElementsByTagNameNSAll` iterates through the whole document to find matching tags. When looking for nested matching tags in `validateTextBoxDeletedText` and `validateMoveFromDeletedText`, it is more performant to retrieve the parent first (e.g., `<w:txbxContent>` or `<w:moveFrom>`) and then query the descendants directly inside that node, rather than query the whole document and then check if it's inside the parent node. Using a `Set` handles potential deduplication.
+**Action:** Always optimize nested tag lookups by utilizing parent queries directly instead of checking parents of all document-wide elements.
