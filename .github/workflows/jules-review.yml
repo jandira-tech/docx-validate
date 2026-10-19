@@ -30,6 +30,9 @@ jobs:
             pull-requests: write
             checks: write
         steps:
+            - uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
             # No checkout: the action reads the diff and rules through the GitHub API,
             # so no token is persisted to disk in the workspace.
             - name: Jules review
@@ -54,6 +57,7 @@ jobs:
                       error handling and resource cleanup; concurrency and async misuse; performance regressions;
                       missing or weakened tests for changed behaviour; breaking API or schema changes; docs that
                       no longer match the code. Prefer concrete file:line findings with a fix over general advice.
+                  rules_file: .github/jules-review-rules.md
                   ignored_paths: >-
                       ["**/package-lock.json", "**/pnpm-lock.yaml", "**/yarn.lock", "**/bun.lock",
                       "**/bun.lockb", "**/uv.lock", "**/poetry.lock", "**/Cargo.lock", "**/*.min.js",
