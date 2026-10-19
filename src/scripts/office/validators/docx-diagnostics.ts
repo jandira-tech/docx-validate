@@ -247,6 +247,10 @@ type TraversalState = {
     inComment: boolean;
 };
 
+// ⚡ Bolt Optimization: Stateful DFS to collect text elements.
+// Instead of querying `getElementsByTagNameAll` and doing an O(N*D) `parentNode` chain lookup
+// for every text node to determine its context (e.g. inside <ins> or <del>), we maintain
+// state flags via a single-pass top-down Depth-First Search (DFS). This reduces DOM lookup complexity to O(N).
 function collectText(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
     const stack: TraversalState[] = [{ node: dom, inDel: false, inIns: false, inMoveFrom: false, inMoveTo: false, inComment: false }];
 
