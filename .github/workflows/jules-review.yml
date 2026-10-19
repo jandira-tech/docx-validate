@@ -58,6 +58,7 @@ jobs:
                       missing or weakened tests for changed behaviour; breaking API or schema changes; docs that
                       no longer match the code. Prefer concrete file:line findings with a fix over general advice.
                   rules_file: .github/jules-review-rules.md
+                  rules_directory: .github/jules-rules
                   ignored_paths: >-
                       ["**/package-lock.json", "**/pnpm-lock.yaml", "**/yarn.lock", "**/bun.lock",
                       "**/bun.lockb", "**/uv.lock", "**/poetry.lock", "**/Cargo.lock", "**/*.min.js",
