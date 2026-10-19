@@ -32,3 +32,8 @@
 
 **Learning:** Parent traversal (`parentNode` loops) for every matched node in a deep document is O(N*D). Combining this with querying all elements leads to huge performance degradation.
 **Action:** Implement an integrated top-down DFS traversal instead of querying all elements and then checking their parent chains. This removes redundant parent tree traversals and prunes excluded subtrees. End-to-end timings can still be dominated by XML parsing and allocation; see `docs/performance/redlining-dfs.md` for mixed local measurements.
+
+## 2026-10-23 - Avoid O(N*D) parentNode traversal with stateful DFS
+
+**Learning:** In docx diagnostics, checking an element's context (e.g. is it inside an `<ins>`, `<del>`, `<comment>`) using a `.parentNode` loop upwards for every text node creates an O(N*D) performance bottleneck, especially on deeply nested Word documents with heavy redlining or comments.
+**Action:** Replace `getElementsByTagNameAll` and upward `parentNode` checks with a custom, stateful, stack-based top-down Depth-First Search (DFS). Pushing the current state (e.g. `inDel: true`) down to children is O(N) and drastically speeds up the traversal by eliminating redundant DOM lookups.

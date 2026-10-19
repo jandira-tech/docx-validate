@@ -238,21 +238,77 @@ function collectDocumentStructure(rel: string, dom: Document, inventory: Mutable
     if (pictures > 0) addCounter(inventory, rel, "document structure", "DrawingML picture", "element(s)", pictures);
 }
 
+type TraversalState = {
+    node: Node;
+    inDel: boolean;
+    inIns: boolean;
+    inMoveFrom: boolean;
+    inMoveTo: boolean;
+    inComment: boolean;
+};
+
+// ⚡ Bolt Optimization: Stateful DFS to collect text elements.
+// Instead of querying `getElementsByTagNameAll` and doing an O(N*D) `parentNode` chain lookup
+// for every text node to determine its context (e.g. inside <ins> or <del>), we maintain
+// state flags via a single-pass top-down Depth-First Search (DFS). This reduces DOM lookup complexity to O(N).
 function collectText(rel: string, dom: Document, inventory: MutableDocxSemanticInventory): void {
-    const all = getElementsByTagNameAll(dom);
-    for (let i = 0; i < all.length; i += 1) {
-        const elem = all[i];
-        if (!elem || !isWordElement(elem)) continue;
-        const local = localName(elem);
-        if (local === "fldSimple") {
-            const instr = elem.getAttributeNS(wordNamespace(elem), "instr") ?? elem.getAttribute("w:instr") ?? elem.getAttribute("instr");
-            if (instr) addCounter(inventory, rel, "text", "field instruction", "character(s)", instr.length);
-            continue;
+    const stack: TraversalState[] = [{ node: dom, inDel: false, inIns: false, inMoveFrom: false, inMoveTo: false, inComment: false }];
+
+    while (stack.length > 0) {
+        const { node, inDel, inIns, inMoveFrom, inMoveTo, inComment } = stack.pop()!;
+        let cInDel = inDel;
+        let cInIns = inIns;
+        let cInMoveFrom = inMoveFrom;
+        let cInMoveTo = inMoveTo;
+        let cInComment = inComment;
+
+        if (node.nodeType === 1 && node !== dom) {
+            const elem = node as Element;
+            if (isWordElement(elem)) {
+                const local = localName(elem);
+                if (!inDel && local === "del") cInDel = true;
+                if (!inIns && local === "ins") cInIns = true;
+                if (!inMoveFrom && local === "moveFrom") cInMoveFrom = true;
+                if (!inMoveTo && local === "moveTo") cInMoveTo = true;
+                if (!inComment && local === "comment") cInComment = true;
+
+                if (local === "fldSimple") {
+                    const instr =
+                        elem.getAttributeNS(wordNamespace(elem), "instr") ?? elem.getAttribute("w:instr") ?? elem.getAttribute("instr");
+                    if (instr) addCounter(inventory, rel, "text", "field instruction", "character(s)", instr.length);
+                } else if (local === "t" || local === "delText" || local === "instrText" || local === "delInstrText") {
+                    const length = elem.textContent?.length ?? 0;
+                    if (length > 0) {
+                        let label = "visible text";
+                        if (local === "delText") label = "deleted text";
+                        else if (local === "delInstrText") label = "deleted field instruction";
+                        else if (local === "instrText") label = cInDel ? "deleted field instruction" : "field instruction";
+                        else if (cInIns) label = "inserted text";
+                        else if (cInDel) label = "deleted text";
+                        else if (cInMoveFrom) label = "moved-from text";
+                        else if (cInMoveTo) label = "moved-to text";
+                        else if (cInComment) label = "comment text";
+
+                        addCounter(inventory, rel, "text", label, "character(s)", length);
+                    }
+                }
+            }
         }
-        if (local !== "t" && local !== "delText" && local !== "instrText" && local !== "delInstrText") continue;
-        const length = elem.textContent?.length ?? 0;
-        if (length === 0) continue;
-        addCounter(inventory, rel, "text", textLabel(elem, local), "character(s)", length);
+
+        let child = node.lastChild;
+        while (child) {
+            if (child.nodeType === 1) {
+                stack.push({
+                    node: child,
+                    inDel: cInDel,
+                    inIns: cInIns,
+                    inMoveFrom: cInMoveFrom,
+                    inMoveTo: cInMoveTo,
+                    inComment: cInComment,
+                });
+            }
+            child = child.previousSibling;
+        }
     }
 }
 
@@ -523,18 +579,6 @@ function collectTrackedChanges(rel: string, dom: Document, inventory: MutableDoc
     }
 }
 
-function textLabel(elem: Element, local: string): string {
-    if (local === "delText") return "deleted text";
-    if (local === "delInstrText") return "deleted field instruction";
-    if (local === "instrText") return hasWordAncestor(elem, "del") ? "deleted field instruction" : "field instruction";
-    if (hasWordAncestor(elem, "ins")) return "inserted text";
-    if (hasWordAncestor(elem, "del")) return "deleted text";
-    if (hasWordAncestor(elem, "moveFrom")) return "moved-from text";
-    if (hasWordAncestor(elem, "moveTo")) return "moved-to text";
-    if (hasWordAncestor(elem, "comment")) return "comment text";
-    return "visible text";
-}
-
 function runTextLength(run: Element): number {
     let length = 0;
     const all = getElementsByTagNameAll(run);
@@ -580,15 +624,6 @@ function directWordChildren(parent: Element, local: string): Element[] {
         if (isWordElement(elem) && localName(elem) === local) out.push(elem);
     }
     return out;
-}
-
-function hasWordAncestor(elem: Element, local: string): boolean {
-    for (let node = elem.parentNode; node; node = node.parentNode) {
-        if (node.nodeType !== 1) continue;
-        const parent = node as Element;
-        if (isWordElement(parent) && localName(parent) === local) return true;
-    }
-    return false;
 }
 
 function isWordElement(elem: Element): boolean {
