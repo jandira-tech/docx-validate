@@ -1142,28 +1142,33 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             } catch {
                 continue;
             }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                // Optimize: Target text boxes first to avoid O(N*D) parentNode lookups.
-                // Measurement: Reduces whole-document execution time by ~53% (from ~13.4ms to ~6.3ms).
-                const textboxes = getElementsByTagNameNSAll(dom, ns, "txbxContent");
+            // Optimize: Target text boxes first to avoid O(N*D) parentNode lookups.
+            // A Set ensures we don't report the same delText multiple times if textboxes are nested.
+            // Measurement: Reduces whole-document execution time by ~53% (from ~13.4ms to ~6.3ms).
+            const seen = new Set<Node>();
+            for (const parentNs of WORD_PARAGRAPH_NAMESPACES) {
+                const textboxes = getElementsByTagNameNSAll(dom, parentNs, "txbxContent");
                 for (let i = 0; i < textboxes.length; i += 1) {
                     const textbox = textboxes[i];
                     if (!textbox) continue;
-                    for (const local of ["delText", "delInstrText"] as const) {
-                        const nodes = getElementsByTagNameNSAll(textbox, ns, local);
-                        for (let j = 0; j < nodes.length; j += 1) {
-                            const node = nodes[j];
-                            if (!node) continue;
-                            if (this.hasMarkupCompatibilityFallbackAncestor(node)) continue;
-                            if (this.hasTextBoxDeletionAncestor(node)) continue;
-                            issues.push({
-                                severity: "error",
-                                message:
-                                    "A text box contains deleted text. Microsoft Word offers to recover the file. " +
-                                    "Remove the w:delText or w:delInstrText from the text box.",
-                                path: this.relPath(xmlFile),
-                                code: "word-textbox-deleted-text",
-                            });
+                    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                        for (const local of ["delText", "delInstrText"] as const) {
+                            const nodes = getElementsByTagNameNSAll(textbox, ns, local);
+                            for (let j = 0; j < nodes.length; j += 1) {
+                                const node = nodes[j];
+                                if (!node || seen.has(node)) continue;
+                                if (this.hasMarkupCompatibilityFallbackAncestor(node)) continue;
+                                if (this.hasTextBoxDeletionAncestor(node)) continue;
+                                seen.add(node);
+                                issues.push({
+                                    severity: "error",
+                                    message:
+                                        "A text box contains deleted text. Microsoft Word offers to recover the file. " +
+                                        "Remove the w:delText or w:delInstrText from the text box.",
+                                    path: this.relPath(xmlFile),
+                                    code: "word-textbox-deleted-text",
+                                });
+                            }
                         }
                     }
                 }
@@ -1184,25 +1189,30 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             } catch {
                 continue;
             }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                // Optimize: Target moveFrom first to avoid O(N*D) parentNode lookups.
-                // Measurement: Reduces whole-document execution time by ~45% (from ~8.8ms to ~4.8ms).
-                const moveFroms = getElementsByTagNameNSAll(dom, ns, "moveFrom");
+            // Optimize: Target moveFrom first to avoid O(N*D) parentNode lookups.
+            // A Set prevents duplicate reporting if moveFrom elements are nested.
+            // Measurement: Reduces whole-document execution time by ~45% (from ~8.8ms to ~4.8ms).
+            const seenMove = new Set<Node>();
+            for (const parentNs of WORD_PARAGRAPH_NAMESPACES) {
+                const moveFroms = getElementsByTagNameNSAll(dom, parentNs, "moveFrom");
                 for (let i = 0; i < moveFroms.length; i += 1) {
                     const moveFrom = moveFroms[i];
                     if (!moveFrom) continue;
-                    const nodes = getElementsByTagNameNSAll(moveFrom, ns, "delText");
-                    for (let j = 0; j < nodes.length; j += 1) {
-                        const node = nodes[j];
-                        if (!node) continue;
-                        issues.push({
-                            severity: "error",
-                            message:
-                                "A move source contains deleted text. Microsoft Word offers to recover the file. " +
-                                "Use w:t inside w:moveFrom, not w:delText.",
-                            path: this.relPath(xmlFile),
-                            code: "word-move-from-deleted-text",
-                        });
+                    for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                        const nodes = getElementsByTagNameNSAll(moveFrom, ns, "delText");
+                        for (let j = 0; j < nodes.length; j += 1) {
+                            const node = nodes[j];
+                            if (!node || seenMove.has(node)) continue;
+                            seenMove.add(node);
+                            issues.push({
+                                severity: "error",
+                                message:
+                                    "A move source contains deleted text. Microsoft Word offers to recover the file. " +
+                                    "Use w:t inside w:moveFrom, not w:delText.",
+                                path: this.relPath(xmlFile),
+                                code: "word-move-from-deleted-text",
+                            });
+                        }
                     }
                 }
             }
