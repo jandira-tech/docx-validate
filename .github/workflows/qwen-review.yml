@@ -29,7 +29,7 @@ jobs:
         name: Static analysis (uv / pnpm / cargo)
         runs-on: self-hosted
         steps:
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@v4
               with:
                   persist-credentials: false
                   fetch-depth: 0
@@ -38,6 +38,11 @@ jobs:
               uses: astral-sh/setup-uv@v5
               with:
                   version: latest
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
 
             - name: Install pnpm
               uses: pnpm/action-setup@v4
@@ -93,7 +98,7 @@ jobs:
         runs-on: self-hosted
         if: ${{ !github.event.pull_request.draft }}
         steps:
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@v4
               with:
                   fetch-depth: 1
                   persist-credentials: false

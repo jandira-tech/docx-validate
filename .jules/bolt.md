@@ -32,3 +32,13 @@
 
 **Learning:** Parent traversal (`parentNode` loops) for every matched node in a deep document is O(N*D). Combining this with querying all elements leads to huge performance degradation.
 **Action:** Implement an integrated top-down DFS traversal instead of querying all elements and then checking their parent chains. This removes redundant parent tree traversals and prunes excluded subtrees. End-to-end timings can still be dominated by XML parsing and allocation; see `docs/performance/redlining-dfs.md` for mixed local measurements.
+
+## 2026-10-20 - Optimize DOM collection in docx validations
+
+**Learning:** `getElementsByTagNameNSAll` iterates through the whole document to find matching tags. When looking for nested matching tags in `validateTextBoxDeletedText` and `validateMoveFromDeletedText`, it is much more performant to retrieve the parent first (e.g., `<w:txbxContent>` or `<w:moveFrom>`) and then query the descendants directly inside that node, rather than query the whole document and then traverse up the `.parentNode` chain (which is O(N*D)).
+**Action:** Always optimize nested tag lookups by utilizing parent queries directly instead of checking parents of all document-wide elements.
+
+## 2026-10-20 - Optimize DOM collection deduplication
+
+**Learning:** When searching for nested tags inside specific rare ancestors (like `<w:delText>` inside `<w:txbxContent>`), query for the ancestor elements first and then extract the targets from their subtrees. This approach is significantly faster than querying the whole document for the target tags and traversing up `.parentNode` chains (O(N*D)). However, if the ancestor containers can themselves be nested (e.g., a text box inside another text box), you must implement a deduplication mechanism (like a `Set<Node>`) to prevent duplicate processing of the same target elements.
+**Action:** Always optimize nested tag lookups by utilizing parent queries directly instead of checking parents of all document-wide elements, and always include a deduplication `Set` when nested ancestors are possible.
