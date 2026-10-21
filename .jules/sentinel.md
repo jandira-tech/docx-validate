@@ -32,3 +32,15 @@
 
 **Learning:** JSZip 3.8+ (we pin 3.10.2) stores every entry under `utils.resolve(name)` on load and keeps the raw name in `unsafeOriginalName`: `../../evil.xml` loads as `evil.xml`, and `zip.file("../../evil.xml")` returns null. `_getOriginalFileErrors` looks entries up by name and returns before writing when the lookup fails, so the zip slip reported in PR #189 is unreachable; its test had to monkeypatch JSZip to recreate it. An absolute name (`/abs.xml`) is kept as is, but `path.join(tmpDir, rel)` cannot leave `tmpDir` with it.
 **Prevention:** Code that iterates `zip.files` or reads `unsafeOriginalName` to write files must still check containment with `path.relative`, as `extractZipEntries` does.
+
+## 2026-10-21 - Denial of Service via unbounded spawnSync
+
+**Vulnerability:** The `runGitDiff` function in `src/scripts/office/validators/redlining.ts` invoked `git diff` via `spawnSync` without a timeout or `maxBuffer` on extracted text from user-supplied DOCX files. An attacker could provide a massive or pathologically formatted document that causes `git diff --word-diff-regex=.` to hang or consume excessive memory, leading to a Denial of Service (DoS).
+**Learning:** External processes invoked via synchronous APIs (`spawnSync`, `execSync`) on untrusted data must always have strict execution bounds.
+**Prevention:** Always enforce a `timeout` (e.g., 10000ms) and a reasonable `maxBuffer` limit when calling shell or external commands to prevent resource exhaustion and hanging processes.
+
+## 2026-10-21 - Jules API Quota Exceeded
+
+**Vulnerability:** The Jules CI PR review action failed with `404 Not Found` because the API quota or rate limit was exceeded.
+**Learning:** CI failures due to external service rate limits (e.g., Jules API, opencode API) are configuration issues outside the scope of codebase security fixes.
+**Prevention:** In the context of solving a codebase issue, acknowledge the expected out-of-scope failure and do not attempt to fix external quota limitations.

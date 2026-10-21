@@ -286,7 +286,12 @@ export async function getGitWordDiff(originalText: string, modifiedText: string)
 
 function runGitDiff(args: string[]): string | null {
     try {
-        const result = spawnSync("git", args, { encoding: "utf8" });
+        // Prevent DoS on massive/complex diffs
+        const result = spawnSync("git", args, {
+            encoding: "utf8",
+            timeout: 10000,
+            maxBuffer: 10 * 1024 * 1024
+        });
         if (result.error) {
             return null;
         }
