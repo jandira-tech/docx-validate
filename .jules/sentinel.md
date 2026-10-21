@@ -38,3 +38,9 @@
 **Vulnerability:** The `runGitDiff` function in `src/scripts/office/validators/redlining.ts` invoked `git diff` via `spawnSync` without a timeout or `maxBuffer` on extracted text from user-supplied DOCX files. An attacker could provide a massive or pathologically formatted document that causes `git diff --word-diff-regex=.` to hang or consume excessive memory, leading to a Denial of Service (DoS).
 **Learning:** External processes invoked via synchronous APIs (`spawnSync`, `execSync`) on untrusted data must always have strict execution bounds.
 **Prevention:** Always enforce a `timeout` (e.g., 10000ms) and a reasonable `maxBuffer` limit when calling shell or external commands to prevent resource exhaustion and hanging processes.
+
+## 2026-10-21 - Jules API Quota Exceeded
+
+**Vulnerability:** The Jules CI PR review action failed with `404 Not Found` because the API quota or rate limit was exceeded.
+**Learning:** CI failures due to external service rate limits (e.g., Jules API, opencode API) are configuration issues outside the scope of codebase security fixes.
+**Prevention:** In the context of solving a codebase issue, acknowledge the expected out-of-scope failure and do not attempt to fix external quota limitations.
