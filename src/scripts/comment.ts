@@ -49,7 +49,7 @@ import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 import { commanderExitCode, runCli } from "../lib/run-cli";
 import { nextSecureLongHexNumber } from "../lib/secure-id";
-import { parseXml, serializeXml } from "../lib/xml-helpers";
+import { getElementsByTagNameNSAll, parseXml, serializeXml } from "../lib/xml-helpers";
 
 const TEMPLATE_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "templates");
 
@@ -143,14 +143,31 @@ async function pathExists(p: string): Promise<boolean> {
     }
 }
 
+/**
+ * Bolt Performance Optimization:
+ * Replaces @xmldom/xmldom's O(N^2) live NodeList `getElementsByTagName`
+ * queries with `getElementsByTagNameNSAll`, returning a flat array in a single pass.
+ * Measurement: Reduces element collection overhead on large documents, preventing O(N^2) lag
+ * when accessing elements with `.item(i)`.
+ */
+function getElements(dom: Document | Element, tag: string): Element[] {
+    if (tag.includes(":")) {
+        const [prefix, localName] = tag.split(":");
+        // Only mapping 'w' namespace for now as that covers all calls in this script
+        const nsUri = prefix === "w" ? "http://schemas.openxmlformats.org/wordprocessingml/2006/main" : "*";
+        return getElementsByTagNameNSAll(dom, nsUri, localName as string);
+    }
+    return getElementsByTagNameNSAll(dom, "*", tag);
+}
+
 async function appendXml(xmlPath: string, rootTag: string, content: string): Promise<void> {
     const text = await fs.readFile(xmlPath, "utf-8");
     const dom = parseXml(text);
-    const roots = dom.getElementsByTagName(rootTag);
+    const roots = getElements(dom, rootTag);
     if (roots.length === 0) {
         throw new Error(`Root tag <${rootTag}> not found in ${xmlPath}`);
     }
-    const root = roots.item(0)!;
+    const root = roots[0]!;
     const nsAttrs = Object.entries(NS)
         .map(([k, v]) => `xmlns:${k}="${v}"`)
         .join(" ");
@@ -169,13 +186,13 @@ async function appendXml(xmlPath: string, rootTag: string, content: string): Pro
 async function findParaId(commentsPath: string, commentId: number): Promise<string | null> {
     const text = await fs.readFile(commentsPath, "utf-8");
     const dom = parseXml(text);
-    const comments = dom.getElementsByTagName("w:comment");
+    const comments = getElements(dom, "w:comment");
     for (let i = 0; i < comments.length; i += 1) {
-        const c = comments.item(i)!;
+        const c = comments[i]!;
         if (c.getAttribute("w:id") === String(commentId)) {
-            const ps = c.getElementsByTagName("w:p");
+            const ps = getElements(c, "w:p");
             for (let j = 0; j < ps.length; j += 1) {
-                const p = ps.item(j)!;
+                const p = ps[j]!;
                 const pid = p.getAttribute("w14:paraId");
                 if (pid) {
                     return pid;
@@ -191,9 +208,9 @@ async function findParaId(commentsPath: string, commentId: number): Promise<stri
 async function commentIdExists(commentsPath: string, commentId: number): Promise<boolean> {
     const text = await fs.readFile(commentsPath, "utf-8");
     const dom = parseXml(text);
-    const comments = dom.getElementsByTagName("w:comment");
+    const comments = getElements(dom, "w:comment");
     for (let i = 0; i < comments.length; i += 1) {
-        const c = comments.item(i)!;
+        const c = comments[i]!;
         if (c.getAttribute("w:id") === String(commentId)) {
             return true;
         }
@@ -205,9 +222,9 @@ async function getNextRid(relsPath: string): Promise<number> {
     const text = await fs.readFile(relsPath, "utf-8");
     const dom = parseXml(text);
     let maxRid = 0;
-    const rels = dom.getElementsByTagName("Relationship");
+    const rels = getElements(dom, "Relationship");
     for (let i = 0; i < rels.length; i += 1) {
-        const rel = rels.item(i)!;
+        const rel = rels[i]!;
         const rid = rel.getAttribute("Id");
         if (rid && rid.startsWith("rId")) {
             const n = Number.parseInt(rid.slice(3), 10);
@@ -222,9 +239,9 @@ async function getNextRid(relsPath: string): Promise<number> {
 async function hasRelationship(relsPath: string, target: string): Promise<boolean> {
     const text = await fs.readFile(relsPath, "utf-8");
     const dom = parseXml(text);
-    const rels = dom.getElementsByTagName("Relationship");
+    const rels = getElements(dom, "Relationship");
     for (let i = 0; i < rels.length; i += 1) {
-        const rel = rels.item(i)!;
+        const rel = rels[i]!;
         if (rel.getAttribute("Target") === target) {
             return true;
         }
@@ -235,9 +252,9 @@ async function hasRelationship(relsPath: string, target: string): Promise<boolea
 async function hasContentType(ctPath: string, partName: string): Promise<boolean> {
     const text = await fs.readFile(ctPath, "utf-8");
     const dom = parseXml(text);
-    const overrides = dom.getElementsByTagName("Override");
+    const overrides = getElements(dom, "Override");
     for (let i = 0; i < overrides.length; i += 1) {
-        const override = overrides.item(i)!;
+        const override = overrides[i]!;
         if (override.getAttribute("PartName") === partName) {
             return true;
         }
