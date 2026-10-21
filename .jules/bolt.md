@@ -32,3 +32,8 @@
 
 **Learning:** Parent traversal (`parentNode` loops) for every matched node in a deep document is O(N*D). Combining this with querying all elements leads to huge performance degradation.
 **Action:** Implement an integrated top-down DFS traversal instead of querying all elements and then checking their parent chains. This removes redundant parent tree traversals and prunes excluded subtrees. End-to-end timings can still be dominated by XML parsing and allocation; see `docs/performance/redlining-dfs.md` for mixed local measurements.
+
+## 2024-11-20 - Avoid item(i) on getElementsByTagName in @xmldom for docx scripts
+
+**Learning:** `src/scripts/comment.ts` processes unpacked docx XML natively and frequently executes loops utilizing `@xmldom/xmldom`'s `getElementsByTagName(tag).item(i)`. Because `NodeList` dynamically recalculates items, accessing `.item(i)` sequentially over many matched nodes results in O(N²) scaling on larger files.
+**Action:** Replace `getElementsByTagName` calls in this script with `getElementsByTagNameNSAll` (which outputs a static array via a fast DFS tree walk) and perform lookups utilizing standard array index access (`[i]`) instead of `.item(i)`. This prevents live `NodeList` recalculations and maintains O(N) performance on the collection phase in scripts that manipulate the XML parts natively.
