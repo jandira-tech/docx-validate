@@ -28,6 +28,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import JSZip from "jszip";
+import { extractZipEntries } from "../src/lib/zip-path";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const MAMMOTH_FIXTURES = path.join(HERE, "fixtures", "external", "mammoth-js");
@@ -48,18 +49,7 @@ export async function unpackDocxFixture(docxPath: string, tmpDir: string): Promi
     const buf = await fs.readFile(docxPath);
     const zip = await JSZip.loadAsync(buf);
 
-    await Promise.all(
-        Object.values(zip.files).map(async (entry) => {
-            const out = path.join(target, entry.name);
-            if (entry.dir) {
-                await fs.mkdir(out, { recursive: true });
-                return;
-            }
-            await fs.mkdir(path.dirname(out), { recursive: true });
-            const data = await entry.async("nodebuffer");
-            await fs.writeFile(out, data);
-        }),
-    );
+    await extractZipEntries(zip, target);
 
     return target;
 }
