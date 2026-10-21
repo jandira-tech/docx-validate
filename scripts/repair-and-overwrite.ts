@@ -18,8 +18,28 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import JSZip from "jszip";
 import { withTempDir } from "../src/lib/run-cli";
-import { extractZipEntries } from "../src/lib/zip-path";
 import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
+
+async function extractAll(zip: JSZip, outputPath: string): Promise<void> {
+    const entries: Array<{ name: string; file: JSZip.JSZipObject }> = [];
+    zip.forEach((relativePath, file) => {
+        entries.push({ name: relativePath, file });
+    });
+    for (const { name, file } of entries) {
+        const target = path.join(outputPath, name);
+        const resolved = path.resolve(target);
+        if (!resolved.startsWith(`${outputPath}${path.sep}`) && resolved !== outputPath) {
+            throw new Error(`Refusing to extract entry outside output dir: ${name}`);
+        }
+        if (file.dir) {
+            await fs.mkdir(resolved, { recursive: true });
+            continue;
+        }
+        await fs.mkdir(path.dirname(resolved), { recursive: true });
+        const data = await file.async("nodebuffer");
+        await fs.writeFile(resolved, data);
+    }
+}
 
 async function main() {
     const targetPath = process.argv[2];
@@ -34,7 +54,7 @@ async function main() {
 
     await withTempDir(async (tempDir) => {
         // 1. Extract
-        await extractZipEntries(zip, tempDir);
+        await extractAll(zip, tempDir);
 
         // 2. Repair
         const validator = new DOCXSchemaValidator({
