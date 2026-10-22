@@ -32,3 +32,9 @@
 
 **Learning:** JSZip 3.8+ (we pin 3.10.2) stores every entry under `utils.resolve(name)` on load and keeps the raw name in `unsafeOriginalName`: `../../evil.xml` loads as `evil.xml`, and `zip.file("../../evil.xml")` returns null. `_getOriginalFileErrors` looks entries up by name and returns before writing when the lookup fails, so the zip slip reported in PR #189 is unreachable; its test had to monkeypatch JSZip to recreate it. An absolute name (`/abs.xml`) is kept as is, but `path.join(tmpDir, rel)` cannot leave `tmpDir` with it.
 **Prevention:** Code that iterates `zip.files` or reads `unsafeOriginalName` to write files must still check containment with `path.relative`, as `extractZipEntries` does.
+
+## 2026-10-18 - Missing Execution Bounds on Synchronous Subprocess Execution
+
+**Vulnerability:** The `runGitDiff` function in `src/scripts/office/validators/redlining.ts` invoked `spawnSync` on untrusted string inputs without setting execution timeouts or memory limits. This could allow an attacker providing maliciously crafted DOCX files to cause a Denial of Service (DoS) by generating massive word diffs that exhaust memory or cause the git process to hang indefinitely.
+**Learning:** Synchronous process APIs (`spawnSync`, `execSync`) run the risk of halting the Node event loop if the child process hangs or consumes excessive resources, particularly when processing user-provided or untrusted data.
+**Prevention:** Always enforce strict execution bounds by configuring a `timeout` (e.g., 10000ms) and `maxBuffer` limit (e.g., 10 * 1024 * 1024 for 10MB) for all external process invocations via `spawnSync` or `execSync` on untrusted data.
