@@ -40,6 +40,11 @@ jobs:
                   version: latest
 
             - name: Install pnpm
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+
+            - name: Install pnpm
               uses: pnpm/action-setup@v4
 
             - name: Python — ruff (lint + format check)
