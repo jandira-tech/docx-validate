@@ -12,6 +12,7 @@
 // Existing surface (preserved verbatim from the auto-generated barrel).
 export * from "./lib/run-cli";
 export * from "./lib/types";
+export * from "./lib/content-types";
 export * from "./lib/xml-helpers";
 export * from "./scripts/comment";
 export * from "./scripts/office/pack";
