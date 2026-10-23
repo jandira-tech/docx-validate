@@ -671,7 +671,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             return parsed.document;
         };
         await this.validateRowsWithoutCells(issues, readXml);
-        await this.validateHyperlinkRelationships(issues, readXml);
         await this.validateDuplicateThemeRelationships(issues, readXml);
         await this.validateDuplicateFontTableRelationships(issues, readXml);
         await this.validateDuplicateWebSettingsRelationships(issues, readXml);
@@ -1009,66 +1008,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     }
 
     /**
-     * A `w:hyperlink` whose `r:id` does not name an external hyperlink
-     * relationship makes Word offer to recover the file. One such element is
-     * enough. Removing the `r:id`, or adding a Relationship with Type ending
-     * in `/hyperlink` and TargetMode `External`, opens clean. A hyperlink
-     * relationship without TargetMode, and an external relationship of
-     * another type, still warn. A hyperlink with no `r:id` is left alone.
-     */
-    private async validateHyperlinkRelationships(
-        issues: ValidationIssue[],
-        readXml: (xmlFile: string) => Promise<Document>,
-    ): Promise<void> {
-        const relationshipNamespaces = [OFFICE_RELATIONSHIPS_NAMESPACE, "http://purl.oclc.org/ooxml/officeDocument/relationships"];
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            const rels = await this.externalHyperlinkRelationshipIds(xmlFile);
-            if (!rels) continue;
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const links = getElementsByTagNameNSAll(dom, ns, "hyperlink");
-                for (let i = 0; i < links.length; i += 1) {
-                    const link = links[i];
-                    if (!link) continue;
-                    let rid: string | null = null;
-                    for (const relNs of relationshipNamespaces) {
-                        const value = link.getAttributeNS(relNs, "id");
-                        if (value) {
-                            rid = value;
-                            break;
-                        }
-                    }
-                    if (!rid) continue;
-                    const rel = rels.get(rid);
-                    if (rel?.externalHyperlink) continue;
-                    let why: string;
-                    if (!rel) {
-                        why = `no Relationship with Id '${rid}'`;
-                    } else if (!rel.type.endsWith("/hyperlink")) {
-                        why = `Relationship '${rid}' has Type '${rel.type || "(none)"}'`;
-                    } else {
-                        why = `Relationship '${rid}' has TargetMode '${rel.targetMode || "(none)"}'`;
-                    }
-                    issues.push({
-                        severity: "error",
-                        message:
-                            `<w:hyperlink> r:id="${rid}" does not reference an external hyperlink relationship (${why}). ` +
-                            "Microsoft Word offers to recover the file. " +
-                            "Use a Relationship whose Type ends in /hyperlink and whose TargetMode is External, or remove the r:id.",
-                        path: this.relPath(xmlFile),
-                        code: "word-hyperlink-relationship",
-                    });
-                }
-            }
-        }
-    }
-
-    /**
      * `null` when the sidecar exists but cannot be parsed (another check
      * reports that). An absent sidecar is an empty map: every `r:id` is
      * unresolved.
@@ -1229,40 +1168,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 code: "word-duplicate-settings-relationship",
             });
         }
-    }
-
-    private async externalHyperlinkRelationshipIds(
-        xmlFile: string,
-    ): Promise<Map<string, { type: string; targetMode: string; externalHyperlink: boolean }> | null> {
-        const relsFile = path.join(path.dirname(xmlFile), "_rels", `${path.basename(xmlFile)}.rels`);
-        let text: string;
-        try {
-            text = decodeXmlBytes(await fs.readFile(relsFile));
-        } catch {
-            return new Map();
-        }
-        let dom: Document;
-        try {
-            dom = parseXml(text);
-        } catch {
-            return null;
-        }
-        const out = new Map<string, { type: string; targetMode: string; externalHyperlink: boolean }>();
-        const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
-        for (let i = 0; i < rels.length; i += 1) {
-            const rel = rels[i];
-            if (!rel) continue;
-            const id = rel.getAttribute("Id");
-            if (!id) continue;
-            const type = rel.getAttribute("Type") ?? "";
-            const targetMode = rel.getAttribute("TargetMode") ?? "";
-            out.set(id, {
-                type,
-                targetMode,
-                externalHyperlink: type.endsWith("/hyperlink") && targetMode === "External",
-            });
-        }
-        return out;
     }
 
     // ----- whitespace ---------------------------------------------------------
