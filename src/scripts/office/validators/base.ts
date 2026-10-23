@@ -307,6 +307,14 @@ export interface XsdValidationOutcome {
      * transformed view, not the source part.
      */
     transformedView?: boolean;
+    /**
+     * True when the failure is an infrastructure finding — the schema failed
+     * to load (`xsd-schema-load-failed`) or the engine itself failed — rather
+     * than a document defect. Baseline subtraction against `--original` must
+     * never erase these: they surface as error-severity issues and keep the
+     * part invalid under every profile (#289).
+     */
+    infrastructure?: boolean;
 }
 
 export class BaseSchemaValidator {
@@ -1308,6 +1316,14 @@ export class BaseSchemaValidator {
             return single;
         }
 
+        // Infrastructure failures (schema load / engine failure) are never
+        // part of the --original baseline subtraction: they surface as
+        // error-severity issues and keep the part invalid under every
+        // profile (#289).
+        if (single.infrastructure) {
+            return single;
+        }
+
         if (this.profile === "strict") {
             // Every structured finding survives — no baseline subtraction, no
             // message suppression, no dedup of repeated messages — so repeated
@@ -1404,11 +1420,15 @@ export class BaseSchemaValidator {
             for (const issue of errorIssues) {
                 errors.add(issue.message.trim());
             }
+            const infrastructure = errorIssues.some(
+                (issue) => issue.code === "xsd-schema-load-failed" || issue.message.startsWith("XSD engine failed"),
+            );
             return {
                 valid: false,
                 errors,
                 schemaIssues: errorIssues,
                 transformedView,
+                ...(infrastructure ? { infrastructure } : {}),
                 ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}),
             };
         } catch (err) {
@@ -1416,6 +1436,11 @@ export class BaseSchemaValidator {
             return {
                 valid: false,
                 errors: new Set([message]),
+                // A throw means the engine never measured the part — unreadable
+                // bytes, preprocessing failure, or an engine-level error. Every
+                // one of those stays blocking: baseline subtraction must not
+                // erase it (#289).
+                infrastructure: true,
                 schemaIssues: [{ severity: "error", message }],
                 ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}),
             };
