@@ -24,7 +24,7 @@ describe("named comment validation (#384)", { timeout: 120_000 }, () => {
             expect.arrayContaining(["comment-marker-missing", "comment-orphan-start"]),
         );
         expect(selected.issues).toEqual(commentIssues(full.issues));
-        expect(selected.metadata?.executedChecks).toEqual(["comment-markers", "comment-threading"]);
+        expect(selected.metadata?.executedChecks).toEqual(["xml-syntax", "comment-markers", "comment-threading"]);
         expect(selected.xsdWalk?.started).toBe(false);
         expect(full.metadata?.executedChecks).toEqual(expect.arrayContaining(["comment-markers", "comment-threading"]));
         expect(new Set(full.metadata?.executedChecks).size).toBe(full.metadata?.executedChecks?.length);

@@ -32,6 +32,7 @@ export const commentMarkersCheck: CheckDefinition = {
     description: "Comment range markers pair and reference existing comments.",
     groups: ["comments"],
     formats: ["docx"],
+    reportsParseFailures: true,
     run: (ctx): ValidationIssue[] => {
         const issues: ValidationIssue[] = [];
 
@@ -146,6 +147,7 @@ export const commentThreadingCheck: CheckDefinition = {
     description: "Comment threading paragraph and durable ids agree across comment parts.",
     groups: ["comments"],
     formats: ["docx"],
+    reportsParseFailures: true,
     run: (ctx): ValidationIssue[] => {
         const issues: ValidationIssue[] = [];
 

@@ -22,6 +22,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Named comment checks also run XML syntax diagnostics and suppress restated parse findings, preserving the full run's profile verdict for malformed parts ([#385](https://github.com/jandira-tech/docx-validate/issues/385)).
+
 - Named `comments` selection now runs comment marker and threading integrity checks while full DOCX validation preserves its findings under every profile. The comment checks now also judge a comment part stored under an OPC-equivalent name (`word/comments.XML`, percent-encoded characters), as every other check does; the legacy rules ignored such parts, so a package that passed can now report comment findings ([#384](https://github.com/jandira-tech/docx-validate/issues/384)).
 
 - Parse XML from original bytes without recovery, preserve available line/column diagnostics, support UTF-8/UTF-16, and diagnose undeclared prefixes and encoding failures with stable codes. BOMs alone never fail validation ([#268](https://github.com/jandira-tech/docx-validate/issues/268), [#290](https://github.com/jandira-tech/docx-validate/issues/290)).

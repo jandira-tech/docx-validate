@@ -274,7 +274,9 @@ and `comment-threading` (marker counts, paragraph ids, parent ids, and durable i
 across comment extension parts). Both apply to DOCX/DOCM under every profile,
 including lenient; they are separate from `WORD_RULE_CHECKS`. They retain their
 own `comment-marker-parse` / `comment-thread-parse` diagnostics rather than
-requiring `xml-syntax`. Full validation runs them once and records their ids in
+requiring `xml-syntax`. A named run that selects them also runs `xml-syntax`
+and reports a malformed part once, through `xml-syntax`, as the full run does
+([#385](https://github.com/jandira-tech/docx-validate/issues/385)). Full validation runs them once and records their ids in
 `executedChecks`; `--quick` does not select them. Like every other check, they
 find a comment part under an OPC-equivalent name (`word/comments.XML`).
 

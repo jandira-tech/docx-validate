@@ -51,6 +51,7 @@ import { promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
 import { nextSecureLongHexNumber } from "../../../lib/secure-id";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
+import { withoutConsequentialParseFailures } from "../../../lib/parse-failures";
 import { mergeResults } from "../../../lib/types";
 import { isWordBlockingIssue } from "./word-blocking";
 import {
@@ -325,19 +326,6 @@ export interface ParagraphCounts {
  * nesting context instead of checking `.parentNode` for every element,
  * eliminating O(N*D) worst-case scaling. Prunes drawings inside deletions.
  */
-/**
- * Drop the `*-parse` findings a check reports for a part the XML diagnostics
- * already rejected: the check could not read the part, which is the same
- * defect reported again.
- */
-const withoutConsequentialParseFailures = (result: ValidationResult, malformed: ReadonlySet<string>): ValidationResult => {
-    if (malformed.size === 0) return result;
-    const issues = result.issues.filter(
-        (issue) => !(issue.path !== undefined && malformed.has(issue.path) && issue.code?.endsWith("-parse")),
-    );
-    return issues.length === result.issues.length ? result : { valid: result.valid, issues };
-};
-
 const collectDeletedRunText = (root: Document | Element, localName: string): Element[] => {
     const out: Element[] = [];
     const stack: { node: Element; inDel: boolean }[] = [];
@@ -455,7 +443,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             xmlOk.issues.flatMap((issue) => (issue.severity === "error" && issue.path !== undefined ? [issue.path] : [])),
         );
         const settle = async (pending: Array<Promise<ValidationResult>>): Promise<ValidationResult[]> =>
-            (await Promise.all(pending)).map((result) => withoutConsequentialParseFailures(result, this.malformedParts));
+            (await Promise.all(pending)).map((result) => ({
+                ...result,
+                issues: withoutConsequentialParseFailures(result.issues, this.malformedParts),
+            }));
 
         const checks: Array<Promise<ValidationResult>> = [
             this.validateNamespaces(),
