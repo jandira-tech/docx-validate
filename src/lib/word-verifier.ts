@@ -211,7 +211,6 @@ export const verifyInWord = async (bytes: Uint8Array, opts: WordVerifyOptions = 
         const documentName = `docx-verify-${fileSha256.slice(0, 12)}-${nextSecureLongHexNumber().toString(16)}.docx`;
         const tempFile = path.join(dir, documentName);
         writeFileSync(tempFile, bytes);
-        await transport.open(tempFile);
 
         const started = clock.now();
         const deadline = started + timeoutMs;
@@ -219,39 +218,53 @@ export const verifyInWord = async (bytes: Uint8Array, opts: WordVerifyOptions = 
         let cleanSince: number | undefined;
         let outcome: WordOutcome = "timeout";
         let details = "no observation reached a conclusive state before the deadline";
+        let elapsed = 0;
+        let settled = false;
 
-        while (clock.now() < deadline) {
-            await clock.sleep(pollMs);
-            const snapshot = await transport.observe(documentName);
-            details = describeSnapshot(snapshot);
-            if (snapshot.processAlive) {
-                sawProcess = true;
-            } else if (sawProcess) {
-                outcome = "crash";
-                details = `Word process exited after open; ${details}`;
-                break;
-            }
-            const dialog = classifyWordDialog(snapshot.dialogText);
-            if (dialog !== null) {
-                outcome = dialog;
-                break;
-            }
-            if (snapshot.processAlive && showsDocument(snapshot, documentName)) {
-                cleanSince ??= clock.now();
-                if (clock.now() - cleanSince >= observationMs) {
-                    outcome = "clean-open";
+        try {
+            await transport.open(tempFile);
+
+            while (clock.now() < deadline) {
+                await clock.sleep(pollMs);
+                const snapshot = await transport.observe(documentName);
+                details = describeSnapshot(snapshot);
+                if (snapshot.processAlive) {
+                    sawProcess = true;
+                } else if (sawProcess) {
+                    outcome = "crash";
+                    details = `Word process exited after open; ${details}`;
                     break;
                 }
-            } else {
-                cleanSince = undefined;
+                const dialog = classifyWordDialog(snapshot.dialogText);
+                if (dialog !== null) {
+                    outcome = dialog;
+                    break;
+                }
+                if (snapshot.processAlive && showsDocument(snapshot, documentName)) {
+                    cleanSince ??= clock.now();
+                    if (clock.now() - cleanSince >= observationMs) {
+                        outcome = "clean-open";
+                        break;
+                    }
+                } else {
+                    cleanSince = undefined;
+                }
             }
-        }
 
-        const elapsed = clock.now() - started;
-        try {
-            await transport.close(documentName);
-        } catch (err) {
-            details = `${details}; cleanup close failed: ${err instanceof Error ? err.message : String(err)}`;
+            elapsed = clock.now() - started;
+            settled = true;
+        } finally {
+            // Close runs even when launch or an observation throws. A
+            // close failure after a settled run folds into details (as
+            // before); during unwind it is swallowed so the original
+            // error still propagates.
+            try {
+                await transport.close(documentName);
+            } catch (err) {
+                if (settled) {
+                    details = `${details}; cleanup close failed: ${err instanceof Error ? err.message : String(err)}`;
+                }
+            }
         }
         return finish(outcome, details, elapsed);
     });
