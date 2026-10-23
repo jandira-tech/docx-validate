@@ -412,11 +412,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     /**
      * The package as the named checks see it, built once per `validate()` run
      * so its read and parse caches never outlive the run (auto-repair rewrites
-     * parts between runs).
+     * parts between runs). Outside a run, a check method called directly
+     * reads the package as it is now.
      */
     private runContext: ValidationContext | undefined;
+    private inRun = false;
 
     private context(): ValidationContext {
+        if (!this.inRun) return contextFromDirectory(this.unpackedDir);
         this.runContext ??= contextFromDirectory(this.unpackedDir);
         return this.runContext;
     }
@@ -428,8 +431,18 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * does not affect the merged validity.
      */
     async validate(): Promise<ValidationResult> {
-        this.xsdWalk = { started: false, parts: [], eligible: 0 };
+        this.inRun = true;
         this.runContext = undefined;
+        try {
+            return await this.runEveryCheck();
+        } finally {
+            this.inRun = false;
+            this.runContext = undefined;
+        }
+    }
+
+    private async runEveryCheck(): Promise<ValidationResult> {
+        this.xsdWalk = { started: false, parts: [], eligible: 0 };
         this.malformedParts = new Set();
         this.resetExecutedChecks();
         const xmlOk = await this.validateXml();

@@ -275,7 +275,8 @@ across comment extension parts). Both apply to DOCX/DOCM under every profile,
 including lenient; they are separate from `WORD_RULE_CHECKS`. They retain their
 own `comment-marker-parse` / `comment-thread-parse` diagnostics rather than
 requiring `xml-syntax`. Full validation runs them once and records their ids in
-`executedChecks`; `--quick` does not select them.
+`executedChecks`; `--quick` does not select them. Like every other check, they
+find a comment part under an OPC-equivalent name (`word/comments.XML`).
 
 The math-run insertion/deletion, shading-color, grid-column-attributes,
 cell-margin-order, table-properties-required, page-margin-attributes, and

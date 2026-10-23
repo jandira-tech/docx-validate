@@ -22,10 +22,14 @@ const extensible = (body: string) => `<c:commentsExtensible xmlns:c="${CEX}">${b
 const extended = (body: string) => `<c:commentsEx xmlns:c="${W15}">${body}</c:commentsEx>`;
 const run = (parts: Readonly<Record<string, string>>) =>
     runChecks(ValidationContext.fromEntries(parts), createDefaultCheckRegistry(), { format: "docx", select: ["comments"] });
-const markerIssues = async (parts: Readonly<Record<string, string>>) =>
-    (await createDefaultCheckRegistry().get("comment-markers")?.run(ValidationContext.fromEntries(parts))) ?? [];
-const threadIssues = async (parts: Readonly<Record<string, string>>) =>
-    (await createDefaultCheckRegistry().get("comment-threading")?.run(ValidationContext.fromEntries(parts))) ?? [];
+// Fails loudly rather than yielding no findings when a check is not registered.
+const runRegistered = async (id: string, parts: Readonly<Record<string, string>>) => {
+    const check = createDefaultCheckRegistry().get(id);
+    if (!check) throw new Error(`${id} is not registered`);
+    return check.run(ValidationContext.fromEntries(parts));
+};
+const markerIssues = (parts: Readonly<Record<string, string>>) => runRegistered("comment-markers", parts);
+const threadIssues = (parts: Readonly<Record<string, string>>) => runRegistered("comment-threading", parts);
 
 // All package bytes in this suite are supplied in memory; no filesystem loaders or mocks.
 describe("registered comment checks", () => {

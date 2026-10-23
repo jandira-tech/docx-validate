@@ -3,7 +3,7 @@
  * Licensed under the Apache License, Version 2.0.
  */
 
-import { readFile, readdir, writeFile } from "node:fs/promises";
+import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -68,21 +68,34 @@ describe("named comment validation (#384)", { timeout: 120_000 }, () => {
         });
     });
 
-    // The orchestrated RED/GREEN runs supply the pre-change snapshot outside
-    // the repository. Ordinary suite runs do not depend on that local artifact.
-    it.skipIf(!process.env.COMMENTS_BASELINE)("preserves every full issue list for broken/comments.* under all profiles", async () => {
-        const baseline = JSON.parse(await readFile(process.env.COMMENTS_BASELINE!, "utf8")) as Record<
-            string,
-            Record<string, ValidationIssue[]>
-        >;
-        const names = (await readdir(broken)).filter((name) => name.startsWith("comments.")).sort();
-        expect(names).toEqual(Object.keys(baseline));
-        for (const name of names) {
-            for (const profile of ["word-valid", "lenient", "strict"] as const) {
-                expect((await validate(path.join(broken, name), { profile })).issues, `${name}: ${profile}`).toEqual(
-                    baseline[name]![profile],
+    // A part name OPC treats as equal to the literal one (ASCII case,
+    // percent-encoded unreserved characters) is the same part, as for every
+    // other check. The legacy comment rules matched literal basenames only,
+    // so before #384 these spellings went unchecked.
+    it.each(["word/comments.XML", "word/%63omments.xml"])("judges %s as the comments part under every profile", async (name) => {
+        await withTempDir(async (dir) => {
+            const document = MINIMAL_PARTS["word/document.xml"]!.replace(
+                "<w:r><w:t>Hello</w:t></w:r>",
+                '<w:commentRangeStart w:id="0"/><w:r><w:t>Hello</w:t></w:r><w:commentRangeEnd w:id="0"/><w:r><w:commentReference w:id="7"/></w:r>',
+            );
+            const comments =
+                '<w:comments xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:comment w:id="0"><w:p/></w:comment></w:comments>';
+            const build = async (part: string, file: string) => {
+                await writeFile(
+                    path.join(dir, file),
+                    await buildDocx({ ...MINIMAL_PARTS, "word/document.xml": document, [part]: comments }),
                 );
+                return path.join(dir, file);
+            };
+            const literal = await build("word/comments.xml", "literal.docx");
+            const equivalent = await build(name, "equivalent.docx");
+            const findings = (issues: readonly ValidationIssue[]) =>
+                commentIssues(issues).map(({ code, severity }) => ({ code, severity }));
+            for (const profile of ["lenient", "word-valid", "strict"] as const) {
+                const expected = findings((await validate(literal, { profile })).issues);
+                expect(expected, profile).toContainEqual(expect.objectContaining({ code: "comment-marker-missing" }));
+                expect(findings((await validate(equivalent, { profile })).issues), profile).toEqual(expected);
             }
-        }
+        });
     });
 });
