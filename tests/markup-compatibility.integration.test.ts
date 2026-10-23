@@ -206,4 +206,20 @@ describe("markup compatibility XSD integration", { timeout: 240_000 }, () => {
         expect(result.xsdWalk.parts).toContain("word/people.xml");
         expect(result.valid, JSON.stringify(result.issues)).toBe(true);
     });
+    it("does not manufacture an error for a part whose root element is ignored (#284)", async () => {
+        const fixture = path.join(import.meta.dirname, "fixtures/external/open-xml-sdk/mcdoc.docx");
+        for (const profile of ["strict", "lenient"] as const) {
+            const result = await validate(fixture, { profile });
+            const part = result.issues.filter((issue) => issue.path === "word/txbx1.xml");
+            expect(
+                part.filter((issue) => issue.severity === "error"),
+                profile,
+            ).toEqual([]);
+            expect(
+                part.map((issue) => [issue.severity, issue.code]),
+                profile,
+            ).toEqual([["info", "mce-root-ignored"]]);
+            expect(result.xsdWalk.parts, profile).toContain("word/txbx1.xml");
+        }
+    });
 });

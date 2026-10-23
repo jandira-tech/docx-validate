@@ -173,6 +173,15 @@ export const applyMarkupCompatibility = (
     if (document.documentElement) {
         visit(document.documentElement, { ignorable: new Set(), processContent: new Set(), extensionPayload: false });
     }
+    if (source.documentElement && !document.documentElement) {
+        // The whole part is ignorable content: there is nothing left for a
+        // schema to judge, so say so instead of validating an empty view.
+        issues.push({
+            severity: "info",
+            code: "mce-root-ignored",
+            message: `Root element ${source.documentElement.tagName} is in an ignorable namespace that is not understood; the part has no content to schema-validate.`,
+        });
+    }
     if (extensionAttributeCount > 0) {
         const namespaces = Array.from(undeclaredExtensions, ([uri, names]) => `${uri}: ${Array.from(names).sort().join(", ")}`);
         issues.push({

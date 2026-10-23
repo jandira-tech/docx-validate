@@ -140,6 +140,20 @@ describe("markup compatibility", () => {
             expect(serializeXml(document)).toContain('wp14:flag="keep"');
         }
     });
+    it("reports, at info level, a root element ignored as a whole (#284)", () => {
+        const result = process(
+            `<wp14:txbx xmlns:wp14="${WP14}" xmlns:mc="${NS.MC}" xmlns:w="${NS.W}" mc:Ignorable="wp14"><w:p/></wp14:txbx>`,
+        );
+        expect(result.document.documentElement).toBeNull();
+        expect(result.issues).toEqual([
+            {
+                severity: "info",
+                code: "mce-root-ignored",
+                message:
+                    "Root element wp14:txbx is in an ignorable namespace that is not understood; the part has no content to schema-validate.",
+            },
+        ]);
+    });
     it("retains non-ignorable foreign content and understood namespaces", () => {
         // This control needs a truly unknown URI: Office attributes have their
         // own removal rule, independently covered above. Keep the same QNames.
