@@ -1720,6 +1720,36 @@ export function collectDeclaredPrefixes(root: Element): Set<string> {
     return declared;
 }
 
+const IGNORABLE_UNDECLARED_MESSAGE = /^Namespace '(.+)' in Ignorable but not declared$/;
+const UNBOUND_IGNORABLE_MESSAGE = /^Unbound prefix in mc:Ignorable: (.+)$/;
+
+/**
+ * `validateNamespaces` reports an undeclared prefix in a part root's
+ * `Ignorable` as `ignorable-undeclared`, and the markup-compatibility
+ * processor reports the same prefix as `mce-unbound-prefix`. Keep the
+ * established code, once: one processor finding is dropped per
+ * `ignorable-undeclared` on the same part and prefix (#309). A prefix only the
+ * processor sees unbound (an `Ignorable` below the root, or a root prefix
+ * bound only on a descendant) keeps its finding.
+ */
+export function withoutRestatedIgnorablePrefixes(result: ValidationResult): ValidationResult {
+    const key = (issue: ValidationIssue, prefix: string): string => `${issue.path ?? ""}\u0000${prefix}`;
+    const undeclared = new Map<string, number>();
+    for (const issue of result.issues) {
+        const prefix = issue.code === "ignorable-undeclared" ? IGNORABLE_UNDECLARED_MESSAGE.exec(issue.message)?.[1] : undefined;
+        if (prefix !== undefined) undeclared.set(key(issue, prefix), (undeclared.get(key(issue, prefix)) ?? 0) + 1);
+    }
+    if (undeclared.size === 0) return result;
+    const issues = result.issues.filter((issue) => {
+        const prefix = issue.code === "mce-unbound-prefix" ? UNBOUND_IGNORABLE_MESSAGE.exec(issue.message)?.[1] : undefined;
+        const remaining = prefix === undefined ? 0 : (undeclared.get(key(issue, prefix)) ?? 0);
+        if (remaining === 0) return true;
+        undeclared.set(key(issue, prefix!), remaining - 1);
+        return false;
+    });
+    return finalize(issues);
+}
+
 function removeMcAlternateContent(dom: Document): void {
     const list = getElementsByTagNameNSAll(dom, MC_NAMESPACE, "AlternateContent");
     const items: Element[] = [];
