@@ -18,6 +18,7 @@ import { pageMarginAttributesCheck } from "./page-margin-attributes";
 import { wordShadingColorCheck } from "./shading-color";
 import { wordTablePropertiesRequiredCheck } from "./table-properties-required";
 import { wordRowWithoutCellCheck } from "./tables";
+import { textboxContentNamespaceCheck } from "./textbox-content-namespace";
 import { xmlSyntaxCheck } from "./xml";
 
 /**
@@ -34,6 +35,7 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordCellMarginOrderCheck,
     wordTablePropertiesRequiredCheck,
     pageMarginAttributesCheck,
+    textboxContentNamespaceCheck,
 ];
 
 export function createDefaultCheckRegistry(): CheckRegistry {
