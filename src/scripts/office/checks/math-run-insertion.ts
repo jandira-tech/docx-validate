@@ -19,7 +19,7 @@ export const mathRunInsertionCheck: CheckDefinition = {
         const issues: ValidationIssue[] = [];
         // Math runs occur in stories, not in the styles content model.
         for (const part of ctx.storyParts()) {
-            const parsed = ctx.xml(part);
+            const parsed = ctx.effectiveXml(part);
             if (!parsed?.ok) {
                 continue;
             }

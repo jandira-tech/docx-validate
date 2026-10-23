@@ -17,7 +17,7 @@ export const wordCustomPropertyFiletimeEmptyCheck: CheckDefinition = {
     groups: ["settings"],
     formats: ["docx"],
     run: (ctx): ValidationIssue[] => {
-        const parsed = ctx.xml("docProps/custom.xml");
+        const parsed = ctx.effectiveXml("docProps/custom.xml");
         if (!parsed?.ok) {
             return [];
         }

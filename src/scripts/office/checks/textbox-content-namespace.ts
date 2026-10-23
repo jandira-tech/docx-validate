@@ -70,7 +70,7 @@ export const textboxContentNamespaceCheck: CheckDefinition = {
     run: (ctx): ValidationIssue[] => {
         const issues: ValidationIssue[] = [];
         for (const part of ctx.storyParts()) {
-            const parsed = ctx.xml(part);
+            const parsed = ctx.effectiveXml(part);
             if (!parsed?.ok) {
                 continue;
             }
