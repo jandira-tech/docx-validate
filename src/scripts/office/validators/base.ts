@@ -1635,7 +1635,8 @@ export class BaseSchemaValidator {
         }
 
         const rel = this.relPath(xmlFile);
-        const firstSegment = rel.split(/[\\/]/)[0];
+        // ASCII case-insensitive, as the schema mapping is (#377).
+        const firstSegment = asciiLowerCase(rel.split(/[\\/]/)[0] ?? "");
         if (MAIN_CONTENT_FOLDERS.has(firstSegment)) {
             const schemaNamespace = SCHEMA_NAMESPACE_CAPABILITIES[path.basename(this._getSchemaPath(xmlFile) ?? "")];
             // A Strict part understands the purl.oclc.org counterparts of the

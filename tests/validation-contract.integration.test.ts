@@ -457,6 +457,22 @@ describe("validation contract: a full run keeps every part's own name (#376, #37
         });
     });
 
+    it("applies markup compatibility to WORD/ parts before their schema (#377)", async () => {
+        // The main part carries w14 attributes under mc:Ignorable="w14".
+        const upper = Object.fromEntries(
+            Object.entries(MINIMAL_PARTS).map(([name, text]) => [
+                name.replace(/^word\//, "WORD/"),
+                text.replaceAll('PartName="/word/', 'PartName="/WORD/').replaceAll('Target="word/', 'Target="WORD/'),
+            ]),
+        );
+        expect(upper["WORD/document.xml"]).toContain('mc:Ignorable="w14"');
+        await withSpecimen(upper, async (file) => {
+            const full = await validate(file, { profile: "strict" });
+            expect(full.xsdWalk.parts).toContain("WORD/document.xml");
+            expect(full.issues.filter((issue) => issue.code === "xsd-error")).toEqual([]);
+        });
+    });
+
     it.each([
         ["a main entry stored as /../word/document.xml", "/../word/document.xml", "word/document.xml"],
         ["custom properties stored as docProps\\nested\\..\\custom.xml", "docProps\\nested\\..\\custom.xml", undefined],

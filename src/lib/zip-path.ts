@@ -60,6 +60,24 @@ export const extractZipEntries = async (zip: JSZip, outputDir: string): Promise<
 };
 
 /**
+ * Every file under `dir`, by its `/`-separated path relative to `dir`. Walks
+ * one directory at a time: `Dirent.parentPath` needs Node 20.12 and a
+ * recursive `readdir` Node 20.1, and the package supports Node 20.
+ */
+const filesUnder = async (dir: string, prefix = ""): Promise<string[]> => {
+    const files: string[] = [];
+    for (const entry of await fs.readdir(path.join(dir, prefix), { withFileTypes: true })) {
+        const name = prefix === "" ? entry.name : `${prefix}/${entry.name}`;
+        if (entry.isDirectory()) {
+            files.push(...(await filesUnder(dir, name)));
+        } else if (entry.isFile()) {
+            files.push(name);
+        }
+    }
+    return files;
+};
+
+/**
  * Extract the package view of `zip` for validation: each part once, under
  * its part name, with the bytes of the entry `indexByPartName` keeps. An
  * entry the view drops is read but not written, so no filesystem lets it
@@ -101,11 +119,7 @@ export const extractPackageParts = async (zip: JSZip, outputDir: string): Promis
     // Such a filesystem can also merge two parts' folders: the later file
     // then lands in the folder the earlier part named, under a name the
     // package does not hold. Every part must be found under its own (#376).
-    const held = new Set(
-        (await fs.readdir(outputDir, { recursive: true, withFileTypes: true }))
-            .filter((entry) => entry.isFile())
-            .map((entry) => path.relative(outputDir, path.join(entry.parentPath, entry.name)).split(path.sep).join("/")),
-    );
+    const held = new Set(await filesUnder(outputDir));
     for (const part of kept.keys()) {
         if (!held.has(part)) {
             throw new Error(`Cannot write part ${JSON.stringify(part)}: this filesystem holds it under another name`);
