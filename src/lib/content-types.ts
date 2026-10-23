@@ -194,12 +194,16 @@ export const findEquivalentPart = (names: readonly string[], partName: string): 
  * The entry in `names` that a package-relative part reference names: `\`
  * reads as `/`, a leading `/` is dropped and dot segments are resolved, then
  * the OPC-equivalent entry is taken ({@link findEquivalentPart}). Falls back
- * to the normalized name when no entry is equivalent. Every resolver of the
- * main document part goes through here, so they agree on which entry it
- * is (#349).
+ * to the normalized name when no entry is equivalent, and is `undefined` for
+ * a reference that is empty, names the package root or climbs above it
+ * (#356). Every resolver of the main document part goes through here, so
+ * they agree on which entry it is (#349).
  */
-export const resolvePartName = (names: readonly string[], partName: string): string => {
+export const resolvePartName = (names: readonly string[], partName: string): string | undefined => {
     const normalized = path.posix.normalize(partName.replace(/\\/g, "/").replace(/^\/+/, ""));
+    if (normalized === "." || normalized === ".." || normalized.startsWith("../")) {
+        return undefined;
+    }
     return findEquivalentPart(names, normalized) ?? normalized;
 };
 

@@ -162,6 +162,13 @@ describe("resolvePartName (#349)", () => {
     ])("falls back to the normalized name %j when no entry is equivalent", (target, normalized) => {
         expect(resolvePartName(names, target)).toBe(normalized);
     });
+
+    it.each(["", "/", ".", "word/..", "../word/document.xml", "word/../../word/document.xml"])(
+        "names no part for %j, which is empty or climbs out of the package (#356)",
+        (target) => {
+            expect(resolvePartName(names, target)).toBeUndefined();
+        },
+    );
 });
 
 describe("parseContentTypes", () => {

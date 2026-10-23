@@ -46,6 +46,7 @@ import { fileURLToPath } from "node:url";
 import { parseContentTypes, partExtension, resolveContentType, resolvePartName } from "../../../lib/content-types";
 import { applyMarkupCompatibility, STRICT_UNDERSTOOD_NAMESPACES, UNDERSTOOD_NAMESPACES } from "../../../lib/markup-compatibility";
 import { withTempDir } from "../../../lib/run-cli";
+import { normalizePartName } from "../../../lib/validation-context";
 import type { Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
 import { DEFAULT_PROFILE, NS, OK_RESULT } from "../../../lib/types";
 import { allowSchemaResourceRoot, createXsdValidator, type XsdValidator } from "../../../lib/xsd-validator";
@@ -590,6 +591,7 @@ export class BaseSchemaValidator {
         // the same validator instance don't try to read the deleted files.
         this.xmlFiles.length = 0;
         for (const f of surviving) this.xmlFiles.push(f);
+        this.mainDocumentParts = undefined;
         return repairs;
     }
 
@@ -1456,30 +1458,44 @@ export class BaseSchemaValidator {
 
     /** Identify the required main part by the package relationship, never its basename. */
     private isMainDocumentPart(xmlFile: string): boolean {
+        // Resolved once per validator: this runs for every part whose root is
+        // ignored, and a walk per call grows with the square of the part
+        // count (#355).
+        this.mainDocumentParts ??= this.resolveMainDocumentParts();
+        return this.mainDocumentParts.has(normalizePartName(this.relPath(xmlFile).split(path.sep).join("/")));
+    }
+
+    /**
+     * The entries the officeDocument relationships name, resolved as the
+     * word-document-root check resolves them, so both agree on which entry is
+     * the main part: reserved escapes stay distinct (`word%2Fdocument.xml` is
+     * another part, #344), `\` reads as `/` in targets and in entry names
+     * alike (#349, #357), and of two equivalent entries only the one the
+     * target names is main (#349).
+     */
+    private resolveMainDocumentParts(): ReadonlySet<string> {
+        const parts = new Set<string>();
         try {
             const relationships = parseXml(readFileSync(path.join(this.unpackedDir, "_rels", ".rels"), "utf-8"));
-            // Resolve the target to an entry as the word-document-root check
-            // does, so both agree on which entry is the main part: reserved
-            // escapes stay distinct (`word%2Fdocument.xml` is another part,
-            // #344), `\` reads as `/`, and of two equivalent entries only the
-            // one the target names is main (#349).
-            const part = this.relPath(xmlFile).split(path.sep).join("/");
-            const names = walkFiles(this.unpackedDir).map((file) => this.relPath(file).split(path.sep).join("/"));
-            return getElementsByTagNameNSAll(relationships, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship").some((relationship) => {
+            const names = walkFiles(this.unpackedDir).map((file) => normalizePartName(this.relPath(file).split(path.sep).join("/")));
+            for (const relationship of getElementsByTagNameNSAll(relationships, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship")) {
                 const type = relationship.getAttribute("Type");
                 if (
                     relationship.getAttribute("TargetMode") === "External" ||
                     (type !== `${OFFICE_RELATIONSHIPS_NAMESPACE}/officeDocument` &&
                         type !== "http://purl.oclc.org/ooxml/officeDocument/relationships/officeDocument")
                 ) {
-                    return false;
+                    continue;
                 }
-                return resolvePartName(names, relationship.getAttribute("Target") ?? "") === part;
-            });
+                const part = resolvePartName(names, relationship.getAttribute("Target") ?? "");
+                if (part !== undefined) {
+                    parts.add(part);
+                }
+            }
         } catch {
             // Missing or malformed package relationships are diagnosed by their own checks.
-            return false;
         }
+        return parts;
     }
 
     protected async _validateSingleFileXsd(xmlFile: string): Promise<XsdValidationOutcome> {
@@ -1709,6 +1725,8 @@ export class BaseSchemaValidator {
 
     /** Per-file memo for {@link _isStrictXmlFile} — root-namespace sniffing would otherwise re-read each part for eligibility, schema dispatch, and preprocessing. */
     private readonly strictRootCache = new Map<string, boolean>();
+    /** See {@link isMainDocumentPart}; reset when a repair deletes files. */
+    private mainDocumentParts: ReadonlySet<string> | undefined;
 }
 
 // ===== module-level helpers ===================================================
