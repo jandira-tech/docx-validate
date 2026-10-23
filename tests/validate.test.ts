@@ -143,7 +143,7 @@ describe("validate", () => {
 
     it("flags paraId overflow in a packed DOCX (negative case)", async () => {
         const docxPath = path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx");
-        const result = await validate(docxPath);
+        const result = await validate(docxPath, { profile: "lenient" });
         expect(result.valid).toBe(false);
         expect(result.issues.some((i) => i.severity === "error" && i.code === "id-paraid-overflow")).toBe(true);
     });

@@ -60,10 +60,18 @@ export type ResolvedMode = {
 };
 
 /**
- * The profile a format defaults to. Task 10 flips DOCX/DOCM to `"word-valid"`
- * here, once the default-flip slice lands.
+ * The profile a format defaults to.
+ *
+ * DOCX/DOCM default to `"word-valid"`: the whole point of the library is to
+ * tell you whether Microsoft Word opens the file, and the brief's plan flips
+ * the default deliberately once the Word rules run as first-class checks.
+ * Every other suffix keeps the historical `"lenient"` default, which matches
+ * real-world Office output, so PPTX behaviour is unchanged.
+ *
+ * Callers that want the pre-flip behaviour pass `profile: "lenient"`
+ * explicitly; nothing silently falls back to it.
  */
-export const defaultProfileForFormat = (_: PackageFormat): Profile => DEFAULT_PROFILE;
+export const defaultProfileForFormat = (format: PackageFormat): Profile => (format === "docx" ? "word-valid" : DEFAULT_PROFILE);
 
 /**
  * Resolve a request into the mode a run executes under.
