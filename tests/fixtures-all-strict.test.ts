@@ -24,8 +24,9 @@
  * Each fixture is asserted with a specific expected outcome — pass or fail
  * — so a *change* in validator behaviour shows up as a CI red, not a
  * silent drift in coverage. The manifest of expected outcomes lives in
- * `tests/fixtures-all.manifest.json`, regenerated via
- * `pnpm run test:fixtures:refresh` (`tsx scripts/probe-all-fixtures.ts`).
+ * `tests/fixtures-all.manifest.json`. `pnpm run test:fixtures:refresh`
+ * (`tsx scripts/update-manifest.ts`) rewrites it while merging every Word
+ * observation; review each expectation change it makes individually.
  *
  * The lenient counterpart of this suite is `fixtures-all-lenient.test.ts`.
  */
