@@ -349,7 +349,7 @@ describe("unknown-element and namespace-less link Word evidence", { timeout: 120
 
 describe("run and run-property placement Word evidence", { timeout: 120_000 }, () => {
     it("rejects the misplaced-run fixture and its OPEN_ERROR probed twins", async () => {
-        expect(await observedWordOutcome("broken/word-rejects-misplaced-run.docx")).toBe("unknown");
+        expect(await observedWordOutcome("broken/word-rejects-misplaced-run.docx")).toBe("open-error");
         const probes = (await readFile(path.join(REPO, "word-invalid-fixtures/manifest.jsonl"), "utf8"))
             .split("\n")
             .filter((line) => line.includes("critic-variations"))
