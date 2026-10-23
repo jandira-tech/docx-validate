@@ -671,7 +671,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             return parsed.document;
         };
         await this.validateRowsWithoutCells(issues, readXml);
-        await this.validateTextContainsParagraph(issues, readXml);
         await this.validateHyperlinkRelationships(issues, readXml);
         await this.validateDuplicateThemeRelationships(issues, readXml);
         await this.validateDuplicateFontTableRelationships(issues, readXml);
@@ -1264,34 +1263,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             });
         }
         return out;
-    }
-
-    private async validateTextContainsParagraph(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const texts = getElementsByTagNameNSAll(dom, ns, "t");
-                for (let i = 0; i < texts.length; i += 1) {
-                    const text = texts[i];
-                    if (!text) continue;
-                    const nested = getElementsByTagNameNSAll(text, ns, "p");
-                    if (nested.length === 0) continue;
-                    issues.push({
-                        severity: "error",
-                        message:
-                            `A <w:t> element contains ${nested.length} <w:p> element(s). ` +
-                            "Microsoft Word cannot open the file. Move the paragraph out of the text run.",
-                        path: this.relPath(xmlFile),
-                        code: "word-text-contains-paragraph",
-                    });
-                }
-            }
-        }
     }
 
     // ----- whitespace ---------------------------------------------------------

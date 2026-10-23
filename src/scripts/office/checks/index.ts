@@ -34,6 +34,7 @@ import { wordDrawingScalarWhitespaceCheck, wordDrawingArcRadiusCheck, wordDrawin
 import { wordEmptyDrawingCheck, wordAnchorMissingAttributeCheck, wordPositionOffsetAndAlignCheck } from "./word-drawing-anchors";
 import { wordCellEndsWithTableCheck } from "./word-cell-ending";
 import { wordTextboxDeletedTextCheck, wordMoveFromDeletedTextCheck } from "./word-deleted-text";
+import { wordTextContainsParagraphCheck } from "./word-text-paragraph";
 import { xmlSyntaxCheck } from "./xml";
 
 /**
@@ -65,6 +66,7 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordUnknownElementCheck,
     wordLinkWithoutNamespaceCheck,
     wordMarkupCompatibilityCheck,
+    wordTextContainsParagraphCheck,
     wordTextboxDeletedTextCheck,
     wordMoveFromDeletedTextCheck,
     wordCellEndsWithTableCheck,
