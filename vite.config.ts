@@ -57,8 +57,9 @@ export default defineConfig({
         // their own deps and must not be picked up by vitest here.
         include: ["tests/**/*.test.ts"],
         exclude: ["node_modules/**", "dist/**", "docx/**", "docx-templates/**", "dotgithubtoport/**"],
-        // The summary reporter prints `Coverage: N% lines, M% branches` after
-        // every --coverage run, including failed ones (reportOnFailure).
+        // The summary reporter prints `Coverage: N% lines, M% branches` on
+        // every --coverage run, failed ones included; `reportOnFailure` below
+        // keeps the provider's own reports on failed runs too.
         reporters: ["default", "./tests/support/coverage-summary-reporter.ts"],
         coverage: {
             provider: "v8",
