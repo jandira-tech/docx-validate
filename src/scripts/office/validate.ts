@@ -162,6 +162,8 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     const format = formatForSuffix(dispatchSuffix);
     const mode = resolveMode(format, opts);
     const profile: Profile = mode.profile;
+    const registry = createDefaultCheckRegistry();
+    const selected = mode.select === undefined ? undefined : selectionUnderProfile(registry, mode.select, format, profile);
 
     await assertExists(target, `Error: ${target} does not exist`);
 
@@ -193,8 +195,8 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     const finish = async (result: ValidateRunResult): Promise<ValidateRunResult> =>
         opts.verifyWord === true ? withWordVerification(result, packedBytes, opts.wordVerifier) : result;
 
-    if (mode.select !== undefined) {
-        return finish(await runSelectedChecks(target, targetIsPackedFile, dispatchSuffix, format, mode));
+    if (selected !== undefined) {
+        return finish(await runSelectedChecks(target, targetIsPackedFile, dispatchSuffix, format, mode, registry, selected));
     }
 
     const runWithUnpacked = async (unpackedDir: string, extraExecuted: readonly string[] = []): Promise<ValidateRunResult> => {
@@ -443,9 +445,9 @@ async function runSelectedChecks(
     suffix: string,
     format: PackageFormat,
     mode: ResolvedMode,
+    registry: CheckRegistry,
+    selected: readonly string[],
 ): Promise<ValidateRunResult> {
-    const registry = createDefaultCheckRegistry();
-    const selected = selectionUnderProfile(registry, mode.select ?? [], format, mode.profile);
     const reportsParseFailures = registry.resolve(selected, format).some((id) => registry.get(id)?.reportsParseFailures);
     // A companion, not a prerequisite: these checks still read every part
     // with their own parser, even when xml-syntax rejects it (#385).
@@ -460,8 +462,8 @@ async function runSelectedChecks(
                 .filter((definition) => definition.archiveOnly === true)
                 .map((definition) => definition.id),
         );
-        const selected = registry.resolve(select, format);
-        const envelopeSelect = selected.filter((id) => archiveOnly.has(id));
+        const resolved = registry.resolve(select, format);
+        const envelopeSelect = resolved.filter((id) => archiveOnly.has(id));
         const envelope =
             envelopeSelect.length > 0 ? await runChecks(opened.context, registry, { format, select: envelopeSelect }) : undefined;
         const executed = envelope?.executed ?? [];
@@ -480,7 +482,7 @@ async function runSelectedChecks(
                 omittedChecks: registry
                     .list(format)
                     .map((definition) => definition.id)
-                    .filter((id) => !selected.includes(id)),
+                    .filter((id) => !resolved.includes(id)),
                 schemaCompleted: false,
             },
         };
