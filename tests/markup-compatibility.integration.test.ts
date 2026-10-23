@@ -99,7 +99,10 @@ describe("markup compatibility XSD integration", { timeout: 240_000 }, () => {
                     expect.objectContaining({ code, severity: profile === "strict" ? "error" : "warning", path: "word/document.xml" }),
                 );
                 expect(result.issues.some((issue) => issue.code === "mce-must-understand")).toBe(false);
-                expect(result.xsdWalk.parts).toContain("word/document.xml");
+                // Strict reads the finding from the schema walk; word-valid,
+                // which walks no schema, from its Word rule.
+                expect(result.xsdWalk.started).toBe(profile === "strict");
+                expect(result.issues.filter((issue) => issue.code === code)).toHaveLength(1);
             }
         }
     });
