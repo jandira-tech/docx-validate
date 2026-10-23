@@ -106,7 +106,11 @@ export type Clock = {
 export type WordVerifyOptions = {
     transport?: WordTransport;
     clock?: Clock;
-    /** Total budget including launch, observation and cleanup polling. Default 45 000 ms. */
+    /**
+     * Total budget including launch, observation and the cleanup close.
+     * Its last slice ({@link WORD_VERIFY_CLEANUP_RESERVE_MS}, at most a
+     * quarter of the budget) is kept for the close. Default 45 000 ms.
+     */
     timeoutMs?: number;
     /** How long the document must stay open and dialog-free before the run counts as clean. Default 3 000 ms. */
     observationMs?: number;
@@ -117,6 +121,8 @@ export type WordVerifyOptions = {
 export const WORD_VERIFY_TIMEOUT_MS = 45_000;
 export const WORD_VERIFY_OBSERVATION_MS = 3_000;
 export const WORD_VERIFY_POLL_MS = 1_000;
+/** The end of the budget kept for closing the document a run opened (#308). */
+export const WORD_VERIFY_CLEANUP_RESERVE_MS = 2_000;
 
 const systemClock: Clock = {
     now: () => Date.now(),
@@ -233,6 +239,10 @@ export const verifyInWord = async (bytes: Uint8Array, opts: WordVerifyOptions = 
     // against it.
     const started = clock.now();
     const deadline = started + timeoutMs;
+    // Launch and observation stop short of the deadline, so the cleanup
+    // close always has a slice of the budget left (#308).
+    const cleanupReserve = Math.min(WORD_VERIFY_CLEANUP_RESERVE_MS, Math.floor(timeoutMs / 4));
+    const workDeadline = deadline - cleanupReserve;
 
     const platform = transport.platform();
     const fileSha256 = createHash("sha256").update(bytes).digest("hex");
@@ -271,14 +281,14 @@ export const verifyInWord = async (bytes: Uint8Array, opts: WordVerifyOptions = 
         let settled = false;
 
         try {
-            const opened = await callWithinDeadline(clock, deadline, () => transport.open(tempFile));
+            const opened = await callWithinDeadline(clock, workDeadline, () => transport.open(tempFile));
             if (opened === deadlineExceeded) {
                 outcome = "timeout";
                 details = `launch did not settle within the ${timeoutMs} ms budget`;
             } else {
-                while (clock.now() < deadline) {
+                while (clock.now() < workDeadline) {
                     await clock.sleep(pollMs);
-                    const snapshot = await callWithinDeadline(clock, deadline, () => transport.observe(documentName));
+                    const snapshot = await callWithinDeadline(clock, workDeadline, () => transport.observe(documentName));
                     if (snapshot === deadlineExceeded) {
                         outcome = "timeout";
                         details = `observation did not settle within the ${timeoutMs} ms budget`;
@@ -317,7 +327,10 @@ export const verifyInWord = async (bytes: Uint8Array, opts: WordVerifyOptions = 
             // before); during unwind it is swallowed so the original
             // error still propagates.
             try {
-                const closed = await callWithinDeadline(clock, deadline, () => transport.close(documentName));
+                // The close always starts: it gets the rest of the budget, or
+                // the reserve when a call overran its race.
+                const closeDeadline = Math.max(deadline, clock.now() + cleanupReserve);
+                const closed = await callWithinDeadline(clock, closeDeadline, () => transport.close(documentName));
                 if (settled && closed === deadlineExceeded) {
                     details = `${details}; cleanup close exceeded the budget and was abandoned`;
                 }

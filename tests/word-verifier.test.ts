@@ -17,7 +17,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import type { Clock, WordSnapshot, WordTransport } from "../src/lib/word-verifier";
-import { classifyWordDialog, parseWordSnapshot, verifyInWord } from "../src/lib/word-verifier";
+import { classifyWordDialog, parseWordSnapshot, verifyInWord, WORD_VERIFY_CLEANUP_RESERVE_MS } from "../src/lib/word-verifier";
 
 const BYTES = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0xde, 0xad, 0xbe, 0xef]);
 
@@ -284,7 +284,9 @@ describe("verifyInWord", () => {
         const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 10_000 });
         expect(result.outcome).toBe("timeout");
         expect(result.satisfied).toBe(false);
-        expect(result.observationMs).toBeGreaterThanOrEqual(10_000);
+        // Observation runs until the slice kept for the cleanup close (#308).
+        expect(result.observationMs).toBeGreaterThanOrEqual(10_000 - WORD_VERIFY_CLEANUP_RESERVE_MS);
+        expect(result.observationMs).toBeLessThanOrEqual(10_000);
     });
 
     it("defaults to a 45-second total budget", async () => {
@@ -292,7 +294,8 @@ describe("verifyInWord", () => {
         const clock = new FakeClock();
         const result = await verifyInWord(BYTES, { transport, clock });
         expect(result.outcome).toBe("timeout");
-        expect(clock.nowValue).toBeGreaterThanOrEqual(45_000);
+        expect(clock.nowValue).toBeGreaterThanOrEqual(45_000 - WORD_VERIFY_CLEANUP_RESERVE_MS);
+        expect(clock.nowValue).toBeLessThanOrEqual(45_000);
     });
 
     it("closes only the document this run opened — never quits Word, never touches other documents", async () => {
@@ -576,6 +579,51 @@ describe("verifyInWord", () => {
         const result = await verifyInWord(BYTES, { transport, clock: wallClock(), timeoutMs: 20, pollMs: 5, observationMs: 0 });
         expect(result.outcome).toBe("clean-open");
         expect(result.details).toContain("cleanup close exceeded the budget");
+    });
+
+    // #300 closes what a run opened; #301 bounds the run. The last slice of
+    // the budget is kept for the cleanup close, so a launch or observation
+    // that uses up its share still leaves the document closed.
+    it.each([
+        ["launch never settles", { open: () => new Promise<void>(() => undefined) }],
+        ["an observation never settles", { observe: () => new Promise<WordSnapshot>(() => undefined) }],
+    ] as const)("still attempts the cleanup close when %s", async (_case, hang) => {
+        const closed: string[] = [];
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            available: async () => true,
+            version: async () => undefined,
+            open: async () => undefined,
+            observe: async (name) => ({ processAlive: true, documentNames: [name], dialogText: "", dialogButtons: [] }),
+            close: async (name) => {
+                closed.push(name);
+            },
+            ...hang,
+        };
+        const result = await verifyInWord(BYTES, { transport, clock: wallClock(), timeoutMs: 40, pollMs: 5 });
+        expect(result.outcome).toBe("timeout");
+        expect(closed).toHaveLength(1);
+        expect(closed[0]).toMatch(/^docx-verify-.*\.docx$/);
+    });
+
+    it("still attempts the cleanup close when launch overruns the whole budget", async () => {
+        const clock = new FakeClock();
+        const closed: string[] = [];
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            available: async () => true,
+            version: async () => undefined,
+            open: async () => {
+                clock.advance(10_000);
+            },
+            observe: async (name) => ({ processAlive: true, documentNames: [name], dialogText: "", dialogButtons: [] }),
+            close: async (name) => {
+                closed.push(name);
+            },
+        };
+        const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 5_000, observationMs: 1_000 });
+        expect(result.outcome).toBe("timeout");
+        expect(closed).toHaveLength(1);
     });
 
     it("awaits transport calls without a race when the clock provides no timer", async () => {
