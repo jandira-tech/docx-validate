@@ -6028,12 +6028,12 @@
         {
             "relativePath": "external/superdoc/super-editor/paragraph_indent_normal_styles.docx",
             "strict": {
-                "valid": false,
-                "errorCodes": ["xsd-error", "xsd-summary"]
+                "valid": true,
+                "errorCodes": []
             },
             "lenient": {
-                "valid": false,
-                "errorCodes": ["xsd-error", "xsd-summary"]
+                "valid": true,
+                "errorCodes": []
             },
             "word": "clean-open"
         },
