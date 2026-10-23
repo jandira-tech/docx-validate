@@ -573,10 +573,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-drawing-scalar-whitespace":
             case "word-drawing-arc-radius":
             case "word-empty-drawing":
-            // A wp:extent cx or cy that is a negative integer makes Word
-            // report an open error (fixture 2213). One negative attribute
-            // is enough. The same drawings with positive extents open clean.
-            // Zero and positive extents are not this defect.
             case "word-drawing-extent-negative":
             // A wp:anchor missing locked, layoutInCell, or allowOverlap makes
             // Word refuse the file (fixture 1061). One missing attribute on
@@ -698,9 +694,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             if (!parsed.ok) throw new Error(parsed.message);
             return parsed.document;
         };
-        await this.validateDrawingScalarTextWhitespace(issues, readXml);
-        await this.validateDrawingArcRadii(issues, readXml);
-        await this.validateDrawingExtentSigns(issues, readXml);
         await this.validateEmptyDrawings(issues, readXml);
         await this.validateAnchorRequiredAttributes(issues, readXml);
         await this.validatePositionOffsetAndAlign(issues, readXml);
@@ -763,102 +756,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             });
         }
         return finalize(issues);
-    }
-
-    private async validateDrawingScalarTextWhitespace(
-        issues: ValidationIssue[],
-        readXml: (xmlFile: string) => Promise<Document>,
-    ): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            for (const { namespace, localName } of WORD_DRAWING_SCALAR_TEXT_ELEMENTS) {
-                const elems = getElementsByTagNameNSAll(dom, namespace, localName);
-                for (let i = 0; i < elems.length; i += 1) {
-                    const elem = elems[i];
-                    if (!elem) continue;
-                    for (let child = elem.firstChild; child; child = child.nextSibling) {
-                        if (child.nodeType !== 3) continue;
-                        const text = child as Text;
-                        const trimmed = text.data.trim();
-                        if (trimmed === text.data) continue;
-                        issues.push({
-                            severity: "error",
-                            message:
-                                `<${elem.tagName}> contains leading/trailing whitespace around scalar value ` +
-                                `${previewRepr(text.data, 80)}; Microsoft Word refuses this shape in drawing anchors.`,
-                            path: this.relPath(xmlFile),
-                            code: "word-drawing-scalar-whitespace",
-                        });
-                    }
-                }
-            }
-        }
-    }
-
-    private async validateDrawingArcRadii(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            const arcs = getElementsByTagNameNSAll(dom, DRAWINGML_NAMESPACE, "arcTo");
-            for (let i = 0; i < arcs.length; i += 1) {
-                const arc = arcs[i];
-                if (!arc) continue;
-                for (const attr of ["wR", "hR"] as const) {
-                    const value = arc.getAttribute(attr);
-                    if (value === null || /^[0-9]+$/.test(value)) continue;
-                    issues.push({
-                        severity: "error",
-                        message:
-                            `<a:arcTo> ${attr}="${value}" is not an integer. ` +
-                            "Microsoft Word cannot open the file. Use an integer radius.",
-                        path: this.relPath(xmlFile),
-                        code: "word-drawing-arc-radius",
-                    });
-                }
-            }
-        }
-    }
-
-    /**
-     * A `wp:extent` whose `cx` or `cy` is a negative integer makes Word
-     * report an open error (fixture 2213). One negative attribute is enough.
-     * The same drawing with a positive extent opens clean. Zero and positive
-     * extents are not this defect.
-     */
-    private async validateDrawingExtentSigns(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            const extents = getElementsByTagNameNSAll(dom, WP_NAMESPACE, "extent");
-            for (let i = 0; i < extents.length; i += 1) {
-                const extent = extents[i];
-                if (!extent) continue;
-                for (const attr of ["cx", "cy"] as const) {
-                    const value = extent.getAttribute(attr);
-                    if (value === null || !/^-\d+$/.test(value)) continue;
-                    issues.push({
-                        severity: "error",
-                        message:
-                            `<wp:extent> ${attr}="${value}" is negative. ` + "Microsoft Word cannot open the file. Use a positive extent.",
-                        path: this.relPath(xmlFile),
-                        code: "word-drawing-extent-negative",
-                    });
-                }
-            }
-        }
     }
 
     /**
