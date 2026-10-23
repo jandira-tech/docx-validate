@@ -92,6 +92,14 @@ function readProbeResults(): Map<string, ProbeRecord> {
  * Keeps regen idempotent w.r.t. Word-probe metadata when the probe JSONL is
  * absent (no LibreOffice in CI).
  */
+/**
+ * The manifest key of a fixture: its path under the fixtures root, always with
+ * forward slashes, the form the manifest and the probe results are keyed by.
+ */
+export function manifestKey(root: string, file: string, pathApi: typeof path = path): string {
+    return pathApi.relative(root, file).split(pathApi.sep).join("/");
+}
+
 export function resolveWordOutcome(relativePath: string, probeOutcome: string | undefined, priorWord: Map<string, string>): string {
     return probeOutcome ?? priorWord.get(relativePath) ?? "unknown";
 }
@@ -157,7 +165,7 @@ async function main(wordOnly: boolean): Promise<void> {
     // does not list are reported, not silently added.
     const files: string[] = [];
     if (wordOnly) {
-        const walkedSet = new Set(walked.map((f) => path.relative(FIXTURES_ROOT, f)));
+        const walkedSet = new Set(walked.map((f) => manifestKey(FIXTURES_ROOT, f)));
         for (const relativePath of [...priorEntries.keys()].sort()) {
             if (!walkedSet.has(relativePath)) {
                 throw new Error(`--word-only: manifest entry ${relativePath} has no fixture on disk`);
@@ -177,7 +185,7 @@ async function main(wordOnly: boolean): Promise<void> {
     let migrated = 0;
 
     for (const file of files) {
-        const relativePath = path.relative(FIXTURES_ROOT, file);
+        const relativePath = manifestKey(FIXTURES_ROOT, file);
         process.stderr.write(`Processing: ${relativePath}\n`);
 
         const prior = priorEntries.get(relativePath);
