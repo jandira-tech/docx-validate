@@ -6,9 +6,7 @@
 import type { CheckDefinition } from "../../../lib/check-registry";
 import type { ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
-
-const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
-const M = "http://schemas.openxmlformats.org/officeDocument/2006/math";
+import { MATH_NAMESPACES, WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
 
 export const mathRunInsertionCheck: CheckDefinition = {
     id: "word-math-run-insertion",
@@ -18,28 +16,32 @@ export const mathRunInsertionCheck: CheckDefinition = {
     requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => {
         const issues: ValidationIssue[] = [];
-        // Math runs occur in stories, not in the styles content model.
+        // Math runs occur in stories, not in the styles content model. Both
+        // conformance classes carry the defect: Transitional and Strict spell
+        // the WML and math namespaces differently but share CT_R.
         for (const part of ctx.storyParts()) {
             const parsed = ctx.effectiveXml(part);
             if (!parsed?.ok) {
                 continue;
             }
-            for (const insertion of getElementsByTagNameNSAll(parsed.document, W, "ins")) {
-                const parent = insertion.parentNode as Element | null;
-                if (parent?.namespaceURI !== M || parent.localName !== "r") {
-                    continue;
+            for (const w of WORD_PARAGRAPH_NAMESPACES) {
+                for (const insertion of getElementsByTagNameNSAll(parsed.document, w, "ins")) {
+                    const parent = insertion.parentNode as Element | null;
+                    if (parent === null || !MATH_NAMESPACES.includes(parent.namespaceURI ?? "") || parent.localName !== "r") {
+                        continue;
+                    }
+                    // shared-math.xsd CT_R excludes revisions; CT_OMath/CT_OMathArg
+                    // admit CT_RunTrackChange via EG_PContentMath (wml.xsd).
+                    issues.push({
+                        severity: "warning",
+                        code: "word-math-run-insertion",
+                        path: part,
+                        message:
+                            "w:ins is a direct child of math run m:r; schema CT_R requires run properties and run content, not revision children. " +
+                            "Use w:ins to wrap the whole m:r inside m:oMath or a math argument, or wrap the whole math zone at run level. " +
+                            "Use m:ctrlPr/w:ins only for control-property revisions.",
+                    });
                 }
-                // shared-math.xsd CT_R excludes revisions; CT_OMath/CT_OMathArg
-                // admit CT_RunTrackChange via EG_PContentMath (wml.xsd).
-                issues.push({
-                    severity: "warning",
-                    code: "word-math-run-insertion",
-                    path: part,
-                    message:
-                        "w:ins is a direct child of math run m:r; schema CT_R requires run properties and run content, not revision children. " +
-                        "Use w:ins to wrap the whole m:r inside m:oMath or a math argument, or wrap the whole math zone at run level. " +
-                        "Use m:ctrlPr/w:ins only for control-property revisions.",
-                });
             }
         }
         return issues;
