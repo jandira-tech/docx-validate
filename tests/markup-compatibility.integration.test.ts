@@ -47,6 +47,38 @@ const chartParts = (extension: string): Record<string, string> => ({
 });
 
 describe("markup compatibility XSD integration", { timeout: 240_000 }, () => {
+    it("rejects loss of the required main root (#287)", async () => {
+        const result = await check({
+            ...MINIMAL_PARTS,
+            "word/document.xml": `<e:garbage xmlns:e="urn:future" xmlns:mc="${NS.MC}" mc:Ignorable="e"/>`,
+        });
+        expect(result.valid).toBe(false);
+        expect(result.issues).toContainEqual(
+            expect.objectContaining({ code: "mce-main-root-ignored", severity: "error", path: "word/document.xml" }),
+        );
+        expect(result.issues.filter((issue) => issue.code === "xsd-error")).toEqual([]);
+    });
+    it("identifies a renamed main part from the package relationship and keeps other ignored roots informational (#287)", async () => {
+        for (const type of [
+            "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
+            "http://purl.oclc.org/ooxml/officeDocument/relationships/officeDocument",
+        ]) {
+            const ignored = `<e:garbage xmlns:e="urn:future" xmlns:mc="${NS.MC}" mc:Ignorable="e"/>`;
+            const result = await check({
+                ...MINIMAL_PARTS,
+                "_rels/.rels": `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="main" Type="${type}" Target="/word/./main.xml"/></Relationships>`,
+                "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"].replace("/word/document.xml", "/word/main.xml"),
+                "word/document.xml": ignored,
+                "word/main.xml": ignored,
+            });
+            expect(result.issues.filter((issue) => issue.code === "mce-main-root-ignored")).toEqual([
+                expect.objectContaining({ severity: "error", path: "word/main.xml" }),
+            ]);
+            expect(result.issues.filter((issue) => issue.path === "word/document.xml" && issue.code?.startsWith("mce-"))).toEqual([
+                expect.objectContaining({ code: "mce-root-ignored", severity: "info" }),
+            ]);
+        }
+    });
     it("keeps invalid directive tokens strict errors and non-blocking word-valid warnings (#296)", async () => {
         for (const [directive, code] of [
             ['mc:Ignorable="missing"', "mce-unbound-prefix"],
