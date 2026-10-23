@@ -11,7 +11,7 @@
  * so a caller gets the same answer whichever entrypoint it uses.
  */
 
-import { writeFileSync } from "node:fs";
+import { mkdirSync, symlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -67,6 +67,43 @@ describe("an injected XsdValidator reaches every entrypoint", { timeout: 120_000
         expect(result.valid).toBe(false);
         expect(result.metadata?.schemaCompleted).toBe(false);
         expect(result.issues.some((issue) => issue.code === "xsd-summary")).toBe(true);
+    });
+});
+
+describe("target validation errors stay structured and specific", () => {
+    it("rejects an --original whose suffix is not an Office file", async () => {
+        await withTempDir(async (dir) => {
+            const notOffice = path.join(dir, "notes.txt");
+            writeFileSync(notOffice, "hello");
+            const { file } = await controlBytes(dir);
+            await expect(validate(file, { original: notOffice })).rejects.toThrow(/must be a \.docx/);
+        });
+    });
+
+    it("rejects a target that is neither a directory nor an Office file", async () => {
+        await withTempDir(async (dir) => {
+            const fifo = path.join(dir, "not-a-package.docx");
+            // A symlink to a character device passes the existence check and
+            // carries a .docx suffix, but is neither a file nor a directory.
+            symlinkSync("/dev/null", fifo);
+            await expect(validate(fifo)).rejects.toThrow(/is not a directory or Office file/);
+        });
+    });
+
+    it("rejects an --original that is a directory", async () => {
+        await withTempDir(async (dir) => {
+            const originalDir = path.join(dir, "original.docx");
+            mkdirSync(originalDir);
+            const { file } = await controlBytes(dir);
+            await expect(validate(file, { original: originalDir })).rejects.toThrow(/is not a file/);
+        });
+    });
+
+    it("requires an author when --original is given", async () => {
+        await withTempDir(async (dir) => {
+            const { file } = await controlBytes(dir);
+            await expect(validate(file, { original: file })).rejects.toThrow(/`author` is required/);
+        });
     });
 });
 
