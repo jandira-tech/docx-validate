@@ -38,16 +38,24 @@ import { withTempDir } from "./run-cli";
 import { nextSecureLongHexNumber } from "./secure-id";
 import { readdir, stat } from "node:fs/promises";
 
+/**
+ * Every outcome `verifyInWord` can report, as the runtime list behind the
+ * {@link WordOutcome} union — tests walk it to prove the manifest mapping
+ * covers each one (#316).
+ */
+export const WORD_OUTCOMES = [
+    "clean-open",
+    "repair-warning",
+    "open-error",
+    "crash",
+    "password-prompt",
+    "unknown-dialog",
+    "timeout",
+    "unavailable",
+] as const;
+
 /** What Word actually did with the file. `unavailable` means verification could not run at all. */
-export type WordOutcome =
-    | "clean-open"
-    | "repair-warning"
-    | "open-error"
-    | "crash"
-    | "password-prompt"
-    | "unknown-dialog"
-    | "timeout"
-    | "unavailable";
+export type WordOutcome = (typeof WORD_OUTCOMES)[number];
 
 /** Structured result of one verification run. `satisfied` is true iff the outcome is `clean-open`. */
 export type WordVerification = {
