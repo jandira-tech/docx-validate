@@ -181,4 +181,28 @@ describe("ValidationContext: the content Word consumes (#291)", () => {
         expect(ctx.effectiveXml("word/document.xml")?.ok).toBe(false);
         expect(ctx.effectiveXml("word/missing.xml")).toBeUndefined();
     });
+
+    it("keeps the compatibility findings of that view, with the part's path", () => {
+        const ctx = ValidationContext.fromEntries({
+            "word/document.xml": alternate("e").replace("<mc:Choice", "<w:p/><mc:Choice"),
+            "word/header1.xml": `<w:hdr xmlns:w="${W}" xmlns:mc="${MC}" xmlns:e="urn:future" mc:MustUnderstand="e"/>`,
+        });
+        expect(ctx.compatibilityIssues("word/document.xml")).toEqual([
+            expect.objectContaining({ code: "mce-malformed", severity: "error", path: "word/document.xml" }),
+        ]);
+        expect(ctx.compatibilityIssues("word/header1.xml")).toEqual([
+            expect.objectContaining({ code: "mce-must-understand", severity: "error", path: "word/header1.xml" }),
+        ]);
+        expect(ctx.parseCount("word/document.xml")).toBe(1);
+    });
+
+    it("finds nothing to report where Word understands the required namespace", () => {
+        const W14 = "http://schemas.microsoft.com/office/word/2010/wordml";
+        const ctx = ValidationContext.fromEntries({
+            "word/document.xml": `<w:document xmlns:w="${W}" xmlns:mc="${MC}" xmlns:w14="${W14}" mc:MustUnderstand="w14"><w:body/></w:document>`,
+        });
+        expect(ctx.compatibilityIssues("word/document.xml")).toEqual([]);
+        expect(ctx.compatibilityIssues("word/missing.xml")).toEqual([]);
+        expect(ValidationContext.fromEntries({ "word/document.xml": "<w:document>" }).compatibilityIssues("word/document.xml")).toEqual([]);
+    });
 });

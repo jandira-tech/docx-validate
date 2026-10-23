@@ -28,6 +28,7 @@ import { wordRunMisplacedCheck, wordRunPropertiesMisplacedCheck, wordUnderlineMi
 import { wordSectionPropertiesMisplacedCheck } from "./word-section-properties";
 import { wordTablePropertiesMisplacedCheck } from "./word-table-properties";
 import { wordLinkWithoutNamespaceCheck, wordUnknownElementCheck } from "./word-unknown-elements";
+import { wordMarkupCompatibilityCheck } from "./word-markup-compatibility";
 import { xmlSyntaxCheck } from "./xml";
 
 /**
@@ -58,6 +59,7 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordTablePropertiesMisplacedCheck,
     wordUnknownElementCheck,
     wordLinkWithoutNamespaceCheck,
+    wordMarkupCompatibilityCheck,
 ];
 
 export function createDefaultCheckRegistry(): CheckRegistry {
