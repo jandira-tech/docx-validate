@@ -1256,7 +1256,8 @@ export class BaseSchemaValidator {
                 // reported line belongs to the transformed view, not the
                 // source part — say so instead of inventing source lines.
                 for (const issue of outcome.schemaIssues ?? []) {
-                    const truncated = issue.message.length > 250 ? `${issue.message.slice(0, 250)}...` : issue.message;
+                    const message = issue.message.trim();
+                    const truncated = message.length > 250 ? `${message.slice(0, 250)}...` : message;
                     const suffix =
                         outcome.transformedView && issue.line !== undefined ? " (line refers to the preprocessed validation view)" : "";
                     issues.push({
