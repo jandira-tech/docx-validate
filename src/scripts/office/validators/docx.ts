@@ -534,6 +534,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "ct-uncovered-part":
             // paragraph-sectpr-breaks.docx: empty vt:filetime causes Word unreadable-content recovery; empty lpwstr in complex2.docx opens clean.
             case "word-custom-property-filetime-empty":
+            // header-with-rid-no-sidecar.docx: Word open-error with missing wp:extent; the complete scaffold in validators-docx.test.ts opens clean.
+            case "word-drawing-extent-missing":
             case "word-drawing-scalar-whitespace":
             case "word-drawing-arc-radius":
             case "word-empty-drawing":
