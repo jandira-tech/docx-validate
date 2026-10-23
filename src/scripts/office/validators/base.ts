@@ -162,13 +162,10 @@ const MAIN_CONTENT_FOLDERS = new Set(["word", "ppt", "xl"]);
  * `schemas.openxmlformats.org/…` prefix. Any root element namespace that
  * starts with this prefix belongs to the Strict conformance class.
  *
- * The XSD schemas bundled with this validator are Transitional-only, so Strict
- * files cannot be validated against them — `validateAgainstXsd` detects these
- * via `_isStrictXmlFile` and emits an info-level `xsd-strict-skipped` issue
- * instead of false-positive xsd-* errors.
- *
- * See PORT_NOTES.md § "ISO OOXML Strict XSD validation" for rationale.
- * Adding full Strict schema support is tracked as a future improvement.
+ * The bundled `iso-strict/` schemas cover these namespaces. Under
+ * `profile: "strict"` `validateAgainstXsd` validates Strict parts against
+ * them (namespace + part identity dispatch); lenient and word-valid keep
+ * the historical info-level `xsd-strict-skipped` skip.
  */
 const STRICT_OOXML_NS_PREFIX = "http://purl.oclc.org/ooxml/";
 
