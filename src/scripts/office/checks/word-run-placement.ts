@@ -121,7 +121,9 @@ const runPropertiesIssues = ({ part, document: doc }: WmlPartDocument): Validati
         if (!parent) {
             continue;
         }
-        const allowed = RUN_PROPERTIES_PARENTS[parent.namespaceURI ?? ""];
+        // Own keys only: a namespace URI such as "constructor" must not reach Object.prototype.
+        const namespace = parent.namespaceURI ?? "";
+        const allowed = Object.hasOwn(RUN_PROPERTIES_PARENTS, namespace) ? RUN_PROPERTIES_PARENTS[namespace] : undefined;
         if (allowed?.has(parent.localName ?? "")) {
             // CT_R admits w:rPr only as its first child, before run content; a
             // second or trailing w:rPr is the defect 5Errors.docx carries.
