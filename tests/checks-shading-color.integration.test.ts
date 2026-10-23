@@ -53,7 +53,7 @@ const validateBytes = async (bytes: Uint8Array, profile: Profile) =>
         return validate(file, { profile });
     });
 
-const advisories = (issues: readonly ValidationIssue[]): ValidationIssue[] => issues.filter((issue) => issue.code === "shading-color");
+const advisories = (issues: readonly ValidationIssue[]): ValidationIssue[] => issues.filter((issue) => issue.code === "word-shading-color");
 
 describe("shading-color integration: synthetic single-defect package", { timeout: 120000 }, () => {
     it("the control (colour omitted) is clean under every profile", async () => {
@@ -73,7 +73,7 @@ describe("shading-color integration: synthetic single-defect package", { timeout
         expect(advisories(wordValid.issues)).toHaveLength(1);
         expect(advisories(wordValid.issues)[0]).toMatchObject({
             severity: "warning",
-            code: "shading-color",
+            code: "word-shading-color",
             path: "word/document.xml",
         });
         expect(advisories(wordValid.issues)[0]!.message).toContain(`w:fill=""`);
@@ -100,7 +100,7 @@ describe("shading-color integration: jubarte 0.13.0 lane specimens", () => {
             const issues = await wordShadingColorCheck.run(context);
             expect(issues).toHaveLength(documentFindings);
             for (const finding of issues) {
-                expect(finding.code).toBe("shading-color");
+                expect(finding.code).toBe("word-shading-color");
                 expect(finding.severity).toBe("warning");
                 expect(finding.path).toBe("word/document.xml");
                 expect(finding.message).toContain(`w:fill=""`);

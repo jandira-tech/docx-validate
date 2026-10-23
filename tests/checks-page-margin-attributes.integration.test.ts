@@ -26,7 +26,7 @@ import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const LANE = path.join(HERE, "lane", "jubarte-0.13.0");
 
-const CHECK_ID = "page-margin-attributes";
+const CHECK_ID = "word-page-margin-attributes";
 
 // The k10 defect: the live pgMar carries only top/right/bottom/left.
 const DEFECTIVE_DOCUMENT = MINIMAL_PARTS["word/document.xml"]!.replace(

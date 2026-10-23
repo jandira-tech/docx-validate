@@ -14,7 +14,7 @@ const M = "http://schemas.openxmlformats.org/officeDocument/2006/math";
 const xml = (body: string): string => `<w:document xmlns:w="${W}" xmlns:m="${M}" xmlns:x="urn:foreign">${body}</w:document>`;
 const parts = ["word/document.xml", "word/header1.xml", "word/footer2.xml", "word/footnotes.xml", "word/endnotes.xml", "word/comments.xml"];
 
-describe("math-run-deletion", () => {
+describe("word-math-run-deletion", () => {
     it("reports each direct WML deletion in a math run in every story, independently of prefix spelling", async () => {
         const defect = `<m:oMath><m:r><w:del w:id="1" w:author="A"><m:t>x</m:t></w:del><w:del w:id="2" w:author="A"/></m:r></m:oMath>`;
         const ctx = ValidationContext.fromEntries({
@@ -25,7 +25,7 @@ describe("math-run-deletion", () => {
         const expectedPaths = [...parts.flatMap((part) => [part, part]), "word/header2.xml"].sort();
         expect(issues.map((issue) => issue.path).sort()).toEqual(expectedPaths);
         for (const issue of issues) {
-            expect(issue).toMatchObject({ severity: "warning", code: "math-run-deletion" });
+            expect(issue).toMatchObject({ severity: "warning", code: "word-math-run-deletion" });
             expect(issue.message).toContain("m:r");
             expect(issue.message).toContain("w:del");
             expect(issue.message).toContain("CT_R");
@@ -72,7 +72,7 @@ describe("math-run-deletion", () => {
         }
         const before = serializeXml(parsed.document);
         expect(await mathRunDeletionCheck.run(ctx)).toEqual([
-            expect.objectContaining({ path: "word/document.xml", code: "math-run-deletion", severity: "warning" }),
+            expect.objectContaining({ path: "word/document.xml", code: "word-math-run-deletion", severity: "warning" }),
         ]);
         expect(serializeXml(parsed.document)).toBe(before);
         expect(ctx.text("word/document.xml")).toBe(source);

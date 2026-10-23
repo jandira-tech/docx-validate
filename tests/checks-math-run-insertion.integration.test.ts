@@ -70,7 +70,7 @@ describe("math-run-insertion integration", { timeout: 120000 }, () => {
             const issues = await mathRunInsertionCheck.run(context);
             expect(issues).toHaveLength(11);
             expect(issues.map((issue) => [issue.path, issue.code, issue.severity])).toEqual(
-                Array.from({ length: 11 }, () => ["word/document.xml", "math-run-insertion", "warning"]),
+                Array.from({ length: 11 }, () => ["word/document.xml", "word-math-run-insertion", "warning"]),
             );
         });
     }

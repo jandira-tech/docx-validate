@@ -39,7 +39,7 @@ describe("textbox-content-namespace check", () => {
         );
         const issues = await run({ "word/document.xml": xml });
         expect(issues).toHaveLength(1);
-        expect(issues[0]).toMatchObject({ severity: "warning", code: "textbox-content-namespace", path: "word/document.xml" });
+        expect(issues[0]).toMatchObject({ severity: "warning", code: "word-textbox-content-namespace", path: "word/document.xml" });
         expect(issues[0]!.message).toContain(WNE);
         expect(issues[0]!.message).toContain("txbxContent");
         expect(issues[0]!.message).toContain(WP);

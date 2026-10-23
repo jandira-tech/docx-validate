@@ -33,7 +33,7 @@ describe("page-margin-attributes check", () => {
         const issues = await run({ "word/document.xml": xml });
         expect(issues).toHaveLength(3);
         for (const issue of issues) {
-            expect(issue).toMatchObject({ severity: "warning", code: "page-margin-attributes", path: "word/document.xml" });
+            expect(issue).toMatchObject({ severity: "warning", code: "word-page-margin-attributes", path: "word/document.xml" });
         }
         expect(issues.map((issue) => issue.message)).toEqual([
             expect.stringContaining("w:header"),
@@ -99,7 +99,7 @@ describe("page-margin-attributes check", () => {
         const xml = documentWith(`<w:sectPr><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr>`, W_STRICT);
         const issues = await run({ "word/document.xml": xml });
         expect(issues).toHaveLength(3);
-        expect(issues.map((issue) => issue.code)).toEqual(["page-margin-attributes", "page-margin-attributes", "page-margin-attributes"]);
+        expect(issues.map((issue) => issue.code)).toEqual(["word-page-margin-attributes", "word-page-margin-attributes", "word-page-margin-attributes"]);
     });
 
     it("skips a part that does not parse instead of throwing", async () => {

@@ -14,7 +14,7 @@ const M = "http://schemas.openxmlformats.org/officeDocument/2006/math";
 const xml = (body: string): string => `<w:document xmlns:w="${W}" xmlns:m="${M}" xmlns:x="urn:foreign">${body}</w:document>`;
 const parts = ["word/document.xml", "word/header1.xml", "word/footer2.xml", "word/footnotes.xml", "word/endnotes.xml", "word/comments.xml"];
 
-describe("math-run-insertion", () => {
+describe("word-math-run-insertion", () => {
     it("reports each direct WML insertion in a math run in every story, independently of prefix spelling", async () => {
         const defect = `<m:oMath><m:r><w:ins w:id="1" w:author="A"><m:t>x</m:t></w:ins><w:ins w:id="2" w:author="A"/></m:r></m:oMath>`;
         const ctx = ValidationContext.fromEntries({
@@ -25,7 +25,7 @@ describe("math-run-insertion", () => {
         const expectedPaths = [...parts.flatMap((part) => [part, part]), "word/header2.xml"].sort();
         expect(issues.map((issue) => issue.path).sort()).toEqual(expectedPaths);
         for (const issue of issues) {
-            expect(issue).toMatchObject({ severity: "warning", code: "math-run-insertion" });
+            expect(issue).toMatchObject({ severity: "warning", code: "word-math-run-insertion" });
             expect(issue.message).toContain("m:r");
             expect(issue.message).toContain("w:ins");
             expect(issue.message).toContain("CT_R");
@@ -72,7 +72,7 @@ describe("math-run-insertion", () => {
         }
         const before = serializeXml(parsed.document);
         expect(await mathRunInsertionCheck.run(ctx)).toEqual([
-            expect.objectContaining({ path: "word/document.xml", code: "math-run-insertion", severity: "warning" }),
+            expect.objectContaining({ path: "word/document.xml", code: "word-math-run-insertion", severity: "warning" }),
         ]);
         expect(serializeXml(parsed.document)).toBe(before);
         expect(ctx.text("word/document.xml")).toBe(source);

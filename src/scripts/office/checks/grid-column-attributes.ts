@@ -30,7 +30,7 @@ import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
 
 export const wordGridColumnAttributesCheck: CheckDefinition = {
-    id: "grid-column-attributes",
+    id: "word-grid-column-attributes",
     description: "Every w:gridCol in a Word story carries only the w:w attribute that CT_TblGridCol declares.",
     groups: ["tables"],
     formats: ["docx"],
@@ -66,7 +66,7 @@ const gridColumnIssues = (gridCol: Element, ns: string, part: string): Validatio
         if (isDeclaredWidth || !inWordprocessingNamespace) continue;
         issues.push({
             severity: "warning",
-            code: "grid-column-attributes",
+            code: "word-grid-column-attributes",
             path: part,
             message:
                 `${prefix}gridCol carries the attribute ${prefix}${attr.localName}="${attr.value}", which CT_TblGridCol ` +

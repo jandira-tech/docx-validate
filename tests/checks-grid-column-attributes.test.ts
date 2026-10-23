@@ -43,7 +43,7 @@ describe("grid-column-attributes check", () => {
         expect(issues).toHaveLength(3);
         for (const issue of issues) {
             expect(issue.severity).toBe("warning");
-            expect(issue.code).toBe("grid-column-attributes");
+            expect(issue.code).toBe("word-grid-column-attributes");
             expect(issue.path).toBe("word/document.xml");
         }
         // The message names the undeclared attribute and keeps the width visible.

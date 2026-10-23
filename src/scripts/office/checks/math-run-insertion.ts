@@ -11,7 +11,7 @@ const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 const M = "http://schemas.openxmlformats.org/officeDocument/2006/math";
 
 export const mathRunInsertionCheck: CheckDefinition = {
-    id: "math-run-insertion",
+    id: "word-math-run-insertion",
     description: "Report tracked insertions nested directly inside math runs instead of wrapping the runs.",
     groups: ["math", "tracked-changes"],
     formats: ["docx"],
@@ -32,7 +32,7 @@ export const mathRunInsertionCheck: CheckDefinition = {
                 // admit CT_RunTrackChange via EG_PContentMath (wml.xsd).
                 issues.push({
                     severity: "warning",
-                    code: "math-run-insertion",
+                    code: "word-math-run-insertion",
                     path: part,
                     message:
                         "w:ins is a direct child of math run m:r; schema CT_R requires run properties and run content, not revision children. " +
