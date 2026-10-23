@@ -62,7 +62,7 @@ These are intentional behaviours of the implementation, documented at the call s
 
 3. **`unpack`/`pack` byte parity is best-effort.** JSZip emits ZIP entries deflated with its own compression settings, so byte-for-byte round-trips against external tools are not guaranteed. XML pretty-printing/indentation is preserved so contents round-trip identically; the outer ZIP envelope can differ. This affects file-checksum equality, not logical-equivalence checks.
 
-4. **`IGNORED_VALIDATION_ERRORS` includes `"Invalid XSD schema"`, `"purl.org/dc/terms"`, and `"dublincore.org"`.** `opc-coreProperties.xsd` imports the Dublin Core schema from a remote HTTP URL that is not bundled; libxml2-wasm reports the failed fetch with the `dublincore.org` host in the message (lxml emitted the `purl.org/dc/terms` namespace; libxmljs2 collapsed everything into `Invalid XSD schema`). All three strings are filtered so the docProps/core.xml false-positive stays suppressed. Schema-load failures otherwise surface as error-severity `xsd-schema-load-failed` issues — never silently valid.
+4. **`IGNORED_VALIDATION_ERRORS` contains only `"hyphenationZone"`.** `opc-coreProperties.xsd` imports the Dublin Core schemas from the bundled `schemas/dublincore/` copies (`dc.xsd`, `dcterms.xsd`, `dcmitype.xsd` — see `schemas/SOURCES.md`), so the former suppressions for the missing remote import (`"purl.org/dc/terms"`, `"dublincore.org"`, and the libxmljs2-era `"Invalid XSD schema"`) were removed. Schema-load failures surface as error-severity `xsd-schema-load-failed` issues — never silently valid and never message-suppressed.
 
 5. **`compareParagraphCounts` returns a structured result.** `{ original, modified, delta, originalUsesStrictNamespace }`. With `verbose: true`, also prints `Paragraphs: N → M (+K)` to stdout before returning.
 
@@ -90,13 +90,13 @@ These are intentional behaviours of the implementation, documented at the call s
 
 ISO OOXML defines two conformance classes: **Transitional** (backward-compatible, widely used) and **Strict** (pure ISO, uses different namespace URIs under `purl.oclc.org/ooxml/` instead of `schemas.openxmlformats.org/…`). Example: Strict WML uses `http://purl.oclc.org/ooxml/wordprocessingml/main` vs Transitional's `http://schemas.openxmlformats.org/wordprocessingml/2006/main`.
 
-The bundled XSD schemas under `src/scripts/office/schemas/` are Transitional-only. Applying them to Strict documents produces ~30 false-positive `xsd-*` errors per file (every element is flagged as from an unknown namespace).
+The official ISO Strict schemas are bundled under `src/scripts/office/schemas/iso-strict/` (ECMA-376 Part 1, 5th edition — see `schemas/SOURCES.md` for provenance, sha256s, and the two local fixes needed to make them compile: the xml.xsd import and three `default="off"` → `default="false"` attribute defaults in wml.xsd).
 
-**Current behaviour:** `validateAgainstXsd` in `validators/base.ts` detects Strict conformance by checking each XML file's root element `namespaceURI` against `STRICT_OOXML_NAMESPACES`. When detected, XSD validation is skipped for that XML part and an `info`-severity `xsd-strict-skipped` issue is recorded. Eligible Transitional parts in the same package are still validated. This avoids namespace false positives while making the schema coverage gap visible.
+**Current behaviour:** `validateAgainstXsd` in `validators/base.ts` detects Strict conformance by checking each XML file's root element `namespaceURI` against the `http://purl.oclc.org/ooxml/` prefix (`_isStrictXmlFile`). Under `profile: "strict"`, Strict parts dispatch to the matching iso-strict schema by part identity (`STRICT_SCHEMA_MAPPINGS`); OPC parts (content types, rels, core properties) share one namespace across both conformance classes and always use the OPC schemas, and Strict parts with no mapped schema are skipped like any unmapped part. Under `lenient` and `word-valid`, Strict parts keep the historical `info`-severity `xsd-strict-skipped` skip so existing callers see no drift.
 
-**Future improvement:** Ship the ISO OOXML Strict XSD schemas alongside the Transitional ones and add a second dispatch path in `_getSchemaPath` / `_validateSingleFileXsd`. Deferred — requires bundling ~50 MB of additional schema files and building a Strict-aware preprocessing pipeline.
+Also under `strict`: baseline subtraction against `--original` is bypassed (a schema defect is invalid even if the original had it — lenient/word-valid keep the diff), and every structured engine finding is emitted as its own `xsd-error` issue with the reported `line`; when preprocessing rewrote the XML for validation, the issue message marks the line as referring to the transformed view.
 
-The `STRICT_OOXML_NAMESPACES` constant in `validators/base.ts` and the `WORD_STRICT_NAMESPACE` constant in `validators/docx.ts` are the canonical sources for these URIs.
+The `STRICT_OOXML_NS_PREFIX` constant in `validators/base.ts` and the `WORD_STRICT_NAMESPACE` constant in `validators/docx.ts` are the canonical sources for these URIs.
 
 ## Known gaps
 
