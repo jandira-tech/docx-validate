@@ -46,7 +46,7 @@ import { fileURLToPath } from "node:url";
 import { findEquivalentPart, parseContentTypes, partExtension, resolveContentType, resolvePartName } from "../../../lib/content-types";
 import { applyMarkupCompatibility, STRICT_UNDERSTOOD_NAMESPACES, UNDERSTOOD_NAMESPACES } from "../../../lib/markup-compatibility";
 import { withTempDir } from "../../../lib/run-cli";
-import { normalizePartName } from "../../../lib/validation-context";
+import { indexByPartName } from "../../../lib/validation-context";
 import type { Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
 import { DEFAULT_PROFILE, NS, OK_RESULT } from "../../../lib/types";
 import { allowSchemaResourceRoot, createXsdValidator, type XsdValidator } from "../../../lib/xsd-validator";
@@ -1462,7 +1462,12 @@ export class BaseSchemaValidator {
         // ignored, and a walk per call grows with the square of the part
         // count (#355).
         this.mainDocumentParts ??= this.resolveMainDocumentParts();
-        return this.mainDocumentParts.has(normalizePartName(this.relPath(xmlFile).split(path.sep).join("/")));
+        return this.mainDocumentParts.has(this.entryName(xmlFile));
+    }
+
+    /** A walked file's name in the package, with `/` separators on every platform. */
+    private entryName(file: string): string {
+        return this.relPath(file).split(path.sep).join("/");
     }
 
     /**
@@ -1471,20 +1476,22 @@ export class BaseSchemaValidator {
      * the main part: reserved escapes stay distinct (`word%2Fdocument.xml` is
      * another part, #344), `\` reads as `/` in targets and in entry names
      * alike (#349, #357), and of two equivalent entries only the one the
-     * target names is main (#349).
+     * target names is main (#349). Of several files naming one part, only the
+     * one the package view keeps is main (#366). Holds entry names.
      */
     private resolveMainDocumentParts(): ReadonlySet<string> {
         const parts = new Set<string>();
         try {
-            const files = walkFiles(this.unpackedDir);
-            const names = files.map((file) => normalizePartName(this.relPath(file).split(path.sep).join("/")));
+            // Indexed as `ValidationContext` indexes its entries, so both keep
+            // the same file when several name one part (#366).
+            const kept = indexByPartName(walkFiles(this.unpackedDir).map((file) => [this.entryName(file), file] as const));
+            const names = [...kept.keys()];
             // Read the package relationships as the package view does: found by
-            // normalized name under OPC equivalence, so `_rels\.rels` and
-            // `_RELS/.RELS` count, the last of several files with that name, as
-            // in `ValidationContext.fromEntries` (#362, #364), and decoded by BOM
-            // or declaration, so UTF-16 counts (#362).
+            // part name under OPC equivalence, so `_rels\.rels` and
+            // `_RELS/.RELS` count (#362, #364), and decoded by BOM or
+            // declaration, so UTF-16 counts (#362).
             const relsName = findEquivalentPart(names, "_rels/.rels");
-            const relsFile = relsName === undefined ? undefined : files[names.lastIndexOf(relsName)];
+            const relsFile = relsName === undefined ? undefined : kept.get(relsName);
             if (relsFile === undefined) {
                 return parts;
             }
@@ -1499,8 +1506,9 @@ export class BaseSchemaValidator {
                     continue;
                 }
                 const part = resolvePartName(names, relationship.getAttribute("Target") ?? "");
-                if (part !== undefined) {
-                    parts.add(part);
+                const file = part === undefined ? undefined : kept.get(part);
+                if (file !== undefined) {
+                    parts.add(this.entryName(file));
                 }
             }
         } catch {

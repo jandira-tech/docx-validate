@@ -221,3 +221,40 @@ describe("ValidationContext: a view with unparseable parts (#307)", () => {
         expect(view.source).toBe(ctx.source);
     });
 });
+
+describe("ValidationContext: two entries naming one part (#366)", () => {
+    // `\` reads as `/` and a leading `/` is dropped, so each pair names one
+    // part. The entry stored under the part name itself is kept, whatever the
+    // order, so a packed archive and its extracted directory keep the same bytes.
+    const PAIRS = [
+        ["_rels\\.rels", "_rels/.rels"],
+        ["/word/document.xml", "word/document.xml"],
+    ] as const;
+    const ORDERS = PAIRS.flatMap(([other, kept]) => [
+        [`${kept} last`, kept, [other, kept]],
+        [`${kept} first`, kept, [kept, other]],
+    ]) as [string, string, string[]][];
+
+    it.each(ORDERS)("fromEntries keeps the entry stored under the part name (%s)", (_order, kept, names) => {
+        const ctx = ValidationContext.fromEntries(names.map((name) => [name, name] as const));
+        expect(ctx.partNames).toEqual([kept]);
+        expect(ctx.text(kept)).toBe(kept);
+    });
+
+    it.each(ORDERS)("fromArchive keeps the entry stored under the part name, whatever the ZIP order (%s)", async (_order, kept, names) => {
+        const zip = new JSZip();
+        for (const name of names) {
+            zip.file(name, name);
+        }
+        const ctx = await ValidationContext.fromArchive(await zip.generateAsync({ type: "uint8array" }));
+        expect(ctx.text(kept)).toBe(kept);
+    });
+
+    it.each([
+        ["in order", ["/word\\a.xml", "word\\a.xml"]],
+        ["reversed", ["word\\a.xml", "/word\\a.xml"]],
+    ])("of two other spellings, keeps the smaller in code-unit order (%s)", (_order, names) => {
+        const ctx = ValidationContext.fromEntries(names.map((name) => [name, name] as const));
+        expect(ctx.text("word/a.xml")).toBe("/word\\a.xml");
+    });
+});
