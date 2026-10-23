@@ -35,6 +35,7 @@ import { wordEmptyDrawingCheck, wordAnchorMissingAttributeCheck, wordPositionOff
 import { wordCellEndsWithTableCheck } from "./word-cell-ending";
 import { wordTextboxDeletedTextCheck, wordMoveFromDeletedTextCheck } from "./word-deleted-text";
 import { wordTextContainsParagraphCheck } from "./word-text-paragraph";
+import { wordHyperlinkRelationshipCheck } from "./word-hyperlink";
 import { xmlSyntaxCheck } from "./xml";
 
 /**
@@ -66,6 +67,7 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordUnknownElementCheck,
     wordLinkWithoutNamespaceCheck,
     wordMarkupCompatibilityCheck,
+    wordHyperlinkRelationshipCheck,
     wordTextContainsParagraphCheck,
     wordTextboxDeletedTextCheck,
     wordMoveFromDeletedTextCheck,
