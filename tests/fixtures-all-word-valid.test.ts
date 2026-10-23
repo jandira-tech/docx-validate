@@ -33,10 +33,11 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES = path.join(HERE, "fixtures");
 const MANIFEST_PATH = path.join(HERE, "fixtures-all.manifest.json");
 
-// The attributable observations when this suite was introduced: 351 clean
-// opens and 62 rejections. Evidence may grow; it must not silently shrink.
-const MIN_CLEAN = 351;
-const MIN_REJECTED = 62;
+// The attributable observations: 351 clean opens and 62 rejections when this
+// suite was introduced, plus the 12 fixtures probed after the #315 fix.
+// Evidence may grow; it must not silently shrink.
+const MIN_CLEAN = 358;
+const MIN_REJECTED = 67;
 
 interface ManifestEntry {
     relativePath: string;
