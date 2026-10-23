@@ -44,6 +44,7 @@ import {
 } from "./word-duplicate-relationships";
 import { wordChoiceRequiresUndeclaredCheck } from "./word-choice-requires";
 import { wordSdtIdEmptyCheck } from "./word-sdt-id";
+import { wordAttachedToolbarUtf8Check } from "./word-attached-toolbar";
 import { xmlSyntaxCheck } from "./xml";
 
 /**
@@ -75,6 +76,7 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordUnknownElementCheck,
     wordLinkWithoutNamespaceCheck,
     wordMarkupCompatibilityCheck,
+    wordAttachedToolbarUtf8Check,
     wordSdtIdEmptyCheck,
     wordChoiceRequiresUndeclaredCheck,
     wordDuplicateThemeRelationshipCheck,
