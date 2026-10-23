@@ -59,6 +59,56 @@ export const parseXml = (text: string): Document => {
 };
 
 /**
+ * Byte-level decoding for the DOM layer. `@xmldom` takes a JavaScript string,
+ * so a part stored as UTF-16 must be decoded from its ORIGINAL BYTES first —
+ * reading it as UTF-8 (`fs.readFile(file, "utf-8")`) yields NUL-interleaved
+ * garbage that no parser can rescue.
+ *
+ * Encoding selection follows XML 1.0 §4.3.3: the byte order mark wins, then
+ * the `encoding` pseudo-attribute of the XML declaration. Only the three
+ * encodings OOXML parts actually use are supported — UTF-8, UTF-16LE,
+ * UTF-16BE — and anything else falls back to UTF-8 rather than guessing.
+ * The result carries no BOM and no leading whitespace, so callers can hand it
+ * straight to {@link parseXml}.
+ */
+export const decodeXmlBytes = (bytes: Uint8Array): string => {
+    if (bytes.length >= 3 && bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf) {
+        // UTF-8 BOM. `TextDecoder` drops it for "utf-8" only when told not to
+        // be fatal about it, so decode the remainder explicitly.
+        return new TextDecoder("utf-8").decode(bytes.subarray(3));
+    }
+    if (bytes.length >= 2 && bytes[0] === 0xff && bytes[1] === 0xfe) {
+        return new TextDecoder("utf-16le").decode(bytes.subarray(2));
+    }
+    if (bytes.length >= 2 && bytes[0] === 0xfe && bytes[1] === 0xff) {
+        return new TextDecoder("utf-16be").decode(bytes.subarray(2));
+    }
+    // No BOM. Read the declaration as ASCII so the encoding name is legible
+    // even when the body is UTF-16 (whose NUL padding is dropped so the
+    // declaration reads as text rather than as interleaved bytes).
+    const head = new TextDecoder("latin1").decode(bytes.subarray(0, Math.min(bytes.length, 200))).replaceAll("\0", "");
+    const declared = /^\s*<\?xml[^>]*encoding\s*=\s*["']([^"']+)["']/i
+        .exec(head)?.[1]
+        ?.toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
+    if (declared === "utf16" || declared === "utf16le" || declared === "utf16be") {
+        // XML 1.0 §4.3.3 requires a BOM for UTF-16 entities; without one, the
+        // first character discriminates the endianness ('<' as 3C 00 or 00 3C).
+        const littleEndian = declared === "utf16le" || (declared === "utf16" && !(bytes[0] === 0 && bytes[1] === 0x3c));
+        return new TextDecoder(littleEndian ? "utf-16le" : "utf-16be").decode(bytes);
+    }
+    return new TextDecoder("utf-8").decode(bytes);
+};
+
+/**
+ * Parse ORIGINAL XML part bytes into a DOM `Document`.
+ *
+ * The decoding step lives in {@link decodeXmlBytes} and the DOM construction
+ * stays here, so no caller ever calls `DOMParser` directly.
+ */
+export const parseXmlBytes = (bytes: Uint8Array): Document => parseXml(decodeXmlBytes(bytes));
+
+/**
  * Serialize a DOM `Document` (or any `Node`) back to a string.
  *
  * `encoding` is accepted for parity with Python's `doc.toxml(encoding=...)`
