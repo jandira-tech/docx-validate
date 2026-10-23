@@ -635,12 +635,28 @@ export class BaseSchemaValidator {
             const root = dom.documentElement;
             if (!root) continue;
 
-            for (const elem of iterElements(root)) {
+            // Single-pass DFS optimizing away O(N*D) parentNode lookups
+            // Tracks exclusion state on the stack. Reduces execution time significantly for deep hierarchies.
+            const stack: [Element, boolean][] = [[root, false]];
+            while (stack.length > 0) {
+                const item = stack.pop();
+                if (item === undefined) break;
+                const [elem, isExcluded] = item;
                 const tag = localName(elem.tagName ?? elem.nodeName).toLowerCase();
+
+                const nextExcluded = isExcluded || EXCLUDED_ID_CONTAINERS.has(tag);
+                const children = elem.childNodes;
+                for (let i = children.length - 1; i >= 0; i -= 1) {
+                    const child = children[i];
+                    if (child && child.nodeType === 1 /* ELEMENT_NODE */) {
+                        stack.push([child as Element, nextExcluded]);
+                    }
+                }
+
                 const requirement = UNIQUE_ID_REQUIREMENTS[tag];
                 if (!requirement) continue;
 
-                if (hasExcludedAncestor(elem)) continue;
+                if (isExcluded) continue;
 
                 const [attrName, scope] = requirement;
                 const idValue = findIdAttribute(elem, attrName);
@@ -1574,16 +1590,6 @@ function removeMcAlternateContent(dom: Document): void {
     for (const elem of items) {
         elem.parentNode?.removeChild(elem);
     }
-}
-
-function hasExcludedAncestor(elem: Element): boolean {
-    let cur: Node | null = elem.parentNode;
-    while (cur && cur.nodeType === 1) {
-        const tag = localName((cur as Element).tagName ?? cur.nodeName).toLowerCase();
-        if (EXCLUDED_ID_CONTAINERS.has(tag)) return true;
-        cur = cur.parentNode;
-    }
-    return false;
 }
 
 function findIdAttribute(elem: Element, attrName: string): string | null {

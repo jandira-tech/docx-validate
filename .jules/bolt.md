@@ -32,3 +32,8 @@
 
 **Learning:** Parent traversal (`parentNode` loops) for every matched node in a deep document is O(N*D). Combining this with querying all elements leads to huge performance degradation.
 **Action:** Implement an integrated top-down DFS traversal instead of querying all elements and then checking their parent chains. This removes redundant parent tree traversals and prunes excluded subtrees. End-to-end timings can still be dominated by XML parsing and allocation; see `docs/performance/redlining-dfs.md` for mixed local measurements.
+
+## 2024-10-23 - Optimize Duplicate ID Validation DFS
+
+**Learning:** Using `iterElements` combined with repeated `parentNode` traversals (e.g. `hasExcludedAncestor`) on deeply nested elements leads to severe O(N*D) performance bottlenecks (where D is depth).
+**Action:** Track ancestral state (like `isExcluded`) directly on a DFS stack alongside the nodes to reduce validation cost to a single O(N) pass.
