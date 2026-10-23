@@ -13,6 +13,7 @@ import { getElementsByTagNameNSAll, parseXml } from "../src/lib/xml-helpers";
 import * as xsdMod from "../src/lib/xsd-validator";
 import { wordDrawingExtentMissingCheck as check } from "../src/scripts/office/checks/word-drawing";
 import { validate } from "../src/scripts/office/validate";
+import { observedWordOutcome } from "./support/word-observation";
 
 const fixtures = path.join(import.meta.dirname, "fixtures");
 const rejected = path.join(fixtures, "broken/header-with-rid-no-sidecar.docx");
@@ -21,11 +22,7 @@ const XSD = "http://www.w3.org/2001/XMLSchema";
 
 describe("drawing extent Word evidence", { timeout: 120_000 }, () => {
     it("rejects the Word open-error header fixture and accepts the positive-extent drawing control", async () => {
-        const manifest = JSON.parse(await readFile(path.join(fixtures, "../fixtures-all.manifest.json"), "utf8"));
-        expect(
-            manifest.entries.find((entry: { relativePath: string }) => entry.relativePath === "broken/header-with-rid-no-sidecar.docx")
-                ?.word,
-        ).toBe("open-error");
+        expect(await observedWordOutcome("broken/header-with-rid-no-sidecar.docx")).toBe("open-error");
         const result = await validate(rejected, { profile: "word-valid" });
         expect(result.valid).toBe(false);
         expect(result.issues).toContainEqual(expect.objectContaining({ code: check.id, severity: "error", path: "word/header1.xml" }));

@@ -13,6 +13,7 @@ import { getElementsByTagNameNSAll, parseXml } from "../src/lib/xml-helpers";
 import * as xsdMod from "../src/lib/xsd-validator";
 import { wordCustomPropertyFiletimeEmptyCheck as check } from "../src/scripts/office/checks/word-custom-properties";
 import { validate } from "../src/scripts/office/validate";
+import { observedWordOutcome } from "./support/word-observation";
 
 const fixtures = path.join(import.meta.dirname, "fixtures");
 const rejected = path.join(fixtures, "external/superdoc/super-editor/paragraph-sectpr-breaks.docx");
@@ -22,13 +23,12 @@ const XSD = "http://www.w3.org/2001/XMLSchema";
 
 describe("custom-property Word evidence", { timeout: 120_000 }, () => {
     it("pairs the manifest's recovery fixture with its clean-open empty-string control", async () => {
-        const manifest = JSON.parse(await readFile(path.join(fixtures, "../fixtures-all.manifest.json"), "utf8"));
         for (const [file, outcome, count] of [
             [rejected, "unreadable-content-warning", 2],
             [tolerated, "clean-open", 0],
         ] as const) {
             const relativePath = path.relative(fixtures, file);
-            expect(manifest.entries.find((entry: { relativePath: string }) => entry.relativePath === relativePath)?.word).toBe(outcome);
+            expect(await observedWordOutcome(relativePath)).toBe(outcome);
             const bytes = await readFile(file);
             const ctx = await ValidationContext.fromArchive(bytes);
             expect(await check.run(ctx)).toHaveLength(count);
