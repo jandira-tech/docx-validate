@@ -18,6 +18,8 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
+import JSZip from "jszip";
+
 import { withTempDir } from "../src/lib/run-cli";
 import type { XsdValidator } from "../src/lib/xsd-validator";
 import { validate } from "../src/scripts/office/validate";
@@ -25,6 +27,7 @@ import { buildDocx } from "./support/minimal-docx";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const BROKEN = path.join(HERE, "fixtures", "broken");
+const LANE = path.join(HERE, "lane", "jubarte-0.13.0");
 
 const errorCodes = (issues: readonly { severity: string; code?: string }[]): string[] => [
     ...new Set(issues.filter((issue) => issue.severity === "error").map((issue) => issue.code ?? "")),
@@ -71,3 +74,58 @@ describe("strict policy: success implies complete Word checks and completed sche
         expect(result.metadata?.schemaCompleted).toBe(false);
     });
 });
+
+describe("default profile is resolved from the package format", { timeout: 120_000 }, () => {
+    it("validates a DOCX as word-valid, so schema-only hygiene is not a Word-opening error", async () => {
+        // k06_1 carries 60 schema-only `w:shd w:fill=""` findings. Microsoft
+        // Word opens it, so the default profile must call it valid while
+        // keeping the findings visible as warnings.
+        const result = await validate(path.join(LANE, "k06_1.redline.docx"));
+
+        expect(result.valid).toBe(true);
+        expect(result.metadata?.profile).toBe("word-valid");
+        const shading = result.issues.filter((issue) => issue.code === "word-shading-color");
+        expect(shading.length).toBeGreaterThan(0);
+        expect(shading.every((issue) => issue.severity === "warning")).toBe(true);
+    });
+
+    it("keeps the historical lenient default for a PPTX", async () => {
+        const [defaultRun, explicitLenient] = await withTempDir(async (dir) => {
+            const file = path.join(dir, "deck.pptx");
+            writeFileSync(file, await buildPptx());
+            return Promise.all([validate(file), validate(file, { profile: "lenient" })]);
+        });
+
+        expect(defaultRun.metadata?.profile).toBe("lenient");
+        expect(defaultRun.valid).toBe(explicitLenient.valid);
+        expect(defaultRun.issues).toEqual(explicitLenient.issues);
+    });
+});
+
+const PR = "http://schemas.openxmlformats.org/package/2006/relationships";
+const P = "http://schemas.openxmlformats.org/presentationml/2006/main";
+
+/** The smallest OPC package that dispatches to `PPTXSchemaValidator`. */
+async function buildPptx(): Promise<Buffer> {
+    const zip = new JSZip();
+    zip.file(
+        "[Content_Types].xml",
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+            '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+            '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+            '<Default Extension="xml" ContentType="application/xml"/>' +
+            '<Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/>' +
+            "</Types>",
+    );
+    zip.file(
+        "_rels/.rels",
+        `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+            `<Relationships xmlns="${PR}"><Relationship Id="rId1" Type="${PR}/officeDocument" Target="ppt/presentation.xml"/></Relationships>`,
+    );
+    zip.file(
+        "ppt/presentation.xml",
+        `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<p:presentation xmlns:p="${P}" xmlns:r="${PR}">` +
+            `<p:sldSz cx="9144000" cy="6858000"/><p:notesSz cx="6858000" cy="9144000"/></p:presentation>`,
+    );
+    return zip.generateAsync({ type: "nodebuffer" });
+}

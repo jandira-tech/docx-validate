@@ -40,7 +40,6 @@ import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
 import { runChecks } from "../../lib/check-scheduler";
 import { resolveMode } from "../../lib/mode-policy";
 import {
-    DEFAULT_PROFILE,
     mergeResults,
     xsdWalkNotStarted,
     type PackageFormat,
@@ -430,7 +429,7 @@ interface CliOptions {
     verbose: boolean;
     autoRepair: boolean;
     author?: string;
-    profile: Profile;
+    profile?: Profile;
 }
 
 export function buildValidateCommand(): Command {
@@ -447,8 +446,7 @@ export function buildValidateCommand(): Command {
         .option("--author <name>", "Author name for redlining validation (required when --original is provided)")
         .option(
             "--profile <profile>",
-            "Validation profile: 'lenient' (default), 'strict' (spec-purist), or 'word-valid' (Microsoft Word openability)",
-            DEFAULT_PROFILE,
+            "Validation profile: 'word-valid' (default for .docx/.docm), 'lenient' (default for every other format), or 'strict'",
         );
     return cmd;
 }
@@ -478,7 +476,7 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
     const opts = cmd.opts<CliOptions>();
     const [target] = cmd.args;
 
-    if (opts.profile !== "lenient" && opts.profile !== "strict" && opts.profile !== "word-valid") {
+    if (opts.profile !== undefined && opts.profile !== "lenient" && opts.profile !== "strict" && opts.profile !== "word-valid") {
         const bad = String(opts.profile);
         process.stderr.write(`Invalid --profile: ${bad}. Must be 'lenient', 'strict', or 'word-valid'.\n`);
         return 1;
