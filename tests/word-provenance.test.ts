@@ -80,4 +80,30 @@ describe("mergeWordObservation", () => {
             history: [{ outcome: "clean-open", sha256: "aaaa" }],
         });
     });
+
+    it("retires a same-bytes observation that a fresh probe supersedes, and never lets an unattributable re-probe replace attributable evidence", () => {
+        const superseded = mergeWordObservation({
+            prior: { outcome: "open-error", sha256: "aaaa", observedAt: "2026-10-01T00:00:00Z" },
+            freshOutcome: "clean-open",
+            currentSha256: "aaaa",
+            observedAt: "2026-10-02T00:00:00Z",
+        });
+        expect(superseded).toEqual({
+            word: { outcome: "clean-open", sha256: "aaaa", observedAt: "2026-10-02T00:00:00Z" },
+            history: [{ outcome: "open-error", sha256: "aaaa", observedAt: "2026-10-01T00:00:00Z" }],
+        });
+
+        // A timeout says nothing about the bytes: the clean-open stays current
+        // and the timeout is recorded, not the other way round.
+        const timedOut = mergeWordObservation({
+            prior: { outcome: "clean-open", sha256: "aaaa" },
+            freshOutcome: "timeout",
+            currentSha256: "aaaa",
+            observedAt: "2026-10-03T00:00:00Z",
+        });
+        expect(timedOut).toEqual({
+            word: { outcome: "clean-open", sha256: "aaaa" },
+            history: [{ outcome: "timeout", sha256: "aaaa", observedAt: "2026-10-03T00:00:00Z" }],
+        });
+    });
 });
