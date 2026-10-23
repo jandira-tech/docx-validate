@@ -249,3 +249,21 @@ describe("bundled schema trees resolve offline", () => {
         expect(missing).toEqual([]);
     });
 });
+
+describe("strict profile — non-OOXML parts", () => {
+    it("a customXml payload in an unknown namespace is not a missing schema", async () => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...MINIMAL_PARTS,
+                "customXml/item1.xml": `<?xml version="1.0"?><invoice xmlns="http://example.com/bespoke"><line/></invoice>`,
+            };
+            const file = await writeDocx(dir, "custom-xml.docx", parts);
+            const result = await validate(file, { profile: "strict" });
+            // No OOXML schema applies to arbitrary customXml payloads — the
+            // part is simply not XSD-eligible, so no xsd-* issue (and in
+            // particular no schema-load failure) may be reported for it.
+            const xsdIssues = result.issues.filter((i) => i.code?.startsWith("xsd-"));
+            expect(xsdIssues).toEqual([]);
+        });
+    }, 60_000);
+});
