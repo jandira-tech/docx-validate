@@ -38,6 +38,7 @@ import JSZip from "jszip";
 
 import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
 import { runChecks } from "../../lib/check-scheduler";
+import { resolveMode } from "../../lib/mode-policy";
 import {
     DEFAULT_PROFILE,
     mergeResults,
@@ -47,6 +48,7 @@ import {
     type ValidationResult,
     type XsdWalkTrace,
 } from "../../lib/types";
+import type { XsdValidator } from "../../lib/xsd-validator";
 import { ValidationContext } from "../../lib/validation-context";
 import { extractZipEntries } from "../../lib/zip-path";
 import { createDefaultCheckRegistry } from "./checks";
@@ -77,6 +79,19 @@ export interface ValidateOptions {
      * constructs). See {@link Profile}.
      */
     profile?: Profile;
+    /**
+     * Override the XSD engine for every schema validator this run creates.
+     * When omitted, `BaseSchemaValidator` lazy-creates the default
+     * libxml2-wasm validator.
+     */
+    xsdValidator?: XsdValidator;
+}
+
+/** Package format a dispatch suffix maps to. `.docm` validates exactly like `.docx`. */
+export function formatForSuffix(suffix: string): PackageFormat {
+    if (suffix === ".pptx") return "pptx";
+    if (suffix === ".xlsx") return "xlsx";
+    return "docx";
 }
 
 export interface ValidateRunResult extends ValidationResult {
@@ -102,7 +117,6 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     const verbose = opts.verbose ?? false;
     const autoRepair = opts.autoRepair ?? false;
     const original = opts.original;
-    const profile: Profile = opts.profile ?? DEFAULT_PROFILE;
 
     await assertExists(target, `Error: ${target} does not exist`);
 
@@ -117,6 +131,8 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     }
 
     const dispatchSuffix = path.extname(originalFile ?? target).toLowerCase();
+    const format = formatForSuffix(dispatchSuffix);
+    const profile: Profile = resolveMode(format, opts).profile;
 
     if (!SUPPORTED_SUFFIXES.has(dispatchSuffix)) {
         throw new Error(`Error: Cannot determine file type from ${target}. Use --original or provide a .docx/.docm/.pptx/.xlsx file.`);
@@ -138,9 +154,19 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
             verbose,
             autoRepair,
             schemasDir: opts.schemasDir,
+            xsdValidator: opts.xsdValidator,
             profile,
         });
-        return { ...subclassResult, suffix: dispatchSuffix };
+        return {
+            ...subclassResult,
+            suffix: dispatchSuffix,
+            metadata: {
+                profile,
+                executedChecks: executedCheckIds(format),
+                omittedChecks: [],
+                schemaCompleted: schemaWalkCompleted(subclassResult.xsdWalk, subclassResult.engineFailures),
+            },
+        };
     };
 
     if (targetIsPackedFile) {
@@ -175,6 +201,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                     repairs: 0,
                     suffix: dispatchSuffix,
                     xsdWalk: xsdWalkNotStarted(),
+                    metadata: { profile, executedChecks: [], omittedChecks: [], schemaCompleted: false },
                 };
             }
             try {
@@ -194,15 +221,49 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                     repairs: 0,
                     suffix: dispatchSuffix,
                     xsdWalk: xsdWalkNotStarted(),
+                    metadata: { profile, executedChecks: [], omittedChecks: [], schemaCompleted: false },
                 };
             }
             const unpacked = await runWithUnpacked(tempDir);
             if (envelopeIssues.length === 0) return unpacked;
-            return { ...unpacked, valid: false, issues: [...unpacked.issues, ...envelopeIssues] };
+            return {
+                ...unpacked,
+                valid: false,
+                issues: [...unpacked.issues, ...envelopeIssues],
+                metadata: { ...(unpacked.metadata ?? {}), executedChecks: coveredEnvelopeChecks(unpacked.metadata, profile) },
+            };
         });
     }
 
     return runWithUnpacked(path.resolve(target));
+}
+
+/** Every check id applicable to `format`, in registry order. */
+function executedCheckIds(format: PackageFormat): readonly string[] {
+    return createDefaultCheckRegistry()
+        .list(format)
+        .map((def) => def.id);
+}
+
+/**
+ * The ZIP-envelope checks only cover the complete Word profiles and only run
+ * for a packed file (an unpacked directory has no envelope), so the executed
+ * set is empty for every other combination.
+ */
+function coveredEnvelopeChecks(metadata: ValidationResult["metadata"], profile: Profile): readonly string[] {
+    const all = metadata?.executedChecks ?? [];
+    return runsWordPackageChecks(profile) ? all : all.filter((id) => !ENVELOPE_CHECK_IDS.includes(id));
+}
+
+/** Check ids that read the packed archive's ZIP envelope. */
+const ENVELOPE_CHECK_IDS = ["zip-bytes-after-eocd", "zip-eocd-comment-overrun"];
+
+/**
+ * A schema walk "completed" when it started, offered every eligible part to
+ * the engine, and the engine answered for each one (no schema failed to load).
+ */
+function schemaWalkCompleted(walk: XsdWalkTrace, engineFailures: number): boolean {
+    return walk.started && walk.parts.length === walk.eligible && engineFailures === 0;
 }
 
 /**
@@ -236,13 +297,14 @@ interface RunValidatorsOptions {
     verbose: boolean;
     autoRepair: boolean;
     schemasDir?: string;
+    xsdValidator?: XsdValidator;
     profile: Profile;
 }
 
 async function runValidators(
     unpackedDir: string,
     opts: RunValidatorsOptions,
-): Promise<ValidationResult & { repairs: number; xsdWalk: XsdWalkTrace }> {
+): Promise<ValidationResult & { repairs: number; xsdWalk: XsdWalkTrace; engineFailures: number }> {
     const validators: ValidatorRunner[] = [];
     let schemaValidator: BaseSchemaValidator | undefined;
 
@@ -252,6 +314,7 @@ async function runValidators(
             originalFile: opts.originalFile ?? undefined,
             verbose: opts.verbose,
             schemasDir: opts.schemasDir,
+            xsdValidator: opts.xsdValidator,
             profile: opts.profile,
         });
         schemaValidator = docx;
@@ -282,6 +345,7 @@ async function runValidators(
             originalFile: opts.originalFile ?? undefined,
             verbose: opts.verbose,
             schemasDir: opts.schemasDir,
+            xsdValidator: opts.xsdValidator,
             profile: opts.profile,
         });
         schemaValidator = pptx;
@@ -303,6 +367,7 @@ async function runValidators(
             ],
             repairs: 0,
             xsdWalk: xsdWalkNotStarted(),
+            engineFailures: 0,
         };
     }
 
@@ -330,7 +395,12 @@ async function runValidators(
     const merged = mergeResults(...results, repairDiagnostics);
     // mergeResults drops xsdWalk. Copy the trace off the schema validator
     // after the walk, including the word-valid path that never started XSD.
-    return { ...merged, repairs, xsdWalk: schemaValidator?.xsdWalk ?? xsdWalkNotStarted() };
+    return {
+        ...merged,
+        repairs,
+        xsdWalk: schemaValidator?.xsdWalk ?? xsdWalkNotStarted(),
+        engineFailures: schemaValidator?.xsdEngineFailures ?? 0,
+    };
 }
 
 async function assertExists(p: string, message: string): Promise<void> {

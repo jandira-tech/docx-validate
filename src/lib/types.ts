@@ -45,10 +45,57 @@ export type ValidationIssue = {
     code?: string;
 };
 
+/**
+ * What a real-Microsoft-Word observation did with the file, as it appears on
+ * {@link ValidationMetadata}. A structural mirror of `WordVerification` from
+ * `lib/word-verifier.ts` — declared here so `lib/types.ts` stays free of
+ * imports from the verifier (which itself imports `lib/types.ts`).
+ */
+export type WordVerificationMetadata = {
+    requested: boolean;
+    satisfied: boolean;
+    outcome: string;
+    platform: string;
+    details: string;
+    observedAt: string;
+    observationMs: number;
+    fileSha256: string;
+    wordVersion?: string;
+    wordBuild?: string;
+};
+
+/**
+ * Execution metadata for one validation run (plan § 1, tasks 10-11). Answers
+ * "what actually ran", so a caller can tell a complete run from a partial one:
+ * a partial run is still `valid` when its selected checks passed, but
+ * `omittedChecks` is non-empty and the caller is expected to say so.
+ *
+ * Every field is optional so a validator that knows nothing about modes can
+ * still return a `ValidationResult` unchanged.
+ */
+export type ValidationMetadata = {
+    /** The profile the run was executed under. */
+    profile?: Profile;
+    /** Check ids this run covered, in registry order. */
+    executedChecks?: readonly string[];
+    /** Applicable check ids this run left out. Empty for a complete run. */
+    omittedChecks?: readonly string[];
+    /**
+     * True only when every schema-eligible part was validated and no schema
+     * failed to load. False when schema validation never started, stopped
+     * early, or the engine could not compile a schema.
+     */
+    schemaCompleted?: boolean;
+    /** Present when real-Word verification ran. */
+    wordVerification?: WordVerificationMetadata;
+};
+
 /** Aggregate result returned by every validator. `valid` is false iff there is at least one `error` issue. */
 export type ValidationResult = {
     valid: boolean;
     issues: ValidationIssue[];
+    /** What the run executed. Attached by the top-level `validate()`, never by an inner validator. */
+    metadata?: ValidationMetadata;
 };
 
 /**
@@ -75,7 +122,13 @@ export const OK_RESULT: ValidationResult = Object.freeze({
     issues: [],
 });
 
-/** Combine multiple results into one; `valid` is the AND of all inputs. */
+/**
+ * Combine multiple results into one; `valid` is the AND of all inputs.
+ *
+ * Keeps only `valid` and `issues`, so per-run `metadata` (and the older
+ * `xsdWalk` trace) is dropped here and re-attached by the caller that knows
+ * what the whole run executed.
+ */
 export const mergeResults = (...results: ValidationResult[]): ValidationResult => {
     const issues = results.flatMap((r) => r.issues);
     const valid = results.every((r) => r.valid);
