@@ -57,11 +57,16 @@ export default defineConfig({
         // their own deps and must not be picked up by vitest here.
         include: ["tests/**/*.test.ts"],
         exclude: ["node_modules/**", "dist/**", "docx/**", "docx-templates/**", "dotgithubtoport/**"],
+        // The summary reporter prints `Coverage: N% lines, M% branches` after
+        // every --coverage run, including failed ones (reportOnFailure).
+        reporters: ["default", "./tests/support/coverage-summary-reporter.ts"],
         coverage: {
             provider: "v8",
             // lcov is required for codecov upload in ci.yml; text/html keep
-            // the local `pnpm test --coverage` workflow human-readable.
-            reporter: ["text", "html", "lcov"],
+            // the local `pnpm test --coverage` workflow human-readable;
+            // json-summary feeds the per-module threshold gate.
+            reporter: ["text", "json-summary", "html", "lcov"],
+            reportOnFailure: true,
             include: ["src/**/*.ts"],
             exclude: ["src/**/*.d.ts", "tests/**", "dist/**", "docx/**", "docx-templates/**", "dotgithubtoport/**"],
         },
