@@ -8,7 +8,11 @@ import { describe, expect, it } from "vitest";
 
 import { classify, emptySummary, type WordProbe, updateSummary } from "../scripts/probe-word-fixtures";
 
-const record = (overrides: { validatorValid: boolean; outcome?: WordProbe["outcome"]; clean?: boolean }): Parameters<typeof updateSummary>[1] => ({
+const record = (overrides: {
+    validatorValid: boolean;
+    outcome?: WordProbe["outcome"];
+    clean?: boolean;
+}): Parameters<typeof updateSummary>[1] => ({
     relativePath: "broken/a.docx",
     file: "/fixtures/broken/a.docx",
     validator: { valid: overrides.validatorValid, errorCodes: [], threw: undefined, profile: "word-valid" },
