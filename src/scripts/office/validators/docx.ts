@@ -659,6 +659,38 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 // quirk. The ignore list already dropped the Dublin Core
                 // false positive before this issue was built.
                 if (issue.message.includes("Schema load failed") || issue.message.includes("XSD engine failed:")) return true;
+                // k07/k08/k09 lane files opened/exported in Word: tblBorders
+                // under style/tblStylePr[@type='firstRow']/tcPr is tolerated.
+                // Keep the legacy heuristic for body tblPr ordering (the
+                // Word-unreadable table_tests_v2.docx has tblLayout first).
+                if (
+                    issue.path === "word/styles.xml" &&
+                    issue.message.includes(`{${WORD_2006_NAMESPACE}}tblBorders': This element is not expected`) &&
+                    // CT_TcPr's expected children distinguish the tolerated
+                    // cell-style placement from a separate CT_TblPr order error.
+                    issue.message.includes(`{${WORD_2006_NAMESPACE}}cnfStyle`)
+                ) {
+                    const styles = this.context().xml(issue.path);
+                    if (
+                        styles?.ok &&
+                        getElementsByTagNameNSAll(styles.document, WORD_2006_NAMESPACE, "tblBorders").some((border) => {
+                            const cell = border.parentNode as Element;
+                            const override = cell.parentNode as Element | null;
+                            const style = override?.parentNode as Element | null;
+                            return (
+                                cell.namespaceURI === WORD_2006_NAMESPACE &&
+                                cell.localName === "tcPr" &&
+                                override?.namespaceURI === WORD_2006_NAMESPACE &&
+                                override.localName === "tblStylePr" &&
+                                override.getAttributeNS(WORD_2006_NAMESPACE, "type") === "firstRow" &&
+                                style?.namespaceURI === WORD_2006_NAMESPACE &&
+                                style.localName === "style"
+                            );
+                        })
+                    ) {
+                        return false;
+                    }
+                }
                 return isWordBlockingXsdIssue(issue);
             default:
                 return false;
