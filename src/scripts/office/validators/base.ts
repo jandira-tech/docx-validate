@@ -43,6 +43,7 @@ import { existsSync, promises as fs, readdirSync, readFileSync, realpathSync, st
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { parseContentTypes, resolveContentType } from "../../../lib/content-types";
 import { withTempDir } from "../../../lib/run-cli";
 import type { Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
 import { DEFAULT_PROFILE, OK_RESULT } from "../../../lib/types";
@@ -1025,6 +1026,10 @@ export class BaseSchemaValidator {
 
         const declaredParts = new Set<string>();
         const declaredExtensions = new Set<string>();
+        // OPC resolution table (Override first, then Default) — the media
+        // pass below resolves through it; the set-based lookups above it are
+        // still consulted by the XML-root and residual passes.
+        const table = parseContentTypes(dom);
 
         const overrides = getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Override");
         for (let i = 0; i < overrides.length; i += 1) {
@@ -1107,13 +1112,18 @@ export class BaseSchemaValidator {
             const parts = filePath.split(path.sep);
             if (parts.includes("_rels") || parts.includes("docProps")) continue;
 
+            const rel = this.relPath(filePath).replace(/\\/g, "/");
             const extension = ext.replace(/^\./, "");
+            // An exact <Override PartName> covers a media part just as well
+            // as a <Default Extension> — OPC §10.1.2.4 resolves Override
+            // first — so resolve through the table instead of consulting
+            // only the Default extensions (jubarte redlines declare every
+            // media part by Override; issues #208/#237).
             // Object.hasOwn, not `in`: mediaExtensions is a plain object, so
             // `"constructor" in mediaExtensions` is true and a part named
             // x.constructor would sail past the check (and be "suggested"
             // with ContentType="undefined").
-            if (extension && !declaredExtensions.has(extension) && Object.hasOwn(mediaExtensions, extension)) {
-                const rel = this.relPath(filePath);
+            if (Object.hasOwn(mediaExtensions, extension) && resolveContentType(table, rel) === null) {
                 issues.push({
                     severity: "error",
                     message:
