@@ -44,7 +44,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { parseContentTypes, partExtension, resolveContentType } from "../../../lib/content-types";
-import { applyMarkupCompatibility, UNDERSTOOD_NAMESPACES } from "../../../lib/markup-compatibility";
+import { applyMarkupCompatibility, STRICT_UNDERSTOOD_NAMESPACES, UNDERSTOOD_NAMESPACES } from "../../../lib/markup-compatibility";
 import { withTempDir } from "../../../lib/run-cli";
 import type { Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
 import { DEFAULT_PROFILE, NS, OK_RESULT } from "../../../lib/types";
@@ -118,9 +118,10 @@ const STRICT_SCHEMA_MAPPINGS: Record<string, string> = {
 };
 
 const IGNORED_VALIDATION_ERRORS: readonly string[] = [
-    // w:hyphenationZone's declared value space in the bundled transitional
-    // wml.xsd is narrower than what Word emits — a schema-side false
-    // positive, not a document defect.
+    // Inherited from the Python validator with no recorded reason or
+    // fixture; it hides every engine message that mentions the element.
+    // Lenient and word-valid keep it for compatibility. Strict never
+    // consults this list: its validity rests on unsuppressed schema issues.
     "hyphenationZone",
     // opc-coreProperties.xsd's Dublin Core imports resolve to the bundled
     // schemas/dublincore/ copies (SOURCES.md), so the libxmljs2-era
@@ -1330,11 +1331,9 @@ export class BaseSchemaValidator {
 
         if (this.profile === "strict") {
             // Every structured finding survives — no baseline subtraction, no
-            // dedup of repeated messages — so repeated identical defects keep
-            // their own location. Known engine noise is still filtered.
-            const schemaIssues = (single.schemaIssues ?? []).filter(
-                (issue) => !IGNORED_VALIDATION_ERRORS.some((pattern) => issue.message.includes(pattern)),
-            );
+            // message suppression, no dedup of repeated messages — so repeated
+            // identical defects keep their own location.
+            const schemaIssues = single.schemaIssues ?? [];
             if (schemaIssues.length === 0) {
                 return { ...single, valid: true, errors: new Set(), schemaIssues: [] };
             }
@@ -1416,7 +1415,11 @@ export class BaseSchemaValidator {
             // IGNORED_VALIDATION_ERRORS in `validateFileAgainstXsd`.
             const errorIssues = issues.filter((i) => i.severity === "error");
             if (errorIssues.length === 0) {
-                return { valid: true, errors: new Set(), ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}) };
+                return {
+                    valid: true,
+                    errors: new Set(),
+                    ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}),
+                };
             }
             const errors = new Set<string>();
             for (const issue of errorIssues) {
@@ -1472,7 +1475,12 @@ export class BaseSchemaValidator {
         const firstSegment = rel.split(/[\\/]/)[0];
         if (MAIN_CONTENT_FOLDERS.has(firstSegment)) {
             const schemaNamespace = SCHEMA_NAMESPACE_CAPABILITIES[path.basename(this._getSchemaPath(xmlFile) ?? "")];
-            const understood = schemaNamespace ? new Set([...UNDERSTOOD_NAMESPACES, schemaNamespace]) : UNDERSTOOD_NAMESPACES;
+            // A Strict part understands the purl.oclc.org counterparts of the
+            // Transitional namespaces its iso-strict schema validates.
+            const baseUnderstood = dom.documentElement?.namespaceURI?.startsWith(STRICT_OOXML_NS_PREFIX)
+                ? STRICT_UNDERSTOOD_NAMESPACES
+                : UNDERSTOOD_NAMESPACES;
+            const understood = schemaNamespace ? new Set([...baseUnderstood, schemaNamespace]) : baseUnderstood;
             const compatible = applyMarkupCompatibility(dom, { understood });
             issues.push(
                 ...compatible.issues.map((issue) => ({

@@ -118,7 +118,10 @@ describe("strict profile — one issue per error occurrence", () => {
                 "<w:sectPr>",
                 `\n${para("00000002", "a")}\n${para("00000003", "b")}\n${para("00000004", "c")}\n<w:sectPr>`,
             );
-            const file = await writeDocx(dir, "repeated-defect.docx", { ...MINIMAL_PARTS, "word/document.xml": documentXml });
+            const file = await writeDocx(dir, "repeated-defect.docx", {
+                ...MINIMAL_PARTS,
+                "word/document.xml": documentXml,
+            });
             const result = await validate(file, { profile: "strict" });
             expect(result.valid).toBe(false);
             const occurrences = result.issues.filter((i) => i.code === "xsd-error" && i.message.includes("bogus"));
@@ -145,7 +148,11 @@ describe("strict profile — missing schemas never pass silently", () => {
             const unpackedDir = await unpack(dir);
             const emptySchemas = path.join(dir, "empty-schemas");
             await fs.mkdir(emptySchemas, { recursive: true });
-            const validator = new DOCXSchemaValidator({ unpackedDir, schemasDir: emptySchemas, profile: "strict" });
+            const validator = new DOCXSchemaValidator({
+                unpackedDir,
+                schemasDir: emptySchemas,
+                profile: "strict",
+            });
             const result = await validator.validate();
             expect(result.valid).toBe(false);
             expect(result.issues.some((i) => i.code === "xsd-schema-load-failed")).toBe(true);
@@ -160,7 +167,11 @@ describe("strict profile — missing schemas never pass silently", () => {
                 profile: "strict",
                 xsdValidator: {
                     validate: async () => [
-                        { severity: "error", code: "xsd-schema-load-failed", message: "Schema load failed: cannot resolve import" },
+                        {
+                            severity: "error",
+                            code: "xsd-schema-load-failed",
+                            message: "Schema load failed: cannot resolve import",
+                        },
                     ],
                 },
             });
@@ -264,6 +275,38 @@ describe("strict profile — non-OOXML parts", () => {
             // particular no schema-load failure) may be reported for it.
             const xsdIssues = result.issues.filter((i) => i.code?.startsWith("xsd-"));
             expect(xsdIssues).toEqual([]);
+        });
+    }, 60_000);
+});
+
+describe("strict profile — no message suppression, Strict-aware markup compatibility", () => {
+    it("reports a misplaced w:hyphenationZone instead of suppressing it by message text", async () => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...MINIMAL_PARTS,
+                "word/document.xml": inject(MINIMAL_PARTS["word/document.xml"]!, '<w:hyphenationZone w:val="1"/>'),
+            };
+            const file = await writeDocx(dir, "hyphenation-zone-misplaced.docx", parts);
+            const result = await validate(file, { profile: "strict" });
+            expect(result.valid).toBe(false);
+            expect(result.issues.some((i) => i.code === "xsd-error" && i.message.includes("hyphenationZone"))).toBe(true);
+        });
+    }, 60_000);
+
+    it("treats a Strict part's own namespace as understood for mc:MustUnderstand", async () => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...STRICT_PARTS,
+                "word/document.xml": STRICT_PARTS["word/document.xml"]!.replace(
+                    'mc:Ignorable="w14"',
+                    'mc:Ignorable="w14" mc:MustUnderstand="w"',
+                ),
+            };
+            expect(parts["word/document.xml"]).toContain('mc:MustUnderstand="w"');
+            const file = await writeDocx(dir, "strict-must-understand.docx", parts);
+            const result = await validate(file, { profile: "strict" });
+            expect(result.issues.filter((i) => i.code === "mce-must-understand")).toEqual([]);
+            expect(result.valid).toBe(true);
         });
     }, 60_000);
 });
