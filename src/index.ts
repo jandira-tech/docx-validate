@@ -37,7 +37,7 @@ export type { NormalizeResult } from "./normalize";
 export { Measure } from "./measure";
 export type { MeasureOptions, MeasureResult, MeasureClassification, MeasureMetrics, AstAdapter } from "./measure";
 
-import { Validate } from "./validate";
+import { Validate, type ValidateOptions } from "./validate";
 import { Repair } from "./repair";
 import { Normalize } from "./normalize";
 import { Measure } from "./measure";
@@ -50,7 +50,7 @@ import { Measure } from "./measure";
  * configure an `XsdValidator` or other options.
  */
 export const jubarte = {
-    validate: (bytes: Uint8Array) => new Validate().run(bytes),
+    validate: (bytes: Uint8Array, options?: ValidateOptions) => new Validate(options).run(bytes),
     repair: (bytes: Uint8Array) => new Repair().run(bytes),
     normalize: (bytes: Uint8Array) => new Normalize().run(bytes),
     measure: (bytes: Uint8Array) => new Measure().runOne(bytes),
