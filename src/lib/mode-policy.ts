@@ -39,12 +39,26 @@
 
 import { DEFAULT_PROFILE, type PackageFormat, type Profile } from "./types";
 
+/**
+ * The groups `--quick` runs: package integrity, XML syntax, content types,
+ * relationships, table structure and drawing structure.
+ *
+ * A group with no registered member yet contributes nothing; the run reports
+ * which checks it covered and which it omitted, so the gap is visible rather
+ * than implied.
+ */
+export const QUICK_CHECK_GROUPS: readonly string[] = ["package", "xml", "content-types", "relationships", "tables", "drawings"];
+
 /** What the caller asked for. Every field is optional. */
 export type ModeRequest = {
     /** Explicit `--profile`. */
     profile?: Profile;
     /** `--strict`: shorthand for `profile: "strict"`. */
     strict?: boolean;
+    /** `--quick`: run {@link QUICK_CHECK_GROUPS} and disclose the omissions. */
+    quick?: boolean;
+    /** `--checks`: run these ids or group names, plus their prerequisites. */
+    checks?: readonly string[];
 };
 
 /** What the run will actually do. */
@@ -74,6 +88,13 @@ export type ResolvedMode = {
 export const defaultProfileForFormat = (format: PackageFormat): Profile => (format === "docx" ? "word-valid" : DEFAULT_PROFILE);
 
 /**
+ * True when the request asks for part of the check set rather than all of it.
+ * A partial run never constructs a schema validator, so callers use this to
+ * skip the XSD-engine startup probe as well.
+ */
+export const isPartialRequest = (request: ModeRequest): boolean => request.quick === true || (request.checks?.length ?? 0) > 0;
+
+/**
  * Resolve a request into the mode a run executes under.
  *
  * Deliberately pure: no I/O, no registry, no filesystem. Callers resolve
@@ -82,5 +103,5 @@ export const defaultProfileForFormat = (format: PackageFormat): Profile => (form
  */
 export const resolveMode = (format: PackageFormat, request: ModeRequest): ResolvedMode => ({
     profile: request.strict === true ? "strict" : (request.profile ?? defaultProfileForFormat(format)),
-    select: undefined,
+    select: request.quick === true ? QUICK_CHECK_GROUPS : request.checks?.length ? [...request.checks] : undefined,
 });

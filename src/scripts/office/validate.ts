@@ -38,7 +38,7 @@ import JSZip from "jszip";
 
 import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
 import { runChecks } from "../../lib/check-scheduler";
-import { resolveMode } from "../../lib/mode-policy";
+import { isPartialRequest, QUICK_CHECK_GROUPS, resolveMode, type ResolvedMode } from "../../lib/mode-policy";
 import {
     mergeResults,
     xsdWalkNotStarted,
@@ -51,6 +51,7 @@ import type { XsdValidator } from "../../lib/xsd-validator";
 import { ValidationContext } from "../../lib/validation-context";
 import { extractZipEntries } from "../../lib/zip-path";
 import { createDefaultCheckRegistry } from "./checks";
+import { contextFromArchive, contextFromDirectory } from "./package-context";
 import { BaseSchemaValidator } from "./validators/base";
 import { DOCXSchemaValidator } from "./validators/docx";
 import { buildRepairPlanIssues, collectDocxSemanticInventory, compareDocxSemanticInventories } from "./validators/docx-diagnostics";
@@ -78,6 +79,10 @@ export interface ValidateOptions {
      * constructs). See {@link Profile}.
      */
     profile?: Profile;
+    /** `--quick`: run the common-defect preset and disclose the omissions. */
+    quick?: boolean;
+    /** `--checks`: run these check ids or group names, plus their prerequisites. */
+    checks?: readonly string[];
     /**
      * Override the XSD engine for every schema validator this run creates.
      * When omitted, `BaseSchemaValidator` lazy-creates the default
@@ -131,7 +136,8 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
 
     const dispatchSuffix = path.extname(originalFile ?? target).toLowerCase();
     const format = formatForSuffix(dispatchSuffix);
-    const profile: Profile = resolveMode(format, opts).profile;
+    const mode = resolveMode(format, opts);
+    const profile: Profile = mode.profile;
 
     if (!SUPPORTED_SUFFIXES.has(dispatchSuffix)) {
         throw new Error(`Error: Cannot determine file type from ${target}. Use --original or provide a .docx/.docm/.pptx/.xlsx file.`);
@@ -143,6 +149,10 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
 
     if (!targetIsPackedFile && !targetStat.isDirectory()) {
         throw new Error(`Error: ${target} is not a directory or Office file`);
+    }
+
+    if (mode.select !== undefined) {
+        return runSelectedChecks(target, targetIsPackedFile, dispatchSuffix, format, mode);
     }
 
     const runWithUnpacked = async (unpackedDir: string): Promise<ValidateRunResult> => {
@@ -242,6 +252,39 @@ function executedCheckIds(format: PackageFormat): readonly string[] {
     return createDefaultCheckRegistry()
         .list(format)
         .map((def) => def.id);
+}
+
+/**
+ * A partial run: only the selected named checks, against a context built from
+ * the package. No schema validator is constructed, so nothing compiles an XSD
+ * and no rule outside the selection runs. Everything the selection left out is
+ * reported as an omission — `valid` here means "the requested checks passed".
+ */
+async function runSelectedChecks(
+    target: string,
+    packed: boolean,
+    suffix: string,
+    format: PackageFormat,
+    mode: ResolvedMode,
+): Promise<ValidateRunResult> {
+    const registry = createDefaultCheckRegistry();
+    const select = mode.select ?? [];
+    const selected = registry.resolve(select, format);
+    const context = packed ? (await contextFromArchive(await fs.readFile(target))).context : contextFromDirectory(path.resolve(target));
+    const run = await runChecks(context, registry, { format, select });
+    return {
+        valid: run.valid,
+        issues: [...run.issues],
+        repairs: 0,
+        suffix,
+        xsdWalk: xsdWalkNotStarted(),
+        metadata: {
+            profile: mode.profile,
+            executedChecks: [...selected],
+            omittedChecks: [...run.omitted],
+            schemaCompleted: false,
+        },
+    };
 }
 
 /**
@@ -430,6 +473,9 @@ interface CliOptions {
     autoRepair: boolean;
     author?: string;
     profile?: Profile;
+    quick?: boolean;
+    /** Comma-separated check ids or group names. */
+    checks?: string;
 }
 
 export function buildValidateCommand(): Command {
@@ -447,22 +493,20 @@ export function buildValidateCommand(): Command {
         .option(
             "--profile <profile>",
             "Validation profile: 'word-valid' (default for .docx/.docm), 'lenient' (default for every other format), or 'strict'",
-        );
+        )
+        .option("--quick", "Run the common-defect check preset and report the checks it omits", false)
+        .option("--checks <ids-or-groups,...>", "Run only these named checks (or groups) plus their prerequisites");
     return cmd;
 }
 
-export async function runValidateFromArgv(argv: readonly string[]): Promise<number> {
-    // Fail loudly at startup if the wasm-backed XSD engine is broken — otherwise
-    // the per-file pipeline silently turns the same condition into per-file
-    // "xsd-validation-failed" errors that look like document corruption.
-    try {
-        await BaseSchemaValidator.assertXsdValidationAvailable();
-    } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        process.stderr.write(`${message}\n`);
-        return 1;
-    }
+/** Split `--checks a,b , c` into trimmed, non-empty names. */
+const parseCheckList = (raw: string | undefined): string[] =>
+    (raw ?? "")
+        .split(",")
+        .map((name) => name.trim())
+        .filter((name) => name !== "");
 
+export async function runValidateFromArgv(argv: readonly string[]): Promise<number> {
     const cmd = buildValidateCommand();
     cmd.exitOverride();
     // Commander throws CommanderError under exitOverride() for missing args,
@@ -482,6 +526,23 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
         return 1;
     }
 
+    const checks = parseCheckList(opts.checks);
+
+    // Fail loudly at startup if the wasm-backed XSD engine is broken — otherwise
+    // the per-file pipeline silently turns the same condition into per-file
+    // "xsd-validation-failed" errors that look like document corruption. A
+    // partial run never touches the engine, so it skips the probe (and so does
+    // any invocation that exits before validating).
+    if (!isPartialRequest({ quick: opts.quick, checks })) {
+        try {
+            await BaseSchemaValidator.assertXsdValidationAvailable();
+        } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            process.stderr.write(`${message}\n`);
+            return 1;
+        }
+    }
+
     let result: ValidateRunResult;
     try {
         result = await validate(target, {
@@ -490,6 +551,8 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
             author: opts.author,
             verbose: opts.verbose,
             profile: opts.profile,
+            quick: opts.quick,
+            checks,
         });
     } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
@@ -501,14 +564,30 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
         process.stdout.write(`Auto-repaired ${result.repairs} issue(s)\n`);
     }
 
+    // A partial run is not a verdict on the whole document, so it discloses
+    // what it left out and never claims that every validation passed.
+    const omitted = result.metadata?.omittedChecks ?? [];
+    if (omitted.length > 0) {
+        process.stdout.write(`Omitted checks (not run): ${omitted.join(", ")}\n`);
+        if (opts.quick === true) {
+            process.stdout.write(`Quick preset groups: ${QUICK_CHECK_GROUPS.join(", ")}\n`);
+        }
+    }
+
     if (result.valid) {
-        process.stdout.write("All validations PASSED!\n");
+        if (omitted.length === 0) {
+            process.stdout.write("All validations PASSED!\n");
+        } else {
+            process.stdout.write(
+                `Selected checks passed (${result.metadata?.executedChecks?.length ?? 0} run, ${omitted.length} omitted).\n`,
+            );
+        }
     } else {
         for (const issue of result.issues) {
             if (issue.severity !== "error") continue;
             const where = issue.path ? ` [${issue.path}]` : "";
             process.stderr.write(`${issue.severity.toUpperCase()}${where}: ${issue.message}\n`);
-            if (opts.profile === "word-valid") {
+            if (result.metadata?.profile === "word-valid") {
                 const explanation = explainWordError(issue.code);
                 if (explanation) process.stderr.write(`  ↳ ${explanation}\n`);
             }
