@@ -144,12 +144,35 @@ function sha256OfFile(file: string): string {
 }
 
 async function main(wordOnly: boolean): Promise<void> {
-    const files: string[] = [];
-    walkDocx(FIXTURES_ROOT, files);
-    files.sort();
+    const walked: string[] = [];
+    walkDocx(FIXTURES_ROOT, walked);
+    walked.sort();
 
     const probeResults = readProbeResults();
     const priorEntries = readPriorManifestEntries();
+
+    // `--word-only` rebinds the Word column of the PRIOR manifest's entries
+    // without re-running the validators, so the resulting diff is exactly the
+    // sha256/structural migration. Fixtures on disk that the prior manifest
+    // does not list are reported, not silently added.
+    const files: string[] = [];
+    if (wordOnly) {
+        const walkedSet = new Set(walked.map((f) => path.relative(FIXTURES_ROOT, f)));
+        for (const relativePath of [...priorEntries.keys()].sort()) {
+            if (!walkedSet.has(relativePath)) {
+                throw new Error(`--word-only: manifest entry ${relativePath} has no fixture on disk`);
+            }
+            files.push(path.join(FIXTURES_ROOT, relativePath));
+        }
+        for (const relativePath of walkedSet) {
+            if (!priorEntries.has(relativePath)) {
+                process.stderr.write(`--word-only: skipping unlisted fixture ${relativePath}\n`);
+            }
+        }
+    } else {
+        files.push(...walked);
+    }
+
     const entries: ManifestEntry[] = [];
     let migrated = 0;
 
