@@ -20,6 +20,17 @@ import { withTempDir } from "../src/lib/run-cli";
 import * as xsdMod from "../src/lib/xsd-validator";
 import { validate, type ValidateRunResult } from "../src/scripts/office/validate";
 
+// These tests pin the transitional word-valid XSD walk: it starts only when
+// no non-XSD blocker exists and stops at the first message-matched blocking
+// error. The structural Word rules (Task 7) now name those same defects
+// before XSD starts, so they are isolated out here to keep the walk itself
+// under test. Task 7's final step removes the walk and replaces these tests
+// with "word-valid never compiles the XSD bundle".
+vi.mock("../src/scripts/office/checks/index", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("../src/scripts/office/checks/index")>()),
+    WORD_RULE_CHECKS: [],
+}));
+
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "..");
 const BROKEN = path.join(HERE, "fixtures", "broken");

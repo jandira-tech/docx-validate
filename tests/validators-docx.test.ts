@@ -1266,9 +1266,10 @@ describe("DOCXSchemaValidator", () => {
 
                 const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" });
                 const result = await v.validate();
-                const issue = result.issues.find((i) => i.code === "xsd-error" && i.path === "word/header1.xml");
+                // Named structurally (Task 7), before and independent of XSD.
+                const issue = result.issues.find((i) => i.code === "word-drawing-extent-missing" && i.path === "word/header1.xml");
                 expect(issue?.severity).toBe("error");
-                expect(issue?.message).toContain("graphic");
+                expect(issue?.message).toContain("wp:extent");
                 expect(result.valid).toBe(false);
             });
         });
