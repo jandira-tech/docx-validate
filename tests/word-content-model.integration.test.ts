@@ -40,6 +40,8 @@ import {
     TBLPRBASE_ORDER,
     wordTablePropertiesMisplacedCheck,
 } from "../src/scripts/office/checks/word-table-properties";
+import { wordLinkWithoutNamespaceCheck, wordUnknownElementCheck } from "../src/scripts/office/checks/word-unknown-elements";
+import { WML_ELEMENT_NAMES } from "../src/scripts/office/checks/wml-vocabulary";
 import { validate, type ValidateRunResult } from "../src/scripts/office/validate";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -196,6 +198,38 @@ describe("content-model tables pinned to the bundled wml.xsd", { timeout: 30_000
         expect(children).toEqual([...TBLPRBASE_ORDER]);
     });
 
+    it("the WordprocessingML element vocabulary equals every xsd:element declaration in wml.xsd", async () => {
+        const schema = await loadSchema("wml.xsd");
+        const declared = new Set(
+            getElementsByTagNameNSAll(schema, XSD, "element")
+                .map((element) => element.getAttribute("name"))
+                .filter((name): name is string => Boolean(name)),
+        );
+        expect(WML_ELEMENT_NAMES).toEqual(declared);
+        expect(WML_ELEMENT_NAMES.has("p2")).toBe(false);
+        expect(WML_ELEMENT_NAMES.has("p")).toBe(true);
+        // No other bundled schema targets the WordprocessingML namespace, so
+        // this vocabulary is the whole namespace.
+        const { readdir } = await import("node:fs/promises");
+        const schemaDir = path.join(REPO, "src/scripts/office/schemas");
+        const others: string[] = [];
+        const walk = async (dir: string): Promise<void> => {
+            for (const entry of await readdir(dir, { withFileTypes: true })) {
+                const full = path.join(dir, entry.name);
+                if (entry.isDirectory()) {
+                    await walk(full);
+                } else if (entry.name.endsWith(".xsd") && !full.includes("ISO-IEC29500-4_2016/wml.xsd")) {
+                    others.push(await readFile(full, "utf8"));
+                }
+            }
+        };
+        await walk(schemaDir);
+        for (const source of others) {
+            const target = /targetNamespace="([^"]*)"/.exec(source)?.[1];
+            expect(target, "no other schema may declare elements in the WordprocessingML namespace").not.toBe(W);
+        }
+    });
+
     it("the math r and ctrlPr parents come from shared-math.xsd referencing w:EG_RPr", async () => {
         const math = await readFile(path.join(SCHEMAS, "shared-math.xsd"), "utf8");
         expect(math).toMatch(/<xsd:complexType name="CT_CtrlPr">[\s\S]*?<xsd:group ref="w:EG_RPrMath" minOccurs="0"\/>/);
@@ -277,6 +311,46 @@ describe("table-properties placement Word evidence", { timeout: 120_000 }, () =>
         }
         const repaired = path.join(FIXTURES, "working/package.word-row-without-cell-repaired.docx");
         expect((await validate(repaired, { profile: "word-valid" })).valid).toBe(true);
+    });
+});
+
+describe("unknown-element and namespace-less link Word evidence", { timeout: 120_000 }, () => {
+    it("rejects the unknown w:p2 block of UnknownElement.docx without any XSD diagnostic", async () => {
+        expect(wordVerdict("external/open-xml-sdk/UnknownElement.docx")).toBe("open-error");
+        const file = path.join(FIXTURES, "external/open-xml-sdk/UnknownElement.docx");
+        const result = await validate(file, { profile: "word-valid" });
+        expect(result.valid).toBe(false);
+        expect(errorCodes(result)).toContain(wordUnknownElementCheck.id);
+        await rejectingNoXsd(file, wordUnknownElementCheck.id);
+    });
+
+    it("rejects the namespace-less link of hyperlink-exported.docx without any XSD diagnostic", async () => {
+        expect(wordVerdict("external/superdoc/super-editor/hyperlink-exported.docx")).toBe("open-error");
+        const file = path.join(FIXTURES, "external/superdoc/super-editor/hyperlink-exported.docx");
+        const result = await validate(file, { profile: "word-valid" });
+        expect(result.valid).toBe(false);
+        expect(errorCodes(result)).toContain(wordLinkWithoutNamespaceCheck.id);
+        await rejectingNoXsd(file, wordLinkWithoutNamespaceCheck.id);
+    });
+
+    it("tolerates unknown names in property containers and the namespaced w:link style child", async () => {
+        // annotations_import_2.docx is manifest word: clean-open while carrying
+        // w:fieldType/w:fieldTypeShort/w:fieldColor in w:sdtPr; the misplaced-
+        // link control carries the namespaced w:link style child.
+        expect(wordVerdict("external/superdoc/super-editor/annotations_import_2.docx")).toBe("clean-open");
+        const sdtFields = await ValidationContext.fromArchive(
+            new Uint8Array(await readFile(path.join(FIXTURES, "external/superdoc/super-editor/annotations_import_2.docx"))),
+        );
+        expect(await wordUnknownElementCheck.run(sdtFields)).toEqual([]);
+        expect(
+            (await validate(path.join(FIXTURES, "external/superdoc/super-editor/annotations_import_2.docx"), { profile: "word-valid" }))
+                .valid,
+        ).toBe(true);
+        const linkControl = await ValidationContext.fromArchive(
+            new Uint8Array(await readFile(path.join(FIXTURES, "working/word-tolerated-misplaced-link.docx"))),
+        );
+        expect(await wordLinkWithoutNamespaceCheck.run(linkControl)).toEqual([]);
+        expect(await wordUnknownElementCheck.run(linkControl)).toEqual([]);
     });
 });
 

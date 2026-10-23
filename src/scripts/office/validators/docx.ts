@@ -577,6 +577,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-section-properties-misplaced":
             // table_tests_v2.docx (probed UNREADABLE_CONTENT): w:tblBorders ordered after w:tblLayout inside w:tblPr makes Word offer recovery; Word-opened jubarte k07/k08/k09 keep tcPr tolerated.
             case "word-table-properties-misplaced":
+            // UnknownElement.docx (word: open-error): an unknown w:p2 block in the body makes Word refuse the file; unknown names in property containers (annotations_import_2.docx, clean-open) stay tolerated.
+            case "word-unknown-element":
+            // hyperlink-exported.docx (word: open-error): a namespace-less <link/> inside w:rPr makes Word refuse the file; the namespaced w:link style child opens clean (word-tolerated-misplaced-link.docx).
+            case "word-link-without-namespace":
             case "word-drawing-scalar-whitespace":
             case "word-drawing-arc-radius":
             case "word-empty-drawing":
