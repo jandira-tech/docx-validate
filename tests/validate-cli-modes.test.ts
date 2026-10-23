@@ -20,7 +20,8 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
-import { runValidateFromArgv } from "../src/scripts/office/validate";
+import { ModeConflictError } from "../src/lib/mode-policy";
+import { runValidateFromArgv, validate, type ValidateOptions } from "../src/scripts/office/validate";
 import { buildDocx } from "./support/minimal-docx";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -106,4 +107,62 @@ describe("validate CLI: named checks", { timeout: 120_000 }, () => {
         expect(run.stdout).toMatch(/Every XML part of the package is well-formed/);
         expect(run.stdout).toMatch(/docx/);
     });
+});
+
+describe("validate CLI: strict mode", { timeout: 120_000 }, () => {
+    it("--strict runs the complete Word check set and the schema walk", async () => {
+        const run = await withTempDir(async (dir) => capture([await controlDocx(dir), "--strict"]));
+
+        expect(run.code).toBe(0);
+        expect(run.stdout).toContain("All validations PASSED!");
+    });
+});
+
+describe("validate CLI: conflicting selectors are rejected", { timeout: 120_000 }, () => {
+    const CONFLICTS: readonly (readonly string[])[] = [
+        ["--quick", "--checks", "tables"],
+        ["--strict", "--quick"],
+        ["--strict", "--checks", "tables"],
+        ["--strict", "--profile", "lenient"],
+        ["--strict", "--profile", "word-valid"],
+    ];
+
+    for (const selectors of CONFLICTS) {
+        it(`rejects ${selectors.join(" ")} with one stderr line and no exit-zero`, async () => {
+            const run = await withTempDir(async (dir) => capture([await controlDocx(dir), ...selectors]));
+
+            expect(run.code).not.toBe(0);
+            const lines = run.stderr
+                .trimEnd()
+                .split("\n")
+                .filter((line) => line !== "");
+            expect(lines).toHaveLength(1);
+            expect(lines[0]).toMatch(/cannot|not.*combin/i);
+            expect(run.stdout).toBe("");
+        });
+    }
+});
+
+describe("validate API: conflicting selectors throw a typed error", () => {
+    const CONFLICTS: readonly { readonly options: ValidateOptions; readonly message: RegExp }[] = [
+        { options: { quick: true, checks: ["tables"] }, message: /quick/i },
+        { options: { strict: true, quick: true }, message: /strict/i },
+        { options: { strict: true, checks: ["tables"] }, message: /strict/i },
+        { options: { strict: true, profile: "lenient" }, message: /strict/i },
+        { options: { strict: true, profile: "word-valid" }, message: /strict/i },
+    ];
+
+    for (const { options, message } of CONFLICTS) {
+        it(`throws ModeConflictError for ${JSON.stringify(options)}`, async () => {
+            await withTempDir(async (dir) => {
+                const file = await controlDocx(dir);
+                const error = await validate(file, options).then(
+                    () => undefined,
+                    (err: unknown) => err,
+                );
+                expect(error).toBeInstanceOf(ModeConflictError);
+                expect((error as Error).message).toMatch(message);
+            });
+        });
+    }
 });

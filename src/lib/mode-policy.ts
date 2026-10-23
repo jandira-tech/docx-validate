@@ -61,6 +61,18 @@ export type ModeRequest = {
     checks?: readonly string[];
 };
 
+/**
+ * Two selectors that contradict each other (`--quick` with `--checks`,
+ * `--strict` with partial selection, …). A configuration error: the caller
+ * asked for something that has no meaning, so nothing is validated.
+ */
+export class ModeConflictError extends Error {
+    public constructor(message: string) {
+        super(message);
+        this.name = "ModeConflictError";
+    }
+}
+
 /** What the run will actually do. */
 export type ResolvedMode = {
     /** The profile the schema validators run under. */
@@ -95,13 +107,45 @@ export const defaultProfileForFormat = (format: PackageFormat): Profile => (form
 export const isPartialRequest = (request: ModeRequest): boolean => request.quick === true || (request.checks?.length ?? 0) > 0;
 
 /**
+ * Reject a request whose selectors contradict each other. Strict is the
+ * complete mode, so it cannot be paired with partial check selection, and it
+ * cannot be paired with a profile that would silently win over it.
+ *
+ * @throws {ModeConflictError}
+ */
+export const assertModeCoherent = (request: ModeRequest): void => {
+    const partial = isPartialRequest(request);
+    if (request.quick === true && (request.checks?.length ?? 0) > 0) {
+        throw new ModeConflictError("Cannot combine --quick with --checks: --quick is a fixed preset, --checks names individual checks.");
+    }
+    if (request.strict === true && partial) {
+        throw new ModeConflictError(
+            "Cannot combine --strict with --quick or --checks: strict validation cannot be limited to part of the check set.",
+        );
+    }
+    if (request.strict === true && request.profile !== undefined && request.profile !== "strict") {
+        throw new ModeConflictError(`Cannot combine --strict with --profile ${request.profile}: strict is already a complete mode.`);
+    }
+    if (request.profile === "strict" && partial) {
+        throw new ModeConflictError(
+            "Cannot combine profile 'strict' with --quick or --checks: strict validation cannot be limited to part of the check set.",
+        );
+    }
+};
+
+/**
  * Resolve a request into the mode a run executes under.
  *
  * Deliberately pure: no I/O, no registry, no filesystem. Callers resolve
  * selections against the check registry afterwards, which is where unknown ids
  * are reported.
+ *
+ * @throws {ModeConflictError} when the selectors contradict each other.
  */
-export const resolveMode = (format: PackageFormat, request: ModeRequest): ResolvedMode => ({
-    profile: request.strict === true ? "strict" : (request.profile ?? defaultProfileForFormat(format)),
-    select: request.quick === true ? QUICK_CHECK_GROUPS : request.checks?.length ? [...request.checks] : undefined,
-});
+export const resolveMode = (format: PackageFormat, request: ModeRequest): ResolvedMode => {
+    assertModeCoherent(request);
+    return {
+        profile: request.strict === true ? "strict" : (request.profile ?? defaultProfileForFormat(format)),
+        select: request.quick === true ? QUICK_CHECK_GROUPS : request.checks?.length ? [...request.checks] : undefined,
+    };
+};
