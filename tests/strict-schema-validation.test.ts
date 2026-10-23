@@ -101,3 +101,26 @@ describe("strict profile — original-baseline subtraction", () => {
         });
     }, 60_000);
 });
+
+describe("strict profile — one issue per error occurrence", () => {
+    it("keeps distinct locations for repeated identical schema defects", async () => {
+        await withTempDir(async (dir) => {
+            // Three identical attribute defects on three different lines. The
+            // deduplicated message set would collapse them to one; structured
+            // reporting must keep one issue per occurrence with its own line.
+            const para = (id: string, text: string): string =>
+                `<w:p w14:paraId="${id}" w14:textId="${id}" w:bogus="${id}"><w:r><w:t>${text}</w:t></w:r></w:p>`;
+            const documentXml = MINIMAL_PARTS["word/document.xml"]!.replace(
+                "<w:sectPr>",
+                `\n${para("00000002", "a")}\n${para("00000003", "b")}\n${para("00000004", "c")}\n<w:sectPr>`,
+            );
+            const file = await writeDocx(dir, "repeated-defect.docx", { ...MINIMAL_PARTS, "word/document.xml": documentXml });
+            const result = await validate(file, { profile: "strict" });
+            expect(result.valid).toBe(false);
+            const occurrences = result.issues.filter((i) => i.code === "xsd-error" && i.message.includes("bogus"));
+            expect(occurrences.length).toBe(3);
+            const lines = new Set(occurrences.map((i) => i.line));
+            expect(lines.size).toBe(3);
+        });
+    }, 60_000);
+});
