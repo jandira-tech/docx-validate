@@ -36,6 +36,7 @@ import { promisify } from "node:util";
 
 import { withTempDir } from "./run-cli";
 import { nextSecureLongHexNumber } from "./secure-id";
+import { readdir, stat } from "node:fs/promises";
 
 /** What Word actually did with the file. `unavailable` means verification could not run at all. */
 export type WordOutcome =
@@ -85,6 +86,12 @@ export type WordTransport = {
     open: (file: string) => Promise<void>;
     observe: (documentName: string) => Promise<WordSnapshot>;
     close: (documentName: string) => Promise<void>;
+    /**
+     * Whether a new Microsoft Word crash report was written after `sinceMs`
+     * (epoch ms) — the only crash evidence a vanished Word process can offer
+     * (#305). Transports without a DiagnosticReports store answer false.
+     */
+    crashReportedSince: (sinceMs: number) => Promise<boolean>;
 };
 
 /** Time source. Tests inject a fake that advances only inside `sleep`. */
@@ -310,6 +317,9 @@ export const verifyInWord = async (bytes: Uint8Array, opts: WordVerifyOptions = 
         let settled = false;
 
         try {
+            // The open instant: only a crash report written after THIS run
+            // opened the file is crash evidence (#305).
+            const openedAt = clock.now();
             const opened = await callWithinDeadline(clock, workDeadline, () => transport.open(tempFile));
             if (opened === deadlineExceeded) {
                 outcome = "timeout";
@@ -327,8 +337,21 @@ export const verifyInWord = async (bytes: Uint8Array, opts: WordVerifyOptions = 
                     if (snapshot.processAlive) {
                         sawProcess = true;
                     } else if (sawProcess) {
-                        outcome = "crash";
-                        details = `Word process exited after open; ${details}`;
+                        // #305: a vanished process alone is not a crash — an
+                        // external kill or quit looks identical. Only a new
+                        // Word crash report written after the open is crash
+                        // evidence; without one no verdict can be attributed.
+                        const report = await callWithinDeadline(clock, workDeadline, () => transport.crashReportedSince(openedAt));
+                        if (report === deadlineExceeded) {
+                            outcome = "timeout";
+                            details = `the crash-report lookup did not settle within the ${timeoutMs} ms budget; ${details}`;
+                        } else if (report) {
+                            outcome = "crash";
+                            details = `Word process exited after open with a crash report; ${details}`;
+                        } else {
+                            outcome = "unavailable";
+                            details = `Word exited without a crash report after the open; ${details}`;
+                        }
                         break;
                     }
                     const dialog = classifyWordDialog(snapshot.dialogText);
@@ -501,6 +524,35 @@ return linesOut
         // error). Declining recovery can raise a follow-up alert, hence the
         // short loop. Word is only addressed while running, so cleanup after
         // a crash does not relaunch it.
+        // (#305) A vanished Word process is a crash only when macOS wrote a
+        // new Word crash report after the open; an external kill or quit
+        // writes none. readdir + stat mtime keeps the lookup simple.
+        crashReportedSince: async (sinceMs: number): Promise<boolean> => {
+            const dirs = [path.join(homedir(), "Library/Logs/DiagnosticReports"), "/Library/Logs/DiagnosticReports"];
+            for (const dir of dirs) {
+                let entries: string[];
+                try {
+                    entries = await readdir(dir);
+                } catch {
+                    continue; // No directory — no reports there.
+                }
+                for (const entry of entries) {
+                    if (!entry.startsWith("Microsoft Word")) {
+                        continue;
+                    }
+                    try {
+                        const info = await stat(path.join(dir, entry));
+                        if (info.mtimeMs >= sinceMs) {
+                            return true;
+                        }
+                    } catch {
+                        // Listed but gone before stat — keep looking.
+                    }
+                }
+            }
+            return false;
+        },
+
         close: async (documentName: string) => {
             const escaped = escapeAppleScriptString(documentName);
             await osascript(`
