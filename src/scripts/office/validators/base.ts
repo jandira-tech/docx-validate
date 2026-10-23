@@ -1476,8 +1476,16 @@ export class BaseSchemaValidator {
     private resolveMainDocumentParts(): ReadonlySet<string> {
         const parts = new Set<string>();
         try {
-            const relationships = parseXml(readFileSync(path.join(this.unpackedDir, "_rels", ".rels"), "utf-8"));
-            const names = walkFiles(this.unpackedDir).map((file) => normalizePartName(this.relPath(file).split(path.sep).join("/")));
+            const files = walkFiles(this.unpackedDir);
+            const names = files.map((file) => normalizePartName(this.relPath(file).split(path.sep).join("/")));
+            // Read the package relationships as the package view does: found by
+            // normalized name, so `_rels\.rels` counts, and decoded by BOM or
+            // declaration, so UTF-16 counts (#362).
+            const relsFile = files[names.indexOf("_rels/.rels")];
+            if (relsFile === undefined) {
+                return parts;
+            }
+            const relationships = parseXmlBytes(readFileSync(relsFile));
             for (const relationship of getElementsByTagNameNSAll(relationships, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship")) {
                 const type = relationship.getAttribute("Type");
                 if (
