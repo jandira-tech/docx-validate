@@ -1188,23 +1188,6 @@ export class BaseSchemaValidator {
 
     // ----- XSD validation -----------------------------------------------------
 
-    /**
-     * Word-valid override stops after the first Word-blocking `xsd-error`.
-     * Lenient and strict keep the default: never stop.
-     */
-    protected shouldStopXsdWalk(_rel: string, _errors: ReadonlySet<string>): boolean {
-        return false;
-    }
-
-    /**
-     * `xsd-error` strings kept from one part. The default cap is three.
-     * A profile that stops the walk has to override this when a blocking
-     * error sits past that cap, or the stop hides the only failing issue.
-     */
-    protected xsdErrorsToReport(_rel: string, errors: ReadonlySet<string>): readonly string[] {
-        return [...errors].slice(0, 3);
-    }
-
     async validateAgainstXsd(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
         let strictSkipped = false;
@@ -1228,9 +1211,9 @@ export class BaseSchemaValidator {
         const countEligible = (xmlFile: string): boolean => {
             if (this.malformedParts.has(this.relPath(xmlFile))) return false;
             // Strict-conformance parts are only skipped outside the strict
-            // profile: lenient and word-valid keep the documented
-            // `xsd-strict-skipped` info issue, while `strict` schema-validates
-            // them against the bundled iso-strict schemas.
+            // profile: lenient keeps the documented `xsd-strict-skipped` info
+            // issue, while `strict` schema-validates them against the bundled
+            // iso-strict schemas. Word-valid never walks the schemas.
             if (this._isStrictXmlFile(xmlFile) && this.profile !== "strict") {
                 noteStrict();
                 return false;
@@ -1240,10 +1223,7 @@ export class BaseSchemaValidator {
             return true;
         };
 
-        const files = this.xmlFiles;
-        for (let i = 0; i < files.length; i += 1) {
-            const xmlFile = files[i];
-            if (!xmlFile) continue;
+        for (const xmlFile of this.xmlFiles) {
             if (!countEligible(xmlFile)) continue;
 
             const outcome = await this.validateFileAgainstXsd(xmlFile);
@@ -1276,10 +1256,8 @@ export class BaseSchemaValidator {
                         code: !issue.code || issue.code === "xsd-validation-failed" ? "xsd-error" : issue.code,
                     });
                 }
-                if (!this.shouldStopXsdWalk(rel, outcome.errors)) continue;
             } else {
-                const list = this.xsdErrorsToReport(rel, outcome.errors);
-                for (const e of list) {
+                for (const e of [...outcome.errors].slice(0, 3)) {
                     const truncated = e.length > 250 ? `${e.slice(0, 250)}...` : e;
                     issues.push({
                         severity: "error",
@@ -1288,15 +1266,7 @@ export class BaseSchemaValidator {
                         code: "xsd-error",
                     });
                 }
-                if (!this.shouldStopXsdWalk(rel, outcome.errors)) continue;
             }
-
-            for (let j = i + 1; j < files.length; j += 1) {
-                const rest = files[j];
-                if (!rest) continue;
-                countEligible(rest);
-            }
-            break;
         }
 
         return finalize(issues);

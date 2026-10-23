@@ -465,21 +465,28 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             this.validateRelationshipIdStability(),
             this.validateRedundantRunProperties(),
         ];
-        if (this.profile !== "lenient") checks.push(this.validateRegisteredWordRules());
+        const wordRules = this.profile === "lenient" ? undefined : this.validateRegisteredWordRules();
+        if (wordRules) checks.push(wordRules);
         if (this.profile === "word-valid") {
-            // Non-XSD checks first. A blocking no returns before XSD starts.
+            // Word-valid judges what Word reads through structural checks
+            // alone: no schema is compiled or walked.
             checks.push(this.validateWordOpenCompatibility());
-            const profiled = this.applyWordValidProfile(mergeResults(xmlOk, ...(await settle(checks))));
-            if (!profiled.valid) return profiled;
-            const xsd = await this.validateAgainstXsd();
-            return this.applyWordValidProfile(mergeResults(profiled, xsd));
+            return this.applyWordValidProfile(mergeResults(xmlOk, ...(await settle(checks))));
         }
 
         // Strict is a superset of word-valid: every Word-proven rejection
         // rule runs here too, at its native error severity.
         if (this.profile === "strict") checks.push(this.validateWordOpenCompatibility());
-        checks.push(this.validateAgainstXsd());
-        return mergeResults(xmlOk, ...(await settle(checks)));
+        const xsd = this.validateAgainstXsd();
+        checks.push(xsd);
+        const results = await settle(checks);
+        if (!wordRules) return mergeResults(xmlOk, ...results);
+        const rules = results[checks.indexOf(wordRules)]!;
+        const schema = results[checks.indexOf(xsd)]!;
+        return mergeResults(
+            xmlOk,
+            ...results.map((result) => (result === schema ? withoutRepeatedCompatibilityFindings(schema, rules) : result)),
+        );
     }
 
     /**
@@ -494,34 +501,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             select: WORD_RULE_CHECKS.map((check) => check.id),
         });
         return { valid: run.valid, issues: [...run.issues] };
-    }
-
-    /**
-     * Stop only when a Word-blocking schema error is one of the issues this
-     * part will actually return. The three-message cap used to stop on a
-     * later blocking error while emitting only tolerated ones, and the
-     * profile then downgraded those to warnings.
-     */
-    protected override shouldStopXsdWalk(rel: string, errors: ReadonlySet<string>): boolean {
-        if (this.profile !== "word-valid") return false;
-        return this.xsdErrorsToReport(rel, errors).some((error) => this.wordBlocksXsdError(rel, error));
-    }
-
-    protected override xsdErrorsToReport(rel: string, errors: ReadonlySet<string>): readonly string[] {
-        const all = [...errors];
-        const reported = all.slice(0, 3);
-        if (this.profile !== "word-valid") return reported;
-        if (reported.some((error) => this.wordBlocksXsdError(rel, error))) return reported;
-        const hidden = all.slice(3).find((error) => this.wordBlocksXsdError(rel, error));
-        if (hidden !== undefined) reported.push(hidden);
-        return reported;
-    }
-
-    private wordBlocksXsdError(rel: string, error: string): boolean {
-        const truncated = error.length > 250 ? `${error.slice(0, 250)}...` : error;
-        const message = `  - ${truncated}`;
-        if (message.includes("Schema load failed") || message.includes("XSD engine failed:")) return true;
-        return isWordBlockingXsdIssue({ severity: "error", message, path: rel, code: "xsd-error" });
     }
 
     private applyWordValidProfile(result: ValidationResult): ValidationResult {
@@ -693,44 +672,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "mce-malformed":
             case "mce-must-understand":
                 return true;
-            case "xsd-error":
-                // A schema the engine could not load is not a Word-tolerated
-                // quirk. The ignore list already dropped the Dublin Core
-                // false positive before this issue was built.
-                if (issue.message.includes("Schema load failed") || issue.message.includes("XSD engine failed:")) return true;
-                // k07/k08/k09 lane files opened/exported in Word: tblBorders
-                // under style/tblStylePr[@type='firstRow']/tcPr is tolerated.
-                // Keep the legacy heuristic for body tblPr ordering (the
-                // Word-unreadable table_tests_v2.docx has tblLayout first).
-                if (
-                    issue.path === "word/styles.xml" &&
-                    issue.message.includes(`{${WORD_2006_NAMESPACE}}tblBorders': This element is not expected`) &&
-                    // CT_TcPr's expected children distinguish the tolerated
-                    // cell-style placement from a separate CT_TblPr order error.
-                    issue.message.includes(`{${WORD_2006_NAMESPACE}}cnfStyle`)
-                ) {
-                    const styles = this.context().xml(issue.path);
-                    if (
-                        styles?.ok &&
-                        getElementsByTagNameNSAll(styles.document, WORD_2006_NAMESPACE, "tblBorders").some((border) => {
-                            const cell = border.parentNode as Element;
-                            const override = cell.parentNode as Element | null;
-                            const style = override?.parentNode as Element | null;
-                            return (
-                                cell.namespaceURI === WORD_2006_NAMESPACE &&
-                                cell.localName === "tcPr" &&
-                                override?.namespaceURI === WORD_2006_NAMESPACE &&
-                                override.localName === "tblStylePr" &&
-                                override.getAttributeNS(WORD_2006_NAMESPACE, "type") === "firstRow" &&
-                                style?.namespaceURI === WORD_2006_NAMESPACE &&
-                                style.localName === "style"
-                            );
-                        })
-                    ) {
-                        return false;
-                    }
-                }
-                return isWordBlockingXsdIssue(issue);
             default:
                 return false;
         }
@@ -4367,62 +4308,25 @@ function finalize(issues: ValidationIssue[]): ValidationResult {
 }
 
 /**
- * Element local-names whose XSD "this element is not expected" (content-model)
- * violation makes real Microsoft Word refuse the file (OPEN_ERROR / unreadable),
- * as opposed to silently relocating it. Derived empirically from a real-Word
- * openability probe over a 1300+-file corpus; this set is DISJOINT from the
- * Word-tolerated misplacements (pgSz, headerReference, uiPriority, link, tr,
- * hyperlink, duplicate pPr, and EG_RunInnerContent under <w:p>), so promoting
- * only these keeps the word-valid profile free of false positives.
+ * Strict applies markup compatibility twice: the Word rules judge Word's view
+ * and the schema walk judges the schema's view. A finding both views make is
+ * reported once, by the Word rule; the schema walk keeps what only its view
+ * finds (a namespace Word understands but the schemas do not).
  */
-const WORD_BLOCKING_MISPLACED_LOCALS: ReadonlySet<string> = new Set([
-    "r", // a run misplaced (e.g. directly in the body where a sectPr is due)
-    "rPr", // run properties outside a run
-    // NB: pPr is intentionally NOT here. A duplicate <w:pPr> in one paragraph
-    // trips "pPr: not expected", but real Word silently merges/ignores it and
-    // opens cleanly (verified: superdoc exports, word-tolerated-duplicate-ppr.docx).
-    // The narrow line-3002 guard (pPr + "Expected is one of") still covers the
-    // genuinely Word-blocking pPr-misplacement variant.
-    "sectPr", // section properties misplaced
-    "extent", // drawing extent misplaced (corrupt <w:drawing> structure)
-    // NB: tblBorders is intentionally NOT here any more. The only observed
-    // placements are (a) under w:tcPr in word/styles.xml, which real Word
-    // OPENS cleanly (jubarte lane k07/k08/k09, all word_opened_and_exported)
-    // — this message match was a word-valid false positive — and (b) ordered
-    // after tblLayout/tblCellMar inside w:tblPr, which the structural
-    // word-table-properties-misplaced check now names before XSD starts.
-    "tblCellSpacing", // table-property elements outside <w:tblPr>
-]);
-
-function isWordBlockingXsdIssue(issue: ValidationIssue): boolean {
-    if (issue.path && !issue.path.startsWith("word/") && issue.path !== "docProps/custom.xml") return false;
-    const msg = issue.message;
-    // Content-model violation ("Element '{ns}local': This element is not expected"):
-    // an element sits where the schema forbids it. Word's loader rejects a specific
-    // family of these (a misplaced run, run/paragraph/section/table-property block,
-    // or drawing extent) with OPEN_ERROR / unreadable; OTHER misplaced elements
-    // (sectPr CHILDREN like pgSz/headerReference, style children like uiPriority/
-    // link, table rows, hyperlinks, and run-inner-content under <w:p>) Word silently
-    // relocates and opens cleanly. The blocking allowlist below is derived
-    // empirically from a real-Word corpus probe (disjoint from the tolerated set);
-    // an allowlist keeps this false-positive-free (unknown elements stay warnings).
-    const notExpected = /Element '\{[^}]*\}([^']+)': This element is not expected/.exec(msg);
-    if (notExpected && WORD_BLOCKING_MISPLACED_LOCALS.has(notExpected[1])) return true;
-    return (
-        msg.includes("}p2': This element is not expected") ||
-        (msg.includes("}pPr': This element is not expected") && msg.includes("Expected is one of")) ||
-        msg.includes("}rPr': This element is not expected.") ||
-        msg.includes(
-            "}graphic': This element is not expected. Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}extent",
-        ) ||
-        msg.includes(
-            "}blipFill': This element is not expected. Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/picture}nvPicPr",
-        ) ||
-        msg.includes("Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/picture}spPr") ||
-        msg.includes("Element 'link': This element is not expected") ||
-        msg.includes("}u': This element is not expected") ||
-        msg.includes("}filetime': '' is not a valid value")
-    );
+function withoutRepeatedCompatibilityFindings(schema: ValidationResult, rules: ValidationResult): ValidationResult {
+    const key = (issue: ValidationIssue): string => `${issue.code}\u0000${issue.path ?? ""}\u0000${issue.message}`;
+    const reported = new Map<string, number>();
+    for (const issue of rules.issues) {
+        if (!issue.code?.startsWith("mce-")) continue;
+        reported.set(key(issue), (reported.get(key(issue)) ?? 0) + 1);
+    }
+    const issues = schema.issues.filter((issue) => {
+        const remaining = reported.get(key(issue)) ?? 0;
+        if (remaining === 0) return true;
+        reported.set(key(issue), remaining - 1);
+        return false;
+    });
+    return { valid: schema.valid, issues };
 }
 
 function directChild(parent: Element, namespaceURI: string, local: string): Element | null {

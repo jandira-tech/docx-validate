@@ -1,6 +1,6 @@
 {
     "generatedAt": "2026-10-23T09:03:55.628Z",
-    "totalFixtures": 619,
+    "totalFixtures": 621,
     "entries": [
         {
             "relativePath": "broken/comments.unmatched-comment-marker.docx",
@@ -9549,6 +9549,40 @@
             "word": {
                 "outcome": "unknown",
                 "sha256": "cbb3bab8439ed65ac8be9ff830da40e0b7394d40f7c080dd7bc83a7679f6cc34"
+            }
+        },
+        {
+            "relativePath": "working/word-tolerated-style-table-borders-mixed.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["xsd-error", "xsd-summary"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "096636a13331c047fd2d85c9e440f37e4e796432d7dfbe94191e8415b3a055d4",
+                "observedAt": "2026-10-23T10:16:24.314Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/word-tolerated-style-table-layout-before-borders.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["xsd-error", "xsd-summary"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "2b79c5dd50e85248419f83782f7e5b4f475106e2a0fc16996694ccdc516ee288",
+                "observedAt": "2026-10-23T10:14:53.006Z",
+                "wordVersion": "16.115"
             }
         }
     ]
