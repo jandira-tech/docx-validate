@@ -1,0 +1,2081 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid wp14">
+  <w:body>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="00B764B4" w:rsidP="006858B1">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="006858B1">
+        <w:rPr>
+          <w:b/>
+          <w:lang w:val="en-US" w:eastAsia="en-US"/>
+        </w:rPr>
+        <w:drawing>
+          <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251660288" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1">
+            <wp:simplePos x="0" y="0"/>
+            <wp:positionH relativeFrom="column">
+              <wp:posOffset>5142230
+              </wp:posOffset>
+            </wp:positionH>
+            <wp:positionV relativeFrom="paragraph">
+              <wp:posOffset>3810
+              </wp:posOffset>
+            </wp:positionV>
+            <wp:extent cx="1179195" cy="1123950"/>
+            <wp:effectExtent l="19050" t="0" r="1905" b="0"/>
+            <wp:wrapTight wrapText="bothSides">
+              <wp:wrapPolygon edited="0">
+                <wp:start x="-349" y="0"/>
+                <wp:lineTo x="-349" y="21234"/>
+                <wp:lineTo x="21635" y="21234"/>
+                <wp:lineTo x="21635" y="14278"/>
+                <wp:lineTo x="20937" y="11715"/>
+                <wp:lineTo x="21635" y="8786"/>
+                <wp:lineTo x="21635" y="0"/>
+                <wp:lineTo x="-349" y="0"/>
+              </wp:wrapPolygon>
+            </wp:wrapTight>
+            <wp:docPr id="1" name="Imagen 2" descr="https://upload.wikimedia.org/wikipedia/commons/f/fd/Logo_FCAyF.png"/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name="Picture 1" descr="https://upload.wikimedia.org/wikipedia/commons/f/fd/Logo_FCAyF.png"/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId7" cstate="print">
+                      <a:extLst>
+                        <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                          <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                        </a:ext>
+                      </a:extLst>
+                    </a:blip>
+                    <a:srcRect/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr bwMode="auto">
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="1179195" cy="1123950"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                    <a:noFill/>
+                    <a:ln>
+                      <a:noFill/>
+                    </a:ln>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:anchor>
+        </w:drawing>
+      </w:r>
+      <w:r w:rsidRPr="006858B1">
+        <w:rPr>
+          <w:b/>
+          <w:lang w:val="en-US" w:eastAsia="en-US"/>
+        </w:rPr>
+        <w:drawing>
+          <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251659264" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1">
+            <wp:simplePos x="0" y="0"/>
+            <wp:positionH relativeFrom="column">
+              <wp:posOffset>0
+              </wp:posOffset>
+            </wp:positionH>
+            <wp:positionV relativeFrom="paragraph">
+              <wp:posOffset>3810
+              </wp:posOffset>
+            </wp:positionV>
+            <wp:extent cx="1079500" cy="1123950"/>
+            <wp:effectExtent l="19050" t="0" r="6350" b="0"/>
+            <wp:wrapThrough wrapText="bothSides">
+              <wp:wrapPolygon edited="0">
+                <wp:start x="-381" y="0"/>
+                <wp:lineTo x="-381" y="21234"/>
+                <wp:lineTo x="21727" y="21234"/>
+                <wp:lineTo x="21727" y="0"/>
+                <wp:lineTo x="-381" y="0"/>
+              </wp:wrapPolygon>
+            </wp:wrapThrough>
+            <wp:docPr id="26" name="Picture 3"/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name="Picture 3"/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId8" cstate="print">
+                      <a:extLst>
+                        <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                          <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                        </a:ext>
+                      </a:extLst>
+                    </a:blip>
+                    <a:srcRect/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr bwMode="auto">
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="1079500" cy="1123950"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                    <a:noFill/>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:anchor>
+        </w:drawing>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="00B764B4" w:rsidP="006858B1">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="00B764B4" w:rsidP="006858B1">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="00B764B4" w:rsidP="00C974F7">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="006858B1">
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t>UNIVERSIDAD NACIONAL DE LA PLATA
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="00B764B4" w:rsidP="00C974F7">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="006858B1">
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t>FACULTAD DE CIENCIAS AGRARIAS Y FORESTALES
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="00B764B4" w:rsidP="00C974F7">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="006858B1">
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t>CURSO MANEJO Y CONSERVACIÓN DE SUELOS
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="00B764B4" w:rsidP="006858B1">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="00B764B4" w:rsidP="006858B1">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="00B764B4" w:rsidP="006858B1">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="00B764B4" w:rsidP="006858B1">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRDefault="00B764B4" w:rsidP="00C974F7">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="006858B1">
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t>MATERIAL PRÁCTICO
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="006858B1" w:rsidRPr="006858B1" w:rsidRDefault="006858B1" w:rsidP="00C974F7">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">INGENIERÍA
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00251428">
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t>FORESTAL
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="00B764B4" w:rsidP="006858B1">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="00B764B4" w:rsidP="006858B1">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="00B764B4" w:rsidP="006858B1">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="00B764B4" w:rsidP="006858B1">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="00B764B4" w:rsidP="006858B1">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="00B764B4" w:rsidP="00C974F7">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="006858B1">
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">UNIDAD DIDÁCTICA
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00251428">
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t>D9 (
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00940F0D" w:rsidRPr="006858B1">
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t>2 de 2)
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="00B764B4" w:rsidP="00C974F7">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:b/>
+          <w:i/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="006858B1">
+        <w:rPr>
+          <w:b/>
+          <w:i/>
+        </w:rPr>
+        <w:t>Abonos Orgánicos
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="00B764B4" w:rsidP="006858B1">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="00B764B4" w:rsidP="006858B1">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="00B764B4" w:rsidP="006858B1">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="00B764B4" w:rsidP="006858B1">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="00B764B4" w:rsidP="006858B1">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRPr="006858B1" w:rsidRDefault="006858B1" w:rsidP="006858B1">
+      <w:pPr>
+        <w:pStyle w:val="Cartula"/>
+      </w:pPr>
+      <w:r w:rsidRPr="006858B1">
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t>20
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="003D39AE">
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t>20
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00B764B4" w:rsidRDefault="00B764B4" w:rsidP="00F03359"/>
+    <w:p w:rsidR="00B764B4" w:rsidRDefault="00B764B4" w:rsidP="006858B1"/>
+    <w:p w:rsidR="006858B1" w:rsidRDefault="006858B1" w:rsidP="006858B1"/>
+    <w:p w:rsidR="006858B1" w:rsidRDefault="006858B1" w:rsidP="006858B1">
+      <w:pPr>
+        <w:sectPr w:rsidR="006858B1" w:rsidSect="006858B1">
+          <w:headerReference w:type="even" r:id="rId9"/>
+          <w:headerReference w:type="default" r:id="rId10"/>
+          <w:footerReference w:type="even" r:id="rId11"/>
+          <w:footerReference w:type="default" r:id="rId12"/>
+          <w:headerReference w:type="first" r:id="rId13"/>
+          <w:footerReference w:type="first" r:id="rId14"/>
+          <w:pgSz w:w="11907" w:h="16840" w:code="9"/>
+          <w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="709" w:footer="709" w:gutter="0"/>
+          <w:cols w:space="708"/>
+          <w:docGrid w:linePitch="360"/>
+        </w:sectPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00230A3A" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+      <w:r w:rsidRPr="00DA4415">
+        <w:lastRenderedPageBreak/>
+        <w:t>Un establecimiento hortícola bajo cubierta en la localidad de Los Hornos, Partido de La Plata, posee suelos de tipo Argiudol vértico (Serie Arturo Seguí), cuyos datos se presentan a continuación:
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00230A3A" w:rsidRDefault="00230A3A" w:rsidP="006858B1">
+      <w:pPr>
+        <w:pStyle w:val="Figuras"/>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00230A3A" w:rsidRPr="00DA4415" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+      <w:r w:rsidRPr="006858B1">
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t>Tabla 1
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="00DA4415">
+        <w:t>. Descripcíon de la Serie Arturo Seguí.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00230A3A" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+      <w:pPr>
+        <w:pStyle w:val="Tabla-Imagenes"/>
+      </w:pPr>
+      <w:r w:rsidRPr="0013231D">
+        <w:rPr>
+          <w:noProof/>
+          <w:lang w:val="en-US" w:eastAsia="en-US"/>
+        </w:rPr>
+        <w:drawing>
+          <wp:inline distT="0" distB="0" distL="0" distR="0">
+            <wp:extent cx="5966321" cy="2857500"/>
+            <wp:effectExtent l="19050" t="0" r="0" b="0"/>
+            <wp:docPr id="30" name="Imagen 7"/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name="Picture 7"/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId15" cstate="print">
+                      <a:lum bright="-10000"/>
+                    </a:blip>
+                    <a:srcRect b="2017"/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr bwMode="auto">
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="5970350" cy="2859430"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                    <a:noFill/>
+                    <a:ln w="9525">
+                      <a:noFill/>
+                      <a:miter lim="800000"/>
+                      <a:headEnd/>
+                      <a:tailEnd/>
+                    </a:ln>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:inline>
+        </w:drawing>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+          <w:lang w:val="en-US" w:eastAsia="en-US"/>
+        </w:rPr>
+        <w:drawing>
+          <wp:inline distT="0" distB="0" distL="0" distR="0">
+            <wp:extent cx="5612130" cy="514350"/>
+            <wp:effectExtent l="19050" t="0" r="7620" b="0"/>
+            <wp:docPr id="31" name="Imagen 10"/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name="Picture 10"/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId16" cstate="print">
+                      <a:lum bright="-10000"/>
+                    </a:blip>
+                    <a:srcRect t="40000"/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr bwMode="auto">
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="5612130" cy="514350"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                    <a:noFill/>
+                    <a:ln w="9525">
+                      <a:noFill/>
+                      <a:miter lim="800000"/>
+                      <a:headEnd/>
+                      <a:tailEnd/>
+                    </a:ln>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:inline>
+        </w:drawing>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="006858B1">
+      <w:pPr>
+        <w:pStyle w:val="Figuras"/>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00230A3A" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+      <w:pPr>
+        <w:pStyle w:val="Tabla-Imagenes"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+          <w:lang w:val="en-US" w:eastAsia="en-US"/>
+        </w:rPr>
+        <w:drawing>
+          <wp:inline distT="0" distB="0" distL="0" distR="0">
+            <wp:extent cx="5876925" cy="4508367"/>
+            <wp:effectExtent l="19050" t="0" r="9525" b="0"/>
+            <wp:docPr id="25" name="Imagen 4"/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name="Picture 4"/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId17" cstate="print">
+                      <a:lum bright="-10000"/>
+                    </a:blip>
+                    <a:srcRect/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr bwMode="auto">
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="5876925" cy="4508367"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                    <a:noFill/>
+                    <a:ln w="9525">
+                      <a:noFill/>
+                      <a:miter lim="800000"/>
+                      <a:headEnd/>
+                      <a:tailEnd/>
+                    </a:ln>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:inline>
+        </w:drawing>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D"/>
+    <w:p w:rsidR="00230A3A" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+      <w:r>
+        <w:lastRenderedPageBreak/>
+        <w:t>Dentro del establecimiento se muestreó un suelo virgen y un invernáculo con 14 años de uso intensivo (
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="006858B1">
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t>Tabla 2
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:t>).
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="006858B1">
+      <w:pPr>
+        <w:pStyle w:val="Figuras"/>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00230A3A" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+      <w:r w:rsidRPr="006858B1">
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t>Tabla 2.
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="00143820">
+        <w:t xml:space="preserve">Datos analíticos del suelo virgen y bajo invernáculo con 14 años de producción.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblW w:w="4280" w:type="pct"/>
+        <w:tblLook w:val="01E0" w:firstRow="1" w:lastRow="1" w:firstColumn="1" w:lastColumn="1" w:noHBand="0" w:noVBand="0"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="3066"/>
+        <w:gridCol w:w="1011"/>
+        <w:gridCol w:w="1178"/>
+        <w:gridCol w:w="779"/>
+        <w:gridCol w:w="825"/>
+        <w:gridCol w:w="725"/>
+        <w:gridCol w:w="852"/>
+      </w:tblGrid>
+      <w:tr w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidTr="00940F0D">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1817" w:type="pct"/>
+            <w:vMerge w:val="restart"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="006858B1" w:rsidRDefault="006858B1" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t>SUELO
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="599" w:type="pct"/>
+            <w:vMerge w:val="restart"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:b/>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00940F0D">
+              <w:rPr>
+                <w:b/>
+                <w:bCs/>
+              </w:rPr>
+              <w:t>pH
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:b/>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00940F0D">
+              <w:rPr>
+                <w:b/>
+                <w:bCs/>
+              </w:rPr>
+              <w:t>(1/2.5)
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="698" w:type="pct"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:b/>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00940F0D">
+              <w:rPr>
+                <w:b/>
+                <w:bCs/>
+              </w:rPr>
+              <w:t>CE
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="462" w:type="pct"/>
+            <w:vMerge w:val="restart"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00940F0D">
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t>RAS
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="489" w:type="pct"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00940F0D">
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t>COT
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="430" w:type="pct"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00940F0D">
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">Cp
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="505" w:type="pct"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00940F0D">
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t>DMP
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidTr="00940F0D">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1817" w:type="pct"/>
+            <w:vMerge/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="599" w:type="pct"/>
+            <w:vMerge/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:b/>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="698" w:type="pct"/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:b/>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00940F0D">
+              <w:rPr>
+                <w:b/>
+                <w:bCs/>
+              </w:rPr>
+              <w:t>dS m
+              </w:t>
+            </w:r>
+            <w:r w:rsidRPr="00940F0D">
+              <w:rPr>
+                <w:b/>
+                <w:bCs/>
+                <w:vertAlign w:val="superscript"/>
+              </w:rPr>
+              <w:t>-1
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="462" w:type="pct"/>
+            <w:vMerge/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="489" w:type="pct"/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00940F0D">
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t>%
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="430" w:type="pct"/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00940F0D">
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t>%
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="505" w:type="pct"/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00940F0D">
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t>mm
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidTr="00940F0D">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1817" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00C078E1" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:bCs/>
+                <w:i/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00C078E1">
+              <w:rPr>
+                <w:bCs/>
+                <w:i/>
+              </w:rPr>
+              <w:t>Suelos virgen
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="599" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:rPr>
+                <w:bCs/>
+              </w:rPr>
+              <w:t>6,2
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="698" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:rPr>
+                <w:bCs/>
+              </w:rPr>
+              <w:t>0,6
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="462" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:t>0,3
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="489" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:t>3,7
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="430" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:t>0,9
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="505" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:t>2,16
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidTr="00940F0D">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1817" w:type="pct"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00C078E1" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:bCs/>
+                <w:i/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00C078E1">
+              <w:rPr>
+                <w:bCs/>
+                <w:i/>
+              </w:rPr>
+              <w:t>Invernáculo 14 años
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="599" w:type="pct"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:rPr>
+                <w:bCs/>
+              </w:rPr>
+              <w:t>7,8
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="698" w:type="pct"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:rPr>
+                <w:bCs/>
+              </w:rPr>
+              <w:t>11,8
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="462" w:type="pct"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:t>12
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="489" w:type="pct"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:t>1,8
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="430" w:type="pct"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:rPr>
+                <w:bCs/>
+              </w:rPr>
+              <w:t>0,22
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="505" w:type="pct"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:rPr>
+                <w:bCs/>
+              </w:rPr>
+              <w:t>1,13
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w:rsidR="006858B1" w:rsidRDefault="006858B1" w:rsidP="00230A3A">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:i/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00230A3A" w:rsidRDefault="00230A3A" w:rsidP="006858B1">
+      <w:pPr>
+        <w:pStyle w:val="Figuras"/>
+      </w:pPr>
+      <w:r w:rsidRPr="00143820">
+        <w:t>Referencias: CE (conductividad eléctrica), RAS (relación de adsorción de sodio), COT
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00C078E1">
+        <w:t xml:space="preserve">
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="00143820">
+        <w:t>(carbono total),
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="006858B1">
+        <w:br/>
+      </w:r>
+      <w:r w:rsidRPr="00143820">
+        <w:t xml:space="preserve">Cp (carbono particulado), DMP (diámetro medio ponderado).
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00230A3A" w:rsidRDefault="00230A3A" w:rsidP="00940F0D"/>
+    <w:p w:rsidR="006858B1" w:rsidRDefault="006858B1" w:rsidP="00940F0D"/>
+    <w:p w:rsidR="00230A3A" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+      <w:r>
+        <w:t>Se cuenta con la posibilidad de utilizar las siguientes enmiendas (
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="006858B1">
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t>Tabla 3
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:t>).
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00230A3A" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+      <w:r w:rsidRPr="006858B1">
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t>Tabla 3
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="00143820">
+        <w:t>. Características generales de los abonos orgánicos.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:jc w:val="center"/>
+        <w:tblLook w:val="01E0" w:firstRow="1" w:lastRow="1" w:firstColumn="1" w:lastColumn="1" w:noHBand="0" w:noVBand="0"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="3409"/>
+        <w:gridCol w:w="817"/>
+        <w:gridCol w:w="593"/>
+        <w:gridCol w:w="1337"/>
+        <w:gridCol w:w="1391"/>
+      </w:tblGrid>
+      <w:tr w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidTr="00940F0D">
+        <w:trPr>
+          <w:jc w:val="center"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3409" w:type="dxa"/>
+            <w:vMerge w:val="restart"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00940F0D">
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t>Abono orgánico
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="817" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00940F0D">
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t>MO
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="593" w:type="dxa"/>
+            <w:vMerge w:val="restart"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00940F0D">
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t>pH
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1337" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00940F0D">
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t>Na total
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1391" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00940F0D">
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t>Humedad
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidTr="00940F0D">
+        <w:trPr>
+          <w:jc w:val="center"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3409" w:type="dxa"/>
+            <w:vMerge/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="817" w:type="dxa"/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+            </w:pPr>
+            <w:r w:rsidRPr="00940F0D">
+              <w:t>%
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="593" w:type="dxa"/>
+            <w:vMerge/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1337" w:type="dxa"/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+            </w:pPr>
+            <w:r w:rsidRPr="00940F0D">
+              <w:t>%
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1391" w:type="dxa"/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00940F0D" w:rsidRPr="00940F0D" w:rsidRDefault="00940F0D" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+            </w:pPr>
+            <w:r w:rsidRPr="00940F0D">
+              <w:t>%
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidTr="00940F0D">
+        <w:trPr>
+          <w:jc w:val="center"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3409" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+              <w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00C078E1" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:i/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00C078E1">
+              <w:rPr>
+                <w:i/>
+              </w:rPr>
+              <w:t xml:space="preserve">Cáscara de arroz
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="817" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+              <w:left w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:t>79,1
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="593" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:t>5,9
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1337" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:t>8,8 x 10
+              </w:t>
+            </w:r>
+            <w:r w:rsidRPr="00143820">
+              <w:rPr>
+                <w:vertAlign w:val="superscript"/>
+              </w:rPr>
+              <w:t>-4
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1391" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:t>6,5
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidTr="00D56ECC">
+        <w:trPr>
+          <w:jc w:val="center"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3409" w:type="dxa"/>
+            <w:tcBorders>
+              <w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00C078E1" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:i/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00C078E1">
+              <w:rPr>
+                <w:i/>
+              </w:rPr>
+              <w:t>Compost comercial
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="817" w:type="dxa"/>
+            <w:tcBorders>
+              <w:left w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:t>29,2
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="593" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:t>4,4
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1337" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:t>0,1
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1391" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:t>5,0
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidTr="00D56ECC">
+        <w:trPr>
+          <w:jc w:val="center"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3409" w:type="dxa"/>
+            <w:tcBorders>
+              <w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00C078E1" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+              <w:rPr>
+                <w:i/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="00C078E1">
+              <w:rPr>
+                <w:i/>
+              </w:rPr>
+              <w:t>Cama de pollo estacionada a la intemperie por 6 meses
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="817" w:type="dxa"/>
+            <w:tcBorders>
+              <w:left w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:t>51,4
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="593" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:t>8,4
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1337" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:t>0,42
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1391" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00230A3A" w:rsidRPr="00143820" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+            <w:pPr>
+              <w:pStyle w:val="Tabla-Imagenes"/>
+            </w:pPr>
+            <w:r w:rsidRPr="00143820">
+              <w:t>6,7
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w:rsidR="00230A3A" w:rsidRDefault="00230A3A" w:rsidP="00940F0D">
+      <w:pPr>
+        <w:pStyle w:val="Figuras"/>
+      </w:pPr>
+      <w:r w:rsidRPr="00143820">
+        <w:t>Referencia: MO (materia orgánica)
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="006858B1" w:rsidRDefault="006858B1" w:rsidP="00940F0D"/>
+    <w:p w:rsidR="00230A3A" w:rsidRPr="006858B1" w:rsidRDefault="00230A3A" w:rsidP="00C974F7">
+      <w:pPr>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="006858B1">
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t>Responda:
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00230A3A" w:rsidRDefault="003D39AE" w:rsidP="00C078E1">
+      <w:pPr>
+        <w:ind w:firstLine="0"/>
+      </w:pPr>
+      <w:r>
+        <w:t>1. ¿Cuáles son las cualidades positivas y negativas de la Serie Arturo Seguí para este tipo de producción?
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00230A3A" w:rsidRDefault="003D39AE" w:rsidP="00C078E1">
+      <w:pPr>
+        <w:ind w:firstLine="0"/>
+      </w:pPr>
+      <w:r>
+        <w:t>2. ¿
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00230A3A">
+        <w:t>Qué tipo de evolución ha tenido el suelo tras 14 años de uso y cuáles cree que son las razones
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00230A3A" w:rsidRDefault="00230A3A" w:rsidP="00C078E1">
+      <w:pPr>
+        <w:ind w:firstLine="0"/>
+      </w:pPr>
+      <w:r>
+        <w:t>3.- Analice la conveniencia del empleo de un abono orgánico.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00230A3A" w:rsidRDefault="00230A3A" w:rsidP="00C078E1">
+      <w:pPr>
+        <w:ind w:firstLine="0"/>
+      </w:pPr>
+      <w:r>
+        <w:t>4.- De acuerdo a los abonos disponibles, cuál le parece el más conveniente.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00230A3A" w:rsidRDefault="003D39AE" w:rsidP="00C078E1">
+      <w:pPr>
+        <w:ind w:firstLine="0"/>
+      </w:pPr>
+      <w:r>
+        <w:t>5. ¿Qué otro aspecto debería solucionarse?
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00230A3A" w:rsidRDefault="003D39AE" w:rsidP="00C078E1">
+      <w:pPr>
+        <w:ind w:firstLine="0"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">6.
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00230A3A">
+        <w:t xml:space="preserve">De acuerdo a los resultados obtenidos por Andreau et al (2012) (Figura 1),
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:t>¿
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00230A3A">
+        <w:t>qué dosis emplearía del abono seleccionado y con qué frecuencia lo aplicaría
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:t>?
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00230A3A" w:rsidRDefault="003D39AE" w:rsidP="00C078E1">
+      <w:pPr>
+        <w:ind w:firstLine="0"/>
+      </w:pPr>
+      <w:r>
+        <w:t>7. ¿
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00230A3A">
+        <w:t>Podría suscitarse algún
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve">aspecto negativo con su empleo?
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00230A3A" w:rsidRDefault="00230A3A" w:rsidP="00C078E1">
+      <w:pPr>
+        <w:ind w:firstLine="0"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">8.- Si el productor estuviese dispuesto a elaborar su propio compost y cuenta con cáscara de frutas de una pequeña industria vecina, aserrín y gallinaza de un criadero de pollos,
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="003D39AE">
+        <w:t>¿
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:t>en qué proporción convendría que mezclara los productos para la elaboración del compost y qué recaudos debiera tener p
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="003D39AE">
+        <w:t>or el tipo de material empleado?
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00230A3A" w:rsidRDefault="00230A3A" w:rsidP="00C078E1">
+      <w:pPr>
+        <w:ind w:firstLine="0"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">9.- Si considera que algún material para hacer el compost es riesgoso,
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="003D39AE">
+        <w:t>¿
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:t>cóm
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="003D39AE">
+        <w:t>o podría sustituirlo?
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="006858B1" w:rsidRPr="001C169B" w:rsidRDefault="006858B1" w:rsidP="006858B1"/>
+    <w:sectPr w:rsidR="006858B1" w:rsidRPr="001C169B" w:rsidSect="006858B1">
+      <w:headerReference w:type="default" r:id="rId18"/>
+      <w:footerReference w:type="default" r:id="rId19"/>
+      <w:pgSz w:w="11907" w:h="16840" w:code="9"/>
+      <w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="709" w:footer="709" w:gutter="0"/>
+      <w:pgNumType w:fmt="numberInDash" w:start="1"/>
+      <w:cols w:space="708"/>
+      <w:docGrid w:linePitch="360"/>
+    </w:sectPr>
+  </w:body>
+</w:document>

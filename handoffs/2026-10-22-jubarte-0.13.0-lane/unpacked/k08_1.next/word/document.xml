@@ -1,0 +1,948 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml">
+  <w:body>
+    <w:p w:rsidR="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRDefault="00C40747" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:rPr>
+          <w:b/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+          <w:noProof/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:drawing>
+          <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251657728" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1">
+            <wp:simplePos x="0" y="0"/>
+            <wp:positionH relativeFrom="column">
+              <wp:posOffset>2561590
+              </wp:posOffset>
+            </wp:positionH>
+            <wp:positionV relativeFrom="paragraph">
+              <wp:posOffset>-77470
+              </wp:posOffset>
+            </wp:positionV>
+            <wp:extent cx="889635" cy="714375"/>
+            <wp:effectExtent l="19050" t="0" r="5715" b="0"/>
+            <wp:wrapSquare wrapText="bothSides"/>
+            <wp:docPr id="3" name="Рисунок 0" descr="стрельна.jpg"/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name="Рисунок 0" descr="стрельна.jpg"/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId6" cstate="print">
+                      <a:lum bright="-20000" contrast="40000"/>
+                    </a:blip>
+                    <a:srcRect l="22966" t="29781" r="23471" b="29781"/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr bwMode="auto">
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="889635" cy="714375"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                    <a:noFill/>
+                    <a:ln w="9525">
+                      <a:noFill/>
+                      <a:miter lim="800000"/>
+                      <a:headEnd/>
+                      <a:tailEnd/>
+                    </a:ln>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:anchor>
+        </w:drawing>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:b/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:b/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRPr="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00F37F73" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="001E08FA">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">МУНИЦИПАЛЬНЫЙ СОВЕТ
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRPr="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="001E08FA">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>МУНИЦИПАЛЬНОГО ОБРАЗОВАНИЯ ПОСЕЛОК СТРЕЛЬНА
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRPr="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:pBdr>
+          <w:bottom w:val="single" w:sz="12" w:space="1" w:color="auto"/>
+        </w:pBdr>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="001E08FA">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="en-US"/>
+        </w:rPr>
+        <w:t>V
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="001E08FA">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">СОЗЫВА
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRPr="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:pStyle w:val="1"/>
+        <w:tabs>
+          <w:tab w:val="num" w:pos="0"/>
+        </w:tabs>
+        <w:suppressAutoHyphens/>
+        <w:ind w:left="432" w:hanging="432"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRPr="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:pStyle w:val="1"/>
+        <w:tabs>
+          <w:tab w:val="num" w:pos="0"/>
+        </w:tabs>
+        <w:suppressAutoHyphens/>
+        <w:ind w:left="432" w:hanging="432"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="001E08FA">
+        <w:rPr>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>РЕШЕНИЕ (проект)
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRPr="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRPr="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="001E08FA">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">от __________ 2017 года №__
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRPr="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:bCs/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRPr="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00F37F73" w:rsidRDefault="00F37F73" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:pStyle w:val="ab"/>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:b/>
+          <w:spacing w:val="-2"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRPr="001E08FA" w:rsidRDefault="00F37F73" w:rsidP="00F37F73">
+      <w:pPr>
+        <w:pStyle w:val="ab"/>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:b/>
+          <w:spacing w:val="-2"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+          <w:spacing w:val="-2"/>
+        </w:rPr>
+        <w:t xml:space="preserve">О внесении изменений в
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t>Положение
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="001E08FA">
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">«Об осуществлении благоустройства территории Внутригородского муниципального образования Санкт-Петербурга поселок Стрельна»
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t>, утвержденное решением Муниципального Совета Муниципального образования поселок Стрельна от 05.09.2017 №56
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRPr="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:pStyle w:val="ab"/>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:b/>
+          <w:spacing w:val="-2"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:pStyle w:val="21"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="009C61C2">
+      <w:pPr>
+        <w:pStyle w:val="21"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:tab/>
+        <w:t xml:space="preserve">В соответствии с
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="009C61C2" w:rsidRPr="009C61C2">
+        <w:rPr>
+          <w:rFonts w:eastAsia="Calibri"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>Законом Санкт-Петербурга от 23.09.2009 № 420-79
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="009C61C2" w:rsidRPr="009C61C2">
+        <w:rPr>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">«
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="009C61C2" w:rsidRPr="009C61C2">
+        <w:rPr>
+          <w:rFonts w:eastAsia="Calibri"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>Об организации местного самоуправления в Санкт-Петербурге»
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="009C61C2">
+        <w:rPr>
+          <w:rFonts w:eastAsia="Calibri"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">, Уставом Внутригородского муниципального образования Санкт-Петербурга поселок Стрельна
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:pStyle w:val="21"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRPr="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:pStyle w:val="21"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="001E08FA">
+        <w:rPr>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="001E08FA">
+        <w:rPr>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>МУНИЦИПАЛЬНЫЙ СОВЕТ
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRPr="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:pStyle w:val="21"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="001E08FA">
+        <w:rPr>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>РЕШИЛ:
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRPr="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:pStyle w:val="21"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00F37F73" w:rsidRDefault="00F37F73" w:rsidP="00F37F73">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="18"/>
+        </w:numPr>
+        <w:ind w:left="0" w:firstLine="709"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00F37F73">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>Внести следующие изменения в Положение «Об осуществлении благоустройства территории Внутригородского муниципального образования Санкт-Петербурга поселок Стрельна», утвержденное решением Муниципального Совета Муниципального образования поселок Стрельна от 05.09.2017 №56
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="000B0709">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">(далее – Положение)
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>:
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00F37F73" w:rsidRDefault="000B0709" w:rsidP="00FF542C">
+      <w:pPr>
+        <w:pStyle w:val="a5"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="20"/>
+        </w:numPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1134"/>
+        </w:tabs>
+        <w:ind w:left="0" w:firstLine="709"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>В пункте 1.4. Положения слова «
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="000B0709">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>, а также за счет средств бюджета Санкт-Петербурга
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>» исключить.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00F37F73" w:rsidRDefault="00FF542C" w:rsidP="00FF542C">
+      <w:pPr>
+        <w:pStyle w:val="a5"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="20"/>
+        </w:numPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1134"/>
+        </w:tabs>
+        <w:ind w:left="0" w:firstLine="709"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00FF542C">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Пункт
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>2.5.1. Положения дополнить словом «уличная» перед словом «мебель».
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00FF542C" w:rsidRDefault="00FF542C" w:rsidP="00FF542C">
+      <w:pPr>
+        <w:pStyle w:val="a5"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="20"/>
+        </w:numPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1134"/>
+        </w:tabs>
+        <w:ind w:left="0" w:firstLine="709"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>Пункт 2.5.3. Положения дополнить словом «уличной» перед словом «мебели».
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00FF542C" w:rsidRDefault="00FF542C" w:rsidP="00FF542C">
+      <w:pPr>
+        <w:pStyle w:val="a5"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="20"/>
+        </w:numPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1134"/>
+        </w:tabs>
+        <w:ind w:left="0" w:firstLine="709"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00FF542C">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>Абзац 1 пункта 2.11.5 Положения после слов «местного значения» дополнить словами «, взамен уничтоженных или поврежденных»
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00F37F73" w:rsidRDefault="00FF542C" w:rsidP="00FF542C">
+      <w:pPr>
+        <w:pStyle w:val="a5"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="20"/>
+        </w:numPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1134"/>
+        </w:tabs>
+        <w:ind w:left="0" w:firstLine="709"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>Пункт 2.12.4. Положения исключить.
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="00FF542C">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00FF542C" w:rsidRPr="00FF542C" w:rsidRDefault="00FF542C" w:rsidP="00FF542C">
+      <w:pPr>
+        <w:pStyle w:val="a5"/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1134"/>
+        </w:tabs>
+        <w:ind w:left="709"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="009C61C2" w:rsidRPr="00637047" w:rsidRDefault="001E08FA" w:rsidP="009C61C2">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="18"/>
+        </w:numPr>
+        <w:spacing w:after="240"/>
+        <w:ind w:left="0" w:firstLine="709"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:proofErr w:type="gramStart"/>
+      <w:r w:rsidRPr="00637047">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>Контроль за
+        </w:t>
+      </w:r>
+      <w:proofErr w:type="gramEnd"/>
+      <w:r w:rsidRPr="00637047">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">исполнением настоящего решения возложить на Главу Муниципального образования поселок Стрельна
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="00637047">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:spacing w:val="-2"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Беленкова Валерия Николаевича.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRPr="009C61C2" w:rsidRDefault="001E08FA" w:rsidP="009C61C2">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="18"/>
+        </w:numPr>
+        <w:spacing w:after="240"/>
+        <w:ind w:left="0" w:firstLine="709"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="009C61C2">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Настоящее решение вступает в силу со дня
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="009C61C2">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">его
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00637047">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>официального опубликования (обнародования).
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRPr="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRPr="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRPr="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="001E08FA">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Глава Муниципального образования,
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRPr="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:proofErr w:type="gramStart"/>
+      <w:r w:rsidRPr="001E08FA">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>исполняющий
+        </w:t>
+      </w:r>
+      <w:proofErr w:type="gramEnd"/>
+      <w:r w:rsidRPr="001E08FA">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">полномочия
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRPr="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="001E08FA">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>председателя Муниципального Совета
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="001E08FA">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="001E08FA">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="001E08FA">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:tab/>
+        <w:t xml:space="preserve">В.Н. Беленков
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="001E08FA" w:rsidRPr="001E08FA" w:rsidRDefault="001E08FA" w:rsidP="001E08FA">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00CC0ED6" w:rsidRPr="001E08FA" w:rsidRDefault="00CC0ED6" w:rsidP="00FF542C">
+      <w:pPr>
+        <w:autoSpaceDE w:val="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:sectPr w:rsidR="00CC0ED6" w:rsidRPr="001E08FA" w:rsidSect="006E54AE">
+      <w:pgSz w:w="11906" w:h="16838"/>
+      <w:pgMar w:top="1079" w:right="850" w:bottom="1134" w:left="1440" w:header="708" w:footer="708" w:gutter="0"/>
+      <w:cols w:space="708"/>
+      <w:docGrid w:linePitch="360"/>
+    </w:sectPr>
+  </w:body>
+</w:document>

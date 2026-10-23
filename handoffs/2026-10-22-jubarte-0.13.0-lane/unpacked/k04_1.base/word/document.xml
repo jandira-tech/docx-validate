@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:oel="http://schemas.microsoft.com/office/2019/extlst" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16du="http://schemas.microsoft.com/office/word/2023/wordml/word16du" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16sdtfl="http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh w16sdtfl w16du wp14">
+  <w:body>
+    <w:p>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+          <w:sz w:val="32"/>
+        </w:rPr>
+        <w:t>m:groupChr ECMA-376 §22.1.2.41 — All Variations
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t xml:space="preserve">Each labeled line below is followed by the math object it describes. Empty m:chr should render with no bracket/arrow.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">1. Default (no groupChrPr) — expect U+23DF bottom curly, below base
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:e>
+              <m:r>
+                <m:t>x+y+z
+                </m:t>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">2. Empty m:chr (no m:val) — spec says character is hidden
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:groupChrPr>
+              <m:chr/>
+            </m:groupChrPr>
+            <m:e>
+              <m:r>
+                <m:t>a+b
+                </m:t>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">3. Explicit bottom curly bracket U+23DF, pos=bot (underbrace)
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:groupChrPr>
+              <m:chr m:val="⏟"/>
+              <m:pos m:val="bot"/>
+            </m:groupChrPr>
+            <m:e>
+              <m:r>
+                <m:t>a+b+c
+                </m:t>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">4. Top curly bracket U+23DE, pos=top (overbrace)
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:groupChrPr>
+              <m:chr m:val="⏞"/>
+              <m:pos m:val="top"/>
+            </m:groupChrPr>
+            <m:e>
+              <m:r>
+                <m:t>x+y
+                </m:t>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">5. Leftward arrow U+2190, pos=top
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:groupChrPr>
+              <m:chr m:val="←"/>
+              <m:pos m:val="top"/>
+            </m:groupChrPr>
+            <m:e>
+              <m:r>
+                <m:t>n terms
+                </m:t>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">6. Rightward arrow U+2192, pos=bot
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:groupChrPr>
+              <m:chr m:val="→"/>
+              <m:pos m:val="bot"/>
+            </m:groupChrPr>
+            <m:e>
+              <m:r>
+                <m:t>vector
+                </m:t>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">7. vertJc combo: pos=top, vertJc=top
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:groupChrPr>
+              <m:chr m:val="⏞"/>
+              <m:pos m:val="top"/>
+              <m:vertJc m:val="top"/>
+            </m:groupChrPr>
+            <m:e>
+              <m:r>
+                <m:t>p+q
+                </m:t>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">8. vertJc combo: pos=top, vertJc=bot
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:groupChrPr>
+              <m:chr m:val="⏞"/>
+              <m:pos m:val="top"/>
+              <m:vertJc m:val="bot"/>
+            </m:groupChrPr>
+            <m:e>
+              <m:r>
+                <m:t>r+s
+                </m:t>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">9. vertJc combo: pos=bot, vertJc=top
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:groupChrPr>
+              <m:chr m:val="⏟"/>
+              <m:pos m:val="bot"/>
+              <m:vertJc m:val="top"/>
+            </m:groupChrPr>
+            <m:e>
+              <m:r>
+                <m:t>t+u
+                </m:t>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">10. vertJc combo: pos=bot, vertJc=bot
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:groupChrPr>
+              <m:chr m:val="⏟"/>
+              <m:pos m:val="bot"/>
+              <m:vertJc m:val="bot"/>
+            </m:groupChrPr>
+            <m:e>
+              <m:r>
+                <m:t>v+w
+                </m:t>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">11. vertJc with empty m:val (defaults to bot per spec)
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:groupChrPr>
+              <m:chr m:val="⏞"/>
+              <m:pos m:val="top"/>
+              <m:vertJc/>
+            </m:groupChrPr>
+            <m:e>
+              <m:r>
+                <m:t>x
+                </m:t>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">12. Complex base — summation inside groupChr
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:groupChrPr>
+              <m:chr m:val="⏟"/>
+              <m:pos m:val="bot"/>
+            </m:groupChrPr>
+            <m:e>
+              <m:r>
+                <m:t>x₁+x₂+⋯+xₙ
+                </m:t>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:sectPr w:rsidR="00133146">
+      <w:pgSz w:w="12240" w:h="15840"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+      <w:cols w:space="720"/>
+      <w:docGrid w:linePitch="360"/>
+    </w:sectPr>
+  </w:body>
+</w:document>

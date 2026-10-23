@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:styleId="Normal" w:customStyle="false">
+    <w:uiPriority w:val="11"/>
+    <w:qFormat/>
+    <w:name w:val="Normal"/>
+    <w:rPr>
+      <w:color w:themeColor="text1"/>
+      <w:rFonts w:ascii="Segoe UI"/>
+      <w:sz w:val="22"/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="character" w:styleId="row-heading" w:customStyle="false">
+    <w:uiPriority w:val="11"/>
+    <w:qFormat/>
+    <w:name w:val="row-heading"/>
+    <w:rPr>
+      <w:color w:themeColor="dark2"/>
+      <w:rFonts w:ascii="Segoe UI"/>
+      <w:sz w:val="22"/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="character" w:styleId="row-content" w:customStyle="false">
+    <w:name w:val="row-content"/>
+    <w:basedOn w:val="Normal"/>
+    <w:uiPriority w:val="12"/>
+    <w:qFormat/>
+  </w:style>
+  <w:style w:type="character" w:styleId="row-content-rich-text" w:customStyle="false">
+    <w:name w:val="row-content-rich-text"/>
+    <w:basedOn w:val="Normal"/>
+    <w:uiPriority w:val="12"/>
+    <w:qFormat/>
+  </w:style>
+  <w:style w:type="character" w:styleId="alternate-name-de" w:customStyle="false">
+    <w:name w:val="alternate-name-de"/>
+    <w:basedOn w:val="Normal"/>
+    <w:uiPriority w:val="12"/>
+    <w:qFormat/>
+  </w:style>
+  <w:style w:type="character" w:styleId="alternate-name-indicator" w:customStyle="false">
+    <w:name w:val="alternate-name-indicator"/>
+    <w:basedOn w:val="Normal"/>
+    <w:uiPriority w:val="12"/>
+    <w:qFormat/>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="registration-status" w:customStyle="false">
+    <w:name w:val="registration-status"/>
+    <w:basedOn w:val="Normal"/>
+    <w:uiPriority w:val="12"/>
+    <w:qFormat/>
+    <w:pPr>
+      <w:ind w:left="400"/>
+    </w:pPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Heading1" w:customStyle="false">
+    <w:uiPriority w:val="11"/>
+    <w:qFormat/>
+    <w:name w:val="heading 1"/>
+    <w:rPr>
+      <w:color w:themeColor="accent1" w:themeShade="6F"/>
+      <w:rFonts w:ascii="Segoe UI"/>
+      <w:sz w:val="36"/>
+      <w:b/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="underlinedHeading1" w:customStyle="false">
+    <w:uiPriority w:val="11"/>
+    <w:qFormat/>
+    <w:name w:val="heading 1"/>
+    <w:rPr>
+      <w:color w:themeColor="accent1" w:themeShade="6F"/>
+      <w:rFonts w:ascii="Segoe UI"/>
+      <w:sz w:val="36"/>
+      <w:b/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Heading2" w:customStyle="false">
+    <w:uiPriority w:val="11"/>
+    <w:qFormat/>
+    <w:name w:val="heading 2"/>
+    <w:rPr>
+      <w:color w:themeColor="accent1" w:themeShade="7F"/>
+      <w:rFonts w:ascii="Segoe UI"/>
+      <w:sz w:val="32"/>
+      <w:b/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="underlinedHeading2" w:customStyle="false">
+    <w:uiPriority w:val="11"/>
+    <w:qFormat/>
+    <w:name w:val="heading 2"/>
+    <w:rPr>
+      <w:color w:themeColor="accent1" w:themeShade="7F"/>
+      <w:rFonts w:ascii="Segoe UI"/>
+      <w:sz w:val="32"/>
+      <w:b/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Heading3" w:customStyle="false">
+    <w:uiPriority w:val="11"/>
+    <w:qFormat/>
+    <w:name w:val="heading 3"/>
+    <w:rPr>
+      <w:color w:themeColor="accent1" w:themeShade="BF"/>
+      <w:rFonts w:ascii="Segoe UI"/>
+      <w:sz w:val="28"/>
+      <w:b/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="underlinedHeading3" w:customStyle="false">
+    <w:uiPriority w:val="11"/>
+    <w:qFormat/>
+    <w:name w:val="heading 3"/>
+    <w:rPr>
+      <w:color w:themeColor="accent1" w:themeShade="BF"/>
+      <w:rFonts w:ascii="Segoe UI"/>
+      <w:sz w:val="28"/>
+      <w:b/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Heading4" w:customStyle="false">
+    <w:uiPriority w:val="11"/>
+    <w:qFormat/>
+    <w:name w:val="heading 4"/>
+    <w:rPr>
+      <w:color w:themeColor="accent1" w:themeShade="EF"/>
+      <w:rFonts w:ascii="Segoe UI"/>
+      <w:sz w:val="26"/>
+      <w:b/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="underlinedHeading4" w:customStyle="false">
+    <w:uiPriority w:val="11"/>
+    <w:qFormat/>
+    <w:name w:val="heading 4"/>
+    <w:rPr>
+      <w:color w:themeColor="accent1" w:themeShade="EF"/>
+      <w:rFonts w:ascii="Segoe UI"/>
+      <w:sz w:val="26"/>
+      <w:b/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Heading5" w:customStyle="false">
+    <w:uiPriority w:val="11"/>
+    <w:qFormat/>
+    <w:name w:val="heading 5"/>
+    <w:rPr>
+      <w:color w:themeColor="accent1" w:themeShade="FF"/>
+      <w:rFonts w:ascii="Segoe UI"/>
+      <w:sz w:val="24"/>
+      <w:b/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="underlinedHeading5" w:customStyle="false">
+    <w:uiPriority w:val="11"/>
+    <w:qFormat/>
+    <w:name w:val="heading 5"/>
+    <w:rPr>
+      <w:color w:themeColor="accent1" w:themeShade="FF"/>
+      <w:rFonts w:ascii="Segoe UI"/>
+      <w:sz w:val="24"/>
+      <w:b/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Heading6" w:customStyle="false">
+    <w:uiPriority w:val="11"/>
+    <w:qFormat/>
+    <w:name w:val="heading 6"/>
+    <w:rPr>
+      <w:color w:themeColor="accent1" w:themeShade="FF"/>
+      <w:rFonts w:ascii="Segoe UI"/>
+      <w:sz w:val="22"/>
+      <w:b/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="underlinedHeading6" w:customStyle="false">
+    <w:uiPriority w:val="11"/>
+    <w:qFormat/>
+    <w:name w:val="heading 6"/>
+    <w:rPr>
+      <w:color w:themeColor="accent1" w:themeShade="FF"/>
+      <w:rFonts w:ascii="Segoe UI"/>
+      <w:sz w:val="22"/>
+      <w:b/>
+    </w:rPr>
+  </w:style>
+  <w:style xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:type="table" w:styleId="TableGrid">
+    <w:name w:val="Table Grid"/>
+    <w:basedOn w:val="TableNormal"/>
+    <w:pPr>
+      <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+    </w:pPr>
+    <w:tblPr>
+      <w:tblInd w:w="0" w:type="dxa"/>
+      <w:tblBorders>
+        <w:top w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+        <w:left w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+        <w:bottom w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+        <w:right w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+        <w:insideH w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+        <w:insideV w:val="single" w:color="auto" w:sz="4" w:space="0"/>
+      </w:tblBorders>
+      <w:tblCellMar>
+        <w:top w:w="0" w:type="dxa"/>
+        <w:left w:w="108" w:type="dxa"/>
+        <w:bottom w:w="0" w:type="dxa"/>
+        <w:right w:w="108" w:type="dxa"/>
+      </w:tblCellMar>
+    </w:tblPr>
+  </w:style>
+  <w:style xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:type="character" w:styleId="Hyperlink">
+    <w:name w:val="Hyperlink"/>
+    <w:unhideWhenUsed/>
+    <w:rPr>
+      <w:color w:val="0000FF" w:themeColor="hyperlink"/>
+      <w:u w:val="single"/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="table" w:styleId="InnerTable">
+    <w:name w:val="Inner Table"/>
+    <w:basedOn w:val="TableGrid"/>
+    <w:tblPr>
+      <w:tblCellMar>
+        <w:left w:w="0" w:type="dxa"/>
+        <w:right w:w="0" w:type="dxa"/>
+      </w:tblCellMar>
+    </w:tblPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Title" w:customStyle="false">
+    <w:uiPriority w:val="10"/>
+    <w:qFormat/>
+    <w:name w:val="Title"/>
+    <w:basedOn w:val="Normal"/>
+    <w:next w:val="Normal"/>
+    <w:rPr>
+      <w:color w:themeColor="dark1"/>
+      <w:rFonts w:ascii="Calibri Light"/>
+      <w:sz w:val="56"/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Subtitle" w:customStyle="false">
+    <w:uiPriority w:val="11"/>
+    <w:qFormat/>
+    <w:name w:val="Subtitle"/>
+    <w:basedOn w:val="Normal"/>
+    <w:next w:val="Normal"/>
+    <w:rPr>
+      <w:color w:themeColor="dark1"/>
+      <w:rFonts w:ascii="Calibri Light"/>
+      <w:sz w:val="32"/>
+    </w:rPr>
+  </w:style>
+</w:styles>

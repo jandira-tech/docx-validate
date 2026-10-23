@@ -1,0 +1,175 @@
+<w:hdr xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 wp14">
+  <w:tbl>
+    <w:tblGrid>
+      <w:gridCol w:w="4500" w:type="dxa"/>
+      <w:gridCol w:w="1000" w:type="dxa"/>
+      <w:gridCol w:w="4500" w:type="dxa"/>
+    </w:tblGrid>
+    <w:tr>
+      <w:trPr>
+        <w:ins w:author="Jubarte" w:id="1" w:date="1970-01-01T00:00:00Z"/>
+      </w:trPr>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="4500" w:type="dxa"/>
+          <w:tcBorders>
+            <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+          </w:tcBorders>
+          <w:noWrap/>
+        </w:tcPr>
+        <w:p>
+          <w:pPr>
+            <w:jc w:val="left"/>
+            <w:rPr>
+              <w:ins w:author="Jubarte" w:id="2" w:date="1970-01-01T00:00:00Z"/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Jubarte" w:id="3" w:date="1970-01-01T00:00:00Z">
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+              <w:t>D+H
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="000000"/>
+              </w:rPr>
+              <w:t xml:space="preserve">| Kilde: www.dh-partner.com
+              </w:t>
+            </w:r>
+          </w:ins>
+        </w:p>
+      </w:tc>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="1000" w:type="dxa"/>
+          <w:tcBorders>
+            <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+          </w:tcBorders>
+          <w:noWrap/>
+        </w:tcPr>
+        <w:p>
+          <w:pPr>
+            <w:jc w:val="center"/>
+            <w:rPr>
+              <w:ins w:author="Jubarte" w:id="4" w:date="1970-01-01T00:00:00Z"/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Jubarte" w:id="5" w:date="1970-01-01T00:00:00Z">
+            <w:r>
+              <w:rPr>
+                <w:color w:val="000000"/>
+              </w:rPr>
+              <w:t>-
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:fldChar w:fldCharType="begin"/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="000000"/>
+              </w:rPr>
+              <w:instrText>PAGE
+              </w:instrText>
+            </w:r>
+            <w:r>
+              <w:fldChar w:fldCharType="separate"/>
+            </w:r>
+            <w:r>
+              <w:fldChar w:fldCharType="end"/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="000000"/>
+              </w:rPr>
+              <w:t>-
+              </w:t>
+            </w:r>
+          </w:ins>
+        </w:p>
+      </w:tc>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="4500" w:type="dxa"/>
+          <w:tcBorders>
+            <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+          </w:tcBorders>
+          <w:noWrap/>
+        </w:tcPr>
+        <w:p>
+          <w:pPr>
+            <w:jc w:val="right"/>
+            <w:rPr>
+              <w:ins w:author="Jubarte" w:id="6" w:date="1970-01-01T00:00:00Z"/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Jubarte" w:id="7" w:date="1970-01-01T00:00:00Z">
+            <w:r>
+              <w:rPr>
+                <w:color w:val="000000"/>
+              </w:rPr>
+              <w:t>07.12.2025
+              </w:t>
+            </w:r>
+          </w:ins>
+        </w:p>
+      </w:tc>
+    </w:tr>
+  </w:tbl>
+  <w:sdt>
+    <w:sdtPr>
+      <w:id w:val="1688948825"/>
+      <w:docPartObj>
+        <w:docPartGallery w:val="Page Numbers (Top of Page)"/>
+        <w:docPartUnique/>
+      </w:docPartObj>
+    </w:sdtPr>
+    <w:sdtContent>
+      <w:p w14:paraId="6489191E" w14:textId="572E9D51">
+        <w:pPr>
+          <w:pStyle w:val="Antrats"/>
+          <w:jc w:val="center"/>
+          <w:rPr>
+            <w:del w:author="Jubarte" w:id="8" w:date="1970-01-01T00:00:00Z"/>
+          </w:rPr>
+        </w:pPr>
+        <w:del w:author="Jubarte" w:id="9" w:date="1970-01-01T00:00:00Z">
+          <w:r>
+            <w:fldChar w:fldCharType="begin"/>
+          </w:r>
+          <w:r>
+            <w:delInstrText>PAGE \* MERGEFORMAT
+            </w:delInstrText>
+          </w:r>
+          <w:r>
+            <w:fldChar w:fldCharType="separate"/>
+          </w:r>
+          <w:r>
+            <w:rPr>
+              <w:noProof/>
+            </w:rPr>
+            <w:delText>3
+            </w:delText>
+          </w:r>
+          <w:r>
+            <w:fldChar w:fldCharType="end"/>
+          </w:r>
+        </w:del>
+      </w:p>
+    </w:sdtContent>
+  </w:sdt>
+  <w:p w14:paraId="2FE44DCA" w14:textId="77777777">
+    <w:pPr>
+      <w:pStyle w:val="Antrats"/>
+      <w:rPr>
+        <w:del w:id="10" w:author="Jubarte" w:date="1970-01-01T00:00:00Z"/>
+      </w:rPr>
+    </w:pPr>
+  </w:p>
+</w:hdr>

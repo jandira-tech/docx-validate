@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:hdr xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:m="http://purl.oclc.org/ooxml/officeDocument/math" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:oel="http://schemas.microsoft.com/office/2019/extlst" xmlns:r="http://purl.oclc.org/ooxml/officeDocument/relationships" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://purl.oclc.org/ooxml/drawingml/wordprocessingDrawing" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://purl.oclc.org/ooxml/wordprocessingml/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16sdtfl="http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:w16du="http://schemas.microsoft.com/office/word/2023/wordml/word16du" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh w16sdtfl w16du wne wp14">
+  <w:sdt>
+    <w:sdtPr>
+      <w:id w:val="393556026"/>
+      <w:docPartObj>
+        <w:docPartGallery w:val="Watermarks"/>
+        <w:docPartUnique/>
+      </w:docPartObj>
+    </w:sdtPr>
+    <w:sdtEndPr/>
+    <w:sdtContent>
+      <w:p w14:paraId="62B150C8" w14:textId="77777777" w:rsidR="00104652" w:rsidRDefault="00104652">
+        <w:pPr>
+          <w:pStyle w:val="Header"/>
+        </w:pPr>
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+          </w:rPr>
+          <mc:AlternateContent>
+            <mc:Choice Requires="v">
+              <w:pict w14:anchorId="6D72D594">
+                <v:shapetype id="_x0000_t136" coordsize="21600,21600" o:spt="136" adj="10800" path="m@7,l@8,m@5,21600l@6,21600e">
+                  <v:formulas>
+                    <v:f eqn="sum #0 0 10800"/>
+                    <v:f eqn="prod #0 2 1"/>
+                    <v:f eqn="sum 21600 0 @1"/>
+                    <v:f eqn="sum 0 0 @2"/>
+                    <v:f eqn="sum 21600 0 @3"/>
+                    <v:f eqn="if @0 @3 0"/>
+                    <v:f eqn="if @0 21600 @1"/>
+                    <v:f eqn="if @0 0 @2"/>
+                    <v:f eqn="if @0 @4 21600"/>
+                    <v:f eqn="mid @5 @6"/>
+                    <v:f eqn="mid @8 @5"/>
+                    <v:f eqn="mid @7 @8"/>
+                    <v:f eqn="mid @6 @7"/>
+                    <v:f eqn="sum @6 0 @5"/>
+                  </v:formulas>
+                  <v:path textpathok="t" o:connecttype="custom" o:connectlocs="@9,0;@10,10800;@11,21600;@12,10800" o:connectangles="270,180,90,0"/>
+                  <v:textpath on="t" fitshape="t"/>
+                  <v:handles>
+                    <v:h position="#0,bottomRight" xrange="6629,14971"/>
+                  </v:handles>
+                  <o:lock v:ext="edit" text="t" shapetype="t"/>
+                </v:shapetype>
+                <v:shape id="PowerPlusWaterMarkObject357476642" o:spid="_x0000_s1025" type="#_x0000_t136" alt="" style="position:absolute;margin-left:0;margin-top:0;width:527.85pt;height:131.95pt;rotation:315;z-index:-251658752;mso-wrap-edited:f;mso-width-percent:0;mso-height-percent:0;mso-position-horizontal:center;mso-position-horizontal-relative:margin;mso-position-vertical:center;mso-position-vertical-relative:margin;mso-width-percent:0;mso-height-percent:0" o:allowincell="f" fillcolor="silver" stroked="f">
+                  <v:fill opacity=".5"/>
+                  <v:textpath style="font-family:&quot;Calibri&quot;;font-size:1pt" string="CONFIDENTIAL"/>
+                  <w10:wrap anchorx="margin" anchory="margin"/>
+                </v:shape>
+              </w:pict>
+            </mc:Choice>
+            <mc:Fallback>
+              <w:drawing>
+                <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251659264" behindDoc="1" locked="0" layoutInCell="0" allowOverlap="1" wp14:anchorId="697874E4" wp14:editId="0D07AD04">
+                  <wp:simplePos x="0" y="0"/>
+                  <wp:positionH relativeFrom="margin">
+                    <wp:align>center
+                    </wp:align>
+                  </wp:positionH>
+                  <wp:positionV relativeFrom="margin">
+                    <wp:align>center
+                    </wp:align>
+                  </wp:positionV>
+                  <wp:extent cx="6703695" cy="1675765"/>
+                  <wp:effectExtent l="0" t="0" r="0" b="0"/>
+                  <wp:wrapNone/>
+                  <wp:docPr id="318206338" name="PowerPlusWaterMarkObject357476642"/>
+                  <wp:cNvGraphicFramePr>
+                    <a:graphicFrameLocks xmlns:a="http://purl.oclc.org/ooxml/drawingml/main"/>
+                  </wp:cNvGraphicFramePr>
+                  <a:graphic xmlns:a="http://purl.oclc.org/ooxml/drawingml/main">
+                    <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                      <wp:wsp>
+                        <wp:cNvSpPr txBox="1">
+                          <a:spLocks noChangeArrowheads="1" noChangeShapeType="1" noTextEdit="1"/>
+                        </wp:cNvSpPr>
+                        <wp:spPr bwMode="auto">
+                          <a:xfrm rot="18900000">
+                            <a:off x="0" y="0"/>
+                            <a:ext cx="6703695" cy="1675765"/>
+                          </a:xfrm>
+                          <a:prstGeom prst="rect">
+                            <a:avLst/>
+                          </a:prstGeom>
+                          <a:extLst>
+                            <a:ext uri="{91240B29-F687-4F45-9708-019B960494DF}">
+                              <a14:hiddenLine xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" w="9525">
+                                <a:solidFill>
+                                  <a:srgbClr val="000000"/>
+                                </a:solidFill>
+                                <a:round/>
+                                <a:headEnd/>
+                                <a:tailEnd/>
+                              </a14:hiddenLine>
+                            </a:ext>
+                          </a:extLst>
+                        </wp:spPr>
+                        <wp:txbx>
+                          <wne:txbxContent>
+                            <w:p w14:paraId="315855F8" w14:textId="77777777" w:rsidR="00034A7A" w:rsidRDefault="00034A7A" w:rsidP="00034A7A">
+                              <w:pPr>
+                                <w:jc w:val="center"/>
+                                <w:rPr>
+                                  <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                                  <w:color w:val="C0C0C0"/>
+                                  <w:kern w:val="0"/>
+                                  <w:sz w:val="72"/>
+                                  <w:szCs w:val="72"/>
+                                  <w14:textFill>
+                                    <w14:solidFill>
+                                      <w14:srgbClr w14:val="C0C0C0">
+                                        <w14:alpha w14:val="50000"/>
+                                      </w14:srgbClr>
+                                    </w14:solidFill>
+                                  </w14:textFill>
+                                  <w14:ligatures w14:val="none"/>
+                                </w:rPr>
+                              </w:pPr>
+                              <w:r>
+                                <w:rPr>
+                                  <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+                                  <w:color w:val="C0C0C0"/>
+                                  <w:sz w:val="72"/>
+                                  <w:szCs w:val="72"/>
+                                  <w14:textFill>
+                                    <w14:solidFill>
+                                      <w14:srgbClr w14:val="C0C0C0">
+                                        <w14:alpha w14:val="50000"/>
+                                      </w14:srgbClr>
+                                    </w14:solidFill>
+                                  </w14:textFill>
+                                </w:rPr>
+                                <w:t>CONFIDENTIAL
+                                </w:t>
+                              </w:r>
+                            </w:p>
+                          </wne:txbxContent>
+                        </wp:txbx>
+                        <wp:bodyPr wrap="square" numCol="1" fromWordArt="1">
+                          <a:prstTxWarp prst="textPlain">
+                            <a:avLst>
+                              <a:gd name="adj" fmla="val 50000"/>
+                            </a:avLst>
+                          </a:prstTxWarp>
+                          <a:noAutofit/>
+                        </wp:bodyPr>
+                      </wp:wsp>
+                    </a:graphicData>
+                  </a:graphic>
+                  <wp14:sizeRelH relativeFrom="page">
+                    <wp14:pctWidth>0%
+                    </wp14:pctWidth>
+                  </wp14:sizeRelH>
+                  <wp14:sizeRelV relativeFrom="page">
+                    <wp14:pctHeight>0%
+                    </wp14:pctHeight>
+                  </wp14:sizeRelV>
+                </wp:anchor>
+              </w:drawing>
+            </mc:Fallback>
+          </mc:AlternateContent>
+        </w:r>
+      </w:p>
+    </w:sdtContent>
+  </w:sdt>
+</w:hdr>

@@ -1,0 +1,932 @@
+<w:document xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:mo="http://schemas.microsoft.com/office/mac/office/2008/main" xmlns:mv="urn:schemas-microsoft-com:mac:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:pt14="http://powertools.codeplex.com/2011" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="pt14 w14 wp14">
+  <w:body>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="1" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="2" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Αα Alpha
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="3" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="4" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Ββ Beta
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="5" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="6" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Γγ Gamma
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="7" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="8" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Δδ Delta
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="9" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="10" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Εε Epsilon
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="11" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="12" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Ζζ Zeta
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="13" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="14" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Ηη Eta
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="15" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="16" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Θθ Theta
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="17" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="18" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Ιι Iota
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="19" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="20" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Κκ Kappa
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="21" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="22" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Λλ Lambda
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="23" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="24" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Μμ Mu
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="25" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="26" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Νν Nu
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="27" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="28" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Ξξ Xi
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="29" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="30" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Οο Omicron
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="31" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="32" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Ππ Pi
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="33" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="34" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Ρρ Rho
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="35" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="36" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Σσς Sigma
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="37" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="38" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Ττ Tau
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="39" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="40" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Υυ Upsilon
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="41" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="42" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Φφ Phi
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="43" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="44" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Χχ Chi
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="PreformattedText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="45" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="46" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Ψψ Psi
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="47" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="48" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Ωω Omega
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:del w:author="Jubarte" w:id="49" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>OOXML w:b (bold) tester: ST_OnOff variants, rStyle-only cases, rStyle + inline overrides, and a linked style pair (paragraph+character) to verify behavior.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="50" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="51" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>A) ST_OnOff values for &lt;w:b&gt; on a run:
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="52" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="53" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">- w:b w:val=(w:val omitted):
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>Sample text
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="54" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="55" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">- w:b w:val=true:
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="true"/>
+          </w:rPr>
+          <w:delText>Sample text
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="56" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="57" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">- w:b w:val=1:
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+          </w:rPr>
+          <w:delText>Sample text
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="58" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="59" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">- w:b w:val=on:
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="on"/>
+          </w:rPr>
+          <w:delText>Sample text
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="60" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="61" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">- w:b w:val=false:
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="false"/>
+          </w:rPr>
+          <w:delText>Sample text
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="62" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="63" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">- w:b w:val=0:
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="0"/>
+          </w:rPr>
+          <w:delText>Sample text
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="64" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="65" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">- w:b w:val=off:
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="off"/>
+          </w:rPr>
+          <w:delText>Sample text
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="66" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="67" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="68" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>B) rStyle-only cases (no inline &lt;w:b&gt;):
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="69" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="70" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">- rStyle='SD_BoldChar' (should be bold):
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="SDBoldChar"/>
+          </w:rPr>
+          <w:delText>Sample via SD_BoldChar
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="71" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="72" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">- rStyle='Strong' (built-in bold):
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Strong"/>
+          </w:rPr>
+          <w:delText>Sample via Strong
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="73" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="74" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">- rStyle='SD_PlainChar' (not bold):
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="SDPlainChar"/>
+          </w:rPr>
+          <w:delText>Sample via SD_PlainChar
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="75" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="76" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="77" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>C) rStyle + inline &lt;w:b&gt; combinations (inline overrides style):
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="78" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="79" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">- rStyle='SD_BoldChar' + &lt;w:b w:val='0'&gt; =&gt; expect NOT bold:
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="SDBoldChar"/>
+            <w:b w:val="0"/>
+          </w:rPr>
+          <w:delText>Styled bold, overridden off
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="80" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="81" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">- rStyle='SD_BoldChar' + &lt;w:b w:val='1'&gt; =&gt; expect bold:
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="SDBoldChar"/>
+            <w:b w:val="1"/>
+          </w:rPr>
+          <w:delText>Styled bold, reinforced on
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="82" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="83" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">- rStyle='SD_PlainChar' + &lt;w:b w:val='on'&gt; =&gt; expect bold:
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="SDPlainChar"/>
+            <w:b w:val="on"/>
+          </w:rPr>
+          <w:delText>Plain style, inline turns bold on
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="84" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="85" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">- rStyle='Strong' + &lt;w:b w:val='off'&gt; =&gt; expect NOT bold:
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Strong"/>
+            <w:b w:val="off"/>
+          </w:rPr>
+          <w:delText>Strong style, explicit bold off
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="86" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="87" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">- rStyle='Strong' + &lt;w:b w:val='true'&gt; =&gt; expect bold:
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Strong"/>
+            <w:b w:val="true"/>
+          </w:rPr>
+          <w:delText>Strong style, inline bold on
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="88" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="89" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="90" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>D) Linked style (paragraph+character) demonstrations:
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="91" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="92" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">- rStyle='SD_LinkedHeadingChar' (character side of linked pair) =&gt; expect bold:
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="SDLinkedHeadingChar"/>
+          </w:rPr>
+          <w:delText>Linked Char style applied to run
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="93" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="94" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">- rStyle='SD_LinkedHeadingChar' + &lt;w:b w:val='0'&gt; =&gt; expect NOT bold:
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="SDLinkedHeadingChar"/>
+            <w:b w:val="0"/>
+          </w:rPr>
+          <w:delText>Linked Char style overridden off
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="SDLinkedHeading"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="95" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="96" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">- pStyle='SD_LinkedHeading' + inline &lt;w:b w:val='0'&gt;:
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="0"/>
+          </w:rPr>
+          <w:delText>Paragraph style makes text bold, but inline turns it off here
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="SDLinkedHeading"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="97" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="98" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText xml:space="preserve">- pStyle='SD_LinkedHeading' (no inline) =&gt; expect bold: All runs inherit bold from the paragraph style
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="99" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="100" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="101" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>Table examples (linked style + inline overrides):
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblW w:type="auto" w:w="0"/>
+        <w:tblLook w:firstColumn="1" w:firstRow="1" w:lastColumn="0" w:lastRow="0" w:noHBand="0" w:noVBand="1" w:val="04A0"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="4680"/>
+        <w:gridCol w:w="4680"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="102" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:type="dxa" w:w="4680"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="103" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="104" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>rStyle='SD_LinkedHeadingChar' (no inline)
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:type="dxa" w:w="4680"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="105" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="106" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="SDLinkedHeadingChar"/>
+                </w:rPr>
+                <w:delText>Should be bold
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="107" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:type="dxa" w:w="4680"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="108" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="109" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>rStyle='SD_LinkedHeadingChar' + w:b='0'
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:type="dxa" w:w="4680"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="110" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="111" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="SDLinkedHeadingChar"/>
+                  <w:b w:val="0"/>
+                </w:rPr>
+                <w:delText>Should NOT be bold
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:sectPr>
+      <w:pgSz w:h="15840" w:w="12240"/>
+      <w:pgMar w:bottom="1134" w:left="1134" w:right="1134" w:top="1134"/>
+      <w:formProt w:val="off"/>
+      <w:docGrid w:linePitch="0" w:type="default"/>
+      <w:sectPrChange w:author="Jubarte" w:date="1970-01-01T00:00:00Z" w:id="112">
+        <w:sectPr>
+          <w:pgSz w:w="12240" w:h="15840"/>
+          <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+          <w:cols w:space="720"/>
+          <w:docGrid w:linePitch="360"/>
+        </w:sectPr>
+      </w:sectPrChange>
+    </w:sectPr>
+  </w:body>
+</w:document>

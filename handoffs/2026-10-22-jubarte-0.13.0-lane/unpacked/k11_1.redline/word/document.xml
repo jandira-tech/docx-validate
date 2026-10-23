@@ -1,0 +1,2273 @@
+<w:document xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:oel="http://schemas.microsoft.com/office/2019/extlst" xmlns:pt14="http://powertools.codeplex.com/2011" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" ve:Ignorable="pt14 w14 w15 w16 w16cex w16cid w16sdtdh w16se wp14">
+  <w:body>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="1" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Segoe UI"/>
+          <w:b/>
+          <w:bCs/>
+          <w:color w:val="2F5496"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="2" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>ACB-kædemotor - frit konfigurerbar - CDC-1-ACB
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>24 V DC / Tilpasset efter kundeønsker
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Elektrisk motor til integreret, usynlig montering i vinduesprofilen og til eftermontering.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Praktisk til motoriseret åbning og lukning af vinduer og lemme.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Kan bruges til Komfortopluk, røgudluftning og brandventilation iht. DS/EN12101-2
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Kan kombineres med alle D+H låsemotorer.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Egenskaber:
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Integreret, frit parametrerbar slukningselektronik for at forhindre en defekt i tilfælde af overbelastning af vindue og motor.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Integreret grænseflade ACB (Advanced Communication Bus) med åben Modbus RTU-protokol.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Direkte integration af motoren gennem åben buskommunikation via ACB (Advanced Communication Bus), f.eks. i CTS (bygningsautomation).
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Lav driftsstøj takket være innovativ, akustisk afkobling af drevkomponenterne.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Højpræcisionsmotor og synkron elektronik til synkron drift af op til 8 motorer.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Korrosionsbeskyttet, hærdet, stålkæde, vedligeholdelsesfri takket være livstidssmøring.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Highspeed-funktion (-HS) til hurtigt opluk af vinduer i tilfælde af brand (ABV).
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Justerbart, flertrins klembeskyttelsessystem (løbetid, kraft, åbning).
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Automatisk aflastning af tætningsbåndet efter lukning beskytter tætningslister.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Lavt kabelforbrug med mulighed for gennemsløjfning af op til 3 motorer.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Enkel installation takket være stik med beskyttelse mod omvendt polaritet.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Tilslutning valgfrit mulig fra venstre eller højre (forsyning inkl. bussignaler).
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Kan parametriseres individuelt via D+H SCS-software.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Funktionsbeskrivelse ACB
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Sikker ABV-central kommunikation gennem krypteret dataoverførsel mellem centraler og motorer fra D+H Mechatronic AG.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Direkte styring af motoren via ACB mulig.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Som standard er motoren indstillet med drift med pol-skift fra fabrikken.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Præcis styring af position og feedback, herunder angivelser af den faktiske position.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Åbne- og lukke meddelelser kommer direkte fra motoren via ACB-kommunikation.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Motorens generelle status, som f.eks. samlet kørestrækning, antal aktiveringer, diagnostik og nødfunktion, kan evalueres.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Udvidelsesfunktioner:
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Option "SBD/SBU"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">- Korrosionsbeskyttet, hærdet stålkæde i sidebue-design til lave karmhøjder
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Option "ZB"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t>- Vindebroanvendelse til sidemontering af motoren på vinduet
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Option "CP"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t>- Brugertilpasset motorfunktionsprogrammering såsom løbetid, kraft og åbning
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Option "HP"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t>- Åbningsprogrammering
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Option "VP"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t>- Signal til forbindelse med D+H BSY+ låsemotorer
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Option "KM"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t>- Kraftig motor-gear-enhed med øget kraft (op til 400 N) til at åbne og lukke tunge parallelsprossede og hæve-/sænkevindue/tophængte vinduer.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Option "LS"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t>- Lavhastigheds-programmering i LUKKET-retning til 5 mm/s
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Option "SA"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">- "Afbryder ÅBEN" endepositionsmeddelelse
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Option "SZ"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">- "Afbryder LUKKET" endepositionsmeddelelse
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Option "SA-SZ"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">- "Afbryder ÅBEN" og "Afbryder LUKKET" endepositionsmeddelelse
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Option "AS2"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">- Akustisk signal i overensstemmelse med beskyttelsesklasse 2 i henhold til MaschRL/42/EG
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Option "AS3"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">- Akustisk signal i overensstemmelse med beskyttelsesklasse 3 i henhold til MaschRL/42/EG
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Option "SKS"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">- Mulighed for direkte tilslutning af en klembeskyttelsesliste eller en optisk sensor til overvågning af lukkekanten på motoren
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Option "specialfarve"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t>- lakering til perfekt integration i facadens udseende i henhold til RAL, DB, NCS
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Tekniske data:
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Forsyning: 24 V DC / ±15 %
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Strømforbrug:
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:color w:val="E10025"/>
+          </w:rPr>
+          <w:t>0,6 A (til 350 mm åbning)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:color w:val="0092D4"/>
+          </w:rPr>
+          <w:t>0,8 A (til 500 + 600 mm åbning)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:color w:val="0092D4"/>
+          </w:rPr>
+          <w:t>1 A (til 700 mm åbning)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:color w:val="6DB755"/>
+          </w:rPr>
+          <w:t>1 A (til 800 - 1300 mm åbning)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Indkoblingstid: 30 % (TIL: 3 Min. / FRA: 7 Min.)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Udkobling: Integreret elektronisk belastningsafbryder
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Konfiguration: Main eller Sub
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Design: Højre eller venstre
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Trykkraft: 250 N
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Trækkraft: 250 N
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Nominel låsekraft **: 1500 N
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Levetid: 20000 dobbeltoperationer *
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Åbning:300 mm - 1300 mm
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Hastighed ÅBNE: 6,7 mm/s
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Hastighed ÅBNE - ABV:
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:color w:val="E10025"/>
+          </w:rPr>
+          <w:t>9,4 mm/s (til 350 mm åbning)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:color w:val="0092D4"/>
+          </w:rPr>
+          <w:t>13,6 mm/s (til 500 + 700 mm åbning)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:color w:val="6DB755"/>
+          </w:rPr>
+          <w:t>15 mm/s (til 800 - 1300 mm åbning)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Hastighed LUKKE:
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:color w:val="E10025"/>
+          </w:rPr>
+          <w:t>5 mm/s (til 350 mm åbning)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:color w:val="0092D4"/>
+          </w:rPr>
+          <w:t>6,7 mm/s (til 500 + 700 mm åbning)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:color w:val="6DB755"/>
+          </w:rPr>
+          <w:t>6,7 mm/s (til 800 - 1300 mm åbning)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Beskyttelsesklasse: IP 32
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Måling af lydtryk (støjemission): LpA ≤ 35 dB(A)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Temperaturområde: -15 °C (-5 °C ***) ... +75 °C
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Temperaturstandsikkerhed: B300 (30 min / 300 °C)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Hus: Aluminium
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Farve: Specialfarve i henhold til RAL/DB/NCS
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Tilslutning: Silikonekabel
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>B x H x D: 405-885 (åbningsafhængig) x 30 x 39 mm
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>* Ved lodret anvendelse skal D+H-forhandleren kontaktes!
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>** Afhængig af fastgørelsen, *** iht. VdS 2580
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Leverance:
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Motor, silikoneforbindelseskabel med systemstik, brugsanvisning
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Brand: D+H
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Type: CDC-1-ACB
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Art.nr.:
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">26.100.00
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Mængde: .......... stk Pris: ................. DKK Total: ................. DKK
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+            <w:i w:val="1"/>
+            <w:iCs w:val="1"/>
+          </w:rPr>
+          <w:t>Gør din lokale D+H-partner tilgængelig for designvarianter.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>https://www.dh-partner.com/dk/da/service/projekterings-hjaelp
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Vigtige noter:
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Denne produktbeskrivelse udgør ikke et udbud. Ansvaret for overensstemmelse med udbudsretlige krav påhviler den udbudsgivende projektant eller arkitekt.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Montering og ibrugtagning skal ske i henhold til producentens anvisninger.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Med forbehold for tekniske ændringer.
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:del w:author="Jubarte" w:id="3" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro"/>
+            <w:b/>
+            <w:bCs/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Work Instructions:
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro"/>
+            <w:b/>
+            <w:bCs/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">How to
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:b/>
+            <w:bCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>Replace
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:b/>
+            <w:bCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">an Air Cylinder
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Eop"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:b/>
+            <w:bCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="18347E69" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="4" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Segoe UI"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="5" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Scxw94794337"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:b/>
+            <w:bCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>Parts Needed
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Eop"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="30E23133" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:ind w:left="1080" w:firstLine="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="6" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="7" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>Tire Shine Air Cylinder (P-TB-205)
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Eop"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="70864E10" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:ind w:left="1080" w:firstLine="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="8" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="9" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>Wrap Retract Air Cylinder (P-M2035)
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Eop"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="6B6DA22A" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:ind w:left="1080" w:firstLine="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="10" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="11" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>Blast Gate Air Cylinder (P-C2008)
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Eop"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="67F303E4" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="4"/>
+        </w:numPr>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:ind w:left="1080" w:firstLine="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="12" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="13" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>All-In-One Electric Combo Unit Air Cylinder (P-M2213)
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Eop"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="688C90A3" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="14" w:date="1970-01-01T00:00:00Z"/>
+          <w:rStyle w:val="Normaltextrun"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:b/>
+          <w:bCs/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="70E92B8D" w14:textId="7443CFEC">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="15" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Segoe UI"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="16" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:b/>
+            <w:bCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>Tools Needed
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Eop"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="3C38A560" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="5"/>
+        </w:numPr>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:ind w:left="1080" w:firstLine="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="17" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="18" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>Pliers
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Eop"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="642D361B" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="5"/>
+        </w:numPr>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:ind w:left="1080" w:firstLine="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="19" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="20" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Hammer
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Eop"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="4D2CC19E" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="21" w:date="1970-01-01T00:00:00Z"/>
+          <w:rStyle w:val="Normaltextrun"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:b/>
+          <w:bCs/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="358188AB" w14:textId="73959973">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="22" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Segoe UI"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="23" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:b/>
+            <w:bCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>Procedure
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Eop"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="4564E050" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="6"/>
+        </w:numPr>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:ind w:left="1080" w:firstLine="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="24" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="25" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>Push in a wash stop
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Eop"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="49FE2EE2" w14:textId="59E7E919">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="7"/>
+        </w:numPr>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:ind w:left="1080" w:firstLine="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="26" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="27" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Turn
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">off
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>the air going to the air cylinder
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">in the POD.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="45919829" w14:textId="687EF3CB">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="8"/>
+        </w:numPr>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:ind w:left="1080" w:firstLine="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="28" w:date="1970-01-01T00:00:00Z"/>
+          <w:rStyle w:val="Normaltextrun"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="29" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Disconnect
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">both
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>airlines
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">from the air cylinder.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="37597B6E" w14:textId="589EC6D5">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:numPr>
+          <w:ilvl w:val="2"/>
+          <w:numId w:val="8"/>
+        </w:numPr>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="30" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="31" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Record what airlines go into what port.
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Eop"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="7EE0F0F1" w14:textId="062CB885">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="9"/>
+        </w:numPr>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:ind w:left="1080" w:firstLine="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="32" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="33" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Using a pair of pliers, remove the cotter pins holding the bolts at
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>both
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">end
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>s
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">of the air cylinder.
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Eop"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="1497B520" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="10"/>
+        </w:numPr>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:ind w:left="1080" w:firstLine="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="34" w:date="1970-01-01T00:00:00Z"/>
+          <w:rStyle w:val="Normaltextrun"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="35" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>Remove the bolts holding the air cylinder in place
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="1688406B" w14:textId="15159F79">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:numPr>
+          <w:ilvl w:val="2"/>
+          <w:numId w:val="10"/>
+        </w:numPr>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="36" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="37" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>A
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">hammer may be necessary to help remove the bolts.
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Eop"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="041C0DE2" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="11"/>
+        </w:numPr>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:ind w:left="1080" w:firstLine="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="38" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="39" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>Replace the old air cylinder with a new one.
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Eop"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="434D55BE" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="12"/>
+        </w:numPr>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:ind w:left="1080" w:firstLine="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="40" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="41" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>Secure the air cylinder with the bolts and cotter pins.
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Eop"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="08DF2E2C" w14:textId="5B76027F">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="13"/>
+        </w:numPr>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:ind w:left="1080" w:firstLine="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="42" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="43" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>R
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>econnect
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>both
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>airlines
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">at the correct ports.
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Eop"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="0EF5448A" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="14"/>
+        </w:numPr>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:ind w:left="1080" w:firstLine="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="44" w:date="1970-01-01T00:00:00Z"/>
+          <w:rStyle w:val="Normaltextrun"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="45" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>Turn the air going to the POD back on
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="74FB00C8" w14:textId="0D9BFFA3">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="14"/>
+        </w:numPr>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:ind w:left="1080" w:firstLine="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="46" w:date="1970-01-01T00:00:00Z"/>
+          <w:rStyle w:val="Eop"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="47" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>P
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>ull out the wash stop.
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Eop"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="34AAC916" w14:textId="5CFC896F">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="14"/>
+        </w:numPr>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:ind w:left="1080" w:firstLine="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="48" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="49" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Eop"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Verify that the new air cylinder is working
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="09FE7DE4" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="50" w:date="1970-01-01T00:00:00Z"/>
+          <w:rStyle w:val="Normaltextrun"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:b/>
+          <w:bCs/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="6E79E983" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="51" w:date="1970-01-01T00:00:00Z"/>
+          <w:rStyle w:val="Normaltextrun"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+          <w:b/>
+          <w:bCs/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="5C59FEB4" w14:textId="03304955">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="52" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Segoe UI"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="53" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Normaltextrun"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:b/>
+            <w:bCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>Instructional Video
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Eop"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="038D1796" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="54" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Segoe UI"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:hyperlink r:id="rId8" w:tgtFrame="_blank" w:history="1">
+        <w:del w:author="Jubarte" w:id="55" w:date="1970-01-01T00:00:00Z">
+          <w:r>
+            <w:rPr>
+              <w:rStyle w:val="Normaltextrun"/>
+              <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+              <w:color w:val="0563C1"/>
+              <w:sz w:val="22"/>
+              <w:szCs w:val="22"/>
+              <w:u w:val="single"/>
+            </w:rPr>
+            <w:delText>Replacing an Air Cylinder on Vimeo
+            </w:delText>
+          </w:r>
+        </w:del>
+      </w:hyperlink>
+      <w:del w:author="Jubarte" w:id="56" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Eop"/>
+            <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro" w:cs="Calibri"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="689FD72B" w14:textId="56CE80F3">
+      <w:pPr>
+        <w:pStyle w:val="Paragraph"/>
+        <w:spacing w:before="0" w:beforeAutospacing="0" w:after="0" w:afterAutospacing="0"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="57" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Avenir Next LT Pro" w:hAnsi="Avenir Next LT Pro"/>
+          <w:b/>
+          <w:bCs/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="486673D7" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:rPrChange w:id="58" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+            <w:rPr>
+              <w:rFonts w:ascii="Avenir Next LT Pro" w:eastAsia="Times New Roman" w:hAnsi="Avenir Next LT Pro"/>
+              <w:b/>
+              <w:bCs/>
+              <w:sz w:val="22"/>
+              <w:szCs w:val="22"/>
+              <w:bdr w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+            </w:rPr>
+          </w:rPrChange>
+        </w:rPr>
+        <w:pPrChange w:id="59" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+          <w:pPr>
+            <w:pBdr>
+              <w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+              <w:left w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+              <w:bottom w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+              <w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+              <w:between w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+              <w:bar w:val="none" w:sz="0" w:color="auto"/>
+            </w:pBdr>
+            <w:spacing w:before="100" w:beforeAutospacing="1" w:after="100" w:afterAutospacing="1"/>
+            <w:outlineLvl w:val="2"/>
+          </w:pPr>
+        </w:pPrChange>
+      </w:pPr>
+    </w:p>
+    <w:sectPr>
+      <w:headerReference w:type="even" r:id="rId9"/>
+      <w:headerReference w:type="default" r:id="rId10"/>
+      <w:headerReference w:type="first" r:id="rId13"/>
+      <w:footerReference w:type="even" r:id="rId11"/>
+      <w:footerReference w:type="default" r:id="rId12"/>
+      <w:footerReference w:type="first" r:id="rId14"/>
+      <w:pgSz w:orient="portrait" w:w="11906" w:h="16838"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+      <w:cols w:num="1" w:space="720"/>
+      <w:sectPrChange w:author="Jubarte" w:date="1970-01-01T00:00:00Z" w:id="60">
+        <w:sectPr>
+          <w:type w:val="continuous"/>
+          <w:pgSz w:w="12240" w:h="15840"/>
+          <w:pgMar w:top="2880" w:right="2160" w:bottom="2160" w:left="2160" w:header="720" w:footer="864" w:gutter="0"/>
+          <w:cols w:space="720"/>
+        </w:sectPr>
+      </w:sectPrChange>
+    </w:sectPr>
+  </w:body>
+</w:document>

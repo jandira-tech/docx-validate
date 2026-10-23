@@ -1,0 +1,4744 @@
+<w:document xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:oel="http://schemas.microsoft.com/office/2019/extlst" xmlns:pt14="http://powertools.codeplex.com/2011" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16du="http://schemas.microsoft.com/office/word/2023/wordml/word16du" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16sdtfl="http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="pt14 w14 w15 w16 w16cex w16cid w16du w16sdtdh w16sdtfl w16se wne wp14">
+  <w:body>
+    <w:p w14:paraId="54257407" w14:textId="77777777">
+      <w:r>
+        <w:rPr>
+          <w:rPrChange w:id="1" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+            <w:rPr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+              <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+              <w:b/>
+              <w:bCs/>
+              <w:sz w:val="32"/>
+              <w:szCs w:val="32"/>
+            </w:rPr>
+          </w:rPrChange>
+        </w:rPr>
+        <w:t>file_
+        </w:t>
+      </w:r>
+      <w:ins w:author="Jubarte" w:id="2" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>196
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:del w:author="Jubarte" w:id="3" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:b/>
+            <w:bCs/>
+            <w:sz w:val="32"/>
+            <w:szCs w:val="32"/>
+          </w:rPr>
+          <w:delText>195
+          </w:delText>
+        </w:r>
+      </w:del>
+      <w:r>
+        <w:rPr>
+          <w:rPrChange w:id="4" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+            <w:rPr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+              <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+              <w:b/>
+              <w:bCs/>
+              <w:sz w:val="32"/>
+              <w:szCs w:val="32"/>
+            </w:rPr>
+          </w:rPrChange>
+        </w:rPr>
+        <w:t>.docx
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="123C8CD0" w14:textId="756238AE">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="5" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="6" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+          </w:rPr>
+          <w:drawing>
+            <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251659776" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="1EE8516C" wp14:editId="51885242">
+              <wp:simplePos x="0" y="0"/>
+              <wp:positionH relativeFrom="column">
+                <wp:posOffset>2422478
+                </wp:posOffset>
+              </wp:positionH>
+              <wp:positionV relativeFrom="paragraph">
+                <wp:posOffset>211539
+                </wp:posOffset>
+              </wp:positionV>
+              <wp:extent cx="2149522" cy="1207827"/>
+              <wp:effectExtent l="0" t="0" r="79375" b="87630"/>
+              <wp:wrapNone/>
+              <wp:docPr id="1" name="Elbow Connector 6"/>
+              <wp:cNvGraphicFramePr/>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                  <wps:wsp>
+                    <wps:cNvCnPr/>
+                    <wps:spPr>
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="2149522" cy="1207827"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="bentConnector3">
+                        <a:avLst/>
+                      </a:prstGeom>
+                      <a:ln>
+                        <a:tailEnd type="triangle"/>
+                      </a:ln>
+                    </wps:spPr>
+                    <wps:style>
+                      <a:lnRef idx="1">
+                        <a:schemeClr val="accent1"/>
+                      </a:lnRef>
+                      <a:fillRef idx="0">
+                        <a:schemeClr val="accent1"/>
+                      </a:fillRef>
+                      <a:effectRef idx="0">
+                        <a:schemeClr val="accent1"/>
+                      </a:effectRef>
+                      <a:fontRef idx="minor">
+                        <a:schemeClr val="tx1"/>
+                      </a:fontRef>
+                    </wps:style>
+                    <wps:bodyPr/>
+                  </wps:wsp>
+                </a:graphicData>
+              </a:graphic>
+            </wp:anchor>
+          </w:drawing>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+          </w:rPr>
+          <w:drawing>
+            <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251657728" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="75C88664" wp14:editId="28D8910E">
+              <wp:simplePos x="0" y="0"/>
+              <wp:positionH relativeFrom="column">
+                <wp:posOffset>2204112
+                </wp:posOffset>
+              </wp:positionH>
+              <wp:positionV relativeFrom="paragraph">
+                <wp:posOffset>525439
+                </wp:posOffset>
+              </wp:positionV>
+              <wp:extent cx="2354239" cy="962167"/>
+              <wp:effectExtent l="0" t="19050" r="27305" b="28575"/>
+              <wp:wrapNone/>
+              <wp:docPr id="2" name="Curved Connector 5"/>
+              <wp:cNvGraphicFramePr/>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                  <wps:wsp>
+                    <wps:cNvCnPr/>
+                    <wps:spPr>
+                      <a:xfrm flipV="1">
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="2354239" cy="962167"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="curvedConnector3">
+                        <a:avLst/>
+                      </a:prstGeom>
+                    </wps:spPr>
+                    <wps:style>
+                      <a:lnRef idx="1">
+                        <a:schemeClr val="accent1"/>
+                      </a:lnRef>
+                      <a:fillRef idx="0">
+                        <a:schemeClr val="accent1"/>
+                      </a:fillRef>
+                      <a:effectRef idx="0">
+                        <a:schemeClr val="accent1"/>
+                      </a:effectRef>
+                      <a:fontRef idx="minor">
+                        <a:schemeClr val="tx1"/>
+                      </a:fontRef>
+                    </wps:style>
+                    <wps:bodyPr/>
+                  </wps:wsp>
+                </a:graphicData>
+              </a:graphic>
+            </wp:anchor>
+          </w:drawing>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+          </w:rPr>
+          <w:drawing>
+            <wp:inline distT="0" distB="0" distL="0" distR="0" wp14:anchorId="1741A120" wp14:editId="4BCF16B3">
+              <wp:extent cx="5104263" cy="2122227"/>
+              <wp:effectExtent l="0" t="0" r="0" b="0"/>
+              <wp:docPr id="3" name="Rectangle 3"/>
+              <wp:cNvGraphicFramePr/>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                  <wps:wsp>
+                    <wps:cNvSpPr/>
+                    <wps:spPr>
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="5104263" cy="2122227"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                      <a:noFill/>
+                      <a:ln>
+                        <a:noFill/>
+                      </a:ln>
+                    </wps:spPr>
+                    <wps:style>
+                      <a:lnRef idx="2">
+                        <a:schemeClr val="accent1">
+                          <a:shade val="50000"/>
+                        </a:schemeClr>
+                      </a:lnRef>
+                      <a:fillRef idx="1">
+                        <a:schemeClr val="accent1"/>
+                      </a:fillRef>
+                      <a:effectRef idx="0">
+                        <a:schemeClr val="accent1"/>
+                      </a:effectRef>
+                      <a:fontRef idx="minor">
+                        <a:schemeClr val="lt1"/>
+                      </a:fontRef>
+                    </wps:style>
+                    <wps:bodyPr rot="0" spcFirstLastPara="0" vertOverflow="overflow" horzOverflow="overflow" vert="horz" wrap="square" lIns="91440" tIns="45720" rIns="91440" bIns="45720" numCol="1" spcCol="0" rtlCol="0" fromWordArt="0" anchor="ctr" anchorCtr="0" forceAA="0" compatLnSpc="1">
+                      <a:prstTxWarp prst="textNoShape">
+                        <a:avLst/>
+                      </a:prstTxWarp>
+                      <a:noAutofit/>
+                    </wps:bodyPr>
+                  </wps:wsp>
+                </a:graphicData>
+              </a:graphic>
+            </wp:inline>
+          </w:drawing>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+          </w:rPr>
+          <w:drawing>
+            <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251655680" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="62A6B534" wp14:editId="30828679">
+              <wp:simplePos x="0" y="0"/>
+              <wp:positionH relativeFrom="column">
+                <wp:posOffset>1978925
+                </wp:posOffset>
+              </wp:positionH>
+              <wp:positionV relativeFrom="paragraph">
+                <wp:posOffset>382137
+                </wp:posOffset>
+              </wp:positionV>
+              <wp:extent cx="1160060" cy="320723"/>
+              <wp:effectExtent l="0" t="19050" r="40640" b="41275"/>
+              <wp:wrapNone/>
+              <wp:docPr id="4" name="Right Arrow 2"/>
+              <wp:cNvGraphicFramePr/>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                  <wps:wsp>
+                    <wps:cNvSpPr/>
+                    <wps:spPr>
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="1160060" cy="320723"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rightArrow">
+                        <a:avLst/>
+                      </a:prstGeom>
+                    </wps:spPr>
+                    <wps:style>
+                      <a:lnRef idx="2">
+                        <a:schemeClr val="accent1">
+                          <a:shade val="50000"/>
+                        </a:schemeClr>
+                      </a:lnRef>
+                      <a:fillRef idx="1">
+                        <a:schemeClr val="accent1"/>
+                      </a:fillRef>
+                      <a:effectRef idx="0">
+                        <a:schemeClr val="accent1"/>
+                      </a:effectRef>
+                      <a:fontRef idx="minor">
+                        <a:schemeClr val="lt1"/>
+                      </a:fontRef>
+                    </wps:style>
+                    <wps:bodyPr rot="0" spcFirstLastPara="0" vertOverflow="overflow" horzOverflow="overflow" vert="horz" wrap="square" lIns="91440" tIns="45720" rIns="91440" bIns="45720" numCol="1" spcCol="0" rtlCol="0" fromWordArt="0" anchor="ctr" anchorCtr="0" forceAA="0" compatLnSpc="1">
+                      <a:prstTxWarp prst="textNoShape">
+                        <a:avLst/>
+                      </a:prstTxWarp>
+                      <a:noAutofit/>
+                    </wps:bodyPr>
+                  </wps:wsp>
+                </a:graphicData>
+              </a:graphic>
+            </wp:anchor>
+          </w:drawing>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+          </w:rPr>
+          <w:drawing>
+            <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251652608" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="1A6DB018" wp14:editId="7D093DEA">
+              <wp:simplePos x="0" y="0"/>
+              <wp:positionH relativeFrom="column">
+                <wp:posOffset>40943
+                </wp:posOffset>
+              </wp:positionH>
+              <wp:positionV relativeFrom="paragraph">
+                <wp:posOffset>95534
+                </wp:posOffset>
+              </wp:positionV>
+              <wp:extent cx="1692323" cy="1030406"/>
+              <wp:effectExtent l="0" t="0" r="22225" b="17780"/>
+              <wp:wrapNone/>
+              <wp:docPr id="5" name="Rectangle 1"/>
+              <wp:cNvGraphicFramePr/>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                  <wps:wsp>
+                    <wps:cNvSpPr/>
+                    <wps:spPr>
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="1692323" cy="1030406"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                    </wps:spPr>
+                    <wps:style>
+                      <a:lnRef idx="2">
+                        <a:schemeClr val="accent1">
+                          <a:shade val="50000"/>
+                        </a:schemeClr>
+                      </a:lnRef>
+                      <a:fillRef idx="1">
+                        <a:schemeClr val="accent1"/>
+                      </a:fillRef>
+                      <a:effectRef idx="0">
+                        <a:schemeClr val="accent1"/>
+                      </a:effectRef>
+                      <a:fontRef idx="minor">
+                        <a:schemeClr val="lt1"/>
+                      </a:fontRef>
+                    </wps:style>
+                    <wps:bodyPr rot="0" spcFirstLastPara="0" vertOverflow="overflow" horzOverflow="overflow" vert="horz" wrap="square" lIns="91440" tIns="45720" rIns="91440" bIns="45720" numCol="1" spcCol="0" rtlCol="0" fromWordArt="0" anchor="ctr" anchorCtr="0" forceAA="0" compatLnSpc="1">
+                      <a:prstTxWarp prst="textNoShape">
+                        <a:avLst/>
+                      </a:prstTxWarp>
+                      <a:noAutofit/>
+                    </wps:bodyPr>
+                  </wps:wsp>
+                </a:graphicData>
+              </a:graphic>
+            </wp:anchor>
+          </w:drawing>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="37F2C3E1" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="7" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="8" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+          </w:rPr>
+          <w:drawing>
+            <wp:inline distT="0" distB="0" distL="0" distR="0" wp14:anchorId="669938DC" wp14:editId="1F273DB2">
+              <wp:extent cx="5486400" cy="3200400"/>
+              <wp:effectExtent l="0" t="0" r="0" b="0"/>
+              <wp:docPr id="6" name="Chart 1"/>
+              <wp:cNvGraphicFramePr/>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/chart">
+                  <c:chart xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="rId8"/>
+                </a:graphicData>
+              </a:graphic>
+            </wp:inline>
+          </w:drawing>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="7751710B" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="9" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="10" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Video provides a powerful way to help you prove your point.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="0A6A98D4" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="1"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="11" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="12" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>When you click Online Video, you can paste in the embed code for the video you want to add.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="3675AACC" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="1"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="13" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="14" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>You can also type a keyword to search online for the video that best fits your document.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="5B262D46" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="15" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="16" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>To make your document look professionally produced, Word provides header, footer, cover page, and text box designs that complement each other.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="62A3B61C" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="1"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="17" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="18" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>For example, you can add a matching cover page, header, and sidebar.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="3D8E4EA7" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="1"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="19" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="20" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Click Insert and then choose the elements you want from the different galleries.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="176C2786" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="1"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="21" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="22" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Themes and styles also help keep your document coordinated.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="2B3504C4" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="2"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="23" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="24" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>When you click Design and choose a new Theme, the pictures, charts, and SmartArt graphics change to match your new theme.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="2C0498D0" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="25" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="26" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>When you apply styles, your headings change to match the new theme.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="47673396" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="1"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="27" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="28" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Save time in Word with new buttons that show up where you need them.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="5D32DB08" w14:textId="77777777">
+      <w:pPr>
+        <w:spacing w:after="480"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="29" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="30" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Video provides a powerful way to help you prove your point. When you click Online Video, you can paste in the embed code for the video you want to add. You can also type a keyword to search online for the video that best fits your document.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="03099E12" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="31" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="32" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>To make your document look professionally produced, Word provides header, footer, cover page, and text box designs that complement each other. For example, you can add a matching cover page, header, and sidebar. Click Insert and then choose the elements you want from the different galleries.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="2301DC0D" w14:textId="77777777">
+      <w:pPr>
+        <w:spacing w:before="800"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="33" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="34" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Themes and styles also help keep your document coordinated. When you click Design and choose a new Theme, the pictures, charts, and SmartArt graphics change to match your new theme. When you apply styles, your headings change to match the new theme.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="1963AB74" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="35" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="36" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Heading 1
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="1FB54B9F" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="37" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="38" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>This is Heading 2
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="0922DB5F" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="39" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="40" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:i/>
+            <w:highlight w:val="yellow"/>
+            <w:u w:val="single"/>
+          </w:rPr>
+          <w:t>Video provides a powerful way to help you prove your point.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">When you click Online Video, you can paste in the embed code for the video you want to add. You can also type a keyword to search online for the video that best fits your document.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="19467F5D" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="41" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="42" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Second Heading 1
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="4090E0F0" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="43" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="44" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+          </w:rPr>
+          <w:t>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="11121BFA" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="45" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="46" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>More Info
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="7EC7EF8D" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="47" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="48" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+          </w:rPr>
+          <w:t>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="573DFB18" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="49" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="50" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t xml:space="preserve">When
+          </w:t>
+        </w:r>
+        <w:commentRangeStart w:id="0"/>
+        <w:r>
+          <w:t>you click Online Video
+          </w:t>
+        </w:r>
+        <w:commentRangeEnd w:id="0"/>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="CommentReference"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:commentReference w:id="0"/>
+        </w:r>
+        <w:r>
+          <w:t>, you can paste in the embed code for the video you want to add. You can also type a keyword to search online for the video that best fits your document.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:sdt>
+      <w:sdtPr>
+        <w:alias w:val="RichTextContentControl"/>
+        <w:tag w:val="RichTextContentControl"/>
+        <w:id w:val="1111861867"/>
+      </w:sdtPr>
+      <w:sdtEndPr/>
+      <w:sdtContent>
+        <w:p w14:paraId="7FD69FC2" w14:textId="77777777">
+          <w:pPr>
+            <w:rPr>
+              <w:ins w:author="Jubarte" w:id="51" w:date="1970-01-01T00:00:00Z"/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Jubarte" w:id="52" w:date="1970-01-01T00:00:00Z">
+            <w:r>
+              <w:t>Video provides a powerful way to help you prove your point. When you click Online Video, you can paste in the embed code for the video you want to add. You can also type a keyword to search online for the video that best fits your document.
+              </w:t>
+            </w:r>
+          </w:ins>
+        </w:p>
+      </w:sdtContent>
+    </w:sdt>
+    <w:p w14:paraId="67BBBFB9" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="53" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="54" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t xml:space="preserve">To
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t>make your document look professionally
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">produced, Word provides header, footer, cover page, and text box designs that complement each other. For example, you can add a matching cover page, header, and sidebar. Click Insert and then choose the elements you want from the different galleries.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:sdt>
+      <w:sdtPr>
+        <w:id w:val="-132646417"/>
+        <w:picture/>
+      </w:sdtPr>
+      <w:sdtEndPr/>
+      <w:sdtContent>
+        <w:p w14:paraId="28B70BED" w14:textId="77777777">
+          <w:pPr>
+            <w:rPr>
+              <w:ins w:author="Jubarte" w:id="55" w:date="1970-01-01T00:00:00Z"/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Jubarte" w:id="56" w:date="1970-01-01T00:00:00Z">
+            <w:r>
+              <w:rPr>
+                <w:noProof/>
+              </w:rPr>
+              <w:drawing>
+                <wp:inline distT="0" distB="0" distL="0" distR="0" wp14:anchorId="3F768D1D" wp14:editId="421054E5">
+                  <wp:extent cx="1903730" cy="1515822"/>
+                  <wp:effectExtent l="0" t="0" r="1270" b="8255"/>
+                  <wp:docPr id="7" name="Picture 1"/>
+                  <wp:cNvGraphicFramePr>
+                    <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+                  </wp:cNvGraphicFramePr>
+                  <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                    <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                      <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                        <pic:nvPicPr>
+                          <pic:cNvPr id="0" name="Picture 1"/>
+                          <pic:cNvPicPr>
+                            <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                          </pic:cNvPicPr>
+                        </pic:nvPicPr>
+                        <pic:blipFill>
+                          <a:blip r:embed="rId9" cstate="print">
+                            <a:extLst>
+                              <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                                <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                              </a:ext>
+                            </a:extLst>
+                          </a:blip>
+                          <a:stretch>
+                            <a:fillRect/>
+                          </a:stretch>
+                        </pic:blipFill>
+                        <pic:spPr bwMode="auto">
+                          <a:xfrm>
+                            <a:off x="0" y="0"/>
+                            <a:ext cx="1903730" cy="1515822"/>
+                          </a:xfrm>
+                          <a:prstGeom prst="rect">
+                            <a:avLst/>
+                          </a:prstGeom>
+                          <a:noFill/>
+                          <a:ln>
+                            <a:noFill/>
+                          </a:ln>
+                        </pic:spPr>
+                      </pic:pic>
+                    </a:graphicData>
+                  </a:graphic>
+                </wp:inline>
+              </w:drawing>
+            </w:r>
+          </w:ins>
+        </w:p>
+      </w:sdtContent>
+    </w:sdt>
+    <w:sdt>
+      <w:sdtPr>
+        <w:alias w:val="CheckBoxContentControl"/>
+        <w:tag w:val="CheckBoxContentControl"/>
+        <w:id w:val="-1047533240"/>
+        <w14:checkbox>
+          <w14:checked w14:val="0"/>
+          <w14:checkedState w14:val="2612" w14:font="Arial Unicode MS"/>
+          <w14:uncheckedState w14:val="2610" w14:font="Arial Unicode MS"/>
+        </w14:checkbox>
+      </w:sdtPr>
+      <w:sdtEndPr/>
+      <w:sdtContent>
+        <w:p w14:paraId="11515645" w14:textId="77777777">
+          <w:pPr>
+            <w:rPr>
+              <w:ins w:author="Jubarte" w:id="57" w:date="1970-01-01T00:00:00Z"/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Jubarte" w:id="58" w:date="1970-01-01T00:00:00Z">
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="MS Gothic" w:eastAsia="MS Gothic" w:hAnsi="MS Gothic" w:hint="eastAsia"/>
+              </w:rPr>
+              <w:t>☐
+              </w:t>
+            </w:r>
+          </w:ins>
+        </w:p>
+      </w:sdtContent>
+    </w:sdt>
+    <w:sdt>
+      <w:sdtPr>
+        <w:alias w:val="ComboBoxContentControl"/>
+        <w:tag w:val="ComboBoxContentControl"/>
+        <w:id w:val="1891146277"/>
+        <w:comboBox>
+          <w:listItem w:displayText="One" w:value="One"/>
+          <w:listItem w:displayText="Two" w:value="Two"/>
+          <w:listItem w:displayText="Three" w:value="Three"/>
+        </w:comboBox>
+      </w:sdtPr>
+      <w:sdtEndPr/>
+      <w:sdtContent>
+        <w:p w14:paraId="7867605E" w14:textId="77777777">
+          <w:pPr>
+            <w:rPr>
+              <w:ins w:author="Jubarte" w:id="59" w:date="1970-01-01T00:00:00Z"/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Jubarte" w:id="60" w:date="1970-01-01T00:00:00Z">
+            <w:r>
+              <w:t>Two
+              </w:t>
+            </w:r>
+          </w:ins>
+        </w:p>
+      </w:sdtContent>
+    </w:sdt>
+    <w:p w14:paraId="30E8E50B" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="61" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="62" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t xml:space="preserve">Video provides a powerful way to help you prove your point. When you click Online Video, you can paste in the embed code for the video you want to add. You can also type a keyword to search online for the video that best fits your document.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="EndnoteReference"/>
+          </w:rPr>
+          <w:endnoteReference w:id="1"/>
+        </w:r>
+        <w:r>
+          <w:t>To make your document look professionally produced, Word provides header, footer, cover page, and text box designs that complement each other. For example, you can add a matching cover page, header, and sidebar.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="71A7AA3D" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="63" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+        <w:sectPr>
+          <w:headerReference w:type="even" r:id="rId10"/>
+          <w:headerReference w:type="default" r:id="rId11"/>
+          <w:footerReference w:type="even" r:id="rId12"/>
+          <w:footerReference w:type="default" r:id="rId13"/>
+          <w:headerReference w:type="first" r:id="rId14"/>
+          <w:footerReference w:type="first" r:id="rId15"/>
+          <w:pgSz w:w="12240" w:h="15840"/>
+          <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+          <w:cols w:space="720"/>
+          <w:docGrid w:linePitch="360"/>
+        </w:sectPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="483ADECB" w14:textId="77777777">
+      <w:pPr>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="4" w:space="1" w:color="auto"/>
+          <w:left w:val="single" w:sz="4" w:space="4" w:color="auto"/>
+          <w:bottom w:val="single" w:sz="4" w:space="1" w:color="auto"/>
+          <w:right w:val="single" w:sz="4" w:space="4" w:color="auto"/>
+        </w:pBdr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="64" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="65" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Video provides a powerful way to help you prove your point. When you click Online Video, you can paste in the embed code for the video you want to add. You can also type a keyword to search online for the video that best fits your document.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:sdt>
+      <w:sdtPr>
+        <w:rPr>
+          <w:b w:val="0"/>
+          <w:bCs w:val="0"/>
+          <w:noProof/>
+          <w:color w:val="auto"/>
+        </w:rPr>
+        <w:alias w:val="MyTable"/>
+        <w:tag w:val="MyTable"/>
+        <w:id w:val="354002298"/>
+      </w:sdtPr>
+      <w:sdtEndPr>
+        <w:rPr>
+          <w:noProof w:val="0"/>
+        </w:rPr>
+      </w:sdtEndPr>
+      <w:sdtContent>
+        <w:tbl>
+          <w:tblPr>
+            <w:tblStyle w:val="GridTable4Accent5"/>
+            <w:tblW w:w="0" w:type="dxa"/>
+            <w:tblLook w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+          </w:tblPr>
+          <w:tblGrid>
+            <w:gridCol w:w="3116"/>
+            <w:gridCol w:w="3117"/>
+            <w:gridCol w:w="3117"/>
+          </w:tblGrid>
+          <w:tr w14:paraId="665D73C2" w14:textId="77777777">
+            <w:trPr>
+              <w:cnfStyle w:firstRow="1" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="100000000000"/>
+              <w:ins w:author="Jubarte" w:id="66" w:date="1970-01-01T00:00:00Z"/>
+            </w:trPr>
+            <w:tc>
+              <w:tcPr>
+                <w:cnfStyle w:firstRow="0" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="001000000000"/>
+                <w:tcW w:w="3116" w:type="dxa"/>
+              </w:tcPr>
+              <w:sdt>
+                <w:sdtPr>
+                  <w:rPr>
+                    <w:noProof/>
+                  </w:rPr>
+                  <w:alias w:val="Latin1"/>
+                  <w:tag w:val="Latin1"/>
+                  <w:id w:val="1646851742"/>
+                </w:sdtPr>
+                <w:sdtEndPr/>
+                <w:sdtContent>
+                  <w:p w14:paraId="1581FCAC" w14:textId="77777777">
+                    <w:pPr>
+                      <w:rPr>
+                        <w:ins w:author="Jubarte" w:id="67" w:date="1970-01-01T00:00:00Z"/>
+                      </w:rPr>
+                    </w:pPr>
+                    <w:ins w:author="Jubarte" w:id="68" w:date="1970-01-01T00:00:00Z">
+                      <w:r>
+                        <w:rPr>
+                          <w:noProof/>
+                        </w:rPr>
+                        <w:t>Lorem ipsum dolor sit amet
+                        </w:t>
+                      </w:r>
+                    </w:ins>
+                  </w:p>
+                </w:sdtContent>
+              </w:sdt>
+            </w:tc>
+            <w:tc>
+              <w:tcPr>
+                <w:tcW w:w="3117" w:type="dxa"/>
+              </w:tcPr>
+              <w:sdt>
+                <w:sdtPr>
+                  <w:rPr>
+                    <w:noProof/>
+                  </w:rPr>
+                  <w:alias w:val="Latin2"/>
+                  <w:tag w:val="Latin2"/>
+                  <w:id w:val="1730795754"/>
+                </w:sdtPr>
+                <w:sdtEndPr/>
+                <w:sdtContent>
+                  <w:p w14:paraId="36C70DAE" w14:textId="77777777">
+                    <w:pPr>
+                      <w:cnfStyle w:firstRow="1" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="100000000000"/>
+                      <w:rPr>
+                        <w:ins w:author="Jubarte" w:id="69" w:date="1970-01-01T00:00:00Z"/>
+                        <w:b w:val="0"/>
+                      </w:rPr>
+                    </w:pPr>
+                    <w:ins w:author="Jubarte" w:id="70" w:date="1970-01-01T00:00:00Z">
+                      <w:r>
+                        <w:rPr>
+                          <w:noProof/>
+                        </w:rPr>
+                        <w:t>Consectetuer adipiscing elit
+                        </w:t>
+                      </w:r>
+                    </w:ins>
+                  </w:p>
+                </w:sdtContent>
+              </w:sdt>
+            </w:tc>
+            <w:tc>
+              <w:tcPr>
+                <w:tcW w:w="3117" w:type="dxa"/>
+              </w:tcPr>
+              <w:sdt>
+                <w:sdtPr>
+                  <w:rPr>
+                    <w:noProof/>
+                  </w:rPr>
+                  <w:alias w:val="Latin3"/>
+                  <w:tag w:val="Latin3"/>
+                  <w:id w:val="-88469536"/>
+                </w:sdtPr>
+                <w:sdtEndPr/>
+                <w:sdtContent>
+                  <w:p w14:paraId="0D6492B9" w14:textId="77777777">
+                    <w:pPr>
+                      <w:cnfStyle w:firstRow="1" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="100000000000"/>
+                      <w:rPr>
+                        <w:ins w:author="Jubarte" w:id="71" w:date="1970-01-01T00:00:00Z"/>
+                      </w:rPr>
+                    </w:pPr>
+                    <w:ins w:author="Jubarte" w:id="72" w:date="1970-01-01T00:00:00Z">
+                      <w:r>
+                        <w:rPr>
+                          <w:noProof/>
+                        </w:rPr>
+                        <w:t>Maecenas porttitor congue massa.
+                        </w:t>
+                      </w:r>
+                    </w:ins>
+                  </w:p>
+                </w:sdtContent>
+              </w:sdt>
+            </w:tc>
+          </w:tr>
+          <w:sdt>
+            <w:sdtPr>
+              <w:rPr>
+                <w:b w:val="0"/>
+                <w:bCs w:val="0"/>
+              </w:rPr>
+              <w:alias w:val="Row1"/>
+              <w:tag w:val="Row1"/>
+              <w:id w:val="2087339449"/>
+            </w:sdtPr>
+            <w:sdtEndPr/>
+            <w:sdtContent>
+              <w:tr w14:paraId="6041CD2D" w14:textId="77777777">
+                <w:trPr>
+                  <w:cnfStyle w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="1" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="000000100000"/>
+                  <w:ins w:author="Jubarte" w:id="73" w:date="1970-01-01T00:00:00Z"/>
+                </w:trPr>
+                <w:tc>
+                  <w:tcPr>
+                    <w:cnfStyle w:firstRow="0" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="001000000000"/>
+                    <w:tcW w:w="3116" w:type="dxa"/>
+                  </w:tcPr>
+                  <w:sdt>
+                    <w:sdtPr>
+                      <w:alias w:val="Data11"/>
+                      <w:tag w:val="Data11"/>
+                      <w:id w:val="1641614218"/>
+                      <w:text/>
+                    </w:sdtPr>
+                    <w:sdtEndPr/>
+                    <w:sdtContent>
+                      <w:p w14:paraId="2A2ECE4B" w14:textId="77777777">
+                        <w:pPr>
+                          <w:rPr>
+                            <w:ins w:author="Jubarte" w:id="74" w:date="1970-01-01T00:00:00Z"/>
+                          </w:rPr>
+                        </w:pPr>
+                        <w:ins w:author="Jubarte" w:id="75" w:date="1970-01-01T00:00:00Z">
+                          <w:r>
+                            <w:t>100
+                            </w:t>
+                          </w:r>
+                        </w:ins>
+                      </w:p>
+                    </w:sdtContent>
+                  </w:sdt>
+                </w:tc>
+                <w:tc>
+                  <w:tcPr>
+                    <w:tcW w:w="3117" w:type="dxa"/>
+                  </w:tcPr>
+                  <w:sdt>
+                    <w:sdtPr>
+                      <w:alias w:val="Data12"/>
+                      <w:tag w:val="Data12"/>
+                      <w:id w:val="184647321"/>
+                      <w:text/>
+                    </w:sdtPr>
+                    <w:sdtEndPr/>
+                    <w:sdtContent>
+                      <w:p w14:paraId="60ACCD8A" w14:textId="77777777">
+                        <w:pPr>
+                          <w:cnfStyle w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="1" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="000000100000"/>
+                          <w:rPr>
+                            <w:ins w:author="Jubarte" w:id="76" w:date="1970-01-01T00:00:00Z"/>
+                          </w:rPr>
+                        </w:pPr>
+                        <w:ins w:author="Jubarte" w:id="77" w:date="1970-01-01T00:00:00Z">
+                          <w:r>
+                            <w:t>200
+                            </w:t>
+                          </w:r>
+                        </w:ins>
+                      </w:p>
+                    </w:sdtContent>
+                  </w:sdt>
+                </w:tc>
+                <w:tc>
+                  <w:tcPr>
+                    <w:tcW w:w="3117" w:type="dxa"/>
+                  </w:tcPr>
+                  <w:sdt>
+                    <w:sdtPr>
+                      <w:alias w:val="Data13"/>
+                      <w:tag w:val="Data13"/>
+                      <w:id w:val="131915776"/>
+                      <w:text/>
+                    </w:sdtPr>
+                    <w:sdtEndPr/>
+                    <w:sdtContent>
+                      <w:p w14:paraId="60560D1C" w14:textId="77777777">
+                        <w:pPr>
+                          <w:cnfStyle w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="1" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="000000100000"/>
+                          <w:rPr>
+                            <w:ins w:author="Jubarte" w:id="78" w:date="1970-01-01T00:00:00Z"/>
+                          </w:rPr>
+                        </w:pPr>
+                        <w:ins w:author="Jubarte" w:id="79" w:date="1970-01-01T00:00:00Z">
+                          <w:r>
+                            <w:t>300
+                            </w:t>
+                          </w:r>
+                        </w:ins>
+                      </w:p>
+                    </w:sdtContent>
+                  </w:sdt>
+                </w:tc>
+              </w:tr>
+            </w:sdtContent>
+          </w:sdt>
+          <w:sdt>
+            <w:sdtPr>
+              <w:rPr>
+                <w:b w:val="0"/>
+                <w:bCs w:val="0"/>
+              </w:rPr>
+              <w:alias w:val="Row2"/>
+              <w:tag w:val="Row2"/>
+              <w:id w:val="1563601403"/>
+            </w:sdtPr>
+            <w:sdtEndPr/>
+            <w:sdtContent>
+              <w:tr w14:paraId="68A60E71" w14:textId="77777777">
+                <w:trPr>
+                  <w:ins w:author="Jubarte" w:id="80" w:date="1970-01-01T00:00:00Z"/>
+                </w:trPr>
+                <w:tc>
+                  <w:tcPr>
+                    <w:cnfStyle w:firstRow="0" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="001000000000"/>
+                    <w:tcW w:w="3116" w:type="dxa"/>
+                  </w:tcPr>
+                  <w:sdt>
+                    <w:sdtPr>
+                      <w:alias w:val="Data21"/>
+                      <w:tag w:val="Data21"/>
+                      <w:id w:val="-1031330684"/>
+                      <w:text/>
+                    </w:sdtPr>
+                    <w:sdtEndPr/>
+                    <w:sdtContent>
+                      <w:p w14:paraId="576927AA" w14:textId="77777777">
+                        <w:pPr>
+                          <w:rPr>
+                            <w:ins w:author="Jubarte" w:id="81" w:date="1970-01-01T00:00:00Z"/>
+                          </w:rPr>
+                        </w:pPr>
+                        <w:ins w:author="Jubarte" w:id="82" w:date="1970-01-01T00:00:00Z">
+                          <w:r>
+                            <w:t>400
+                            </w:t>
+                          </w:r>
+                        </w:ins>
+                      </w:p>
+                    </w:sdtContent>
+                  </w:sdt>
+                </w:tc>
+                <w:tc>
+                  <w:tcPr>
+                    <w:tcW w:w="3117" w:type="dxa"/>
+                  </w:tcPr>
+                  <w:sdt>
+                    <w:sdtPr>
+                      <w:alias w:val="Data22"/>
+                      <w:tag w:val="Data22"/>
+                      <w:id w:val="560603829"/>
+                      <w:text/>
+                    </w:sdtPr>
+                    <w:sdtEndPr/>
+                    <w:sdtContent>
+                      <w:p w14:paraId="7823894F" w14:textId="77777777">
+                        <w:pPr>
+                          <w:cnfStyle w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="000000000000"/>
+                          <w:rPr>
+                            <w:ins w:author="Jubarte" w:id="83" w:date="1970-01-01T00:00:00Z"/>
+                          </w:rPr>
+                        </w:pPr>
+                        <w:ins w:author="Jubarte" w:id="84" w:date="1970-01-01T00:00:00Z">
+                          <w:r>
+                            <w:t>500
+                            </w:t>
+                          </w:r>
+                        </w:ins>
+                      </w:p>
+                    </w:sdtContent>
+                  </w:sdt>
+                </w:tc>
+                <w:tc>
+                  <w:tcPr>
+                    <w:tcW w:w="3117" w:type="dxa"/>
+                  </w:tcPr>
+                  <w:sdt>
+                    <w:sdtPr>
+                      <w:alias w:val="Data23"/>
+                      <w:tag w:val="Data23"/>
+                      <w:id w:val="-847252032"/>
+                      <w:text/>
+                    </w:sdtPr>
+                    <w:sdtEndPr/>
+                    <w:sdtContent>
+                      <w:p w14:paraId="065792C4" w14:textId="77777777">
+                        <w:pPr>
+                          <w:cnfStyle w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="000000000000"/>
+                          <w:rPr>
+                            <w:ins w:author="Jubarte" w:id="85" w:date="1970-01-01T00:00:00Z"/>
+                          </w:rPr>
+                        </w:pPr>
+                        <w:ins w:author="Jubarte" w:id="86" w:date="1970-01-01T00:00:00Z">
+                          <w:r>
+                            <w:t>600
+                            </w:t>
+                          </w:r>
+                        </w:ins>
+                      </w:p>
+                    </w:sdtContent>
+                  </w:sdt>
+                </w:tc>
+              </w:tr>
+            </w:sdtContent>
+          </w:sdt>
+        </w:tbl>
+      </w:sdtContent>
+    </w:sdt>
+    <w:p w14:paraId="4584E974" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="87" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:sdt>
+      <w:sdtPr>
+        <w:alias w:val="RichTextContentControl"/>
+        <w:tag w:val="RichTextContentControl"/>
+        <w:id w:val="873813965"/>
+      </w:sdtPr>
+      <w:sdtEndPr/>
+      <w:sdtContent>
+        <w:p w14:paraId="16FCF045" w14:textId="77777777">
+          <w:pPr>
+            <w:rPr>
+              <w:ins w:author="Jubarte" w:id="88" w:date="1970-01-01T00:00:00Z"/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Jubarte" w:id="89" w:date="1970-01-01T00:00:00Z">
+            <w:r>
+              <w:t>Video provides a powerful way to help you prove your point. When you click Online Video, you can paste in the embed code for the video you want to add. You can also type a keyword to search online for the video that best fits your document.
+              </w:t>
+            </w:r>
+          </w:ins>
+        </w:p>
+      </w:sdtContent>
+    </w:sdt>
+    <w:p w14:paraId="009A347A" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="90" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="91" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t xml:space="preserve">To
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t>make your document look professionally
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">produced, Word provides header, footer, cover page, and text box designs that complement each other. For example, you can add a matching cover page, header, and sidebar. Click Insert and then choose the elements you want from the different galleries.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:sdt>
+      <w:sdtPr>
+        <w:id w:val="615948864"/>
+        <w:picture/>
+      </w:sdtPr>
+      <w:sdtEndPr/>
+      <w:sdtContent>
+        <w:p w14:paraId="36DBE2A5" w14:textId="77777777">
+          <w:pPr>
+            <w:rPr>
+              <w:ins w:author="Jubarte" w:id="92" w:date="1970-01-01T00:00:00Z"/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Jubarte" w:id="93" w:date="1970-01-01T00:00:00Z">
+            <w:r>
+              <w:rPr>
+                <w:noProof/>
+              </w:rPr>
+              <w:drawing>
+                <wp:inline distT="0" distB="0" distL="0" distR="0" wp14:anchorId="0795BA59" wp14:editId="161AA40E">
+                  <wp:extent cx="1903730" cy="1515822"/>
+                  <wp:effectExtent l="0" t="0" r="1270" b="8255"/>
+                  <wp:docPr id="8" name="Picture 1"/>
+                  <wp:cNvGraphicFramePr>
+                    <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+                  </wp:cNvGraphicFramePr>
+                  <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                    <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                      <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                        <pic:nvPicPr>
+                          <pic:cNvPr id="0" name="Picture 1"/>
+                          <pic:cNvPicPr>
+                            <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                          </pic:cNvPicPr>
+                        </pic:nvPicPr>
+                        <pic:blipFill>
+                          <a:blip r:embed="rId16" cstate="print">
+                            <a:extLst>
+                              <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                                <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                              </a:ext>
+                            </a:extLst>
+                          </a:blip>
+                          <a:stretch>
+                            <a:fillRect/>
+                          </a:stretch>
+                        </pic:blipFill>
+                        <pic:spPr bwMode="auto">
+                          <a:xfrm>
+                            <a:off x="0" y="0"/>
+                            <a:ext cx="1903730" cy="1515822"/>
+                          </a:xfrm>
+                          <a:prstGeom prst="rect">
+                            <a:avLst/>
+                          </a:prstGeom>
+                          <a:noFill/>
+                          <a:ln>
+                            <a:noFill/>
+                          </a:ln>
+                        </pic:spPr>
+                      </pic:pic>
+                    </a:graphicData>
+                  </a:graphic>
+                </wp:inline>
+              </w:drawing>
+            </w:r>
+          </w:ins>
+        </w:p>
+      </w:sdtContent>
+    </w:sdt>
+    <w:sdt>
+      <w:sdtPr>
+        <w:alias w:val="CheckBoxContentControl"/>
+        <w:tag w:val="CheckBoxContentControl"/>
+        <w:id w:val="-834760353"/>
+        <w14:checkbox>
+          <w14:checked w14:val="0"/>
+          <w14:checkedState w14:val="2612" w14:font="Arial Unicode MS"/>
+          <w14:uncheckedState w14:val="2610" w14:font="Arial Unicode MS"/>
+        </w14:checkbox>
+      </w:sdtPr>
+      <w:sdtEndPr/>
+      <w:sdtContent>
+        <w:p w14:paraId="2C92A1DF" w14:textId="77777777">
+          <w:pPr>
+            <w:rPr>
+              <w:ins w:author="Jubarte" w:id="94" w:date="1970-01-01T00:00:00Z"/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Jubarte" w:id="95" w:date="1970-01-01T00:00:00Z">
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="MS Gothic" w:eastAsia="MS Gothic" w:hAnsi="MS Gothic" w:hint="eastAsia"/>
+              </w:rPr>
+              <w:t>☐
+              </w:t>
+            </w:r>
+          </w:ins>
+        </w:p>
+      </w:sdtContent>
+    </w:sdt>
+    <w:sdt>
+      <w:sdtPr>
+        <w:alias w:val="ComboBoxContentControl"/>
+        <w:tag w:val="ComboBoxContentControl"/>
+        <w:id w:val="1221097602"/>
+        <w:comboBox>
+          <w:listItem w:displayText="One" w:value="One"/>
+          <w:listItem w:displayText="Two" w:value="Two"/>
+          <w:listItem w:displayText="Three" w:value="Three"/>
+        </w:comboBox>
+      </w:sdtPr>
+      <w:sdtEndPr/>
+      <w:sdtContent>
+        <w:p w14:paraId="1058A35C" w14:textId="77777777">
+          <w:pPr>
+            <w:rPr>
+              <w:ins w:author="Jubarte" w:id="96" w:date="1970-01-01T00:00:00Z"/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Jubarte" w:id="97" w:date="1970-01-01T00:00:00Z">
+            <w:r>
+              <w:t>Two
+              </w:t>
+            </w:r>
+          </w:ins>
+        </w:p>
+      </w:sdtContent>
+    </w:sdt>
+    <w:p w14:paraId="337FAE81" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="98" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="99" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Video provides a powerful way to help you prove your point. When you click Online Video, you can paste in the embed code for the video you want to add. You can also type a keyword to search online for the video that best fits your document. To make your document look professionally produced, Word provides header, footer, cover page, and text box designs that complement each other. For example, you can add a matching cover page, header, and sidebar. Click Insert and then choose the elements you want from the different galleries.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:sdt>
+      <w:sdtPr>
+        <w:id w:val="289707828"/>
+        <w:docPartObj>
+          <w:docPartGallery w:val="Cover Pages"/>
+          <w:docPartUnique/>
+        </w:docPartObj>
+      </w:sdtPr>
+      <w:sdtEndPr/>
+      <w:sdtContent>
+        <w:p w14:paraId="4456598A" w14:textId="77777777">
+          <w:pPr>
+            <w:rPr>
+              <w:ins w:author="Jubarte" w:id="100" w:date="1970-01-01T00:00:00Z"/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Jubarte" w:id="101" w:date="1970-01-01T00:00:00Z">
+            <w:r>
+              <w:rPr>
+                <w:noProof/>
+              </w:rPr>
+              <w:drawing>
+                <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251662848" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="171457A6" wp14:editId="02733561">
+                  <wp:simplePos x="0" y="0"/>
+                  <mc:AlternateContent>
+                    <mc:Choice Requires="wp14">
+                      <wp:positionH relativeFrom="page">
+                        <wp14:pctPosHOffset>45500
+                        </wp14:pctPosHOffset>
+                      </wp:positionH>
+                    </mc:Choice>
+                    <mc:Fallback>
+                      <wp:positionH relativeFrom="page">
+                        <wp:posOffset>4576445
+                        </wp:posOffset>
+                      </wp:positionH>
+                    </mc:Fallback>
+                  </mc:AlternateContent>
+                  <mc:AlternateContent>
+                    <mc:Choice Requires="wp14">
+                      <wp:positionV relativeFrom="page">
+                        <wp14:pctPosVOffset>66000
+                        </wp14:pctPosVOffset>
+                      </wp:positionV>
+                    </mc:Choice>
+                    <mc:Fallback>
+                      <wp:positionV relativeFrom="page">
+                        <wp:posOffset>5129530
+                        </wp:posOffset>
+                      </wp:positionV>
+                    </mc:Fallback>
+                  </mc:AlternateContent>
+                  <wp:extent cx="2797810" cy="268605"/>
+                  <wp:effectExtent l="0" t="0" r="0" b="0"/>
+                  <wp:wrapSquare wrapText="bothSides"/>
+                  <wp:docPr id="9" name="Text Box 465"/>
+                  <wp:cNvGraphicFramePr/>
+                  <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                    <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                      <wps:wsp>
+                        <wps:cNvSpPr txBox="1"/>
+                        <wps:spPr>
+                          <a:xfrm>
+                            <a:off x="0" y="0"/>
+                            <a:ext cx="2797810" cy="268605"/>
+                          </a:xfrm>
+                          <a:prstGeom prst="rect">
+                            <a:avLst/>
+                          </a:prstGeom>
+                          <a:noFill/>
+                          <a:ln w="6350">
+                            <a:noFill/>
+                          </a:ln>
+                          <a:effectLst/>
+                        </wps:spPr>
+                        <wps:txbx>
+                          <w:txbxContent>
+                            <w:p w14:paraId="568BADCB" w14:textId="77777777">
+                              <w:pPr>
+                                <w:pStyle w:val="NoSpacing"/>
+                                <w:rPr>
+                                  <w:noProof/>
+                                  <w:color w:val="44546A" w:themeColor="text2"/>
+                                </w:rPr>
+                              </w:pPr>
+                              <w:r>
+                                <w:rPr>
+                                  <w:noProof/>
+                                  <w:color w:val="44546A" w:themeColor="text2"/>
+                                </w:rPr>
+                                <w:t>Eric White
+                                </w:t>
+                              </w:r>
+                            </w:p>
+                          </w:txbxContent>
+                        </wps:txbx>
+                        <wps:bodyPr rot="0" spcFirstLastPara="0" vertOverflow="overflow" horzOverflow="overflow" vert="horz" wrap="square" lIns="91440" tIns="45720" rIns="91440" bIns="45720" numCol="1" spcCol="0" rtlCol="0" fromWordArt="0" anchor="b" anchorCtr="0" forceAA="0" compatLnSpc="1">
+                          <a:prstTxWarp prst="textNoShape">
+                            <a:avLst/>
+                          </a:prstTxWarp>
+                          <a:spAutoFit/>
+                        </wps:bodyPr>
+                      </wps:wsp>
+                    </a:graphicData>
+                  </a:graphic>
+                  <wp14:sizeRelH relativeFrom="page">
+                    <wp14:pctWidth>36000
+                    </wp14:pctWidth>
+                  </wp14:sizeRelH>
+                  <wp14:sizeRelV relativeFrom="margin">
+                    <wp14:pctHeight>0
+                    </wp14:pctHeight>
+                  </wp14:sizeRelV>
+                </wp:anchor>
+              </w:drawing>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:noProof/>
+              </w:rPr>
+              <w:drawing>
+                <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251661824" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="18D374F3" wp14:editId="033A564A">
+                  <wp:simplePos x="0" y="0"/>
+                  <wp:positionH relativeFrom="page">
+                    <wp:align>center
+                    </wp:align>
+                  </wp:positionH>
+                  <wp:positionV relativeFrom="page">
+                    <wp:align>center
+                    </wp:align>
+                  </wp:positionV>
+                  <wp:extent cx="7383780" cy="9555480"/>
+                  <wp:effectExtent l="0" t="0" r="7620" b="7620"/>
+                  <wp:wrapNone/>
+                  <wp:docPr id="10" name="Rectangle 466"/>
+                  <wp:cNvGraphicFramePr>
+                    <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+                  </wp:cNvGraphicFramePr>
+                  <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                    <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                      <wps:wsp>
+                        <wps:cNvSpPr>
+                          <a:spLocks/>
+                        </wps:cNvSpPr>
+                        <wps:spPr>
+                          <a:xfrm>
+                            <a:off x="0" y="0"/>
+                            <a:ext cx="7383780" cy="9555480"/>
+                          </a:xfrm>
+                          <a:prstGeom prst="rect">
+                            <a:avLst/>
+                          </a:prstGeom>
+                          <a:gradFill>
+                            <a:gsLst>
+                              <a:gs pos="0">
+                                <a:schemeClr val="accent1">
+                                  <a:lumMod val="20000"/>
+                                  <a:lumOff val="80000"/>
+                                </a:schemeClr>
+                              </a:gs>
+                              <a:gs pos="100000">
+                                <a:schemeClr val="accent1">
+                                  <a:lumMod val="60000"/>
+                                  <a:lumOff val="40000"/>
+                                </a:schemeClr>
+                              </a:gs>
+                            </a:gsLst>
+                          </a:gradFill>
+                          <a:ln>
+                            <a:noFill/>
+                          </a:ln>
+                        </wps:spPr>
+                        <wps:style>
+                          <a:lnRef idx="2">
+                            <a:schemeClr val="accent1">
+                              <a:shade val="50000"/>
+                            </a:schemeClr>
+                          </a:lnRef>
+                          <a:fillRef idx="1003">
+                            <a:schemeClr val="lt2"/>
+                          </a:fillRef>
+                          <a:effectRef idx="0">
+                            <a:schemeClr val="accent1"/>
+                          </a:effectRef>
+                          <a:fontRef idx="minor">
+                            <a:schemeClr val="lt1"/>
+                          </a:fontRef>
+                        </wps:style>
+                        <wps:txbx>
+                          <w:txbxContent>
+                            <w:p w14:paraId="0F5FC56C" w14:textId="77777777"/>
+                          </w:txbxContent>
+                        </wps:txbx>
+                        <wps:bodyPr rot="0" spcFirstLastPara="0" vertOverflow="overflow" horzOverflow="overflow" vert="horz" wrap="square" lIns="274320" tIns="45720" rIns="274320" bIns="45720" numCol="1" spcCol="0" rtlCol="0" fromWordArt="0" anchor="ctr" anchorCtr="0" forceAA="0" compatLnSpc="1">
+                          <a:prstTxWarp prst="textNoShape">
+                            <a:avLst/>
+                          </a:prstTxWarp>
+                          <a:noAutofit/>
+                        </wps:bodyPr>
+                      </wps:wsp>
+                    </a:graphicData>
+                  </a:graphic>
+                  <wp14:sizeRelH relativeFrom="page">
+                    <wp14:pctWidth>95000
+                    </wp14:pctWidth>
+                  </wp14:sizeRelH>
+                  <wp14:sizeRelV relativeFrom="page">
+                    <wp14:pctHeight>95000
+                    </wp14:pctHeight>
+                  </wp14:sizeRelV>
+                </wp:anchor>
+              </w:drawing>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:noProof/>
+              </w:rPr>
+              <w:drawing>
+                <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251656704" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="700D0E5A" wp14:editId="3FEC78C0">
+                  <wp:simplePos x="0" y="0"/>
+                  <mc:AlternateContent>
+                    <mc:Choice Requires="wp14">
+                      <wp:positionH relativeFrom="page">
+                        <wp14:pctPosHOffset>45500
+                        </wp14:pctPosHOffset>
+                      </wp:positionH>
+                    </mc:Choice>
+                    <mc:Fallback>
+                      <wp:positionH relativeFrom="page">
+                        <wp:posOffset>4576445
+                        </wp:posOffset>
+                      </wp:positionH>
+                    </mc:Fallback>
+                  </mc:AlternateContent>
+                  <mc:AlternateContent>
+                    <mc:Choice Requires="wp14">
+                      <wp:positionV relativeFrom="page">
+                        <wp14:pctPosVOffset>2500
+                        </wp14:pctPosVOffset>
+                      </wp:positionV>
+                    </mc:Choice>
+                    <mc:Fallback>
+                      <wp:positionV relativeFrom="page">
+                        <wp:posOffset>194310
+                        </wp:posOffset>
+                      </wp:positionV>
+                    </mc:Fallback>
+                  </mc:AlternateContent>
+                  <wp:extent cx="2875915" cy="3017520"/>
+                  <wp:effectExtent l="0" t="0" r="0" b="0"/>
+                  <wp:wrapNone/>
+                  <wp:docPr id="11" name="Rectangle 467"/>
+                  <wp:cNvGraphicFramePr/>
+                  <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                    <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                      <wps:wsp>
+                        <wps:cNvSpPr/>
+                        <wps:spPr>
+                          <a:xfrm>
+                            <a:off x="0" y="0"/>
+                            <a:ext cx="2875915" cy="3017520"/>
+                          </a:xfrm>
+                          <a:prstGeom prst="rect">
+                            <a:avLst/>
+                          </a:prstGeom>
+                          <a:solidFill>
+                            <a:schemeClr val="tx2"/>
+                          </a:solidFill>
+                          <a:ln>
+                            <a:noFill/>
+                          </a:ln>
+                        </wps:spPr>
+                        <wps:style>
+                          <a:lnRef idx="2">
+                            <a:schemeClr val="accent1">
+                              <a:shade val="50000"/>
+                            </a:schemeClr>
+                          </a:lnRef>
+                          <a:fillRef idx="1">
+                            <a:schemeClr val="accent1"/>
+                          </a:fillRef>
+                          <a:effectRef idx="0">
+                            <a:schemeClr val="accent1"/>
+                          </a:effectRef>
+                          <a:fontRef idx="minor">
+                            <a:schemeClr val="lt1"/>
+                          </a:fontRef>
+                        </wps:style>
+                        <wps:txbx>
+                          <w:txbxContent>
+                            <w:p w14:paraId="7ECC6AAF" w14:textId="77777777">
+                              <w:pPr>
+                                <w:spacing w:before="240"/>
+                                <w:jc w:val="center"/>
+                                <w:rPr>
+                                  <w:color w:val="FFFFFF" w:themeColor="background1"/>
+                                </w:rPr>
+                              </w:pPr>
+                              <w:r>
+                                <w:rPr>
+                                  <w:color w:val="FFFFFF" w:themeColor="background1"/>
+                                </w:rPr>
+                                <w:t>This is my interesting abstract
+                                </w:t>
+                              </w:r>
+                              <w:r>
+                                <w:rPr>
+                                  <w:color w:val="FFFFFF" w:themeColor="background1"/>
+                                </w:rPr>
+                                <w:t>.
+                                </w:t>
+                              </w:r>
+                            </w:p>
+                          </w:txbxContent>
+                        </wps:txbx>
+                        <wps:bodyPr rot="0" spcFirstLastPara="0" vertOverflow="overflow" horzOverflow="overflow" vert="horz" wrap="square" lIns="182880" tIns="182880" rIns="182880" bIns="365760" numCol="1" spcCol="0" rtlCol="0" fromWordArt="0" anchor="b" anchorCtr="0" forceAA="0" compatLnSpc="1">
+                          <a:prstTxWarp prst="textNoShape">
+                            <a:avLst/>
+                          </a:prstTxWarp>
+                          <a:noAutofit/>
+                        </wps:bodyPr>
+                      </wps:wsp>
+                    </a:graphicData>
+                  </a:graphic>
+                  <wp14:sizeRelH relativeFrom="page">
+                    <wp14:pctWidth>37000
+                    </wp14:pctWidth>
+                  </wp14:sizeRelH>
+                  <wp14:sizeRelV relativeFrom="page">
+                    <wp14:pctHeight>30000
+                    </wp14:pctHeight>
+                  </wp14:sizeRelV>
+                </wp:anchor>
+              </w:drawing>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:noProof/>
+              </w:rPr>
+              <w:drawing>
+                <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251653632" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="6DE13770" wp14:editId="7418ADC8">
+                  <wp:simplePos x="0" y="0"/>
+                  <mc:AlternateContent>
+                    <mc:Choice Requires="wp14">
+                      <wp:positionH relativeFrom="page">
+                        <wp14:pctPosHOffset>44000
+                        </wp14:pctPosHOffset>
+                      </wp:positionH>
+                    </mc:Choice>
+                    <mc:Fallback>
+                      <wp:positionH relativeFrom="page">
+                        <wp:posOffset>4425315
+                        </wp:posOffset>
+                      </wp:positionH>
+                    </mc:Fallback>
+                  </mc:AlternateContent>
+                  <mc:AlternateContent>
+                    <mc:Choice Requires="wp14">
+                      <wp:positionV relativeFrom="page">
+                        <wp14:pctPosVOffset>2500
+                        </wp14:pctPosVOffset>
+                      </wp:positionV>
+                    </mc:Choice>
+                    <mc:Fallback>
+                      <wp:positionV relativeFrom="page">
+                        <wp:posOffset>194310
+                        </wp:posOffset>
+                      </wp:positionV>
+                    </mc:Fallback>
+                  </mc:AlternateContent>
+                  <wp:extent cx="3108960" cy="7040880"/>
+                  <wp:effectExtent l="0" t="0" r="0" b="0"/>
+                  <wp:wrapNone/>
+                  <wp:docPr id="12" name="Rectangle 468"/>
+                  <wp:cNvGraphicFramePr/>
+                  <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                    <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                      <wps:wsp>
+                        <wps:cNvSpPr/>
+                        <wps:spPr>
+                          <a:xfrm>
+                            <a:off x="0" y="0"/>
+                            <a:ext cx="3108960" cy="7040880"/>
+                          </a:xfrm>
+                          <a:prstGeom prst="rect">
+                            <a:avLst/>
+                          </a:prstGeom>
+                          <a:solidFill>
+                            <a:schemeClr val="bg1"/>
+                          </a:solidFill>
+                          <a:ln w="15875">
+                            <a:solidFill>
+                              <a:schemeClr val="bg2">
+                                <a:lumMod val="50000"/>
+                              </a:schemeClr>
+                            </a:solidFill>
+                          </a:ln>
+                        </wps:spPr>
+                        <wps:style>
+                          <a:lnRef idx="2">
+                            <a:schemeClr val="accent1">
+                              <a:shade val="50000"/>
+                            </a:schemeClr>
+                          </a:lnRef>
+                          <a:fillRef idx="1">
+                            <a:schemeClr val="accent1"/>
+                          </a:fillRef>
+                          <a:effectRef idx="0">
+                            <a:schemeClr val="accent1"/>
+                          </a:effectRef>
+                          <a:fontRef idx="minor">
+                            <a:schemeClr val="lt1"/>
+                          </a:fontRef>
+                        </wps:style>
+                        <wps:bodyPr rot="0" spcFirstLastPara="0" vertOverflow="overflow" horzOverflow="overflow" vert="horz" wrap="square" lIns="91440" tIns="45720" rIns="91440" bIns="45720" numCol="1" spcCol="0" rtlCol="0" fromWordArt="0" anchor="ctr" anchorCtr="0" forceAA="0" compatLnSpc="1">
+                          <a:prstTxWarp prst="textNoShape">
+                            <a:avLst/>
+                          </a:prstTxWarp>
+                          <a:noAutofit/>
+                        </wps:bodyPr>
+                      </wps:wsp>
+                    </a:graphicData>
+                  </a:graphic>
+                  <wp14:sizeRelH relativeFrom="page">
+                    <wp14:pctWidth>40000
+                    </wp14:pctWidth>
+                  </wp14:sizeRelH>
+                  <wp14:sizeRelV relativeFrom="page">
+                    <wp14:pctHeight>70000
+                    </wp14:pctHeight>
+                  </wp14:sizeRelV>
+                </wp:anchor>
+              </w:drawing>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:noProof/>
+              </w:rPr>
+              <w:drawing>
+                <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251660800" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="71CFD9A6" wp14:editId="4DDDA938">
+                  <wp:simplePos x="0" y="0"/>
+                  <mc:AlternateContent>
+                    <mc:Choice Requires="wp14">
+                      <wp:positionH relativeFrom="page">
+                        <wp14:pctPosHOffset>45500
+                        </wp14:pctPosHOffset>
+                      </wp:positionH>
+                    </mc:Choice>
+                    <mc:Fallback>
+                      <wp:positionH relativeFrom="page">
+                        <wp:posOffset>4576445
+                        </wp:posOffset>
+                      </wp:positionH>
+                    </mc:Fallback>
+                  </mc:AlternateContent>
+                  <mc:AlternateContent>
+                    <mc:Choice Requires="wp14">
+                      <wp:positionV relativeFrom="page">
+                        <wp14:pctPosVOffset>69000
+                        </wp14:pctPosVOffset>
+                      </wp:positionV>
+                    </mc:Choice>
+                    <mc:Fallback>
+                      <wp:positionV relativeFrom="page">
+                        <wp:posOffset>5362575
+                        </wp:posOffset>
+                      </wp:positionV>
+                    </mc:Fallback>
+                  </mc:AlternateContent>
+                  <wp:extent cx="2875915" cy="118745"/>
+                  <wp:effectExtent l="0" t="0" r="0" b="0"/>
+                  <wp:wrapNone/>
+                  <wp:docPr id="13" name="Rectangle 469"/>
+                  <wp:cNvGraphicFramePr/>
+                  <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                    <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                      <wps:wsp>
+                        <wps:cNvSpPr/>
+                        <wps:spPr>
+                          <a:xfrm>
+                            <a:off x="0" y="0"/>
+                            <a:ext cx="2875915" cy="118745"/>
+                          </a:xfrm>
+                          <a:prstGeom prst="rect">
+                            <a:avLst/>
+                          </a:prstGeom>
+                          <a:ln>
+                            <a:noFill/>
+                          </a:ln>
+                        </wps:spPr>
+                        <wps:style>
+                          <a:lnRef idx="2">
+                            <a:schemeClr val="accent1">
+                              <a:shade val="50000"/>
+                            </a:schemeClr>
+                          </a:lnRef>
+                          <a:fillRef idx="1">
+                            <a:schemeClr val="accent1"/>
+                          </a:fillRef>
+                          <a:effectRef idx="0">
+                            <a:schemeClr val="accent1"/>
+                          </a:effectRef>
+                          <a:fontRef idx="minor">
+                            <a:schemeClr val="lt1"/>
+                          </a:fontRef>
+                        </wps:style>
+                        <wps:bodyPr rot="0" spcFirstLastPara="0" vertOverflow="overflow" horzOverflow="overflow" vert="horz" wrap="square" lIns="91440" tIns="45720" rIns="91440" bIns="45720" numCol="1" spcCol="0" rtlCol="0" fromWordArt="0" anchor="ctr" anchorCtr="0" forceAA="0" compatLnSpc="1">
+                          <a:prstTxWarp prst="textNoShape">
+                            <a:avLst/>
+                          </a:prstTxWarp>
+                          <a:noAutofit/>
+                        </wps:bodyPr>
+                      </wps:wsp>
+                    </a:graphicData>
+                  </a:graphic>
+                  <wp14:sizeRelH relativeFrom="page">
+                    <wp14:pctWidth>37000
+                    </wp14:pctWidth>
+                  </wp14:sizeRelH>
+                  <wp14:sizeRelV relativeFrom="margin">
+                    <wp14:pctHeight>0
+                    </wp14:pctHeight>
+                  </wp14:sizeRelV>
+                </wp:anchor>
+              </w:drawing>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:noProof/>
+              </w:rPr>
+              <w:drawing>
+                <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251658752" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="4BB1A32F" wp14:editId="78CE13BE">
+                  <wp:simplePos x="0" y="0"/>
+                  <mc:AlternateContent>
+                    <mc:Choice Requires="wp14">
+                      <wp:positionH relativeFrom="page">
+                        <wp14:pctPosHOffset>45500
+                        </wp14:pctPosHOffset>
+                      </wp:positionH>
+                    </mc:Choice>
+                    <mc:Fallback>
+                      <wp:positionH relativeFrom="page">
+                        <wp:posOffset>4576445
+                        </wp:posOffset>
+                      </wp:positionH>
+                    </mc:Fallback>
+                  </mc:AlternateContent>
+                  <mc:AlternateContent>
+                    <mc:Choice Requires="wp14">
+                      <wp:positionV relativeFrom="page">
+                        <wp14:pctPosVOffset>35000
+                        </wp14:pctPosVOffset>
+                      </wp:positionV>
+                    </mc:Choice>
+                    <mc:Fallback>
+                      <wp:positionV relativeFrom="page">
+                        <wp:posOffset>2720340
+                        </wp:posOffset>
+                      </wp:positionV>
+                    </mc:Fallback>
+                  </mc:AlternateContent>
+                  <wp:extent cx="2797810" cy="2475230"/>
+                  <wp:effectExtent l="0" t="0" r="0" b="0"/>
+                  <wp:wrapSquare wrapText="bothSides"/>
+                  <wp:docPr id="14" name="Text Box 470"/>
+                  <wp:cNvGraphicFramePr/>
+                  <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                    <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                      <wps:wsp>
+                        <wps:cNvSpPr txBox="1"/>
+                        <wps:spPr>
+                          <a:xfrm>
+                            <a:off x="0" y="0"/>
+                            <a:ext cx="2797810" cy="2475230"/>
+                          </a:xfrm>
+                          <a:prstGeom prst="rect">
+                            <a:avLst/>
+                          </a:prstGeom>
+                          <a:noFill/>
+                          <a:ln w="6350">
+                            <a:noFill/>
+                          </a:ln>
+                          <a:effectLst/>
+                        </wps:spPr>
+                        <wps:txbx>
+                          <w:txbxContent>
+                            <w:p w14:paraId="58E3DB93" w14:textId="77777777">
+                              <w:pPr>
+                                <w:spacing w:line="240" w:lineRule="auto"/>
+                                <w:rPr>
+                                  <w:rFonts w:asciiTheme="majorHAnsi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi" w:cstheme="majorBidi"/>
+                                  <w:noProof/>
+                                  <w:color w:val="5B9BD5" w:themeColor="accent1"/>
+                                  <w:sz w:val="72"/>
+                                  <w:szCs w:val="144"/>
+                                </w:rPr>
+                              </w:pPr>
+                              <w:r>
+                                <w:rPr>
+                                  <w:rFonts w:asciiTheme="majorHAnsi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi" w:cstheme="majorBidi"/>
+                                  <w:noProof/>
+                                  <w:color w:val="5B9BD5" w:themeColor="accent1"/>
+                                  <w:sz w:val="72"/>
+                                  <w:szCs w:val="72"/>
+                                </w:rPr>
+                                <w:t xml:space="preserve">
+                                </w:t>
+                              </w:r>
+                            </w:p>
+                            <w:p w14:paraId="386B7A36" w14:textId="77777777">
+                              <w:pPr>
+                                <w:rPr>
+                                  <w:rFonts w:asciiTheme="majorHAnsi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi" w:cstheme="majorBidi"/>
+                                  <w:noProof/>
+                                  <w:color w:val="44546A" w:themeColor="text2"/>
+                                  <w:sz w:val="32"/>
+                                  <w:szCs w:val="40"/>
+                                </w:rPr>
+                              </w:pPr>
+                              <w:r>
+                                <w:rPr>
+                                  <w:rFonts w:asciiTheme="majorHAnsi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi" w:cstheme="majorBidi"/>
+                                  <w:noProof/>
+                                  <w:color w:val="44546A" w:themeColor="text2"/>
+                                  <w:sz w:val="32"/>
+                                  <w:szCs w:val="32"/>
+                                </w:rPr>
+                                <w:t xml:space="preserve">
+                                </w:t>
+                              </w:r>
+                            </w:p>
+                          </w:txbxContent>
+                        </wps:txbx>
+                        <wps:bodyPr rot="0" spcFirstLastPara="0" vertOverflow="overflow" horzOverflow="overflow" vert="horz" wrap="square" lIns="91440" tIns="45720" rIns="91440" bIns="45720" numCol="1" spcCol="0" rtlCol="0" fromWordArt="0" anchor="t" anchorCtr="0" forceAA="0" compatLnSpc="1">
+                          <a:prstTxWarp prst="textNoShape">
+                            <a:avLst/>
+                          </a:prstTxWarp>
+                          <a:spAutoFit/>
+                        </wps:bodyPr>
+                      </wps:wsp>
+                    </a:graphicData>
+                  </a:graphic>
+                  <wp14:sizeRelH relativeFrom="page">
+                    <wp14:pctWidth>36000
+                    </wp14:pctWidth>
+                  </wp14:sizeRelH>
+                  <wp14:sizeRelV relativeFrom="page">
+                    <wp14:pctHeight>28000
+                    </wp14:pctHeight>
+                  </wp14:sizeRelV>
+                </wp:anchor>
+              </w:drawing>
+            </w:r>
+          </w:ins>
+        </w:p>
+        <w:p w14:paraId="3FB5D255" w14:textId="77777777">
+          <w:pPr>
+            <w:rPr>
+              <w:ins w:author="Jubarte" w:id="102" w:date="1970-01-01T00:00:00Z"/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Jubarte" w:id="103" w:date="1970-01-01T00:00:00Z">
+            <w:r>
+              <w:br w:type="page"/>
+            </w:r>
+          </w:ins>
+        </w:p>
+      </w:sdtContent>
+    </w:sdt>
+    <w:p w14:paraId="3D52E07E" w14:textId="77777777">
+      <w:pPr>
+        <w:shd w:val="clear" w:color="auto" w:fill="ED7D31" w:themeFill="accent2"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="104" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="105" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Video provides a powerful way to help you prove your point. When you click Online Video, you can paste in the embed code for the video you want to add. You can also type a keyword to search online for the video that best fits your document. To make your document look professionally produced, Word provides header, footer, cover page, and text box designs that complement each other. For example, you can add a matching cover page, header, and sidebar.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="GridTable4Accent5"/>
+        <w:tblW w:w="0" w:type="dxa"/>
+        <w:tblLook w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="3116"/>
+        <w:gridCol w:w="3117"/>
+        <w:gridCol w:w="3117"/>
+      </w:tblGrid>
+      <w:tr w14:paraId="288546D0" w14:textId="77777777">
+        <w:trPr>
+          <w:cnfStyle w:firstRow="1" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="100000000000"/>
+          <w:ins w:author="Jubarte" w:id="106" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:cnfStyle w:firstRow="0" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="001000000000"/>
+            <w:tcW w:w="3116" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="2F7B24E8" w14:textId="77777777">
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="107" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="108" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:noProof/>
+                </w:rPr>
+                <w:t>Lorem ipsum dolor sit amet
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3117" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="224397AC" w14:textId="77777777">
+            <w:pPr>
+              <w:cnfStyle w:firstRow="1" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="100000000000"/>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="109" w:date="1970-01-01T00:00:00Z"/>
+                <w:b w:val="0"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="110" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:noProof/>
+                </w:rPr>
+                <w:t>Consectetuer adipiscing elit
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3117" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="161E6E97" w14:textId="77777777">
+            <w:pPr>
+              <w:cnfStyle w:firstRow="1" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="100000000000"/>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="111" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="112" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:noProof/>
+                </w:rPr>
+                <w:t>Maecenas porttitor congue massa.
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w14:paraId="0BA6A6D4" w14:textId="77777777">
+        <w:trPr>
+          <w:cnfStyle w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="1" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="000000100000"/>
+          <w:ins w:author="Jubarte" w:id="113" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:cnfStyle w:firstRow="0" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="001000000000"/>
+            <w:tcW w:w="3116" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="1BFA56A2" w14:textId="77777777">
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="114" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="115" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>100
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3117" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="6DDA39C0" w14:textId="77777777">
+            <w:pPr>
+              <w:cnfStyle w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="1" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="000000100000"/>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="116" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="117" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>200
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3117" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="67E65DBA" w14:textId="77777777">
+            <w:pPr>
+              <w:cnfStyle w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="1" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="000000100000"/>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="118" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="119" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>300
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w14:paraId="10B5E2C1" w14:textId="77777777">
+        <w:trPr>
+          <w:ins w:author="Jubarte" w:id="120" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:cnfStyle w:firstRow="0" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="001000000000"/>
+            <w:tcW w:w="3116" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="135AC8F8" w14:textId="77777777">
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="121" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="122" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>400
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3117" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="1CDC7D2E" w14:textId="77777777">
+            <w:pPr>
+              <w:cnfStyle w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="000000000000"/>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="123" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="124" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>500
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3117" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="51BB1232" w14:textId="77777777">
+            <w:pPr>
+              <w:cnfStyle w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="000000000000"/>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="125" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="126" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>600
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w14:paraId="2CC8D0BE" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="127" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="2EFCDF91" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="128" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <m:oMathPara>
+        <m:oMath>
+          <m:sSup>
+            <m:sSupPr>
+              <m:ctrlPr>
+                <w:ins w:id="308" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                  <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                  </w:rPr>
+                </w:ins>
+              </m:ctrlPr>
+            </m:sSupPr>
+            <m:e>
+              <m:d>
+                <m:dPr>
+                  <m:ctrlPr>
+                    <w:ins w:id="309" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                      <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                      </w:rPr>
+                    </w:ins>
+                  </m:ctrlPr>
+                </m:dPr>
+                <m:e>
+                  <m:r>
+                    <w:ins w:id="297" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                      <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                      </w:rPr>
+                      <m:t>x+a
+                      </m:t>
+                    </w:ins>
+                  </m:r>
+                </m:e>
+              </m:d>
+            </m:e>
+            <m:sup>
+              <m:r>
+                <w:ins w:id="298" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                  <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                  </w:rPr>
+                  <m:t>n
+                  </m:t>
+                </w:ins>
+              </m:r>
+            </m:sup>
+          </m:sSup>
+          <m:r>
+            <w:ins w:id="299" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+              <w:rPr>
+                <w:rFonts w:ascii="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math" w:cs="Cambria Math"/>
+              </w:rPr>
+              <m:t>=
+              </m:t>
+            </w:ins>
+          </m:r>
+          <m:nary>
+            <m:naryPr>
+              <m:chr m:val="∑"/>
+              <m:grow m:val="1"/>
+              <m:ctrlPr>
+                <w:ins w:id="310" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                  <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                  </w:rPr>
+                </w:ins>
+              </m:ctrlPr>
+            </m:naryPr>
+            <m:sub>
+              <m:r>
+                <w:ins w:id="300" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                  <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math" w:cs="Cambria Math"/>
+                  </w:rPr>
+                  <m:t>k=0
+                  </m:t>
+                </w:ins>
+              </m:r>
+            </m:sub>
+            <m:sup>
+              <m:r>
+                <w:ins w:id="301" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                  <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math" w:cs="Cambria Math"/>
+                  </w:rPr>
+                  <m:t>n
+                  </m:t>
+                </w:ins>
+              </m:r>
+            </m:sup>
+            <m:e>
+              <m:d>
+                <m:dPr>
+                  <m:ctrlPr>
+                    <w:ins w:id="311" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                      <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                      </w:rPr>
+                    </w:ins>
+                  </m:ctrlPr>
+                </m:dPr>
+                <m:e>
+                  <m:f>
+                    <m:fPr>
+                      <m:type m:val="noBar"/>
+                      <m:ctrlPr>
+                        <w:ins w:id="312" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                          <w:rPr>
+                            <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                          </w:rPr>
+                        </w:ins>
+                      </m:ctrlPr>
+                    </m:fPr>
+                    <m:num>
+                      <m:r>
+                        <w:ins w:id="302" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                          <w:rPr>
+                            <w:rFonts w:ascii="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math" w:cs="Cambria Math"/>
+                          </w:rPr>
+                          <m:t>n
+                          </m:t>
+                        </w:ins>
+                      </m:r>
+                    </m:num>
+                    <m:den>
+                      <m:r>
+                        <w:ins w:id="303" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                          <w:rPr>
+                            <w:rFonts w:ascii="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math" w:cs="Cambria Math"/>
+                          </w:rPr>
+                          <m:t>k
+                          </m:t>
+                        </w:ins>
+                      </m:r>
+                    </m:den>
+                  </m:f>
+                </m:e>
+              </m:d>
+              <m:sSup>
+                <m:sSupPr>
+                  <m:ctrlPr>
+                    <w:ins w:id="313" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                      <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                      </w:rPr>
+                    </w:ins>
+                  </m:ctrlPr>
+                </m:sSupPr>
+                <m:e>
+                  <m:r>
+                    <w:ins w:id="304" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                      <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math" w:cs="Cambria Math"/>
+                      </w:rPr>
+                      <m:t>x
+                      </m:t>
+                    </w:ins>
+                  </m:r>
+                </m:e>
+                <m:sup>
+                  <m:r>
+                    <w:ins w:id="305" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                      <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math" w:cs="Cambria Math"/>
+                      </w:rPr>
+                      <m:t>k
+                      </m:t>
+                    </w:ins>
+                  </m:r>
+                </m:sup>
+              </m:sSup>
+              <m:sSup>
+                <m:sSupPr>
+                  <m:ctrlPr>
+                    <w:ins w:id="314" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                      <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                      </w:rPr>
+                    </w:ins>
+                  </m:ctrlPr>
+                </m:sSupPr>
+                <m:e>
+                  <m:r>
+                    <w:ins w:id="306" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                      <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math" w:cs="Cambria Math"/>
+                      </w:rPr>
+                      <m:t>a
+                      </m:t>
+                    </w:ins>
+                  </m:r>
+                </m:e>
+                <m:sup>
+                  <m:r>
+                    <w:ins w:id="307" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                      <w:rPr>
+                        <w:rFonts w:ascii="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math" w:cs="Cambria Math"/>
+                      </w:rPr>
+                      <m:t>n-k
+                      </m:t>
+                    </w:ins>
+                  </m:r>
+                </m:sup>
+              </m:sSup>
+            </m:e>
+          </m:nary>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p w14:paraId="36198FA6" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="130" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="131" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>β
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="0DA8A235" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="132" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="133" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>¥≤≥
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="196388FF" w14:textId="44FD2BF5">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="134" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="135" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:fldChar w:fldCharType="begin"/>
+        </w:r>
+        <w:r>
+          <w:instrText xml:space="preserve">DATE \@ "dddd, MMMM d, yyyy"
+          </w:instrText>
+        </w:r>
+        <w:r>
+          <w:fldChar w:fldCharType="separate"/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+          </w:rPr>
+          <w:t>Friday, July 10, 2026
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:fldChar w:fldCharType="end"/>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="1A8B6BE4" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="136" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="71B6C7B7" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="137" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="138" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:i/>
+            <w:highlight w:val="yellow"/>
+            <w:u w:val="single"/>
+          </w:rPr>
+          <w:t>Video provides a powerful way to help you prove your point.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">When you click Online Video, you can paste in the embed code for the video you want to add. You can also type a keyword to search online for the video that best fits your document.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="0C18B909" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="139" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="140" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Following hyperlink is to a bookmark on this same page.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="2B7F43FF" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="141" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="142" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:fldChar w:fldCharType="begin"/>
+        </w:r>
+        <w:r>
+          <w:instrText>HYPERLINK \l "ABookmark"
+          </w:instrText>
+        </w:r>
+        <w:r>
+          <w:fldChar w:fldCharType="separate"/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t>Video provides a powerful
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:fldChar w:fldCharType="end"/>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">way to help you prove your point.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="4C604A2E" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="143" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="144" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>When you click Online Video, you can paste in the embed code for the video you want to add.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="250A978F" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="145" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="146" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>When you click Design and choose a new Theme, the pictures, charts, and SmartArt graphics change to match your new theme.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="2265226A" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="147" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="148" w:date="1970-01-01T00:00:00Z">
+        <w:bookmarkStart w:id="315" w:name="ABookmark"/>
+        <w:r>
+          <w:rPr>
+            <w:highlight w:val="yellow"/>
+          </w:rPr>
+          <w:t>This is the bookmark here.
+          </w:t>
+        </w:r>
+        <w:bookmarkEnd w:id="315"/>
+        <w:r>
+          <w:t xml:space="preserve">Your headings change to match the new theme.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="1CE611B4" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="149" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="150" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Save time in Word with new buttons that show up where you need them.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="4141EE06" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="2"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="151" w:date="1970-01-01T00:00:00Z"/>
+          <w:noProof/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="152" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+          </w:rPr>
+          <w:t>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="19552889" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="2"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="153" w:date="1970-01-01T00:00:00Z"/>
+          <w:noProof/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="154" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+          </w:rPr>
+          <w:t>Maecenas porttitor congue massa.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="7300C6C4" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="2"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="155" w:date="1970-01-01T00:00:00Z"/>
+          <w:noProof/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="156" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+          </w:rPr>
+          <w:t>Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="7FD6337A" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="2"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="157" w:date="1970-01-01T00:00:00Z"/>
+          <w:noProof/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="158" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+          </w:rPr>
+          <w:t>Nunc viverra imperdiet enim.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="5781CD46" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="2"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="159" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="160" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+          </w:rPr>
+          <w:t>Fusce est.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="29ACDD4F" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="161" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="162" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+          </w:rPr>
+          <w:drawing>
+            <wp:anchor distT="45720" distB="45720" distL="114300" distR="114300" simplePos="0" relativeHeight="251654656" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="14D85FC7" wp14:editId="4BDF2398">
+              <wp:simplePos x="0" y="0"/>
+              <wp:positionH relativeFrom="column">
+                <wp:align>center
+                </wp:align>
+              </wp:positionH>
+              <wp:positionV relativeFrom="paragraph">
+                <wp:posOffset>182880
+                </wp:posOffset>
+              </wp:positionV>
+              <wp:extent cx="2360930" cy="1404620"/>
+              <wp:effectExtent l="0" t="0" r="22860" b="11430"/>
+              <wp:wrapSquare wrapText="bothSides"/>
+              <wp:docPr id="15" name="Text Box 2"/>
+              <wp:cNvGraphicFramePr>
+                <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+              </wp:cNvGraphicFramePr>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                  <wps:wsp>
+                    <wps:cNvSpPr txBox="1">
+                      <a:spLocks noChangeArrowheads="1"/>
+                    </wps:cNvSpPr>
+                    <wps:spPr bwMode="auto">
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="2360930" cy="1404620"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                      <a:solidFill>
+                        <a:srgbClr val="FFFFFF"/>
+                      </a:solidFill>
+                      <a:ln w="9525">
+                        <a:solidFill>
+                          <a:srgbClr val="000000"/>
+                        </a:solidFill>
+                        <a:miter lim="800000"/>
+                        <a:headEnd/>
+                        <a:tailEnd/>
+                      </a:ln>
+                    </wps:spPr>
+                    <wps:txbx>
+                      <w:txbxContent>
+                        <w:p w14:paraId="3656EF4F" w14:textId="77777777">
+                          <w:r>
+                            <w:t>Here is a text box.
+                            </w:t>
+                          </w:r>
+                        </w:p>
+                      </w:txbxContent>
+                    </wps:txbx>
+                    <wps:bodyPr rot="0" vert="horz" wrap="square" lIns="91440" tIns="45720" rIns="91440" bIns="45720" anchor="t" anchorCtr="0">
+                      <a:spAutoFit/>
+                    </wps:bodyPr>
+                  </wps:wsp>
+                </a:graphicData>
+              </a:graphic>
+              <wp14:sizeRelH relativeFrom="margin">
+                <wp14:pctWidth>40000
+                </wp14:pctWidth>
+              </wp14:sizeRelH>
+              <wp14:sizeRelV relativeFrom="margin">
+                <wp14:pctHeight>20000
+                </wp14:pctHeight>
+              </wp14:sizeRelV>
+            </wp:anchor>
+          </w:drawing>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="67B2E23C" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="163" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="164" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+          </w:rPr>
+          <mc:AlternateContent>
+            <mc:Choice Requires="v">
+              <w:object w:dxaOrig="362.05pt" w:dyaOrig="146.40pt" w14:anchorId="1717CF17">
+                <v:shapetype id="1" coordsize="21600,21600" o:spt="75" o:preferrelative="t" path="m@4@5l@4@11@9@11@9@5xe" filled="f" stroked="f">
+                  <v:stroke joinstyle="miter"/>
+                  <v:formulas>
+                    <v:f eqn="if lineDrawn pixelLineWidth 0"/>
+                    <v:f eqn="sum @0 1 0"/>
+                    <v:f eqn="sum 0 0 @1"/>
+                    <v:f eqn="prod @2 1 2"/>
+                    <v:f eqn="prod @3 21600 pixelWidth"/>
+                    <v:f eqn="prod @3 21600 pixelHeight"/>
+                    <v:f eqn="sum @0 0 1"/>
+                    <v:f eqn="prod @6 1 2"/>
+                    <v:f eqn="prod @7 21600 pixelWidth"/>
+                    <v:f eqn="sum @8 21600 0"/>
+                    <v:f eqn="prod @7 21600 pixelHeight"/>
+                    <v:f eqn="sum @10 21600 0"/>
+                  </v:formulas>
+                  <v:path o:extrusionok="f" gradientshapeok="t" o:connecttype="rect"/>
+                  <o:lock v:ext="edit" aspectratio="t"/>
+                </v:shapetype>
+                <v:shape id="1" type="#1" alt="" style="width:362.15pt;height:146.15pt;mso-width-percent:0;mso-height-percent:0;mso-width-percent:0;mso-height-percent:0" o:ole="">
+                  <v:imagedata r:id="rId17" o:title=""/>
+                </v:shape>
+                <o:OLEObject Type="Embed" ProgID="Excel.Sheet.12" ShapeID="1" DrawAspect="Content" ObjectID="_1845224506"/>
+              </w:object>
+            </mc:Choice>
+            <mc:Fallback>
+              <w:object>
+                <w:drawing>
+                  <wp:inline distT="0" distB="0" distL="0" distR="0" wp14:anchorId="19A444EA" wp14:editId="61965CC7">
+                    <wp:extent cx="4599305" cy="1856105"/>
+                    <wp:effectExtent l="0" t="0" r="0" b="0"/>
+                    <wp:docPr id="16" name="Object 1"/>
+                    <wp:cNvGraphicFramePr>
+                      <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+                    </wp:cNvGraphicFramePr>
+                    <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                      <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                        <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                          <pic:nvPicPr>
+                            <pic:cNvPr id="0" name="Object 1"/>
+                            <pic:cNvPicPr>
+                              <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                              <a:extLst>
+                                <a:ext uri="{837473B0-CC2E-450a-ABE3-18F120FF3D37}">
+                                  <a15:objectPr xmlns:a15="http://schemas.microsoft.com/office/drawing/2012/main" objectId="_1845224506" isActiveX="0" linkType=""/>
+                                </a:ext>
+                              </a:extLst>
+                            </pic:cNvPicPr>
+                          </pic:nvPicPr>
+                          <pic:blipFill>
+                            <a:blip r:embed="rId18">
+                              <a:extLst>
+                                <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                                  <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                                </a:ext>
+                              </a:extLst>
+                            </a:blip>
+                            <a:srcRect/>
+                            <a:stretch>
+                              <a:fillRect/>
+                            </a:stretch>
+                          </pic:blipFill>
+                          <pic:spPr bwMode="auto">
+                            <a:xfrm>
+                              <a:off x="0" y="0"/>
+                              <a:ext cx="4599305" cy="1856105"/>
+                            </a:xfrm>
+                            <a:prstGeom prst="rect">
+                              <a:avLst/>
+                            </a:prstGeom>
+                            <a:noFill/>
+                            <a:ln>
+                              <a:noFill/>
+                            </a:ln>
+                          </pic:spPr>
+                        </pic:pic>
+                      </a:graphicData>
+                    </a:graphic>
+                  </wp:inline>
+                </w:drawing>
+                <w:objectEmbed w:drawAspect="content" r:id="rId19" w:progId="Excel.Sheet.12" w:shapeId="440" w:fieldCodes=""/>
+              </w:object>
+            </mc:Fallback>
+          </mc:AlternateContent>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="549DFD06" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="165" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="166" w:date="1970-01-01T00:00:00Z">
+        <w:bookmarkStart w:id="316" w:name="_MON_1476039688"/>
+        <w:bookmarkEnd w:id="316"/>
+        <w:r>
+          <w:t>Heading1
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="4C00B83B" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="167" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="168" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Video provides a powerful way to help you prove your point. When you click Online Video, you can paste in the embed code for the video you want to add. You can also type a keyword to search online for the video that best fits your document.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="52A87C3C" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="169" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="170" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>To make your document look professionally produced, Word provides header, footer, cover page, and text box designs that complement each other. For example, you can add a matching cover page, header, and sidebar. Click Insert and then choose the elements you want from the different galleries.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="24B2EA9B" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="171" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="172" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Heading 2
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="7EDF09DB" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="173" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="174" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Themes and styles also help keep your document coordinated. When you click Design and choose a new Theme, the pictures, charts, and SmartArt graphics change to match your new theme. When you apply styles, your headings change to match the new theme.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="4D8A16AF" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="175" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="176" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Save time in Word with new buttons that show up where you need them. To change the way a picture fits in your document, click it and a button for layout options appears next to it. When you work on a table, click where you want to add a row or a column, and then click the plus sign.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="459528CA" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="177" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="178" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Reading is easier, too, in the new Reading view. You can collapse parts of the document and focus on the text you want. If you need to stop reading before you reach the end, Word remembers where you left off - even on another device.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="064AB8D5" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="179" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:sdt>
+      <w:sdtPr>
+        <w:rPr>
+          <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsiaTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorBidi"/>
+          <w:color w:val="auto"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+        <w:id w:val="787555665"/>
+        <w:docPartObj>
+          <w:docPartGallery w:val="Table of Contents"/>
+          <w:docPartUnique/>
+        </w:docPartObj>
+      </w:sdtPr>
+      <w:sdtEndPr>
+        <w:rPr>
+          <w:b/>
+          <w:bCs/>
+          <w:noProof/>
+        </w:rPr>
+      </w:sdtEndPr>
+      <w:sdtContent>
+        <w:p w14:paraId="7BA188FC" w14:textId="77777777">
+          <w:pPr>
+            <w:pStyle w:val="TOCHeading"/>
+            <w:rPr>
+              <w:ins w:author="Jubarte" w:id="180" w:date="1970-01-01T00:00:00Z"/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Jubarte" w:id="181" w:date="1970-01-01T00:00:00Z">
+            <w:r>
+              <w:t>Contents
+              </w:t>
+            </w:r>
+          </w:ins>
+        </w:p>
+        <w:p w14:paraId="7F1121EE" w14:textId="77777777">
+          <w:pPr>
+            <w:pStyle w:val="TOC1"/>
+            <w:tabs>
+              <w:tab w:val="end" w:leader="dot" w:pos="9350"/>
+            </w:tabs>
+            <w:rPr>
+              <w:ins w:author="Jubarte" w:id="182" w:date="1970-01-01T00:00:00Z"/>
+              <w:noProof/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Jubarte" w:id="183" w:date="1970-01-01T00:00:00Z">
+            <w:r>
+              <w:fldChar w:fldCharType="begin"/>
+            </w:r>
+            <w:r>
+              <w:instrText xml:space="preserve">TOC \o "1-3" \h \z \u
+              </w:instrText>
+            </w:r>
+            <w:r>
+              <w:fldChar w:fldCharType="separate"/>
+            </w:r>
+            <w:r>
+              <w:fldChar w:fldCharType="begin"/>
+            </w:r>
+            <w:r>
+              <w:instrText>HYPERLINK \l "_Toc402299822"
+              </w:instrText>
+            </w:r>
+            <w:r>
+              <w:fldChar w:fldCharType="separate"/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+              </w:rPr>
+              <w:t>Heading 1
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:tab/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:fldChar w:fldCharType="begin"/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:instrText xml:space="preserve">PAGEREF _Toc402299822 \h
+              </w:instrText>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:fldChar w:fldCharType="separate"/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:t>1
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:fldChar w:fldCharType="end"/>
+            </w:r>
+            <w:r>
+              <w:fldChar w:fldCharType="end"/>
+            </w:r>
+          </w:ins>
+        </w:p>
+        <w:p w14:paraId="4F4FA75D" w14:textId="77777777">
+          <w:pPr>
+            <w:pStyle w:val="TOC2"/>
+            <w:tabs>
+              <w:tab w:val="end" w:leader="dot" w:pos="9350"/>
+            </w:tabs>
+            <w:rPr>
+              <w:ins w:author="Jubarte" w:id="184" w:date="1970-01-01T00:00:00Z"/>
+              <w:noProof/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Jubarte" w:id="185" w:date="1970-01-01T00:00:00Z">
+            <w:r>
+              <w:fldChar w:fldCharType="begin"/>
+            </w:r>
+            <w:r>
+              <w:instrText>HYPERLINK \l "_Toc402299823"
+              </w:instrText>
+            </w:r>
+            <w:r>
+              <w:fldChar w:fldCharType="separate"/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+              </w:rPr>
+              <w:t>Heading 2
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:tab/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:fldChar w:fldCharType="begin"/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:instrText xml:space="preserve">PAGEREF _Toc402299823 \h
+              </w:instrText>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:fldChar w:fldCharType="separate"/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:t>1
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:fldChar w:fldCharType="end"/>
+            </w:r>
+            <w:r>
+              <w:fldChar w:fldCharType="end"/>
+            </w:r>
+          </w:ins>
+        </w:p>
+        <w:p w14:paraId="3DD47706" w14:textId="77777777">
+          <w:pPr>
+            <w:pStyle w:val="TOC1"/>
+            <w:tabs>
+              <w:tab w:val="end" w:leader="dot" w:pos="9350"/>
+            </w:tabs>
+            <w:rPr>
+              <w:ins w:author="Jubarte" w:id="186" w:date="1970-01-01T00:00:00Z"/>
+              <w:noProof/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Jubarte" w:id="187" w:date="1970-01-01T00:00:00Z">
+            <w:r>
+              <w:fldChar w:fldCharType="begin"/>
+            </w:r>
+            <w:r>
+              <w:instrText>HYPERLINK \l "_Toc402299824"
+              </w:instrText>
+            </w:r>
+            <w:r>
+              <w:fldChar w:fldCharType="separate"/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+              </w:rPr>
+              <w:t>Heading 1 again
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:tab/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:fldChar w:fldCharType="begin"/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:instrText xml:space="preserve">PAGEREF _Toc402299824 \h
+              </w:instrText>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:fldChar w:fldCharType="separate"/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:t>1
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:fldChar w:fldCharType="end"/>
+            </w:r>
+            <w:r>
+              <w:fldChar w:fldCharType="end"/>
+            </w:r>
+          </w:ins>
+        </w:p>
+        <w:p w14:paraId="1AE6EBA9" w14:textId="77777777">
+          <w:pPr>
+            <w:pStyle w:val="TOC2"/>
+            <w:tabs>
+              <w:tab w:val="end" w:leader="dot" w:pos="9350"/>
+            </w:tabs>
+            <w:rPr>
+              <w:ins w:author="Jubarte" w:id="188" w:date="1970-01-01T00:00:00Z"/>
+              <w:noProof/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Jubarte" w:id="189" w:date="1970-01-01T00:00:00Z">
+            <w:r>
+              <w:fldChar w:fldCharType="begin"/>
+            </w:r>
+            <w:r>
+              <w:instrText>HYPERLINK \l "_Toc402299825"
+              </w:instrText>
+            </w:r>
+            <w:r>
+              <w:fldChar w:fldCharType="separate"/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+              </w:rPr>
+              <w:t>Heading 2 again
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:tab/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:fldChar w:fldCharType="begin"/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:instrText xml:space="preserve">PAGEREF _Toc402299825 \h
+              </w:instrText>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:fldChar w:fldCharType="separate"/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:t>1
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="Hyperlink"/>
+                <w:noProof/>
+                <w:webHidden/>
+              </w:rPr>
+              <w:fldChar w:fldCharType="end"/>
+            </w:r>
+            <w:r>
+              <w:fldChar w:fldCharType="end"/>
+            </w:r>
+          </w:ins>
+        </w:p>
+        <w:p w14:paraId="27EB7B00" w14:textId="77777777">
+          <w:pPr>
+            <w:rPr>
+              <w:ins w:author="Jubarte" w:id="190" w:date="1970-01-01T00:00:00Z"/>
+            </w:rPr>
+          </w:pPr>
+          <w:ins w:author="Jubarte" w:id="191" w:date="1970-01-01T00:00:00Z">
+            <w:r>
+              <w:rPr>
+                <w:b/>
+                <w:bCs/>
+                <w:noProof/>
+              </w:rPr>
+              <w:fldChar w:fldCharType="end"/>
+            </w:r>
+          </w:ins>
+        </w:p>
+      </w:sdtContent>
+    </w:sdt>
+    <w:p w14:paraId="0FDA8938" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="192" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="4DCED121" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="193" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="1239CA24" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="194" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="4E0C70D0" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="195" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="196" w:date="1970-01-01T00:00:00Z">
+        <w:bookmarkStart w:id="317" w:name="_Toc402299822"/>
+        <w:r>
+          <w:t>Heading 1
+          </w:t>
+        </w:r>
+        <w:bookmarkEnd w:id="317"/>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="4E50BC12" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="197" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="198" w:date="1970-01-01T00:00:00Z">
+        <w:bookmarkStart w:id="318" w:name="_Toc402299823"/>
+        <w:r>
+          <w:t>Heading 2
+          </w:t>
+        </w:r>
+        <w:bookmarkEnd w:id="318"/>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="0A4BD695" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="199" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="200" w:date="1970-01-01T00:00:00Z">
+        <w:bookmarkStart w:id="319" w:name="_Toc402299824"/>
+        <w:r>
+          <w:t>Heading 1 again
+          </w:t>
+        </w:r>
+        <w:bookmarkEnd w:id="319"/>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="1A73D604" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="201" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="202" w:date="1970-01-01T00:00:00Z">
+        <w:bookmarkStart w:id="320" w:name="_Toc402299825"/>
+        <w:r>
+          <w:t>Heading 2 again
+          </w:t>
+        </w:r>
+        <w:bookmarkEnd w:id="320"/>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="68E620A8" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="203" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="5F7FB8A0" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="204" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="205" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+          </w:rPr>
+          <w:drawing>
+            <wp:inline distT="0" distB="0" distL="0" distR="0" wp14:anchorId="2BDEF569" wp14:editId="2379780A">
+              <wp:extent cx="5943600" cy="4618990"/>
+              <wp:effectExtent l="0" t="0" r="0" b="0"/>
+              <wp:docPr id="17" name="Picture 1"/>
+              <wp:cNvGraphicFramePr>
+                <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+              </wp:cNvGraphicFramePr>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                    <pic:nvPicPr>
+                      <pic:cNvPr id="1" name="C8C7E21.tmp"/>
+                      <pic:cNvPicPr/>
+                    </pic:nvPicPr>
+                    <pic:blipFill>
+                      <a:blip r:embed="rId20">
+                        <a:extLst>
+                          <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                            <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                          </a:ext>
+                        </a:extLst>
+                      </a:blip>
+                      <a:stretch>
+                        <a:fillRect/>
+                      </a:stretch>
+                    </pic:blipFill>
+                    <pic:spPr>
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="5943600" cy="4618990"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                    </pic:spPr>
+                  </pic:pic>
+                </a:graphicData>
+              </a:graphic>
+            </wp:inline>
+          </w:drawing>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="41DACC09" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="206" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="207" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>This is a section that is in landscape mode.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="01D23D0E" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="208" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+        <w:sectPr>
+          <w:headerReference w:type="even" r:id="rId21"/>
+          <w:headerReference w:type="default" r:id="rId22"/>
+          <w:footerReference w:type="even" r:id="rId23"/>
+          <w:footerReference w:type="default" r:id="rId24"/>
+          <w:headerReference w:type="first" r:id="rId25"/>
+          <w:footerReference w:type="first" r:id="rId26"/>
+          <w:pgSz w:w="15840" w:h="12240" w:orient="landscape"/>
+          <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+          <w:cols w:space="720"/>
+          <w:docGrid w:linePitch="360"/>
+        </w:sectPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="797CF602" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="209" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+        <w:sectPr>
+          <w:headerReference w:type="even" r:id="rId27"/>
+          <w:headerReference w:type="default" r:id="rId28"/>
+          <w:footerReference w:type="even" r:id="rId29"/>
+          <w:footerReference w:type="default" r:id="rId30"/>
+          <w:headerReference w:type="first" r:id="rId31"/>
+          <w:footerReference w:type="first" r:id="rId32"/>
+          <w:pgSz w:w="12240" w:h="15840"/>
+          <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+          <w:cols w:space="720"/>
+          <w:docGrid w:linePitch="360"/>
+        </w:sectPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="210" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>This is in the following section.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="49F6A636" w14:textId="77777777">
+      <w:pPr>
+        <w:jc w:val="right"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="211" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="212" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Video provides a powerful way to help you prove your point. When you click Online Video, you can paste in the embed code for the video you want to add. You can also type a keyword to search online for the video that best fits your document. To make your document look professionally produced, Word provides header, footer, cover page, and text box designs that complement each other. For example, you can add a matching cover page, header, and sidebar. Click Insert and then choose the elements you want from the different galleries.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="16533D5C" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="213" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="214" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t xml:space="preserve">Video provides a
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="FootnoteReference"/>
+          </w:rPr>
+          <w:footnoteReference w:id="1"/>
+        </w:r>
+        <w:r>
+          <w:t>powerful way to help you prove your point.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="1265C0CD" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="215" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Wide Latin" w:hAnsi="Wide Latin"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="216" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Wide Latin" w:hAnsi="Wide Latin"/>
+          </w:rPr>
+          <w:t>Video provides a powerful way to help you prove your point.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="64A22BCC" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="217" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="40"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="218" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="40"/>
+          </w:rPr>
+          <w:t>When you click Online Video, you can paste in the embed code for the video you want to add.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="3C771B35" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="219" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/>
+          <w:sz w:val="12"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="220" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/>
+            <w:sz w:val="12"/>
+          </w:rPr>
+          <w:t>You can also type a keyword to search online for the video that best fits your document.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="405BA1E3" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="221" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+          <w:color w:val="262626" w:themeColor="text1" w:themeTint="D9"/>
+          <w:sz w:val="36"/>
+          <w14:shadow w14:blurRad="0" w14:dist="38100" w14:dir="2700000" w14:sx="100000" w14:sy="100000" w14:kx="0" w14:ky="0" w14:algn="bl">
+            <w14:schemeClr w14:val="accent5"/>
+          </w14:shadow>
+          <w14:textOutline w14:w="6731" w14:cap="flat" w14:cmpd="sng" w14:algn="ctr">
+            <w14:solidFill>
+              <w14:schemeClr w14:val="bg1"/>
+            </w14:solidFill>
+            <w14:prstDash w14:val="solid"/>
+            <w14:round/>
+          </w14:textOutline>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="222" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:color w:val="262626" w:themeColor="text1" w:themeTint="D9"/>
+            <w:sz w:val="36"/>
+            <w14:shadow w14:blurRad="0" w14:dist="38100" w14:dir="2700000" w14:sx="100000" w14:sy="100000" w14:kx="0" w14:ky="0" w14:algn="bl">
+              <w14:schemeClr w14:val="accent5"/>
+            </w14:shadow>
+            <w14:textOutline w14:w="6731" w14:cap="flat" w14:cmpd="sng" w14:algn="ctr">
+              <w14:solidFill>
+                <w14:schemeClr w14:val="bg1"/>
+              </w14:solidFill>
+              <w14:prstDash w14:val="solid"/>
+              <w14:round/>
+            </w14:textOutline>
+          </w:rPr>
+          <w:t>Video provides a powerful way to help you prove your point.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="165E4EF2" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="223" w:date="1970-01-01T00:00:00Z"/>
+          <w:sz w:val="40"/>
+          <w14:reflection w14:blurRad="6350" w14:stA="53000" w14:stPos="0" w14:endA="300" w14:endPos="35500" w14:dist="0" w14:dir="5400000" w14:fadeDir="5400000" w14:sx="100000" w14:sy="-90000" w14:kx="0" w14:ky="0" w14:algn="bl"/>
+          <w14:textOutline w14:w="0" w14:cap="flat" w14:cmpd="sng" w14:algn="ctr">
+            <w14:noFill/>
+            <w14:prstDash w14:val="solid"/>
+            <w14:round/>
+          </w14:textOutline>
+          <w14:textFill>
+            <w14:gradFill>
+              <w14:gsLst>
+                <w14:gs w14:pos="0">
+                  <w14:schemeClr w14:val="accent5">
+                    <w14:lumMod w14:val="50000"/>
+                  </w14:schemeClr>
+                </w14:gs>
+                <w14:gs w14:pos="50000">
+                  <w14:schemeClr w14:val="accent5"/>
+                </w14:gs>
+                <w14:gs w14:pos="100000">
+                  <w14:schemeClr w14:val="accent5">
+                    <w14:lumMod w14:val="60000"/>
+                    <w14:lumOff w14:val="40000"/>
+                  </w14:schemeClr>
+                </w14:gs>
+              </w14:gsLst>
+              <w14:lin w14:ang="5400000" w14:scaled="0"/>
+            </w14:gradFill>
+          </w14:textFill>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="224" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="40"/>
+            <w14:reflection w14:blurRad="6350" w14:stA="53000" w14:stPos="0" w14:endA="300" w14:endPos="35500" w14:dist="0" w14:dir="5400000" w14:fadeDir="5400000" w14:sx="100000" w14:sy="-90000" w14:kx="0" w14:ky="0" w14:algn="bl"/>
+            <w14:textOutline w14:w="0" w14:cap="flat" w14:cmpd="sng" w14:algn="ctr">
+              <w14:noFill/>
+              <w14:prstDash w14:val="solid"/>
+              <w14:round/>
+            </w14:textOutline>
+            <w14:textFill>
+              <w14:gradFill>
+                <w14:gsLst>
+                  <w14:gs w14:pos="0">
+                    <w14:schemeClr w14:val="accent5">
+                      <w14:lumMod w14:val="50000"/>
+                    </w14:schemeClr>
+                  </w14:gs>
+                  <w14:gs w14:pos="50000">
+                    <w14:schemeClr w14:val="accent5"/>
+                  </w14:gs>
+                  <w14:gs w14:pos="100000">
+                    <w14:schemeClr w14:val="accent5">
+                      <w14:lumMod w14:val="60000"/>
+                      <w14:lumOff w14:val="40000"/>
+                    </w14:schemeClr>
+                  </w14:gs>
+                </w14:gsLst>
+                <w14:lin w14:ang="5400000" w14:scaled="0"/>
+              </w14:gradFill>
+            </w14:textFill>
+          </w:rPr>
+          <w:t>When you click Online Video, you can paste in the embed code for the video you want to add.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="3B074659" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="225" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+          <w:color w:val="F7CAAC" w:themeColor="accent2" w:themeTint="66"/>
+          <w14:textOutline w14:w="11112" w14:cap="flat" w14:cmpd="sng" w14:algn="ctr">
+            <w14:solidFill>
+              <w14:schemeClr w14:val="accent2"/>
+            </w14:solidFill>
+            <w14:prstDash w14:val="solid"/>
+            <w14:round/>
+          </w14:textOutline>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="226" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:color w:val="F7CAAC" w:themeColor="accent2" w:themeTint="66"/>
+            <w14:textOutline w14:w="11112" w14:cap="flat" w14:cmpd="sng" w14:algn="ctr">
+              <w14:solidFill>
+                <w14:schemeClr w14:val="accent2"/>
+              </w14:solidFill>
+              <w14:prstDash w14:val="solid"/>
+              <w14:round/>
+            </w14:textOutline>
+          </w:rPr>
+          <w:t>You can also type a keyword to search online for the video that best fits your document.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="21229329" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="227" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="228" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Following is a hyperlink.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="467442AB" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="229" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="230" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:fldChar w:fldCharType="begin"/>
+        </w:r>
+        <w:r>
+          <w:instrText>HYPERLINK "http://www.ericwhite.com" \h
+          </w:instrText>
+        </w:r>
+        <w:r>
+          <w:fldChar w:fldCharType="separate"/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t>EricWhite.com
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:fldChar w:fldCharType="end"/>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="752E6B7E" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="231" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="232" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Video provides a powerful way to help you prove your point.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="10DEA4A8" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="1"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="233" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="234" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>When you click Online Video, you can paste in the embed code for the video you want to add.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="485F7974" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="1"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="235" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="236" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>You can also type a keyword to search online for the video that best fits your document.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="11C3285E" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="237" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="238" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>To make your document look professionally produced, Word provides header, footer, cover page, and text box designs that complement each other.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="06F04DBB" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="1"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="239" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="240" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>For example, you can add a matching cover page, header, and sidebar.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="4BE2BF85" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="4"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="241" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="242" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Video provides a powerful way to help you prove your point.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="54DA412F" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="1"/>
+          <w:numId w:val="4"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="243" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="244" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>When you click Online Video, you can paste in the embed code for the video you want to add.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="5403892E" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="1"/>
+          <w:numId w:val="4"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="245" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="246" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>You can also type a keyword to search online for the video that best fits your document.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="26B29323" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="1"/>
+          <w:numId w:val="4"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="247" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="248" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>To make your document look professionally produced, Word provides header, footer, cover page, and text box designs that complement each other.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="2BC36EFF" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="4"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="249" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="250" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>For example, you can add a matching cover page, header, and sidebar.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="0385F8D8" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="1"/>
+          <w:numId w:val="4"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="251" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="252" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Click Insert and then choose the elements you want from the different galleries.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="45A81F88" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="1"/>
+          <w:numId w:val="4"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="253" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="254" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Themes and styles also help keep your document coordinated.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="5DCE6C90" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="4"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="255" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="256" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>When you click Design and choose a new Theme, the pictures, charts, and SmartArt graphics change to match your new theme.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="5327A714" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="1"/>
+          <w:numId w:val="4"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="257" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="258" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>When you apply styles, your headings change to match the new theme.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="33419125" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="1"/>
+          <w:numId w:val="4"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="259" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="260" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Save time in Word with new buttons that show up where you need them.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="7569FAFA" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="261" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="7DCE2E0C" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="262" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="263" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:i/>
+            <w:highlight w:val="yellow"/>
+            <w:u w:val="single"/>
+          </w:rPr>
+          <w:t>Video provides a powerful way to help you prove your point.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">When you click Online Video, you can paste. You can also type a keyword to search online for the video that best fits your document.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="GridTable4Accent5"/>
+        <w:tblW w:w="0" w:type="dxa"/>
+        <w:tblLook w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="3116"/>
+        <w:gridCol w:w="3117"/>
+        <w:gridCol w:w="3117"/>
+      </w:tblGrid>
+      <w:tr w14:paraId="28433401" w14:textId="77777777">
+        <w:trPr>
+          <w:cnfStyle w:firstRow="1" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="100000000000"/>
+          <w:ins w:author="Jubarte" w:id="264" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:cnfStyle w:firstRow="0" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="001000000000"/>
+            <w:tcW w:w="3116" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="69C96B7B" w14:textId="77777777">
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="265" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="266" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:noProof/>
+                </w:rPr>
+                <w:t>Lorem ipsum dolor sit amet
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3117" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="6F2D47E4" w14:textId="77777777">
+            <w:pPr>
+              <w:cnfStyle w:firstRow="1" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="100000000000"/>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="267" w:date="1970-01-01T00:00:00Z"/>
+                <w:b w:val="0"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="268" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:noProof/>
+                </w:rPr>
+                <w:t>Consectetuer adipiscing elit
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3117" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="372BD97C" w14:textId="77777777">
+            <w:pPr>
+              <w:cnfStyle w:firstRow="1" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="100000000000"/>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="269" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="270" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:noProof/>
+                </w:rPr>
+                <w:t>Maecenas porttitor congue massa.
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w14:paraId="6B9CB10B" w14:textId="77777777">
+        <w:trPr>
+          <w:ins w:author="Jubarte" w:id="271" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:cnfStyle w:firstRow="0" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="001000000000"/>
+            <w:tcW w:w="3116" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="5C1719FD" w14:textId="77777777">
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="272" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="273" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>400
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3117" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="7D4CF8AA" w14:textId="77777777">
+            <w:pPr>
+              <w:cnfStyle w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="000000000000"/>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="274" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="275" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>500
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3117" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="0CEC9855" w14:textId="77777777">
+            <w:pPr>
+              <w:cnfStyle w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:oddVBand="0" w:evenVBand="0" w:oddHBand="0" w:evenHBand="0" w:firstRowFirstColumn="0" w:firstRowLastColumn="0" w:lastRowFirstColumn="0" w:lastRowLastColumn="0" w:val="000000000000"/>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="276" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="277" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>600
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w14:paraId="7540EDBA" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="278" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="56ECE6CA" w14:textId="77777777">
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="279" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="280" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Video provides a powerful way to help you prove your point. When you click Online Video, you can paste in the embed code for the video you want to add. You can also type a keyword to search online for the video that best fits your document. To make your document look professionally produced, Word provides header, footer, cover page, and text box designs that complement each other. For example, you can add a matching cover page, header, and sidebar. Click Insert and then choose the elements you want from the different galleries.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="595EB4B7" w14:textId="77777777">
+      <w:pPr>
+        <w:ind w:start="720" w:hanging="720"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="281" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="282" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Video provides a powerful way to help you prove your point. When you click Online Video, you can paste in the embed code for the video you want to add. You can also type a keyword to search online for the video that best fits your document.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="2147A873" w14:textId="77777777">
+      <w:pPr>
+        <w:ind w:firstLine="720"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="283" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="284" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>To make your document look professionally produced, Word provides header, footer, cover page, and text box designs that complement each other.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="551600B1" w14:textId="77777777">
+      <w:pPr>
+        <w:ind w:start="1440"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="285" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="286" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>For example, you can add a matching cover page, header, and sidebar.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="482579FD" w14:textId="77777777">
+      <w:pPr>
+        <w:ind w:start="2880"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="287" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="288" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Click Insert and then choose the elements you want from the different galleries.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p w14:paraId="60C5CA22" w14:textId="77777777">
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="289" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="290" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+          </w:rPr>
+          <w:drawing>
+            <wp:inline distT="0" distB="0" distL="0" distR="0" wp14:anchorId="05FEE8A2" wp14:editId="1F2F4FE4">
+              <wp:extent cx="5486400" cy="3200400"/>
+              <wp:effectExtent l="0" t="0" r="19050" b="0"/>
+              <wp:docPr id="18" name="Diagram 1"/>
+              <wp:cNvGraphicFramePr/>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/diagram">
+                  <dgm:relIds xmlns:dgm="http://schemas.openxmlformats.org/drawingml/2006/diagram" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:dm="rId34" r:lo="rId35" r:qs="rId36" r:cs="rId37"/>
+                </a:graphicData>
+              </a:graphic>
+            </wp:inline>
+          </w:drawing>
+        </w:r>
+      </w:ins>
+      <w:del w:author="Jubarte" w:id="291" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:b/>
+            <w:bCs/>
+            <w:sz w:val="32"/>
+            <w:szCs w:val="32"/>
+          </w:rPr>
+          <w:delText>Heading 2 Center Demo
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="11ADCD3B" w14:textId="77777777">
+      <w:pPr>
+        <w:spacing w:before="360" w:after="80" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="292" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="293" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:b/>
+            <w:bCs/>
+            <w:sz w:val="32"/>
+            <w:szCs w:val="32"/>
+          </w:rPr>
+          <w:delText>This document shows Heading 2 style with center alignment.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p w14:paraId="53A70901" w14:textId="77777777">
+      <w:pPr>
+        <w:pPrChange w:id="294" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+          <w:pPr>
+            <w:spacing w:before="360" w:after="80" w:line="240" w:lineRule="auto"/>
+          </w:pPr>
+        </w:pPrChange>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="295" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:b/>
+            <w:bCs/>
+            <w:sz w:val="32"/>
+            <w:szCs w:val="32"/>
+          </w:rPr>
+          <w:delText>Centered Heading 2 is useful for section titles in reports.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:sectPr>
+      <w:pgSz w:w="12240" w:h="15840"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+      <w:cols w:space="720"/>
+      <w:docGrid w:linePitch="360"/>
+      <w:sectPrChange w:author="Jubarte" w:date="1970-01-01T00:00:00Z" w:id="296">
+        <w:sectPr>
+          <w:pgSz w:w="12240" w:h="15840"/>
+          <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+          <w:cols w:space="720"/>
+        </w:sectPr>
+      </w:sectPrChange>
+    </w:sectPr>
+  </w:body>
+</w:document>

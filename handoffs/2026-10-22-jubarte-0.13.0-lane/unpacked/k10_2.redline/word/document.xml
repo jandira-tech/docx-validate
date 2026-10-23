@@ -1,0 +1,5416 @@
+<w:document xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:pt14="http://powertools.codeplex.com/2011" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="pt14 w14 w15 w16se wp14">
+  <w:body>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="0"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="1" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:left w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:bottom w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:right w:val="single" w:sz="16" w:color="4472C4"/>
+        </w:pBdr>
+        <w:shd w:val="clear" w:fill="E2EFD9"/>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="0"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="2" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="3" w:date="1970-01-01T00:00:00Z">
+        <w:bookmarkStart w:id="349" w:name="47990011"/>
+        <w:bookmarkEnd w:id="349"/>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>A
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>cce
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>s
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>sories for toilet, shower, and bath
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">by ASI.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">The section includes specifications for commonly encountered accessories with
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">typical
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>options. Special types, such as materials other than stainless steel, chrome
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>,
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">and baked enamel, or modular designed accessories
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>,
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">will need to be added by editing or by listing by model name in a schedule.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Electrically operated paper towel dispensers, electric hand dryers, and diaper changing stations are also included in this section.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>SECTION 10 2800 (10800) -- TOILET, BATH, AND LAUNDRY ACCESSORIES
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">- ASI
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">,
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Copyright 2021
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">,
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>ASI
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel0"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="2"/>
+        </w:numPr>
+        <w:ind w:left="0"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="4" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="5" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Section 102800
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Toilet, Bath, and Laundry Accessories - ASI
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel1"/>
+        <w:numPr>
+          <w:ilvl w:val="1"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="6" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="7" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>PART 1 GENERAL
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel2"/>
+        <w:numPr>
+          <w:ilvl w:val="2"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="8" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="9" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>SECTION INCLUDES
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel3"/>
+        <w:numPr>
+          <w:ilvl w:val="3"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="10" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="11" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Paper towel combination units.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="530"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="12" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="4"/>
+        </w:numPr>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:left w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:bottom w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:right w:val="single" w:sz="16" w:color="4472C4"/>
+        </w:pBdr>
+        <w:shd w:val="clear" w:fill="E2EFD9"/>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="530"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="13" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="14" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>List sections that are referenced directly in this section; indicate specific items. Do not list sections that specify installation of products included in this section; include a cross
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>-
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>reference statement in Part 3 (Formerly these cross
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>-
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>references were included here under article titled "Products Supplied But Not Installed Under This Section.") Do not list sections that specify products for which installation is specified in this section; include a cross
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>-
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>reference statement in Part 2. (Formerly these cross
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>-
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>references were included here under article titled "Products Installed But Not Supplied Under This Section.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel2"/>
+        <w:numPr>
+          <w:ilvl w:val="2"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="15" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="16" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>RELATED REQUIREMENTS
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="530"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="17" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="5"/>
+        </w:numPr>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:left w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:bottom w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:right w:val="single" w:sz="16" w:color="4472C4"/>
+        </w:pBdr>
+        <w:shd w:val="clear" w:fill="E2EFD9"/>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="530"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="18" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="19" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">List reference standards that are included within the text of this section. Use the full title as listed in the
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">reference
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>standard itself. Include as author the full name of the sponsoring organization, unless the acronym is an adequate identifier (ASTM, ANSI, NEMA, etc.). Include the date of publication if consistent with global decision on publication dates.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel2"/>
+        <w:numPr>
+          <w:ilvl w:val="2"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="20" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="21" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>REFERENCE STANDARDS
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="900"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="22" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="6"/>
+        </w:numPr>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:left w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:bottom w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:right w:val="single" w:sz="16" w:color="4472C4"/>
+        </w:pBdr>
+        <w:shd w:val="clear" w:fill="E2EFD9"/>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="900"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="23" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="24" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Search online at
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Jubarte" w:id="25" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:fldChar w:fldCharType="begin"/>
+        </w:r>
+        <w:r>
+          <w:instrText>HYPERLINK "http://www.ada.gov/" \h
+          </w:instrText>
+        </w:r>
+        <w:r>
+          <w:fldChar w:fldCharType="separate"/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:u w:color="0000EE" w:val="single"/>
+          </w:rPr>
+          <w:t>www.ada.gov
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:fldChar w:fldCharType="end"/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Jubarte" w:id="26" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">for a free copy of the 2010 ADA Standards for Accessible Design published by the U. S. Department of Justice (DOJ).
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel3"/>
+        <w:numPr>
+          <w:ilvl w:val="3"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="27" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="28" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>ADA Standards
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t xml:space="preserve">- 2010 ADA Standards for Accessible Design; 2010.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="900"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="29" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="7"/>
+        </w:numPr>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:left w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:bottom w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:right w:val="single" w:sz="16" w:color="4472C4"/>
+        </w:pBdr>
+        <w:shd w:val="clear" w:fill="E2EFD9"/>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="900"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="30" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="31" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Visit
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Jubarte" w:id="32" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:fldChar w:fldCharType="begin"/>
+        </w:r>
+        <w:r>
+          <w:instrText>HYPERLINK "https://global.ihs.com/doc_detail.cfm?&amp;rid=BSD&amp;item_s_key=00006864&amp;item_key_date=901231&amp;input_doc_number=ICC&amp;input_doc_title=" \h
+          </w:instrText>
+        </w:r>
+        <w:r>
+          <w:fldChar w:fldCharType="separate"/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:u w:color="0000EE" w:val="single"/>
+          </w:rPr>
+          <w:t>IHS Standards Store
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:fldChar w:fldCharType="end"/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Jubarte" w:id="33" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">for free information or to purchase a copy of this document.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel3"/>
+        <w:numPr>
+          <w:ilvl w:val="3"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="34" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="35" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>ICC A117.1
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t xml:space="preserve">- Accessible and Usable Buildings and Facilities; 2017.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="530"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="36" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="8"/>
+        </w:numPr>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:left w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:bottom w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:right w:val="single" w:sz="16" w:color="4472C4"/>
+        </w:pBdr>
+        <w:shd w:val="clear" w:fill="E2EFD9"/>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="530"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="37" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="38" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Do not request submittals if drawings sufficiently describe the products of this section or if proprietary specifying techniques are used. The review of submittals increases the possibility of unintended variations to drawings, thereby increasing the design professional's liability. See Section
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>01 3000 (
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>01300
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">- Administrative Requirements for definitions of which types of submittals are for review, for information, and for project record.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel2"/>
+        <w:numPr>
+          <w:ilvl w:val="2"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="39" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="40" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>SUBMITTALS
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel3"/>
+        <w:numPr>
+          <w:ilvl w:val="3"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="41" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="42" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>See Section 013000 - Administrative Requirements for submittal procedures.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="900"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="43" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="9"/>
+        </w:numPr>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:left w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:bottom w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:right w:val="single" w:sz="16" w:color="4472C4"/>
+        </w:pBdr>
+        <w:shd w:val="clear" w:fill="E2EFD9"/>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="900"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="44" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="45" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>When manufacturer's instructions for specific installation requirements are referenced in PART 3 EXECUTION, include the following request for submittal of those instructions. Edit the PART 3 statements to avoid conflict with manufacturer's instructions.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel3"/>
+        <w:numPr>
+          <w:ilvl w:val="3"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="46" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="47" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Manufacturer's Installation Instructions: Indicate special procedures and conditions requiring special attention.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel1"/>
+        <w:numPr>
+          <w:ilvl w:val="1"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="48" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="49" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>PART 2 PRODUCTS
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="530"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="50" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="10"/>
+        </w:numPr>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:left w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:bottom w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:right w:val="single" w:sz="16" w:color="4472C4"/>
+        </w:pBdr>
+        <w:shd w:val="clear" w:fill="E2EFD9"/>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="530"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="51" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="52" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Select manufacturers by category or
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>list specific model numbers or product names
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">if desired.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel2"/>
+        <w:numPr>
+          <w:ilvl w:val="2"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="53" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="54" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>MANUFACTURERs
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="900"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="55" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="11"/>
+        </w:numPr>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:left w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:bottom w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:right w:val="single" w:sz="16" w:color="4472C4"/>
+        </w:pBdr>
+        <w:shd w:val="clear" w:fill="E2EFD9"/>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="900"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="56" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="57" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Jubarte" w:id="58" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:fldChar w:fldCharType="begin"/>
+        </w:r>
+        <w:r>
+          <w:instrText>HYPERLINK "https://americanspecialties.com/product_category/showertub-accessories/" \h
+          </w:instrText>
+        </w:r>
+        <w:r>
+          <w:fldChar w:fldCharType="separate"/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:u w:color="0000EE" w:val="single"/>
+          </w:rPr>
+          <w:t>ASI (American Specialties, Inc.) - Commercial and Residential Toilet, Shower, and Bath Accessories
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:fldChar w:fldCharType="end"/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Jubarte" w:id="59" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>ASI provides a full range of shower and tub accessories that show attention to details to address the safety and comfort needs of users. All items-including shower seats and benches, tub seats, soap dishes, and shower curtain rods-are designed to ensure secure installation and easy use.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>American Specialties, Inc. is the world&#x2019;s leading manufacturer of commercial washroom accessories, offering the largest product breadth in the industry with over 3000 accessories and seven curated collections that are fully integrated to work together seamlessly.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Only
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Jubarte" w:id="60" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:fldChar w:fldCharType="begin"/>
+        </w:r>
+        <w:r>
+          <w:instrText>HYPERLINK "http://www.asigroup.us/" \h
+          </w:instrText>
+        </w:r>
+        <w:r>
+          <w:fldChar w:fldCharType="separate"/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:u w:color="0000EE" w:val="single"/>
+          </w:rPr>
+          <w:t>ASI Group
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:fldChar w:fldCharType="end"/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Jubarte" w:id="61" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">designs, engineers, and manufactures fully integrated washroom accessories, partitions, lockers, and visual display products from one source. The ASI Group is known for innovative products, speed to market, and the widest offering of materials and products in the industry.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Contact Information:
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>American Specialties, Inc.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>441 Saw Mill River Road
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Yonkers, NY 10701
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>United States
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Phone: 914-476-9000
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Jubarte" w:id="62" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:fldChar w:fldCharType="begin"/>
+        </w:r>
+        <w:r>
+          <w:instrText>HYPERLINK "https://americanspecialties.com/representatives/" \h
+          </w:instrText>
+        </w:r>
+        <w:r>
+          <w:fldChar w:fldCharType="separate"/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:u w:color="0000EE" w:val="single"/>
+          </w:rPr>
+          <w:t>Contact for Design Professional
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:fldChar w:fldCharType="end"/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Jubarte" w:id="63" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Jubarte" w:id="64" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:fldChar w:fldCharType="begin"/>
+        </w:r>
+        <w:r>
+          <w:instrText>HYPERLINK "https://americanspecialties.com/continuing-education/" \h
+          </w:instrText>
+        </w:r>
+        <w:r>
+          <w:fldChar w:fldCharType="separate"/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:u w:color="0000EE" w:val="single"/>
+          </w:rPr>
+          <w:t>Online CEU Courses
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:fldChar w:fldCharType="end"/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Jubarte" w:id="65" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Jubarte" w:id="66" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:fldChar w:fldCharType="begin"/>
+        </w:r>
+        <w:r>
+          <w:instrText>HYPERLINK "http://www.americanspecialties.com/" \h
+          </w:instrText>
+        </w:r>
+        <w:r>
+          <w:fldChar w:fldCharType="separate"/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:u w:color="0000EE" w:val="single"/>
+          </w:rPr>
+          <w:t>www.americanspecialties.com
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:fldChar w:fldCharType="end"/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Jubarte" w:id="67" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Plant Location: Yonkers, NY
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel3"/>
+        <w:numPr>
+          <w:ilvl w:val="3"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="68" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="69" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Basis of Design Manufacturer: American Specialties, Inc: www.americanspecialties.com/#sle.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="900"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="70" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="12"/>
+        </w:numPr>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:left w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:bottom w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:right w:val="single" w:sz="16" w:color="4472C4"/>
+        </w:pBdr>
+        <w:shd w:val="clear" w:fill="E2EFD9"/>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="900"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="71" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="72" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">This manufacturer list can be used alone or in addition to specifying a "Basis of Design" manufacturer.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Select "Other Acceptable" Manufacturers in the choice if a "Basis of Design" manufacturer is specified above. Otherwise, use the option "None-N/A".
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel3"/>
+        <w:numPr>
+          <w:ilvl w:val="3"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="73" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="74" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Other Acceptable Manufacturers:
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel4"/>
+        <w:numPr>
+          <w:ilvl w:val="4"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="75" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="76" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Products by listed manufacturers are subject to compliance with specified requirements found in specification and in Technical Data Sheet of selected ASI model and prior approval of Architect.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel3"/>
+        <w:numPr>
+          <w:ilvl w:val="3"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="77" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="78" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Substitutions: See Section 016000 - Product Requirements.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel4"/>
+        <w:numPr>
+          <w:ilvl w:val="4"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="79" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="80" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t xml:space="preserve">All proposed substitutions (clearly delineated as such) must be submitted in writing for approval by
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Architect
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t xml:space="preserve">minimum of 10 working days prior to bid date and must be made available to all bidders. Proposed substitutes must be accompanied by review of specification and ASI Technical Data Sheets noting compliance on line-by-line basis.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel2"/>
+        <w:numPr>
+          <w:ilvl w:val="2"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="81" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="82" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Paper Towel Combination Units
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel3"/>
+        <w:numPr>
+          <w:ilvl w:val="3"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="83" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="84" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Combination Towel Dispenser/Waste Receptacle: Stainless steel; seamless wall flanges, continuous heavy-duty stainless steel multi-staked piano hinges, tumbler locks on upper and lower doors.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel4"/>
+        <w:numPr>
+          <w:ilvl w:val="4"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="85" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="86" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Mounting: As indicated in product listing.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel4"/>
+        <w:numPr>
+          <w:ilvl w:val="4"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="87" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="88" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Stainless Steel Thickness: As indicated on Technical Data Sheet for selected ASI model.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel4"/>
+        <w:numPr>
+          <w:ilvl w:val="4"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="89" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="90" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Waste Receptacle Liner: Reusable, heavy-duty vinyl.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel4"/>
+        <w:numPr>
+          <w:ilvl w:val="4"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="91" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="92" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Towel Type: As indicated in product listing.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel4"/>
+        <w:numPr>
+          <w:ilvl w:val="4"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="93" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="94" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Folded Towel Dispenser Capacity: As indicated in product listing.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel4"/>
+        <w:numPr>
+          <w:ilvl w:val="4"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="95" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="96" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Waste Receptacle Capacity: As indicated in product listing.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel4"/>
+        <w:numPr>
+          <w:ilvl w:val="4"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="97" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="98" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Products:
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel5"/>
+        <w:numPr>
+          <w:ilvl w:val="5"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="99" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="100" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Model 0469-ND - Recessed - Traditional Collection - Paper Towel Dispenser and Waste Receptacle - No Door - 12 gal (45.4 L).
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel5"/>
+        <w:numPr>
+          <w:ilvl w:val="5"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="101" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="102" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Substitutions: Section 016000 - Product Requirements.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="530"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="103" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="13"/>
+        </w:numPr>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:left w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:bottom w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:right w:val="single" w:sz="16" w:color="4472C4"/>
+        </w:pBdr>
+        <w:shd w:val="clear" w:fill="E2EFD9"/>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="530"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="104" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="105" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">The material specifications in this article
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t xml:space="preserve">will
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>only be used if the accessory item descriptions below or the manufacturers' model numbers listed do not fully define the quality level. For instance, it does little good to specify that stainless steel is to be ASTM A
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>66
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>, Type 304 if the specified manufacturer's accessories are made of Type 316. On the other hand, an open descriptive specification may need further quality definition for evaluation of proposed manufacturers' products.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel2"/>
+        <w:numPr>
+          <w:ilvl w:val="2"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="106" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="107" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Materials
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel3"/>
+        <w:numPr>
+          <w:ilvl w:val="3"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="108" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="109" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Accessories - General: Shop assembled, free of dents and scratches and packaged complete with anchors and fittings, steel anchor plates, adapters, and anchor components for installation.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="530"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="110" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="14"/>
+        </w:numPr>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:left w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:bottom w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:right w:val="single" w:sz="16" w:color="4472C4"/>
+        </w:pBdr>
+        <w:shd w:val="clear" w:fill="E2EFD9"/>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="530"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="111" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="112" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>The paragraph below is optional text
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel2"/>
+        <w:numPr>
+          <w:ilvl w:val="2"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="113" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="114" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Fabrication
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel3"/>
+        <w:numPr>
+          <w:ilvl w:val="3"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="115" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="116" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Traditional Collection:
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel4"/>
+        <w:numPr>
+          <w:ilvl w:val="4"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="117" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="118" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Basic Construction Requirements:
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel5"/>
+        <w:numPr>
+          <w:ilvl w:val="5"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="119" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="120" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Doors: Type 304, 22 gauge, 0.0312 inch (0.79 mm) stainless steel, double pan construction, with 1/4 inch (6 mm) thick structural fiberboard core.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel5"/>
+        <w:numPr>
+          <w:ilvl w:val="5"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="121" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="122" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Cabinets: Type 304, 22 gauge, 0.0312 inch (0.79 mm) stainless steel, formed perimeter trim with 1/4 inch (6 mm) return to wall four sides; joints welded, sight-exposed welds finished to match sheet finish.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel5"/>
+        <w:numPr>
+          <w:ilvl w:val="5"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="123" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="124" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Hinges: Heavy-duty stainless steel multi-staked piano hinge, 3/16 inch (5 mm) diameter barrel, full length of cabinet; hinge leaves spot-welded to door and cabinet body.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel5"/>
+        <w:numPr>
+          <w:ilvl w:val="5"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="125" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="126" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Locks: Tumbler locks, keyed alike other toilet accessory locks, with one key for each lock.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel5"/>
+        <w:numPr>
+          <w:ilvl w:val="5"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="127" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="128" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Cabinet and Door Finish: No.4 satin finish.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="530"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="129" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="15"/>
+        </w:numPr>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:left w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:bottom w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:right w:val="single" w:sz="16" w:color="4472C4"/>
+        </w:pBdr>
+        <w:shd w:val="clear" w:fill="E2EFD9"/>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="530"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="130" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="131" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Select and edit one or more of the following paragraphs based on materials and finishes of accessories selected. If a proprietary specification fully covers the required finishes, inclusion of this article is not required.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel2"/>
+        <w:numPr>
+          <w:ilvl w:val="2"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="132" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="133" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Finishes
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="900"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="134" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="16"/>
+        </w:numPr>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:left w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:bottom w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:right w:val="single" w:sz="16" w:color="4472C4"/>
+        </w:pBdr>
+        <w:shd w:val="clear" w:fill="E2EFD9"/>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="900"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="135" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="136" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>The paragraph below is optional text
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel3"/>
+        <w:numPr>
+          <w:ilvl w:val="3"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="137" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="138" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Shop Primed Ferrous Metals: Pretreat and clean, spray apply one coat primer and bake.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="900"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="139" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="17"/>
+        </w:numPr>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:left w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:bottom w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:right w:val="single" w:sz="16" w:color="4472C4"/>
+        </w:pBdr>
+        <w:shd w:val="clear" w:fill="E2EFD9"/>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="900"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="140" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="141" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>The paragraph below is optional text
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel3"/>
+        <w:numPr>
+          <w:ilvl w:val="3"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="142" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="143" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Back paint components where contact is made with building finishes to prevent electrolysis.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel1"/>
+        <w:numPr>
+          <w:ilvl w:val="1"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="144" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="145" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>PART 3 EXECUTION
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel2"/>
+        <w:numPr>
+          <w:ilvl w:val="2"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="146" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="147" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>EXAMINATION
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel3"/>
+        <w:numPr>
+          <w:ilvl w:val="3"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="148" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="149" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Verify existing conditions before starting work.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel3"/>
+        <w:numPr>
+          <w:ilvl w:val="3"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="150" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="151" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Verify exact location of accessories for installation.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel2"/>
+        <w:numPr>
+          <w:ilvl w:val="2"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="152" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="153" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>PREPARATION
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel3"/>
+        <w:numPr>
+          <w:ilvl w:val="3"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="154" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="155" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Deliver inserts and rough-in frames to site for timely installation.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel3"/>
+        <w:numPr>
+          <w:ilvl w:val="3"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="156" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="157" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Provide templates and rough-in measurements as required.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel2"/>
+        <w:numPr>
+          <w:ilvl w:val="2"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="158" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="159" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>INSTALLATION
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel3"/>
+        <w:numPr>
+          <w:ilvl w:val="3"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="160" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="161" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Install accessories in accordance with manufacturers' instructions in locations indicated on drawings.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="900"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="162" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="18"/>
+        </w:numPr>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:left w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:bottom w:val="single" w:sz="16" w:color="4472C4"/>
+          <w:right w:val="single" w:sz="16" w:color="4472C4"/>
+        </w:pBdr>
+        <w:shd w:val="clear" w:fill="E2EFD9"/>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="900"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="163" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:vanish/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="164" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+            <w:vanish/>
+            <w:color w:val="0000FF"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>The paragraph below is optional text
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel3"/>
+        <w:numPr>
+          <w:ilvl w:val="3"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="165" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="166" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Mounting Heights: As required by accessibility regulations, unless otherwise indicated.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel4"/>
+        <w:numPr>
+          <w:ilvl w:val="4"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="167" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="168" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Other Accessories: As indicated on drawings.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel2"/>
+        <w:numPr>
+          <w:ilvl w:val="2"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="169" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="170" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>PROTECTION
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel3"/>
+        <w:numPr>
+          <w:ilvl w:val="3"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="171" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="172" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>Protect installed accessories from damage due to subsequent construction operations.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Title"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="173" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="174" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="arial" w:eastAsia="arial" w:hAnsi="arial" w:cs="arial"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:t>END OF SECTION
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:del w:author="Jubarte" w:id="175" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>Injury event—place of occurrence, code (ICD-10-AM 8th edn) ANN{.N[N]}
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Subtitle"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="176" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="177" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>Exported from METEOR
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Subtitle"/>
+        <w:spacing w:after="4800"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="178" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="179" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>(AIHW's Metadata Online Registry)
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="180" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="181" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>© Australian Institute of Health and Welfare 2024
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="182" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="183" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="184" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>This product, excluding the AIHW logo, Commonwealth Coat of Arms and any material owned by a third party or protected by a trademark, has been released under a Creative Commons BY 4.0 (CC BY 4.0) licence. Excluded material owned by third parties may include, for example, design and layout, images obtained under licence from third parties and signatures. We have made all reasonable efforts to identify and label material owned by third parties.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="185" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="186" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>You may distribute, remix and build on this website&#x2019;s material but must attribute the AIHW as the copyright holder, in line with our attribution policy. The full terms and conditions of this licence are available at https://creativecommons.org/licenses/by/4.0/.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="187" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="188" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>Enquiries relating to copyright should be addressed to info@aihw.gov.au.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="189" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="190" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>Enquiries or comments on the METEOR metadata or download should be directed to the METEOR team at meteor@aihw.gov.au.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="191" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="192" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:br w:type="page"/>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="193" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="194" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>Injury event—place of occurrence, code (ICD-10-AM 8th edn) ANN{.N[N]}
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="5000" w:type="pct"/>
+        <w:tblLayout w:type="fixed"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol/>
+        <w:gridCol/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="195" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:gridSpan w:val="2"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="200"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="Heading3"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="196" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="197" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>Identifying and definitional attributes
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="198" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="199" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="200" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowHeading"/>
+                </w:rPr>
+                <w:delText>Metadata item type:
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="201" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="202" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>Data Element
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="203" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="204" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="205" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowHeading"/>
+                </w:rPr>
+                <w:delText>Short name:
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="206" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="207" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="AlternateNameDe"/>
+                </w:rPr>
+                <w:delText>Place of occurrence of external cause of injury (ICD-10-AM)
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="208" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="209" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="210" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowHeading"/>
+                </w:rPr>
+                <w:delText>METEOR identifier:
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="211" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="212" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>514302
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="213" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="214" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="215" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowHeading"/>
+                </w:rPr>
+                <w:delText>Registration status:
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:before="0" w:after="0"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="216" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:hyperlink w:history="true" r:id="Rbcd182f89d96463e">
+              <w:del w:author="Jubarte" w:id="217" w:date="1970-01-01T00:00:00Z">
+                <w:r>
+                  <w:rPr>
+                    <w:rStyle w:val="Hyperlink"/>
+                    <w:color w:val="244061"/>
+                  </w:rPr>
+                  <w:delText>Health
+                  </w:delText>
+                </w:r>
+              </w:del>
+            </w:hyperlink>
+            <w:del w:author="Jubarte" w:id="218" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                  <w:color w:val="244061"/>
+                </w:rPr>
+                <w:delText>, Superseded 13/11/2014
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="219" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="220" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="221" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowHeading"/>
+                </w:rPr>
+                <w:delText>Definition:
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="222" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="223" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContentRichText"/>
+                </w:rPr>
+                <w:delText>The place where the external cause of injury, poisoning or adverse effect occurred, as represented by a code.
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="224" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="225" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="226" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowHeading"/>
+                </w:rPr>
+                <w:delText>Data Element Concept:
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="227" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:hyperlink w:history="true" r:id="Rd76e77bc207647f8">
+              <w:del w:author="Jubarte" w:id="228" w:date="1970-01-01T00:00:00Z">
+                <w:r>
+                  <w:rPr>
+                    <w:rStyle w:val="Hyperlink"/>
+                  </w:rPr>
+                  <w:delText>Injury event—place of occurrence
+                  </w:delText>
+                </w:r>
+              </w:del>
+            </w:hyperlink>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="229" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="230" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="231" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowHeading"/>
+                </w:rPr>
+                <w:delText>Value Domain:
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="232" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:hyperlink w:history="true" r:id="R09f8b029a9ec4ad9">
+              <w:del w:author="Jubarte" w:id="233" w:date="1970-01-01T00:00:00Z">
+                <w:r>
+                  <w:rPr>
+                    <w:rStyle w:val="Hyperlink"/>
+                  </w:rPr>
+                  <w:delText>Place of occurrence (ICD-10-AM 8th edn) ANN{.N[N]}
+                  </w:delText>
+                </w:r>
+              </w:del>
+            </w:hyperlink>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="234" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="5000" w:type="pct"/>
+        <w:tblLayout w:type="fixed"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol/>
+        <w:gridCol/>
+        <w:gridCol/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="235" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:gridSpan w:val="3"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="underlinedHeading2"/>
+              <w:pBdr>
+                <w:bottom w:val="single"/>
+              </w:pBdr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="236" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="237" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>Value domain attributes
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="238" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:gridSpan w:val="3"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="200"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="Heading3"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="239" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="240" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>Representational attributes
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="241" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="242" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="243" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowHeading"/>
+                </w:rPr>
+                <w:delText>Classification scheme:
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:gridSpan w:val="2"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="244" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:hyperlink w:history="true" r:id="R41a975da5ac34a88">
+              <w:del w:author="Jubarte" w:id="245" w:date="1970-01-01T00:00:00Z">
+                <w:r>
+                  <w:rPr>
+                    <w:rStyle w:val="Hyperlink"/>
+                  </w:rPr>
+                  <w:delText>International Statistical Classification of Diseases and Related Health Problems, Tenth Revision, Australian Modification 8th edition
+                  </w:delText>
+                </w:r>
+              </w:del>
+            </w:hyperlink>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="246" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="247" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="248" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowHeading"/>
+                </w:rPr>
+                <w:delText>Representation class:
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3750" w:type="pct"/>
+            <w:gridSpan w:val="2"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="249" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="250" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                </w:rPr>
+                <w:delText>Code
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="251" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="252" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="253" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowHeading"/>
+                </w:rPr>
+                <w:delText>Data type:
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3750" w:type="pct"/>
+            <w:gridSpan w:val="2"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="254" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="255" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                </w:rPr>
+                <w:delText>String
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="256" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="257" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="258" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowHeading"/>
+                </w:rPr>
+                <w:delText>Format:
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3750" w:type="pct"/>
+            <w:gridSpan w:val="2"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="259" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="260" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                </w:rPr>
+                <w:delText>ANN{.N[N]}
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="261" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="262" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="263" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowHeading"/>
+                </w:rPr>
+                <w:delText>Maximum character length:
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3750" w:type="pct"/>
+            <w:gridSpan w:val="2"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="264" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="265" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                </w:rPr>
+                <w:delText>6
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="266" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="267" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="5000" w:type="pct"/>
+        <w:tblLayout w:type="fixed"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol/>
+        <w:gridCol/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="268" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:gridSpan w:val="2"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="underlinedHeading2"/>
+              <w:pBdr>
+                <w:bottom w:val="single"/>
+              </w:pBdr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="269" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="270" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText xml:space="preserve">Data element attributes
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="271" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:gridSpan w:val="2"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="200"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="Heading3"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="272" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="273" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>Collection and usage attributes
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="274" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="275" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="276" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowHeading"/>
+                </w:rPr>
+                <w:delText>Guide for use:
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:after="160"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="277" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="278" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContentRichText"/>
+                </w:rPr>
+                <w:delText>Admitted patient:
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:after="160"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="279" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="280" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContentRichText"/>
+                </w:rPr>
+                <w:delText xml:space="preserve">External cause codes in the range V00 to Y89 must be accompanied by a place of occurrence code.
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="281" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="282" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContentRichText"/>
+                </w:rPr>
+                <w:delText>External cause codes V00 to Y34 must be accompanied by an activity code.
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="283" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="284" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="285" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowHeading"/>
+                </w:rPr>
+                <w:delText>Comments:
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="286" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="287" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContentRichText"/>
+                </w:rPr>
+                <w:delText>Enables categorisation of injury and poisoning according to factors important for injury control. Necessary for defining and monitoring injury control targets, injury costing and identifying cases for in-depth research.
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="288" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:gridSpan w:val="2"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="200"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="Heading3"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="289" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="290" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>Source and reference attributes
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="291" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="292" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="293" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowHeading"/>
+                </w:rPr>
+                <w:delText>Origin:
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:after="160"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="294" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="295" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContentRichText"/>
+                </w:rPr>
+                <w:delText>National Centre for Classification in Health
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:after="160"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="296" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="297" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContentRichText"/>
+                </w:rPr>
+                <w:delText>AIHW National Injury Surveillance Unit
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="298" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="299" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContentRichText"/>
+                </w:rPr>
+                <w:delText>National Data Standards for Injury Surveillance Advisory Group
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="300" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:gridSpan w:val="2"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="200"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="Heading3"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="301" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="302" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>Relational attributes
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="303" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="304" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="305" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowHeading"/>
+                </w:rPr>
+                <w:delText>Related metadata references:
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3750" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="306" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="307" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                </w:rPr>
+                <w:delText xml:space="preserve">Supersedes
+                </w:delText>
+              </w:r>
+            </w:del>
+            <w:hyperlink w:history="true" r:id="R080934f40f4c41e0">
+              <w:del w:author="Jubarte" w:id="308" w:date="1970-01-01T00:00:00Z">
+                <w:r>
+                  <w:rPr>
+                    <w:rStyle w:val="Hyperlink"/>
+                  </w:rPr>
+                  <w:delText>Injury event—place of occurrence, code (ICD-10-AM 7th edn) ANN{.N[N]}
+                  </w:delText>
+                </w:r>
+              </w:del>
+            </w:hyperlink>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="RegistrationStatus"/>
+              <w:spacing w:before="0" w:after="0"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="309" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:hyperlink w:history="true" r:id="R726bd7e9527d4065">
+              <w:del w:author="Jubarte" w:id="310" w:date="1970-01-01T00:00:00Z">
+                <w:r>
+                  <w:rPr>
+                    <w:rStyle w:val="Hyperlink"/>
+                    <w:color w:val="244061"/>
+                  </w:rPr>
+                  <w:delText>Health
+                  </w:delText>
+                </w:r>
+              </w:del>
+            </w:hyperlink>
+            <w:del w:author="Jubarte" w:id="311" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                  <w:color w:val="244061"/>
+                </w:rPr>
+                <w:delText>, Superseded 02/05/2013
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="312" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="313" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:br/>
+              </w:r>
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                </w:rPr>
+                <w:delText xml:space="preserve">Has been superseded by
+                </w:delText>
+              </w:r>
+            </w:del>
+            <w:hyperlink w:history="true" r:id="Rd38a3b7f43ba4553">
+              <w:del w:author="Jubarte" w:id="314" w:date="1970-01-01T00:00:00Z">
+                <w:r>
+                  <w:rPr>
+                    <w:rStyle w:val="Hyperlink"/>
+                  </w:rPr>
+                  <w:delText>Injury event—place of occurrence, code (ICD-10-AM 9th edn) ANN{.N[N]}
+                  </w:delText>
+                </w:r>
+              </w:del>
+            </w:hyperlink>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="RegistrationStatus"/>
+              <w:spacing w:before="0" w:after="0"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="315" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:hyperlink w:history="true" r:id="R14954e7b53004137">
+              <w:del w:author="Jubarte" w:id="316" w:date="1970-01-01T00:00:00Z">
+                <w:r>
+                  <w:rPr>
+                    <w:rStyle w:val="Hyperlink"/>
+                    <w:color w:val="244061"/>
+                  </w:rPr>
+                  <w:delText>Health
+                  </w:delText>
+                </w:r>
+              </w:del>
+            </w:hyperlink>
+            <w:del w:author="Jubarte" w:id="317" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                  <w:color w:val="244061"/>
+                </w:rPr>
+                <w:delText>, Superseded 05/10/2016
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="RegistrationStatus"/>
+              <w:spacing w:before="0" w:after="0"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="318" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:hyperlink w:history="true" r:id="R01d3b3a2245849df">
+              <w:del w:author="Jubarte" w:id="319" w:date="1970-01-01T00:00:00Z">
+                <w:r>
+                  <w:rPr>
+                    <w:rStyle w:val="Hyperlink"/>
+                    <w:color w:val="244061"/>
+                  </w:rPr>
+                  <w:delText>Tasmanian Health
+                  </w:delText>
+                </w:r>
+              </w:del>
+            </w:hyperlink>
+            <w:del w:author="Jubarte" w:id="320" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                  <w:color w:val="244061"/>
+                </w:rPr>
+                <w:delText>, Superseded 10/07/2017
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="321" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="322" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:br/>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="323" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="324" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="325" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowHeading"/>
+                </w:rPr>
+                <w:delText>Implementation in Data Set Specifications:
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="326" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:hyperlink w:history="true" r:id="Rc65aa908f59644f9">
+              <w:del w:author="Jubarte" w:id="327" w:date="1970-01-01T00:00:00Z">
+                <w:r>
+                  <w:rPr>
+                    <w:rStyle w:val="Hyperlink"/>
+                  </w:rPr>
+                  <w:delText>Admitted patient care NMDS 2013-14
+                  </w:delText>
+                </w:r>
+              </w:del>
+            </w:hyperlink>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="RegistrationStatus"/>
+              <w:spacing w:before="0" w:after="0"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="328" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:hyperlink w:history="true" r:id="R1446a04920f545c3">
+              <w:del w:author="Jubarte" w:id="329" w:date="1970-01-01T00:00:00Z">
+                <w:r>
+                  <w:rPr>
+                    <w:rStyle w:val="Hyperlink"/>
+                    <w:color w:val="244061"/>
+                  </w:rPr>
+                  <w:delText>Health
+                  </w:delText>
+                </w:r>
+              </w:del>
+            </w:hyperlink>
+            <w:del w:author="Jubarte" w:id="330" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                  <w:color w:val="244061"/>
+                </w:rPr>
+                <w:delText>, Superseded 11/04/2014
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="331" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="332" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                  <w:b/>
+                  <w:i/>
+                </w:rPr>
+                <w:delText xml:space="preserve">Implementation start date:
+                </w:delText>
+              </w:r>
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                </w:rPr>
+                <w:delText>01/07/2013
+                </w:delText>
+              </w:r>
+              <w:r>
+                <w:br/>
+              </w:r>
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                  <w:b/>
+                  <w:i/>
+                </w:rPr>
+                <w:delText xml:space="preserve">Implementation end date:
+                </w:delText>
+              </w:r>
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                </w:rPr>
+                <w:delText>30/06/2014
+                </w:delText>
+              </w:r>
+              <w:r>
+                <w:br/>
+              </w:r>
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                  <w:b/>
+                  <w:i/>
+                </w:rPr>
+                <w:delText xml:space="preserve">DSS specific information:
+                </w:delText>
+              </w:r>
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                </w:rPr>
+                <w:delText>To be used with ICD-10-AM external cause codes.
+                </w:delText>
+              </w:r>
+              <w:r>
+                <w:br/>
+              </w:r>
+              <w:r>
+                <w:br/>
+              </w:r>
+            </w:del>
+            <w:hyperlink w:history="true" r:id="R52252077f907434a">
+              <w:del w:author="Jubarte" w:id="333" w:date="1970-01-01T00:00:00Z">
+                <w:r>
+                  <w:rPr>
+                    <w:rStyle w:val="Hyperlink"/>
+                  </w:rPr>
+                  <w:delText>Admitted patient care NMDS 2014-15
+                  </w:delText>
+                </w:r>
+              </w:del>
+            </w:hyperlink>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="RegistrationStatus"/>
+              <w:spacing w:before="0" w:after="0"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="334" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:hyperlink w:history="true" r:id="Radda9bed1c05417f">
+              <w:del w:author="Jubarte" w:id="335" w:date="1970-01-01T00:00:00Z">
+                <w:r>
+                  <w:rPr>
+                    <w:rStyle w:val="Hyperlink"/>
+                    <w:color w:val="244061"/>
+                  </w:rPr>
+                  <w:delText>Health
+                  </w:delText>
+                </w:r>
+              </w:del>
+            </w:hyperlink>
+            <w:del w:author="Jubarte" w:id="336" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                  <w:color w:val="244061"/>
+                </w:rPr>
+                <w:delText>, Superseded 13/11/2014
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="337" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="338" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                  <w:b/>
+                  <w:i/>
+                </w:rPr>
+                <w:delText xml:space="preserve">Implementation start date:
+                </w:delText>
+              </w:r>
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                </w:rPr>
+                <w:delText>01/07/2014
+                </w:delText>
+              </w:r>
+              <w:r>
+                <w:br/>
+              </w:r>
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                  <w:b/>
+                  <w:i/>
+                </w:rPr>
+                <w:delText xml:space="preserve">Implementation end date:
+                </w:delText>
+              </w:r>
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                </w:rPr>
+                <w:delText>30/06/2015
+                </w:delText>
+              </w:r>
+              <w:r>
+                <w:br/>
+              </w:r>
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                  <w:b/>
+                  <w:i/>
+                </w:rPr>
+                <w:delText xml:space="preserve">DSS specific information:
+                </w:delText>
+              </w:r>
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                </w:rPr>
+                <w:delText>To be used with ICD-10-AM external cause codes.
+                </w:delText>
+              </w:r>
+              <w:r>
+                <w:br/>
+              </w:r>
+              <w:r>
+                <w:br/>
+              </w:r>
+            </w:del>
+            <w:hyperlink w:history="true" r:id="Rb04aa8cb25e441ff">
+              <w:del w:author="Jubarte" w:id="339" w:date="1970-01-01T00:00:00Z">
+                <w:r>
+                  <w:rPr>
+                    <w:rStyle w:val="Hyperlink"/>
+                  </w:rPr>
+                  <w:delText>Injury surveillance NBPDS 2013-
+                  </w:delText>
+                </w:r>
+              </w:del>
+            </w:hyperlink>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="RegistrationStatus"/>
+              <w:spacing w:before="0" w:after="0"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="340" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:hyperlink w:history="true" r:id="Rfb3a75741e4d4fed">
+              <w:del w:author="Jubarte" w:id="341" w:date="1970-01-01T00:00:00Z">
+                <w:r>
+                  <w:rPr>
+                    <w:rStyle w:val="Hyperlink"/>
+                    <w:color w:val="244061"/>
+                  </w:rPr>
+                  <w:delText>Health
+                  </w:delText>
+                </w:r>
+              </w:del>
+            </w:hyperlink>
+            <w:del w:author="Jubarte" w:id="342" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                  <w:color w:val="244061"/>
+                </w:rPr>
+                <w:delText>, Standard 02/05/2013
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="343" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="344" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                  <w:b/>
+                  <w:i/>
+                </w:rPr>
+                <w:delText xml:space="preserve">Implementation start date:
+                </w:delText>
+              </w:r>
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="RowContent"/>
+                </w:rPr>
+                <w:delText>01/07/2013
+                </w:delText>
+              </w:r>
+              <w:r>
+                <w:br/>
+              </w:r>
+              <w:r>
+                <w:br/>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="345" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="CSILevel0"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="19"/>
+        </w:numPr>
+        <w:ind w:left="0"/>
+        <w:jc w:val="center"/>
+        <w:pPrChange w:id="346" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+          <w:pPr/>
+        </w:pPrChange>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="347" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:br/>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:sectPr>
+      <w:headerReference w:type="default" r:id="rId10"/>
+      <w:footerReference xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" w:type="default" r:id="R278b617a59164699"/>
+      <w:pgSz w:w="12240" w:h="15840" w:code="1"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+      <w:pgNumType w:start="1"/>
+      <w:cols w:space="708"/>
+      <w:docGrid w:linePitch="360"/>
+      <w:sectPrChange w:author="Jubarte" w:date="1970-01-01T00:00:00Z" w:id="348">
+        <w:sectPr>
+          <w:pgMar w:top="1060" w:right="1000" w:bottom="1060" w:left="1000" w:footer="300"/>
+          <w:titlePg/>
+        </w:sectPr>
+      </w:sectPrChange>
+    </w:sectPr>
+  </w:body>
+</w:document>

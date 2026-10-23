@@ -1,0 +1,744 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml">
+  <w:body>
+    <w:p>
+      <w:pPr/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">ACB-kædemotor - frit konfigurerbar - CDC-1-ACB
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">24 V DC / Tilpasset efter kundeønsker
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Elektrisk motor til integreret, usynlig montering i vinduesprofilen og til eftermontering.
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Praktisk til motoriseret åbning og lukning af vinduer og lemme.
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Kan bruges til Komfortopluk, røgudluftning og brandventilation iht. DS/EN12101-2
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Kan kombineres med alle D+H låsemotorer.
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Egenskaber:
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Integreret, frit parametrerbar slukningselektronik for at forhindre en defekt i tilfælde af overbelastning af vindue og motor.
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Integreret grænseflade ACB (Advanced Communication Bus) med åben Modbus RTU-protokol.
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Direkte integration af motoren gennem åben buskommunikation via ACB (Advanced Communication Bus), f.eks. i CTS (bygningsautomation).
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Lav driftsstøj takket være innovativ, akustisk afkobling af drevkomponenterne.
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Højpræcisionsmotor og synkron elektronik til synkron drift af op til 8 motorer.
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Korrosionsbeskyttet, hærdet, stålkæde, vedligeholdelsesfri takket være livstidssmøring.
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Highspeed-funktion (-HS) til hurtigt opluk af vinduer i tilfælde af brand (ABV).
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Justerbart, flertrins klembeskyttelsessystem (løbetid, kraft, åbning).
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Automatisk aflastning af tætningsbåndet efter lukning beskytter tætningslister.
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Lavt kabelforbrug med mulighed for gennemsløjfning af op til 3 motorer.
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Enkel installation takket være stik med beskyttelse mod omvendt polaritet.
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Tilslutning valgfrit mulig fra venstre eller højre (forsyning inkl. bussignaler).
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Kan parametriseres individuelt via D+H SCS-software.
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Funktionsbeskrivelse ACB
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Sikker ABV-central kommunikation gennem krypteret dataoverførsel mellem centraler og motorer fra D+H Mechatronic AG.
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Direkte styring af motoren via ACB mulig.
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Som standard er motoren indstillet med drift med pol-skift fra fabrikken.
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Præcis styring af position og feedback, herunder angivelser af den faktiske position.
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Åbne- og lukke meddelelser kommer direkte fra motoren via ACB-kommunikation.
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Motorens generelle status, som f.eks. samlet kørestrækning, antal aktiveringer, diagnostik og nødfunktion, kan evalueres.
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Udvidelsesfunktioner:
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Option "SBD/SBU"
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">- Korrosionsbeskyttet, hærdet stålkæde i sidebue-design til lave karmhøjder
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Option "ZB"
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">- Vindebroanvendelse til sidemontering af motoren på vinduet
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Option "CP"
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">- Brugertilpasset motorfunktionsprogrammering såsom løbetid, kraft og åbning
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Option "HP"
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">- Åbningsprogrammering
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Option "VP"
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">- Signal til forbindelse med D+H BSY+ låsemotorer
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Option "KM"
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">- Kraftig motor-gear-enhed med øget kraft (op til 400 N) til at åbne og lukke tunge parallelsprossede og hæve-/sænkevindue/tophængte vinduer.
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Option "LS"
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">- Lavhastigheds-programmering i LUKKET-retning til 5 mm/s
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Option "SA"
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">- "Afbryder ÅBEN" endepositionsmeddelelse
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Option "SZ"
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">- "Afbryder LUKKET" endepositionsmeddelelse
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Option "SA-SZ"
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">- "Afbryder ÅBEN" og "Afbryder LUKKET" endepositionsmeddelelse
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Option "AS2"
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">- Akustisk signal i overensstemmelse med beskyttelsesklasse 2 i henhold til MaschRL/42/EG
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Option "AS3"
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">- Akustisk signal i overensstemmelse med beskyttelsesklasse 3 i henhold til MaschRL/42/EG
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Option "SKS"
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">- Mulighed for direkte tilslutning af en klembeskyttelsesliste eller en optisk sensor til overvågning af lukkekanten på motoren
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Option "specialfarve"
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">- lakering til perfekt integration i facadens udseende i henhold til RAL, DB, NCS
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Tekniske data:
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Forsyning: 24 V DC / ±15 %
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Strømforbrug:
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="E10025"/>
+        </w:rPr>
+        <w:t xml:space="preserve">0,6 A (til 350 mm åbning)
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="0092D4"/>
+        </w:rPr>
+        <w:t xml:space="preserve">0,8 A (til 500 + 600 mm åbning)
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="0092D4"/>
+        </w:rPr>
+        <w:t xml:space="preserve">1 A (til 700 mm åbning)
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="6DB755"/>
+        </w:rPr>
+        <w:t xml:space="preserve">1 A (til 800 - 1300 mm åbning)
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Indkoblingstid: 30 % (TIL: 3 Min. / FRA: 7 Min.)
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Udkobling: Integreret elektronisk belastningsafbryder
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Konfiguration: Main eller Sub
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Design: Højre eller venstre
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Trykkraft: 250 N
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Trækkraft: 250 N
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Nominel låsekraft **: 1500 N
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Levetid: 20000 dobbeltoperationer *
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Åbning:300 mm - 1300 mm
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Hastighed ÅBNE: 6,7 mm/s
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Hastighed ÅBNE - ABV:
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="E10025"/>
+        </w:rPr>
+        <w:t xml:space="preserve">9,4 mm/s (til 350 mm åbning)
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="0092D4"/>
+        </w:rPr>
+        <w:t xml:space="preserve">13,6 mm/s (til 500 + 700 mm åbning)
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="6DB755"/>
+        </w:rPr>
+        <w:t xml:space="preserve">15 mm/s (til 800 - 1300 mm åbning)
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Hastighed LUKKE:
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="E10025"/>
+        </w:rPr>
+        <w:t xml:space="preserve">5 mm/s (til 350 mm åbning)
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="0092D4"/>
+        </w:rPr>
+        <w:t xml:space="preserve">6,7 mm/s (til 500 + 700 mm åbning)
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="6DB755"/>
+        </w:rPr>
+        <w:t xml:space="preserve">6,7 mm/s (til 800 - 1300 mm åbning)
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Beskyttelsesklasse: IP 32
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Måling af lydtryk (støjemission): LpA ≤ 35 dB(A)
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Temperaturområde: -15 °C (-5 °C ***) ... +75 °C
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Temperaturstandsikkerhed: B300 (30 min / 300 °C)
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Hus: Aluminium
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Farve: Specialfarve i henhold til RAL/DB/NCS
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Tilslutning: Silikonekabel
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">B x H x D: 405-885 (åbningsafhængig) x 30 x 39 mm
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">* Ved lodret anvendelse skal D+H-forhandleren kontaktes!
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">** Afhængig af fastgørelsen, *** iht. VdS 2580
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Leverance:
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Motor, silikoneforbindelseskabel med systemstik, brugsanvisning
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Brand: D+H
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Type: CDC-1-ACB
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Art.nr.:
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">26.100.00
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:br/>
+      <w:br/>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Mængde: .......... stk Pris: ................. DKK Total: ................. DKK
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:br/>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+          <w:i w:val="1"/>
+          <w:iCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Gør din lokale D+H-partner tilgængelig for designvarianter.
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:br/>
+      <w:br/>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">https://www.dh-partner.com/dk/da/service/projekterings-hjaelp
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:br/>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+          <w:bCs w:val="1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Vigtige noter:
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Denne produktbeskrivelse udgør ikke et udbud. Ansvaret for overensstemmelse med udbudsretlige krav påhviler den udbudsgivende projektant eller arkitekt.
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Montering og ibrugtagning skal ske i henhold til producentens anvisninger.
+        </w:t>
+      </w:r>
+      <w:br/>
+      <w:br/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Med forbehold for tekniske ændringer.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:sectPr>
+      <w:headerReference w:type="default" r:id="rId7"/>
+      <w:pgSz w:orient="portrait" w:w="11905.511811023622" w:h="16837.79527559055"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+      <w:cols w:num="1" w:space="720"/>
+    </w:sectPr>
+  </w:body>
+</w:document>

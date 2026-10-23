@@ -1,0 +1,44 @@
+<w:endnotes xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:pt14="http://powertools.codeplex.com/2011" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 wp14 pt14">
+  <w:endnote w:type="separator" w:id="-1">
+    <w:p w14:paraId="4BD8ED06" w14:textId="77777777">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:separator/>
+      </w:r>
+    </w:p>
+  </w:endnote>
+  <w:endnote w:type="continuationSeparator" w:id="0">
+    <w:p w14:paraId="7F19DA88" w14:textId="77777777">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:continuationSeparator/>
+      </w:r>
+    </w:p>
+  </w:endnote>
+  <w:endnote w:id="1">
+    <w:p w14:paraId="68990B77" w14:textId="77777777">
+      <w:pPr>
+        <w:pStyle w:val="EndnoteText"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="352" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="EndnoteReference"/>
+        </w:rPr>
+        <w:endnoteRef/>
+      </w:r>
+      <w:ins w:author="Jubarte" w:id="353" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t xml:space="preserve">This is an endnote.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+  </w:endnote>
+</w:endnotes>

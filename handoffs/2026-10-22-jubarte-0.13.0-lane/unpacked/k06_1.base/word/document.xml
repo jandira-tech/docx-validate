@@ -1,0 +1,2132 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml">
+  <w:body>
+    <w:tbl>
+      <w:tblGrid>
+        <w:gridCol w:w="5000" w:type="dxa"/>
+      </w:tblGrid>
+      <w:tblPr>
+        <w:tblW w:w="5000" w:type="pct"/>
+        <w:tblLayout w:type="fixed"/>
+        <w:bidiVisual w:val="0"/>
+      </w:tblPr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="5000" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill="FFFFFF"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="80" w:after="80"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="000000"/>
+                <w:sz w:val="56"/>
+                <w:szCs w:val="56"/>
+                <w:b w:val="1"/>
+                <w:bCs w:val="1"/>
+              </w:rPr>
+              <w:t xml:space="preserve">February 2025
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:tbl>
+      <w:tblGrid>
+        <w:gridCol w:w="300" w:type="dxa"/>
+        <w:gridCol w:w="300" w:type="dxa"/>
+        <w:gridCol w:w="4400" w:type="dxa"/>
+      </w:tblGrid>
+      <w:tblPr>
+        <w:tblW w:w="5000" w:type="pct"/>
+        <w:tblLayout w:type="fixed"/>
+        <w:bidiVisual w:val="0"/>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="1" w:color="000000"/>
+          <w:left w:val="single" w:sz="1" w:color="000000"/>
+          <w:right w:val="single" w:sz="1" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="1" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="1" w:color="000000"/>
+        </w:tblBorders>
+      </w:tblPr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">01
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Sat
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">02
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Sun
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">03
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Mon
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">04
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Tue
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">05
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Wed
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">06
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Thu
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">07
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Fri
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">08
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Sat
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">09
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Sun
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">10
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Mon
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">11
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Tue
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">12
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Wed
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">13
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Thu
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">14
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Fri
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">15
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Sat
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">16
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Sun
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">17
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Mon
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Presidents' Day
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">18
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Tue
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">19
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Wed
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">20
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Thu
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">21
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Fri
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">22
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Sat
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">23
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Sun
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">24
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Mon
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">25
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Tue
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">26
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Wed
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">27
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Thu
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">28
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Fri
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:ind w:left="80" w:right="0"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="400" w:hRule="atLeast"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="300" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="32"/>
+                <w:szCs w:val="32"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4400" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="left"/>
+              <w:spacing w:before="15" w:after="15"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="FF0000"/>
+                <w:sz w:val="28"/>
+                <w:szCs w:val="28"/>
+              </w:rPr>
+              <w:t xml:space="preserve"/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="center"/>
+        <w:spacing w:before="30"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:b w:val="0"/>
+          <w:bCs w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">© PrintableCalendar4U.Com
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:sectPr>
+      <w:pgSz w:orient="landscape" w:w="24480" w:h="15840"/>
+      <w:pgMar w:top="1000" w:right="1440" w:bottom="1000" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+      <w:cols w:num="1" w:space="720"/>
+    </w:sectPr>
+  </w:body>
+</w:document>

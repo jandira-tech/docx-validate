@@ -1,0 +1,733 @@
+<w:document xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:oel="http://schemas.microsoft.com/office/2019/extlst" xmlns:pt14="http://powertools.codeplex.com/2011" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16du="http://schemas.microsoft.com/office/word/2023/wordml/word16du" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16sdtfl="http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="pt14 w14 w15 w16 w16cex w16cid w16du w16sdtdh w16sdtfl w16se wp14">
+  <w:body>
+    <w:p w14:paraId="6439FBAB" w14:textId="55E7A5AC">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="1" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="2" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Diffing feature
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="9350"/>
+      </w:tblGrid>
+      <w:tr w14:paraId="718AB3DC" w14:textId="77777777">
+        <w:trPr>
+          <w:ins w:author="Jubarte" w:id="3" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="9350" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="71D0C7B7" w14:textId="0D6B1B09">
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="4" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="5" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>Diffing allows users to compare two versions of a document and quickly identify what changed between them. Instead of reading both files line by line, the editor highlights insertions, deletions, and updates so reviewers can focus on meaningful edits.
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w14:paraId="63E4DFED" w14:textId="77777777">
+        <w:trPr>
+          <w:ins w:author="Jubarte" w:id="6" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="9350" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="7122ECD7" w14:textId="2344E7E7">
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="7" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="8" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>The comparison process starts by loading a source document and a target document. The diff engine analyzes structure, content, and metadata, then produces a set of changes that describe how to transform the source into the target. This result can be inspected before any edits are applied.
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w14:paraId="741A0F82" w14:textId="77777777">
+        <w:trPr>
+          <w:ins w:author="Jubarte" w:id="9" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="9350" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="5E6F6F9F" w14:textId="7C87E125">
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="10" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="11" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>Replay takes those computed changes and applies them back to the source document in a controlled way. This is useful when teams want to review proposed changes incrementally, verify outcomes, or combine automated updates with manual review. It also helps when change tracking needs to remain visible during collaboration.
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w14:paraId="5E53081A" w14:textId="77777777">
+        <w:trPr>
+          <w:ins w:author="Jubarte" w:id="12" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="9350" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="26D1EBE2" w14:textId="15B91767">
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="13" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="14" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>Comment handling is an important part of diffing and replay workflows. If a comment is added, updated, resolved, or removed in the target document, those actions should be reflected during replay so the discussion state stays consistent. Accurate comment synchronization is essential for review quality.
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w14:paraId="455A96BF" w14:textId="77777777">
+        <w:trPr>
+          <w:ins w:author="Jubarte" w:id="15" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="9350" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="326AC6D5" w14:textId="657A841B">
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="16" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="17" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>In multi-document sessions, ID collisions can occur when different files reuse the same imported comment IDs. A robust implementation scopes comment operations to the active document to avoid incorrectly updating, deleting, or deduplicating comments from another file. This keeps replay behavior predictable.
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w14:paraId="5E9E6D64" w14:textId="77777777">
+        <w:trPr>
+          <w:ins w:author="Jubarte" w:id="18" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="9350" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="3F55EE29" w14:textId="46510B01">
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="19" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="20" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>A reliable diff and replay pipeline gives teams confidence when validating revisions. It supports faster reviews, clearer audit trails, and safer document updates, especially in complex workflows with tracked changes, threaded comments, and repeated compare/replay cycles.
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="21" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="22" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:sz w:val="32"/>
+          </w:rPr>
+          <w:delText>m:groupChr ECMA-376 §22.1.2.41 — All Variations
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="23" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="24" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>Each labeled line below is followed by the math object it describes. Empty m:chr should render with no bracket/arrow.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="25" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="26" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>1. Default (no groupChrPr) — expect U+23DF bottom curly, below base
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="27" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:e>
+              <m:r>
+                <w:del w:id="73" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                  <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                  </w:rPr>
+                  <m:t>x+y+z
+                  </m:t>
+                </w:del>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="29" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="30" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>2. Empty m:chr (no m:val) — spec says character is hidden
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="31" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:groupChrPr>
+              <m:chr/>
+            </m:groupChrPr>
+            <m:e>
+              <m:r>
+                <w:del w:id="74" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                  <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                  </w:rPr>
+                  <m:t>a+b
+                  </m:t>
+                </w:del>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="33" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="34" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>3. Explicit bottom curly bracket U+23DF, pos=bot (underbrace)
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="35" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:groupChrPr>
+              <m:chr m:val="⏟"/>
+              <m:pos m:val="bot"/>
+            </m:groupChrPr>
+            <m:e>
+              <m:r>
+                <w:del w:id="75" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                  <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                  </w:rPr>
+                  <m:t>a+b+c
+                  </m:t>
+                </w:del>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="37" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="38" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>4. Top curly bracket U+23DE, pos=top (overbrace)
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="39" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:groupChrPr>
+              <m:chr m:val="⏞"/>
+              <m:pos m:val="top"/>
+            </m:groupChrPr>
+            <m:e>
+              <m:r>
+                <w:del w:id="76" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                  <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                  </w:rPr>
+                  <m:t>x+y
+                  </m:t>
+                </w:del>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="41" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="42" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>5. Leftward arrow U+2190, pos=top
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="43" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:groupChrPr>
+              <m:chr m:val="←"/>
+              <m:pos m:val="top"/>
+            </m:groupChrPr>
+            <m:e>
+              <m:r>
+                <w:del w:id="77" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                  <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                  </w:rPr>
+                  <m:t>n terms
+                  </m:t>
+                </w:del>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="45" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="46" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>6. Rightward arrow U+2192, pos=bot
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="47" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:groupChrPr>
+              <m:chr m:val="→"/>
+              <m:pos m:val="bot"/>
+            </m:groupChrPr>
+            <m:e>
+              <m:r>
+                <w:del w:id="78" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                  <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                  </w:rPr>
+                  <m:t>vector
+                  </m:t>
+                </w:del>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="49" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="50" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>7. vertJc combo: pos=top, vertJc=top
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="51" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:groupChrPr>
+              <m:chr m:val="⏞"/>
+              <m:pos m:val="top"/>
+              <m:vertJc m:val="top"/>
+            </m:groupChrPr>
+            <m:e>
+              <m:r>
+                <w:del w:id="79" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                  <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                  </w:rPr>
+                  <m:t>p+q
+                  </m:t>
+                </w:del>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="53" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="54" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>8. vertJc combo: pos=top, vertJc=bot
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="55" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:groupChrPr>
+              <m:chr m:val="⏞"/>
+              <m:pos m:val="top"/>
+              <m:vertJc m:val="bot"/>
+            </m:groupChrPr>
+            <m:e>
+              <m:r>
+                <w:del w:id="80" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                  <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                  </w:rPr>
+                  <m:t>r+s
+                  </m:t>
+                </w:del>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="57" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="58" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>9. vertJc combo: pos=bot, vertJc=top
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="59" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:groupChrPr>
+              <m:chr m:val="⏟"/>
+              <m:pos m:val="bot"/>
+              <m:vertJc m:val="top"/>
+            </m:groupChrPr>
+            <m:e>
+              <m:r>
+                <w:del w:id="81" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                  <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                  </w:rPr>
+                  <m:t>t+u
+                  </m:t>
+                </w:del>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="61" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="62" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>10. vertJc combo: pos=bot, vertJc=bot
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="63" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:groupChrPr>
+              <m:chr m:val="⏟"/>
+              <m:pos m:val="bot"/>
+              <m:vertJc m:val="bot"/>
+            </m:groupChrPr>
+            <m:e>
+              <m:r>
+                <w:del w:id="82" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                  <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                  </w:rPr>
+                  <m:t>v+w
+                  </m:t>
+                </w:del>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="65" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="66" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>11. vertJc with empty m:val (defaults to bot per spec)
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="67" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:groupChrPr>
+              <m:chr m:val="⏞"/>
+              <m:pos m:val="top"/>
+              <m:vertJc/>
+            </m:groupChrPr>
+            <m:e>
+              <m:r>
+                <w:del w:id="83" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                  <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                  </w:rPr>
+                  <m:t>x
+                  </m:t>
+                </w:del>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="69" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="70" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>12. Complex base — summation inside groupChr
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <m:oMathPara>
+        <m:oMath>
+          <m:groupChr>
+            <m:groupChrPr>
+              <m:chr m:val="⏟"/>
+              <m:pos m:val="bot"/>
+            </m:groupChrPr>
+            <m:e>
+              <m:r>
+                <w:del w:id="84" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+                  <w:rPr>
+                    <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                  </w:rPr>
+                  <m:t>x₁+x₂+⋯+xₙ
+                  </m:t>
+                </w:del>
+              </m:r>
+            </m:e>
+          </m:groupChr>
+        </m:oMath>
+      </m:oMathPara>
+    </w:p>
+    <w:sectPr>
+      <w:pgSz w:w="12240" w:h="15840"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="708" w:footer="708" w:gutter="0"/>
+      <w:cols w:space="708"/>
+      <w:docGrid w:linePitch="360"/>
+      <w:sectPrChange w:author="Jubarte" w:date="1970-01-01T00:00:00Z" w:id="72">
+        <w:sectPr>
+          <w:pgSz w:w="12240" w:h="15840"/>
+          <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+          <w:cols w:space="720"/>
+          <w:docGrid w:linePitch="360"/>
+        </w:sectPr>
+      </w:sectPrChange>
+    </w:sectPr>
+  </w:body>
+</w:document>

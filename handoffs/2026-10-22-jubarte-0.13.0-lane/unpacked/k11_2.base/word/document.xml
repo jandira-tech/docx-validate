@@ -1,0 +1,1493 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 wp14">
+  <w:body>
+    <w:p w14:paraId="7447FA4D" w14:textId="00FD0DE0" w:rsidR="007220A9" w:rsidRDefault="00B67724">
+      <w:pPr>
+        <w:suppressAutoHyphens/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial"/>
+          <w:spacing w:val="8"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:drawing>
+          <wp:inline distT="0" distB="0" distL="0" distR="0" wp14:anchorId="7447FA7B" wp14:editId="070A01FA">
+            <wp:extent cx="519430" cy="621665"/>
+            <wp:effectExtent l="0" t="0" r="0" b="6985"/>
+            <wp:docPr id="4" name="Picture 4" descr="HERB21"/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name="Picture 1" descr="HERB21"/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId8" cstate="print">
+                      <a:extLst>
+                        <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                          <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                        </a:ext>
+                      </a:extLst>
+                    </a:blip>
+                    <a:srcRect/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr bwMode="auto">
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="519430" cy="621665"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                    <a:noFill/>
+                    <a:ln>
+                      <a:noFill/>
+                    </a:ln>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:inline>
+        </w:drawing>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA4F" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="00B67724">
+      <w:pPr>
+        <w:suppressAutoHyphens/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:b/>
+          <w:bCs/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+          <w:bCs/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>LIETUVOS RESPUBLIKOS APLINKOS MINISTRAS
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="23277E9C" w14:textId="77777777" w:rsidR="0037120E" w:rsidRDefault="0037120E">
+      <w:pPr>
+        <w:suppressAutoHyphens/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:b/>
+          <w:bCs/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="7447FA51" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="00B67724">
+      <w:pPr>
+        <w:suppressAutoHyphens/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:b/>
+          <w:bCs/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+          <w:bCs/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>ĮSAKYMAS
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA53" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="00B67724">
+      <w:pPr>
+        <w:suppressAutoHyphens/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:b/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>DĖL LIETUVOS RESPUBLIKOS APLINKOS MINISTRO 2000 M. BIRŽELIO 27 D. ĮSAKYMO NR. 258 „DĖL MEDŽIOKLĖS LIETUVOS RESPUBLIKOS TERITORIJOJE TAISYKLIŲ PATVIRTINIMO&#x201C; PAKEITIMO
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA54" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="007220A9">
+      <w:pPr>
+        <w:suppressAutoHyphens/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:b/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="7447FA55" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="00B67724">
+      <w:pPr>
+        <w:suppressAutoHyphens/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>2016 m. lapkričio 23 d. Nr. D1-793
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7CF80861" w14:textId="77777777" w:rsidR="0037120E" w:rsidRDefault="00B67724" w:rsidP="0037120E">
+      <w:pPr>
+        <w:suppressAutoHyphens/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>Vilnius
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="2F3462F3" w14:textId="77777777" w:rsidR="0037120E" w:rsidRDefault="0037120E" w:rsidP="0037120E">
+      <w:pPr>
+        <w:suppressAutoHyphens/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="07C4BEF3" w14:textId="77777777" w:rsidR="0037120E" w:rsidRDefault="0037120E" w:rsidP="0037120E">
+      <w:pPr>
+        <w:suppressAutoHyphens/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="7447FA58" w14:textId="77744710" w:rsidR="007220A9" w:rsidRDefault="00B67724" w:rsidP="0037120E">
+      <w:pPr>
+        <w:suppressAutoHyphens/>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>P a k e i č i u Medžioklės Lietuvos Respublikos teritorijoje taisykles, patvirtintas Lietuvos Respublikos aplinkos ministro 2000 m. birželio 27 d. įsakymu Nr. 258 „Dėl Medžioklės Lietuvos Respublikos teritorijoje taisyklių patvirtinimo&#x201C;:
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA59" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="0037120E">
+      <w:pPr>
+        <w:suppressAutoHyphens/>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:i/>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>1
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>. Pakeičiu 11 punktą ir jį išdėstau taip:
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA5A" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="00B67724">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+          <w:tab w:val="left" w:pos="567"/>
+          <w:tab w:val="left" w:pos="2748"/>
+          <w:tab w:val="left" w:pos="3664"/>
+          <w:tab w:val="left" w:pos="4580"/>
+          <w:tab w:val="left" w:pos="5496"/>
+          <w:tab w:val="left" w:pos="6412"/>
+          <w:tab w:val="left" w:pos="7328"/>
+          <w:tab w:val="left" w:pos="8244"/>
+          <w:tab w:val="left" w:pos="9160"/>
+          <w:tab w:val="left" w:pos="10076"/>
+          <w:tab w:val="left" w:pos="10992"/>
+          <w:tab w:val="left" w:pos="11908"/>
+          <w:tab w:val="left" w:pos="12824"/>
+          <w:tab w:val="left" w:pos="13740"/>
+          <w:tab w:val="left" w:pos="14656"/>
+        </w:tabs>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>„
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>11
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>. Medžioti leidžiama šiais būdais:
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA5B" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="0037120E">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+          <w:tab w:val="left" w:pos="567"/>
+          <w:tab w:val="left" w:pos="2748"/>
+          <w:tab w:val="left" w:pos="3664"/>
+          <w:tab w:val="left" w:pos="4580"/>
+          <w:tab w:val="left" w:pos="5496"/>
+          <w:tab w:val="left" w:pos="6412"/>
+          <w:tab w:val="left" w:pos="7328"/>
+          <w:tab w:val="left" w:pos="8244"/>
+          <w:tab w:val="left" w:pos="9160"/>
+          <w:tab w:val="left" w:pos="10076"/>
+          <w:tab w:val="left" w:pos="10992"/>
+          <w:tab w:val="left" w:pos="11908"/>
+          <w:tab w:val="left" w:pos="12824"/>
+          <w:tab w:val="left" w:pos="13740"/>
+          <w:tab w:val="left" w:pos="14656"/>
+        </w:tabs>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>11.1
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t xml:space="preserve">varant - kai medžiojamuosius gyvūnus link medžiotojų, stovinčių ant žemės arba esančių tam skirtuose bokšteliuose, medžiotojų linijoje ar jos flanguose, ar kitose tikėtinose medžiojamųjų gyvūnų pasirodymo vietose, gena varovai su medžiokliniais šunimis ar be jų arba tik medžiokliniai šunys. Medžiotojų, varovų ir šunų skaičius neribojamas;
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA5C" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="0037120E">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+          <w:tab w:val="left" w:pos="567"/>
+        </w:tabs>
+        <w:suppressAutoHyphens/>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>11.2
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>. v
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>arant tyliuoju būdu - kai medžiojamuosius gyvūnus link medžiotojų, esančių tam skirtuose bokšteliuose, nekeldami triukšmo (nešūkaudami ir nenaudodami papildomų garsinių priemonių) varo varovai, gerai pažįstantys mišką, kuriame medžiojama, ir šunys. Prieš pradedant tokią medžioklę, medžioklės būdas (varant tyliuoju būdu) nurodomas medžioklės lape;
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA5D" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="0037120E">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+          <w:tab w:val="left" w:pos="567"/>
+          <w:tab w:val="left" w:pos="2748"/>
+          <w:tab w:val="left" w:pos="3664"/>
+          <w:tab w:val="left" w:pos="4580"/>
+          <w:tab w:val="left" w:pos="5496"/>
+          <w:tab w:val="left" w:pos="6412"/>
+          <w:tab w:val="left" w:pos="7328"/>
+          <w:tab w:val="left" w:pos="8244"/>
+          <w:tab w:val="left" w:pos="9160"/>
+          <w:tab w:val="left" w:pos="10076"/>
+          <w:tab w:val="left" w:pos="10992"/>
+          <w:tab w:val="left" w:pos="11908"/>
+          <w:tab w:val="left" w:pos="12824"/>
+          <w:tab w:val="left" w:pos="13740"/>
+          <w:tab w:val="left" w:pos="14656"/>
+        </w:tabs>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>11.3
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t xml:space="preserve">. tykojant - kai medžiojamųjų gyvūnų laukiama tam skirtame medžioklės bokštelyje, slėptuvėje, valtyje, specialiai įrengtoje priedangoje ar be jos. Tykojamus medžiojamuosius gyvūnus galima vilioti natūralios kilmės masalu (masalo kiekis ne daugiau kaip 100 kg), iškamšomis, muliažais, profiliais, viliokliais ir
+        </w:t>
+      </w:r>
+      <w:proofErr w:type="spellStart"/>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>vilbynėmis
+        </w:t>
+      </w:r>
+      <w:proofErr w:type="spellEnd"/>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t xml:space="preserve">, feromoniniais jaukais,
+        </w:t>
+      </w:r>
+      <w:proofErr w:type="spellStart"/>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>krykštėmis
+        </w:t>
+      </w:r>
+      <w:proofErr w:type="spellEnd"/>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>. Tykojamus šernus leidžiama apšviesti Medžioklės taisyklių 10.2.6 punkte nurodytomis priemonėmis. Medžioklės bokštelis statomas ne arčiau kaip 200 m nuo besiribojančio medžioklės plotų vieneto ribos, jei besiribojančių medžioklės plotų naudotojai nesusitarė kitaip. Ši nuostata netaikoma, kai medžioklės bokšteliai smulkiajai medžiojamajai faunai medžioti statomi medžioklės plotų vienetuose, suformuotose žuvininkystės tvenkinių teritorijoje;
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA5E" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="0037120E">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+          <w:tab w:val="left" w:pos="567"/>
+          <w:tab w:val="left" w:pos="2748"/>
+          <w:tab w:val="left" w:pos="3664"/>
+          <w:tab w:val="left" w:pos="4580"/>
+          <w:tab w:val="left" w:pos="5496"/>
+          <w:tab w:val="left" w:pos="6412"/>
+          <w:tab w:val="left" w:pos="7328"/>
+          <w:tab w:val="left" w:pos="8244"/>
+          <w:tab w:val="left" w:pos="9160"/>
+          <w:tab w:val="left" w:pos="10076"/>
+          <w:tab w:val="left" w:pos="10992"/>
+          <w:tab w:val="left" w:pos="11908"/>
+          <w:tab w:val="left" w:pos="12824"/>
+          <w:tab w:val="left" w:pos="13740"/>
+          <w:tab w:val="left" w:pos="14656"/>
+        </w:tabs>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>11.4
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t xml:space="preserve">. sėlinant - kai prie medžiojamojo gyvūno prisėlinama, gyvūną pabaido ar sustabdo medžioklinis šuo, medžiojamasis gyvūnas priviliojamas viliokliu ar
+        </w:t>
+      </w:r>
+      <w:proofErr w:type="spellStart"/>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>vilbyne
+        </w:t>
+      </w:r>
+      <w:proofErr w:type="spellEnd"/>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>. Vandens paukščius, bebrus, ondatras leidžiama medžioti iriantis irkline (nemotorine) valtimi. Medžioklė sėlinant leidžiama tik šviesiuoju paros metu - ne anksčiau kaip pusantros valandos iki saulės patekėjimo ir ne vėliau kaip pusantros valandos saulei nusileidus;
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA5F" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="0037120E">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+          <w:tab w:val="left" w:pos="567"/>
+          <w:tab w:val="left" w:pos="2748"/>
+          <w:tab w:val="left" w:pos="3664"/>
+          <w:tab w:val="left" w:pos="4580"/>
+          <w:tab w:val="left" w:pos="5496"/>
+          <w:tab w:val="left" w:pos="6412"/>
+          <w:tab w:val="left" w:pos="7328"/>
+          <w:tab w:val="left" w:pos="8244"/>
+          <w:tab w:val="left" w:pos="9160"/>
+          <w:tab w:val="left" w:pos="10076"/>
+          <w:tab w:val="left" w:pos="10992"/>
+          <w:tab w:val="left" w:pos="11908"/>
+          <w:tab w:val="left" w:pos="12824"/>
+          <w:tab w:val="left" w:pos="13740"/>
+          <w:tab w:val="left" w:pos="14656"/>
+        </w:tabs>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>11.5
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>. su šunimis - kai su medžiokliniais šunimis žvėrys gaudomi jų urvuose ar nameliuose arba yra šaudomi šunų išvaryti iš urvų ar namelių, ar jie gaudomi atkasant urvą, arba kai šuo pasiveja ir pagauna plėšrųjį žvėrį ar kiškį. Medžiojant šiuo būdu, būtina užtikrinti, kad nebūtų pažeistos Lietuvos Respublikos gyvūnų gerovės ir apsaugos įstatymo nuostatos;
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA60" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="0037120E">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+          <w:tab w:val="left" w:pos="567"/>
+          <w:tab w:val="left" w:pos="2748"/>
+          <w:tab w:val="left" w:pos="3664"/>
+          <w:tab w:val="left" w:pos="4580"/>
+          <w:tab w:val="left" w:pos="5496"/>
+          <w:tab w:val="left" w:pos="6412"/>
+          <w:tab w:val="left" w:pos="7328"/>
+          <w:tab w:val="left" w:pos="8244"/>
+          <w:tab w:val="left" w:pos="9160"/>
+          <w:tab w:val="left" w:pos="10076"/>
+          <w:tab w:val="left" w:pos="10992"/>
+          <w:tab w:val="left" w:pos="11908"/>
+          <w:tab w:val="left" w:pos="12824"/>
+          <w:tab w:val="left" w:pos="13740"/>
+          <w:tab w:val="left" w:pos="14656"/>
+        </w:tabs>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>11.6
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>. grandine - kai medžiotojai, sustoję linija, eina atviru lauku;
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA61" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="0037120E">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+          <w:tab w:val="left" w:pos="567"/>
+          <w:tab w:val="left" w:pos="2748"/>
+          <w:tab w:val="left" w:pos="3664"/>
+          <w:tab w:val="left" w:pos="4580"/>
+          <w:tab w:val="left" w:pos="5496"/>
+          <w:tab w:val="left" w:pos="6412"/>
+          <w:tab w:val="left" w:pos="7328"/>
+          <w:tab w:val="left" w:pos="8244"/>
+          <w:tab w:val="left" w:pos="9160"/>
+          <w:tab w:val="left" w:pos="10076"/>
+          <w:tab w:val="left" w:pos="10992"/>
+          <w:tab w:val="left" w:pos="11908"/>
+          <w:tab w:val="left" w:pos="12824"/>
+          <w:tab w:val="left" w:pos="13740"/>
+          <w:tab w:val="left" w:pos="14656"/>
+        </w:tabs>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>11.7
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>. katilu - kai medžiotojai eina į centrą, apsupę tam tikrą atvirą lauko plotą;
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA62" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="0037120E">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+          <w:tab w:val="left" w:pos="567"/>
+          <w:tab w:val="left" w:pos="2748"/>
+          <w:tab w:val="left" w:pos="3664"/>
+          <w:tab w:val="left" w:pos="4580"/>
+          <w:tab w:val="left" w:pos="5496"/>
+          <w:tab w:val="left" w:pos="6412"/>
+          <w:tab w:val="left" w:pos="7328"/>
+          <w:tab w:val="left" w:pos="8244"/>
+          <w:tab w:val="left" w:pos="9160"/>
+          <w:tab w:val="left" w:pos="10076"/>
+          <w:tab w:val="left" w:pos="10992"/>
+          <w:tab w:val="left" w:pos="11908"/>
+          <w:tab w:val="left" w:pos="12824"/>
+          <w:tab w:val="left" w:pos="13740"/>
+          <w:tab w:val="left" w:pos="14656"/>
+        </w:tabs>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>11.8
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>. su plėšriaisiais paukščiais - kai smulkioji fauna gaudoma, pasitelkus specialiai apmokytą plėšrųjį paukštį;
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA63" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="0037120E">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+          <w:tab w:val="left" w:pos="567"/>
+          <w:tab w:val="left" w:pos="2748"/>
+          <w:tab w:val="left" w:pos="3664"/>
+          <w:tab w:val="left" w:pos="4580"/>
+          <w:tab w:val="left" w:pos="5496"/>
+          <w:tab w:val="left" w:pos="6412"/>
+          <w:tab w:val="left" w:pos="7328"/>
+          <w:tab w:val="left" w:pos="8244"/>
+          <w:tab w:val="left" w:pos="9160"/>
+          <w:tab w:val="left" w:pos="10076"/>
+          <w:tab w:val="left" w:pos="10992"/>
+          <w:tab w:val="left" w:pos="11908"/>
+          <w:tab w:val="left" w:pos="12824"/>
+          <w:tab w:val="left" w:pos="13740"/>
+          <w:tab w:val="left" w:pos="14656"/>
+        </w:tabs>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>11.9
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>. gaudant spąstais, gaudyklėmis - kai gyvūnai gaudyklėmis gaudomi gyvi ir nesužeisti arba plėšrieji žvėrys (išskyrus vilką), bebrai ir ondatros gaudomi spąstais, kurie garantuoja staigią pagauto gyvūno žūtį ir pagal jų naudojimo sąlygas garantuoja, kad nebus sugauti kiti gyvūnai, kuriems gaudyti spąstai neskirti;
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA64" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="0037120E">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+          <w:tab w:val="left" w:pos="567"/>
+          <w:tab w:val="left" w:pos="2748"/>
+          <w:tab w:val="left" w:pos="3664"/>
+          <w:tab w:val="left" w:pos="4580"/>
+          <w:tab w:val="left" w:pos="5496"/>
+          <w:tab w:val="left" w:pos="6412"/>
+          <w:tab w:val="left" w:pos="7328"/>
+          <w:tab w:val="left" w:pos="8244"/>
+          <w:tab w:val="left" w:pos="9160"/>
+          <w:tab w:val="left" w:pos="10076"/>
+          <w:tab w:val="left" w:pos="10992"/>
+          <w:tab w:val="left" w:pos="11908"/>
+          <w:tab w:val="left" w:pos="12824"/>
+          <w:tab w:val="left" w:pos="13740"/>
+          <w:tab w:val="left" w:pos="14656"/>
+        </w:tabs>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>11.10
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>. su vėliavėlėmis - kai medžiojamieji gyvūnai medžiojami medžioklės plotų dalį apjuosiant specialia virve su vėliavėlėmis;
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA65" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="0037120E">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+          <w:tab w:val="left" w:pos="567"/>
+          <w:tab w:val="left" w:pos="2748"/>
+          <w:tab w:val="left" w:pos="3664"/>
+          <w:tab w:val="left" w:pos="4580"/>
+          <w:tab w:val="left" w:pos="5496"/>
+          <w:tab w:val="left" w:pos="6412"/>
+          <w:tab w:val="left" w:pos="7328"/>
+          <w:tab w:val="left" w:pos="8244"/>
+          <w:tab w:val="left" w:pos="9160"/>
+          <w:tab w:val="left" w:pos="10076"/>
+          <w:tab w:val="left" w:pos="10992"/>
+          <w:tab w:val="left" w:pos="11908"/>
+          <w:tab w:val="left" w:pos="12824"/>
+          <w:tab w:val="left" w:pos="13740"/>
+          <w:tab w:val="left" w:pos="14656"/>
+        </w:tabs>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>11.11
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>. esant nepalankioms medžiojamiesiems gyvūnams gamtinėms sąlygoms, Aplinkos ministerija gali nustatyti apribojimus leidžiamiems medžioklės būdams.&#x201C;.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA66" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="0037120E">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="567"/>
+        </w:tabs>
+        <w:suppressAutoHyphens/>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>2
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>. Pakeičiu 15.1 papunktį ir jį išdėstau taip:
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA67" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="00B67724">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+          <w:tab w:val="left" w:pos="567"/>
+        </w:tabs>
+        <w:suppressAutoHyphens/>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>„
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>15.1
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>. medžiojamuosius gyvūnus (išskyrus suaugusius elninių žvėrių patinus (draudimas netaikomas medžiojant tauriųjų elnių ir briedžių antramečius patinus
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t xml:space="preserve">
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>bei suaugusius tauriųjų elnių ir briedžių patinus varant tyliuoju būdu)) medžioti varant leidžiama nuo spalio 15 d. iki vasario 1 d., atsižvelgiant į Medžioklės taisyklių 15.2 punkte nustatytus atskirų medžiojamųjų gyvūnų rūšių medžioklės terminus. Lapes, mangutus ir kanadines audines, miškines ir akmenines kiaunes, juoduosius šeškus medžioti varant ne miškuose leidžiama nuo spalio 15 d. iki balandžio 15 d. Kitais Medžioklės taisyklių 11 punkte nurodytais medžioklės būdais tam tikrus medžiojamuosius gyvūnus medžioti leidžiama Medžioklės taisyklių 15.2 punkte nurodytais terminais;&#x201C;.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA68" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="0037120E">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+          <w:tab w:val="left" w:pos="567"/>
+        </w:tabs>
+        <w:suppressAutoHyphens/>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>3
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>. Pakeičiu 19.3 papunktį ir jį išdėstau taip:
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA69" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="00B67724">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+          <w:tab w:val="left" w:pos="567"/>
+          <w:tab w:val="left" w:pos="2748"/>
+          <w:tab w:val="left" w:pos="3664"/>
+          <w:tab w:val="left" w:pos="4580"/>
+          <w:tab w:val="left" w:pos="5496"/>
+          <w:tab w:val="left" w:pos="6412"/>
+          <w:tab w:val="left" w:pos="7328"/>
+          <w:tab w:val="left" w:pos="8244"/>
+          <w:tab w:val="left" w:pos="9160"/>
+          <w:tab w:val="left" w:pos="10076"/>
+          <w:tab w:val="left" w:pos="10992"/>
+          <w:tab w:val="left" w:pos="11908"/>
+          <w:tab w:val="left" w:pos="12824"/>
+          <w:tab w:val="left" w:pos="13740"/>
+          <w:tab w:val="left" w:pos="14656"/>
+        </w:tabs>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>„
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>19.3
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>. nurodyti medžioklės būdą (jei medžiojama varant tyliuoju būdu) ir
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t xml:space="preserve">
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>medžioklės lapo galiojimo laiką. Medžioklės lapas gali būti išduodamas ne ilgesniam laikotarpiui, kaip iki to paties medžioklės sezono kovo 31 d. (datos nurodomos įskaitytinai). Pratęsti medžioklės lapo galiojimą draudžiama;&#x201C;.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA6A" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="0037120E">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+          <w:tab w:val="left" w:pos="567"/>
+          <w:tab w:val="left" w:pos="2748"/>
+          <w:tab w:val="left" w:pos="3664"/>
+          <w:tab w:val="left" w:pos="4580"/>
+          <w:tab w:val="left" w:pos="5496"/>
+          <w:tab w:val="left" w:pos="6412"/>
+          <w:tab w:val="left" w:pos="7328"/>
+          <w:tab w:val="left" w:pos="8244"/>
+          <w:tab w:val="left" w:pos="9160"/>
+          <w:tab w:val="left" w:pos="10076"/>
+          <w:tab w:val="left" w:pos="10992"/>
+          <w:tab w:val="left" w:pos="11908"/>
+          <w:tab w:val="left" w:pos="12824"/>
+          <w:tab w:val="left" w:pos="13740"/>
+          <w:tab w:val="left" w:pos="14656"/>
+        </w:tabs>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>4
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>. Pakeičiu 51 punktą ir jį išdėstau taip:
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA6B" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="00B67724">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+          <w:tab w:val="left" w:pos="567"/>
+          <w:tab w:val="left" w:pos="2748"/>
+          <w:tab w:val="left" w:pos="3664"/>
+          <w:tab w:val="left" w:pos="4580"/>
+          <w:tab w:val="left" w:pos="5496"/>
+          <w:tab w:val="left" w:pos="6412"/>
+          <w:tab w:val="left" w:pos="7328"/>
+          <w:tab w:val="left" w:pos="8244"/>
+          <w:tab w:val="left" w:pos="9160"/>
+          <w:tab w:val="left" w:pos="10076"/>
+          <w:tab w:val="left" w:pos="10992"/>
+          <w:tab w:val="left" w:pos="11908"/>
+          <w:tab w:val="left" w:pos="12824"/>
+          <w:tab w:val="left" w:pos="13740"/>
+          <w:tab w:val="left" w:pos="14656"/>
+        </w:tabs>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>„
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>51
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>. Medžiotojas, sugavęs draudžiamą medžioti gyvūną, jeigu šis nesužeistas, turi jį paleisti. Jeigu toks gyvūnas žuvęs arba yra akivaizdu, kad dėl sužalojimų jis neišgyvens, medžioklės vadovas arba individualiai medžiojantis medžiotojas sugavimo vietoje apie tai turi įrašyti medžioklės lape ir ne vėliau kaip kitą darbo dieną nugabenti jį į atitinkamo Aplinkos ministerijos regiono aplinkos apsaugos departamento rajono agentūrą, kuri, esant reikalui, šį gyvūną gabena į Kauno T. Ivanausko zoologijos muziejų. Kartu medžiotojas pateikia užpildytą Lietuvos Respublikos aplinkos ministro 2001 m. gruodžio 12 d. įsakymu Nr. 592 „Dėl Europos Bendrijos svarbos gyvūnų ir augalų rūšių, kurioms reikalinga griežta apsauga, ir Europos bendrijos svarbos gyvūnų ir augalų, kurių ėmimui iš gamtos ir naudojimui gali būti taikomos tvarkymo priemonės, sąrašų patvirtinimo, apsaugos priemonių nustatymo ir duomenų kaupimo apie šias rūšis&#x201C; patvirtintą Europos Bendrijos svarbos gyvūnų rūšių, kurioms reikalinga griežta apsauga, atsitiktinio sugavimo ar sunaikinimo registracijos anketą. Medžiotojas, sumedžiojęs gyvūną 11.9 punkte nustatytu būdu ir įvykdęs šio punkto reikalavimus, administracinėn atsakomybėn netraukiamas.&#x201C;.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA6C" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="0037120E">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+          <w:tab w:val="left" w:pos="567"/>
+        </w:tabs>
+        <w:suppressAutoHyphens/>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>5
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>. Pakeičiu 58.24 papunktį ir jį išdėstau taip:
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA6D" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="00B67724">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+          <w:tab w:val="left" w:pos="567"/>
+          <w:tab w:val="left" w:pos="2748"/>
+          <w:tab w:val="left" w:pos="3664"/>
+          <w:tab w:val="left" w:pos="4580"/>
+          <w:tab w:val="left" w:pos="5496"/>
+          <w:tab w:val="left" w:pos="6412"/>
+          <w:tab w:val="left" w:pos="7328"/>
+          <w:tab w:val="left" w:pos="8244"/>
+          <w:tab w:val="left" w:pos="9160"/>
+          <w:tab w:val="left" w:pos="10076"/>
+          <w:tab w:val="left" w:pos="10992"/>
+          <w:tab w:val="left" w:pos="11908"/>
+          <w:tab w:val="left" w:pos="12824"/>
+          <w:tab w:val="left" w:pos="13740"/>
+          <w:tab w:val="left" w:pos="14656"/>
+        </w:tabs>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>„
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>58.24
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>. medžioti suaugusius elninių žvėrių patinus, išskyrus briedžių ir tauriųjų elnių antramečius patinus, varant, grandine, katilu. Draudimas netaikomas medžiojant suaugusius briedžių ir tauriųjų elnių patinus varant tyliuoju būdu;&#x201C;.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA6E" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="0037120E">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+          <w:tab w:val="left" w:pos="567"/>
+        </w:tabs>
+        <w:suppressAutoHyphens/>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>6
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>. Pakeičiu 58.37 papunktį ir jį išdėstau taip:
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA6F" w14:textId="77777777" w:rsidR="007220A9" w:rsidRDefault="00B67724">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+          <w:tab w:val="left" w:pos="567"/>
+          <w:tab w:val="left" w:pos="2748"/>
+          <w:tab w:val="left" w:pos="3664"/>
+          <w:tab w:val="left" w:pos="4580"/>
+          <w:tab w:val="left" w:pos="5496"/>
+          <w:tab w:val="left" w:pos="6412"/>
+          <w:tab w:val="left" w:pos="7328"/>
+          <w:tab w:val="left" w:pos="8244"/>
+          <w:tab w:val="left" w:pos="9160"/>
+          <w:tab w:val="left" w:pos="10076"/>
+          <w:tab w:val="left" w:pos="10992"/>
+          <w:tab w:val="left" w:pos="11908"/>
+          <w:tab w:val="left" w:pos="12824"/>
+          <w:tab w:val="left" w:pos="13740"/>
+          <w:tab w:val="left" w:pos="14656"/>
+        </w:tabs>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>„
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>58.37
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t xml:space="preserve">. medžioklės plotų vienetuose, kurie patenka į 2014 m. spalio 9 d. Komisijos įgyvendinimo sprendimo 2014/709/ES dėl gyvūnų sveikatos kontrolės priemonių, susijusių su
+        </w:t>
+      </w:r>
+      <w:proofErr w:type="spellStart"/>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>afrikiniu
+        </w:t>
+      </w:r>
+      <w:proofErr w:type="spellEnd"/>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t xml:space="preserve">kiaulių maru tam tikrose valstybėse narėse, kuriuo panaikinamas įgyvendinimo sprendimas 2014/178/ES (OL 2014 L 295, p. 63), priede nurodytas vietoves, toje pačioje medžioklės plotų vieneto dalyje (tame pačiame miško kvartale) medžiojamuosius gyvūnus medžioti su varovais ar šunimis dažniau kaip vieną kartą per mėnesį.&#x201C;.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA70" w14:textId="53AA77A2" w:rsidR="007220A9" w:rsidRDefault="0037120E">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="567"/>
+        </w:tabs>
+        <w:suppressAutoHyphens/>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>7
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t xml:space="preserve">.
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00B67724">
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>Pakeičiu 72.18 papunktį ir jį išdėstau taip:
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA74" w14:textId="6CB1F48B" w:rsidR="007220A9" w:rsidRDefault="00B67724" w:rsidP="00B67724">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+          <w:tab w:val="left" w:pos="567"/>
+          <w:tab w:val="left" w:pos="2748"/>
+          <w:tab w:val="left" w:pos="3664"/>
+          <w:tab w:val="left" w:pos="4580"/>
+          <w:tab w:val="left" w:pos="5496"/>
+          <w:tab w:val="left" w:pos="6412"/>
+          <w:tab w:val="left" w:pos="7328"/>
+          <w:tab w:val="left" w:pos="8244"/>
+          <w:tab w:val="left" w:pos="9160"/>
+          <w:tab w:val="left" w:pos="10076"/>
+          <w:tab w:val="left" w:pos="10992"/>
+          <w:tab w:val="left" w:pos="11908"/>
+          <w:tab w:val="left" w:pos="12824"/>
+          <w:tab w:val="left" w:pos="13740"/>
+          <w:tab w:val="left" w:pos="14656"/>
+        </w:tabs>
+        <w:ind w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>„
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>7
+        </w:t>
+      </w:r>
+      <w:bookmarkStart w:id="0" w:name="_GoBack"/>
+      <w:bookmarkEnd w:id="0"/>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>2.18
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t xml:space="preserve">. šaudyti į plaukiojančius paukščius, išskyrus laukius, antis (tik medžiojant 11.3 punkte nurodytu būdu) ir nukritusius į vandenį sužeistus paukščius. Šaudamas į medžiojamąjį gyvūną,
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:lastRenderedPageBreak/>
+        <w:t>esantį vandens paviršiuje, medžiotojas turi užtikrinti, kad nuo vandens paviršiaus atšokę šratai nebus kam nors pavojingi;&#x201C;.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="343129CC" w14:textId="77777777" w:rsidR="00B67724" w:rsidRDefault="00B67724">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="4825"/>
+        </w:tabs>
+        <w:suppressAutoHyphens/>
+        <w:ind w:left="8" w:right="34"/>
+        <w:rPr>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="4944259D" w14:textId="77777777" w:rsidR="00B67724" w:rsidRDefault="00B67724">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="4825"/>
+        </w:tabs>
+        <w:suppressAutoHyphens/>
+        <w:ind w:left="8" w:right="34"/>
+        <w:rPr>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="5663C74F" w14:textId="77777777" w:rsidR="00B67724" w:rsidRDefault="00B67724">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="4825"/>
+        </w:tabs>
+        <w:suppressAutoHyphens/>
+        <w:ind w:left="8" w:right="34"/>
+        <w:rPr>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="3427CC14" w14:textId="4A34FF2E" w:rsidR="00B67724" w:rsidRDefault="00B67724">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="4825"/>
+        </w:tabs>
+        <w:suppressAutoHyphens/>
+        <w:ind w:left="8" w:right="34"/>
+        <w:rPr>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:t>Laikinai einantis aplinkos ministro pareigas
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:eastAsia="lt-LT"/>
+        </w:rPr>
+        <w:tab/>
+        <w:t>Kęstutis Trečiokas
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7447FA78" w14:textId="39058143" w:rsidR="007220A9" w:rsidRDefault="0037120E"/>
+    <w:sectPr w:rsidR="007220A9" w:rsidSect="0037120E">
+      <w:headerReference w:type="even" r:id="rId9"/>
+      <w:headerReference w:type="default" r:id="rId10"/>
+      <w:footerReference w:type="even" r:id="rId11"/>
+      <w:footerReference w:type="default" r:id="rId12"/>
+      <w:headerReference w:type="first" r:id="rId13"/>
+      <w:footerReference w:type="first" r:id="rId14"/>
+      <w:footnotePr>
+        <w:pos w:val="beneathText"/>
+      </w:footnotePr>
+      <w:type w:val="continuous"/>
+      <w:pgSz w:w="11905" w:h="16837"/>
+      <w:pgMar w:top="1134" w:right="567" w:bottom="1134" w:left="1701" w:header="1142" w:footer="919" w:gutter="0"/>
+      <w:cols w:space="1296"/>
+      <w:formProt w:val="0"/>
+      <w:titlePg/>
+      <w:docGrid w:linePitch="360"/>
+    </w:sectPr>
+  </w:body>
+</w:document>

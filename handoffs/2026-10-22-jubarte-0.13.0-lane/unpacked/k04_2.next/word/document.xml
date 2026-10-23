@@ -1,0 +1,373 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
+<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mo="http://schemas.microsoft.com/office/mac/office/2008/main" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:mv="urn:schemas-microsoft-com:mac:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 wp14">
+  <w:body>
+    <w:p>
+      <w:r>
+        <w:t>OOXML w:b (bold) tester: ST_OnOff variants, rStyle-only cases, rStyle + inline overrides, and a linked style pair (paragraph+character) to verify behavior.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t>A) ST_OnOff values for &lt;w:b&gt; on a run:
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t xml:space="preserve">- w:b w:val=(w:val omitted):
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t>Sample text
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t xml:space="preserve">- w:b w:val=true:
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="true"/>
+        </w:rPr>
+        <w:t>Sample text
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t xml:space="preserve">- w:b w:val=1:
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="1"/>
+        </w:rPr>
+        <w:t>Sample text
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t xml:space="preserve">- w:b w:val=on:
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="on"/>
+        </w:rPr>
+        <w:t>Sample text
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t xml:space="preserve">- w:b w:val=false:
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="false"/>
+        </w:rPr>
+        <w:t>Sample text
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t xml:space="preserve">- w:b w:val=0:
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="0"/>
+        </w:rPr>
+        <w:t>Sample text
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t xml:space="preserve">- w:b w:val=off:
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="off"/>
+        </w:rPr>
+        <w:t>Sample text
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p/>
+    <w:p>
+      <w:r>
+        <w:t>B) rStyle-only cases (no inline &lt;w:b&gt;):
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t xml:space="preserve">- rStyle='SD_BoldChar' (should be bold):
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SD_BoldChar"/>
+        </w:rPr>
+        <w:t>Sample via SD_BoldChar
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t xml:space="preserve">- rStyle='Strong' (built-in bold):
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="Strong"/>
+        </w:rPr>
+        <w:t>Sample via Strong
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t xml:space="preserve">- rStyle='SD_PlainChar' (not bold):
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SD_PlainChar"/>
+        </w:rPr>
+        <w:t>Sample via SD_PlainChar
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p/>
+    <w:p>
+      <w:r>
+        <w:t>C) rStyle + inline &lt;w:b&gt; combinations (inline overrides style):
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t xml:space="preserve">- rStyle='SD_BoldChar' + &lt;w:b w:val='0'&gt; =&gt; expect NOT bold:
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SD_BoldChar"/>
+          <w:b w:val="0"/>
+        </w:rPr>
+        <w:t>Styled bold, overridden off
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t xml:space="preserve">- rStyle='SD_BoldChar' + &lt;w:b w:val='1'&gt; =&gt; expect bold:
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SD_BoldChar"/>
+          <w:b w:val="1"/>
+        </w:rPr>
+        <w:t>Styled bold, reinforced on
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t xml:space="preserve">- rStyle='SD_PlainChar' + &lt;w:b w:val='on'&gt; =&gt; expect bold:
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SD_PlainChar"/>
+          <w:b w:val="on"/>
+        </w:rPr>
+        <w:t>Plain style, inline turns bold on
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t xml:space="preserve">- rStyle='Strong' + &lt;w:b w:val='off'&gt; =&gt; expect NOT bold:
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="Strong"/>
+          <w:b w:val="off"/>
+        </w:rPr>
+        <w:t>Strong style, explicit bold off
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t xml:space="preserve">- rStyle='Strong' + &lt;w:b w:val='true'&gt; =&gt; expect bold:
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="Strong"/>
+          <w:b w:val="true"/>
+        </w:rPr>
+        <w:t>Strong style, inline bold on
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p/>
+    <w:p>
+      <w:r>
+        <w:t>D) Linked style (paragraph+character) demonstrations:
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t xml:space="preserve">- rStyle='SD_LinkedHeadingChar' (character side of linked pair) =&gt; expect bold:
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SD_LinkedHeadingChar"/>
+        </w:rPr>
+        <w:t>Linked Char style applied to run
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t xml:space="preserve">- rStyle='SD_LinkedHeadingChar' + &lt;w:b w:val='0'&gt; =&gt; expect NOT bold:
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SD_LinkedHeadingChar"/>
+          <w:b w:val="0"/>
+        </w:rPr>
+        <w:t>Linked Char style overridden off
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="SD_LinkedHeading"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">- pStyle='SD_LinkedHeading' + inline &lt;w:b w:val='0'&gt;:
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="0"/>
+        </w:rPr>
+        <w:t>Paragraph style makes text bold, but inline turns it off here
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="SD_LinkedHeading"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">- pStyle='SD_LinkedHeading' (no inline) =&gt; expect bold:
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t>All runs inherit bold from the paragraph style
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p/>
+    <w:p>
+      <w:r>
+        <w:t>Table examples (linked style + inline overrides):
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblW w:type="auto" w:w="0"/>
+        <w:tblLook w:firstColumn="1" w:firstRow="1" w:lastColumn="0" w:lastRow="0" w:noHBand="0" w:noVBand="1" w:val="04A0"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="4680"/>
+        <w:gridCol w:w="4680"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:type="dxa" w:w="4680"/>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:t>rStyle='SD_LinkedHeadingChar' (no inline)
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:type="dxa" w:w="4680"/>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="SD_LinkedHeadingChar"/>
+              </w:rPr>
+              <w:t>Should be bold
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:type="dxa" w:w="4680"/>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:t>rStyle='SD_LinkedHeadingChar' + w:b='0'
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:type="dxa" w:w="4680"/>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="SD_LinkedHeadingChar"/>
+                <w:b w:val="0"/>
+              </w:rPr>
+              <w:t>Should NOT be bold
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:sectPr w:rsidR="00FC693F" w:rsidRPr="0006063C" w:rsidSect="00034616">
+      <w:pgSz w:w="12240" w:h="15840"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+      <w:cols w:space="720"/>
+      <w:docGrid w:linePitch="360"/>
+    </w:sectPr>
+  </w:body>
+</w:document>

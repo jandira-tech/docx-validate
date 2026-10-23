@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:hdr xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml">
+  <w:tbl>
+    <w:tblGrid>
+      <w:gridCol w:w="4500" w:type="dxa"/>
+      <w:gridCol w:w="1000" w:type="dxa"/>
+      <w:gridCol w:w="4500" w:type="dxa"/>
+    </w:tblGrid>
+    <w:tr>
+      <w:trPr/>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="4500" w:type="dxa"/>
+          <w:tcBorders>
+            <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+          </w:tcBorders>
+          <w:noWrap/>
+        </w:tcPr>
+        <w:p>
+          <w:pPr>
+            <w:jc w:val="start"/>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/>
+              <w:color w:val="000000"/>
+              <w:sz w:val="24"/>
+              <w:szCs w:val="24"/>
+            </w:rPr>
+            <w:t xml:space="preserve">D+H
+            </w:t>
+          </w:r>
+          <w:r>
+            <w:rPr>
+              <w:color w:val="000000"/>
+            </w:rPr>
+            <w:t xml:space="preserve">| Kilde: www.dh-partner.com
+            </w:t>
+          </w:r>
+        </w:p>
+      </w:tc>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="1000" w:type="dxa"/>
+          <w:tcBorders>
+            <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+          </w:tcBorders>
+          <w:noWrap/>
+        </w:tcPr>
+        <w:p>
+          <w:pPr>
+            <w:jc w:val="center"/>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:color w:val="000000"/>
+            </w:rPr>
+            <w:t xml:space="preserve">-
+            </w:t>
+          </w:r>
+          <w:r>
+            <w:fldChar w:fldCharType="begin"/>
+          </w:r>
+          <w:r>
+            <w:rPr>
+              <w:color w:val="000000"/>
+            </w:rPr>
+            <w:instrText xml:space="preserve">PAGE
+            </w:instrText>
+          </w:r>
+          <w:r>
+            <w:fldChar w:fldCharType="separate"/>
+          </w:r>
+          <w:r>
+            <w:fldChar w:fldCharType="end"/>
+          </w:r>
+          <w:r>
+            <w:rPr>
+              <w:color w:val="000000"/>
+            </w:rPr>
+            <w:t xml:space="preserve">-
+            </w:t>
+          </w:r>
+        </w:p>
+      </w:tc>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="4500" w:type="dxa"/>
+          <w:tcBorders>
+            <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+          </w:tcBorders>
+          <w:noWrap/>
+        </w:tcPr>
+        <w:p>
+          <w:pPr>
+            <w:jc w:val="end"/>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:color w:val="000000"/>
+            </w:rPr>
+            <w:t xml:space="preserve">07.12.2025
+            </w:t>
+          </w:r>
+        </w:p>
+      </w:tc>
+    </w:tr>
+  </w:tbl>
+</w:hdr>

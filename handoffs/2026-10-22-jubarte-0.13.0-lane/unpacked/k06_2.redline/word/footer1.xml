@@ -1,0 +1,266 @@
+<w:ftr xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:oel="http://schemas.microsoft.com/office/2019/extlst" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh wp14">
+  <w:sdt>
+    <w:sdtPr>
+      <w:rPr>
+        <w:rFonts w:ascii="HelveticaNeueLT Pro 55 Roman" w:hAnsi="HelveticaNeueLT Pro 55 Roman"/>
+        <w:color w:val="404040" w:themeColor="text1" w:themeTint="BF"/>
+        <w:sz w:val="16"/>
+        <w:szCs w:val="16"/>
+      </w:rPr>
+      <w:id w:val="-1053462570"/>
+      <w:docPartObj>
+        <w:docPartGallery w:val="Page Numbers (Bottom of Page)"/>
+        <w:docPartUnique/>
+      </w:docPartObj>
+    </w:sdtPr>
+    <w:sdtEndPr/>
+    <w:sdtContent>
+      <w:sdt>
+        <w:sdtPr>
+          <w:rPr>
+            <w:rFonts w:ascii="HelveticaNeueLT Pro 55 Roman" w:hAnsi="HelveticaNeueLT Pro 55 Roman"/>
+            <w:color w:val="404040" w:themeColor="text1" w:themeTint="BF"/>
+            <w:sz w:val="16"/>
+            <w:szCs w:val="16"/>
+          </w:rPr>
+          <w:id w:val="-1769616900"/>
+          <w:docPartObj>
+            <w:docPartGallery w:val="Page Numbers (Top of Page)"/>
+            <w:docPartUnique/>
+          </w:docPartObj>
+        </w:sdtPr>
+        <w:sdtEndPr/>
+        <w:sdtContent>
+          <w:p w14:paraId="1E6DDD50" w14:textId="5A3C31CC">
+            <w:pPr>
+              <w:pStyle w:val="Footer"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="HelveticaNeueLT Pro 55 Roman" w:hAnsi="HelveticaNeueLT Pro 55 Roman"/>
+                <w:color w:val="575756"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="HelveticaNeueLT Pro 55 Roman" w:hAnsi="HelveticaNeueLT Pro 55 Roman"/>
+                <w:color w:val="575756"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Achensee Tourismus |
+              </w:t>
+            </w:r>
+            <w:proofErr w:type="spellStart"/>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="HelveticaNeueLT Pro 55 Roman" w:hAnsi="HelveticaNeueLT Pro 55 Roman"/>
+                <w:color w:val="575756"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t>Achenseestraße
+              </w:t>
+            </w:r>
+            <w:proofErr w:type="spellEnd"/>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="HelveticaNeueLT Pro 55 Roman" w:hAnsi="HelveticaNeueLT Pro 55 Roman"/>
+                <w:color w:val="575756"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t xml:space="preserve">63 | 6212 Maurach am Achensee | Österreich
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p w14:paraId="77CFFEA1" w14:textId="77777777">
+            <w:pPr>
+              <w:pStyle w:val="Footer"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="HelveticaNeueLT Pro 55 Roman" w:hAnsi="HelveticaNeueLT Pro 55 Roman"/>
+                <w:color w:val="575756"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="HelveticaNeueLT Pro 55 Roman" w:hAnsi="HelveticaNeueLT Pro 55 Roman"/>
+                <w:color w:val="575756"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t>Tel.: +43 (0) 595300-0 | Fax: +43 (0) 595300-19
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p w14:paraId="14F03161" w14:textId="01686C04">
+            <w:pPr>
+              <w:pStyle w:val="Footer"/>
+              <w:jc w:val="right"/>
+              <w:rPr>
+                <w:rFonts w:ascii="HelveticaNeueLT Pro 55 Roman" w:hAnsi="HelveticaNeueLT Pro 55 Roman"/>
+                <w:color w:val="404040" w:themeColor="text1" w:themeTint="BF"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="HelveticaNeueLT Pro 55 Roman" w:hAnsi="HelveticaNeueLT Pro 55 Roman"/>
+                <w:color w:val="404040" w:themeColor="text1" w:themeTint="BF"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="de-DE"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Seite
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="HelveticaNeueLT Pro 55 Roman" w:hAnsi="HelveticaNeueLT Pro 55 Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="404040" w:themeColor="text1" w:themeTint="BF"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:fldChar w:fldCharType="begin"/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="HelveticaNeueLT Pro 55 Roman" w:hAnsi="HelveticaNeueLT Pro 55 Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="404040" w:themeColor="text1" w:themeTint="BF"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:instrText>PAGE
+              </w:instrText>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="HelveticaNeueLT Pro 55 Roman" w:hAnsi="HelveticaNeueLT Pro 55 Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="404040" w:themeColor="text1" w:themeTint="BF"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:fldChar w:fldCharType="separate"/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="HelveticaNeueLT Pro 55 Roman" w:hAnsi="HelveticaNeueLT Pro 55 Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="404040" w:themeColor="text1" w:themeTint="BF"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="de-DE"/>
+              </w:rPr>
+              <w:t>2
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="HelveticaNeueLT Pro 55 Roman" w:hAnsi="HelveticaNeueLT Pro 55 Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="404040" w:themeColor="text1" w:themeTint="BF"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:fldChar w:fldCharType="end"/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="HelveticaNeueLT Pro 55 Roman" w:hAnsi="HelveticaNeueLT Pro 55 Roman"/>
+                <w:color w:val="404040" w:themeColor="text1" w:themeTint="BF"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="de-DE"/>
+              </w:rPr>
+              <w:t xml:space="preserve">von
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="HelveticaNeueLT Pro 55 Roman" w:hAnsi="HelveticaNeueLT Pro 55 Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="404040" w:themeColor="text1" w:themeTint="BF"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:fldChar w:fldCharType="begin"/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="HelveticaNeueLT Pro 55 Roman" w:hAnsi="HelveticaNeueLT Pro 55 Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="404040" w:themeColor="text1" w:themeTint="BF"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:instrText>NUMPAGES
+              </w:instrText>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="HelveticaNeueLT Pro 55 Roman" w:hAnsi="HelveticaNeueLT Pro 55 Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="404040" w:themeColor="text1" w:themeTint="BF"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:fldChar w:fldCharType="separate"/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="HelveticaNeueLT Pro 55 Roman" w:hAnsi="HelveticaNeueLT Pro 55 Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="404040" w:themeColor="text1" w:themeTint="BF"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="de-DE"/>
+              </w:rPr>
+              <w:t>2
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="HelveticaNeueLT Pro 55 Roman" w:hAnsi="HelveticaNeueLT Pro 55 Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="404040" w:themeColor="text1" w:themeTint="BF"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:fldChar w:fldCharType="end"/>
+            </w:r>
+          </w:p>
+        </w:sdtContent>
+      </w:sdt>
+    </w:sdtContent>
+  </w:sdt>
+  <w:p w14:paraId="4260AB63" w14:textId="08573746">
+    <w:pPr>
+      <w:pStyle w:val="Footer"/>
+      <w:jc w:val="center"/>
+      <w:rPr>
+        <w:rFonts w:ascii="HelveticaNeueLT Pro 55 Roman" w:hAnsi="HelveticaNeueLT Pro 55 Roman"/>
+        <w:color w:val="575756"/>
+        <w:sz w:val="16"/>
+        <w:szCs w:val="16"/>
+      </w:rPr>
+    </w:pPr>
+  </w:p>
+</w:ftr>

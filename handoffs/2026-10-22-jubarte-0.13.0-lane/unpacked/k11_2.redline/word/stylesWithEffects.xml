@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 wp14">
+  <w:docDefaults>
+    <w:rPrDefault>
+      <w:rPr>
+        <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+        <w:sz w:val="24"/>
+        <w:lang w:val="lt-LT" w:eastAsia="en-US" w:bidi="ar-SA"/>
+      </w:rPr>
+    </w:rPrDefault>
+    <w:pPrDefault/>
+  </w:docDefaults>
+  <w:latentStyles w:defLockedState="0" w:defUIPriority="0" w:defSemiHidden="0" w:defUnhideWhenUsed="0" w:defQFormat="0" w:count="267">
+    <w:lsdException w:name="header" w:uiPriority="99"/>
+  </w:latentStyles>
+  <w:style w:type="paragraph" w:default="1" w:styleId="prastasis">
+    <w:name w:val="Normal"/>
+    <w:qFormat/>
+  </w:style>
+  <w:style w:type="character" w:default="1" w:styleId="Numatytasispastraiposriftas">
+    <w:name w:val="Default Paragraph Font"/>
+    <w:uiPriority w:val="1"/>
+    <w:semiHidden/>
+    <w:unhideWhenUsed/>
+  </w:style>
+  <w:style w:type="table" w:default="1" w:styleId="prastojilentel">
+    <w:name w:val="Normal Table"/>
+    <w:uiPriority w:val="99"/>
+    <w:semiHidden/>
+    <w:unhideWhenUsed/>
+    <w:tblPr>
+      <w:tblInd w:w="0" w:type="dxa"/>
+      <w:tblCellMar>
+        <w:top w:w="0" w:type="dxa"/>
+        <w:left w:w="108" w:type="dxa"/>
+        <w:bottom w:w="0" w:type="dxa"/>
+        <w:right w:w="108" w:type="dxa"/>
+      </w:tblCellMar>
+    </w:tblPr>
+  </w:style>
+  <w:style w:type="numbering" w:default="1" w:styleId="Sraonra">
+    <w:name w:val="No List"/>
+    <w:uiPriority w:val="99"/>
+    <w:semiHidden/>
+    <w:unhideWhenUsed/>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Debesliotekstas">
+    <w:name w:val="Balloon Text"/>
+    <w:basedOn w:val="prastasis"/>
+    <w:link w:val="DebesliotekstasDiagrama"/>
+    <w:rsid w:val="00B67724"/>
+    <w:rPr>
+      <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+      <w:sz w:val="16"/>
+      <w:szCs w:val="16"/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="character" w:customStyle="1" w:styleId="DebesliotekstasDiagrama">
+    <w:name w:val="Debesėlio tekstas Diagrama"/>
+    <w:basedOn w:val="Numatytasispastraiposriftas"/>
+    <w:link w:val="Debesliotekstas"/>
+    <w:rsid w:val="00B67724"/>
+    <w:rPr>
+      <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+      <w:sz w:val="16"/>
+      <w:szCs w:val="16"/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="character" w:styleId="Vietosrezervavimoenklotekstas">
+    <w:name w:val="Placeholder Text"/>
+    <w:basedOn w:val="Numatytasispastraiposriftas"/>
+    <w:rsid w:val="00B67724"/>
+    <w:rPr>
+      <w:color w:val="808080"/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Antrats">
+    <w:name w:val="header"/>
+    <w:basedOn w:val="prastasis"/>
+    <w:link w:val="AntratsDiagrama"/>
+    <w:uiPriority w:val="99"/>
+    <w:rsid w:val="0037120E"/>
+    <w:pPr>
+      <w:tabs>
+        <w:tab w:val="center" w:pos="4819"/>
+        <w:tab w:val="right" w:pos="9638"/>
+      </w:tabs>
+    </w:pPr>
+  </w:style>
+  <w:style w:type="character" w:customStyle="1" w:styleId="AntratsDiagrama">
+    <w:name w:val="Antraštės Diagrama"/>
+    <w:basedOn w:val="Numatytasispastraiposriftas"/>
+    <w:link w:val="Antrats"/>
+    <w:uiPriority w:val="99"/>
+    <w:rsid w:val="0037120E"/>
+  </w:style>
+</w:styles>

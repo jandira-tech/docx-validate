@@ -1,0 +1,1599 @@
+<?xml version="1.0" encoding="utf-8"?>
+<w:document xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Title"/>
+      </w:pPr>
+      <w:r>
+        <w:t>Injury event—place of occurrence, code (ICD-10-AM 8th edn) ANN{.N[N]}
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Subtitle"/>
+      </w:pPr>
+      <w:r>
+        <w:t>Exported from METEOR
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Subtitle"/>
+        <w:spacing w:after="4800"/>
+      </w:pPr>
+      <w:r>
+        <w:t>(AIHW's Metadata Online Registry)
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t>© Australian Institute of Health and Welfare 2024
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t>This product, excluding the AIHW logo, Commonwealth Coat of Arms and any material owned by a third party or protected by a trademark, has been released under a Creative Commons BY 4.0 (CC BY 4.0) licence. Excluded material owned by third parties may include, for example, design and layout, images obtained under licence from third parties and signatures. We have made all reasonable efforts to identify and label material owned by third parties.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t>You may distribute, remix and build on this website&#x2019;s material but must attribute the AIHW as the copyright holder, in line with our attribution policy. The full terms and conditions of this licence are available at https://creativecommons.org/licenses/by/4.0/.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t>Enquiries relating to copyright should be addressed to info@aihw.gov.au.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:t>Enquiries or comments on the METEOR metadata or download should be directed to the METEOR team at meteor@aihw.gov.au.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:r>
+        <w:br w:type="page"/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">Injury event—place of occurrence, code (ICD-10-AM 8th edn) ANN{.N[N]}
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="5000" w:type="pct"/>
+        <w:tblLayout w:type="fixed"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol/>
+        <w:gridCol/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:gridSpan w:val="2"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="200"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="Heading3"/>
+            </w:pPr>
+            <w:r>
+              <w:t xml:space="preserve">Identifying and definitional attributes
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-heading"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Metadata item type:
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:t xml:space="preserve">Data Element
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-heading"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Short name:
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="alternate-name-de"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Place of occurrence of external cause of injury (ICD-10-AM)
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-heading"/>
+              </w:rPr>
+              <w:t xml:space="preserve">METEOR identifier:
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:t xml:space="preserve">514302
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-heading"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Registration status:
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:before="0" w:after="0"/>
+            </w:pPr>
+            <w:hyperlink w:history="true" r:id="Rbcd182f89d96463e">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="Hyperlink"/>
+                  <w:color w:val="244061"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Health
+                </w:t>
+              </w:r>
+            </w:hyperlink>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+                <w:color w:val="244061"/>
+              </w:rPr>
+              <w:t xml:space="preserve">, Superseded 13/11/2014
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-heading"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Definition:
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr/>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content-rich-text"/>
+              </w:rPr>
+              <w:t xml:space="preserve">The place where the external cause of injury, poisoning or adverse effect occurred, as represented by a code.
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-heading"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Data Element Concept:
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:hyperlink w:history="true" r:id="Rd76e77bc207647f8">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="Hyperlink"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Injury event—place of occurrence
+                </w:t>
+              </w:r>
+            </w:hyperlink>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-heading"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Value Domain:
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:hyperlink w:history="true" r:id="R09f8b029a9ec4ad9">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="Hyperlink"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Place of occurrence (ICD-10-AM 8th edn) ANN{.N[N]}
+                </w:t>
+              </w:r>
+            </w:hyperlink>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p/>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="5000" w:type="pct"/>
+        <w:tblLayout w:type="fixed"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol/>
+        <w:gridCol/>
+        <w:gridCol/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:gridSpan w:val="3"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="underlinedHeading2"/>
+              <w:pBdr>
+                <w:bottom w:val="single"/>
+              </w:pBdr>
+            </w:pPr>
+            <w:r>
+              <w:t xml:space="preserve">Value domain attributes
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:gridSpan w:val="3"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="200"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="Heading3"/>
+            </w:pPr>
+            <w:r>
+              <w:t xml:space="preserve">Representational attributes
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-heading"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Classification scheme:
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:gridSpan w:val="2"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:hyperlink w:history="true" r:id="R41a975da5ac34a88">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="Hyperlink"/>
+                </w:rPr>
+                <w:t xml:space="preserve">International Statistical Classification of Diseases and Related Health Problems, Tenth Revision, Australian Modification 8th edition
+                </w:t>
+              </w:r>
+            </w:hyperlink>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-heading"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Representation class:
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3750" w:type="pct"/>
+            <w:gridSpan w:val="2"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Code
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-heading"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Data type:
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3750" w:type="pct"/>
+            <w:gridSpan w:val="2"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+              </w:rPr>
+              <w:t xml:space="preserve">String
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-heading"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Format:
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3750" w:type="pct"/>
+            <w:gridSpan w:val="2"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+              </w:rPr>
+              <w:t xml:space="preserve">ANN{.N[N]}
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-heading"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Maximum character length:
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3750" w:type="pct"/>
+            <w:gridSpan w:val="2"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+              </w:rPr>
+              <w:t xml:space="preserve">6
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p/>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="0" w:type="auto"/>
+      </w:tblPr>
+    </w:tbl>
+    <w:p/>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="5000" w:type="pct"/>
+        <w:tblLayout w:type="fixed"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol/>
+        <w:gridCol/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:gridSpan w:val="2"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="underlinedHeading2"/>
+              <w:pBdr>
+                <w:bottom w:val="single"/>
+              </w:pBdr>
+            </w:pPr>
+            <w:r>
+              <w:t xml:space="preserve">Data element attributes
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:t xml:space="preserve">
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:gridSpan w:val="2"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="200"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="Heading3"/>
+            </w:pPr>
+            <w:r>
+              <w:t xml:space="preserve">Collection and usage attributes
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-heading"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Guide for use:
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:after="160"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content-rich-text"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Admitted patient:
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:after="160"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content-rich-text"/>
+              </w:rPr>
+              <w:t xml:space="preserve">External cause codes in the range V00 to Y89 must be accompanied by a place of occurrence code.
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr/>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content-rich-text"/>
+              </w:rPr>
+              <w:t xml:space="preserve">External cause codes V00 to Y34 must be accompanied by an activity code.
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-heading"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Comments:
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr/>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content-rich-text"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Enables categorisation of injury and poisoning according to factors important for injury control. Necessary for defining and monitoring injury control targets, injury costing and identifying cases for in-depth research.
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:gridSpan w:val="2"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="200"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="Heading3"/>
+            </w:pPr>
+            <w:r>
+              <w:t xml:space="preserve">Source and reference attributes
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-heading"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Origin:
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:after="160"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content-rich-text"/>
+              </w:rPr>
+              <w:t xml:space="preserve">National Centre for Classification in Health
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:after="160"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content-rich-text"/>
+              </w:rPr>
+              <w:t xml:space="preserve">AIHW National Injury Surveillance Unit
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr/>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content-rich-text"/>
+              </w:rPr>
+              <w:t xml:space="preserve">National Data Standards for Injury Surveillance Advisory Group
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:gridSpan w:val="2"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="200"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="Heading3"/>
+            </w:pPr>
+            <w:r>
+              <w:t xml:space="preserve">Relational attributes
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-heading"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Related metadata references:
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3750" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Supersedes
+              </w:t>
+            </w:r>
+            <w:hyperlink w:history="true" r:id="R080934f40f4c41e0">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="Hyperlink"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Injury event—place of occurrence, code (ICD-10-AM 7th edn) ANN{.N[N]}
+                </w:t>
+              </w:r>
+            </w:hyperlink>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="registration-status"/>
+              <w:spacing w:before="0" w:after="0"/>
+            </w:pPr>
+            <w:hyperlink w:history="true" r:id="R726bd7e9527d4065">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="Hyperlink"/>
+                  <w:color w:val="244061"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Health
+                </w:t>
+              </w:r>
+            </w:hyperlink>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+                <w:color w:val="244061"/>
+              </w:rPr>
+              <w:t xml:space="preserve">, Superseded 02/05/2013
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:r>
+              <w:br/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Has been superseded by
+              </w:t>
+            </w:r>
+            <w:hyperlink w:history="true" r:id="Rd38a3b7f43ba4553">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="Hyperlink"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Injury event—place of occurrence, code (ICD-10-AM 9th edn) ANN{.N[N]}
+                </w:t>
+              </w:r>
+            </w:hyperlink>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="registration-status"/>
+              <w:spacing w:before="0" w:after="0"/>
+            </w:pPr>
+            <w:hyperlink w:history="true" r:id="R14954e7b53004137">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="Hyperlink"/>
+                  <w:color w:val="244061"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Health
+                </w:t>
+              </w:r>
+            </w:hyperlink>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+                <w:color w:val="244061"/>
+              </w:rPr>
+              <w:t xml:space="preserve">, Superseded 05/10/2016
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="registration-status"/>
+              <w:spacing w:before="0" w:after="0"/>
+            </w:pPr>
+            <w:hyperlink w:history="true" r:id="R01d3b3a2245849df">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="Hyperlink"/>
+                  <w:color w:val="244061"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Tasmanian Health
+                </w:t>
+              </w:r>
+            </w:hyperlink>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+                <w:color w:val="244061"/>
+              </w:rPr>
+              <w:t xml:space="preserve">, Superseded 10/07/2017
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:r>
+              <w:br/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1250" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+            <w:tcMar>
+              <w:top w:w="100"/>
+              <w:bottom w:w="100"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-heading"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Implementation in Data Set Specifications:
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcBorders>
+              <w:top w:val="none" w:color="000000" w:sz="0"/>
+              <w:left w:val="none" w:color="000000" w:sz="0"/>
+              <w:bottom w:val="none" w:color="000000" w:sz="0"/>
+              <w:right w:val="none" w:color="000000" w:sz="0"/>
+            </w:tcBorders>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:hyperlink w:history="true" r:id="Rc65aa908f59644f9">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="Hyperlink"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Admitted patient care NMDS 2013-14
+                </w:t>
+              </w:r>
+            </w:hyperlink>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="registration-status"/>
+              <w:spacing w:before="0" w:after="0"/>
+            </w:pPr>
+            <w:hyperlink w:history="true" r:id="R1446a04920f545c3">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="Hyperlink"/>
+                  <w:color w:val="244061"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Health
+                </w:t>
+              </w:r>
+            </w:hyperlink>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+                <w:color w:val="244061"/>
+              </w:rPr>
+              <w:t xml:space="preserve">, Superseded 11/04/2014
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+                <w:b/>
+                <w:i/>
+              </w:rPr>
+              <w:t xml:space="preserve">Implementation start date:
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+              </w:rPr>
+              <w:t xml:space="preserve">01/07/2013
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:br/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+                <w:b/>
+                <w:i/>
+              </w:rPr>
+              <w:t xml:space="preserve">Implementation end date:
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+              </w:rPr>
+              <w:t xml:space="preserve">30/06/2014
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:br/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+                <w:b/>
+                <w:i/>
+              </w:rPr>
+              <w:t xml:space="preserve">DSS specific information:
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+              </w:rPr>
+              <w:t xml:space="preserve">To be used with ICD-10-AM external cause codes.
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:br/>
+            </w:r>
+            <w:r>
+              <w:br/>
+            </w:r>
+            <w:hyperlink w:history="true" r:id="R52252077f907434a">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="Hyperlink"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Admitted patient care NMDS 2014-15
+                </w:t>
+              </w:r>
+            </w:hyperlink>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="registration-status"/>
+              <w:spacing w:before="0" w:after="0"/>
+            </w:pPr>
+            <w:hyperlink w:history="true" r:id="Radda9bed1c05417f">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="Hyperlink"/>
+                  <w:color w:val="244061"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Health
+                </w:t>
+              </w:r>
+            </w:hyperlink>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+                <w:color w:val="244061"/>
+              </w:rPr>
+              <w:t xml:space="preserve">, Superseded 13/11/2014
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+                <w:b/>
+                <w:i/>
+              </w:rPr>
+              <w:t xml:space="preserve">Implementation start date:
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+              </w:rPr>
+              <w:t xml:space="preserve">01/07/2014
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:br/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+                <w:b/>
+                <w:i/>
+              </w:rPr>
+              <w:t xml:space="preserve">Implementation end date:
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+              </w:rPr>
+              <w:t xml:space="preserve">30/06/2015
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:br/>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+                <w:b/>
+                <w:i/>
+              </w:rPr>
+              <w:t xml:space="preserve">DSS specific information:
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+              </w:rPr>
+              <w:t xml:space="preserve">To be used with ICD-10-AM external cause codes.
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:br/>
+            </w:r>
+            <w:r>
+              <w:br/>
+            </w:r>
+            <w:hyperlink w:history="true" r:id="Rb04aa8cb25e441ff">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="Hyperlink"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Injury surveillance NBPDS 2013-
+                </w:t>
+              </w:r>
+            </w:hyperlink>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="registration-status"/>
+              <w:spacing w:before="0" w:after="0"/>
+            </w:pPr>
+            <w:hyperlink w:history="true" r:id="Rfb3a75741e4d4fed">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="Hyperlink"/>
+                  <w:color w:val="244061"/>
+                </w:rPr>
+                <w:t xml:space="preserve">Health
+                </w:t>
+              </w:r>
+            </w:hyperlink>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+                <w:color w:val="244061"/>
+              </w:rPr>
+              <w:t xml:space="preserve">, Standard 02/05/2013
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+                <w:b/>
+                <w:i/>
+              </w:rPr>
+              <w:t xml:space="preserve">Implementation start date:
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rStyle w:val="row-content"/>
+              </w:rPr>
+              <w:t xml:space="preserve">01/07/2013
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:br/>
+            </w:r>
+            <w:r>
+              <w:br/>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p/>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="0" w:type="auto"/>
+      </w:tblPr>
+    </w:tbl>
+    <w:p>
+      <w:r>
+        <w:br/>
+      </w:r>
+    </w:p>
+    <w:sectPr>
+      <w:footerReference xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" w:type="default" r:id="R278b617a59164699"/>
+      <w:pgMar w:top="1060" w:right="1000" w:bottom="1060" w:left="1000" w:footer="300"/>
+      <w:titlePg/>
+    </w:sectPr>
+  </w:body>
+</w:document>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="gemHypRid1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.ada.gov/" TargetMode="External"/>
+  <Relationship Id="gemHypRid2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://global.ihs.com/doc_detail.cfm?&amp;rid=BSD&amp;item_s_key=00006864&amp;item_key_date=901231&amp;input_doc_number=ICC&amp;input_doc_title=" TargetMode="External"/>
+  <Relationship Id="gemHypRid3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://americanspecialties.com/product_category/showertub-accessories/" TargetMode="External"/>
+  <Relationship Id="gemHypRid4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.asigroup.us/" TargetMode="External"/>
+  <Relationship Id="gemHypRid5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://americanspecialties.com/representatives/" TargetMode="External"/>
+  <Relationship Id="gemHypRid6" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://americanspecialties.com/continuing-education/" TargetMode="External"/>
+  <Relationship Id="gemHypRid7" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.americanspecialties.com/" TargetMode="External"/>
+  <Relationship Id="gemHfRid7" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml"/>
+  <Relationship Id="gemHfRid8" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/>
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+  <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/>
+  <Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml"/>
+</Relationships>

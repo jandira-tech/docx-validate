@@ -1,0 +1,3324 @@
+<w:document xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:pt14="http://powertools.codeplex.com/2011" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" ve:Ignorable="pt14 w14 w15 w16cid w16se wp14">
+  <w:body>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="1" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="2" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>ACB-kædemotor - frit konfigurerbar - CDC-1-ACB
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>24 V DC / Tilpasset efter kundeønsker
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Elektrisk motor til integreret, usynlig montering i vinduesprofilen og til eftermontering.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Praktisk til motoriseret åbning og lukning af vinduer og lemme.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Kan bruges til Komfortopluk, røgudluftning og brandventilation iht. DS/EN12101-2
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Kan kombineres med alle D+H låsemotorer.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Egenskaber:
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Integreret, frit parametrerbar slukningselektronik for at forhindre en defekt i tilfælde af overbelastning af vindue og motor.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Integreret grænseflade ACB (Advanced Communication Bus) med åben Modbus RTU-protokol.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Direkte integration af motoren gennem åben buskommunikation via ACB (Advanced Communication Bus), f.eks. i CTS (bygningsautomation).
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Lav driftsstøj takket være innovativ, akustisk afkobling af drevkomponenterne.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Højpræcisionsmotor og synkron elektronik til synkron drift af op til 8 motorer.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Korrosionsbeskyttet, hærdet, stålkæde, vedligeholdelsesfri takket være livstidssmøring.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Highspeed-funktion (-HS) til hurtigt opluk af vinduer i tilfælde af brand (ABV).
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Justerbart, flertrins klembeskyttelsessystem (løbetid, kraft, åbning).
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Automatisk aflastning af tætningsbåndet efter lukning beskytter tætningslister.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Lavt kabelforbrug med mulighed for gennemsløjfning af op til 3 motorer.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Enkel installation takket være stik med beskyttelse mod omvendt polaritet.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Tilslutning valgfrit mulig fra venstre eller højre (forsyning inkl. bussignaler).
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Kan parametriseres individuelt via D+H SCS-software.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Funktionsbeskrivelse ACB
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Sikker ABV-central kommunikation gennem krypteret dataoverførsel mellem centraler og motorer fra D+H Mechatronic AG.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Direkte styring af motoren via ACB mulig.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Som standard er motoren indstillet med drift med pol-skift fra fabrikken.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Præcis styring af position og feedback, herunder angivelser af den faktiske position.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Åbne- og lukke meddelelser kommer direkte fra motoren via ACB-kommunikation.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Motorens generelle status, som f.eks. samlet kørestrækning, antal aktiveringer, diagnostik og nødfunktion, kan evalueres.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Udvidelsesfunktioner:
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Option "SBD/SBU"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">- Korrosionsbeskyttet, hærdet stålkæde i sidebue-design til lave karmhøjder
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Option "ZB"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t>- Vindebroanvendelse til sidemontering af motoren på vinduet
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Option "CP"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t>- Brugertilpasset motorfunktionsprogrammering såsom løbetid, kraft og åbning
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Option "HP"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t>- Åbningsprogrammering
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Option "VP"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t>- Signal til forbindelse med D+H BSY+ låsemotorer
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Option "KM"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t>- Kraftig motor-gear-enhed med øget kraft (op til 400 N) til at åbne og lukke tunge parallelsprossede og hæve-/sænkevindue/tophængte vinduer.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Option "LS"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t>- Lavhastigheds-programmering i LUKKET-retning til 5 mm/s
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Option "SA"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">- "Afbryder ÅBEN" endepositionsmeddelelse
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Option "SZ"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">- "Afbryder LUKKET" endepositionsmeddelelse
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Option "SA-SZ"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">- "Afbryder ÅBEN" og "Afbryder LUKKET" endepositionsmeddelelse
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Option "AS2"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">- Akustisk signal i overensstemmelse med beskyttelsesklasse 2 i henhold til MaschRL/42/EG
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Option "AS3"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">- Akustisk signal i overensstemmelse med beskyttelsesklasse 3 i henhold til MaschRL/42/EG
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Option "SKS"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">- Mulighed for direkte tilslutning af en klembeskyttelsesliste eller en optisk sensor til overvågning af lukkekanten på motoren
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Option "specialfarve"
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t>- lakering til perfekt integration i facadens udseende i henhold til RAL, DB, NCS
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Tekniske data:
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Forsyning: 24 V DC / ±15 %
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Strømforbrug:
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:color w:val="E10025"/>
+          </w:rPr>
+          <w:t>0,6 A (til 350 mm åbning)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:color w:val="0092D4"/>
+          </w:rPr>
+          <w:t>0,8 A (til 500 + 600 mm åbning)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:color w:val="0092D4"/>
+          </w:rPr>
+          <w:t>1 A (til 700 mm åbning)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:color w:val="6DB755"/>
+          </w:rPr>
+          <w:t>1 A (til 800 - 1300 mm åbning)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Indkoblingstid: 30 % (TIL: 3 Min. / FRA: 7 Min.)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Udkobling: Integreret elektronisk belastningsafbryder
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Konfiguration: Main eller Sub
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Design: Højre eller venstre
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Trykkraft: 250 N
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Trækkraft: 250 N
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Nominel låsekraft **: 1500 N
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Levetid: 20000 dobbeltoperationer *
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Åbning:300 mm - 1300 mm
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Hastighed ÅBNE: 6,7 mm/s
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Hastighed ÅBNE - ABV:
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:color w:val="E10025"/>
+          </w:rPr>
+          <w:t>9,4 mm/s (til 350 mm åbning)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:color w:val="0092D4"/>
+          </w:rPr>
+          <w:t>13,6 mm/s (til 500 + 700 mm åbning)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:color w:val="6DB755"/>
+          </w:rPr>
+          <w:t>15 mm/s (til 800 - 1300 mm åbning)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Hastighed LUKKE:
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:color w:val="E10025"/>
+          </w:rPr>
+          <w:t>5 mm/s (til 350 mm åbning)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:color w:val="0092D4"/>
+          </w:rPr>
+          <w:t>6,7 mm/s (til 500 + 700 mm åbning)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:color w:val="6DB755"/>
+          </w:rPr>
+          <w:t>6,7 mm/s (til 800 - 1300 mm åbning)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Beskyttelsesklasse: IP 32
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Måling af lydtryk (støjemission): LpA ≤ 35 dB(A)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Temperaturområde: -15 °C (-5 °C ***) ... +75 °C
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Temperaturstandsikkerhed: B300 (30 min / 300 °C)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Hus: Aluminium
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Farve: Specialfarve i henhold til RAL/DB/NCS
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Tilslutning: Silikonekabel
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>B x H x D: 405-885 (åbningsafhængig) x 30 x 39 mm
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>* Ved lodret anvendelse skal D+H-forhandleren kontaktes!
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>** Afhængig af fastgørelsen, *** iht. VdS 2580
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Leverance:
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Motor, silikoneforbindelseskabel med systemstik, brugsanvisning
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Brand: D+H
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Type: CDC-1-ACB
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Art.nr.:
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:t xml:space="preserve">26.100.00
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Mængde: .......... stk Pris: ................. DKK Total: ................. DKK
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+            <w:i w:val="1"/>
+            <w:iCs w:val="1"/>
+          </w:rPr>
+          <w:t>Gør din lokale D+H-partner tilgængelig for designvarianter.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>https://www.dh-partner.com/dk/da/service/projekterings-hjaelp
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b w:val="1"/>
+            <w:bCs w:val="1"/>
+          </w:rPr>
+          <w:t>Vigtige noter:
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Denne produktbeskrivelse udgør ikke et udbud. Ansvaret for overensstemmelse med udbudsretlige krav påhviler den udbudsgivende projektant eller arkitekt.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Montering og ibrugtagning skal ske i henhold til producentens anvisninger.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:t>Med forbehold for tekniske ændringer.
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:del w:author="Jubarte" w:id="3" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:lang w:val="en-US" w:eastAsia="en-US"/>
+          </w:rPr>
+          <w:drawing>
+            <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251660288" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1">
+              <wp:simplePos x="0" y="0"/>
+              <wp:positionH relativeFrom="column">
+                <wp:posOffset>5142230
+                </wp:posOffset>
+              </wp:positionH>
+              <wp:positionV relativeFrom="paragraph">
+                <wp:posOffset>3810
+                </wp:posOffset>
+              </wp:positionV>
+              <wp:extent cx="1179195" cy="1123950"/>
+              <wp:effectExtent l="19050" t="0" r="1905" b="0"/>
+              <wp:wrapTight wrapText="bothSides">
+                <wp:wrapPolygon edited="0">
+                  <wp:start x="-349" y="0"/>
+                  <wp:lineTo x="-349" y="21234"/>
+                  <wp:lineTo x="21635" y="21234"/>
+                  <wp:lineTo x="21635" y="14278"/>
+                  <wp:lineTo x="20937" y="11715"/>
+                  <wp:lineTo x="21635" y="8786"/>
+                  <wp:lineTo x="21635" y="0"/>
+                  <wp:lineTo x="-349" y="0"/>
+                </wp:wrapPolygon>
+              </wp:wrapTight>
+              <wp:docPr id="1" name="Imagen 2" descr="https://upload.wikimedia.org/wikipedia/commons/f/fd/Logo_FCAyF.png"/>
+              <wp:cNvGraphicFramePr>
+                <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+              </wp:cNvGraphicFramePr>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                    <pic:nvPicPr>
+                      <pic:cNvPr id="0" name="Picture 1" descr="https://upload.wikimedia.org/wikipedia/commons/f/fd/Logo_FCAyF.png"/>
+                      <pic:cNvPicPr>
+                        <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                      </pic:cNvPicPr>
+                    </pic:nvPicPr>
+                    <pic:blipFill>
+                      <a:blip r:embed="rId7" cstate="print">
+                        <a:extLst>
+                          <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                            <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                          </a:ext>
+                        </a:extLst>
+                      </a:blip>
+                      <a:srcRect/>
+                      <a:stretch>
+                        <a:fillRect/>
+                      </a:stretch>
+                    </pic:blipFill>
+                    <pic:spPr bwMode="auto">
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="1179195" cy="1123950"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                      <a:noFill/>
+                      <a:ln>
+                        <a:noFill/>
+                      </a:ln>
+                    </pic:spPr>
+                  </pic:pic>
+                </a:graphicData>
+              </a:graphic>
+            </wp:anchor>
+          </w:drawing>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:lang w:val="en-US" w:eastAsia="en-US"/>
+          </w:rPr>
+          <w:drawing>
+            <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251659264" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1">
+              <wp:simplePos x="0" y="0"/>
+              <wp:positionH relativeFrom="column">
+                <wp:posOffset>0
+                </wp:posOffset>
+              </wp:positionH>
+              <wp:positionV relativeFrom="paragraph">
+                <wp:posOffset>3810
+                </wp:posOffset>
+              </wp:positionV>
+              <wp:extent cx="1079500" cy="1123950"/>
+              <wp:effectExtent l="19050" t="0" r="6350" b="0"/>
+              <wp:wrapThrough wrapText="bothSides">
+                <wp:wrapPolygon edited="0">
+                  <wp:start x="-381" y="0"/>
+                  <wp:lineTo x="-381" y="21234"/>
+                  <wp:lineTo x="21727" y="21234"/>
+                  <wp:lineTo x="21727" y="0"/>
+                  <wp:lineTo x="-381" y="0"/>
+                </wp:wrapPolygon>
+              </wp:wrapThrough>
+              <wp:docPr id="2" name="Picture 3"/>
+              <wp:cNvGraphicFramePr>
+                <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+              </wp:cNvGraphicFramePr>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                    <pic:nvPicPr>
+                      <pic:cNvPr id="0" name="Picture 3"/>
+                      <pic:cNvPicPr>
+                        <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                      </pic:cNvPicPr>
+                    </pic:nvPicPr>
+                    <pic:blipFill>
+                      <a:blip r:embed="rId8" cstate="print">
+                        <a:extLst>
+                          <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                            <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                          </a:ext>
+                        </a:extLst>
+                      </a:blip>
+                      <a:srcRect/>
+                      <a:stretch>
+                        <a:fillRect/>
+                      </a:stretch>
+                    </pic:blipFill>
+                    <pic:spPr bwMode="auto">
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="1079500" cy="1123950"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                      <a:noFill/>
+                    </pic:spPr>
+                  </pic:pic>
+                </a:graphicData>
+              </a:graphic>
+            </wp:anchor>
+          </w:drawing>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="4" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="5" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="6" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="7" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>UNIVERSIDAD NACIONAL DE LA PLATA
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="8" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="9" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>FACULTAD DE CIENCIAS AGRARIAS Y FORESTALES
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="10" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="11" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>CURSO MANEJO Y CONSERVACIÓN DE SUELOS
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="12" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="13" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="14" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="15" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="16" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="17" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>MATERIAL PRÁCTICO
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="18" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="19" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText xml:space="preserve">INGENIERÍA
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>FORESTAL
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="20" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="21" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="22" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="23" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="24" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="25" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="26" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText xml:space="preserve">UNIDAD DIDÁCTICA
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>D9 (
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>2 de 2)
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="27" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+          <w:i/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="28" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+            <w:i/>
+          </w:rPr>
+          <w:delText>Abonos Orgánicos
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="29" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="30" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="31" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="32" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="33" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Carátula"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="34" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="35" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>20
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>20
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="36" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="37" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="38" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="39" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+        <w:sectPr>
+          <w:headerReference w:type="even" r:id="rId9"/>
+          <w:headerReference w:type="default" r:id="rId10"/>
+          <w:footerReference w:type="even" r:id="rId11"/>
+          <w:footerReference w:type="default" r:id="rId12"/>
+          <w:headerReference w:type="first" r:id="rId13"/>
+          <w:footerReference w:type="first" r:id="rId14"/>
+          <w:pgSz w:w="11907" w:h="16840" w:code="9"/>
+          <w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="709" w:footer="709" w:gutter="0"/>
+          <w:cols w:space="708"/>
+          <w:docGrid w:linePitch="360"/>
+        </w:sectPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="40" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="41" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>Un establecimiento hortícola bajo cubierta en la localidad de Los Hornos, Partido de La Plata, posee suelos de tipo Argiudol vértico (Serie Arturo Seguí), cuyos datos se presentan a continuación:
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Figuras"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="42" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="43" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="44" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>Tabla 1
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:delText>. Descripcíon de la Serie Arturo Seguí.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="TablaImagenes"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="45" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="46" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+            <w:lang w:val="en-US" w:eastAsia="en-US"/>
+          </w:rPr>
+          <w:drawing>
+            <wp:inline distT="0" distB="0" distL="0" distR="0">
+              <wp:extent cx="5966321" cy="2857500"/>
+              <wp:effectExtent l="19050" t="0" r="0" b="0"/>
+              <wp:docPr id="3" name="Imagen 7"/>
+              <wp:cNvGraphicFramePr>
+                <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+              </wp:cNvGraphicFramePr>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                    <pic:nvPicPr>
+                      <pic:cNvPr id="0" name="Picture 7"/>
+                      <pic:cNvPicPr>
+                        <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                      </pic:cNvPicPr>
+                    </pic:nvPicPr>
+                    <pic:blipFill>
+                      <a:blip r:embed="rId15" cstate="print">
+                        <a:lum bright="-10000"/>
+                      </a:blip>
+                      <a:srcRect b="2017"/>
+                      <a:stretch>
+                        <a:fillRect/>
+                      </a:stretch>
+                    </pic:blipFill>
+                    <pic:spPr bwMode="auto">
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="5970350" cy="2859430"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                      <a:noFill/>
+                      <a:ln w="9525">
+                        <a:noFill/>
+                        <a:miter lim="800000"/>
+                        <a:headEnd/>
+                        <a:tailEnd/>
+                      </a:ln>
+                    </pic:spPr>
+                  </pic:pic>
+                </a:graphicData>
+              </a:graphic>
+            </wp:inline>
+          </w:drawing>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+            <w:lang w:val="en-US" w:eastAsia="en-US"/>
+          </w:rPr>
+          <w:drawing>
+            <wp:inline distT="0" distB="0" distL="0" distR="0">
+              <wp:extent cx="5612130" cy="514350"/>
+              <wp:effectExtent l="19050" t="0" r="7620" b="0"/>
+              <wp:docPr id="4" name="Imagen 10"/>
+              <wp:cNvGraphicFramePr>
+                <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+              </wp:cNvGraphicFramePr>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                    <pic:nvPicPr>
+                      <pic:cNvPr id="0" name="Picture 10"/>
+                      <pic:cNvPicPr>
+                        <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                      </pic:cNvPicPr>
+                    </pic:nvPicPr>
+                    <pic:blipFill>
+                      <a:blip r:embed="rId16" cstate="print">
+                        <a:lum bright="-10000"/>
+                      </a:blip>
+                      <a:srcRect t="40000"/>
+                      <a:stretch>
+                        <a:fillRect/>
+                      </a:stretch>
+                    </pic:blipFill>
+                    <pic:spPr bwMode="auto">
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="5612130" cy="514350"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                      <a:noFill/>
+                      <a:ln w="9525">
+                        <a:noFill/>
+                        <a:miter lim="800000"/>
+                        <a:headEnd/>
+                        <a:tailEnd/>
+                      </a:ln>
+                    </pic:spPr>
+                  </pic:pic>
+                </a:graphicData>
+              </a:graphic>
+            </wp:inline>
+          </w:drawing>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Figuras"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="47" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="TablaImagenes"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="48" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="49" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:noProof/>
+            <w:lang w:val="en-US" w:eastAsia="en-US"/>
+          </w:rPr>
+          <w:drawing>
+            <wp:inline distT="0" distB="0" distL="0" distR="0">
+              <wp:extent cx="5876925" cy="4508367"/>
+              <wp:effectExtent l="19050" t="0" r="9525" b="0"/>
+              <wp:docPr id="5" name="Imagen 4"/>
+              <wp:cNvGraphicFramePr>
+                <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+              </wp:cNvGraphicFramePr>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                    <pic:nvPicPr>
+                      <pic:cNvPr id="0" name="Picture 4"/>
+                      <pic:cNvPicPr>
+                        <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                      </pic:cNvPicPr>
+                    </pic:nvPicPr>
+                    <pic:blipFill>
+                      <a:blip r:embed="rId17" cstate="print">
+                        <a:lum bright="-10000"/>
+                      </a:blip>
+                      <a:srcRect/>
+                      <a:stretch>
+                        <a:fillRect/>
+                      </a:stretch>
+                    </pic:blipFill>
+                    <pic:spPr bwMode="auto">
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="5876925" cy="4508367"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                      <a:noFill/>
+                      <a:ln w="9525">
+                        <a:noFill/>
+                        <a:miter lim="800000"/>
+                        <a:headEnd/>
+                        <a:tailEnd/>
+                      </a:ln>
+                    </pic:spPr>
+                  </pic:pic>
+                </a:graphicData>
+              </a:graphic>
+            </wp:inline>
+          </w:drawing>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="50" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="51" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="52" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>Dentro del establecimiento se muestreó un suelo virgen y un invernáculo con 14 años de uso intensivo (
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>Tabla 2
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:delText>).
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Figuras"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="53" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="54" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="55" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>Tabla 2.
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:delText xml:space="preserve">Datos analíticos del suelo virgen y bajo invernáculo con 14 años de producción.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblW w:w="4280" w:type="pct"/>
+        <w:tblLook w:val="01E0" w:firstRow="1" w:lastRow="1" w:firstColumn="1" w:lastColumn="1" w:noHBand="0" w:noVBand="0"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="3066"/>
+        <w:gridCol w:w="1011"/>
+        <w:gridCol w:w="1178"/>
+        <w:gridCol w:w="779"/>
+        <w:gridCol w:w="825"/>
+        <w:gridCol w:w="725"/>
+        <w:gridCol w:w="852"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="56" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1817" w:type="pct"/>
+            <w:vMerge w:val="restart"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="57" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="58" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b/>
+                </w:rPr>
+                <w:delText>SUELO
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="599" w:type="pct"/>
+            <w:vMerge w:val="restart"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="59" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="60" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b/>
+                  <w:bCs/>
+                </w:rPr>
+                <w:delText>pH
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="61" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="62" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b/>
+                  <w:bCs/>
+                </w:rPr>
+                <w:delText>(1/2.5)
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="698" w:type="pct"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="63" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="64" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b/>
+                  <w:bCs/>
+                </w:rPr>
+                <w:delText>CE
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="462" w:type="pct"/>
+            <w:vMerge w:val="restart"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="65" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="66" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b/>
+                </w:rPr>
+                <w:delText>RAS
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="489" w:type="pct"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="67" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="68" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b/>
+                </w:rPr>
+                <w:delText>COT
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="430" w:type="pct"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="69" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="70" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b/>
+                </w:rPr>
+                <w:delText xml:space="preserve">Cp
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="505" w:type="pct"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="71" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="72" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b/>
+                </w:rPr>
+                <w:delText>DMP
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="73" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1817" w:type="pct"/>
+            <w:vMerge/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="74" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="599" w:type="pct"/>
+            <w:vMerge/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="75" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="698" w:type="pct"/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="76" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="77" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b/>
+                  <w:bCs/>
+                </w:rPr>
+                <w:delText>dS m
+                </w:delText>
+              </w:r>
+              <w:r>
+                <w:rPr>
+                  <w:b/>
+                  <w:bCs/>
+                  <w:vertAlign w:val="superscript"/>
+                </w:rPr>
+                <w:delText>-1
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="462" w:type="pct"/>
+            <w:vMerge/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="78" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="489" w:type="pct"/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="79" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="80" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b/>
+                </w:rPr>
+                <w:delText>%
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="430" w:type="pct"/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="81" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="82" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b/>
+                </w:rPr>
+                <w:delText>%
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="505" w:type="pct"/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="83" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="84" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b/>
+                </w:rPr>
+                <w:delText>mm
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="85" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1817" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="86" w:date="1970-01-01T00:00:00Z"/>
+                <w:bCs/>
+                <w:i/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="87" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:bCs/>
+                  <w:i/>
+                </w:rPr>
+                <w:delText>Suelos virgen
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="599" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="88" w:date="1970-01-01T00:00:00Z"/>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="89" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:bCs/>
+                </w:rPr>
+                <w:delText>6,2
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="698" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="90" w:date="1970-01-01T00:00:00Z"/>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="91" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:bCs/>
+                </w:rPr>
+                <w:delText>0,6
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="462" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="92" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="93" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>0,3
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="489" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="94" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="95" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>3,7
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="430" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="96" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="97" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>0,9
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="505" w:type="pct"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="98" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="99" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>2,16
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="100" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1817" w:type="pct"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="101" w:date="1970-01-01T00:00:00Z"/>
+                <w:bCs/>
+                <w:i/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="102" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:bCs/>
+                  <w:i/>
+                </w:rPr>
+                <w:delText>Invernáculo 14 años
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="599" w:type="pct"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="103" w:date="1970-01-01T00:00:00Z"/>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="104" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:bCs/>
+                </w:rPr>
+                <w:delText>7,8
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="698" w:type="pct"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="105" w:date="1970-01-01T00:00:00Z"/>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="106" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:bCs/>
+                </w:rPr>
+                <w:delText>11,8
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="462" w:type="pct"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="107" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="108" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>12
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="489" w:type="pct"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="109" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="110" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>1,8
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="430" w:type="pct"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="111" w:date="1970-01-01T00:00:00Z"/>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="112" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:bCs/>
+                </w:rPr>
+                <w:delText>0,22
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="505" w:type="pct"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="113" w:date="1970-01-01T00:00:00Z"/>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="114" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:bCs/>
+                </w:rPr>
+                <w:delText>1,13
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="115" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>
+          <w:i/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Figuras"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="116" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="117" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>Referencias: CE (conductividad eléctrica), RAS (relación de adsorción de sodio), COT (carbono total),
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:delText xml:space="preserve">Cp (carbono particulado), DMP (diámetro medio ponderado).
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="118" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="119" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="120" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="121" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>Se cuenta con la posibilidad de utilizar las siguientes enmiendas (
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>Tabla 3
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:delText>).
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="122" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="123" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>Tabla 3
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:delText>. Características generales de los abonos orgánicos.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:jc w:val="center"/>
+        <w:tblLook w:val="01E0" w:firstRow="1" w:lastRow="1" w:firstColumn="1" w:lastColumn="1" w:noHBand="0" w:noVBand="0"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="3409"/>
+        <w:gridCol w:w="817"/>
+        <w:gridCol w:w="593"/>
+        <w:gridCol w:w="1337"/>
+        <w:gridCol w:w="1391"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr>
+          <w:jc w:val="center"/>
+          <w:del w:author="Jubarte" w:id="124" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3409" w:type="dxa"/>
+            <w:vMerge w:val="restart"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="125" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="126" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b/>
+                </w:rPr>
+                <w:delText>Abono orgánico
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="817" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="127" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="128" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b/>
+                </w:rPr>
+                <w:delText>MO
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="593" w:type="dxa"/>
+            <w:vMerge w:val="restart"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="129" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="130" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b/>
+                </w:rPr>
+                <w:delText>pH
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1337" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="131" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="132" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b/>
+                </w:rPr>
+                <w:delText>Na total
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1391" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="133" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="134" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b/>
+                </w:rPr>
+                <w:delText>Humedad
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:jc w:val="center"/>
+          <w:del w:author="Jubarte" w:id="135" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3409" w:type="dxa"/>
+            <w:vMerge/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="136" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="817" w:type="dxa"/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="137" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="138" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>%
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="593" w:type="dxa"/>
+            <w:vMerge/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="139" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1337" w:type="dxa"/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="140" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="141" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>%
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1391" w:type="dxa"/>
+            <w:tcBorders>
+              <w:bottom w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="142" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="143" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>%
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:jc w:val="center"/>
+          <w:del w:author="Jubarte" w:id="144" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3409" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+              <w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="145" w:date="1970-01-01T00:00:00Z"/>
+                <w:i/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="146" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:i/>
+                </w:rPr>
+                <w:delText xml:space="preserve">Cáscara de arroz
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="817" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+              <w:left w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="147" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="148" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>79,1
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="593" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="149" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="150" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>5,9
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1337" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="151" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="152" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>8,8 x 10
+                </w:delText>
+              </w:r>
+              <w:r>
+                <w:rPr>
+                  <w:vertAlign w:val="superscript"/>
+                </w:rPr>
+                <w:delText>-4
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1391" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="double" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="153" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="154" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>6,5
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:jc w:val="center"/>
+          <w:del w:author="Jubarte" w:id="155" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3409" w:type="dxa"/>
+            <w:tcBorders>
+              <w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="156" w:date="1970-01-01T00:00:00Z"/>
+                <w:i/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="157" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:i/>
+                </w:rPr>
+                <w:delText>Compost comercial
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="817" w:type="dxa"/>
+            <w:tcBorders>
+              <w:left w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="158" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="159" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>29,2
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="593" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="160" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="161" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>4,4
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1337" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="162" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="163" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>0,1
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1391" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="164" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="165" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>5,0
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:jc w:val="center"/>
+          <w:del w:author="Jubarte" w:id="166" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3409" w:type="dxa"/>
+            <w:tcBorders>
+              <w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="167" w:date="1970-01-01T00:00:00Z"/>
+                <w:i/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="168" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:i/>
+                </w:rPr>
+                <w:delText>Cama de pollo estacionada a la intemperie por 6 meses
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="817" w:type="dxa"/>
+            <w:tcBorders>
+              <w:left w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="169" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="170" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>51,4
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="593" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="171" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="172" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>8,4
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1337" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="173" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="174" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>0,42
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1391" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="TablaImagenes"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="175" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="176" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:delText>6,7
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Figuras"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="177" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="178" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>Referencia: MO (materia orgánica)
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="179" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="180" w:date="1970-01-01T00:00:00Z"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="181" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b/>
+          </w:rPr>
+          <w:delText>Responda:
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:ind w:firstLine="0"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="182" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="183" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>1. ¿Cuáles son las cualidades positivas y negativas de la Serie Arturo Seguí para este tipo de producción?
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:ind w:firstLine="0"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="184" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="185" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>2. ¿Qué tipo de evolución ha tenido el suelo tras 14 años de uso y cuáles cree que son las razones
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:ind w:firstLine="0"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="186" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="187" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>3.- Analice la conveniencia del empleo de un abono orgánico.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:ind w:firstLine="0"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="188" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="189" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>4.- De acuerdo a los abonos disponibles, cuál le parece el más conveniente.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:ind w:firstLine="0"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="190" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="191" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>5. ¿Qué otro aspecto debería solucionarse?
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:ind w:firstLine="0"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="192" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="193" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>6. De acuerdo a los resultados obtenidos por Andreau et al (2012) (Figura 1), ¿qué dosis emplearía del abono seleccionado y con qué frecuencia lo aplicaría?
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:ind w:firstLine="0"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="194" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="195" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>7. ¿Podría suscitarse algún aspecto negativo con su empleo?
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:ind w:firstLine="0"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="196" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="197" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>8.- Si el productor estuviese dispuesto a elaborar su propio compost y cuenta con cáscara de frutas de una pequeña industria vecina, aserrín y gallinaza de un criadero de pollos, ¿en qué proporción convendría que mezclara los productos para la elaboración del compost y qué recaudos debiera tener por el tipo de material empleado?
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:ind w:firstLine="0"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="198" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="199" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:delText>9.- Si considera que algún material para hacer el compost es riesgoso, ¿cómo podría sustituirlo?
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p/>
+    <w:sectPr>
+      <w:headerReference w:type="default" r:id="rId18"/>
+      <w:pgSz w:orient="portrait" w:w="11906" w:h="16838"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+      <w:pgNumType w:fmt="numberInDash" w:start="1"/>
+      <w:cols w:num="1" w:space="720"/>
+      <w:docGrid w:linePitch="0" w:type="default"/>
+      <w:sectPrChange w:author="Jubarte" w:date="1970-01-01T00:00:00Z" w:id="200">
+        <w:sectPr>
+          <w:pgSz w:w="11907" w:h="16840" w:code="9"/>
+          <w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="709" w:footer="709" w:gutter="0"/>
+          <w:cols w:space="708"/>
+          <w:docGrid w:linePitch="360"/>
+        </w:sectPr>
+      </w:sectPrChange>
+    </w:sectPr>
+  </w:body>
+</w:document>

@@ -1,0 +1,82 @@
+<w:hdr xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 wp14 w15">
+  <w:tbl>
+    <w:tblPr>
+      <w:tblW w:w="5000" w:type="pct"/>
+      <w:jc w:val="left"/>
+    </w:tblPr>
+    <w:tr>
+      <w:trPr>
+        <w:ins w:author="Jubarte" w:date="1970-01-01T00:00:00Z" w:id="1"/>
+      </w:trPr>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="1650" w:type="pct"/>
+          <w:tcBorders>
+            <w:top w:val="single" w:sz="6" w:color="DDDDDD"/>
+            <w:left w:val="single" w:sz="6" w:color="DDDDDD"/>
+            <w:bottom w:val="single" w:sz="6" w:color="DDDDDD"/>
+            <w:right w:val="single" w:sz="6" w:color="DDDDDD"/>
+          </w:tcBorders>
+          <w:vAlign w:val="center"/>
+        </w:tcPr>
+        <w:p>
+          <w:pPr>
+            <w:spacing w:before="0" w:after="0"/>
+            <w:jc w:val="left"/>
+            <w:rPr>
+              <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+              <w:sz w:val="24"/>
+              <w:szCs w:val="24"/>
+            </w:rPr>
+          </w:pPr>
+        </w:p>
+      </w:tc>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="1650" w:type="pct"/>
+          <w:tcBorders>
+            <w:top w:val="single" w:sz="6" w:color="DDDDDD"/>
+            <w:left w:val="single" w:sz="6" w:color="DDDDDD"/>
+            <w:bottom w:val="single" w:sz="6" w:color="DDDDDD"/>
+            <w:right w:val="single" w:sz="6" w:color="DDDDDD"/>
+          </w:tcBorders>
+          <w:vAlign w:val="center"/>
+        </w:tcPr>
+        <w:p>
+          <w:pPr>
+            <w:spacing w:before="0" w:after="0"/>
+            <w:jc w:val="center"/>
+            <w:rPr>
+              <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+              <w:sz w:val="24"/>
+              <w:szCs w:val="24"/>
+            </w:rPr>
+          </w:pPr>
+        </w:p>
+      </w:tc>
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="1650" w:type="pct"/>
+          <w:tcBorders>
+            <w:top w:val="single" w:sz="6" w:color="DDDDDD"/>
+            <w:left w:val="single" w:sz="6" w:color="DDDDDD"/>
+            <w:bottom w:val="single" w:sz="6" w:color="DDDDDD"/>
+            <w:right w:val="single" w:sz="6" w:color="DDDDDD"/>
+          </w:tcBorders>
+          <w:vAlign w:val="center"/>
+        </w:tcPr>
+        <w:p>
+          <w:pPr>
+            <w:spacing w:before="0" w:after="0"/>
+            <w:jc w:val="right"/>
+            <w:rPr>
+              <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+              <w:sz w:val="24"/>
+              <w:szCs w:val="24"/>
+            </w:rPr>
+          </w:pPr>
+        </w:p>
+      </w:tc>
+    </w:tr>
+  </w:tbl>
+</w:hdr>

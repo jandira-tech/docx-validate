@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="R278b617a59164699" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="/word/footer1.xml"/>
+  <Relationship Id="Reff5b0384ace4658" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="/word/settings.xml"/>
+  <Relationship Id="Rb0b4ddebfb704917" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="/word/styles.xml"/>
+  <Relationship Id="Rbcd182f89d96463e" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/RegistrationAuthority/12" TargetMode="External"/>
+  <Relationship Id="Rd76e77bc207647f8" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/content/269924" TargetMode="External"/>
+  <Relationship Id="R09f8b029a9ec4ad9" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/content/514073" TargetMode="External"/>
+  <Relationship Id="R41a975da5ac34a88" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/content/514003" TargetMode="External"/>
+  <Relationship Id="R080934f40f4c41e0" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/content/391334" TargetMode="External"/>
+  <Relationship Id="R726bd7e9527d4065" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/RegistrationAuthority/12" TargetMode="External"/>
+  <Relationship Id="Rd38a3b7f43ba4553" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/content/589028" TargetMode="External"/>
+  <Relationship Id="R14954e7b53004137" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/RegistrationAuthority/12" TargetMode="External"/>
+  <Relationship Id="R01d3b3a2245849df" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/RegistrationAuthority/15" TargetMode="External"/>
+  <Relationship Id="Rc65aa908f59644f9" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/content/491555" TargetMode="External"/>
+  <Relationship Id="R1446a04920f545c3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/RegistrationAuthority/12" TargetMode="External"/>
+  <Relationship Id="R52252077f907434a" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/content/535047" TargetMode="External"/>
+  <Relationship Id="Radda9bed1c05417f" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/RegistrationAuthority/12" TargetMode="External"/>
+  <Relationship Id="Rb04aa8cb25e441ff" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/content/516747" TargetMode="External"/>
+  <Relationship Id="Rfb3a75741e4d4fed" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/RegistrationAuthority/12" TargetMode="External"/>
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footnotes" Target="footnotes.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/endnotes" Target="endnotes.xml"/>
+  <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.ada.gov/" TargetMode="External"/>
+  <Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://global.ihs.com/doc_detail.cfm?&amp;rid=BSD&amp;item_s_key=00006864&amp;item_key_date=901231&amp;input_doc_number=ICC&amp;input_doc_title=" TargetMode="External"/>
+  <Relationship Id="rId5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://americanspecialties.com/product_category/showertub-accessories/" TargetMode="External"/>
+  <Relationship Id="rId6" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.asigroup.us/" TargetMode="External"/>
+  <Relationship Id="rId7" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://americanspecialties.com/representatives/" TargetMode="External"/>
+  <Relationship Id="rId8" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://americanspecialties.com/continuing-education/" TargetMode="External"/>
+  <Relationship Id="rId9" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="http://www.americanspecialties.com/" TargetMode="External"/>
+  <Relationship Id="rId10" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml"/>
+  <Relationship Id="rId11" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/>
+  <Relationship Id="rId12" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings" Target="webSettings.xml"/>
+  <Relationship Id="rId13" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml"/>
+  <Relationship Id="rId14" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="theme/theme1.xml"/>
+</Relationships>

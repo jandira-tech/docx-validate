@@ -1,0 +1,4215 @@
+<w:document xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:pt14="http://powertools.codeplex.com/2011" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" ve:Ignorable="pt14 w14 wp14">
+  <w:body>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:before="360" w:after="240" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="1" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:cstheme="minorHAnsi"/>
+          <w:b/>
+          <w:smallCaps/>
+          <w:sz w:val="32"/>
+          <w:szCs w:val="32"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="2" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:cstheme="minorHAnsi"/>
+            <w:b/>
+            <w:smallCaps/>
+            <w:sz w:val="32"/>
+            <w:szCs w:val="32"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Erasmus+ KA1 mobilitási projektek – egyéni beszámoló – 201
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:cstheme="minorHAnsi"/>
+            <w:b/>
+            <w:smallCaps/>
+            <w:sz w:val="32"/>
+            <w:szCs w:val="32"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>6
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:before="360" w:after="300" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="3" w:date="1970-01-01T00:00:00Z"/>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="4" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t xml:space="preserve">A
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>résztvevő
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>adatai
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+        <w:tblPrChange w:id="5" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+          <w:tblPr>
+            <w:bidiVisual w:val="0"/>
+            <w:tblW w:w="5000" w:type="pct"/>
+            <w:tblLayout w:type="fixed"/>
+          </w:tblPr>
+        </w:tblPrChange>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="2000"/>
+        <w:gridCol w:w="2000"/>
+        <w:gridCol w:w="2000"/>
+        <w:gridCol w:w="2000"/>
+        <w:gridCol w:w="2000"/>
+        <w:gridCol w:w="2000"/>
+        <w:gridCol w:w="2004"/>
+        <w:tblGridChange w:id="6">
+          <w:tblGrid>
+            <w:gridCol w:w="1995" w:type="dxa"/>
+            <w:gridCol w:w="1995" w:type="dxa"/>
+            <w:gridCol w:w="1995" w:type="dxa"/>
+            <w:gridCol w:w="1995" w:type="dxa"/>
+            <w:gridCol w:w="1995" w:type="dxa"/>
+            <w:gridCol w:w="1995" w:type="dxa"/>
+            <w:gridCol w:w="1995" w:type="dxa"/>
+          </w:tblGrid>
+        </w:tblGridChange>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr>
+          <w:ins w:author="Jubarte" w:id="7" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2802" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="8" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="9" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>Név
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="11340" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="10" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="11" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="11906" w:type="dxa"/>
+            <w:gridSpan w:val="7"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill="FFFFFF"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:before="80" w:after="80"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="12" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="13" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b w:val="1"/>
+                  <w:bCs w:val="1"/>
+                  <w:color w:val="000000"/>
+                  <w:sz w:val="56"/>
+                  <w:szCs w:val="56"/>
+                </w:rPr>
+                <w:delText>March 2025
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:ins w:author="Jubarte" w:id="14" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2802" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="15" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="16" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>Beosztás
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="11340" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="17" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="410" w:hRule="exact"/>
+          <w:del w:author="Jubarte" w:id="18" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill="DDDDDD"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="19" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="20" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b w:val="1"/>
+                  <w:bCs w:val="1"/>
+                  <w:sz w:val="36"/>
+                  <w:szCs w:val="36"/>
+                </w:rPr>
+                <w:delText>Mon
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill="DDDDDD"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="21" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="22" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b w:val="1"/>
+                  <w:bCs w:val="1"/>
+                  <w:sz w:val="36"/>
+                  <w:szCs w:val="36"/>
+                </w:rPr>
+                <w:delText>Tue
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill="DDDDDD"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="23" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="24" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b w:val="1"/>
+                  <w:bCs w:val="1"/>
+                  <w:sz w:val="36"/>
+                  <w:szCs w:val="36"/>
+                </w:rPr>
+                <w:delText>Wed
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill="DDDDDD"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="25" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="26" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b w:val="1"/>
+                  <w:bCs w:val="1"/>
+                  <w:sz w:val="36"/>
+                  <w:szCs w:val="36"/>
+                </w:rPr>
+                <w:delText>Thu
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill="DDDDDD"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="27" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="28" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b w:val="1"/>
+                  <w:bCs w:val="1"/>
+                  <w:sz w:val="36"/>
+                  <w:szCs w:val="36"/>
+                </w:rPr>
+                <w:delText>Fri
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill="DDDDDD"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="29" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="30" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b w:val="1"/>
+                  <w:bCs w:val="1"/>
+                  <w:sz w:val="36"/>
+                  <w:szCs w:val="36"/>
+                </w:rPr>
+                <w:delText>Sat
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill="DDDDDD"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="31" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="32" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b w:val="1"/>
+                  <w:bCs w:val="1"/>
+                  <w:sz w:val="36"/>
+                  <w:szCs w:val="36"/>
+                </w:rPr>
+                <w:delText>Sun
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="1300" w:hRule="exact"/>
+          <w:del w:author="Jubarte" w:id="33" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:before="80" w:after="80"/>
+              <w:ind w:left="0" w:right="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="34" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:before="80" w:after="80"/>
+              <w:ind w:left="0" w:right="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="35" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:before="80" w:after="80"/>
+              <w:ind w:left="0" w:right="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="36" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:before="80" w:after="80"/>
+              <w:ind w:left="0" w:right="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="37" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:before="80" w:after="80"/>
+              <w:ind w:left="0" w:right="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="38" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="39" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="40" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="41" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="FF0000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>1
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="42" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="43" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="44" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="45" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="FF0000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>2
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="46" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="1300" w:hRule="exact"/>
+          <w:del w:author="Jubarte" w:id="47" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="48" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="49" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="50" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="000000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>3
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="51" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="52" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="53" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="54" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="000000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>4
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="55" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="56" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="57" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="58" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="000000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>5
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="59" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="60" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="61" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="62" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="000000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>6
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="63" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="64" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="65" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="66" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="000000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>7
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="67" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="68" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="69" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="70" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="FF0000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>8
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="71" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="72" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="73" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="74" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="FF0000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>9
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="75" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="1300" w:hRule="exact"/>
+          <w:del w:author="Jubarte" w:id="76" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="77" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="78" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="79" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="000000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>10
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="80" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="81" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="82" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="83" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="000000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>11
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="84" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="85" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="86" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="87" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="000000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>12
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="88" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="89" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="90" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="91" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="000000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>13
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="92" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="93" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="94" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="95" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="000000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>14
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="96" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="97" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="98" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="99" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="FF0000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>15
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="100" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="101" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="102" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="103" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="FF0000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>16
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="104" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="1300" w:hRule="exact"/>
+          <w:del w:author="Jubarte" w:id="105" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="106" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="107" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="108" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="000000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>17
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="109" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="110" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="111" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="112" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="000000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>18
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="113" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="114" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="115" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="116" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="000000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>19
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="117" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="118" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="119" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="120" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="000000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>20
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="121" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="122" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="123" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="124" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="000000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>21
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="125" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="126" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="127" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="128" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="FF0000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>22
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="129" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="130" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="131" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="132" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="FF0000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>23
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="133" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="1300" w:hRule="exact"/>
+          <w:del w:author="Jubarte" w:id="134" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="135" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="136" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="137" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="000000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>24
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="138" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="139" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="140" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="141" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="000000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>25
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="142" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="143" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="144" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="145" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="000000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>26
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="146" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="147" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="148" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="149" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="000000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>27
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="150" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="151" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="152" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="153" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="000000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>28
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="154" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="155" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="156" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="157" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="FF0000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>29
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="158" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="159" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="160" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="161" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="FF0000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>30
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="162" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="1300" w:hRule="exact"/>
+          <w:del w:author="Jubarte" w:id="163" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:tbl>
+            <w:tblPr>
+              <w:bidiVisual w:val="0"/>
+              <w:tblW w:w="1000" w:type="pct"/>
+              <w:jc w:val="center"/>
+              <w:tblLayout w:type="fixed"/>
+              <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="0" w:type="dxa"/>
+                <w:right w:w="0" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+              </w:tblCellMar>
+              <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+            </w:tblPr>
+            <w:tblGrid>
+              <w:gridCol w:w="399" w:type="dxa"/>
+            </w:tblGrid>
+            <w:tr>
+              <w:tblPrEx>
+                <w:tblCellMar>
+                  <w:top w:w="0" w:type="dxa"/>
+                  <w:bottom w:w="0" w:type="dxa"/>
+                </w:tblCellMar>
+              </w:tblPrEx>
+              <w:trPr>
+                <w:trHeight w:val="399" w:hRule="atLeast"/>
+                <w:del w:author="Jubarte" w:id="164" w:date="1970-01-01T00:00:00Z"/>
+              </w:trPr>
+              <w:tc>
+                <w:tcPr>
+                  <w:tcW w:w="399" w:type="dxa"/>
+                  <w:tcBorders>
+                    <w:left w:val="single" w:sz="1" w:color="000000"/>
+                    <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+                    <w:right w:val="single" w:sz="1" w:color="000000"/>
+                  </w:tcBorders>
+                </w:tcPr>
+                <w:p>
+                  <w:pPr>
+                    <w:spacing w:before="80" w:after="80"/>
+                    <w:jc w:val="center"/>
+                    <w:rPr>
+                      <w:del w:author="Jubarte" w:id="165" w:date="1970-01-01T00:00:00Z"/>
+                    </w:rPr>
+                  </w:pPr>
+                  <w:del w:author="Jubarte" w:id="166" w:date="1970-01-01T00:00:00Z">
+                    <w:r>
+                      <w:rPr>
+                        <w:color w:val="000000"/>
+                        <w:sz w:val="22"/>
+                        <w:szCs w:val="22"/>
+                      </w:rPr>
+                      <w:delText>31
+                      </w:delText>
+                    </w:r>
+                  </w:del>
+                </w:p>
+              </w:tc>
+            </w:tr>
+          </w:tbl>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="167" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:before="80" w:after="80"/>
+              <w:ind w:left="0" w:right="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="168" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:before="80" w:after="80"/>
+              <w:ind w:left="0" w:right="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="169" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:before="80" w:after="80"/>
+              <w:ind w:left="0" w:right="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="170" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill=""/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:before="80" w:after="80"/>
+              <w:ind w:left="0" w:right="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="171" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:before="80" w:after="80"/>
+              <w:ind w:left="0" w:right="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="172" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1995" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="1" w:color="000000"/>
+              <w:left w:val="single" w:sz="1" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="1" w:color="000000"/>
+              <w:right w:val="single" w:sz="1" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:fill="F7F7F7"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:before="80" w:after="80"/>
+              <w:ind w:left="0" w:right="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="173" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:before="360" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="174" w:date="1970-01-01T00:00:00Z"/>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="175" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>A
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t xml:space="preserve">mobilitás adatai
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:before="30"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="176" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="177" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:b w:val="0"/>
+            <w:bCs w:val="0"/>
+            <w:sz w:val="22"/>
+            <w:szCs w:val="22"/>
+          </w:rPr>
+          <w:delText>© PrintableCalendar4U.Com
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="2802"/>
+        <w:gridCol w:w="11340"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="1168"/>
+          <w:ins w:author="Jubarte" w:id="178" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2802" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="179" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="180" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>Mobilitás típusa
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="181" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="182" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>(nem helyes törlendő)
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="11340" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="1"/>
+              </w:numPr>
+              <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="183" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="184" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>szakmai továbbképzés
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="1"/>
+              </w:numPr>
+              <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="185" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="186" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>nyelvtanfolyam
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="1"/>
+              </w:numPr>
+              <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="187" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="188" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>szakmai látogatás (job shadowing)
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="1"/>
+              </w:numPr>
+              <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="189" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="190" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>oktatási tevékenység
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:ins w:author="Jubarte" w:id="191" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2802" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="192" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="193" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>Továbbképzés címe
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="194" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="195" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>(amennyiben releváns)
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="11340" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="196" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="428"/>
+          <w:ins w:author="Jubarte" w:id="197" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2802" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="198" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="199" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>Fogadó intézmény neve
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="11340" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="200" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="703"/>
+          <w:ins w:author="Jubarte" w:id="201" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2802" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="202" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="203" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>Fogadó intézmény típusa
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="204" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="205" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>(nem helyes törlendő)
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="11340" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="2"/>
+              </w:numPr>
+              <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="206" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="207" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>oktatási intézmény
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="ListParagraph"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="2"/>
+              </w:numPr>
+              <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="208" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="209" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>továbbképző intézmény
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:ins w:author="Jubarte" w:id="210" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2802" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="211" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="212" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>Fogadó ország
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="11340" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="213" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:ins w:author="Jubarte" w:id="214" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2802" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="215" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="216" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>Munkanyelv
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="11340" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="217" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:ins w:author="Jubarte" w:id="218" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2802" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="219" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="220" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>Mobilitás időtartama
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="221" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="222" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>(munkanapok száma)
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="11340" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:ind w:firstLine="882"/>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="223" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="224" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>nap
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="225" w:date="1970-01-01T00:00:00Z"/>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="226" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:br w:type="page"/>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="227" w:date="1970-01-01T00:00:00Z"/>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="228" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>Tanulási eredmények
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="4714"/>
+        <w:gridCol w:w="4715"/>
+        <w:gridCol w:w="4715"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr>
+          <w:ins w:author="Jubarte" w:id="229" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4714" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="230" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="231" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b/>
+                  <w:bCs/>
+                </w:rPr>
+                <w:t>Az elvárt tanulási eredmények meghatározása a mobilitás tervezési szakaszában
+                </w:t>
+              </w:r>
+              <w:r>
+                <w:rPr>
+                  <w:b/>
+                  <w:bCs/>
+                </w:rPr>
+                <w:t xml:space="preserve">(pályázat)
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="232" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="233" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>(A tanulási folyamat elvárt eredményét írja le, cselekvést jelentő igéket használ, specifikus, konkrét, világos, egyértelmű és mérhető.)
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4715" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="234" w:date="1970-01-01T00:00:00Z"/>
+                <w:b/>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="235" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b/>
+                  <w:bCs/>
+                </w:rPr>
+                <w:t>A tanulási eredmények értékelése a mobilitás után
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="236" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="237" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>(Az elvárt tanulási eredmények teljesülésének „vizsgálata&#x201D;, a személyes fejlődés nyomon követése, bizonyítékok a kompetenciafejlődésre.)
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4715" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="238" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="239" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:b/>
+                  <w:bCs/>
+                </w:rPr>
+                <w:t>Hogyan alkalmazhatóak a mobilitás során megszerzett tanulási eredmények a saját munkámban, illetve a küldő intézmény gyakorlatában?
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="240" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+            <w:ins w:author="Jubarte" w:id="241" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:t>(A terjesztésre vonatkozó tervek.)
+                </w:t>
+              </w:r>
+            </w:ins>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="2994"/>
+          <w:ins w:author="Jubarte" w:id="242" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4714" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="243" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4715" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="244" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4715" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="245" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="246" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="247" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t xml:space="preserve">További információ:
+          </w:t>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Jubarte" w:id="248" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:fldChar w:fldCharType="begin"/>
+        </w:r>
+        <w:r>
+          <w:instrText>HYPERLINK "http://tka.hu/konyv/7099/az-iskola-es-a-vilag" \h
+          </w:instrText>
+        </w:r>
+        <w:r>
+          <w:fldChar w:fldCharType="separate"/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t>Az iskola és a világ
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:fldChar w:fldCharType="end"/>
+        </w:r>
+      </w:ins>
+      <w:ins w:author="Jubarte" w:id="249" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t xml:space="preserve">TKA, 2016.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="250" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="251" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>A
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>továbbképzés
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>programj
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>a
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t xml:space="preserve">/
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>szakmai látogatás (job shadowing)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t xml:space="preserve">munkaterve
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="14142"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="2835"/>
+          <w:ins w:author="Jubarte" w:id="252" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="14142" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="253" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:before="120" w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="254" w:date="1970-01-01T00:00:00Z"/>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="255" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>A r
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t>észtvevő fel
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+            <w:highlight w:val="lightGray"/>
+          </w:rPr>
+          <w:t xml:space="preserve">adatai a mobilitás előtt
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:before="120" w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="256" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="257" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Kérjük, röviden mutassa be, hogyan készült fel a mobilitásra.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="14142"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr>
+          <w:trHeight w:val="1701"/>
+          <w:ins w:author="Jubarte" w:id="258" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="14142" w:type="dxa"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:before="120"/>
+              <w:rPr>
+                <w:ins w:author="Jubarte" w:id="259" w:date="1970-01-01T00:00:00Z"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="10206"/>
+          <w:tab w:val="left" w:leader="underscore" w:pos="13608"/>
+        </w:tabs>
+        <w:spacing w:before="1600" w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="260" w:date="1970-01-01T00:00:00Z"/>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="261" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+          </w:rPr>
+          <w:t>Dátum:
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="11340"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="262" w:date="1970-01-01T00:00:00Z"/>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="263" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+          </w:rPr>
+          <w:t>résztvevő
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="28"/>
+            <w:szCs w:val="28"/>
+          </w:rPr>
+          <w:t xml:space="preserve">aláírása
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:sectPr>
+      <w:headerReference w:type="default" r:id="rId10"/>
+      <w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/>
+      <w:pgMar w:top="1417" w:right="1417" w:bottom="1417" w:left="1417" w:header="708" w:footer="708" w:gutter="0"/>
+      <w:cols w:space="708" w:num="1"/>
+      <w:docGrid w:linePitch="360"/>
+      <w:sectPrChange w:author="Jubarte" w:date="1970-01-01T00:00:00Z" w:id="264">
+        <w:sectPr>
+          <w:pgSz w:orient="landscape" w:w="16838" w:h="11906"/>
+          <w:pgMar w:top="1200" w:right="1440" w:bottom="1200" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+          <w:cols w:num="1" w:space="720"/>
+        </w:sectPr>
+      </w:sectPrChange>
+    </w:sectPr>
+  </w:body>
+</w:document>

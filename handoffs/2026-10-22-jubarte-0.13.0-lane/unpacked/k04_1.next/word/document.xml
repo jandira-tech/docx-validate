@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:oel="http://schemas.microsoft.com/office/2019/extlst" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16du="http://schemas.microsoft.com/office/word/2023/wordml/word16du" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16sdtfl="http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh w16sdtfl w16du wp14">
+  <w:body>
+    <w:p w14:paraId="6439FBAB" w14:textId="55E7A5AC" w:rsidR="00BF2CA6" w:rsidRDefault="00BF2CA6" w:rsidP="00BF2CA6">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+      </w:pPr>
+      <w:r>
+        <w:t>Diffing feature
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="9350"/>
+      </w:tblGrid>
+      <w:tr w:rsidR="00523539" w14:paraId="718AB3DC" w14:textId="77777777" w:rsidTr="00523539">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="9350" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="71D0C7B7" w14:textId="0D6B1B09" w:rsidR="00523539" w:rsidRDefault="00523539" w:rsidP="00BF2CA6">
+            <w:r>
+              <w:t>Diffing allows users to compare two versions of a document and quickly identify what changed between them. Instead of reading both files line by line, the editor highlights insertions, deletions, and updates so reviewers can focus on meaningful edits.
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00523539" w14:paraId="63E4DFED" w14:textId="77777777" w:rsidTr="00523539">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="9350" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="7122ECD7" w14:textId="2344E7E7" w:rsidR="00523539" w:rsidRDefault="00523539" w:rsidP="00BF2CA6">
+            <w:r>
+              <w:t>The comparison process starts by loading a source document and a target document. The diff engine analyzes structure, content, and metadata, then produces a set of changes that describe how to transform the source into the target. This result can be inspected before any edits are applied.
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00523539" w14:paraId="741A0F82" w14:textId="77777777" w:rsidTr="00523539">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="9350" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="5E6F6F9F" w14:textId="7C87E125" w:rsidR="00523539" w:rsidRDefault="00523539" w:rsidP="00BF2CA6">
+            <w:r>
+              <w:t>Replay takes those computed changes and applies them back to the source document in a controlled way. This is useful when teams want to review proposed changes incrementally, verify outcomes, or combine automated updates with manual review. It also helps when change tracking needs to remain visible during collaboration.
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00523539" w14:paraId="5E53081A" w14:textId="77777777" w:rsidTr="00523539">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="9350" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="26D1EBE2" w14:textId="15B91767" w:rsidR="00523539" w:rsidRDefault="00523539" w:rsidP="00BF2CA6">
+            <w:r>
+              <w:t>Comment handling is an important part of diffing and replay workflows. If a comment is added, updated, resolved, or removed in the target document, those actions should be reflected during replay so the discussion state stays consistent. Accurate comment synchronization is essential for review quality.
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00523539" w14:paraId="455A96BF" w14:textId="77777777" w:rsidTr="00523539">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="9350" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="326AC6D5" w14:textId="657A841B" w:rsidR="00523539" w:rsidRDefault="00523539" w:rsidP="00BF2CA6">
+            <w:r>
+              <w:t>In multi-document sessions, ID collisions can occur when different files reuse the same imported comment IDs. A robust implementation scopes comment operations to the active document to avoid incorrectly updating, deleting, or deduplicating comments from another file. This keeps replay behavior predictable.
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00523539" w14:paraId="5E9E6D64" w14:textId="77777777" w:rsidTr="00523539">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="9350" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="3F55EE29" w14:textId="46510B01" w:rsidR="00523539" w:rsidRDefault="00523539" w:rsidP="00BF2CA6">
+            <w:r>
+              <w:t>A reliable diff and replay pipeline gives teams confidence when validating revisions. It supports faster reviews, clearer audit trails, and safer document updates, especially in complex workflows with tracked changes, threaded comments, and repeated compare/replay cycles.
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w14:paraId="67BF34A7" w14:textId="3F2685A7" w:rsidR="00BF2CA6" w:rsidRDefault="00BF2CA6" w:rsidP="00BF2CA6"/>
+    <w:sectPr w:rsidR="00BF2CA6">
+      <w:pgSz w:w="12240" w:h="15840"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="708" w:footer="708" w:gutter="0"/>
+      <w:cols w:space="708"/>
+      <w:docGrid w:linePitch="360"/>
+    </w:sectPr>
+  </w:body>
+</w:document>

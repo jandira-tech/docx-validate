@@ -1,0 +1,3614 @@
+<w:document xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:pt14="http://powertools.codeplex.com/2011" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" ve:Ignorable="pt14 w14 w15 wp14">
+  <w:body>
+    <w:p>
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="284"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:contextualSpacing/>
+        <w:jc w:val="right"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="1" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="2" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:b/>
+            <w:noProof/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:drawing>
+            <wp:inline distT="0" distB="0" distL="0" distR="0">
+              <wp:extent cx="1234760" cy="652224"/>
+              <wp:effectExtent l="19050" t="0" r="3490" b="0"/>
+              <wp:docPr id="1" name="Picture 1" descr="EL_Sotsiaalfond_horisontaalne.jpg"/>
+              <wp:cNvGraphicFramePr>
+                <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+              </wp:cNvGraphicFramePr>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                    <pic:nvPicPr>
+                      <pic:cNvPr id="0" name="EL_Sotsiaalfond_horisontaalne.jpg"/>
+                      <pic:cNvPicPr/>
+                    </pic:nvPicPr>
+                    <pic:blipFill>
+                      <a:blip r:embed="rId9" cstate="print"/>
+                      <a:stretch>
+                        <a:fillRect/>
+                      </a:stretch>
+                    </pic:blipFill>
+                    <pic:spPr>
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="1242054" cy="656077"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                    </pic:spPr>
+                  </pic:pic>
+                </a:graphicData>
+              </a:graphic>
+            </wp:inline>
+          </w:drawing>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="284"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:contextualSpacing/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="3" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="284"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:contextualSpacing/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="4" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="5" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:b/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Ekspertarvamus
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:b/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Luunja valla
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:b/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>haldusterritoriaalse korralduse võimaliku muutmise kohta
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:b/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="284"/>
+        </w:tabs>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:contextualSpacing/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="6" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="284"/>
+        </w:tabs>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:contextualSpacing/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="7" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="8" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>Luunja vald ei täida haldusreformi seadusega pandud miinimum
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>suuruse
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>kriteeriumi 5000 elanikku
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>, s
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>eisuga 01.01.2017 oli Luunja vallas registreeritud 4251
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">elanikk
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>u
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="284"/>
+        </w:tabs>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:contextualSpacing/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="9" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="284"/>
+        </w:tabs>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:contextualSpacing/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="10" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="11" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>Luunja vald kuulu
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>b
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Statistikaameti analüüsi
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="FootnoteReference"/>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:footnoteReference w:id="1"/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">põhjal Tartu linna lähivööndisse (joonis 1).
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="284"/>
+        </w:tabs>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:contextualSpacing/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="12" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="284"/>
+        </w:tabs>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:contextualSpacing/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="13" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="14" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:noProof/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:drawing>
+            <wp:inline distT="0" distB="0" distL="0" distR="0">
+              <wp:extent cx="2947916" cy="2342725"/>
+              <wp:effectExtent l="0" t="0" r="5080" b="635"/>
+              <wp:docPr id="2" name="Picture 5"/>
+              <wp:cNvGraphicFramePr>
+                <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+              </wp:cNvGraphicFramePr>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                    <pic:nvPicPr>
+                      <pic:cNvPr id="0" name=""/>
+                      <pic:cNvPicPr/>
+                    </pic:nvPicPr>
+                    <pic:blipFill>
+                      <a:blip r:embed="rId10" cstate="print"/>
+                      <a:stretch>
+                        <a:fillRect/>
+                      </a:stretch>
+                    </pic:blipFill>
+                    <pic:spPr>
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="2950578" cy="2344841"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                    </pic:spPr>
+                  </pic:pic>
+                </a:graphicData>
+              </a:graphic>
+            </wp:inline>
+          </w:drawing>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:noProof/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:drawing>
+            <wp:inline distT="0" distB="0" distL="0" distR="0">
+              <wp:extent cx="1132764" cy="653005"/>
+              <wp:effectExtent l="0" t="0" r="0" b="0"/>
+              <wp:docPr id="3" name="Picture 7"/>
+              <wp:cNvGraphicFramePr>
+                <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+              </wp:cNvGraphicFramePr>
+              <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                    <pic:nvPicPr>
+                      <pic:cNvPr id="0" name=""/>
+                      <pic:cNvPicPr/>
+                    </pic:nvPicPr>
+                    <pic:blipFill>
+                      <a:blip r:embed="rId11" cstate="print"/>
+                      <a:stretch>
+                        <a:fillRect/>
+                      </a:stretch>
+                    </pic:blipFill>
+                    <pic:spPr>
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="1146131" cy="660711"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect">
+                        <a:avLst/>
+                      </a:prstGeom>
+                    </pic:spPr>
+                  </pic:pic>
+                </a:graphicData>
+              </a:graphic>
+            </wp:inline>
+          </w:drawing>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="284"/>
+        </w:tabs>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:contextualSpacing/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="15" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="16" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>Joonis 1. Tartu toimepiirkond. Allikas: Statistikaamet (2014) Toimepiirkondade määramine
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="284"/>
+        </w:tabs>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:contextualSpacing/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="17" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:contextualSpacing/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="18" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="19" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+            <w:lang w:eastAsia="en-US"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Luunja vald kuulub Tartu linnapiirkonna koosseisu ja on paljudes eluvaldkondade toimimises seotud Tartu linnaga.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Vallas on 20 küla ja üks alevik. Rahvaarvult suurim on
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>Lohkva
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">küla
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>Kohalikeks tõmbekeskusteks küladele on Lohkva, Luunja ja Kavastu, mis on endisaegsete ühismajandite keskused. Intensiivne ehitustegevus on valda toonud hulgaliselt uusi elanikke
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>, r
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">ahvastikuregistri andmetel on elanike arv aastatel 2007-2015 kasvanud enam kui 1000 inimese võrra. Luunja valla arengut mõjutab oluliselt Tartu valglinnastumise protsess. Märkimisväärne osa rahvastikust elab
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>Lohkva
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">(1181 elanikku) ja
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>Veibri
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">(577) külades
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">, mis asuvad
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Tartu
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">linna
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>administratiivpiiril
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>. Linnast kaugemale jäävates külades asustustihedus oluliselt langeb ja tegu on pigem maalise elulaadi viljelemisega.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="284"/>
+        </w:tabs>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:contextualSpacing/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="20" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="284"/>
+        </w:tabs>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:contextualSpacing/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="21" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="22" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Luunja valla
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>ühendamisel Vabariigi Valitsuse algatusel
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">tuleb kaaluda ettepaneku esitamisel
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>kahe võimaluse vahel
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">– ühendamine
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Tartu vallaga või Tartu linnaga.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>A
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>sjakoha
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">ne ei ole
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Luunja valla
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">ühendamine
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>Haaslava, Mäksa ja Võnnu valdade baasil moodustu
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">va
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>uue omavalitsusüksusega
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">, mis on
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>märksa maalisema iseloomuga kui Luunja vald ning puudub kogemus ja ressursid Tartu valglinnastumise käigus Tartu linnapiiril kujunenud tiheasustuse piirkondade arendamiseks.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="284"/>
+        </w:tabs>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:contextualSpacing/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="23" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Default"/>
+        <w:contextualSpacing/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="24" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="25" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Tartu linnaga ühendamise poolt on järgmised asjaolud:
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="27"/>
+        </w:numPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="237"/>
+        </w:tabs>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="26" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="27" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Tartu linnaga ühendatakse linnaga kokku kasvanud Lohkva ja Veibri külade tiheasustusalad Luunja vallast
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">viies need
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>ühtse juhtim
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>i
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">se alla ja moodustub loogiline
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>planeerimispiirkond. Samas maalis
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>t
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">e Luunja valla alade arendamine eeldab keskuslinna käsitlusest erineva linnastu kontseptsiooni rakendamist.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="27"/>
+        </w:numPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="237"/>
+        </w:tabs>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="28" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="29" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Luunja valla
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>Lohkva
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">ja
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>Veibri
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">külades elab ligi pool
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Luunja
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">valla elanikkonnast,
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">kes saavad ühinemisel Tartu linnaga
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>võimalus
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>e
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">rääkida kaasa arengutes, mis mõjutavad nende tegelikku igapäevast teenuste tarbimist. Olukord, kus elanikud ei saa oma elukeskkonda maksumaksjana mõjutada ja selle arengus kaasa rääkida, ei ole demokraatlik.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="27"/>
+        </w:numPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="237"/>
+        </w:tabs>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="30" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="31" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>Ühise omavalitsusena on liikumiskeskkond
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>paremini korraldatav
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">, et tagada ennekõike keskuslinnas Tartus töökohtade, teenuste
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>ja
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">vaba aja võimaluste kättesaadavus
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">praeguse
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Luunja valla elanikele.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="27"/>
+        </w:numPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="237"/>
+        </w:tabs>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="32" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="33" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>Teki
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">vad paremad võimalused
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">läbi planeerimise arendada Tartu linna.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>Lohkva
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">ja
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>Veibri
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">küla
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>ühinemisel
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">moodustuks loogiline Tartu linna tervikala.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="284"/>
+        </w:tabs>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:contextualSpacing/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="34" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Default"/>
+        <w:contextualSpacing/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="35" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="36" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:t>Tartu vallaga ühendamise poolt on järgmised asjaolud:
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="24"/>
+        </w:numPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="237"/>
+        </w:tabs>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="37" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:iCs/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="38" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>Ühinemisel Tartu vallaga saab Vabariigi Valitsuse algatatud ühendamise käigus pakkuda terviklahendused Tartu valla kujundamiseks
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">(arvestades ka teisi ühinevad omavalitsusi)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>luu
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>es
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">parim
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>a
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">elukeskkon
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>na
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">ja lahend
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>used elanikele ühises toimealas
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:iCs/>
+            <w:color w:val="000000"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="24"/>
+        </w:numPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="237"/>
+        </w:tabs>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="39" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="40" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Tartu vald ja Luunja vald on arengus sama sotsiaal-majandusliku iseloomuga omavalitsused, neil on analoogsed arenguprobleemid ja väljakutsete lahendamine. Neil on vahetud Tartu
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>valglinnastumise
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">mõjuga piirkonnad, sh sisuliselt Tartu linnaga kokku kasvanud alad
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">ning s
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">amas on valdadel
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">ka
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>linnalähedase maapiirkonna
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>na
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Tartu linna vahetust mõjust väljapoole jäävad lähivööndi alad
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">(k
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">uigi ka
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">nendes piirkondades
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>on Tartu linnal suur mõju võimekuse
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>ga
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">pakkuda töökohti, avalikke teenuseid ja võimalusi vaba aja veetmiseks
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>).
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="24"/>
+        </w:numPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="237"/>
+        </w:tabs>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="41" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="42" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Luunja ja Tartu vald on teinud väga olulisi pingutusi, et tugevdada omavalitsuste terviklikkust ja sisemist sidusust. Seega on olulisel kohal olnud mõlemas omavalitsuses nii linnalise kui maalise elulaadi toetamine.
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>Sarnasuse tõttu on j
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>uhtimiskultuuride ühendamine lihtsam.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="24"/>
+        </w:numPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="237"/>
+        </w:tabs>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:ins w:author="Jubarte" w:id="43" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:ins w:author="Jubarte" w:id="44" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t>Luunja vallavolikogu on teinud vabatahtliku ühinemise etapis ettepaneku ühinemiseks Tartu vallaga
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">(kes küll keeldus esitatud ettepanekust)
+          </w:t>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:t xml:space="preserve">.
+          </w:t>
+        </w:r>
+      </w:ins>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="NoSpacing"/>
+        <w:spacing w:line="300" w:lineRule="exact"/>
+        <w:ind w:left="2832" w:firstLine="708"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="45" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="NoSpacing"/>
+        <w:spacing w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="46" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="47" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:cs="Times New Roman"/>
+            <w:b/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>ZARZĄDZENIE NR 180
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="NoSpacing"/>
+        <w:spacing w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="48" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="49" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:cs="Times New Roman"/>
+            <w:b/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>PREZYDENTA MIASTA TORUNIA
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="NoSpacing"/>
+        <w:spacing w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="50" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="51" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:cs="Times New Roman"/>
+            <w:b/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>z dnia 12.08.2021 r.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="NoSpacing"/>
+        <w:spacing w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="52" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="NoSpacing"/>
+        <w:spacing w:line="300" w:lineRule="exact"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="53" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="54" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:cs="Times New Roman"/>
+            <w:b/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">zmieniające zarządzenie w sprawie
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:cs="Times New Roman"/>
+            <w:b/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>ustalenia Regulaminu wynagradzania pracowników
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:cs="Times New Roman"/>
+            <w:b/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:cs="Times New Roman"/>
+            <w:b/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>Urzędu Miasta Torunia
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="NoSpacing"/>
+        <w:spacing w:line="300" w:lineRule="exact"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="55" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:ind w:firstLine="708"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="56" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="57" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>Na podstawie art. 33 ust. 3 ustawy z dnia 8 marca 1990 r.
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">o samorządzie gminnym
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>(Dz. U. z 2021 r. poz. 1372
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>), art. 36 ust.
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">5 i 6 oraz
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">art. 39 ust. 1 i 2 usta
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">wy z dnia 21 listopada 2008 r.
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>o pracownik
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>ach samorządowych (Dz. U. z 2019 r. poz. 1282
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>), § 5 ust. 6 rozporządzenia Rady Ministrów z dnia 15 maja 2018 r. w sprawie wynagradzania pracowników samorządowych (Dz. U. z 2018 r. poz. 936
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">z późn. zm.
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+            <w:vertAlign w:val="superscript"/>
+          </w:rPr>
+          <w:delText>1
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+            <w:vertAlign w:val="superscript"/>
+          </w:rPr>
+          <w:delText>)
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">) oraz
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">§ 18 pkt 8 Regulaminu Organizacyjnego Urzędu Miasta Torunia, stanowiącego załącznik nr 1
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>do zarządzenia nr 378 Prezydenta Miasta Torunia z dnia 30
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">października 2013 r.
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>w sprawie nadania Regulaminu Organizacyjnego Urzędowi Miasta Torunia
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">z późn. zm.
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+            <w:vertAlign w:val="superscript"/>
+          </w:rPr>
+          <w:delText>2
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+            <w:vertAlign w:val="superscript"/>
+          </w:rPr>
+          <w:delText>)
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">), zarządza
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>się co następuje:
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="58" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="59" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="60" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">§
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>1
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="61" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="62" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>W
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Wykazie stanowisk, zaszeregowań, stawek dodatku funkcyjnego i wymagań kwalifikacyjnych pracowników stanowiącym załącznik nr 1 do Regulaminu
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">wynagradzania pracowników Urzędu
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>Miasta Torunia ustalonego
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>zarządzeniem Nr 385
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Pre
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">zydenta Miasta Torunia z dnia
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>18.12.2019
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">r. w sprawie
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">ustalenia
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Regulaminu
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>wynagradzania pracowników
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Urzęd
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>u Miasta Torunia
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>(
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>zmienionego zarządzeniami Prezydenta Miasta Torunia nr 65 z dnia 16.04.2020 r. i nr 135 z dnia 06.07.2020 r.
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>)
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">,
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">poz. 5
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>w części dotyczącej stanowisk urzędniczych otrzymuje brzmienie:
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="63" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="562"/>
+        <w:gridCol w:w="2127"/>
+        <w:gridCol w:w="1841"/>
+        <w:gridCol w:w="1510"/>
+        <w:gridCol w:w="1511"/>
+        <w:gridCol w:w="1511"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="64" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="562" w:type="dxa"/>
+            <w:vMerge w:val="restart"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="65" w:date="1970-01-01T00:00:00Z"/>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="66" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                  <w:sz w:val="24"/>
+                  <w:szCs w:val="24"/>
+                </w:rPr>
+                <w:delText>5
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2127" w:type="dxa"/>
+            <w:vMerge w:val="restart"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="67" w:date="1970-01-01T00:00:00Z"/>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="68" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                  <w:sz w:val="24"/>
+                  <w:szCs w:val="24"/>
+                </w:rPr>
+                <w:delText>Inspektor
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1841" w:type="dxa"/>
+            <w:vMerge w:val="restart"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="69" w:date="1970-01-01T00:00:00Z"/>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="70" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                  <w:sz w:val="24"/>
+                  <w:szCs w:val="24"/>
+                </w:rPr>
+                <w:delText>XII - XVI
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1510" w:type="dxa"/>
+            <w:vMerge w:val="restart"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="71" w:date="1970-01-01T00:00:00Z"/>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="72" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                  <w:sz w:val="24"/>
+                  <w:szCs w:val="24"/>
+                </w:rPr>
+                <w:delText>-
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1511" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="73" w:date="1970-01-01T00:00:00Z"/>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="74" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                  <w:sz w:val="24"/>
+                  <w:szCs w:val="24"/>
+                </w:rPr>
+                <w:delText>wyższe
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1511" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="75" w:date="1970-01-01T00:00:00Z"/>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="76" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                  <w:sz w:val="24"/>
+                  <w:szCs w:val="24"/>
+                </w:rPr>
+                <w:delText>3
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:del w:author="Jubarte" w:id="77" w:date="1970-01-01T00:00:00Z"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="562" w:type="dxa"/>
+            <w:vMerge/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="78" w:date="1970-01-01T00:00:00Z"/>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2127" w:type="dxa"/>
+            <w:vMerge/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="79" w:date="1970-01-01T00:00:00Z"/>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1841" w:type="dxa"/>
+            <w:vMerge/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="80" w:date="1970-01-01T00:00:00Z"/>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1510" w:type="dxa"/>
+            <w:vMerge/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="81" w:date="1970-01-01T00:00:00Z"/>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1511" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="82" w:date="1970-01-01T00:00:00Z"/>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="83" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                  <w:sz w:val="24"/>
+                  <w:szCs w:val="24"/>
+                </w:rPr>
+                <w:delText>średnie
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1511" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:del w:author="Jubarte" w:id="84" w:date="1970-01-01T00:00:00Z"/>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+            <w:del w:author="Jubarte" w:id="85" w:date="1970-01-01T00:00:00Z">
+              <w:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                  <w:sz w:val="24"/>
+                  <w:szCs w:val="24"/>
+                </w:rPr>
+                <w:delText>5
+                </w:delText>
+              </w:r>
+            </w:del>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="86" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="87" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="88" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="89" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>§ 2
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="90" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="91" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">Zarządzenie wchodzi w życie po upływie dwóch tygodni od dnia podania go do wiadomości pracownikom poprzez wywieszenie na tablicy ogłoszeń w Urzędzie Miasta Torunia
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:br/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>i opublikowaniu na stronie internetowej Urzędu Miasta Torunia.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="92" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:ind w:firstLine="708"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="93" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:ind w:firstLine="708"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="94" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="NoSpacing"/>
+        <w:spacing w:line="300" w:lineRule="exact"/>
+        <w:ind w:firstLine="708"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="95" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="96" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:cs="Times New Roman"/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:cs="Times New Roman"/>
+            <w:b/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+          </w:rPr>
+          <w:delText>Prezydent Miasta Torunia
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:suppressAutoHyphens/>
+        <w:overflowPunct w:val="0"/>
+        <w:autoSpaceDE w:val="0"/>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:ind w:firstLine="708"/>
+        <w:jc w:val="both"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="97" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="ar-SA"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:suppressAutoHyphens/>
+        <w:overflowPunct w:val="0"/>
+        <w:autoSpaceDE w:val="0"/>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:ind w:firstLine="708"/>
+        <w:jc w:val="both"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="98" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="ar-SA"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:suppressAutoHyphens/>
+        <w:overflowPunct w:val="0"/>
+        <w:autoSpaceDE w:val="0"/>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:ind w:firstLine="708"/>
+        <w:jc w:val="both"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="99" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="ar-SA"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="100" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:b/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+            <w:lang w:eastAsia="ar-SA"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:b/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+            <w:lang w:eastAsia="ar-SA"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:b/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+            <w:lang w:eastAsia="ar-SA"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:b/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+            <w:lang w:eastAsia="ar-SA"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:b/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+            <w:lang w:eastAsia="ar-SA"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:b/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+            <w:lang w:eastAsia="ar-SA"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:b/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+            <w:lang w:eastAsia="ar-SA"/>
+          </w:rPr>
+          <w:tab/>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:suppressAutoHyphens/>
+        <w:overflowPunct w:val="0"/>
+        <w:autoSpaceDE w:val="0"/>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:ind w:left="5664"/>
+        <w:jc w:val="both"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="101" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="ar-SA"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="102" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:b/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+            <w:lang w:eastAsia="ar-SA"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:b/>
+            <w:sz w:val="24"/>
+            <w:szCs w:val="24"/>
+            <w:lang w:eastAsia="ar-SA"/>
+          </w:rPr>
+          <w:delText>Michał Zaleski
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="708"/>
+          <w:tab w:val="center" w:pos="4536"/>
+          <w:tab w:val="right" w:pos="9072"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="103" w:date="1970-01-01T00:00:00Z"/>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:eastAsia="pl-PL"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="708"/>
+          <w:tab w:val="center" w:pos="4536"/>
+          <w:tab w:val="right" w:pos="9072"/>
+        </w:tabs>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="104" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="708"/>
+          <w:tab w:val="center" w:pos="4536"/>
+          <w:tab w:val="right" w:pos="9072"/>
+        </w:tabs>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="105" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="106" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:lang w:eastAsia="pl-PL"/>
+          </w:rPr>
+          <w:delText>Zmiany regulaminu wprowadzone niniejszym zarządzeniem
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="708"/>
+          <w:tab w:val="center" w:pos="4536"/>
+          <w:tab w:val="right" w:pos="9072"/>
+        </w:tabs>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="107" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="108" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:lang w:eastAsia="pl-PL"/>
+          </w:rPr>
+          <w:delText>został
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:lang w:eastAsia="pl-PL"/>
+          </w:rPr>
+          <w:delText>y uzgodnione
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:lang w:eastAsia="pl-PL"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:lang w:eastAsia="pl-PL"/>
+          </w:rPr>
+          <w:delText>z Niezależnym Samorządnym Związkiem
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pBdr>
+          <w:bottom w:val="single" w:sz="6" w:space="1" w:color="auto"/>
+        </w:pBdr>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="109" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="110" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:lang w:eastAsia="pl-PL"/>
+          </w:rPr>
+          <w:delText>Zawodowym Pracowników Administracji
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:lang w:eastAsia="pl-PL"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="20"/>
+            <w:szCs w:val="20"/>
+            <w:lang w:eastAsia="pl-PL"/>
+          </w:rPr>
+          <w:delText>przy Urzędzie Miasta Torunia
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="BodyText2"/>
+        <w:rPr>
+          <w:del w:author="Jubarte" w:id="111" w:date="1970-01-01T00:00:00Z"/>
+        </w:rPr>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="112" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="17"/>
+            <w:szCs w:val="17"/>
+            <w:vertAlign w:val="superscript"/>
+          </w:rPr>
+          <w:delText>1
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="17"/>
+            <w:szCs w:val="17"/>
+            <w:vertAlign w:val="superscript"/>
+          </w:rPr>
+          <w:delText>)
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="17"/>
+            <w:szCs w:val="17"/>
+          </w:rPr>
+          <w:delText>zmiany
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="17"/>
+            <w:szCs w:val="17"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">tekstu jednolitego wymienionego rozporządzenia
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="17"/>
+            <w:szCs w:val="17"/>
+          </w:rPr>
+          <w:delText>zostały
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="17"/>
+            <w:szCs w:val="17"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">ogłoszone w Dz. U. z 2018
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="17"/>
+            <w:szCs w:val="17"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">r. poz.
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="17"/>
+            <w:szCs w:val="17"/>
+          </w:rPr>
+          <w:delText>2437, Dz. U. z
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="17"/>
+            <w:szCs w:val="17"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">2020 r. poz.
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:sz w:val="17"/>
+            <w:szCs w:val="17"/>
+          </w:rPr>
+          <w:delText>268 i Dz. U. z 2021 r. poz. 791,
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="3969"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:contextualSpacing/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:rPrChange w:id="113" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+            <w:rPr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+              <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+              <w:sz w:val="17"/>
+              <w:szCs w:val="17"/>
+            </w:rPr>
+          </w:rPrChange>
+        </w:rPr>
+        <w:pPrChange w:id="114" w:author="Jubarte" w:date="1970-01-01T00:00:00Z">
+          <w:pPr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+            <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+            <w:jc w:val="both"/>
+          </w:pPr>
+        </w:pPrChange>
+      </w:pPr>
+      <w:del w:author="Jubarte" w:id="115" w:date="1970-01-01T00:00:00Z">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="17"/>
+            <w:szCs w:val="17"/>
+            <w:vertAlign w:val="superscript"/>
+          </w:rPr>
+          <w:delText>2
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="17"/>
+            <w:szCs w:val="17"/>
+            <w:vertAlign w:val="superscript"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">)
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="17"/>
+            <w:szCs w:val="17"/>
+          </w:rPr>
+          <w:delText>zmienionego zarządzeniami Prezydenta Miasta Torunia nr 312 z dnia 21.10.2014 r., nr 38
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="17"/>
+            <w:szCs w:val="17"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">0 z dnia 30.12.2014 r., nr 149
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="17"/>
+            <w:szCs w:val="17"/>
+          </w:rPr>
+          <w:delText>z dnia 19.06.2015 r., nr 273 z dnia 21.08.2015 r., nr 391 z dnia 04.12.2015 r., nr 379 z dnia 24.11.2016 r., nr 40 z dnia 17.02.2017 r., nr 130 z dnia 23.05.2017 r., nr 254 z dnia 18.09.2017 r., nr 319 z dnia 31.10.2017 r., nr 353 z dnia 01.12.2017 r., nr 293 z dnia 27.08.2018 r., nr 124 z dnia 02.05.2019 r., nr 337 z dnia 23.10.2019 r., nr 202 z dnia 28.09.2020 r.
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="17"/>
+            <w:szCs w:val="17"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">, nr 222 z dnia 08.10.2020 r.,
+          </w:delText>
+        </w:r>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+            <w:sz w:val="17"/>
+            <w:szCs w:val="17"/>
+          </w:rPr>
+          <w:delText>nr 230 z dnia 26.10.2020 r. oraz nr 253 z dnia 09.11.2020 r.
+          </w:delText>
+        </w:r>
+      </w:del>
+    </w:p>
+    <w:sectPr>
+      <w:pgSz w:w="11906" w:h="16838"/>
+      <w:pgMar w:top="1417" w:right="1417" w:bottom="1417" w:left="1417" w:header="708" w:footer="708" w:gutter="0"/>
+      <w:cols w:space="708"/>
+      <w:docGrid w:linePitch="360"/>
+      <w:sectPrChange w:author="Jubarte" w:date="1970-01-01T00:00:00Z" w:id="116">
+        <w:sectPr>
+          <w:pgSz w:w="11906" w:h="16838"/>
+          <w:pgMar w:top="568" w:right="1417" w:bottom="426" w:left="1417" w:header="708" w:footer="708" w:gutter="0"/>
+          <w:cols w:space="708"/>
+          <w:docGrid w:linePitch="360"/>
+        </w:sectPr>
+      </w:sectPrChange>
+    </w:sectPr>
+  </w:body>
+</w:document>

@@ -1,3 +1,9 @@
+# Supply-chain defense: require packages to be at least 7 days old before
+# installation. Compromised packages (stolen maintainer tokens) are almost
+# always yanked within hours, well before this window elapses.
+# Unit is minutes (pnpm ≥10.16). Ported from bunfig.toml (seconds) when Bun
+# support was dropped.
+minimumReleaseAge: 10080
 allowBuilds:
     esbuild: true
     libxml2-wasm: true

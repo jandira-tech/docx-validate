@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:hdr xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 wp14">
+  <w:p w:rsidR="0061350B" w:rsidRPr="0061350B" w:rsidRDefault="0061350B" w:rsidP="0061350B">
+    <w:pPr>
+      <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+      <w:jc w:val="right"/>
+      <w:rPr>
+        <w:rFonts w:cs="Arial"/>
+        <w:b/>
+        <w:color w:val="0000FF"/>
+        <w:sz w:val="16"/>
+        <w:szCs w:val="16"/>
+      </w:rPr>
+    </w:pPr>
+    <w:r>
+      <w:rPr>
+        <w:noProof/>
+        <w:lang w:eastAsia="hu-HU"/>
+      </w:rPr>
+      <w:drawing>
+        <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251664384" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="592AEDEF" wp14:editId="5EF6C71C">
+          <wp:simplePos x="0" y="0"/>
+          <wp:positionH relativeFrom="margin">
+            <wp:posOffset>7216140
+            </wp:posOffset>
+          </wp:positionH>
+          <wp:positionV relativeFrom="margin">
+            <wp:posOffset>-630555
+            </wp:posOffset>
+          </wp:positionV>
+          <wp:extent cx="1671955" cy="503555"/>
+          <wp:effectExtent l="0" t="0" r="4445" b="0"/>
+          <wp:wrapSquare wrapText="bothSides"/>
+          <wp:docPr id="8" name="Kép 2" descr="N:\Erasmus_Plus\tka_logo_magyar_új.jpg"/>
+          <wp:cNvGraphicFramePr>
+            <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+          </wp:cNvGraphicFramePr>
+          <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+            <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+              <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:nvPicPr>
+                  <pic:cNvPr id="0" name="Kép 2" descr="N:\Erasmus_Plus\tka_logo_magyar_új.jpg"/>
+                  <pic:cNvPicPr>
+                    <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                  </pic:cNvPicPr>
+                </pic:nvPicPr>
+                <pic:blipFill>
+                  <a:blip r:embed="rId1">
+                    <a:extLst>
+                      <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                        <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                      </a:ext>
+                    </a:extLst>
+                  </a:blip>
+                  <a:srcRect/>
+                  <a:stretch>
+                    <a:fillRect/>
+                  </a:stretch>
+                </pic:blipFill>
+                <pic:spPr bwMode="auto">
+                  <a:xfrm>
+                    <a:off x="0" y="0"/>
+                    <a:ext cx="1671955" cy="503555"/>
+                  </a:xfrm>
+                  <a:prstGeom prst="rect">
+                    <a:avLst/>
+                  </a:prstGeom>
+                  <a:noFill/>
+                  <a:ln>
+                    <a:noFill/>
+                  </a:ln>
+                </pic:spPr>
+              </pic:pic>
+            </a:graphicData>
+          </a:graphic>
+          <wp14:sizeRelH relativeFrom="margin">
+            <wp14:pctWidth>0
+            </wp14:pctWidth>
+          </wp14:sizeRelH>
+          <wp14:sizeRelV relativeFrom="margin">
+            <wp14:pctHeight>0
+            </wp14:pctHeight>
+          </wp14:sizeRelV>
+        </wp:anchor>
+      </w:drawing>
+    </w:r>
+    <w:r>
+      <w:rPr>
+        <w:noProof/>
+        <w:lang w:eastAsia="hu-HU"/>
+      </w:rPr>
+      <w:drawing>
+        <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251657216" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="5FFDC5EC" wp14:editId="259ED3AA">
+          <wp:simplePos x="0" y="0"/>
+          <wp:positionH relativeFrom="column">
+            <wp:posOffset>-16779
+            </wp:posOffset>
+          </wp:positionH>
+          <wp:positionV relativeFrom="paragraph">
+            <wp:posOffset>-217170
+            </wp:posOffset>
+          </wp:positionV>
+          <wp:extent cx="1889634" cy="540000"/>
+          <wp:effectExtent l="0" t="0" r="0" b="0"/>
+          <wp:wrapNone/>
+          <wp:docPr id="7" name="Kép 1" descr="N:\Erasmus_Plus\02_Erasmus\KA1\erasmus+logo_mic.jpg"/>
+          <wp:cNvGraphicFramePr>
+            <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+          </wp:cNvGraphicFramePr>
+          <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+            <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+              <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:nvPicPr>
+                  <pic:cNvPr id="0" name="Kép 1" descr="N:\Erasmus_Plus\02_Erasmus\KA1\erasmus+logo_mic.jpg"/>
+                  <pic:cNvPicPr>
+                    <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                  </pic:cNvPicPr>
+                </pic:nvPicPr>
+                <pic:blipFill>
+                  <a:blip r:embed="rId2">
+                    <a:extLst>
+                      <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                        <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                      </a:ext>
+                    </a:extLst>
+                  </a:blip>
+                  <a:srcRect/>
+                  <a:stretch>
+                    <a:fillRect/>
+                  </a:stretch>
+                </pic:blipFill>
+                <pic:spPr bwMode="auto">
+                  <a:xfrm>
+                    <a:off x="0" y="0"/>
+                    <a:ext cx="1889634" cy="540000"/>
+                  </a:xfrm>
+                  <a:prstGeom prst="rect">
+                    <a:avLst/>
+                  </a:prstGeom>
+                  <a:noFill/>
+                  <a:ln>
+                    <a:noFill/>
+                  </a:ln>
+                </pic:spPr>
+              </pic:pic>
+            </a:graphicData>
+          </a:graphic>
+          <wp14:sizeRelH relativeFrom="margin">
+            <wp14:pctWidth>0
+            </wp14:pctWidth>
+          </wp14:sizeRelH>
+          <wp14:sizeRelV relativeFrom="margin">
+            <wp14:pctHeight>0
+            </wp14:pctHeight>
+          </wp14:sizeRelV>
+        </wp:anchor>
+      </w:drawing>
+    </w:r>
+  </w:p>
+</w:hdr>

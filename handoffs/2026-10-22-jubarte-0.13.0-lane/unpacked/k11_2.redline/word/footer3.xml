@@ -1,0 +1,22 @@
+<w:ftr xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 wp14">
+  <w:p w14:paraId="7447FA87" w14:textId="77777777">
+    <w:pPr>
+      <w:rPr>
+        <w:rPrChange w:author="Jubarte" w:date="1970-01-01T00:00:00Z" w:id="2">
+          <w:rPr>
+            <w:lang w:eastAsia="lt-LT"/>
+          </w:rPr>
+        </w:rPrChange>
+      </w:rPr>
+      <w:pPrChange w:author="Jubarte" w:date="1970-01-01T00:00:00Z" w:id="1">
+        <w:pPr>
+          <w:tabs>
+            <w:tab w:val="center" w:pos="4819"/>
+            <w:tab w:val="right" w:pos="9638"/>
+          </w:tabs>
+          <w:suppressAutoHyphens/>
+        </w:pPr>
+      </w:pPrChange>
+    </w:pPr>
+  </w:p>
+</w:ftr>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="/word/footer1.xml" Id="R278b617a59164699"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="/word/header1.xml" Id="Ra0e22b4089a14ef0"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="/word/settings.xml" Id="Reff5b0384ace4658"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="/word/styles.xml" Id="Rb0b4ddebfb704917"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/RegistrationAuthority/12" TargetMode="External" Id="Rbcd182f89d96463e"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/content/269924" TargetMode="External" Id="Rd76e77bc207647f8"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/content/514073" TargetMode="External" Id="R09f8b029a9ec4ad9"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/content/514003" TargetMode="External" Id="R41a975da5ac34a88"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/content/391334" TargetMode="External" Id="R080934f40f4c41e0"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/RegistrationAuthority/12" TargetMode="External" Id="R726bd7e9527d4065"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/content/589028" TargetMode="External" Id="Rd38a3b7f43ba4553"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/RegistrationAuthority/12" TargetMode="External" Id="R14954e7b53004137"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/RegistrationAuthority/15" TargetMode="External" Id="R01d3b3a2245849df"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/content/491555" TargetMode="External" Id="Rc65aa908f59644f9"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/RegistrationAuthority/12" TargetMode="External" Id="R1446a04920f545c3"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/content/535047" TargetMode="External" Id="R52252077f907434a"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/RegistrationAuthority/12" TargetMode="External" Id="Radda9bed1c05417f"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/content/516747" TargetMode="External" Id="Rb04aa8cb25e441ff"/>
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="https://meteor.aihw.gov.au/RegistrationAuthority/12" TargetMode="External" Id="Rfb3a75741e4d4fed"/>
+</Relationships>

@@ -1,0 +1,919 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 wp14">
+  <w:body>
+    <w:p w:rsidR="00E575FF" w:rsidRPr="00854C26" w:rsidRDefault="00854C26" w:rsidP="0061350B">
+      <w:pPr>
+        <w:spacing w:before="360" w:after="240" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:cstheme="minorHAnsi"/>
+          <w:b/>
+          <w:smallCaps/>
+          <w:sz w:val="32"/>
+          <w:szCs w:val="32"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00440F44">
+        <w:rPr>
+          <w:rFonts w:cstheme="minorHAnsi"/>
+          <w:b/>
+          <w:smallCaps/>
+          <w:sz w:val="32"/>
+          <w:szCs w:val="32"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t>Erasmus+ KA1 mobilitási projektek – egyéni beszámoló – 201
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00440F44" w:rsidRPr="00440F44">
+        <w:rPr>
+          <w:rFonts w:cstheme="minorHAnsi"/>
+          <w:b/>
+          <w:smallCaps/>
+          <w:sz w:val="32"/>
+          <w:szCs w:val="32"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t>6
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00854C26" w:rsidRPr="00854C26" w:rsidRDefault="00854C26" w:rsidP="0061350B">
+      <w:pPr>
+        <w:spacing w:before="360" w:after="300" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00854C26">
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t xml:space="preserve">A
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="008B7245">
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t>résztvevő
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="008B7245" w:rsidRPr="00854C26">
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t xml:space="preserve">
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="00854C26">
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t>adatai
+        </w:t>
+      </w:r>
+      <w:bookmarkStart w:id="0" w:name="_GoBack"/>
+      <w:bookmarkEnd w:id="0"/>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="Rcsostblzat"/>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="2802"/>
+        <w:gridCol w:w="11340"/>
+      </w:tblGrid>
+      <w:tr w:rsidR="00854C26" w:rsidTr="00AD06DF">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2802" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="00854C26" w:rsidRDefault="00854C26" w:rsidP="00391C9E">
+            <w:r>
+              <w:t>Név
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="11340" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="00854C26" w:rsidRDefault="00854C26" w:rsidP="00391C9E"/>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00854C26" w:rsidTr="00AD06DF">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2802" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="00854C26" w:rsidRDefault="00F520F7" w:rsidP="00F520F7">
+            <w:r>
+              <w:t>B
+              </w:t>
+            </w:r>
+            <w:r w:rsidR="00854C26">
+              <w:t>eosztás
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="11340" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="00854C26" w:rsidRDefault="00854C26" w:rsidP="00391C9E"/>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w:rsidR="00854C26" w:rsidRPr="00854C26" w:rsidRDefault="00854C26" w:rsidP="0061350B">
+      <w:pPr>
+        <w:spacing w:before="360" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00854C26">
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t>A
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t xml:space="preserve">mobilitás adatai
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="Rcsostblzat"/>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="2802"/>
+        <w:gridCol w:w="11340"/>
+      </w:tblGrid>
+      <w:tr w:rsidR="00854C26" w:rsidTr="0061350B">
+        <w:trPr>
+          <w:trHeight w:val="1168"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2802" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="00854C26" w:rsidRDefault="00A236F9" w:rsidP="00391C9E">
+            <w:r>
+              <w:t>Mobilitás típusa
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p w:rsidR="00A236F9" w:rsidRDefault="00A236F9" w:rsidP="00391C9E">
+            <w:r>
+              <w:t>(nem helyes törlendő)
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="11340" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="00854C26" w:rsidRDefault="00A236F9" w:rsidP="00391C9E">
+            <w:pPr>
+              <w:pStyle w:val="Listaszerbekezds"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="1"/>
+              </w:numPr>
+            </w:pPr>
+            <w:r>
+              <w:t>szakmai továbbképzés
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p w:rsidR="00A236F9" w:rsidRDefault="00A236F9" w:rsidP="00391C9E">
+            <w:pPr>
+              <w:pStyle w:val="Listaszerbekezds"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="1"/>
+              </w:numPr>
+            </w:pPr>
+            <w:r>
+              <w:t>nyelvtanfolyam
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p w:rsidR="00A236F9" w:rsidRDefault="00F520F7" w:rsidP="00391C9E">
+            <w:pPr>
+              <w:pStyle w:val="Listaszerbekezds"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="1"/>
+              </w:numPr>
+            </w:pPr>
+            <w:r>
+              <w:t xml:space="preserve">szakmai látogatás
+              </w:t>
+            </w:r>
+            <w:r w:rsidR="00A236F9">
+              <w:t>(job shadowing)
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p w:rsidR="00A236F9" w:rsidRDefault="00A236F9" w:rsidP="00391C9E">
+            <w:pPr>
+              <w:pStyle w:val="Listaszerbekezds"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="1"/>
+              </w:numPr>
+            </w:pPr>
+            <w:r>
+              <w:t>oktatási tevékenység
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00A236F9" w:rsidTr="00AD06DF">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2802" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="00A236F9" w:rsidRDefault="00A236F9" w:rsidP="00391C9E">
+            <w:r>
+              <w:t>Továbbképzés címe
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p w:rsidR="00A236F9" w:rsidRDefault="00A236F9" w:rsidP="00391C9E">
+            <w:r>
+              <w:t>(amennyiben releváns)
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="11340" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="00A236F9" w:rsidRDefault="00A236F9" w:rsidP="00391C9E"/>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00A236F9" w:rsidTr="0061350B">
+        <w:trPr>
+          <w:trHeight w:val="428"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2802" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="00A236F9" w:rsidRDefault="00A236F9" w:rsidP="00391C9E">
+            <w:r>
+              <w:t>Fogadó intézmény neve
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="11340" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="005E7FFD" w:rsidRDefault="005E7FFD" w:rsidP="00391C9E"/>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="005E7FFD" w:rsidTr="0061350B">
+        <w:trPr>
+          <w:trHeight w:val="703"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2802" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="005E7FFD" w:rsidRDefault="005E7FFD" w:rsidP="00391C9E">
+            <w:r>
+              <w:t>Fogadó intézmény típusa
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p w:rsidR="005E7FFD" w:rsidRDefault="005E7FFD" w:rsidP="00391C9E">
+            <w:r>
+              <w:t>(nem helyes törlendő)
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="11340" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="005E7FFD" w:rsidRDefault="005E7FFD" w:rsidP="00391C9E">
+            <w:pPr>
+              <w:pStyle w:val="Listaszerbekezds"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="2"/>
+              </w:numPr>
+            </w:pPr>
+            <w:r>
+              <w:t>oktatási intézmény
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p w:rsidR="005E7FFD" w:rsidRDefault="005E7FFD" w:rsidP="00391C9E">
+            <w:pPr>
+              <w:pStyle w:val="Listaszerbekezds"/>
+              <w:numPr>
+                <w:ilvl w:val="0"/>
+                <w:numId w:val="2"/>
+              </w:numPr>
+            </w:pPr>
+            <w:r>
+              <w:t>továbbképző intézmény
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00A236F9" w:rsidTr="00AD06DF">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2802" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="00A236F9" w:rsidRDefault="00A236F9" w:rsidP="00391C9E">
+            <w:r>
+              <w:t>Fogadó ország
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="11340" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="00A236F9" w:rsidRDefault="00A236F9" w:rsidP="00391C9E"/>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00A236F9" w:rsidTr="00AD06DF">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2802" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="00A236F9" w:rsidRDefault="00A236F9" w:rsidP="00391C9E">
+            <w:r>
+              <w:t>Munkanyelv
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="11340" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="00A236F9" w:rsidRDefault="00A236F9" w:rsidP="00391C9E"/>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00A236F9" w:rsidTr="00AD06DF">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2802" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="00A236F9" w:rsidRDefault="00A236F9" w:rsidP="00391C9E">
+            <w:r>
+              <w:t>Mobilitás időtartama
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p w:rsidR="00A236F9" w:rsidRDefault="00A236F9" w:rsidP="00AD06DF">
+            <w:r>
+              <w:t>(
+              </w:t>
+            </w:r>
+            <w:r w:rsidR="00AD06DF">
+              <w:t>munka
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:t>napok száma)
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="11340" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="00A236F9" w:rsidRDefault="00A236F9" w:rsidP="0061350B">
+            <w:pPr>
+              <w:ind w:firstLine="882"/>
+            </w:pPr>
+            <w:r>
+              <w:t>nap
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w:rsidR="0061350B" w:rsidRDefault="0061350B">
+      <w:pPr>
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:br w:type="page"/>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="007A6560" w:rsidRPr="007C10F6" w:rsidRDefault="007C10F6" w:rsidP="007C10F6">
+      <w:pPr>
+        <w:spacing w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:lastRenderedPageBreak/>
+        <w:t>Tanulási eredmények
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="Rcsostblzat"/>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="4714"/>
+        <w:gridCol w:w="4715"/>
+        <w:gridCol w:w="4715"/>
+      </w:tblGrid>
+      <w:tr w:rsidR="007A6560" w:rsidTr="007A6560">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4714" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="007A6560" w:rsidRPr="004B3A33" w:rsidRDefault="007A6560" w:rsidP="007A6560">
+            <w:pPr>
+              <w:rPr>
+                <w:b/>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="004B3A33">
+              <w:rPr>
+                <w:b/>
+                <w:bCs/>
+              </w:rPr>
+              <w:t>Az elvárt tanulási eredmények meghatározása a mobilitás tervezési szakaszában
+              </w:t>
+            </w:r>
+            <w:r w:rsidR="004B3A33" w:rsidRPr="004B3A33">
+              <w:rPr>
+                <w:b/>
+                <w:bCs/>
+              </w:rPr>
+              <w:t xml:space="preserve">(pályázat)
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p w:rsidR="007A6560" w:rsidRPr="00AD06DF" w:rsidRDefault="007A6560" w:rsidP="007A6560">
+            <w:r w:rsidRPr="00AD06DF">
+              <w:t>(A tanulási folyamat elvárt eredményét írja le, cselekvést jelentő igéket használ, specifikus, konkrét, világos, egyértelmű és mérhető
+              </w:t>
+            </w:r>
+            <w:r w:rsidR="004B3A33">
+              <w:t>.
+              </w:t>
+            </w:r>
+            <w:r w:rsidRPr="00AD06DF">
+              <w:t>)
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4715" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="007A6560" w:rsidRPr="004B3A33" w:rsidRDefault="007A6560" w:rsidP="007A6560">
+            <w:pPr>
+              <w:rPr>
+                <w:b/>
+                <w:bCs/>
+              </w:rPr>
+            </w:pPr>
+            <w:r w:rsidRPr="004B3A33">
+              <w:rPr>
+                <w:b/>
+                <w:bCs/>
+              </w:rPr>
+              <w:t>A tanulási eredmények értékelése a mobilitás után
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p w:rsidR="007A6560" w:rsidRPr="00AD06DF" w:rsidRDefault="007A6560" w:rsidP="004B3A33">
+            <w:r w:rsidRPr="00AD06DF">
+              <w:t>(Az elvárt tanulási eredmények teljesülésének „vizsgálata&#x201D;, a személyes fejlődés nyomon követése, bizonyítékok a kompetenciafejlődésre.)
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4715" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="004B3A33" w:rsidRDefault="007A6560" w:rsidP="007A6560">
+            <w:r w:rsidRPr="004B3A33">
+              <w:rPr>
+                <w:b/>
+                <w:bCs/>
+              </w:rPr>
+              <w:t>Hogyan alkalmazhatóak a mobilitás során megszerzett tanulási eredmények a saját munkámban, illetve a küldő intézmény gyakorlatában?
+              </w:t>
+            </w:r>
+          </w:p>
+          <w:p w:rsidR="007A6560" w:rsidRPr="00AD06DF" w:rsidRDefault="004B3A33" w:rsidP="007A6560">
+            <w:r>
+              <w:t>(
+              </w:t>
+            </w:r>
+            <w:r w:rsidR="007A6560" w:rsidRPr="00AD06DF">
+              <w:t>A terjesztésre vonatkozó tervek
+              </w:t>
+            </w:r>
+            <w:r>
+              <w:t>.)
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="007A6560" w:rsidTr="007C10F6">
+        <w:trPr>
+          <w:trHeight w:val="2994"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4714" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="007A6560" w:rsidRDefault="007A6560" w:rsidP="00391C9E"/>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4715" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="007A6560" w:rsidRDefault="007A6560" w:rsidP="00391C9E"/>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4715" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="007A6560" w:rsidRDefault="007A6560" w:rsidP="00391C9E"/>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w:rsidR="00686BE4" w:rsidRPr="00AD06DF" w:rsidRDefault="004B3A33" w:rsidP="00391C9E">
+      <w:pPr>
+        <w:spacing w:line="240" w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:t>További információ
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="008B7245">
+        <w:t xml:space="preserve">:
+        </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId8" w:history="1">
+        <w:r w:rsidRPr="004B3A33">
+          <w:rPr>
+            <w:rStyle w:val="Hiperhivatkozs"/>
+          </w:rPr>
+          <w:t>Az iskola és a világ
+          </w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:t xml:space="preserve">TKA, 2016.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="005E7FFD" w:rsidRDefault="005E7FFD" w:rsidP="00391C9E">
+      <w:pPr>
+        <w:spacing w:line="240" w:lineRule="auto"/>
+      </w:pPr>
+      <w:r w:rsidRPr="00854C26">
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t>A
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t xml:space="preserve">
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00646D28">
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t>továbbképzés
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00646D28" w:rsidRPr="005E7FFD">
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t xml:space="preserve">
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="005E7FFD">
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t>programj
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00646D28" w:rsidRPr="00AD06DF">
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t>a
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="007C10F6">
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t xml:space="preserve">
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00AD06DF" w:rsidRPr="00AD06DF">
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t xml:space="preserve">/
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00AD06DF">
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t>szakmai látogatás (job shadowing)
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00AD06DF" w:rsidRPr="00391C9E">
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t xml:space="preserve">munkaterve
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="Rcsostblzat"/>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="14142"/>
+      </w:tblGrid>
+      <w:tr w:rsidR="005E7FFD" w:rsidTr="0061350B">
+        <w:trPr>
+          <w:trHeight w:val="2835"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="14142" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="005E7FFD" w:rsidRDefault="005E7FFD" w:rsidP="0061350B"/>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w:rsidR="00391C9E" w:rsidRDefault="00646D28" w:rsidP="00391C9E">
+      <w:pPr>
+        <w:spacing w:before="120" w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:lastRenderedPageBreak/>
+        <w:t>A r
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="005E7FFD" w:rsidRPr="005E7FFD">
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t>észtvevő fel
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="002E38FF">
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t xml:space="preserve">adatai a mobilitás előtt
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00391C9E" w:rsidRDefault="00391C9E" w:rsidP="00391C9E">
+      <w:pPr>
+        <w:spacing w:before="120" w:after="0" w:line="240" w:lineRule="auto"/>
+      </w:pPr>
+      <w:r w:rsidRPr="00391C9E">
+        <w:t xml:space="preserve">Kérjük,
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="0067146E">
+        <w:t>röviden mutassa be
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="00391C9E">
+        <w:t>, hogyan készült fel a mobilitásra
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="002E38FF">
+        <w:t>.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="Rcsostblzat"/>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="14142"/>
+      </w:tblGrid>
+      <w:tr w:rsidR="00391C9E" w:rsidTr="003C2C83">
+        <w:trPr>
+          <w:trHeight w:val="1701"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="14142" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w:rsidR="00391C9E" w:rsidRDefault="00391C9E" w:rsidP="0061350B">
+            <w:pPr>
+              <w:spacing w:before="120"/>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w:rsidR="00A236F9" w:rsidRDefault="003C2C83" w:rsidP="003C2C83">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="10206"/>
+          <w:tab w:val="left" w:leader="underscore" w:pos="13608"/>
+        </w:tabs>
+        <w:spacing w:before="1600" w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+        </w:rPr>
+        <w:t>Dátum:
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="003C2C83" w:rsidRPr="003C2C83" w:rsidRDefault="003C2C83" w:rsidP="003C2C83">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="11340"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:proofErr w:type="gramStart"/>
+      <w:r w:rsidRPr="003C2C83">
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+        </w:rPr>
+        <w:t>résztvevő
+        </w:t>
+      </w:r>
+      <w:proofErr w:type="gramEnd"/>
+      <w:r w:rsidRPr="003C2C83">
+        <w:rPr>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="28"/>
+        </w:rPr>
+        <w:t xml:space="preserve">aláírása
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:sectPr w:rsidR="003C2C83" w:rsidRPr="003C2C83" w:rsidSect="00AD06DF">
+      <w:headerReference w:type="default" r:id="rId9"/>
+      <w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/>
+      <w:pgMar w:top="1417" w:right="1417" w:bottom="1417" w:left="1417" w:header="708" w:footer="708" w:gutter="0"/>
+      <w:cols w:space="708"/>
+      <w:docGrid w:linePitch="360"/>
+    </w:sectPr>
+  </w:body>
+</w:document>

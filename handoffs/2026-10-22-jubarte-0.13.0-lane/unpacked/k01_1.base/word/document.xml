@@ -1,0 +1,1679 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 wp14">
+  <w:body>
+    <w:p w:rsidR="00CB322E" w:rsidRDefault="00CB322E" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:pStyle w:val="Bezodstpw"/>
+        <w:spacing w:line="300" w:lineRule="exact"/>
+        <w:ind w:left="2832" w:firstLine="708"/>
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:bookmarkStart w:id="0" w:name="_GoBack"/>
+      <w:bookmarkEnd w:id="0"/>
+    </w:p>
+    <w:p w:rsidR="00CB322E" w:rsidRPr="007B723E" w:rsidRDefault="008B235B" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:pStyle w:val="Bezodstpw"/>
+        <w:spacing w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>ZARZĄDZENIE NR 180
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00CB322E" w:rsidRPr="007B723E" w:rsidRDefault="00CB322E" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:pStyle w:val="Bezodstpw"/>
+        <w:spacing w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="007B723E">
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>PREZYDENTA MIASTA TORUNIA
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00CB322E" w:rsidRPr="007B723E" w:rsidRDefault="008B235B" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:pStyle w:val="Bezodstpw"/>
+        <w:spacing w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>z dnia 12.08.2021 r.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00CB322E" w:rsidRPr="007B723E" w:rsidRDefault="00CB322E" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:pStyle w:val="Bezodstpw"/>
+        <w:spacing w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00CB322E" w:rsidRDefault="00CB322E" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:pStyle w:val="Bezodstpw"/>
+        <w:spacing w:line="300" w:lineRule="exact"/>
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="007B723E">
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">zmieniające zarządzenie w sprawie
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>ustalenia Regulaminu wynagradzania pracowników
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00E71B95">
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="007B723E">
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>Urzędu Miasta Torunia
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00CB322E" w:rsidRDefault="00CB322E" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:pStyle w:val="Bezodstpw"/>
+        <w:spacing w:line="300" w:lineRule="exact"/>
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="0093536C" w:rsidRDefault="0093536C" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:ind w:firstLine="708"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="006D4986">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>Na podstawie art. 33 ust. 3 ustawy z dnia 8 marca 1990 r.
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">o samorządzie gminnym
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:br/>
+      </w:r>
+      <w:r w:rsidR="000740C7">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>(Dz. U. z 2021 r. poz. 1372
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>), art. 36 ust.
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="000740C7">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">5 i 6 oraz
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">art. 39 ust. 1 i 2 usta
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="000740C7">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">wy z dnia 21 listopada 2008 r.
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>o pracownik
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="000740C7">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>ach samorządowych (Dz. U. z 2019 r. poz. 1282
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>), § 5 ust. 6 rozporządzenia Rady Ministrów z dnia 15 maja 2018 r. w sprawie wynagradzania pracowników samorządowych (Dz. U. z 2018 r. poz. 936
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00467293">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">z późn. zm.
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="000740C7">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:vertAlign w:val="superscript"/>
+        </w:rPr>
+        <w:t>1
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00467293" w:rsidRPr="00467293">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:vertAlign w:val="superscript"/>
+        </w:rPr>
+        <w:t>)
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">) oraz
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="006D4986">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">§ 18 pkt 8 Regulaminu Organizacyjnego Urzędu Miasta Torunia, stanowiącego załącznik nr 1
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00397A1C">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:br/>
+      </w:r>
+      <w:r w:rsidRPr="006D4986">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>do zarządzenia nr 378 Prezydenta Miasta Torunia z dnia 30
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">października 2013 r.
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="006D4986">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>w sprawie nadania Regulaminu Organizacyjnego Urzędowi Miasta Torunia
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">z późn. zm.
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="000740C7">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:vertAlign w:val="superscript"/>
+        </w:rPr>
+        <w:t>2
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:vertAlign w:val="superscript"/>
+        </w:rPr>
+        <w:t>)
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">), zarządza
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00397A1C">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:br/>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>się co następuje:
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="009F03CE" w:rsidRDefault="009F03CE" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00FF0A90" w:rsidRDefault="009F03CE" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">§
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="009F03CE">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>1
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00EE25EF" w:rsidRDefault="009F03CE" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="009F03CE">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>W
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00FF0A90">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Wykazie stanowisk, zaszeregowań, stawek dodatku funkcyjnego i wymagań kwalifikacyjnych pracowników stanowiącym załącznik nr 1 do Regulaminu
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00397A1C">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">wynagradzania pracowników Urzędu
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00397A1C">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>Miasta Torunia ustalonego
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00FF0A90">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00EE25EF">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>zarządzeniem Nr 385
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="009F03CE">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Pre
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">zydenta Miasta Torunia z dnia
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00EE25EF">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>18.12.2019
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="009F03CE">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">r. w sprawie
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">ustalenia
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="009F03CE">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Regulaminu
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>wynagradzania pracowników
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="009F03CE">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Urzęd
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>u Miasta Torunia
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00EE25EF">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00397A1C">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>(
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00EE25EF">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>zmienionego zarządzeniami Prezydenta Miasta Torunia nr 65 z dnia 16.04.2020 r. i nr 135 z dnia 06.07.2020 r.
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00397A1C">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>)
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00EE25EF">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">,
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00397A1C">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">poz. 5
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00EE25EF">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>w części dotyczącej stanowisk urzędniczych otrzymuje brzmienie:
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00EE25EF" w:rsidRDefault="00EE25EF" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="Tabela-Siatka"/>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="562"/>
+        <w:gridCol w:w="2127"/>
+        <w:gridCol w:w="1841"/>
+        <w:gridCol w:w="1510"/>
+        <w:gridCol w:w="1511"/>
+        <w:gridCol w:w="1511"/>
+      </w:tblGrid>
+      <w:tr w:rsidR="00EE25EF" w:rsidTr="00EE25EF">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="562" w:type="dxa"/>
+            <w:vMerge w:val="restart"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00EE25EF" w:rsidRDefault="00EE25EF" w:rsidP="00133C7E">
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+              <w:t>5
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2127" w:type="dxa"/>
+            <w:vMerge w:val="restart"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00EE25EF" w:rsidRDefault="00EE25EF" w:rsidP="00133C7E">
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+              <w:t>Inspektor
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1841" w:type="dxa"/>
+            <w:vMerge w:val="restart"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00EE25EF" w:rsidRDefault="00EE25EF" w:rsidP="00133C7E">
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+              <w:t>XII - XVI
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1510" w:type="dxa"/>
+            <w:vMerge w:val="restart"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00EE25EF" w:rsidRDefault="00EE25EF" w:rsidP="00133C7E">
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+              <w:t>-
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1511" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00EE25EF" w:rsidRDefault="00EE25EF" w:rsidP="00133C7E">
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+              <w:t>wyższe
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1511" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00EE25EF" w:rsidRDefault="00EE25EF" w:rsidP="00133C7E">
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+              <w:t>3
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00EE25EF" w:rsidTr="00EE25EF">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="562" w:type="dxa"/>
+            <w:vMerge/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00EE25EF" w:rsidRDefault="00EE25EF" w:rsidP="00133C7E">
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2127" w:type="dxa"/>
+            <w:vMerge/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00EE25EF" w:rsidRDefault="00EE25EF" w:rsidP="00133C7E">
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1841" w:type="dxa"/>
+            <w:vMerge/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00EE25EF" w:rsidRDefault="00EE25EF" w:rsidP="00133C7E">
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1510" w:type="dxa"/>
+            <w:vMerge/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00EE25EF" w:rsidRDefault="00EE25EF" w:rsidP="00133C7E">
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1511" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00EE25EF" w:rsidRDefault="00EE25EF" w:rsidP="00133C7E">
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+              <w:t>średnie
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1511" w:type="dxa"/>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00EE25EF" w:rsidRDefault="00EE25EF" w:rsidP="00133C7E">
+            <w:pPr>
+              <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="24"/>
+              </w:rPr>
+              <w:t>5
+              </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w:rsidR="005A10FC" w:rsidRDefault="005A10FC" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00EE25EF" w:rsidRDefault="00EE25EF" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00EE25EF" w:rsidRDefault="00EE25EF" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>§ 2
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="009F03CE" w:rsidRPr="009F03CE" w:rsidRDefault="00952F40" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00952F40">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Zarządzenie wchodzi w życie po upływie dwóch tygodni od dnia podania go do wiadomości pracownikom poprzez wywieszenie na tablicy ogłoszeń w Urzędzie Miasta Torunia
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00EE25EF">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:br/>
+      </w:r>
+      <w:r w:rsidRPr="00952F40">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>i opublikowaniu na stronie internetowej Urzędu Miasta Torunia.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="009F03CE" w:rsidRDefault="009F03CE" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00CB322E" w:rsidRDefault="00CB322E" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:ind w:firstLine="708"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="005A10FC" w:rsidRDefault="005A10FC" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:ind w:firstLine="708"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="005A10FC" w:rsidRPr="005A10FC" w:rsidRDefault="005A10FC" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:pStyle w:val="Bezodstpw"/>
+        <w:spacing w:line="300" w:lineRule="exact"/>
+        <w:ind w:firstLine="708"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="007B723E">
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="005A10FC">
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="005A10FC">
+        <w:rPr>
+          <w:rFonts w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>Prezydent Miasta Torunia
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="005A10FC" w:rsidRDefault="005A10FC" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:suppressAutoHyphens/>
+        <w:overflowPunct w:val="0"/>
+        <w:autoSpaceDE w:val="0"/>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:ind w:firstLine="708"/>
+        <w:jc w:val="both"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="ar-SA"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="005A10FC" w:rsidRPr="005A10FC" w:rsidRDefault="005A10FC" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:suppressAutoHyphens/>
+        <w:overflowPunct w:val="0"/>
+        <w:autoSpaceDE w:val="0"/>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:ind w:firstLine="708"/>
+        <w:jc w:val="both"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="ar-SA"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="005A10FC" w:rsidRPr="005A10FC" w:rsidRDefault="005A10FC" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:suppressAutoHyphens/>
+        <w:overflowPunct w:val="0"/>
+        <w:autoSpaceDE w:val="0"/>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:ind w:firstLine="708"/>
+        <w:jc w:val="both"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="ar-SA"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="005A10FC">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="ar-SA"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="005A10FC">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="ar-SA"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="005A10FC">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="ar-SA"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="005A10FC">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="ar-SA"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="005A10FC">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="ar-SA"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="005A10FC">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="ar-SA"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="005A10FC">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="ar-SA"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="005A10FC" w:rsidRPr="005A10FC" w:rsidRDefault="00397A1C" w:rsidP="00397A1C">
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:suppressAutoHyphens/>
+        <w:overflowPunct w:val="0"/>
+        <w:autoSpaceDE w:val="0"/>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:ind w:left="5664"/>
+        <w:jc w:val="both"/>
+        <w:textAlignment w:val="baseline"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="ar-SA"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="ar-SA"/>
+        </w:rPr>
+        <w:t xml:space="preserve">
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="005A10FC" w:rsidRPr="005A10FC">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:eastAsia="ar-SA"/>
+        </w:rPr>
+        <w:t>Michał Zaleski
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="005A10FC" w:rsidRDefault="005A10FC" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="708"/>
+          <w:tab w:val="center" w:pos="4536"/>
+          <w:tab w:val="right" w:pos="9072"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="300" w:lineRule="exact"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:eastAsia="pl-PL"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00397A1C" w:rsidRDefault="00397A1C" w:rsidP="00397A1C">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="708"/>
+          <w:tab w:val="center" w:pos="4536"/>
+          <w:tab w:val="right" w:pos="9072"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:eastAsia="pl-PL"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w:rsidR="00255DFF" w:rsidRDefault="00255DFF" w:rsidP="00397A1C">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="708"/>
+          <w:tab w:val="center" w:pos="4536"/>
+          <w:tab w:val="right" w:pos="9072"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:eastAsia="pl-PL"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:eastAsia="pl-PL"/>
+        </w:rPr>
+        <w:t>Zmiany regulaminu wprowadzone niniejszym zarządzeniem
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="005A10FC" w:rsidRPr="005A10FC" w:rsidRDefault="005A10FC" w:rsidP="00397A1C">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="708"/>
+          <w:tab w:val="center" w:pos="4536"/>
+          <w:tab w:val="right" w:pos="9072"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:lang w:eastAsia="pl-PL"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="005A10FC">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:eastAsia="pl-PL"/>
+        </w:rPr>
+        <w:t>został
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00255DFF">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:eastAsia="pl-PL"/>
+        </w:rPr>
+        <w:t>y uzgodnione
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00E71B95">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:eastAsia="pl-PL"/>
+        </w:rPr>
+        <w:t xml:space="preserve">
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="005A10FC">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:eastAsia="pl-PL"/>
+        </w:rPr>
+        <w:t>z Niezależnym Samorządnym Związkiem
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00D87D76" w:rsidRDefault="005A10FC" w:rsidP="00397A1C">
+      <w:pPr>
+        <w:pBdr>
+          <w:bottom w:val="single" w:sz="6" w:space="1" w:color="auto"/>
+        </w:pBdr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:eastAsia="pl-PL"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="005A10FC">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:eastAsia="pl-PL"/>
+        </w:rPr>
+        <w:t>Zawodowym Pracowników Administracji
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00397A1C">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:eastAsia="pl-PL"/>
+        </w:rPr>
+        <w:t xml:space="preserve">
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="005A10FC">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:eastAsia="pl-PL"/>
+        </w:rPr>
+        <w:t>przy Urzędzie Miasta Torunia
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="004A308D" w:rsidRPr="00402A4C" w:rsidRDefault="004A308D" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:pStyle w:val="Tekstpodstawowy2"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:sz w:val="17"/>
+          <w:szCs w:val="17"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="006D4986">
+        <w:rPr>
+          <w:sz w:val="17"/>
+          <w:szCs w:val="17"/>
+          <w:vertAlign w:val="superscript"/>
+        </w:rPr>
+        <w:t>1
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00467293">
+        <w:rPr>
+          <w:sz w:val="17"/>
+          <w:szCs w:val="17"/>
+          <w:vertAlign w:val="superscript"/>
+        </w:rPr>
+        <w:t>)
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="00402A4C">
+        <w:rPr>
+          <w:sz w:val="17"/>
+          <w:szCs w:val="17"/>
+        </w:rPr>
+        <w:t>zmiany
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00467293">
+        <w:rPr>
+          <w:sz w:val="17"/>
+          <w:szCs w:val="17"/>
+        </w:rPr>
+        <w:t xml:space="preserve">tekstu jednolitego wymienionego rozporządzenia
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="00402A4C">
+        <w:rPr>
+          <w:sz w:val="17"/>
+          <w:szCs w:val="17"/>
+        </w:rPr>
+        <w:t>zostały
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00467293">
+        <w:rPr>
+          <w:sz w:val="17"/>
+          <w:szCs w:val="17"/>
+        </w:rPr>
+        <w:t xml:space="preserve">ogłoszone w Dz. U. z 2018
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="17"/>
+          <w:szCs w:val="17"/>
+        </w:rPr>
+        <w:t xml:space="preserve">r. poz.
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00FF0A90">
+        <w:rPr>
+          <w:sz w:val="17"/>
+          <w:szCs w:val="17"/>
+        </w:rPr>
+        <w:t>2437, Dz. U. z
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="000740C7">
+        <w:rPr>
+          <w:sz w:val="17"/>
+          <w:szCs w:val="17"/>
+        </w:rPr>
+        <w:t xml:space="preserve">2020 r. poz.
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00FF0A90">
+        <w:rPr>
+          <w:sz w:val="17"/>
+          <w:szCs w:val="17"/>
+        </w:rPr>
+        <w:t>268 i Dz. U. z 2021 r. poz. 791,
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00EE25EF" w:rsidRPr="00133C7E" w:rsidRDefault="00FF0A90" w:rsidP="00133C7E">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="17"/>
+          <w:szCs w:val="17"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="17"/>
+          <w:szCs w:val="17"/>
+          <w:vertAlign w:val="superscript"/>
+        </w:rPr>
+        <w:t>2
+        </w:t>
+      </w:r>
+      <w:r w:rsidR="00467293">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="17"/>
+          <w:szCs w:val="17"/>
+          <w:vertAlign w:val="superscript"/>
+        </w:rPr>
+        <w:t xml:space="preserve">)
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="00FF0A90">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="17"/>
+          <w:szCs w:val="17"/>
+        </w:rPr>
+        <w:t>zmienionego zarządzeniami Prezydenta Miasta Torunia nr 312 z dnia 21.10.2014 r., nr 38
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="17"/>
+          <w:szCs w:val="17"/>
+        </w:rPr>
+        <w:t xml:space="preserve">0 z dnia 30.12.2014 r., nr 149
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="00FF0A90">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="17"/>
+          <w:szCs w:val="17"/>
+        </w:rPr>
+        <w:t>z dnia 19.06.2015 r., nr 273 z dnia 21.08.2015 r., nr 391 z dnia 04.12.2015 r., nr 379 z dnia 24.11.2016 r., nr 40 z dnia 17.02.2017 r., nr 130 z dnia 23.05.2017 r., nr 254 z dnia 18.09.2017 r., nr 319 z dnia 31.10.2017 r., nr 353 z dnia 01.12.2017 r., nr 293 z dnia 27.08.2018 r., nr 124 z dnia 02.05.2019 r., nr 337 z dnia 23.10.2019 r., nr 202 z dnia 28.09.2020 r.
+        </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="17"/>
+          <w:szCs w:val="17"/>
+        </w:rPr>
+        <w:t xml:space="preserve">, nr 222 z dnia 08.10.2020 r.,
+        </w:t>
+      </w:r>
+      <w:r w:rsidRPr="00FF0A90">
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:sz w:val="17"/>
+          <w:szCs w:val="17"/>
+        </w:rPr>
+        <w:t>nr 230 z dnia 26.10.2020 r. oraz nr 253 z dnia 09.11.2020 r.
+        </w:t>
+      </w:r>
+    </w:p>
+    <w:sectPr w:rsidR="00EE25EF" w:rsidRPr="00133C7E" w:rsidSect="00EE25EF">
+      <w:pgSz w:w="11906" w:h="16838"/>
+      <w:pgMar w:top="568" w:right="1417" w:bottom="426" w:left="1417" w:header="708" w:footer="708" w:gutter="0"/>
+      <w:cols w:space="708"/>
+      <w:docGrid w:linePitch="360"/>
+    </w:sectPr>
+  </w:body>
+</w:document>
