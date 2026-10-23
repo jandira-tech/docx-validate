@@ -21,7 +21,8 @@
  * first, then by a `<Default Extension>` matching the part name's extension.
  * PartName comparison follows OPC part-name equivalence: ASCII
  * case-insensitive, with percent-escapes decoded (a PartName is a URI; the
- * on-disk path is its decoded form). Pure functions only — no filesystem
+ * on-disk path is its decoded form). Duplicate declarations keep their
+ * first entry deterministically. Pure functions only — no filesystem
  * access; callers hand in the parsed [Content_Types].xml DOM.
  */
 
@@ -30,12 +31,12 @@ import { getElementsByTagNameNSAll } from "./xml-helpers";
 export const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types";
 
 /** Normalized declaration table extracted from a [Content_Types].xml DOM. */
-export interface ContentTypeTable {
+export type ContentTypeTable = {
     /** Normalized PartName → ContentType for every `<Override>`. */
     readonly overrides: ReadonlyMap<string, string>;
     /** ASCII-lowercased Extension → ContentType for every `<Default>`. */
     readonly defaults: ReadonlyMap<string, string>;
-}
+};
 
 /** Result of resolving one part name against a {@link ContentTypeTable}. */
 export type ResolvedContentType = {
@@ -58,15 +59,28 @@ const asciiLowercase = (value: string): string => {
 };
 
 /**
- * Normalize a part name (or package-relative file path) to its comparison
- * form: strip leading `/` separators, decode percent-escapes safely
- * (a malformed escape keeps its raw form rather than throwing),
- * ASCII-lowercase. Normalization is for comparison only — the resolved
- * `contentType` is the declared value, never the normalized key.
+ * Decode percent-escapes safely. Malformed sequences (e.g. `%zz`) keep
+ * the raw text — the lookup then simply misses and the caller's residual
+ * pass reports the part, instead of a URIError taking down validation.
  */
-export function normalizePartName(partName: string): string {
-    return asciiLowercase(partName.replace(/^\/+/, ""));
-}
+const decodePercentEscapes = (text: string): string => {
+    try {
+        return decodeURIComponent(text);
+    } catch {
+        return text;
+    }
+};
+
+/**
+ * Normalize a part name (or package-relative file path) to its comparison
+ * form: percent-escapes decoded (a PartName is a package-relative URI while
+ * the on-disk path is its decoded form, so both inputs normalize
+ * identically), leading `/` separators stripped — after decoding, so an
+ * encoded leading `%2F` strips too — and ASCII-lowercased. Normalization is
+ * for comparison only; the resolved `contentType` is the declared value,
+ * never the normalized key.
+ */
+export const normalizePartName = (partName: string): string => asciiLowercase(decodePercentEscapes(partName).replace(/^\/+/, ""));
 
 /**
  * OPC extension of a part name: the substring after the last dot of the
@@ -81,35 +95,36 @@ export const partExtension = (partPath: string): string => {
 };
 
 /** Extract the declarations from a parsed [Content_Types].xml document. */
-export function parseContentTypes(dom: Document): ContentTypeTable {
+export const parseContentTypes = (dom: Document): ContentTypeTable => {
     const overrides = new Map<string, string>();
     const defaults = new Map<string, string>();
 
     for (const elem of getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Override")) {
         const partName = elem.getAttribute("PartName");
-        // OPC PartName is a package-relative URI; the on-disk path is its
-        // decoded form, so decode before storing or an escaped PartName
-        // (%20 et al.) never matches the walked file list. Fall back to
-        // the raw value on malformed escapes — the lookup then simply
-        // misses and the residual pass reports the part.
-        if (!partName) continue;
-        let decoded = partName.replace(/^\/+/, "");
-        try {
-            decoded = decodeURIComponent(decoded);
-        } catch {
-            // keep raw
+        if (!partName) {
+            continue;
         }
-        overrides.set(asciiLowercase(decoded), elem.getAttribute("ContentType") ?? "");
+        // First declaration wins: duplicate PartNames are themselves a
+        // package defect, and coverage only needs one authoritative entry.
+        const key = normalizePartName(partName);
+        if (!overrides.has(key)) {
+            overrides.set(key, elem.getAttribute("ContentType") ?? "");
+        }
     }
 
     for (const elem of getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Default")) {
         const ext = elem.getAttribute("Extension");
-        if (!ext) continue;
-        defaults.set(asciiLowercase(ext), elem.getAttribute("ContentType") ?? "");
+        if (!ext) {
+            continue;
+        }
+        const key = asciiLowercase(ext);
+        if (!defaults.has(key)) {
+            defaults.set(key, elem.getAttribute("ContentType") ?? "");
+        }
     }
 
     return { overrides, defaults };
-}
+};
 
 /**
  * Resolve a part name against the table (ECMA-376 Part 2 §10.1.2.4): an
@@ -117,7 +132,7 @@ export function parseContentTypes(dom: Document): ContentTypeTable {
  * Extension>` for the part's OPC extension applies; `null` when neither
  * covers the part.
  */
-export function resolveContentType(table: ContentTypeTable, partName: string): ResolvedContentType | null {
+export const resolveContentType = (table: ContentTypeTable, partName: string): ResolvedContentType | null => {
     const key = normalizePartName(partName);
     const override = table.overrides.get(key);
     if (override !== undefined) {
@@ -129,4 +144,4 @@ export function resolveContentType(table: ContentTypeTable, partName: string): R
         return { contentType: byDefault, source: "default" };
     }
     return null;
-}
+};
