@@ -14,6 +14,7 @@ import { wordGridColumnAttributesCheck } from "./grid-column-attributes";
 import { mathRunDeletionCheck } from "./math-run-deletion";
 import { mathRunInsertionCheck } from "./math-run-insertion";
 import { zipBytesAfterEocdCheck, zipEocdCommentOverrunCheck } from "./package";
+import { pageMarginAttributesCheck } from "./page-margin-attributes";
 import { wordShadingColorCheck } from "./shading-color";
 import { wordTablePropertiesRequiredCheck } from "./table-properties-required";
 import { wordRowWithoutCellCheck } from "./tables";
@@ -32,6 +33,7 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordGridColumnAttributesCheck,
     wordCellMarginOrderCheck,
     wordTablePropertiesRequiredCheck,
+    pageMarginAttributesCheck,
 ];
 
 export function createDefaultCheckRegistry(): CheckRegistry {
