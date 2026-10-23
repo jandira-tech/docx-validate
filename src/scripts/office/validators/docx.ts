@@ -532,6 +532,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             // ([trash]/0000.dat). A part that has a content type but no
             // relationship is tolerated, so rels-unreferenced stays a warning.
             case "ct-uncovered-part":
+            // paragraph-sectpr-breaks.docx: empty vt:filetime causes Word unreadable-content recovery; empty lpwstr in complex2.docx opens clean.
+            case "word-custom-property-filetime-empty":
             case "word-drawing-scalar-whitespace":
             case "word-drawing-arc-radius":
             case "word-empty-drawing":
