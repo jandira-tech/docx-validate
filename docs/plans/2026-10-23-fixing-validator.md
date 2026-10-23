@@ -10,14 +10,14 @@
 
 ### Required behavior
 
-| Mode | Required checks | Meaning of success |
-|---|---|---|
-| Default / `word-valid` | Complete portable Word check set | No known Word-opening defect detected |
-| `--strict` | Complete Word checks and applicable schemas | Word checks pass and schema validation completes successfully |
-| `--quick` | Common-defect preset | Selected checks pass; report remaining unchecked coverage |
-| `--checks <ids>` | Named checks and prerequisites | Selected checks pass; report remaining unchecked coverage |
-| `--verify-word` | Requested portable mode plus real Word | Microsoft Word also opens the exact file without warnings, repair, recovery, or crashes |
-| Explicit `lenient` | Existing compatibility behavior | Preserve existing callers during migration |
+| Mode                   | Required checks                             | Meaning of success                                                                      |
+| ---------------------- | ------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Default / `word-valid` | Complete portable Word check set            | No known Word-opening defect detected                                                   |
+| `--strict`             | Complete Word checks and applicable schemas | Word checks pass and schema validation completes successfully                           |
+| `--quick`              | Common-defect preset                        | Selected checks pass; report remaining unchecked coverage                               |
+| `--checks <ids>`       | Named checks and prerequisites              | Selected checks pass; report remaining unchecked coverage                               |
+| `--verify-word`        | Requested portable mode plus real Word      | Microsoft Word also opens the exact file without warnings, repair, recovery, or crashes |
+| Explicit `lenient`     | Existing compatibility behavior             | Preserve existing callers during migration                                              |
 
 `--strict` cannot be combined with partial check selection. Quick and named checks are mutually exclusive. Reject conflicting CLI profile selections.
 
@@ -152,16 +152,16 @@ Migrate the remaining existing Word rules into the registry, retaining their cur
 
 Create one module and unit-test file per coherent rule family. Run each row as its own red/green slice.
 
-| Reports | Red assertion | Green implementation |
-|---|---|---|
-| #235, #245, #252, #256, #257, #263 | Illegal direct `m:r/w:ins` is identified; legal math wrappers remain accepted | Check exact namespace and parent relationships; provide permitted-wrapper guidance |
-| #213, #259 | Direct `m:r/w:del` is distinguished from legal math deletion marks | Diagnose nesting without changing revision content |
-| #210, #215, #220, #221, #225, #229, #238, #242 | Empty or invalid shading color is reported; omitted optional color passes | Validate declared color value space |
-| #209, #219, #224, #226, #233, #240 | `gridCol@type` is reported without losing its width | Check permitted grid-column attributes |
-| #211, #216, #222, #223, #227, #228, #231, #232, #234, #236, #241, #246 | Cell-margin order is diagnosed in document stories and styles | Apply the bundled schema sequence to `tblCellMar` and `tcMar` |
-| #214 | Each missing required page-margin attribute is named | Check required attributes without inventing values |
-| #212, #217, #218 | Missing table properties are detected in body and header tables | Check required table children and positions |
-| #244 | Wrong textbox-content namespace is reported before preprocessing | Distinguish `wp`, `wps`, and VML textbox models; preserve text |
+| Reports                                                                | Red assertion                                                                 | Green implementation                                                               |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| #235, #245, #252, #256, #257, #263                                     | Illegal direct `m:r/w:ins` is identified; legal math wrappers remain accepted | Check exact namespace and parent relationships; provide permitted-wrapper guidance |
+| #213, #259                                                             | Direct `m:r/w:del` is distinguished from legal math deletion marks            | Diagnose nesting without changing revision content                                 |
+| #210, #215, #220, #221, #225, #229, #238, #242                         | Empty or invalid shading color is reported; omitted optional color passes     | Validate declared color value space                                                |
+| #209, #219, #224, #226, #233, #240                                     | `gridCol@type` is reported without losing its width                           | Check permitted grid-column attributes                                             |
+| #211, #216, #222, #223, #227, #228, #231, #232, #234, #236, #241, #246 | Cell-margin order is diagnosed in document stories and styles                 | Apply the bundled schema sequence to `tblCellMar` and `tcMar`                      |
+| #214                                                                   | Each missing required page-margin attribute is named                          | Check required attributes without inventing values                                 |
+| #212, #217, #218                                                       | Missing table properties are detected in body and header tables               | Check required table children and positions                                        |
+| #244                                                                   | Wrong textbox-content namespace is reported before preprocessing              | Distinguish `wp`, `wps`, and VML textbox models; preserve text                     |
 
 For historically Word-clean/schema-invalid specimens, assert default-mode advisories and strict-mode rejection. Historical observations retain provenance; they are not newly verified Word results.
 
