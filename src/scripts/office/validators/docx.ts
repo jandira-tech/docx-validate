@@ -603,10 +603,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-duplicate-theme-relationship":
             case "word-duplicate-font-table-relationship":
             case "word-duplicate-web-settings-relationship":
-            // Two settings relationships in one .rels part make Word offer
-            // recovery (fixture 0689). A second relationship that targets
-            // the same settings.xml still warns. One settings relationship
-            // opens clean.
             case "word-duplicate-settings-relationship":
             // w:lvlPicBulletId whose value is not a w:numPicBullet id in the
             // same numbering part makes Word offer recovery (fixture 1541).
@@ -671,10 +667,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             return parsed.document;
         };
         await this.validateRowsWithoutCells(issues, readXml);
-        await this.validateDuplicateThemeRelationships(issues, readXml);
-        await this.validateDuplicateFontTableRelationships(issues, readXml);
-        await this.validateDuplicateWebSettingsRelationships(issues, readXml);
-        await this.validateDuplicateSettingsRelationships(issues, readXml);
         await this.validateChoiceRequiresPrefixes(issues, readXml);
         await this.validateSdtIdEmpty(issues, readXml);
         await this.validateAttachedToolbarUtf8(issues, readXml);
@@ -1005,169 +997,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             current = current.parentNode;
         }
         return false;
-    }
-
-    /**
-     * `null` when the sidecar exists but cannot be parsed (another check
-     * reports that). An absent sidecar is an empty map: every `r:id` is
-     * unresolved.
-     */
-    /**
-     * Two `theme` relationships in one `.rels` part make Word offer to
-     * recover the file. Either theme part alone opens clean. A second theme
-     * whose target is rewritten from `/word/theme/...` to a relative path
-     * still warns.
-     */
-    private async validateDuplicateThemeRelationships(
-        issues: ValidationIssue[],
-        readXml: (xmlFile: string) => Promise<Document>,
-    ): Promise<void> {
-        for (const relsFile of this.xmlFiles) {
-            if (!relsFile.endsWith(".rels")) continue;
-            let dom: Document;
-            try {
-                dom = await readXml(relsFile);
-            } catch {
-                continue;
-            }
-            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
-            const themeIds: string[] = [];
-            for (let i = 0; i < rels.length; i += 1) {
-                const rel = rels[i];
-                if (!rel) continue;
-                const type = rel.getAttribute("Type") ?? "";
-                if (!type.endsWith("/theme")) continue;
-                themeIds.push(rel.getAttribute("Id") ?? "");
-            }
-            if (themeIds.length < 2) continue;
-            issues.push({
-                severity: "error",
-                message:
-                    `${this.relPath(relsFile)} contains ${themeIds.length} theme relationships ` +
-                    `(${themeIds.join(", ")}). Microsoft Word offers to recover the file. Keep one theme relationship.`,
-                path: this.relPath(relsFile),
-                code: "word-duplicate-theme-relationship",
-            });
-        }
-    }
-
-    /**
-     * Two `fontTable` relationships in one `.rels` part make Word offer to
-     * recover the file. A second relationship that targets the same
-     * `fontTable.xml` as the first still warns. Rewriting an absolute
-     * `/word/...` target to a relative path still warns. One font table
-     * relationship opens clean. The extra part and its content type are
-     * not required for the warning.
-     */
-    private async validateDuplicateFontTableRelationships(
-        issues: ValidationIssue[],
-        readXml: (xmlFile: string) => Promise<Document>,
-    ): Promise<void> {
-        for (const relsFile of this.xmlFiles) {
-            if (!relsFile.endsWith(".rels")) continue;
-            let dom: Document;
-            try {
-                dom = await readXml(relsFile);
-            } catch {
-                continue;
-            }
-            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
-            const fontIds: string[] = [];
-            for (let i = 0; i < rels.length; i += 1) {
-                const rel = rels[i];
-                if (!rel) continue;
-                const type = rel.getAttribute("Type") ?? "";
-                if (!type.endsWith("/fontTable")) continue;
-                fontIds.push(rel.getAttribute("Id") ?? "");
-            }
-            if (fontIds.length < 2) continue;
-            issues.push({
-                severity: "error",
-                message:
-                    `${this.relPath(relsFile)} contains ${fontIds.length} font table relationships ` +
-                    `(${fontIds.join(", ")}). Microsoft Word offers to recover the file. Keep one font table relationship.`,
-                path: this.relPath(relsFile),
-                code: "word-duplicate-font-table-relationship",
-            });
-        }
-    }
-
-    /**
-     * Two `webSettings` relationships in one `.rels` part make Word offer to
-     * recover the file. A second relationship that targets the same
-     * `webSettings.xml` as the first still warns. One web settings
-     * relationship opens clean. The extra part is not required for the warning.
-     */
-    private async validateDuplicateWebSettingsRelationships(
-        issues: ValidationIssue[],
-        readXml: (xmlFile: string) => Promise<Document>,
-    ): Promise<void> {
-        for (const relsFile of this.xmlFiles) {
-            if (!relsFile.endsWith(".rels")) continue;
-            let dom: Document;
-            try {
-                dom = await readXml(relsFile);
-            } catch {
-                continue;
-            }
-            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
-            const webIds: string[] = [];
-            for (let i = 0; i < rels.length; i += 1) {
-                const rel = rels[i];
-                if (!rel) continue;
-                const type = rel.getAttribute("Type") ?? "";
-                if (!type.endsWith("/webSettings")) continue;
-                webIds.push(rel.getAttribute("Id") ?? "");
-            }
-            if (webIds.length < 2) continue;
-            issues.push({
-                severity: "error",
-                message:
-                    `${this.relPath(relsFile)} contains ${webIds.length} web settings relationships ` +
-                    `(${webIds.join(", ")}). Microsoft Word offers to recover the file. Keep one web settings relationship.`,
-                path: this.relPath(relsFile),
-                code: "word-duplicate-web-settings-relationship",
-            });
-        }
-    }
-
-    /**
-     * Two `settings` relationships in one `.rels` part make Word offer to
-     * recover the file. A second relationship that targets the same
-     * `settings.xml` as the first still warns. One settings relationship
-     * opens clean. The extra part is not required for the warning.
-     */
-    private async validateDuplicateSettingsRelationships(
-        issues: ValidationIssue[],
-        readXml: (xmlFile: string) => Promise<Document>,
-    ): Promise<void> {
-        for (const relsFile of this.xmlFiles) {
-            if (!relsFile.endsWith(".rels")) continue;
-            let dom: Document;
-            try {
-                dom = await readXml(relsFile);
-            } catch {
-                continue;
-            }
-            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
-            const settingsIds: string[] = [];
-            for (let i = 0; i < rels.length; i += 1) {
-                const rel = rels[i];
-                if (!rel) continue;
-                const type = rel.getAttribute("Type") ?? "";
-                if (!type.endsWith("/settings")) continue;
-                settingsIds.push(rel.getAttribute("Id") ?? "");
-            }
-            if (settingsIds.length < 2) continue;
-            issues.push({
-                severity: "error",
-                message:
-                    `${this.relPath(relsFile)} contains ${settingsIds.length} settings relationships ` +
-                    `(${settingsIds.join(", ")}). Microsoft Word offers to recover the file. Keep one settings relationship.`,
-                path: this.relPath(relsFile),
-                code: "word-duplicate-settings-relationship",
-            });
-        }
     }
 
     // ----- whitespace ---------------------------------------------------------
