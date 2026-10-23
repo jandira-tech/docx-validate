@@ -340,22 +340,15 @@ export class BaseSchemaValidator {
     }
 
     /**
-     * Strict-profile-only check: every XML part must NOT begin with a UTF-8
-     * BOM (U+FEFF, encoded as bytes EF BB BF). The XML spec permits the BOM
-     * and Microsoft Office routinely emits it; the lenient profile silently
-     * strips it before parsing. Strict callers want to know it's there.
-     *
-     * Severity is profile-aware:
-     *   - `strict`  → reported as `error` (fails the document).
-     *   - `lenient` → reported as `warning` (visible to anyone inspecting
-     *     `result.issues` but does NOT flip `valid` to false).
-     *
-     * The check NEVER becomes a silent no-op — even in lenient mode the
-     * gap is surfaced as a warning so callers can audit it later.
+     * Every XML part should NOT begin with a UTF-8 BOM (U+FEFF, bytes EF BB
+     * BF). XML 1.0 §4.3.3 permits the BOM and Microsoft Office emits it
+     * routinely, so this is reported at `warning` severity under EVERY
+     * profile — it never fails a document on its own. The finding stays
+     * visible in `result.issues` so callers who care about canonical bytes can
+     * audit it.
      */
     async validateNoBom(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
         for (const xmlFile of this.xmlFiles) {
             let bytes: Buffer;
             try {
@@ -365,10 +358,10 @@ export class BaseSchemaValidator {
             }
             if (bytes.length >= 3 && bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf) {
                 issues.push({
-                    severity,
+                    severity: "warning",
                     message:
-                        "XML part begins with a UTF-8 BOM (U+FEFF). Permitted by the XML spec but " +
-                        "non-canonical for OOXML; reported as error under strict, warning under lenient.",
+                        "XML part begins with a UTF-8 BOM (U+FEFF). Permitted by the XML spec (and emitted by Microsoft Office), " +
+                        "so it is reported as a warning under every profile and never fails a document on its own.",
                     path: this.relPath(xmlFile),
                     code: "xml-bom-leading",
                 });
