@@ -57,3 +57,19 @@ describe("missing main document part across profiles (#380)", () => {
         });
     }
 });
+
+describe("a quick run judges a missing main part as the full run does (#380, #381)", () => {
+    it("word-valid quick reports it as a warning, and lenient quick does not run it", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "core-only.docx");
+            await writeFile(file, await buildDocx(CORE_ONLY));
+            const quick = await validate(file, { quick: true });
+            expect(quick.issues.filter((issue) => issue.code === CODE)).toEqual([expect.objectContaining({ severity: "warning" })]);
+            expect(quick.metadata?.executedChecks).toContain(CODE);
+
+            const lenient = await validate(file, { profile: "lenient", quick: true });
+            expect(lenient.issues.filter((issue) => issue.code === CODE)).toEqual([]);
+            expect(lenient.metadata?.omittedChecks).toContain(CODE);
+        });
+    });
+});
