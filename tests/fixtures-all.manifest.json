@@ -66,7 +66,15 @@
             "relativePath": "broken/header-with-rid-no-sidecar.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "rels-missing-sidecar", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "paraid-missing-element",
+                    "rels-missing-sidecar",
+                    "word-drawing-extent-missing",
+                    "word-picture-nvpicpr-missing",
+                    "word-picture-sppr-missing",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -7505,7 +7513,14 @@
             "relativePath": "external/superdoc/super-editor/paragraph-sectpr-breaks.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-undeclared-ext", "paraid-missing-element", "rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "ct-undeclared-ext",
+                    "paraid-missing-element",
+                    "rels-unreferenced",
+                    "word-custom-property-filetime-empty",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -8242,7 +8257,14 @@
             "relativePath": "unknown/unknown/header-with-rid-no-sidecar.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["docprops-boolean-invalid", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "docprops-boolean-invalid",
+                    "word-drawing-extent-missing",
+                    "word-picture-nvpicpr-missing",
+                    "word-picture-sppr-missing",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -8413,7 +8435,15 @@
             "relativePath": "word-regenerate-invalid/original/broken/header-with-rid-no-sidecar.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "rels-missing-sidecar", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "paraid-missing-element",
+                    "rels-missing-sidecar",
+                    "word-drawing-extent-missing",
+                    "word-picture-nvpicpr-missing",
+                    "word-picture-sppr-missing",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -8739,7 +8769,14 @@
             "relativePath": "word-regenerate-invalid/original/external/superdoc/super-editor/paragraph-sectpr-breaks.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-undeclared-ext", "paraid-missing-element", "rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "ct-undeclared-ext",
+                    "paraid-missing-element",
+                    "rels-unreferenced",
+                    "word-custom-property-filetime-empty",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -8794,7 +8831,14 @@
             "relativePath": "word-regenerate-invalid/original/unknown/unknown/header-with-rid-no-sidecar.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["docprops-boolean-invalid", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "docprops-boolean-invalid",
+                    "word-drawing-extent-missing",
+                    "word-picture-nvpicpr-missing",
+                    "word-picture-sppr-missing",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -9076,7 +9120,7 @@
             "relativePath": "word-regenerate-invalid/regenerated/external/superdoc/super-editor/paragraph-sectpr-breaks.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-undeclared-ext", "rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": ["ct-undeclared-ext", "rels-unreferenced", "word-custom-property-filetime-empty", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
