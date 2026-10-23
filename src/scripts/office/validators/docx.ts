@@ -574,15 +574,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-drawing-arc-radius":
             case "word-empty-drawing":
             case "word-drawing-extent-negative":
-            // A wp:anchor missing locked, layoutInCell, or allowOverlap makes
-            // Word refuse the file (fixture 1061). One missing attribute on
-            // one anchor is enough. Adding that attribute opens clean.
-            // simplePos, relativeHeight, and the wrap distances are not this
-            // defect.
             case "word-anchor-missing-attribute":
-            // A wp:positionH or wp:positionV that contains both wp:posOffset
-            // and wp:align makes Word refuse the file (fixture 1061). One
-            // such element is enough. Either child alone opens clean.
             case "word-position-offset-and-align":
             // A w:sdtPr/w:id with w:val="" makes Word refuse the file (fixture
             // 1830). Setting that value to a number opens clean.
@@ -694,9 +686,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             if (!parsed.ok) throw new Error(parsed.message);
             return parsed.document;
         };
-        await this.validateEmptyDrawings(issues, readXml);
-        await this.validateAnchorRequiredAttributes(issues, readXml);
-        await this.validatePositionOffsetAndAlign(issues, readXml);
         await this.validateRowsWithoutCells(issues, readXml);
         await this.validateCellsEndingWithTable(issues, readXml);
         await this.validateTextBoxDeletedText(issues, readXml);
@@ -756,55 +745,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             });
         }
         return finalize(issues);
-    }
-
-    /**
-     * An empty `w:drawing` (no element child) is not a drawing Word can load.
-     * Inside `mc:Choice Requires="wps"` Word reports an open error. Inside a
-     * `w:r` Word offers to recover the file. One such element is enough.
-     * A drawing placed directly under `w:p` is a different case: Word drops
-     * that misplaced run content and opens clean, so it is not flagged here.
-     */
-    private async validateEmptyDrawings(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const drawings = getElementsByTagNameNSAll(dom, ns, "drawing");
-                for (let i = 0; i < drawings.length; i += 1) {
-                    const drawing = drawings[i];
-                    if (!drawing) continue;
-                    let hasElementChild = false;
-                    for (let child = drawing.firstChild; child; child = child.nextSibling) {
-                        if (child.nodeType === 1) {
-                            hasElementChild = true;
-                            break;
-                        }
-                    }
-                    if (hasElementChild) continue;
-                    const parent = drawing.parentNode;
-                    if (parent && parent.nodeType === 1) {
-                        const parentElem = parent as Element;
-                        const parentLocal = parentElem.localName || parentElem.tagName.split(":").pop() || "";
-                        if (parentLocal === "p" && WORD_PARAGRAPH_NAMESPACES.includes(parentElem.namespaceURI ?? "")) {
-                            continue;
-                        }
-                    }
-                    issues.push({
-                        severity: "error",
-                        message:
-                            "An empty <w:drawing> has no child element. Microsoft Word does not open the file cleanly. " +
-                            "Remove the drawing, or give it a wp:anchor or wp:inline child.",
-                        path: this.relPath(xmlFile),
-                        code: "word-empty-drawing",
-                    });
-                }
-            }
-        }
     }
 
     /**
@@ -915,87 +855,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     /** Adapter: the rule lives in the named check `word-row-without-cell`. */
     private async validateRowsWithoutCells(issues: ValidationIssue[], _readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
         issues.push(...(await wordRowWithoutCellCheck.run(this.context())));
-    }
-
-    /**
-     * A `wp:anchor` missing `locked`, `layoutInCell`, or `allowOverlap` makes
-     * Word refuse to open the file. One missing attribute on one anchor is
-     * enough. Adding that attribute opens clean. `simplePos`, `relativeHeight`,
-     * and the wrap distances are not this defect.
-     */
-    private async validateAnchorRequiredAttributes(
-        issues: ValidationIssue[],
-        readXml: (xmlFile: string) => Promise<Document>,
-    ): Promise<void> {
-        const required = ["locked", "layoutInCell", "allowOverlap"] as const;
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            const anchors = getElementsByTagNameNSAll(dom, WP_NAMESPACE, "anchor");
-            for (let i = 0; i < anchors.length; i += 1) {
-                const anchor = anchors[i];
-                if (!anchor) continue;
-                for (const attr of required) {
-                    if (anchor.getAttribute(attr) !== null) continue;
-                    issues.push({
-                        severity: "error",
-                        message: `A wp:anchor is missing ${attr}. ` + "Microsoft Word cannot open the file. Add that attribute.",
-                        path: this.relPath(xmlFile),
-                        code: "word-anchor-missing-attribute",
-                    });
-                }
-            }
-        }
-    }
-
-    /**
-     * `wp:positionH` or `wp:positionV` containing both `wp:posOffset` and
-     * `wp:align` makes Word refuse to open the file. One such element is
-     * enough. Either child alone opens clean.
-     */
-    private async validatePositionOffsetAndAlign(
-        issues: ValidationIssue[],
-        readXml: (xmlFile: string) => Promise<Document>,
-    ): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            for (const localName of ["positionH", "positionV"] as const) {
-                const positions = getElementsByTagNameNSAll(dom, WP_NAMESPACE, localName);
-                for (let i = 0; i < positions.length; i += 1) {
-                    const position = positions[i];
-                    if (!position) continue;
-                    let hasOffset = false;
-                    let hasAlign = false;
-                    for (let j = 0; j < position.childNodes.length; j += 1) {
-                        const child = position.childNodes[j];
-                        if (!child || child.nodeType !== 1) continue;
-                        const element = child as Element;
-                        if (element.namespaceURI !== WP_NAMESPACE) continue;
-                        const local = element.localName || element.tagName.split(":").pop() || "";
-                        if (local === "posOffset") hasOffset = true;
-                        if (local === "align") hasAlign = true;
-                    }
-                    if (!hasOffset || !hasAlign) continue;
-                    issues.push({
-                        severity: "error",
-                        message:
-                            `A wp:${localName} contains both wp:posOffset and wp:align. ` +
-                            "Microsoft Word cannot open the file. Keep only one of those children.",
-                        path: this.relPath(xmlFile),
-                        code: "word-position-offset-and-align",
-                    });
-                }
-            }
-        }
     }
 
     /**
