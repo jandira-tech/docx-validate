@@ -16,7 +16,7 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { jubarte, Validate } from "../src/index";
+import { jubarte, ModeConflictError, resolveMode, Validate } from "../src/index";
 import { withTempDir } from "../src/lib/run-cli";
 import type { XsdValidator } from "../src/lib/xsd-validator";
 import { validate } from "../src/scripts/office/validate";
@@ -67,6 +67,18 @@ describe("an injected XsdValidator reaches every entrypoint", { timeout: 120_000
         expect(result.valid).toBe(false);
         expect(result.metadata?.schemaCompleted).toBe(false);
         expect(result.issues.some((issue) => issue.code === "xsd-summary")).toBe(true);
+    });
+});
+
+describe("the public barrel exposes the mode policy", () => {
+    it("re-exports the resolver and the typed conflict error", async () => {
+        expect(resolveMode("docx", { strict: true })).toEqual({ profile: "strict", select: undefined });
+        expect(new ModeConflictError("boom")).toBeInstanceOf(Error);
+        // A consumer can catch the library's typed error by class.
+        await withTempDir(async (dir) => {
+            const { file } = await controlBytes(dir);
+            await expect(validate(file, { strict: true, quick: true })).rejects.toBeInstanceOf(ModeConflictError);
+        });
     });
 });
 
