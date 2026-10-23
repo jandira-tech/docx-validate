@@ -346,6 +346,19 @@ export class BaseSchemaValidator {
     protected malformedParts: ReadonlySet<string> = new Set();
 
     /**
+     * Parts whose schema the engine could not load, or whose XSD call threw,
+     * during the most recent `validateAgainstXsd`. Reset at that method's
+     * entry, like `xsdWalk`.
+     *
+     * `xsdWalk.parts.length === xsdWalk.eligible` only proves every eligible
+     * part was *offered* to the engine; this counter is what proves the engine
+     * actually answered for it. A schema that fails to compile still counts as
+     * a completed walk, which is why the top-level `validate()` also requires
+     * this to be 0 before reporting `schemaCompleted: true`.
+     */
+    xsdEngineFailures = 0;
+
+    /**
      * Subclasses override to map an element name → expected relationship type
      * (used by `validateAllRelationshipIds`). Mirrors
      * `BaseSchemaValidator.ELEMENT_RELATIONSHIP_TYPES`.
@@ -1209,6 +1222,7 @@ export class BaseSchemaValidator {
         this.xsdWalk.started = true;
         this.xsdWalk.parts = [];
         this.xsdWalk.eligible = 0;
+        this.xsdEngineFailures = 0;
 
         const noteStrict = (): void => {
             if (strictSkipped) return;
@@ -1449,6 +1463,9 @@ export class BaseSchemaValidator {
             // failures arrive as errors and are string-filtered by
             // IGNORED_VALIDATION_ERRORS in `validateFileAgainstXsd`.
             const errorIssues = issues.filter((i) => i.severity === "error");
+            if (errorIssues.some((i) => i.code === "xsd-schema-load-failed")) {
+                this.xsdEngineFailures += 1;
+            }
             if (errorIssues.length === 0) {
                 return {
                     valid: true,
@@ -1472,6 +1489,9 @@ export class BaseSchemaValidator {
                 ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}),
             };
         } catch (err) {
+            // The engine never produced a verdict for this part: reading the
+            // part, preprocessing it, or the engine call itself failed.
+            this.xsdEngineFailures += 1;
             const message = err instanceof Error ? err.message : String(err);
             return {
                 valid: false,
