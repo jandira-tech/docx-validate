@@ -26,6 +26,16 @@ describe("markup compatibility", () => {
         expect(() => process(xml)).not.toThrow();
         expect(process(xml).document.documentElement?.localName).toBe("document");
     });
+    it("allows an ignorable AlternateContent child (#294)", () => {
+        const result = process(
+            wrap(
+                '<mc:AlternateContent><mc:Choice Requires="w"><w:p/></mc:Choice><e:newChoice/></mc:AlternateContent>',
+                'xmlns:e="urn:future" mc:Ignorable="e"',
+            ),
+        );
+        expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+        expect(getElementsByTagNameAll(result.document).map((node) => node.localName)).toEqual(["root", "p"]);
+    });
     it("removes non-ignorable Office attributes and aggregates one namespace-aware warning per part", () => {
         const source = parseXml(
             wrap(

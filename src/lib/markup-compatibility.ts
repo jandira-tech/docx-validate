@@ -192,6 +192,12 @@ export const applyMarkupCompatibility = (
             }
         }
         if (element.namespaceURI === NS.MC && element.localName === "AlternateContent") {
+            for (const child of children(element)) {
+                const uri = child.namespaceURI || "";
+                if (ignorable.has(uri) && !opts.understood.has(uri)) {
+                    element.removeChild(child);
+                }
+            }
             const branches = children(element);
             let choices = 0;
             let fallbacks = 0;
