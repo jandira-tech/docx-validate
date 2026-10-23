@@ -161,13 +161,23 @@ export const mergeWordObservation = (input: WordMergeInput): WordMergeResult => 
     }
 
     if (input.freshOutcome !== undefined) {
-        const word: WordObservation = {
+        const fresh: WordHistoryEntry = {
             outcome: input.freshOutcome,
             sha256: input.currentSha256,
             ...(input.observedAt !== undefined ? { observedAt: input.observedAt } : {}),
             ...(input.wordVersion !== undefined ? { wordVersion: input.wordVersion } : {}),
         };
-        return { word, history };
+        if (prior !== null && priorIsCurrent) {
+            const current: WordHistoryEntry = { ...prior, sha256: input.currentSha256 };
+            // An unattributable re-probe (timeout/unknown) carries no signal
+            // about these bytes, so it never displaces attributable evidence.
+            if (classifyWordOutcome(fresh.outcome) === "unattributable" && classifyWordOutcome(current.outcome) !== "unattributable") {
+                return { word: current, history: [...history, fresh] };
+            }
+            // Same bytes, newer observation: the prior one is retired, not dropped.
+            history.push(current);
+        }
+        return { word: fresh, history };
     }
 
     if (prior === null) {
