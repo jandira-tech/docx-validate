@@ -52,8 +52,11 @@ const parseCsvRow = (line: string): string[] => {
     let quoted = false;
     for (const char of line) {
         if (quoted) {
-            current += char;
-            if (char === '"') quoted = false;
+            if (char === '"') {
+                quoted = false;
+            } else {
+                current += char;
+            }
         } else if (char === '"') {
             quoted = true;
         } else if (char === ",") {
