@@ -575,6 +575,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-paragraph-properties-misplaced":
             // Corpus probe (word-invalid-fixtures/README.md, CLEAN-FP 0/1304): a w:sectPr where the schema forbids it is a Word rejection class; legal body/pPr placements (word-tolerated-misplaced-pgsz.docx) open clean.
             case "word-section-properties-misplaced":
+            // table_tests_v2.docx (probed UNREADABLE_CONTENT): w:tblBorders ordered after w:tblLayout inside w:tblPr makes Word offer recovery; Word-opened jubarte k07/k08/k09 keep tcPr tolerated.
+            case "word-table-properties-misplaced":
             case "word-drawing-scalar-whitespace":
             case "word-drawing-arc-radius":
             case "word-empty-drawing":
@@ -4379,7 +4381,12 @@ const WORD_BLOCKING_MISPLACED_LOCALS: ReadonlySet<string> = new Set([
     // genuinely Word-blocking pPr-misplacement variant.
     "sectPr", // section properties misplaced
     "extent", // drawing extent misplaced (corrupt <w:drawing> structure)
-    "tblBorders",
+    // NB: tblBorders is intentionally NOT here any more. The only observed
+    // placements are (a) under w:tcPr in word/styles.xml, which real Word
+    // OPENS cleanly (jubarte lane k07/k08/k09, all word_opened_and_exported)
+    // — this message match was a word-valid false positive — and (b) ordered
+    // after tblLayout/tblCellMar inside w:tblPr, which the structural
+    // word-table-properties-misplaced check now names before XSD starts.
     "tblCellSpacing", // table-property elements outside <w:tblPr>
 ]);
 
