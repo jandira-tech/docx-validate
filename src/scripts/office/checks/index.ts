@@ -30,6 +30,7 @@ import { wordTablePropertiesMisplacedCheck } from "./word-table-properties";
 import { wordLinkWithoutNamespaceCheck, wordUnknownElementCheck } from "./word-unknown-elements";
 import { wordMarkupCompatibilityCheck } from "./word-markup-compatibility";
 import { wordContentTypeInvalidCheck } from "./word-content-types";
+import { wordDrawingScalarWhitespaceCheck, wordDrawingArcRadiusCheck, wordDrawingExtentNegativeCheck } from "./word-drawing-values";
 import { xmlSyntaxCheck } from "./xml";
 
 /**
@@ -61,6 +62,9 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordUnknownElementCheck,
     wordLinkWithoutNamespaceCheck,
     wordMarkupCompatibilityCheck,
+    wordDrawingScalarWhitespaceCheck,
+    wordDrawingArcRadiusCheck,
+    wordDrawingExtentNegativeCheck,
     wordContentTypeInvalidCheck,
 ];
 
