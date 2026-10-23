@@ -310,3 +310,24 @@ describe("strict profile — no message suppression, Strict-aware markup compati
         });
     }, 60_000);
 });
+
+describe("strict profile — schema issue messages", () => {
+    it("keeps each schema finding on one line, with the transformed-view note after the engine text", async () => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...MINIMAL_PARTS,
+                "word/document.xml": inject(MINIMAL_PARTS["word/document.xml"]!, "<w:notInSchema/>"),
+            };
+            const file = await writeDocx(dir, "one-line-messages.docx", parts);
+            const result = await validate(file, { profile: "strict" });
+            const xsdErrors = result.issues.filter((i) => i.code === "xsd-error");
+            expect(xsdErrors.length).toBeGreaterThan(0);
+            for (const issue of xsdErrors) {
+                expect(issue.message).not.toMatch(/[\r\n]/);
+                expect(issue.message).toMatch(
+                    /notInSchema'?: This element is not expected\.( \(line refers to the preprocessed validation view\))?$/,
+                );
+            }
+        });
+    }, 60_000);
+});
