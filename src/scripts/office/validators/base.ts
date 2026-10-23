@@ -118,22 +118,16 @@ const STRICT_SCHEMA_MAPPINGS: Record<string, string> = {
 };
 
 const IGNORED_VALIDATION_ERRORS: readonly string[] = [
+    // w:hyphenationZone's declared value space in the bundled transitional
+    // wml.xsd is narrower than what Word emits — a schema-side false
+    // positive, not a document defect.
     "hyphenationZone",
-    "purl.org/dc/terms",
-    // opc-coreProperties.xsd imports the Dublin Core schema from a remote
-    // HTTP URL that is not (and should not be) bundled; libxml2-wasm reports
-    // the failed fetch with the dublincore.org host in the message. Python's
-    // lxml hit the same wall with the purl.org/dc/terms namespace — both
-    // strings are filtered so the docProps/core.xml false-positive stays
-    // suppressed (AGENTS.md behavioural note 4).
-    "dublincore.org",
-    // Legacy defence from the libxmljs2 era, kept because the filter is
-    // engine-agnostic string matching: libxmljs2 swallowed schema-load
-    // failures into one opaque "Invalid XSD schema" error. libxml2-wasm
-    // surfaces load failures as explicit `xsd-schema-load-failed` issues, so
-    // this string should no longer occur — but a schema regression would
-    // otherwise resurrect the false-positive this list exists to suppress.
-    "Invalid XSD schema",
+    // opc-coreProperties.xsd's Dublin Core imports resolve to the bundled
+    // schemas/dublincore/ copies (SOURCES.md), so the libxmljs2-era
+    // suppressions for the missing remote import ("purl.org/dc/terms",
+    // "dublincore.org", "Invalid XSD schema") are gone — schema-load
+    // failures must surface as xsd-schema-load-failed, never a suppressed
+    // pass.
 ];
 
 const UNIQUE_ID_REQUIREMENTS: Record<string, [attr: string, scope: "file" | "global"]> = {
