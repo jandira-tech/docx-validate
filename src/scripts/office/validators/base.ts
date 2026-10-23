@@ -44,9 +44,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { parseContentTypes, partExtension, resolveContentType } from "../../../lib/content-types";
+import { applyMarkupCompatibility, UNDERSTOOD_NAMESPACES } from "../../../lib/markup-compatibility";
 import { withTempDir } from "../../../lib/run-cli";
 import type { Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
-import { DEFAULT_PROFILE, OK_RESULT } from "../../../lib/types";
+import { DEFAULT_PROFILE, NS, OK_RESULT } from "../../../lib/types";
 import { allowSchemaResourceRoot, createXsdValidator, type XsdValidator } from "../../../lib/xsd-validator";
 import { getElementsByTagNameNSAll, getElementsByTagNameAll, parseXml, serializeXml } from "../../../lib/xml-helpers";
 import { checkXmlSyntax } from "../../../lib/xml-syntax";
@@ -76,6 +77,14 @@ const SCHEMA_MAPPINGS: Record<string, string> = {
     "additionalCharacteristics.xml": "ISO-IEC29500-4_2016/shared-additionalCharacteristics.xsd",
     itemProps: "ISO-IEC29500-4_2016/shared-customXmlDataProperties.xsd",
     sig: "ecma/fourth-edition/opc-digSig.xsd",
+};
+
+// These namespaces are understood only when validating their standalone
+// mapped part schemas. wml.xsd does not import these Microsoft extensions.
+const SCHEMA_NAMESPACE_CAPABILITIES: Readonly<Record<string, string>> = {
+    "wml-2012.xsd": NS.W15,
+    "wml-cex-2018.xsd": NS.W16CEX,
+    "wml-cid-2016.xsd": NS.W16CID,
 };
 
 const IGNORED_VALIDATION_ERRORS: readonly string[] = [
@@ -122,24 +131,6 @@ export const XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace";
 export const PACKAGE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/relationships";
 export const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 const MAIN_CONTENT_FOLDERS = new Set(["word", "ppt", "xl"]);
-
-const OOXML_NAMESPACES = new Set<string>([
-    "http://schemas.openxmlformats.org/officeDocument/2006/math",
-    "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
-    "http://schemas.openxmlformats.org/schemaLibrary/2006/main",
-    "http://schemas.openxmlformats.org/drawingml/2006/main",
-    "http://schemas.openxmlformats.org/drawingml/2006/chart",
-    "http://schemas.openxmlformats.org/drawingml/2006/chartDrawing",
-    "http://schemas.openxmlformats.org/drawingml/2006/diagram",
-    "http://schemas.openxmlformats.org/drawingml/2006/picture",
-    "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing",
-    "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing",
-    "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
-    "http://schemas.openxmlformats.org/presentationml/2006/main",
-    "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
-    "http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes",
-    "http://www.w3.org/XML/1998/namespace",
-]);
 
 /**
  * URI prefix shared by all ISO OOXML Strict conformance class namespaces.
@@ -277,6 +268,8 @@ export interface XsdValidationOutcome {
     /** `null` mirrors Python's `(None, None)` skip — no schema configured. */
     valid: boolean | null;
     errors: Set<string>;
+    /** Compatibility diagnostics keep their own stable codes, independent of XSD messages. */
+    issues?: ValidationIssue[];
 }
 
 export class BaseSchemaValidator {
@@ -1205,6 +1198,7 @@ export class BaseSchemaValidator {
             if (!countEligible(xmlFile)) continue;
 
             const outcome = await this.validateFileAgainstXsd(xmlFile);
+            issues.push(...(outcome.issues ?? []));
             const rel = this.relPath(xmlFile);
             this.xsdWalk.parts.push(rel);
             if (outcome.valid === null || outcome.valid) continue;
@@ -1263,7 +1257,7 @@ export class BaseSchemaValidator {
             return { valid: null, errors: new Set() };
         }
         if (single.valid) {
-            return { valid: true, errors: new Set() };
+            return single;
         }
 
         const originalErrors = await this._getOriginalFileErrors(xmlFile);
@@ -1275,9 +1269,9 @@ export class BaseSchemaValidator {
         }
 
         if (newErrors.size > 0) {
-            return { valid: false, errors: newErrors };
+            return { ...single, valid: false, errors: newErrors };
         }
-        return { valid: true, errors: new Set() };
+        return { ...single, valid: true, errors: new Set() };
     }
 
     /**
@@ -1316,9 +1310,10 @@ export class BaseSchemaValidator {
         const schemaPath = this._getSchemaPath(xmlFile);
         if (!schemaPath) return { valid: null, errors: new Set() };
 
+        const compatibilityIssues: ValidationIssue[] = [];
         try {
             const xmlContent = readFileSync(xmlFile, "utf-8");
-            const cleanedString = this._preprocessXmlForXsd(xmlContent, xmlFile);
+            const cleanedString = this._preprocessXmlForXsd(xmlContent, xmlFile, compatibilityIssues);
 
             const validator = await this._getXsdValidator();
             const issues = await validator.validate(cleanedString, schemaPath);
@@ -1328,29 +1323,25 @@ export class BaseSchemaValidator {
             // IGNORED_VALIDATION_ERRORS in `validateFileAgainstXsd`.
             const errorIssues = issues.filter((i) => i.severity === "error");
             if (errorIssues.length === 0) {
-                return { valid: true, errors: new Set() };
+                return { valid: true, errors: new Set(), ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}) };
             }
             const errors = new Set<string>();
             for (const issue of errorIssues) {
                 errors.add(issue.message.trim());
             }
-            return { valid: false, errors };
+            return { valid: false, errors, ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}) };
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
-            return { valid: false, errors: new Set([message]) };
+            return { valid: false, errors: new Set([message]), ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}) };
         }
     }
 
     /**
      * Pre-process XML before XSD validation: strips `{{template}}` tags from
-     * non-`<*:t>` text nodes, removes the `mc:Ignorable` attribute, and (for
-     * files inside `word/`, `ppt/`, `xl/`) strips elements/attributes belonging
-     * to namespaces not in `OOXML_NAMESPACES`.
-     *
-     * Mirrors `_remove_template_tags_from_text_nodes` + `_preprocess_for_mc_ignorable`
-     * + `_clean_ignorable_namespaces` in Python.
+     * non-`<*:t>` text nodes, then applies markup compatibility to a validation
+     * view of parts inside `word/`, `ppt/`, and `xl/`.
      */
-    protected _preprocessXmlForXsd(xmlContent: string, xmlFile: string): string {
+    protected _preprocessXmlForXsd(xmlContent: string, xmlFile: string, issues: ValidationIssue[] = []): string {
         const dom = parseXml(xmlContent);
 
         // _remove_template_tags_from_text_nodes
@@ -1373,25 +1364,14 @@ export class BaseSchemaValidator {
             }
         }
 
-        // _preprocess_for_mc_ignorable
-        const root = dom.documentElement;
-        if (root) {
-            const attrs = root.attributes;
-            for (let i = attrs.length - 1; i >= 0; i -= 1) {
-                const attr = attrs[i];
-                if (!attr) continue;
-                if (attr.namespaceURI === MC_NAMESPACE && localName(attr.name) === "Ignorable") {
-                    root.removeAttributeNode(attr);
-                }
-            }
-        }
-
-        // _clean_ignorable_namespaces — only for word/ppt/xl files
         const rel = this.relPath(xmlFile);
         const firstSegment = rel.split(/[\\/]/)[0];
-        if (MAIN_CONTENT_FOLDERS.has(firstSegment) && root) {
-            stripNonOoxmlAttributes(root);
-            removeNonOoxmlElements(root);
+        if (MAIN_CONTENT_FOLDERS.has(firstSegment)) {
+            const schemaNamespace = SCHEMA_NAMESPACE_CAPABILITIES[path.basename(this._getSchemaPath(xmlFile) ?? "")];
+            const understood = schemaNamespace ? new Set([...UNDERSTOOD_NAMESPACES, schemaNamespace]) : UNDERSTOOD_NAMESPACES;
+            const compatible = applyMarkupCompatibility(dom, { understood });
+            issues.push(...compatible.issues.map((issue) => ({ ...issue, path: rel })));
+            return serializeXml(compatible.document, "UTF-8");
         }
 
         return serializeXml(dom, "UTF-8");
@@ -1585,47 +1565,6 @@ function findIdAttribute(elem: Element, attrName: string): string | null {
         if (local === attrName) return attr.value;
     }
     return null;
-}
-
-function stripNonOoxmlAttributes(root: Element): void {
-    for (const elem of iterElements(root)) {
-        const attrs = elem.attributes;
-        const toRemove: Attr[] = [];
-        for (let i = 0; i < attrs.length; i += 1) {
-            const attr = attrs[i];
-            if (!attr) continue;
-            const ns = attr.namespaceURI;
-            if (ns && !OOXML_NAMESPACES.has(ns)) {
-                toRemove.push(attr);
-            }
-        }
-        for (const attr of toRemove) {
-            elem.removeAttributeNode(attr);
-        }
-    }
-}
-
-function removeNonOoxmlElements(root: Element): void {
-    // DFS, removing element children whose namespace is outside OOXML_NAMESPACES.
-    const stack: Element[] = [root];
-    while (stack.length > 0) {
-        const node = stack.pop();
-        if (node === undefined) break;
-        const children = node.childNodes;
-        const toRemove: Element[] = [];
-        for (let i = 0; i < children.length; i += 1) {
-            const child = children[i];
-            if (!child || child.nodeType !== 1) continue;
-            const elem = child as Element;
-            const ns = elem.namespaceURI;
-            if (ns && !OOXML_NAMESPACES.has(ns)) {
-                toRemove.push(elem);
-            } else {
-                stack.push(elem);
-            }
-        }
-        for (const e of toRemove) node.removeChild(e);
-    }
 }
 
 function finalize(issues: ValidationIssue[]): ValidationResult {
