@@ -30,7 +30,7 @@ import path from "node:path";
 
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
-import { getElementsByTagNameNSAll, parseXml } from "../../../lib/xml-helpers";
+import { getElementsByTagNameNSAll, parseXmlBytes } from "../../../lib/xml-helpers";
 import type { BaseSchemaValidatorOptions } from "./base";
 import { BaseSchemaValidator, OFFICE_RELATIONSHIPS_NAMESPACE, PACKAGE_RELATIONSHIPS_NAMESPACE, walkFiles } from "./base";
 
@@ -95,7 +95,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.xmlFiles) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -159,7 +159,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
         for (const slideMaster of slideMasters) {
             let masterDom: Document;
             try {
-                masterDom = parseXml(await fs.readFile(slideMaster, "utf-8"));
+                masterDom = parseXmlBytes(await fs.readFile(slideMaster));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -186,7 +186,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
 
             let relsDom: Document;
             try {
-                relsDom = parseXml(await fs.readFile(relsFile, "utf-8"));
+                relsDom = parseXmlBytes(await fs.readFile(relsFile));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -254,7 +254,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
         for (const relsFile of relsFiles) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(relsFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(relsFile));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -315,7 +315,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
         for (const relsFile of relsFiles) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(relsFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(relsFile));
             } catch (err) {
                 issues.push({
                     severity: "error",

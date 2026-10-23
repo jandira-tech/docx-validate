@@ -47,7 +47,14 @@ import path from "node:path";
 import { nextSecureLongHexNumber } from "../../../lib/secure-id";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
-import { getElementsByTagNameAll, getElementsByTagNameNSAll, parseXml, serializeXml } from "../../../lib/xml-helpers";
+import {
+    decodeXmlBytes,
+    getElementsByTagNameAll,
+    getElementsByTagNameNSAll,
+    parseXml,
+    parseXmlBytes,
+    serializeXml,
+} from "../../../lib/xml-helpers";
 import {
     BaseSchemaValidator,
     collectDeclaredPrefixes,
@@ -1690,7 +1697,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const relsFile = path.join(path.dirname(xmlFile), "_rels", `${path.basename(xmlFile)}.rels`);
         let text: string;
         try {
-            text = await fs.readFile(relsFile, "utf-8");
+            text = decodeXmlBytes(await fs.readFile(relsFile));
         } catch {
             return new Map();
         }
@@ -1753,7 +1760,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -1793,7 +1800,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -1833,7 +1840,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -1916,7 +1923,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         let docDom: Document;
         try {
-            docDom = parseXml(await fs.readFile(documentXml, "utf-8"));
+            docDom = parseXmlBytes(await fs.readFile(documentXml));
         } catch (err) {
             issues.push({
                 severity: "error",
@@ -1966,7 +1973,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         if (commentsXml) {
             let commentsDom: Document;
             try {
-                commentsDom = parseXml(await fs.readFile(commentsXml, "utf-8"));
+                commentsDom = parseXmlBytes(await fs.readFile(commentsXml));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -2049,7 +2056,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+            dom = parseXmlBytes(await fs.readFile(stylesPath));
         } catch {
             return { valid: true, issues: [] };
         }
@@ -2103,7 +2110,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
             let content: string;
             try {
-                content = await fs.readFile(xmlFile, "utf-8");
+                content = decodeXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 continue;
             }
@@ -2153,7 +2160,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const appXml = path.join(this.unpackedDir, "docProps", "app.xml");
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(appXml, "utf-8"));
+            dom = parseXmlBytes(await fs.readFile(appXml));
         } catch {
             return { valid: true, issues: [] };
         }
@@ -2192,7 +2199,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const defined = new Set<string>();
         if (stylesPath) {
             try {
-                const dom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+                const dom = parseXmlBytes(await fs.readFile(stylesPath));
                 for (const ns of WORD_PARAGRAPH_NAMESPACES) {
                     const list = getElementsByTagNameNSAll(dom, ns, "style");
                     for (let i = 0; i < list.length; i += 1) {
@@ -2215,7 +2222,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 continue;
             }
@@ -2277,7 +2284,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 continue;
             }
@@ -2347,7 +2354,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 continue;
             }
@@ -2443,7 +2450,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         let commentsDom: Document;
         try {
-            commentsDom = parseXml(await fs.readFile(commentsXml, "utf-8"));
+            commentsDom = parseXmlBytes(await fs.readFile(commentsXml));
         } catch (err) {
             issues.push({
                 severity: "error",
@@ -2496,7 +2503,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // ----- rule 4: marker counts ---------------------------------------
         if (documentXml) {
             try {
-                const docDom = parseXml(await fs.readFile(documentXml, "utf-8"));
+                const docDom = parseXmlBytes(await fs.readFile(documentXml));
                 const counts = (local: string): number => {
                     let total = 0;
                     for (const ns of WORD_PARAGRAPH_NAMESPACES) {
@@ -2541,7 +2548,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         if (commentsIdsXml) {
             let idsDom: Document;
             try {
-                idsDom = parseXml(await fs.readFile(commentsIdsXml, "utf-8"));
+                idsDom = parseXmlBytes(await fs.readFile(commentsIdsXml));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -2619,7 +2626,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         if (commentsExtensibleXml) {
             let cexDom: Document;
             try {
-                cexDom = parseXml(await fs.readFile(commentsExtensibleXml, "utf-8"));
+                cexDom = parseXmlBytes(await fs.readFile(commentsExtensibleXml));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -2674,7 +2681,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         let extDom: Document;
         try {
-            extDom = parseXml(await fs.readFile(commentsExtendedXml, "utf-8"));
+            extDom = parseXmlBytes(await fs.readFile(commentsExtendedXml));
         } catch (err) {
             issues.push({
                 severity: "error",
@@ -2783,7 +2790,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.userTextXmlFiles()) {
             let raw: string;
             try {
-                raw = await fs.readFile(xmlFile, "utf-8");
+                raw = decodeXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 continue;
             }
@@ -2815,7 +2822,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.xmlFiles) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 // Mirrors Python's bare except — silently skip.
                 continue;
@@ -2935,7 +2942,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.xmlFiles) {
             if (baseName(xmlFile) !== "document.xml") continue;
             try {
-                const dom = parseXml(readFileSync(xmlFile, "utf-8"));
+                const dom = parseXmlBytes(readFileSync(xmlFile));
                 count = countParagraphsInRoot(dom);
             } catch {
                 // mirrors Python catch-and-print; we just swallow
@@ -2989,7 +2996,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 this.originalDocumentRootFailed = true;
                 return null;
             }
-            const text = await entry.async("text");
+            const text = decodeXmlBytes(await entry.async("uint8array"));
             const dom = parseXml(text);
             this.originalDocumentRoot = dom.documentElement;
             return this.originalDocumentRoot;
@@ -3020,7 +3027,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             if (!xmlFile.endsWith(".rels")) continue;
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 continue;
             }
@@ -3076,7 +3083,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(fontTablePath, "utf-8"));
+            dom = parseXmlBytes(await fs.readFile(fontTablePath));
         } catch {
             return { valid: true, issues: [] };
         }
@@ -3120,7 +3127,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+            dom = parseXmlBytes(await fs.readFile(stylesPath));
         } catch {
             return { valid: true, issues: [] };
         }
@@ -3159,7 +3166,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 continue;
             }
@@ -3203,7 +3210,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 continue;
             }
@@ -3258,7 +3265,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.documentXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 continue;
             }
@@ -3313,7 +3320,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             if (!xmlFile.endsWith(".rels")) continue;
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 continue;
             }
@@ -3370,7 +3377,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         let stylesDom: Document;
         try {
-            stylesDom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+            stylesDom = parseXmlBytes(await fs.readFile(stylesPath));
         } catch {
             return { valid: true, issues: [] };
         }
@@ -3409,7 +3416,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 continue;
             }
@@ -3475,7 +3482,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 continue;
             }
@@ -3510,7 +3517,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         for (const xmlFile of this.userTextXmlFiles()) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 continue;
             }
@@ -3614,7 +3621,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const appXml = path.join(this.unpackedDir, "docProps", "app.xml");
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(appXml, "utf-8"));
+            dom = parseXmlBytes(await fs.readFile(appXml));
         } catch {
             return 0;
         }
@@ -3643,7 +3650,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const coreXml = path.join(this.unpackedDir, "docProps", "core.xml");
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(coreXml, "utf-8"));
+            dom = parseXmlBytes(await fs.readFile(coreXml));
         } catch {
             return 0;
         }
@@ -3686,8 +3693,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         let commentsDom: Document;
         let idsDom: Document;
         try {
-            commentsDom = parseXml(await fs.readFile(commentsXml, "utf-8"));
-            idsDom = parseXml(await fs.readFile(commentsIdsXml, "utf-8"));
+            commentsDom = parseXmlBytes(await fs.readFile(commentsXml));
+            idsDom = parseXmlBytes(await fs.readFile(commentsIdsXml));
         } catch {
             return 0;
         }
@@ -3743,7 +3750,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         if (!commentsExtensibleXml || durableIds.size !== 1) return repairs;
 
         try {
-            const cexDom = parseXml(await fs.readFile(commentsExtensibleXml, "utf-8"));
+            const cexDom = parseXmlBytes(await fs.readFile(commentsExtensibleXml));
             const entries = getElementsByTagNameNSAll(cexDom, W16CEX_NAMESPACE, "commentExtensible");
             if (entries.length !== 1) return repairs;
             const targetDurableId = [...durableIds][0];
@@ -3777,7 +3784,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         let stylesDom: Document;
         try {
-            stylesDom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+            stylesDom = parseXmlBytes(await fs.readFile(stylesPath));
         } catch {
             return 0;
         }
@@ -3800,7 +3807,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const refTags = ["pStyle", "rStyle", "tblStyle", "numStyle", "linkedStyle"] as const;
         for (const xmlFile of this.userTextXmlFiles()) {
             try {
-                const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                const dom = parseXmlBytes(await fs.readFile(xmlFile));
                 for (const tag of refTags) {
                     for (const ns of WORD_PARAGRAPH_NAMESPACES) {
                         const list = getElementsByTagNameNSAll(dom, ns, tag);
@@ -3880,7 +3887,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const domByFile = new Map<string, Document>();
         for (const xmlFile of this.userTextXmlFiles()) {
             try {
-                const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                const dom = parseXmlBytes(await fs.readFile(xmlFile));
                 domByFile.set(xmlFile, dom);
                 const all = getElementsByTagNameAll(dom);
                 for (let i = 0; i < all.length; i += 1) {
@@ -3971,7 +3978,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         let repairs = 0;
         for (const xmlFile of this.xmlFiles) {
             try {
-                const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                const dom = parseXmlBytes(await fs.readFile(xmlFile));
                 const root = dom.documentElement;
                 if (!root) continue;
 
@@ -4038,7 +4045,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         let repairs = 0;
         for (const xmlFile of this.xmlFiles) {
             try {
-                const content = await fs.readFile(xmlFile, "utf-8");
+                const content = decodeXmlBytes(await fs.readFile(xmlFile));
                 const dom = parseXml(content);
                 let modified = false;
                 const base = baseName(xmlFile);
@@ -4143,7 +4150,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const parsedDoms = new Map<string, Document>();
         for (const xmlFile of this.xmlFiles) {
             try {
-                const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                const dom = parseXmlBytes(await fs.readFile(xmlFile));
                 parsedDoms.set(xmlFile, dom);
                 const all = getElementsByTagNameAll(dom);
                 for (let i = 0; i < all.length; i += 1) {
@@ -4276,7 +4283,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(stylesPath, "utf-8"));
+            dom = parseXmlBytes(await fs.readFile(stylesPath));
         } catch {
             return out;
         }

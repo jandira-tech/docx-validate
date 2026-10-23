@@ -49,7 +49,14 @@ import { withTempDir } from "../../../lib/run-cli";
 import type { Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
 import { DEFAULT_PROFILE, NS, OK_RESULT } from "../../../lib/types";
 import { allowSchemaResourceRoot, createXsdValidator, type XsdValidator } from "../../../lib/xsd-validator";
-import { getElementsByTagNameNSAll, getElementsByTagNameAll, parseXml, serializeXml } from "../../../lib/xml-helpers";
+import {
+    decodeXmlBytes,
+    getElementsByTagNameNSAll,
+    getElementsByTagNameAll,
+    parseXml,
+    parseXmlBytes,
+    serializeXml,
+} from "../../../lib/xml-helpers";
 import { checkXmlSyntax } from "../../../lib/xml-syntax";
 import { resolveSafeZipEntry } from "../../../lib/zip-path";
 
@@ -446,7 +453,7 @@ export class BaseSchemaValidator {
             if (!xmlFile.endsWith(".rels")) continue;
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 // Malformed rels files surface elsewhere via xml-syntax /
                 // rels-broken codes; don't double-report here.
@@ -510,7 +517,7 @@ export class BaseSchemaValidator {
             }
             let isEmpty = false;
             try {
-                const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                const dom = parseXmlBytes(await fs.readFile(xmlFile));
                 const root = dom.documentElement;
                 if (root) {
                     const rels = getElementsByTagNameNSAll(
@@ -554,7 +561,7 @@ export class BaseSchemaValidator {
 
         for (const xmlFile of this.xmlFiles) {
             try {
-                const content = await fs.readFile(xmlFile, "utf-8");
+                const content = decodeXmlBytes(await fs.readFile(xmlFile));
                 const dom = parseXml(content);
                 let modified = false;
 
@@ -630,7 +637,7 @@ export class BaseSchemaValidator {
         for (const xmlFile of this.xmlFiles) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 continue;
             }
@@ -669,7 +676,7 @@ export class BaseSchemaValidator {
         for (const xmlFile of this.xmlFiles) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -756,7 +763,7 @@ export class BaseSchemaValidator {
         for (const relsFile of relsFiles) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(relsFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(relsFile));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -837,7 +844,7 @@ export class BaseSchemaValidator {
         for (const relsFile of relsFiles) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(relsFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(relsFile));
             } catch {
                 continue;
             }
@@ -905,7 +912,7 @@ export class BaseSchemaValidator {
             if (!existsSync(relsFile)) {
                 let xmlDomCheck: Document;
                 try {
-                    xmlDomCheck = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                    xmlDomCheck = parseXmlBytes(await fs.readFile(xmlFile));
                 } catch {
                     continue;
                 }
@@ -934,7 +941,7 @@ export class BaseSchemaValidator {
 
             let relsDom: Document;
             try {
-                relsDom = parseXml(await fs.readFile(relsFile, "utf-8"));
+                relsDom = parseXmlBytes(await fs.readFile(relsFile));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -967,7 +974,7 @@ export class BaseSchemaValidator {
 
             let xmlDom: Document;
             try {
-                xmlDom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                xmlDom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -1060,7 +1067,7 @@ export class BaseSchemaValidator {
 
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(contentTypesFile, "utf-8"));
+            dom = parseXmlBytes(await fs.readFile(contentTypesFile));
         } catch (err) {
             return {
                 valid: false,
@@ -1112,7 +1119,7 @@ export class BaseSchemaValidator {
             }
 
             try {
-                const root = parseXml(await fs.readFile(xmlFile, "utf-8")).documentElement;
+                const root = parseXmlBytes(await fs.readFile(xmlFile)).documentElement;
                 if (!root) continue;
                 const rootName = localName(root.tagName ?? root.nodeName);
                 // A declarable root must be covered by an <Override PartName>
@@ -1296,7 +1303,7 @@ export class BaseSchemaValidator {
 
     private detectStrictRoot(xmlFile: string): boolean {
         try {
-            const content = readFileSync(xmlFile, "utf-8");
+            const content = decodeXmlBytes(readFileSync(xmlFile));
             const dom = parseXml(content);
             const root = dom.documentElement;
             if (!root) return false;
@@ -1395,7 +1402,7 @@ export class BaseSchemaValidator {
 
         const compatibilityIssues: ValidationIssue[] = [];
         try {
-            const xmlContent = readFileSync(xmlFile, "utf-8");
+            const xmlContent = decodeXmlBytes(readFileSync(xmlFile));
             const cleanedString = this._preprocessXmlForXsd(xmlContent, xmlFile, compatibilityIssues);
             if (compatibilityIssues.some((issue) => issue.code === "mce-root-ignored")) {
                 return { valid: true, errors: new Set(), issues: compatibilityIssues };
