@@ -30,15 +30,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Probe the XSD engine only for runs that walk schemas: a broken engine no longer fails a default (word-valid) DOCX run, and `--profile strict` still fails loudly ([#318](https://github.com/jandira-tech/docx-validate/issues/318)).
 - `metadata.executedChecks` lists only the checks a run executed: lenient no longer reports the Word rules it never runs, and a rule skipped by a failed prerequisite is not listed ([#319](https://github.com/jandira-tech/docx-validate/issues/319)).
 - `validate --help`, the `xsd-strict-skipped` message and the option docs describe the per-format default and the bundled ISO Strict schemas ([#321](https://github.com/jandira-tech/docx-validate/issues/321)).
+- `verifyInWord` reports `crash` only with a Microsoft Word crash report written after the open; a Word process that vanishes without one (an external kill or quit) is `unavailable`. Every `crash` behind the issue was an external SIGKILL ([#305](https://github.com/jandira-tech/docx-validate/issues/305)).
+- Race `verifyInWord`'s version and availability calls against its budget, so a hanging transport call ends as `timeout` ([#320](https://github.com/jandira-tech/docx-validate/issues/320)).
+- Count only Word's verdicts as rejections: `crash`, `unavailable` and unmapped outcome spellings are unattributable, and verifier outcomes map to the manifest's spellings ([#316](https://github.com/jandira-tech/docx-validate/issues/316)).
 - Return `unavailable` when a Word dialog is already showing before verification, without opening or closing anything; dismiss dialogs raised by this run during macOS cleanup so later probes remain attributable ([#315](https://github.com/jandira-tech/docx-validate/issues/315)).
 
 ### Security
 
 - Replace the quadratic XML pretty-printer suffix regex with a linear scan, preserving formatting while preventing repeated tag starts in comments from causing excessive work (CodeQL alert #2).
-
-### Known limitations
-
-- `verifyInWord` reports `crash` whenever the Word process disappears after the open, so an external kill or quit is indistinguishable from a crash ([#305](https://github.com/jandira-tech/docx-validate/issues/305)).
 
 ## [0.53.0-rc.1] — 2026-10-15
 
