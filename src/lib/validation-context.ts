@@ -60,18 +60,33 @@ export class ValidationContext {
 
     private readonly parts: ReadonlyMap<string, PartContent>;
     private readonly names: readonly string[];
-    private readonly byteCache = new Map<string, Uint8Array>();
-    private readonly textCache = new Map<string, string>();
-    private readonly xmlCache = new Map<string, XmlPart>();
-    private readonly effectiveCache = new Map<string, { readonly part: XmlPart; readonly issues: readonly ValidationIssue[] }>();
-    private readonly reads = new Map<string, number>();
-    private readonly parses = new Map<string, number>();
+    private readonly byteCache: Map<string, Uint8Array>;
+    private readonly textCache: Map<string, string>;
+    private readonly xmlCache: Map<string, XmlPart>;
+    private readonly effectiveCache: Map<string, { readonly part: XmlPart; readonly issues: readonly ValidationIssue[] }>;
+    private readonly reads: Map<string, number>;
+    private readonly parses: Map<string, number>;
+    /** Parts this view reports as not parsing, with the reason. */
+    private readonly unparseable: ReadonlyMap<string, string>;
 
-    private constructor(parts: ReadonlyMap<string, PartContent>, opts: ValidationContextOptions) {
+    /** `base`, when given, is the context whose caches this view shares. */
+    private constructor(
+        parts: ReadonlyMap<string, PartContent>,
+        opts: ValidationContextOptions,
+        base?: ValidationContext,
+        unparseable: ReadonlyMap<string, string> = new Map(),
+    ) {
         this.parts = parts;
         this.names = [...parts.keys()].sort();
         this.source = opts.source ?? "memory";
         this.archiveBytes = opts.archiveBytes;
+        this.byteCache = base?.byteCache ?? new Map();
+        this.textCache = base?.textCache ?? new Map();
+        this.xmlCache = base?.xmlCache ?? new Map();
+        this.effectiveCache = base?.effectiveCache ?? new Map();
+        this.reads = base?.reads ?? new Map();
+        this.parses = base?.parses ?? new Map();
+        this.unparseable = unparseable;
     }
 
     /** Build a context from part names (leading `/` optional) and their content. */
@@ -146,6 +161,10 @@ export class ValidationContext {
     /** The parsed XML part, or `undefined` when the package has no such part. Parsed once. */
     public xml(part: string): XmlPart | undefined {
         const name = normalizePartName(part);
+        const reason = this.unparseable.get(name);
+        if (reason !== undefined && this.parts.has(name)) {
+            return { ok: false, message: reason };
+        }
         const cached = this.xmlCache.get(name);
         if (cached) {
             return cached;
@@ -176,6 +195,19 @@ export class ValidationContext {
             return parsed;
         }
         return this.effective(name, parsed.document).part;
+    }
+
+    /**
+     * A view of this package in which `parts` (part name to reason) do not
+     * parse, so no check judges a DOM the lenient parser recovered from
+     * them. The view shares this context's caches; this context is unchanged.
+     */
+    public withUnparseable(parts: ReadonlyMap<string, string>): ValidationContext {
+        const unparseable = new Map(this.unparseable);
+        for (const [part, reason] of parts) {
+            unparseable.set(normalizePartName(part), reason);
+        }
+        return new ValidationContext(this.parts, { source: this.source, archiveBytes: this.archiveBytes }, this, unparseable);
     }
 
     /**

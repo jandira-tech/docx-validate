@@ -20,6 +20,9 @@ export const xmlSyntaxCheck: CheckDefinition = {
     description: "Every XML part of the package is well-formed, parsed from its original bytes without recovery.",
     groups: ["xml"],
     formats: ["docx", "pptx", "xlsx"],
+    // A malformed part hides only itself from the checks that require this
+    // one; they still judge every part that parsed (#307).
+    gatesByPart: true,
     run: async (ctx): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
         for (const part of ctx.partNames) {

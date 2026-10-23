@@ -44,12 +44,14 @@ describe("default check registry", () => {
         expect(run.valid).toBe(false);
     });
 
-    it("skips the table check instead of crashing when the story XML is malformed", async () => {
+    it("judges no malformed story XML instead of crashing on it", async () => {
         const ctx = ValidationContext.fromEntries({ ...MINIMAL_PARTS, "word/document.xml": `<w:document xmlns:w="${W}"><w:body>` });
         const run = await runChecks(ctx, createDefaultCheckRegistry(), { format: "docx", select: ["word-row-without-cell"] });
+        // xml-syntax gates by part (#307): the table check runs, and the
+        // malformed part is hidden from it.
         expect(run.outcomes.map((o) => [o.id, o.status])).toEqual([
             ["xml-syntax", "failed"],
-            ["word-row-without-cell", "skipped"],
+            ["word-row-without-cell", "passed"],
         ]);
         expect(run.issues.map((i) => [i.code, i.path])).toEqual([["xml-syntax", "word/document.xml"]]);
     });

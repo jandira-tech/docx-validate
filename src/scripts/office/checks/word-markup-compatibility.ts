@@ -22,6 +22,7 @@ export const wordMarkupCompatibilityCheck: CheckDefinition = {
     description: "Markup compatibility in Word parts is well formed and requires only namespaces Word understands.",
     groups: ["xml"],
     formats: ["docx"],
+    requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] =>
         ctx.partNames
             .filter((name) => WORD_XML_PART.test(name))
