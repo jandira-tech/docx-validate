@@ -38,7 +38,14 @@ import JSZip from "jszip";
 
 import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
 import { runChecks } from "../../lib/check-scheduler";
-import { assertModeCoherent, isPartialRequest, QUICK_CHECK_GROUPS, resolveMode, type ResolvedMode } from "../../lib/mode-policy";
+import {
+    assertModeCoherent,
+    isPartialRequest,
+    profileWalksSchemas,
+    QUICK_CHECK_GROUPS,
+    resolveMode,
+    type ResolvedMode,
+} from "../../lib/mode-policy";
 import {
     mergeResults,
     xsdWalkNotStarted,
@@ -635,10 +642,21 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
 
     // Fail loudly at startup if the wasm-backed XSD engine is broken — otherwise
     // the per-file pipeline silently turns the same condition into per-file
-    // "xsd-validation-failed" errors that look like document corruption. A
-    // partial run never touches the engine, so it skips the probe (and so does
-    // any invocation that exits before validating).
-    if (!isPartialRequest({ quick: opts.quick, checks })) {
+    // "xsd-validation-failed" errors that look like document corruption.
+    //
+    // Only a run that walks schemas needs the engine. The default DOCX run is
+    // `word-valid`, which judges the package with structural Word checks and
+    // compiles no schema, so it must not fail because the engine is broken
+    // (#318). A partial run never touches the engine either, so it skips the
+    // probe (and so does any invocation that exits before validating).
+    const dispatchSuffix = path.extname(opts.original ?? target).toLowerCase();
+    const profile = resolveMode(formatForSuffix(dispatchSuffix), {
+        profile: opts.profile,
+        strict: opts.strict,
+        quick: opts.quick,
+        checks,
+    }).profile;
+    if (!isPartialRequest({ quick: opts.quick, checks }) && profileWalksSchemas(profile)) {
         try {
             await BaseSchemaValidator.assertXsdValidationAvailable();
         } catch (err) {

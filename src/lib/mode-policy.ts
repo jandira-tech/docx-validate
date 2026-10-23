@@ -107,6 +107,16 @@ export const defaultProfileForFormat = (format: PackageFormat): Profile => (form
 export const isPartialRequest = (request: ModeRequest): boolean => request.quick === true || (request.checks?.length ?? 0) > 0;
 
 /**
+ * True when a run under this profile compiles and walks XSD schemas.
+ *
+ * `lenient` and `strict` both walk the schemas. `word-valid` judges a
+ * package with structural Word checks and compiles no schema, so it never
+ * needs the XSD engine: a run under it must neither probe the engine nor
+ * fail because the engine is broken (#318).
+ */
+export const profileWalksSchemas = (profile: Profile): boolean => profile === "lenient" || profile === "strict";
+
+/**
  * Reject a request whose selectors contradict each other. Strict is the
  * complete mode, so it cannot be paired with partial check selection, and it
  * cannot be paired with a profile that would silently win over it.
