@@ -131,7 +131,6 @@ const W16CEX_NAMESPACE = "http://schemas.microsoft.com/office/word/2018/wordml/c
 const W16CID_NAMESPACE = "http://schemas.microsoft.com/office/word/2016/wordml/cid";
 const MATH_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/math";
 const MC_NAMESPACE = "http://schemas.openxmlformats.org/markup-compatibility/2006";
-const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types";
 const VML_NAMESPACE = "urn:schemas-microsoft-com:vml";
 const WP_NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
 const WP14_DRAWING_NAMESPACE = "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing";
@@ -699,7 +698,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             if (!parsed.ok) throw new Error(parsed.message);
             return parsed.document;
         };
-        await this.validateWordContentTypes(issues, readXml);
         await this.validateDrawingScalarTextWhitespace(issues, readXml);
         await this.validateDrawingArcRadii(issues, readXml);
         await this.validateDrawingExtentSigns(issues, readXml);
@@ -765,38 +763,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             });
         }
         return finalize(issues);
-    }
-
-    private async validateWordContentTypes(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
-        const contentTypesFile = path.join(this.unpackedDir, "[Content_Types].xml");
-        let dom: Document;
-        try {
-            dom = await readXml(contentTypesFile);
-        } catch {
-            return;
-        }
-        const check = (elem: Element, attrName: "PartName" | "Extension"): void => {
-            const contentType = elem.getAttribute("ContentType");
-            if (!contentType || !contentType.startsWith("invalid-")) return;
-            const target = elem.getAttribute(attrName) ?? "";
-            issues.push({
-                severity: "error",
-                message: `Microsoft Word refuses content type '${contentType}' for ${target}`,
-                path: "[Content_Types].xml",
-                code: "word-content-type-invalid",
-            });
-        };
-
-        const overrides = getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Override");
-        for (let i = 0; i < overrides.length; i += 1) {
-            const elem = overrides[i];
-            if (elem) check(elem, "PartName");
-        }
-        const defaults = getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Default");
-        for (let i = 0; i < defaults.length; i += 1) {
-            const elem = defaults[i];
-            if (elem) check(elem, "Extension");
-        }
     }
 
     private async validateDrawingScalarTextWhitespace(
