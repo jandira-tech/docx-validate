@@ -32,3 +32,9 @@
 
 **Learning:** JSZip 3.8+ (we pin 3.10.2) stores every entry under `utils.resolve(name)` on load and keeps the raw name in `unsafeOriginalName`: `../../evil.xml` loads as `evil.xml`, and `zip.file("../../evil.xml")` returns null. `_getOriginalFileErrors` looks entries up by name and returns before writing when the lookup fails, so the zip slip reported in PR #189 is unreachable; its test had to monkeypatch JSZip to recreate it. An absolute name (`/abs.xml`) is kept as is, but `path.join(tmpDir, rel)` cannot leave `tmpDir` with it.
 **Prevention:** Code that iterates `zip.files` or reads `unsafeOriginalName` to write files must still check containment with `path.relative`, as `extractZipEntries` does.
+
+## 2026-10-23 - Denial of Service (DoS) in Synchronous Process Execution
+
+**Vulnerability:** Invoking external processes (`git`, `gcc`) using `spawnSync` without setting `timeout` and `maxBuffer` limits. A malicious input or a hung external process could cause the Node.js application to block indefinitely or exhaust memory (e.g., if the external process emits a massive amount of output), leading to a Denial of Service (CWE-400).
+**Learning:** External processes act as boundary interactions. Synchronous executions inherently block the Node.js event loop. If they lack strict time and resource bounds, they introduce a critical reliability and security choke point.
+**Prevention:** Always enforce strict execution bounds when using synchronous APIs like `spawnSync` or `execSync`. Set a `timeout` (e.g., 10000ms) to prevent infinite hangs and a reasonable `maxBuffer` (e.g., 10 * 1024 * 1024 for 10MB) to cap memory allocation for captured I/O streams.

@@ -211,7 +211,11 @@ export function ensureShim(): string {
     SHIM_C = path.join(SHIM_DIR, "lo_socket_shim.c");
 
     writeFileSync(SHIM_C, SHIM_SOURCE);
-    const result = spawnSync("gcc", ["-shared", "-fPIC", "-o", SHIM_SO, SHIM_C, "-ldl"], { encoding: "utf8" });
+    const result = spawnSync("gcc", ["-shared", "-fPIC", "-o", SHIM_SO, SHIM_C, "-ldl"], {
+        encoding: "utf8",
+        timeout: 10000,
+        maxBuffer: 10 * 1024 * 1024,
+    });
     if (result.error) {
         try {
             unlinkSync(SHIM_C);
