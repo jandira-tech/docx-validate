@@ -476,13 +476,14 @@ interface CliOptions {
     quick?: boolean;
     /** Comma-separated check ids or group names. */
     checks?: string;
+    listChecks?: boolean;
 }
 
 export function buildValidateCommand(): Command {
     const cmd = new Command();
     cmd.name("validate")
         .description("Validate Office document XML files against XSD schemas and tracked changes")
-        .argument("<path>", "Path to unpacked directory or packed Office file (.docx/.docm/.pptx/.xlsx)")
+        .argument("[path]", "Path to unpacked directory or packed Office file (.docx/.docm/.pptx/.xlsx)")
         .option(
             "--original <file>",
             "Path to original file (.docx/.docm/.pptx/.xlsx). If omitted, all XSD errors are reported and redlining validation is skipped.",
@@ -495,7 +496,8 @@ export function buildValidateCommand(): Command {
             "Validation profile: 'word-valid' (default for .docx/.docm), 'lenient' (default for every other format), or 'strict'",
         )
         .option("--quick", "Run the common-defect check preset and report the checks it omits", false)
-        .option("--checks <ids-or-groups,...>", "Run only these named checks (or groups) plus their prerequisites");
+        .option("--checks <ids-or-groups,...>", "Run only these named checks (or groups) plus their prerequisites")
+        .option("--list-checks", "List every named check with its id, groups, formats and description, then exit", false);
     return cmd;
 }
 
@@ -505,6 +507,18 @@ const parseCheckList = (raw: string | undefined): string[] =>
         .split(",")
         .map((name) => name.trim())
         .filter((name) => name !== "");
+
+/**
+ * Human-readable catalogue of the named checks, one per line:
+ * `id — groups: … | formats: … — description`.
+ */
+export function renderCheckList(): string {
+    const lines = ["Named checks (pass ids or groups to --checks):"];
+    for (const def of createDefaultCheckRegistry().list()) {
+        lines.push(`  ${def.id} — groups: ${def.groups.join(", ")} | formats: ${def.formats.join(", ")} — ${def.description}`);
+    }
+    return `${lines.join("\n")}\n`;
+}
 
 export async function runValidateFromArgv(argv: readonly string[]): Promise<number> {
     const cmd = buildValidateCommand();
@@ -519,6 +533,18 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
     }
     const opts = cmd.opts<CliOptions>();
     const [target] = cmd.args;
+
+    // Discovery validates nothing: it neither reads a package nor initialises
+    // the XML or XSD engines.
+    if (opts.listChecks === true) {
+        process.stdout.write(renderCheckList());
+        return 0;
+    }
+
+    if (target === undefined) {
+        process.stderr.write("Error: missing required argument 'path' (or use --list-checks).\n");
+        return 1;
+    }
 
     if (opts.profile !== undefined && opts.profile !== "lenient" && opts.profile !== "strict" && opts.profile !== "word-valid") {
         const bad = String(opts.profile);

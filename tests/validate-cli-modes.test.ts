@@ -81,3 +81,29 @@ describe("validate CLI: quick mode output", { timeout: 120_000 }, () => {
         expect(run.stdout).not.toMatch(/all validations pass/i);
     });
 });
+
+describe("validate CLI: named checks", { timeout: 120_000 }, () => {
+    it("runs only the named checks and reports the rest as omitted", async () => {
+        const run = await withTempDir(async (dir) => capture([await controlDocx(dir), "--checks", "math,tracked-changes"]));
+
+        expect(run.code).toBe(0);
+        expect(run.stdout).toContain("Selected checks passed");
+        expect(run.stdout).not.toMatch(/all validations pass/i);
+        expect(run.stdout).toMatch(/Omitted checks \(not run\): [^\n]*word-shading-color/);
+        // The named groups ran: math + tracked-changes checks, plus the
+        // xml-syntax prerequisite they share.
+        expect(run.stdout).not.toContain("Omitted checks (not run): word-math-run-insertion");
+    });
+
+    it("lists every check with its id, groups, formats and description, validating nothing", async () => {
+        const run = await capture(["--list-checks"]);
+
+        expect(run.code).toBe(0);
+        expect(run.stdout).toContain("xml-syntax");
+        expect(run.stdout).toContain("word-row-without-cell");
+        expect(run.stdout).toMatch(/groups/i);
+        expect(run.stdout).toMatch(/formats/i);
+        expect(run.stdout).toMatch(/Every XML part of the package is well-formed/);
+        expect(run.stdout).toMatch(/docx/);
+    });
+});
