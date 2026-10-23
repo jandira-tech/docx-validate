@@ -33,10 +33,13 @@
  *                     the BOM and the document validates as ok. Under the
  *                     strict profile we emit `xml-bom-leading` and reject.
  *                     Both cases are pinned below.
- *  - zipGeneration.docx → genuinely missing <Default Extension="png" .../>
- *                         in [Content_Types].xml. Real OOXML violation —
- *                         pin both `valid===false` and the `ct-undeclared-ext`
- *                         code as a positive-test for that detector.
+ *  - zipGeneration.docx → declares its only media part by an exact
+ *                         <Override PartName="/word/media/image1.png"/> and no
+ *                         png <Default>. OPC resolves Override first (ECMA-376
+ *                         Part 2 §10.1.2.4), so the part IS covered and Word
+ *                         opens the file cleanly; `ct-undeclared-ext` used to
+ *                         flag it (#208). Lenient now passes it; strict still
+ *                         rejects it for its paraId and style-default gaps.
  *  - macroEnabledTemplate.docm → skipped: validate() currently only handles
  *                                .docx/.pptx/.xlsx; .docm is structurally
  *                                identical to .docx but the suffix gate
@@ -66,13 +69,12 @@ const KNOWN_FAILURES_LENIENT: Record<string, ExpectedFailure> = {
     // are stricter than Microsoft's actual implementation. A future "lenient
     // tolerates Office sequence-order deviations" pass would unblock this.
     "office365.docx": { codes: ["xsd-summary"] },
-    "zipGeneration.docx": { codes: ["ct-undeclared-ext"] },
 };
 
 const KNOWN_FAILURES_STRICT: Record<string, ExpectedFailure> = {
     // Strict additionally surfaces xml-bom-leading (the canonical strict-only check).
     "office365.docx": { codes: ["xml-bom-leading", "xsd-summary"] },
-    "zipGeneration.docx": { codes: ["ct-undeclared-ext"] },
+    "zipGeneration.docx": { codes: ["paraid-missing-element", "style-default-missing"] },
 };
 
 const SKIP = new Set<string>([
@@ -98,6 +100,13 @@ describe("docx-templates corpus — valid templates pass under default (lenient)
         }
         expect(result.valid).toBe(true);
         expect(result.issues.filter((i) => i.severity === "error")).toEqual([]);
+    });
+});
+
+describe("docx-templates corpus — media declared by Override (#208)", () => {
+    it.each(["lenient", "strict"] as const)("zipGeneration.docx carries no ct-undeclared-ext under %s", async (profile) => {
+        const result = await validate(path.join(FIXTURE_DIR, "zipGeneration.docx"), { profile });
+        expect(result.issues.map((i) => i.code)).not.toContain("ct-undeclared-ext");
     });
 });
 

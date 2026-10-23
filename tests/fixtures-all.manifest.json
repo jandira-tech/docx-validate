@@ -3353,11 +3353,11 @@
             "relativePath": "external/docx-templates/zipGeneration.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-undeclared-ext", "paraid-missing-element", "style-default-missing"]
+                "errorCodes": ["paraid-missing-element", "style-default-missing"]
             },
             "lenient": {
-                "valid": false,
-                "errorCodes": ["ct-undeclared-ext"]
+                "valid": true,
+                "errorCodes": []
             },
             "word": "clean-open"
         },
@@ -3365,11 +3365,11 @@
             "relativePath": "external/docx2html/attachment_is_tiff.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-undeclared-ext", "paraid-missing-element", "style-default-missing"]
+                "errorCodes": ["paraid-missing-element", "style-default-missing"]
             },
             "lenient": {
-                "valid": false,
-                "errorCodes": ["ct-undeclared-ext"]
+                "valid": true,
+                "errorCodes": []
             },
             "word": "unknown"
         },
@@ -3425,11 +3425,11 @@
             "relativePath": "external/docx2html/has_image.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-undeclared-ext", "paraid-missing-element", "style-default-missing"]
+                "errorCodes": ["paraid-missing-element", "style-default-missing"]
             },
             "lenient": {
-                "valid": false,
-                "errorCodes": ["ct-undeclared-ext"]
+                "valid": true,
+                "errorCodes": []
             },
             "word": "unknown"
         },
@@ -3569,11 +3569,11 @@
             "relativePath": "external/docx2html/resized_image.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-undeclared-ext", "paraid-missing-element", "style-default-missing"]
+                "errorCodes": ["paraid-missing-element", "style-default-missing"]
             },
             "lenient": {
-                "valid": false,
-                "errorCodes": ["ct-undeclared-ext"]
+                "valid": true,
+                "errorCodes": []
             },
             "word": "unknown"
         },
