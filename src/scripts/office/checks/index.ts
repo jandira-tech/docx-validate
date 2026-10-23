@@ -33,6 +33,7 @@ import { wordContentTypeInvalidCheck } from "./word-content-types";
 import { wordDrawingScalarWhitespaceCheck, wordDrawingArcRadiusCheck, wordDrawingExtentNegativeCheck } from "./word-drawing-values";
 import { wordEmptyDrawingCheck, wordAnchorMissingAttributeCheck, wordPositionOffsetAndAlignCheck } from "./word-drawing-anchors";
 import { wordCellEndsWithTableCheck } from "./word-cell-ending";
+import { wordTextboxDeletedTextCheck, wordMoveFromDeletedTextCheck } from "./word-deleted-text";
 import { xmlSyntaxCheck } from "./xml";
 
 /**
@@ -64,6 +65,8 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordUnknownElementCheck,
     wordLinkWithoutNamespaceCheck,
     wordMarkupCompatibilityCheck,
+    wordTextboxDeletedTextCheck,
+    wordMoveFromDeletedTextCheck,
     wordCellEndsWithTableCheck,
     wordEmptyDrawingCheck,
     wordAnchorMissingAttributeCheck,

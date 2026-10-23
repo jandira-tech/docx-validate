@@ -591,18 +591,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             // opens clean, so gridBefore is not the cause.
             case "word-row-without-cell":
             case "word-cell-ends-with-table":
-            // w:delText or w:delInstrText inside w:txbxContent makes Word
-            // offer recovery when no w:del inside that text box wraps it.
-            // That content sits in a VML text box (fixture 0011) or a
-            // drawingML wps:txbx (fixture 0044). The same elements in the
-            // document body are tolerated. An mc:Fallback text box is
-            // tolerated (fixture 2054): Word uses the sibling mc:Choice.
-            // A w:del inside the text box is tolerated (fixture 0948).
-            // A w:del outside the text box does not cover the text-box story.
             case "word-textbox-deleted-text":
-            // w:delText inside w:moveFrom makes Word offer recovery (fixture
-            // 0726). One such element is enough. w:t inside w:moveFrom opens
-            // clean, and w:delText in the document body is tolerated.
             case "word-move-from-deleted-text":
             // mc:Choice @Requires names a prefix that is not declared on
             // that element or an ancestor (fixture 0508). Word offers
@@ -682,8 +671,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             return parsed.document;
         };
         await this.validateRowsWithoutCells(issues, readXml);
-        await this.validateTextBoxDeletedText(issues, readXml);
-        await this.validateMoveFromDeletedText(issues, readXml);
         await this.validateTextContainsParagraph(issues, readXml);
         await this.validateHyperlinkRelationships(issues, readXml);
         await this.validateDuplicateThemeRelationships(issues, readXml);
@@ -849,89 +836,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     /** Adapter: the rule lives in the named check `word-row-without-cell`. */
     private async validateRowsWithoutCells(issues: ValidationIssue[], _readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
         issues.push(...(await wordRowWithoutCellCheck.run(this.context())));
-    }
-
-    /**
-     * `w:delText` or `w:delInstrText` inside `w:txbxContent` makes Word offer
-     * to recover the file when that text is not inside a `w:del` in the text
-     * box. One such element is enough. The text box may be a VML `v:textbox`
-     * or a drawingML `wps:txbx`. The same elements in the document body are
-     * tolerated, and a text box that contains only field characters opens
-     * clean. Deleted text whose text box sits inside `mc:Fallback` is not
-     * this defect: Word uses the sibling `mc:Choice`. A `w:del` that wraps
-     * the text inside the text box is not this defect either. A `w:del`
-     * outside the text box does not cover `w:delText` in the text-box story.
-     */
-    private async validateTextBoxDeletedText(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                for (const local of ["delText", "delInstrText"] as const) {
-                    const nodes = getElementsByTagNameNSAll(dom, ns, local);
-                    for (let i = 0; i < nodes.length; i += 1) {
-                        const node = nodes[i];
-                        if (!node || !this.hasTextBoxContentAncestor(node)) continue;
-                        if (this.hasMarkupCompatibilityFallbackAncestor(node)) continue;
-                        if (this.hasTextBoxDeletionAncestor(node)) continue;
-                        issues.push({
-                            severity: "error",
-                            message:
-                                "A text box contains deleted text. Microsoft Word offers to recover the file. " +
-                                "Remove the w:delText or w:delInstrText from the text box.",
-                            path: this.relPath(xmlFile),
-                            code: "word-textbox-deleted-text",
-                        });
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * `w:delText` inside `w:moveFrom` makes Word offer to recover the file.
-     * One such element is enough. `w:t` inside `w:moveFrom` opens clean.
-     * `w:delText` in the document body is tolerated.
-     */
-    private async validateMoveFromDeletedText(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const nodes = getElementsByTagNameNSAll(dom, ns, "delText");
-                for (let i = 0; i < nodes.length; i += 1) {
-                    const node = nodes[i];
-                    if (!node || !this.hasMoveFromAncestor(node)) continue;
-                    issues.push({
-                        severity: "error",
-                        message:
-                            "A move source contains deleted text. Microsoft Word offers to recover the file. " +
-                            "Use w:t inside w:moveFrom, not w:delText.",
-                        path: this.relPath(xmlFile),
-                        code: "word-move-from-deleted-text",
-                    });
-                }
-            }
-        }
-    }
-
-    private hasMoveFromAncestor(node: Node): boolean {
-        let parent = node.parentNode;
-        while (parent && parent.nodeType === 1) {
-            const elem = parent as Element;
-            const local = elem.localName || elem.tagName.split(":").pop() || "";
-            if (local === "moveFrom" && WORD_PARAGRAPH_NAMESPACES.includes(elem.namespaceURI ?? "")) return true;
-            parent = parent.parentNode;
-        }
-        return false;
     }
 
     /**
@@ -1101,47 +1005,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 if (attr && attr.name === attrName) return true;
             }
             current = current.parentNode;
-        }
-        return false;
-    }
-
-    private hasTextBoxContentAncestor(node: Node): boolean {
-        let parent = node.parentNode;
-        while (parent && parent.nodeType === 1) {
-            const elem = parent as Element;
-            const local = elem.localName || elem.tagName.split(":").pop() || "";
-            if (local === "txbxContent" && WORD_PARAGRAPH_NAMESPACES.includes(elem.namespaceURI ?? "")) return true;
-            parent = parent.parentNode;
-        }
-        return false;
-    }
-
-    /**
-     * True when a `w:del` sits between this node and its `w:txbxContent`.
-     * Word accepts that deletion. A `w:del` outside the text box does not
-     * count, because the text-box story still contains bare `w:delText`.
-     */
-    private hasTextBoxDeletionAncestor(node: Node): boolean {
-        let parent = node.parentNode;
-        while (parent && parent.nodeType === 1) {
-            const elem = parent as Element;
-            const local = elem.localName || elem.tagName.split(":").pop() || "";
-            const ns = elem.namespaceURI ?? "";
-            if (local === "txbxContent" && WORD_PARAGRAPH_NAMESPACES.includes(ns)) return false;
-            if (local === "del" && WORD_PARAGRAPH_NAMESPACES.includes(ns)) return true;
-            parent = parent.parentNode;
-        }
-        return false;
-    }
-
-    /** True when an ancestor is `mc:Fallback`. Word ignores that branch. */
-    private hasMarkupCompatibilityFallbackAncestor(node: Node): boolean {
-        let parent = node.parentNode;
-        while (parent && parent.nodeType === 1) {
-            const elem = parent as Element;
-            const local = elem.localName || elem.tagName.split(":").pop() || "";
-            if (local === "Fallback" && elem.namespaceURI === MC_NAMESPACE) return true;
-            parent = parent.parentNode;
         }
         return false;
     }
