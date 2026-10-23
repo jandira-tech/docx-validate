@@ -1733,7 +1733,9 @@ const UNBOUND_IGNORABLE_MESSAGE = /^Unbound prefix in mc:Ignorable: (.+)$/;
  * bound only on a descendant) keeps its finding.
  */
 export function withoutRestatedIgnorablePrefixes(result: ValidationResult): ValidationResult {
-    const key = (issue: ValidationIssue, prefix: string): string => `${issue.path ?? ""}\u0000${prefix}`;
+    // validateNamespaces reports path.relative paths (backslashes on Windows);
+    // the Word rule reports the normalized part name.
+    const key = (issue: ValidationIssue, prefix: string): string => `${(issue.path ?? "").replace(/\\/g, "/")}\u0000${prefix}`;
     const undeclared = new Map<string, number>();
     for (const issue of result.issues) {
         const prefix = issue.code === "ignorable-undeclared" ? IGNORABLE_UNDECLARED_MESSAGE.exec(issue.message)?.[1] : undefined;

@@ -1023,6 +1023,16 @@ describe("withoutRestatedIgnorablePrefixes (#309)", () => {
         expect(withoutRestatedIgnorablePrefixes({ valid: false, issues }).issues).toEqual(issues);
     });
 
+    it("matches a namespace-check path written with Windows separators (#310 review)", () => {
+        // validateNamespaces reports path.relative paths (backslashes on
+        // Windows); the Word rule reports the normalized part name.
+        const result = withoutRestatedIgnorablePrefixes({
+            valid: false,
+            issues: [undeclared("w15", "word\\document.xml"), unbound("Ignorable", "w15")],
+        });
+        expect(result.issues).toEqual([undeclared("w15", "word\\document.xml")]);
+    });
+
     it("returns the result unchanged when the namespace check found nothing", () => {
         const result = { valid: false, issues: [unbound("Ignorable", "w15")] };
         expect(withoutRestatedIgnorablePrefixes(result)).toBe(result);
