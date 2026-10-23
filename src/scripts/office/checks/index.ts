@@ -36,6 +36,12 @@ import { wordCellEndsWithTableCheck } from "./word-cell-ending";
 import { wordTextboxDeletedTextCheck, wordMoveFromDeletedTextCheck } from "./word-deleted-text";
 import { wordTextContainsParagraphCheck } from "./word-text-paragraph";
 import { wordHyperlinkRelationshipCheck } from "./word-hyperlink";
+import {
+    wordDuplicateThemeRelationshipCheck,
+    wordDuplicateFontTableRelationshipCheck,
+    wordDuplicateWebSettingsRelationshipCheck,
+    wordDuplicateSettingsRelationshipCheck,
+} from "./word-duplicate-relationships";
 import { xmlSyntaxCheck } from "./xml";
 
 /**
@@ -67,6 +73,10 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordUnknownElementCheck,
     wordLinkWithoutNamespaceCheck,
     wordMarkupCompatibilityCheck,
+    wordDuplicateThemeRelationshipCheck,
+    wordDuplicateFontTableRelationshipCheck,
+    wordDuplicateWebSettingsRelationshipCheck,
+    wordDuplicateSettingsRelationshipCheck,
     wordHyperlinkRelationshipCheck,
     wordTextContainsParagraphCheck,
     wordTextboxDeletedTextCheck,
