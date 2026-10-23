@@ -9,6 +9,7 @@
  */
 
 import { type CheckDefinition, CheckRegistry } from "../../../lib/check-registry";
+import { wordCellMarginOrderCheck } from "./cell-margin-order";
 import { wordGridColumnAttributesCheck } from "./grid-column-attributes";
 import { mathRunDeletionCheck } from "./math-run-deletion";
 import { mathRunInsertionCheck } from "./math-run-insertion";
@@ -28,6 +29,7 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     mathRunDeletionCheck,
     wordShadingColorCheck,
     wordGridColumnAttributesCheck,
+    wordCellMarginOrderCheck,
 ];
 
 export function createDefaultCheckRegistry(): CheckRegistry {
