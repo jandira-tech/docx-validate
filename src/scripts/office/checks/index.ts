@@ -29,6 +29,7 @@ import { wordSectionPropertiesMisplacedCheck } from "./word-section-properties";
 import { wordTablePropertiesMisplacedCheck } from "./word-table-properties";
 import { wordLinkWithoutNamespaceCheck, wordUnknownElementCheck } from "./word-unknown-elements";
 import { wordMarkupCompatibilityCheck } from "./word-markup-compatibility";
+import { wordDocumentRootCheck } from "./word-document-root";
 import { wordContentTypeInvalidCheck } from "./word-content-types";
 import { wordDrawingScalarWhitespaceCheck, wordDrawingArcRadiusCheck, wordDrawingExtentNegativeCheck } from "./word-drawing-values";
 import { wordEmptyDrawingCheck, wordAnchorMissingAttributeCheck, wordPositionOffsetAndAlignCheck } from "./word-drawing-anchors";
@@ -79,6 +80,7 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordUnknownElementCheck,
     wordLinkWithoutNamespaceCheck,
     wordMarkupCompatibilityCheck,
+    wordDocumentRootCheck,
     wordRowWithoutCellCheck,
     wordMathParseCheck,
     wordMathSpreBodyCheck,

@@ -26,6 +26,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Resolve content types with exact Override precedence and canonical OPC part-name comparison, including reserved-escape distinctions ([#208](https://github.com/jandira-tech/docx-validate/issues/208), [#297](https://github.com/jandira-tech/docx-validate/issues/297)).
 - Select markup-compatibility branches on validation-only clones, preserve schema-permitted extension payloads, and judge Word rules on the content Word consumes. Diagnose invalid tokens, unbound prefixes, and loss of required main roots without duplicate root Ignorable findings ([#239](https://github.com/jandira-tech/docx-validate/issues/239), [#250](https://github.com/jandira-tech/docx-validate/issues/250), [#287](https://github.com/jandira-tech/docx-validate/issues/287), [#291](https://github.com/jandira-tech/docx-validate/issues/291), [#296](https://github.com/jandira-tech/docx-validate/issues/296), [#309](https://github.com/jandira-tech/docx-validate/issues/309)).
 - Validate ISO Strict OOXML under strict with bundled schemas and local Dublin Core imports. Preserve repeated schema-error locations, bypass strict message suppression and original-baseline subtraction, and keep infrastructure failures out of baseline subtraction ([#270](https://github.com/jandira-tech/docx-validate/issues/270), [#289](https://github.com/jandira-tech/docx-validate/issues/289)).
+- Reject a main document part whose effective root is not a WordprocessingML `document` under Word-valid and strict (`word-document-root`). Word 16.115 refuses to open a foreign root and silently drops all content under a root that markup compatibility ignores ([#317](https://github.com/jandira-tech/docx-validate/issues/317)).
 - Return `unavailable` when a Word dialog is already showing before verification, without opening or closing anything; dismiss dialogs raised by this run during macOS cleanup so later probes remain attributable ([#315](https://github.com/jandira-tech/docx-validate/issues/315)).
 
 ### Security
@@ -34,7 +35,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Known limitations
 
-- Word-valid does not yet check the main document part's root. A foreign root (Word: open error) and a root that markup compatibility ignores (Word opens it with all content dropped) both pass Word-valid; lenient and strict catch them ([#317](https://github.com/jandira-tech/docx-validate/issues/317)).
 - `verifyInWord` reports `crash` whenever the Word process disappears after the open, so an external kill or quit is indistinguishable from a crash ([#305](https://github.com/jandira-tech/docx-validate/issues/305)).
 
 ## [0.53.0-rc.1] — 2026-10-15

@@ -533,6 +533,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-math-parse":
             case "word-math-spre-body":
             case "word-content-type-invalid":
+            // #317, Word 16.115: a foreign main root prevents opening; an ignored main root silently drops all content.
+            case "word-document-root":
             // A part with no Override and no Default makes Word offer recovery
             // ([trash]/0000.dat). A part that has a content type but no
             // relationship is tolerated, so rels-unreferenced stays a warning.
