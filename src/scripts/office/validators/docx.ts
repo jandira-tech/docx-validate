@@ -571,6 +571,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-run-properties-misplaced":
             // invalid-underline.docx (word: unreadable-content-warning): w:u directly inside w:pPr makes Word offer recovery; w:u inside w:rPr opens clean.
             case "word-underline-misplaced":
+            // 5Errors.docx (word: unreadable-content-warning): w:pPr nested inside w:pPr makes Word offer recovery; the duplicate-pPr-in-one-paragraph control (word-tolerated-duplicate-ppr.docx) opens clean.
+            case "word-paragraph-properties-misplaced":
             case "word-drawing-scalar-whitespace":
             case "word-drawing-arc-radius":
             case "word-empty-drawing":
