@@ -22,6 +22,8 @@ import { describe, expect, it, vi } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
 
+import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+
 class HarnessValidator extends BaseSchemaValidator {
     originalErrors(xmlFile: string): Promise<Set<string>> {
         return this._getOriginalFileErrors(xmlFile);
@@ -284,6 +286,28 @@ describe("BaseSchemaValidator", () => {
                 const outcome = await v.validateFileAgainstXsd(path.join(dir, "_rels", ".rels"));
                 expect(outcome.valid).toBe(false);
                 expect(outcome.errors.size).toBeGreaterThan(0);
+            });
+        });
+
+        it("never subtracts schema-load failures (#289)", async () => {
+            // Infrastructure findings (xsd-schema-load-failed, engine
+            // failures) are never part of the --original baseline
+            // subtraction: they always surface as error-severity issues and
+            // make the part invalid, under every profile.
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "word", "document.xml");
+                await writeFile(file, MINIMAL_PARTS["word/document.xml"]!);
+                const original = path.join(dir, "original.docx");
+                await fs.writeFile(original, await buildDocx());
+                const schemasDir = path.join(dir, "empty-schemas");
+                await fs.mkdir(schemasDir);
+                const validator = new BaseSchemaValidator({
+                    unpackedDir: dir,
+                    originalFile: original,
+                    schemasDir,
+                    profile: "word-valid",
+                });
+                expect((await validator.validateFileAgainstXsd(file)).valid).toBe(false);
             });
         });
     });
