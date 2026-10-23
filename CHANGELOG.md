@@ -32,6 +32,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Replace the quadratic XML pretty-printer suffix regex with a linear scan, preserving formatting while preventing repeated tag starts in comments from causing excessive work (CodeQL alert #2).
 
+### Known limitations
+
+- Word-valid does not yet check the main document part's root. A foreign root (Word: open error) and a root that markup compatibility ignores (Word opens it with all content dropped) both pass Word-valid; lenient and strict catch them ([#317](https://github.com/jandira-tech/docx-validate/issues/317)).
+- `verifyInWord` reports `crash` whenever the Word process disappears after the open, so an external kill or quit is indistinguishable from a crash ([#305](https://github.com/jandira-tech/docx-validate/issues/305)).
+
 ## [0.53.0-rc.1] — 2026-10-15
 
 Changes since the latest GitHub release, `v0.52.0` (2026-10-06), through 2026-10-15. This prerelease is published under npm's `next` tag; it does not advance `latest`.
@@ -60,9 +65,7 @@ Changes since the latest GitHub release, `v0.52.0` (2026-10-06), through 2026-10
 
 ### Known limitations
 
-- Word compatibility for some uncovered package parts and unselected markup-compatibility branches still needs targeted Word A/B evidence; see [the inspection notes](docs/really-broken/README.md). Recorded Word observations were preserved; new observations were added only for the 12 fixtures bound in [#313](https://github.com/jandira-tech/docx-validate/issues/313).
-- Word-valid does not yet check the main document part's root. A foreign root (Word: open error) and a root that markup compatibility ignores (Word opens it with all content dropped) both pass Word-valid; lenient and strict catch them ([#317](https://github.com/jandira-tech/docx-validate/issues/317)).
-- `verifyInWord` reports `crash` whenever the Word process disappears after the open, so an external kill or quit is indistinguishable from a crash ([#305](https://github.com/jandira-tech/docx-validate/issues/305)).
+- Word compatibility for some uncovered package parts and unselected markup-compatibility branches still needs targeted Word A/B evidence; see [the inspection notes](docs/really-broken/README.md). Recorded Word observations were preserved; this release review did not perform new Word opens.
 
 ## [0.52.0] — 2026-10-06
 
