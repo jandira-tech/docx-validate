@@ -27,6 +27,7 @@ import { wordParagraphPropertiesMisplacedCheck } from "./word-paragraph-properti
 import { wordRunMisplacedCheck, wordRunPropertiesMisplacedCheck, wordUnderlineMisplacedCheck } from "./word-run-placement";
 import { wordSectionPropertiesMisplacedCheck } from "./word-section-properties";
 import { wordTablePropertiesMisplacedCheck } from "./word-table-properties";
+import { wordLinkWithoutNamespaceCheck, wordUnknownElementCheck } from "./word-unknown-elements";
 import { xmlSyntaxCheck } from "./xml";
 
 /**
@@ -55,6 +56,8 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordParagraphPropertiesMisplacedCheck,
     wordSectionPropertiesMisplacedCheck,
     wordTablePropertiesMisplacedCheck,
+    wordUnknownElementCheck,
+    wordLinkWithoutNamespaceCheck,
 ];
 
 export function createDefaultCheckRegistry(): CheckRegistry {
