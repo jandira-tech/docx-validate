@@ -19,6 +19,7 @@ import { wordShadingColorCheck } from "./shading-color";
 import { wordTablePropertiesRequiredCheck } from "./table-properties-required";
 import { wordRowWithoutCellCheck } from "./tables";
 import { textboxContentNamespaceCheck } from "./textbox-content-namespace";
+import { wordCustomPropertyFiletimeEmptyCheck } from "./word-custom-properties";
 import { xmlSyntaxCheck } from "./xml";
 
 /**
@@ -36,6 +37,7 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordTablePropertiesRequiredCheck,
     pageMarginAttributesCheck,
     textboxContentNamespaceCheck,
+    wordCustomPropertyFiletimeEmptyCheck,
 ];
 
 export function createDefaultCheckRegistry(): CheckRegistry {
