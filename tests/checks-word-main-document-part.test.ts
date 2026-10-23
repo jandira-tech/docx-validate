@@ -37,14 +37,17 @@ describe(CODE, () => {
     });
 
     it.each([OFFICE_DOCUMENT, STRICT_OFFICE_DOCUMENT])("accepts a main part named by %s", async (type) => {
-        expect(await mainPartIssues({ ...MINIMAL_PARTS, "_rels/.rels": relationships(`Type="${type}" Target="/word/document.xml"`) })).toEqual(
-            [],
-        );
+        expect(
+            await mainPartIssues({ ...MINIMAL_PARTS, "_rels/.rels": relationships(`Type="${type}" Target="/word/document.xml"`) }),
+        ).toEqual([]);
     });
 
     it("accepts an OPC-equivalent spelling of the main part's name", async () => {
         expect(
-            await mainPartIssues({ ...MINIMAL_PARTS, "_rels/.rels": relationships(`Type="${OFFICE_DOCUMENT}" Target="WORD/%64ocument.xml"`) }),
+            await mainPartIssues({
+                ...MINIMAL_PARTS,
+                "_rels/.rels": relationships(`Type="${OFFICE_DOCUMENT}" Target="WORD/%64ocument.xml"`),
+            }),
         ).toEqual([]);
     });
 
@@ -66,10 +69,18 @@ describe(CODE, () => {
     it.each([
         ["no relationships", relationships()],
         ["only a core-properties relationship", relationships(`Type="${CORE}" Target="docProps/core.xml"`)],
-        ["only an External officeDocument relationship", relationships(`Type="${OFFICE_DOCUMENT}" Target="https://example.com/main.xml" TargetMode="External"`)],
+        [
+            "only an External officeDocument relationship",
+            relationships(`Type="${OFFICE_DOCUMENT}" Target="https://example.com/main.xml" TargetMode="External"`),
+        ],
     ])("rejects package relationships with %s", async (_label, rels) => {
         expect(await mainPartIssues({ ...MINIMAL_PARTS, "_rels/.rels": rels })).toEqual([
-            expect.objectContaining({ code: CODE, severity: "error", path: "_rels/.rels", message: expect.stringMatching(/officeDocument/) }),
+            expect.objectContaining({
+                code: CODE,
+                severity: "error",
+                path: "_rels/.rels",
+                message: expect.stringMatching(/officeDocument/),
+            }),
         ]);
     });
 
