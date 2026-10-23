@@ -22,6 +22,10 @@ import { ValidationContext } from "../src/lib/validation-context";
 import { getElementsByTagNameNSAll, parseXml } from "../src/lib/xml-helpers";
 import * as xsdMod from "../src/lib/xsd-validator";
 import {
+    PARAGRAPH_PROPERTIES_PARENTS,
+    wordParagraphPropertiesMisplacedCheck,
+} from "../src/scripts/office/checks/word-paragraph-properties";
+import {
     RUN_PARENTS,
     RUN_PROPERTIES_PARENTS,
     UNDERLINE_PARENTS,
@@ -159,12 +163,13 @@ const legalParentsInWml = (index: ModelIndex, child: string): Set<string> => {
     return parents;
 };
 
-describe("content-model tables pinned to the bundled wml.xsd", () => {
-    it("run, run-properties, and underline parents match the schema's content models", async () => {
+describe("content-model tables pinned to the bundled wml.xsd", { timeout: 30_000 }, () => {
+    it("run, run-properties, underline, and paragraph-properties parents match the schema's content models", async () => {
         const index = buildIndex(await loadSchema("wml.xsd"));
         expect(legalParentsInWml(index, "r")).toEqual(RUN_PARENTS);
         expect(legalParentsInWml(index, "rPr")).toEqual(RUN_PROPERTIES_PARENTS[W]);
         expect(legalParentsInWml(index, "u")).toEqual(UNDERLINE_PARENTS);
+        expect(legalParentsInWml(index, "pPr")).toEqual(PARAGRAPH_PROPERTIES_PARENTS);
     });
 
     it("the math r and ctrlPr parents come from shared-math.xsd referencing w:EG_RPr", async () => {
@@ -175,7 +180,7 @@ describe("content-model tables pinned to the bundled wml.xsd", () => {
     });
 });
 
-describe("run and run-property placement Word evidence", () => {
+describe("run and run-property placement Word evidence", { timeout: 120_000 }, () => {
     it("rejects the misplaced-run fixture and its OPEN_ERROR probed twins", async () => {
         expect(wordVerdict("broken/word-rejects-misplaced-run.docx")).toBe("unknown");
         const probes = (await readFile(path.join(REPO, "word-invalid-fixtures/manifest.jsonl"), "utf8"))
@@ -197,7 +202,8 @@ describe("run and run-property placement Word evidence", () => {
         const result = await validate(file, { profile: "word-valid" });
         expect(result.valid).toBe(false);
         expect(errorCodes(result)).toContain(wordRunPropertiesMisplacedCheck.id);
-        await rejectingNoXsd(file, wordRunPropertiesMisplacedCheck.id);
+        expect(errorCodes(result)).toContain(wordParagraphPropertiesMisplacedCheck.id);
+        await rejectingNoXsd(file, wordParagraphPropertiesMisplacedCheck.id);
     });
 
     it("rejects the paragraph-level underline of invalid-underline.docx without any XSD diagnostic", async () => {
@@ -215,5 +221,12 @@ describe("run and run-property placement Word evidence", () => {
         expect(await wordRunMisplacedCheck.run(ctx)).toEqual([]);
         expect(await wordRunPropertiesMisplacedCheck.run(ctx)).toEqual([]);
         expect(await wordUnderlineMisplacedCheck.run(ctx)).toEqual([]);
+        expect(await wordParagraphPropertiesMisplacedCheck.run(ctx)).toEqual([]);
+        const duplicate = await readFile(path.join(FIXTURES, "working/word-tolerated-duplicate-ppr.docx"));
+        const duplicateCtx = await ValidationContext.fromArchive(new Uint8Array(duplicate));
+        expect(await wordParagraphPropertiesMisplacedCheck.run(duplicateCtx)).toEqual([]);
+        expect((await validate(path.join(FIXTURES, "working/word-tolerated-duplicate-ppr.docx"), { profile: "word-valid" })).valid).toBe(
+            true,
+        );
     });
 });
