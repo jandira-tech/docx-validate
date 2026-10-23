@@ -365,6 +365,58 @@ describe("verifyInWord", () => {
         expect(result.details).toContain("cleanup close failed: plain failure");
     });
 
+    it("closes after observation failure", async () => {
+        let closed = false;
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            available: async () => true,
+            version: async () => undefined,
+            open: async () => undefined,
+            observe: async () => {
+                throw new Error("Apple event timed out");
+            },
+            close: async () => {
+                closed = true;
+            },
+        };
+        await expect(verifyInWord(new Uint8Array([1]), { transport, clock: new FakeClock() })).rejects.toThrow("Apple event");
+        expect(closed).toBe(true);
+    });
+
+    it("closes after launch failure and propagates the launch error", async () => {
+        let closed = false;
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            available: async () => true,
+            version: async () => undefined,
+            open: async () => {
+                throw new Error("open -g failed");
+            },
+            observe: async () => PENDING,
+            close: async () => {
+                closed = true;
+            },
+        };
+        await expect(verifyInWord(BYTES, { transport, clock: new FakeClock() })).rejects.toThrow("open -g failed");
+        expect(closed).toBe(true);
+    });
+
+    it("keeps the original observation failure when cleanup close also throws during unwind", async () => {
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            available: async () => true,
+            version: async () => undefined,
+            open: async () => undefined,
+            observe: async () => {
+                throw new Error("Apple event timed out");
+            },
+            close: async () => {
+                throw new Error("close also failed");
+            },
+        };
+        await expect(verifyInWord(BYTES, { transport, clock: new FakeClock() })).rejects.toThrow("Apple event");
+    });
+
     it("uses the real clock and macOS transport defaults only through injection points", async () => {
         // No clock injected: the system clock drives the (tiny) timeout budget.
         const transport = new FakeTransport({ snapshots: [] });
