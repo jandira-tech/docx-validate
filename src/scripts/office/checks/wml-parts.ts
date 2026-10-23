@@ -10,8 +10,9 @@ export const WORDPROCESSINGML_NAMESPACE = "http://schemas.openxmlformats.org/wor
 export type WmlPartDocument = { readonly part: string; readonly document: Document };
 
 /**
- * Every package part whose root element is WordprocessingML, parsed once
- * through the shared context. Content-model placement rules apply to the
+ * Every package part whose root element is WordprocessingML, in the view
+ * Word consumes (`ctx.effectiveXml`: markup compatibility applied with the
+ * namespaces Word understands), parsed once through the shared context. Content-model placement rules apply to the
  * whole WordprocessingML surface — stories, styles, numbering, settings,
  * web settings, and the font table — not only to the parts that carry user
  * text, so a rule must not assume `ctx.storyParts()` is enough.
@@ -25,7 +26,7 @@ export type WmlPartDocument = { readonly part: string; readonly document: Docume
 export const wmlPartDocuments = (ctx: ValidationContext): readonly WmlPartDocument[] => {
     const out: WmlPartDocument[] = [];
     for (const part of ctx.partNames) {
-        const parsed = ctx.xml(part);
+        const parsed = ctx.effectiveXml(part);
         if (!parsed?.ok) {
             continue;
         }

@@ -37,7 +37,7 @@ export const wordGridColumnAttributesCheck: CheckDefinition = {
     run: (ctx): ValidationIssue[] => {
         const issues: ValidationIssue[] = [];
         for (const part of ctx.storyParts()) {
-            const parsed = ctx.xml(part);
+            const parsed = ctx.effectiveXml(part);
             if (!parsed?.ok) continue;
             for (const ns of WORD_PARAGRAPH_NAMESPACES) {
                 for (const gridCol of getElementsByTagNameNSAll(parsed.document, ns, "gridCol")) {

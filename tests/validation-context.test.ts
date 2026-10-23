@@ -140,3 +140,45 @@ describe("ValidationContext", () => {
         expect(a.text("word/document.xml")).not.toContain("<w:p/><w:p/>");
     });
 });
+
+describe("ValidationContext: the content Word consumes (#291)", () => {
+    const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+    const WPS = "http://schemas.microsoft.com/office/word/2010/wordprocessingShape";
+    const alternate = (requires: string) =>
+        `<w:document xmlns:w="${W}" xmlns:mc="${MC}" xmlns:wps="${WPS}" xmlns:e="urn:future"><w:body>` +
+        `<mc:AlternateContent><mc:Choice Requires="${requires}"><w:tbl/></mc:Choice><mc:Fallback><w:p/></mc:Fallback></mc:AlternateContent>` +
+        `</w:body></w:document>`;
+    const bodyChildren = (document: Document): string[] =>
+        Array.from(document.documentElement!.firstChild!.childNodes)
+            .filter((node) => node.nodeType === 1)
+            .map((node) => (node as Element).nodeName);
+
+    it("selects the Fallback of a Choice Word does not understand and leaves the raw DOM untouched", () => {
+        const ctx = ValidationContext.fromEntries({ "word/document.xml": alternate("e") });
+        const effective = ctx.effectiveXml("word/document.xml");
+        expect(effective?.ok).toBe(true);
+        expect(bodyChildren((effective as { document: Document }).document)).toEqual(["w:p"]);
+        const raw = ctx.xml("word/document.xml");
+        expect(bodyChildren((raw as { document: Document }).document)).toEqual(["mc:AlternateContent"]);
+    });
+
+    it("selects a Choice that requires a namespace Word understands", () => {
+        const ctx = ValidationContext.fromEntries({ "word/document.xml": alternate("wps") });
+        const effective = ctx.effectiveXml("word/document.xml");
+        expect(bodyChildren((effective as { document: Document }).document)).toEqual(["w:tbl"]);
+    });
+
+    it("derives the view from the one cached parse", () => {
+        const ctx = ValidationContext.fromEntries({ "word/document.xml": alternate("e") });
+        const first = ctx.effectiveXml("word/document.xml");
+        ctx.xml("word/document.xml");
+        expect(ctx.effectiveXml("word/document.xml")).toBe(first);
+        expect(ctx.parseCount("word/document.xml")).toBe(1);
+    });
+
+    it("passes a parse failure through and has no view of a missing part", () => {
+        const ctx = ValidationContext.fromEntries({ "word/document.xml": "<w:document><w:body>" });
+        expect(ctx.effectiveXml("word/document.xml")?.ok).toBe(false);
+        expect(ctx.effectiveXml("word/missing.xml")).toBeUndefined();
+    });
+});

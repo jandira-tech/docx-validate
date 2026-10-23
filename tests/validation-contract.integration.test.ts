@@ -200,6 +200,32 @@ describe("validation contract: strict keeps checking after an XML failure", { ti
     });
 });
 
+describe("validation contract: Word rules judge the content Word consumes (#291)", { timeout: 120000 }, () => {
+    // A cell-less row inside one AlternateContent branch, with a valid paragraph in the Fallback.
+    const alternateRow = (requires: string) =>
+        `<mc:AlternateContent xmlns:e="urn:future" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">` +
+        `<mc:Choice Requires="${requires}"><w:tbl><w:tblPr/><w:tblGrid/><w:tr/></w:tbl></mc:Choice>` +
+        `<mc:Fallback><w:p w14:paraId="00000002" w14:textId="00000002"/></mc:Fallback>` +
+        `</mc:AlternateContent>`;
+    const withAlternate = (requires: string) =>
+        buildDocx({
+            ...MINIMAL_PARTS,
+            "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace("<w:sectPr>", `${alternateRow(requires)}<w:sectPr>`),
+        });
+
+    it("word-valid ignores a defect inside a Choice Word does not select", async () => {
+        const result = await validateBytes(await withAlternate("e"), "word-valid");
+        expect([...errorCodes(result.issues)]).toEqual([]);
+        expect(result.valid).toBe(true);
+    });
+
+    it("word-valid rejects the same defect inside a Choice Word selects", async () => {
+        const result = await validateBytes(await withAlternate("wps"), "word-valid");
+        expect(errorCodes(result.issues).has("word-row-without-cell")).toBe(true);
+        expect(result.valid).toBe(false);
+    });
+});
+
 describe("validation contract: default DOCX profile", () => {
     // Flipped on in Task 10, after the structural checks of Task 7 replace
     // the XSD-message heuristics. Until then the default stays `lenient`.
