@@ -120,15 +120,29 @@ export const parseXmlBytes = (bytes: Uint8Array): Document => parseXml(decodeXml
  * and is currently advisory: `@xmldom` always emits UTF-16 JS strings and
  * leaves byte-encoding to the caller (write the result with `fs.writeFile(..., 'utf8')`
  * unless you have a reason to do otherwise). When `encoding` is supplied
- * we prepend an XML declaration that names it, like Python does.
+ * we prepend an XML declaration that names it, like Python does — and when
+ * the document already carries a declaration, its encoding pseudo-attribute
+ * is rewritten to name the requested encoding, since the returned string is
+ * what the caller will store or re-parse as that encoding.
  */
 export const serializeXml = (node: Node, encoding?: string): string => {
     const xml = new XMLSerializer().serializeToString(node as unknown as XmldomNode);
-    if (encoding) {
-        const decl = `<?xml version="1.0" encoding="${encoding}" standalone="yes"?>`;
-        return xml.startsWith("<?xml") ? xml : `${decl}\n${xml}`;
+    if (!encoding) {
+        return xml;
     }
-    return xml;
+    // `<?xml-stylesheet?>` and friends are PIs, not the XML declaration.
+    const declMatch = /^<\?xml[\s?]/.exec(xml);
+    if (!declMatch) {
+        return `<?xml version="1.0" encoding="${encoding}" standalone="yes"?>\n${xml}`;
+    }
+    // The serialized string will be stored or re-parsed as `encoding`, so a
+    // declaration the source document carried must not keep naming a
+    // different one: a retained encoding="UTF-16" on a JS string (handed to
+    // libxml2 as UTF-8 bytes, or written to disk as UTF-8) makes the next
+    // reader mis-decode every byte (#290). Rewrite the declaration's encoding
+    // pseudo-attribute to the requested encoding; a declaration without one
+    // stays as it is (absent means UTF-8/UTF-16-by-BOM detection anyway).
+    return xml.replace(/^(<\?xml\b(?:(?!\?>)[\s\S])*?encoding\s*=\s*)(["'])[^"']*\2/i, `$1$2${encoding}$2`);
 };
 
 // Match the former /<[^/!?][^>]*>$/ suffix check in one backward scan.

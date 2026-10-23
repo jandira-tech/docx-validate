@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 
 import type { Profile, ValidationIssue } from "../../../lib/types";
-import { getElementsByTagNameNSAll, getElementsByTagNameAll, parseXml } from "../../../lib/xml-helpers";
+import { getElementsByTagNameNSAll, getElementsByTagNameAll, parseXmlBytes } from "../../../lib/xml-helpers";
 
 const WORD_NAMESPACES = new Set([
     "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
@@ -86,7 +86,7 @@ export async function collectDocxSemanticInventory(unpackedDir: string, profile:
         }
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(file, "utf-8"));
+            dom = parseXmlBytes(await fs.readFile(file));
         } catch {
             continue;
         }
