@@ -573,6 +573,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-underline-misplaced":
             // 5Errors.docx (word: unreadable-content-warning): w:pPr nested inside w:pPr makes Word offer recovery; the duplicate-pPr-in-one-paragraph control (word-tolerated-duplicate-ppr.docx) opens clean.
             case "word-paragraph-properties-misplaced":
+            // Corpus probe (word-invalid-fixtures/README.md, CLEAN-FP 0/1304): a w:sectPr where the schema forbids it is a Word rejection class; legal body/pPr placements (word-tolerated-misplaced-pgsz.docx) open clean.
+            case "word-section-properties-misplaced":
             case "word-drawing-scalar-whitespace":
             case "word-drawing-arc-radius":
             case "word-empty-drawing":
