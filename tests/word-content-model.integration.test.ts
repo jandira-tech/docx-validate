@@ -12,7 +12,6 @@
  */
 
 import { readFile } from "node:fs/promises";
-import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -43,6 +42,7 @@ import {
 import { wordLinkWithoutNamespaceCheck, wordUnknownElementCheck } from "../src/scripts/office/checks/word-unknown-elements";
 import { WML_ELEMENT_NAMES } from "../src/scripts/office/checks/wml-vocabulary";
 import { validate, type ValidateRunResult } from "../src/scripts/office/validate";
+import { observedWordOutcome } from "./support/word-observation";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES = path.join(HERE, "fixtures");
@@ -51,13 +51,6 @@ const SCHEMAS = path.join(REPO, "src/scripts/office/schemas/ISO-IEC29500-4_2016"
 const XSD = "http://www.w3.org/2001/XMLSchema";
 const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 const MATH = "http://schemas.openxmlformats.org/officeDocument/2006/math";
-
-const manifest = JSON.parse(readFileSync(path.join(HERE, "fixtures-all.manifest.json"), "utf8")) as {
-    entries: { relativePath: string; word?: string }[];
-};
-
-const wordVerdict = (relativePath: string): string | undefined =>
-    manifest.entries.find((entry) => entry.relativePath === relativePath)?.word;
 
 const errorCodes = (result: ValidateRunResult): string[] =>
     result.issues.filter((issue) => issue.severity === "error").map((issue) => issue.code ?? "");
@@ -316,7 +309,7 @@ describe("table-properties placement Word evidence", { timeout: 120_000 }, () =>
 
 describe("unknown-element and namespace-less link Word evidence", { timeout: 120_000 }, () => {
     it("rejects the unknown w:p2 block of UnknownElement.docx without any XSD diagnostic", async () => {
-        expect(wordVerdict("external/open-xml-sdk/UnknownElement.docx")).toBe("open-error");
+        expect(await observedWordOutcome("external/open-xml-sdk/UnknownElement.docx")).toBe("open-error");
         const file = path.join(FIXTURES, "external/open-xml-sdk/UnknownElement.docx");
         const result = await validate(file, { profile: "word-valid" });
         expect(result.valid).toBe(false);
@@ -325,7 +318,7 @@ describe("unknown-element and namespace-less link Word evidence", { timeout: 120
     });
 
     it("rejects the namespace-less link of hyperlink-exported.docx without any XSD diagnostic", async () => {
-        expect(wordVerdict("external/superdoc/super-editor/hyperlink-exported.docx")).toBe("open-error");
+        expect(await observedWordOutcome("external/superdoc/super-editor/hyperlink-exported.docx")).toBe("open-error");
         const file = path.join(FIXTURES, "external/superdoc/super-editor/hyperlink-exported.docx");
         const result = await validate(file, { profile: "word-valid" });
         expect(result.valid).toBe(false);
@@ -337,7 +330,7 @@ describe("unknown-element and namespace-less link Word evidence", { timeout: 120
         // annotations_import_2.docx is manifest word: clean-open while carrying
         // w:fieldType/w:fieldTypeShort/w:fieldColor in w:sdtPr; the misplaced-
         // link control carries the namespaced w:link style child.
-        expect(wordVerdict("external/superdoc/super-editor/annotations_import_2.docx")).toBe("clean-open");
+        expect(await observedWordOutcome("external/superdoc/super-editor/annotations_import_2.docx")).toBe("clean-open");
         const sdtFields = await ValidationContext.fromArchive(
             new Uint8Array(await readFile(path.join(FIXTURES, "external/superdoc/super-editor/annotations_import_2.docx"))),
         );
@@ -356,7 +349,7 @@ describe("unknown-element and namespace-less link Word evidence", { timeout: 120
 
 describe("run and run-property placement Word evidence", { timeout: 120_000 }, () => {
     it("rejects the misplaced-run fixture and its OPEN_ERROR probed twins", async () => {
-        expect(wordVerdict("broken/word-rejects-misplaced-run.docx")).toBe("unknown");
+        expect(await observedWordOutcome("broken/word-rejects-misplaced-run.docx")).toBe("unknown");
         const probes = (await readFile(path.join(REPO, "word-invalid-fixtures/manifest.jsonl"), "utf8"))
             .split("\n")
             .filter((line) => line.includes("critic-variations"))
@@ -371,7 +364,7 @@ describe("run and run-property placement Word evidence", { timeout: 120_000 }, (
     });
 
     it("rejects the duplicated run properties of 5Errors.docx without any XSD diagnostic", async () => {
-        expect(wordVerdict("external/open-xml-sdk/5Errors.docx")).toBe("unreadable-content-warning");
+        expect(await observedWordOutcome("external/open-xml-sdk/5Errors.docx")).toBe("unreadable-content-warning");
         const file = path.join(FIXTURES, "external/open-xml-sdk/5Errors.docx");
         const result = await validate(file, { profile: "word-valid" });
         expect(result.valid).toBe(false);
@@ -381,7 +374,7 @@ describe("run and run-property placement Word evidence", { timeout: 120_000 }, (
     });
 
     it("rejects the paragraph-level underline of invalid-underline.docx without any XSD diagnostic", async () => {
-        expect(wordVerdict("external/superdoc/super-editor/invalid-underline.docx")).toBe("unreadable-content-warning");
+        expect(await observedWordOutcome("external/superdoc/super-editor/invalid-underline.docx")).toBe("unreadable-content-warning");
         const file = path.join(FIXTURES, "external/superdoc/super-editor/invalid-underline.docx");
         const result = await validate(file, { profile: "word-valid" });
         expect(result.valid).toBe(false);
