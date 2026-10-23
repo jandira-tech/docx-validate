@@ -395,11 +395,14 @@ function selectionUnderProfile(
             `Cannot run ${refused.join(", ")} under profile '${profile}': it runs neither the Word rules nor the ZIP-envelope checks. Use --profile word-valid.`,
         );
     }
-    const ids = registry
+    const members = registry
         .list(format)
         .filter((definition) => select.includes(definition.id) || definition.groups.some((group) => select.includes(group)))
-        .map((definition) => definition.id)
-        .filter((id) => !outside.has(id));
+        .map((definition) => definition.id);
+    const ids = members.filter((id) => !outside.has(id));
+    // A recognized group with no registered check (`comments`) still runs
+    // nothing and omits everything, under every profile.
+    if (members.length === 0) return select;
     if (ids.length === 0) {
         throw new ModeConflictError(
             `No check in ${select.join(", ")} runs under profile '${profile}': it runs neither the Word rules nor the ZIP-envelope checks. Use --profile word-valid.`,
