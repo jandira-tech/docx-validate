@@ -295,3 +295,25 @@ describe("ValidationContext.fromArchive: an item name that places no part (#372)
         expect(ValidationContext.fromEntries({ "/word/document.xml": DOCUMENT }).partNames).toEqual(["word/document.xml"]);
     });
 });
+
+describe("ValidationContext.fromArchive: a stored item name a view would rename (#378)", () => {
+    it.each(["/../word/document.xml", "./word/x.xml", "word/./x.xml", "word//x.xml", "docProps\\nested\\..\\custom.xml"])(
+        "rejects the archive holding %j",
+        async (name) => {
+            const zip = new JSZip();
+            zip.file("word/styles.xml", "<s/>");
+            zip.file(name, "<x/>");
+            await expect(ValidationContext.fromArchive(await zip.generateAsync({ type: "uint8array" }))).rejects.toThrow(
+                /names no package part/,
+            );
+        },
+    );
+
+    it("still loads a name with dots inside a segment", async () => {
+        const zip = new JSZip();
+        zip.file("word/a..b.xml", "<x/>");
+        zip.file("word/.hidden.xml", "<y/>");
+        const ctx = await ValidationContext.fromArchive(await zip.generateAsync({ type: "uint8array" }));
+        expect(ctx.partNames).toEqual(["word/.hidden.xml", "word/a..b.xml"]);
+    });
+});

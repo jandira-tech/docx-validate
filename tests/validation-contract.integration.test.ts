@@ -392,3 +392,85 @@ describe("validation contract: a full run judges what the package view holds (#3
         );
     });
 });
+
+describe("validation contract: a full run keeps every part's own name (#376, #377, #378)", { timeout: 120000 }, () => {
+    const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    const withSpecimen = <T>(
+        parts: Readonly<Record<string, string | Uint8Array>>,
+        run: (file: string, dir: string) => Promise<T>,
+    ): Promise<T> =>
+        withTempDir(async (dir) => {
+            const file = path.join(dir, "specimen.docx");
+            writeFileSync(file, await buildDocx(parts));
+            return run(file, dir);
+        });
+
+    it("never passes a toolbar it renamed through a folder the filesystem folds (#376)", async () => {
+        const composed = "caf\u00e9";
+        const decomposed = "cafe\u0301";
+        const parts = {
+            ...MINIMAL_PARTS,
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"].replace(
+                "</Types>",
+                '<Default Extension="bin" ContentType="application/octet-stream"/></Types>',
+            ),
+            "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"].replace(
+                "</Relationships>",
+                `<Relationship Id="rId2" Type="${R}/settings" Target="settings.xml"/>` +
+                    `<Relationship Id="rId3" Type="${R}/customXml" Target="../${composed}/other.bin"/></Relationships>`,
+            ),
+            "word/settings.xml":
+                `<w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ` +
+                `xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:r="${R}"><wne:toolbarData r:id="rId1"/></w:settings>`,
+            "word/_rels/settings.xml.rels":
+                `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                `<Relationship Id="rId1" Type="${R}/attachedToolbars" Target="../${decomposed}/toolbars.bin"/></Relationships>`,
+            [`${composed}/other.bin`]: new Uint8Array([1]),
+            [`${decomposed}/toolbars.bin`]: new Uint8Array([0xef, 0xbf, 0xbd]),
+        };
+        await withSpecimen(parts, async (file, dir) => {
+            mkdirSync(path.join(dir, "probe"));
+            writeFileSync(path.join(dir, "probe", composed), "");
+            const merges = existsSync(path.join(dir, "probe", decomposed));
+            const quick = await validate(file, { checks: ["word-attached-toolbar-utf8"] });
+            const full = await validate(file, { profile: "word-valid" });
+            expect(errorCodes(quick.issues)).toContain("word-attached-toolbar-utf8");
+            expect(full.valid).toBe(false);
+            expect(errorCodes(full.issues)).toContain(merges ? "package-extract-failed" : "word-attached-toolbar-utf8");
+        });
+    });
+
+    it("schema-validates a package whose parts sit under WORD/ (#377)", async () => {
+        const upper = Object.fromEntries(
+            Object.entries(MINIMAL_PARTS).map(([name, text]) => [
+                name.replace(/^word\//, "WORD/"),
+                text
+                    .replaceAll('PartName="/word/', 'PartName="/WORD/')
+                    .replaceAll('Target="word/', 'Target="WORD/')
+                    .replace('w:w="12240"', 'w:w="BOGUS"'),
+            ]),
+        );
+        await withSpecimen(upper, async (file) => {
+            const full = await validate(file, { profile: "strict" });
+            expect(full.xsdWalk.parts).toContain("WORD/document.xml");
+            expect(errorCodes(full.issues)).toContain("xsd-error");
+        });
+    });
+
+    it.each([
+        ["a main entry stored as /../word/document.xml", "/../word/document.xml", "word/document.xml"],
+        ["custom properties stored as docProps\\nested\\..\\custom.xml", "docProps\\nested\\..\\custom.xml", undefined],
+    ])("a quick and a full run both refuse %s (#378)", async (_label, stored, replaces) => {
+        const parts: Record<string, string> = { ...MINIMAL_PARTS };
+        if (replaces !== undefined) {
+            delete parts[replaces];
+        }
+        parts[stored] = replaces === undefined ? "<x/>" : MINIMAL_PARTS[replaces];
+        await withSpecimen(parts, async (file) => {
+            const quick = await validate(file, { checks: ["xml-syntax"] });
+            const full = await validate(file, { profile: "lenient" });
+            expect(errorCodes(quick.issues)).toContain("package-open-failed");
+            expect(errorCodes(full.issues)).toContain("package-extract-failed");
+        });
+    });
+});

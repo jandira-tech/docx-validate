@@ -156,18 +156,39 @@ describe("extractPackageParts", () => {
         });
     });
 
-    it("writes parts whose folders differ only in case (#373)", async () => {
+    it.each([
+        ["case", "word", "WORD"],
+        ["Unicode normalization", "caf\u00e9", "cafe\u0301"],
+    ])("never renames a part through a folder this filesystem folds (%s, #376)", async (_relation, first, second) => {
         await withTempDir(async (dir) => {
             const out = path.join(dir, "out");
-            await extractPackageParts(
+            const merges = holdsAsOne(dir, first, second);
+            const extraction = extractPackageParts(
                 await zipOf([
-                    ["word/document.xml", "<d/>"],
-                    ["WORD/styles.xml", "<s/>"],
+                    [`${first}/a.xml`, "<a/>"],
+                    [`${second}/b.xml`, "<b/>"],
                 ]),
                 out,
             );
-            expect(readFileSync(path.join(out, "WORD", "styles.xml"), "utf8")).toBe("<s/>");
-            expect(readFileSync(path.join(out, "word", "document.xml"), "utf8")).toBe("<d/>");
+            if (merges) {
+                await expect(extraction).rejects.toThrow(/under another name/);
+            } else {
+                await extraction;
+                expect(filesUnder(out)).toEqual([`${first}/a.xml`, `${second}/b.xml`].sort());
+            }
         });
     });
+
+    it.each(["/../word/document.xml", "./word/x.xml", "word/./x.xml", "word//x.xml", "docProps\\nested\\..\\custom.xml"])(
+        "refuses the stored item name %j, which JSZip or extraction would rename (#378)",
+        async (name) => {
+            await withTempDir(async (dir) => {
+                const zip = await zipOf([
+                    ["word/styles.xml", "<s/>"],
+                    [name, "<x/>"],
+                ]);
+                await expect(extractPackageParts(zip, path.join(dir, "out"))).rejects.toThrow(/names no package part/);
+            });
+        },
+    );
 });

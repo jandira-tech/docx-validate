@@ -167,6 +167,11 @@ export const PACKAGE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.or
 export const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 const MAIN_CONTENT_FOLDERS = new Set(["word", "ppt", "xl"]);
 
+const asciiLowerCase = (text: string): string => text.replace(/[A-Z]/g, (letter) => letter.toLowerCase());
+
+/** {@link SCHEMA_MAPPINGS} keys by their ASCII lower case, for part-name lookups (#377). */
+const SCHEMA_KEY_BY_LOWER_CASE = new Map(Object.keys(SCHEMA_MAPPINGS).map((key) => [asciiLowerCase(key), key]));
+
 /**
  * URI prefix shared by all ISO OOXML Strict conformance class namespaces.
  * Strict documents use `purl.oclc.org/ooxml/` instead of the Transitional
@@ -1675,26 +1680,31 @@ export class BaseSchemaValidator {
      * `_getSchemaPath` heuristics exactly.
      */
     protected _schemaMappingKey(xmlFile: string): string | null {
-        const base = path.basename(xmlFile);
-        if (SCHEMA_MAPPINGS[base]) {
-            return base;
+        // Part names compare ASCII case-insensitively (OPC), so a part under
+        // `WORD/` maps as one under `word/` does. The tests read the
+        // package-relative name with `/` on every platform (#377).
+        const name = asciiLowerCase(this.relPath(xmlFile).split(path.sep).join("/"));
+        const base = path.posix.basename(name);
+        const mapped = SCHEMA_KEY_BY_LOWER_CASE.get(base);
+        if (mapped !== undefined) {
+            return mapped;
         }
-        if (xmlFile.endsWith(".rels")) {
+        if (name.endsWith(".rels")) {
             return ".rels";
         }
-        if (xmlFile.includes("charts/") && base.startsWith("chart")) {
+        if (name.includes("charts/") && base.startsWith("chart")) {
             return "chart";
         }
-        if (xmlFile.includes("theme/") && base.startsWith("theme")) {
+        if (name.includes("theme/") && base.startsWith("theme")) {
             return "theme";
         }
-        if (xmlFile.includes("customXml/") && base.startsWith("itemProps") && base.endsWith(".xml")) {
+        if (name.includes("customxml/") && base.startsWith("itemprops") && base.endsWith(".xml")) {
             return "itemProps";
         }
-        if (xmlFile.includes("_xmlsignatures/") && base.startsWith("sig") && base.endsWith(".xml")) {
+        if (name.includes("_xmlsignatures/") && base.startsWith("sig") && base.endsWith(".xml")) {
             return "sig";
         }
-        const parentName = path.basename(path.dirname(xmlFile));
+        const parentName = path.posix.basename(path.posix.dirname(name));
         if (MAIN_CONTENT_FOLDERS.has(parentName) && SCHEMA_MAPPINGS[parentName]) {
             return parentName;
         }

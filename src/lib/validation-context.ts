@@ -56,20 +56,37 @@ export const normalizePartName = (name: string): string => name.replace(/\\/g, "
 
 /**
  * Why a ZIP item name places no part in the package, or `undefined` when it
- * does. The ZIP format forbids a stored name that starts with a slash or
- * names a drive (APPNOTE 4.4.17.1), and System.IO.Packaging ignores an item
- * whose name starts with `/`. Reading `\\` as `/`, as part names do, the
- * package view and extraction both refuse such a name on every platform (#372).
+ * does. Reading `\` as `/`, as part names do, the name is refused when it
+ * starts with a slash or names a drive, which the ZIP format forbids
+ * (APPNOTE 4.4.17.1) and System.IO.Packaging ignores (#372). It is also
+ * refused when it has an empty or a dot-only segment, which OPC forbids in
+ * part names ([M1.3], [M1.10]) and which JSZip or extraction would rewrite
+ * into a name the package does not hold (#378).
  */
 export const entryNameRefusal = (name: string): string | undefined => {
     const posix = name.replace(/\\/g, "/");
-    if (posix.startsWith("/")) {
-        return `ZIP item ${JSON.stringify(name)} names no package part: it starts with a slash`;
+    const reason = posix.startsWith("/")
+        ? "it starts with a slash"
+        : /^[A-Za-z]:/.test(posix)
+          ? "it names a drive"
+          : posix.split("/").some((segment) => segment === "" || /^\.+$/.test(segment))
+            ? "it has an empty or dot-only segment"
+            : undefined;
+    return reason === undefined ? undefined : `ZIP item ${JSON.stringify(name)} names no package part: ${reason}`;
+};
+
+/**
+ * Throw for the first entry whose stored name places no part. JSZip has
+ * already rewritten some names (`..`, `.`, empty segments, a leading root),
+ * so the name as stored in the archive is judged (#378).
+ */
+export const assertPlaceableEntries = (entries: Iterable<JSZip.JSZipObject>): void => {
+    for (const entry of entries) {
+        const refusal = entryNameRefusal(entry.unsafeOriginalName ?? entry.name);
+        if (refusal !== undefined) {
+            throw new Error(refusal);
+        }
     }
-    if (/^[A-Za-z]:/.test(posix)) {
-        return `ZIP item ${JSON.stringify(name)} names no package part: it names a drive`;
-    }
-    return undefined;
 };
 
 /**
@@ -152,12 +169,7 @@ export class ValidationContext {
     public static async fromArchive(bytes: Uint8Array): Promise<ValidationContext> {
         const zip = await JSZip.loadAsync(bytes);
         const files = Object.values(zip.files).filter((entry) => !entry.dir);
-        for (const entry of files) {
-            const refusal = entryNameRefusal(entry.name);
-            if (refusal !== undefined) {
-                throw new Error(refusal);
-            }
-        }
+        assertPlaceableEntries(files);
         const kept = indexByPartName(files.map((entry) => [entry.name, entry] as const));
         const parts = new Map<string, PartContent>();
         // Every entry is read, as extraction reads it, so an unreadable one

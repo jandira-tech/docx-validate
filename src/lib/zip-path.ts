@@ -19,7 +19,7 @@ import path from "node:path";
 
 import type JSZip from "jszip";
 
-import { entryNameRefusal, indexByPartName, normalizePartName } from "./validation-context";
+import { assertPlaceableEntries, indexByPartName, normalizePartName } from "./validation-context";
 
 /**
  * Resolve a zip entry against `outputDir` and refuse path-traversal names
@@ -64,20 +64,15 @@ export const extractZipEntries = async (zip: JSZip, outputDir: string): Promise<
  * its part name, with the bytes of the entry `indexByPartName` keeps. An
  * entry the view drops is read but not written, so no filesystem lets it
  * overwrite a kept part, and an unreadable one still fails (#371, #369). An
- * item name the view refuses stops the extraction (#372), and so does a part
- * that would land on a file an earlier part wrote: a filesystem that folds
- * case or Unicode normalization holds the two names as one file, and the
- * merged bytes are not what the package holds (#373). `unpack` keeps the raw
+ * item name the view refuses stops the extraction (#372, #378), and so does a
+ * part that would land on a file an earlier part wrote: a filesystem that
+ * folds case or Unicode normalization holds the two names as one file, and
+ * the merged bytes are not what the package holds (#373). `unpack` keeps the raw
  * names (`extractZipEntries`).
  */
 export const extractPackageParts = async (zip: JSZip, outputDir: string): Promise<void> => {
     const files = Object.values(zip.files).filter((entry) => !entry.dir);
-    for (const entry of files) {
-        const refusal = entryNameRefusal(entry.name);
-        if (refusal !== undefined) {
-            throw new Error(refusal);
-        }
-    }
+    assertPlaceableEntries(files);
     const kept = indexByPartName(files.map((entry) => [entry.name, entry] as const));
     for (const entry of files) {
         const content = await entry.async("nodebuffer");
@@ -101,6 +96,19 @@ export const extractPackageParts = async (zip: JSZip, outputDir: string): Promis
                 );
             }
             throw err;
+        }
+    }
+    // Such a filesystem can also merge two parts' folders: the later file
+    // then lands in the folder the earlier part named, under a name the
+    // package does not hold. Every part must be found under its own (#376).
+    const held = new Set(
+        (await fs.readdir(outputDir, { recursive: true, withFileTypes: true }))
+            .filter((entry) => entry.isFile())
+            .map((entry) => path.relative(outputDir, path.join(entry.parentPath, entry.name)).split(path.sep).join("/")),
+    );
+    for (const part of kept.keys()) {
+        if (!held.has(part)) {
+            throw new Error(`Cannot write part ${JSON.stringify(part)}: this filesystem holds it under another name`);
         }
     }
 };
