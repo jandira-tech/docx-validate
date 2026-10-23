@@ -24,6 +24,7 @@ import { describe, expect, it } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
 import { validate } from "../src/scripts/office/validate";
+import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
 import { MINIMAL_PARTS, buildDocx } from "./support/minimal-docx";
 
 const TRANSITIONAL = "http://schemas.openxmlformats.org/";
@@ -121,6 +122,48 @@ describe("strict profile — one issue per error occurrence", () => {
             expect(occurrences.length).toBe(3);
             const lines = new Set(occurrences.map((i) => i.line));
             expect(lines.size).toBe(3);
+        });
+    }, 60_000);
+});
+
+describe("strict profile — missing schemas never pass silently", () => {
+    const unpack = async (dir: string): Promise<string> => {
+        const unpacked = path.join(dir, "unpacked");
+        for (const [name, content] of Object.entries(MINIMAL_PARTS)) {
+            const target = path.join(unpacked, name);
+            await fs.mkdir(path.dirname(target), { recursive: true });
+            await fs.writeFile(target, content);
+        }
+        return unpacked;
+    };
+
+    it("a schema directory without the required XSDs fails strict with xsd-schema-load-failed", async () => {
+        await withTempDir(async (dir) => {
+            const unpackedDir = await unpack(dir);
+            const emptySchemas = path.join(dir, "empty-schemas");
+            await fs.mkdir(emptySchemas, { recursive: true });
+            const validator = new DOCXSchemaValidator({ unpackedDir, schemasDir: emptySchemas, profile: "strict" });
+            const result = await validator.validate();
+            expect(result.valid).toBe(false);
+            expect(result.issues.some((i) => i.code === "xsd-schema-load-failed")).toBe(true);
+        });
+    }, 60_000);
+
+    it("an unresolvable import reported by the engine stays a strict error", async () => {
+        await withTempDir(async (dir) => {
+            const unpackedDir = await unpack(dir);
+            const validator = new DOCXSchemaValidator({
+                unpackedDir,
+                profile: "strict",
+                xsdValidator: {
+                    validate: async () => [
+                        { severity: "error", code: "xsd-schema-load-failed", message: "Schema load failed: cannot resolve import" },
+                    ],
+                },
+            });
+            const result = await validator.validate();
+            expect(result.valid).toBe(false);
+            expect(result.issues.some((i) => i.code === "xsd-schema-load-failed")).toBe(true);
         });
     }, 60_000);
 });
