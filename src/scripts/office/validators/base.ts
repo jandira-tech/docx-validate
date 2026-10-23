@@ -1370,7 +1370,13 @@ export class BaseSchemaValidator {
             const schemaNamespace = SCHEMA_NAMESPACE_CAPABILITIES[path.basename(this._getSchemaPath(xmlFile) ?? "")];
             const understood = schemaNamespace ? new Set([...UNDERSTOOD_NAMESPACES, schemaNamespace]) : UNDERSTOOD_NAMESPACES;
             const compatible = applyMarkupCompatibility(dom, { understood });
-            issues.push(...compatible.issues.map((issue) => ({ ...issue, path: rel })));
+            issues.push(
+                ...compatible.issues.map((issue) => ({
+                    ...issue,
+                    path: rel,
+                    message: issue.code === "mce-extension-not-ignorable" ? `${rel}: ${issue.message}` : issue.message,
+                })),
+            );
             return serializeXml(compatible.document, "UTF-8");
         }
 

@@ -17,6 +17,44 @@ const alternative = (axis: string) =>
     `<mc:AlternateContent><mc:Choice Requires="wp14"><wp:position${axis} relativeFrom="page"><wp14:pctPos${axis}Offset>45500</wp14:pctPos${axis}Offset></wp:position${axis}></mc:Choice><mc:Fallback><wp:position${axis} relativeFrom="page"><wp:posOffset>4576445</wp:posOffset></wp:position${axis}></mc:Fallback></mc:AlternateContent>`;
 
 describe("markup compatibility", () => {
+    it("removes non-ignorable Office attributes and aggregates one namespace-aware warning per part", () => {
+        const source = parseXml(
+            wrap(
+                `<w:p wp14:paraId="1" wp14:textId="2"/><w:p wp14:paraId="3"/><w:r xmlns:alias="${WP14}" alias:paraId="4"/><w:p xmlns:w15="${NS.W15}" w15:flag="5"/>`,
+            ),
+        );
+        const before = serializeXml(source);
+        const { document, issues } = applyMarkupCompatibility(source, { understood: UNDERSTOOD_NAMESPACES });
+        expect(
+            getElementsByTagNameAll(document)
+                .flatMap((node) => Array.from(node.attributes))
+                .filter((attr) => attr.namespaceURI?.startsWith("http://schemas.microsoft.com/office/")),
+        ).toEqual([]);
+        expect(issues).toHaveLength(1);
+        expect(issues[0]).toMatchObject({ code: "mce-extension-not-ignorable", severity: "warning" });
+        for (const value of [WP14, NS.W15, "wp14:paraId", "wp14:textId", "alias:paraId", "w15:flag", "mc:Ignorable"]) {
+            expect(issues[0].message).toContain(value);
+        }
+        expect(issues[0].message.match(/wp14:paraId/g)).toHaveLength(1);
+        expect(issues[0].message).toContain("5 attributes");
+        expect(serializeXml(source)).toBe(before);
+    });
+    it("silently removes Office attributes when their URI is ignorable in scope", () => {
+        const { document, issues } = process(wrap(`<w:p xmlns:alias="${WP14}" mc:Ignorable="alias"><w:r wp14:flag="gone"/></w:p>`));
+        expect(serializeXml(document)).not.toContain("wp14:flag=");
+        expect(issues).toEqual([]);
+    });
+    it("keeps truly unknown non-ignorable attributes and elements for XSD", () => {
+        const { document, issues } = process(
+            wrap(
+                '<foo:foreign xmlns:foo="urn:example:foo" foo:flag="keep"/><w:p xmlns:near="http://schemas.microsoft.com/officeish/test" near:flag="keep"/>',
+            ),
+        );
+        expect(serializeXml(document)).toContain('foo:flag="keep"');
+        expect(serializeXml(document)).toContain('near:flag="keep"');
+        expect(getElementsByTagNameAll(document).some((node) => node.namespaceURI === "urn:example:foo")).toBe(true);
+        expect(issues).toEqual([]);
+    });
     it("keeps fallback anchor positions in schema order", () => {
         const { document, issues } = process(
             wrap(`<wp:simplePos x="0" y="0"/>${alternative("H")}${alternative("V")}<wp:extent cx="1" cy="1"/>`, 'mc:Ignorable="wp14"'),
@@ -103,7 +141,12 @@ describe("markup compatibility", () => {
         }
     });
     it("retains non-ignorable foreign content and understood namespaces", () => {
-        const source = wrap('<wp14:foreign wp14:attribute="kept"/><w:p mc:MustUnderstand="w xml"/>', 'mc:Ignorable="w"');
+        // This control needs a truly unknown URI: Office attributes have their
+        // own removal rule, independently covered above. Keep the same QNames.
+        const source = wrap(
+            '<wp14:foreign xmlns:wp14="urn:example:foo" wp14:attribute="kept"/><w:p mc:MustUnderstand="w xml"/>',
+            'mc:Ignorable="w"',
+        );
         const result = process(source);
         expect(getElementsByTagNameAll(result.document).map((node) => node.localName)).toEqual(["root", "foreign", "p"]);
         expect(serializeXml(result.document)).toContain('wp14:attribute="kept"');

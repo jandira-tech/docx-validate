@@ -48,6 +48,8 @@ export const applyMarkupCompatibility = (
 ): { document: Document; issues: ValidationIssue[] } => {
     const document = source.cloneNode(true) as Document;
     const issues: ValidationIssue[] = [];
+    const undeclaredExtensions = new Map<string, Set<string>>();
+    let extensionAttributeCount = 0;
     const visit = (element: Element, inherited: Context): void => {
         const ignorable = new Set(inherited.ignorable);
         const processContent = new Set(inherited.processContent);
@@ -77,6 +79,17 @@ export const applyMarkupCompatibility = (
                 inherited.extensionPayload || (element.localName === "ext" && EXTENSION_NAMESPACES.has(element.namespaceURI || "")),
         };
         for (const attr of Array.from(element.attributes)) {
+            // Word understands Office extension attributes even when the part
+            // omits Ignorable. The ISO schemas cannot validate these attributes;
+            // remove them only from this clone and diagnose the missing directive.
+            if (attr.namespaceURI?.startsWith("http://schemas.microsoft.com/office/") && !ignorable.has(attr.namespaceURI)) {
+                const names = undeclaredExtensions.get(attr.namespaceURI) ?? new Set<string>();
+                names.add(attr.name);
+                undeclaredExtensions.set(attr.namespaceURI, names);
+                extensionAttributeCount += 1;
+                element.removeAttributeNode(attr);
+                continue;
+            }
             if (
                 attr.namespaceURI === NS.MC ||
                 (!inherited.extensionPayload &&
@@ -159,6 +172,14 @@ export const applyMarkupCompatibility = (
     };
     if (document.documentElement) {
         visit(document.documentElement, { ignorable: new Set(), processContent: new Set(), extensionPayload: false });
+    }
+    if (extensionAttributeCount > 0) {
+        const namespaces = Array.from(undeclaredExtensions, ([uri, names]) => `${uri}: ${Array.from(names).sort().join(", ")}`);
+        issues.push({
+            severity: "warning",
+            code: "mce-extension-not-ignorable",
+            message: `Removed ${extensionAttributeCount} attributes from the validation view in non-ignorable Office extension namespaces (${namespaces.join("; ")}). Declare the corresponding prefixes in mc:Ignorable.`,
+        });
     }
     return { document, issues };
 };

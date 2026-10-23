@@ -46,6 +46,71 @@ const chartParts = (extension: string): Record<string, string> => ({
 });
 
 describe("markup compatibility XSD integration", { timeout: 240_000 }, () => {
+    it("diagnoses the real missing-Ignorable parts once each without changing package bytes", async () => {
+        for (const [specimen, parts] of [
+            ["empty.missing-content-type", ["word/document.xml"]],
+            ["sample-document.missing-paraids", ["word/header1.xml", "word/footer1.xml"]],
+        ] as const) {
+            const file = new URL(`./fixtures/unknown/unknown/${specimen}.docx`, import.meta.url);
+            const before = await fs.readFile(file);
+            const result = await validate(file.pathname, { profile: "lenient" });
+            expect(result.valid, JSON.stringify(result.issues)).toBe(true);
+            const warnings = result.issues.filter((issue) => issue.code === "mce-extension-not-ignorable");
+            expect(warnings.map((issue) => issue.path).sort()).toEqual([...parts].sort());
+            for (const warning of warnings) {
+                expect(warning.severity).toBe("warning");
+                expect(warning.message).toContain(warning.path);
+                expect(warning.message).toContain("http://schemas.microsoft.com/office/word/2010/wordml");
+                expect(warning.message).toContain("w14:paraId");
+                expect(warning.message).toContain("w14:textId");
+            }
+            expect(await fs.readFile(file)).toEqual(before);
+        }
+    });
+    for (const profile of ["lenient", "strict", "word-valid"] as const) {
+        it(`removes non-ignorable Office attributes before XSD with a stable warning under ${profile}`, async () => {
+            const result = await check(
+                {
+                    ...MINIMAL_PARTS,
+                    "word/document.xml": MINIMAL_PARTS["word/document.xml"].replace(
+                        "<w:p ",
+                        `<w:p xmlns:wp14="${WP14}" wp14:paraId="1" wp14:textId="2" `,
+                    ),
+                },
+                profile,
+            );
+            expect(result.valid, JSON.stringify(result.issues)).toBe(true);
+            expect(result.xsdWalk.parts).toContain("word/document.xml");
+            const warnings = result.issues.filter((issue) => issue.code === "mce-extension-not-ignorable");
+            expect(warnings).toHaveLength(1);
+            expect(warnings[0]).toMatchObject({ severity: "warning", path: "word/document.xml" });
+            for (const value of ["word/document.xml", WP14, "wp14:paraId", "wp14:textId", "2 attributes", "mc:Ignorable"]) {
+                expect(warnings[0].message).toContain(value);
+            }
+            expect(result.issues.filter((issue) => issue.code === "xsd-error")).toEqual([]);
+        });
+        it(`keeps truly unknown non-ignorable attributes and elements visible to XSD under ${profile}`, async () => {
+            for (const content of [
+                '<w:r xmlns:foo="urn:example:foo" foo:flag="keep"/>',
+                '<foo:foreign xmlns:foo="urn:example:foo"/>',
+                `<wp14:foreign xmlns:wp14="${WP14}"/>`,
+            ]) {
+                const result = await check(
+                    { ...MINIMAL_PARTS, "word/document.xml": MINIMAL_PARTS["word/document.xml"].replace("</w:p>", `${content}</w:p>`) },
+                    profile,
+                );
+                expect(result.valid).toBe(profile === "word-valid");
+                expect(result.issues).toContainEqual(
+                    expect.objectContaining({
+                        code: "xsd-error",
+                        severity: profile === "word-valid" ? "warning" : "error",
+                        path: "word/document.xml",
+                    }),
+                );
+                expect(result.issues.some((issue) => issue.code === "mce-extension-not-ignorable")).toBe(false);
+            }
+        });
+    }
     it("validates fallback anchor positions without manufacturing missing-position errors", async () => {
         const result = await check({
             ...MINIMAL_PARTS,
