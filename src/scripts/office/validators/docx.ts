@@ -57,7 +57,9 @@ import {
     XML_NAMESPACE,
 } from "./base";
 
+import { runChecks } from "../../../lib/check-scheduler";
 import type { ValidationContext } from "../../../lib/validation-context";
+import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "../checks/index";
 import { wordRowWithoutCellCheck } from "../checks/tables";
 import { contextFromDirectory } from "../package-context";
 import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
@@ -440,6 +442,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             this.validateRelationshipIdStability(),
             this.validateRedundantRunProperties(),
         ];
+        if (this.profile !== "lenient") checks.push(this.validateRegisteredWordRules());
         if (this.profile === "word-valid") {
             // Non-XSD checks first. A blocking no returns before XSD starts.
             checks.push(this.validateWordOpenCompatibility());
@@ -454,6 +457,20 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         if (this.profile === "strict") checks.push(this.validateWordOpenCompatibility());
         checks.push(this.validateAgainstXsd());
         return mergeResults(xmlOk, ...(await Promise.all(checks)));
+    }
+
+    /**
+     * Word rules registered in `WORD_RULE_CHECKS`, run through the shared
+     * context. Lenient output stays as it was, so they run under `word-valid`
+     * and `strict` only.
+     */
+    private async validateRegisteredWordRules(): Promise<ValidationResult> {
+        if (WORD_RULE_CHECKS.length === 0) return { valid: true, issues: [] };
+        const run = await runChecks(this.context(), createDefaultCheckRegistry(), {
+            format: "docx",
+            select: WORD_RULE_CHECKS.map((check) => check.id),
+        });
+        return { valid: run.valid, issues: [...run.issues] };
     }
 
     /**
