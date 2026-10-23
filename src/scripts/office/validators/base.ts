@@ -1463,7 +1463,17 @@ export class BaseSchemaValidator {
             // failures arrive as errors and are string-filtered by
             // IGNORED_VALIDATION_ERRORS in `validateFileAgainstXsd`.
             const errorIssues = issues.filter((i) => i.severity === "error");
-            if (errorIssues.some((i) => i.code === "xsd-schema-load-failed")) {
+            // A schema the engine could not load means it produced no verdict
+            // for this part, so the walk is not "completed". Apply the same
+            // IGNORED_VALIDATION_ERRORS filter used one layer up: the
+            // known-noisy bundled case (`opc-coreProperties.xsd`'s remote
+            // Dublin Core import) is filtered there, and counting it here
+            // would mark every document with docProps/core.xml as having an
+            // incomplete schema walk.
+            const engineFailure = errorIssues.find(
+                (i) => i.code === "xsd-schema-load-failed" && !IGNORED_VALIDATION_ERRORS.some((pattern) => i.message.includes(pattern)),
+            );
+            if (engineFailure) {
                 this.xsdEngineFailures += 1;
             }
             if (errorIssues.length === 0) {
