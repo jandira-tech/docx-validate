@@ -110,8 +110,17 @@ type Context = {
     extensionPayload: boolean;
 };
 const tokens = (value: string): string[] => value.trim().split(/\s+/).filter(Boolean);
+// XML 1.0 NCName: NameStartChar/NameChar without the namespace separator.
+const NCNAME_START =
+    "A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u{10000}-\u{EFFFF}";
+const NCNAME = new RegExp(`^[${NCNAME_START}][${NCNAME_START}0-9.\\-\u00B7\u0300-\u036F\u203F-\u2040]*$`, "u");
 const children = (element: Element): Element[] => Array.from(element.childNodes).filter((node) => node.nodeType === 1) as Element[];
 const namespaceUri = (element: Element, prefix: string): string | null => (prefix === "xml" ? NS.XML : element.lookupNamespaceURI(prefix));
+const unboundPrefixIssue = (directive: string, prefix: string): ValidationIssue => ({
+    severity: "error",
+    code: "mce-unbound-prefix",
+    message: `Unbound prefix in mc:${directive}: ${prefix}`,
+});
 const unwrap = (element: Element): void => {
     const parent = element.parentNode!;
     const next = element.nextSibling;
@@ -131,20 +140,33 @@ export const applyMarkupCompatibility = (
     const issues: ValidationIssue[] = [];
     const undeclaredExtensions = new Map<string, Set<string>>();
     let extensionAttributeCount = 0;
-    const visit = (element: Element, inherited: Context): void => {
+    const visit = (element: Element, inherited: Context, attributesOnly = false): void => {
+        const directiveIssues: ValidationIssue[] = [];
         const ignorable = new Set(inherited.ignorable);
         const processContent = new Set(inherited.processContent);
         for (const prefix of tokens(element.getAttributeNS(NS.MC, "Ignorable") || "")) {
             const uri = namespaceUri(element, prefix);
             if (uri) {
                 ignorable.add(uri);
+            } else {
+                directiveIssues.push(unboundPrefixIssue("Ignorable", prefix));
             }
         }
         for (const name of tokens(element.getAttributeNS(NS.MC, "ProcessContent") || "")) {
-            const [prefix, local] = name.split(":");
+            const [prefix, local, ...rest] = name.split(":");
+            if (rest.length > 0 || !NCNAME.test(prefix) || (local !== "*" && !NCNAME.test(local ?? ""))) {
+                directiveIssues.push({
+                    severity: "error",
+                    code: "mce-invalid-token",
+                    message: `Malformed QName in mc:ProcessContent: ${name}`,
+                });
+                continue;
+            }
             const uri = namespaceUri(element, prefix);
-            if (uri && local) {
+            if (uri) {
                 processContent.add(`${uri}#${local}`);
+            } else {
+                directiveIssues.push(unboundPrefixIssue("ProcessContent", prefix));
             }
         }
         const elementNamespace = element.namespaceURI || "";
@@ -153,15 +175,21 @@ export const applyMarkupCompatibility = (
             element.parentNode!.removeChild(element);
             return;
         }
+        issues.push(...directiveIssues);
         for (const prefix of tokens(element.getAttributeNS(NS.MC, "MustUnderstand") || "")) {
             const uri = namespaceUri(element, prefix);
-            if (!uri || !opts.understood.has(uri)) {
+            if (!uri) {
+                issues.push(unboundPrefixIssue("MustUnderstand", prefix));
+            } else if (!opts.understood.has(uri)) {
                 issues.push({
                     severity: "error",
                     code: "mce-must-understand",
                     message: `Required namespace is not understood: ${prefix}`,
                 });
             }
+        }
+        if (attributesOnly) {
+            return;
         }
         const context = {
             ignorable,
@@ -244,6 +272,16 @@ export const applyMarkupCompatibility = (
                             opts.understood.has(namespaceUri(node, prefix) || ""),
                         ),
                 ) ?? branches.find((node) => node.namespaceURI === NS.MC && node.localName === "Fallback");
+            for (const branch of branches) {
+                if (
+                    branch !== selected &&
+                    branch.namespaceURI === NS.MC &&
+                    (branch.localName === "Choice" || branch.localName === "Fallback")
+                ) {
+                    // Branch attributes always apply; unselected contents do not exist.
+                    visit(branch, context, true);
+                }
+            }
             if (selected) {
                 visit(selected, context);
                 unwrap(selected);

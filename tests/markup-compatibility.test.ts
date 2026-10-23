@@ -21,6 +21,51 @@ const alternative = (axis: string) =>
     `<mc:AlternateContent><mc:Choice Requires="wp14"><wp:position${axis} relativeFrom="page"><wp14:pctPos${axis}Offset>45500</wp14:pctPos${axis}Offset></wp:position${axis}></mc:Choice><mc:Fallback><wp:position${axis} relativeFrom="page"><wp:posOffset>4576445</wp:posOffset></wp:position${axis}></mc:Fallback></mc:AlternateContent>`;
 
 describe("markup compatibility", () => {
+    it("reports an unbound Ignorable prefix (#296)", () => {
+        const result = process(wrap("<w:p/>", 'mc:Ignorable="missing"'));
+        expect(result.issues).toContainEqual(expect.objectContaining({ severity: "error", code: "mce-unbound-prefix" }));
+    });
+    it("does not diagnose invalid directives inside discarded content (#295, #296)", () => {
+        const result = process(
+            wrap(
+                '<e:discard mc:Ignorable="missing" mc:ProcessContent="missing:child w:p:extra" mc:MustUnderstand="missing"/>',
+                'xmlns:e="urn:future" mc:Ignorable="e"',
+            ),
+        );
+        expect(result.issues).toEqual([]);
+    });
+    it("accepts Unicode ProcessContent names and wildcards (#296)", () => {
+        for (const token of ["e:子", "e:*"]) {
+            const result = process(wrap(`<e:子><w:p/></e:子>`, `xmlns:e="urn:future" mc:Ignorable="e" mc:ProcessContent="${token}"`));
+            expect(result.issues).toEqual([]);
+            expect(getElementsByTagNameAll(result.document).map((node) => node.localName)).toEqual(["root", "p"]);
+        }
+    });
+    it("reports an unbound ProcessContent prefix (#296)", () => {
+        const result = process(wrap("<w:p/>", 'mc:ProcessContent="missing:child"'));
+        expect(result.issues).toContainEqual(expect.objectContaining({ severity: "error", code: "mce-unbound-prefix" }));
+    });
+    it("rejects malformed ProcessContent tokens (#296)", () => {
+        for (const token of ["w:p:extra", "w:", ":p", "w", "w:bad?name", "w:1child"]) {
+            const result = process(wrap("<w:p/>", `mc:ProcessContent="${token}"`));
+            expect(result.issues, token).toContainEqual(expect.objectContaining({ severity: "error", code: "mce-invalid-token" }));
+        }
+    });
+    it("reports an unbound MustUnderstand prefix without claiming an unsupported capability (#296)", () => {
+        const result = process(wrap("<w:p/>", 'mc:MustUnderstand="missing"'));
+        expect(result.issues).toEqual([expect.objectContaining({ severity: "error", code: "mce-unbound-prefix" })]);
+    });
+    it("checks directives on unselected branches without inspecting their contents (#296)", () => {
+        for (const attribute of ['mc:Ignorable="missing"', 'mc:ProcessContent="missing:child"', 'mc:MustUnderstand="missing"']) {
+            for (const branch of ["Choice", "Fallback"]) {
+                const unselected = `<mc:${branch} ${branch === "Choice" ? 'Requires="wp14"' : ""} ${attribute}><w:p mc:MustUnderstand="wp14"/></mc:${branch}>`;
+                const chosen = '<mc:Choice Requires="w"><w:p/></mc:Choice>';
+                const content = branch === "Choice" ? unselected + chosen : chosen + unselected;
+                const result = process(wrap(`<mc:AlternateContent>${content}</mc:AlternateContent>`));
+                expect(result.issues).toEqual([expect.objectContaining({ severity: "error", code: "mce-unbound-prefix" })]);
+            }
+        }
+    });
     it("unwraps root AlternateContent (#292)", () => {
         const xml = `<mc:AlternateContent xmlns:mc="${NS.MC}" xmlns:w="${NS.W}"><mc:Choice Requires="w"><w:document><w:body/></w:document></mc:Choice></mc:AlternateContent>`;
         expect(() => process(xml)).not.toThrow();

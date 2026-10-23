@@ -47,6 +47,30 @@ const chartParts = (extension: string): Record<string, string> => ({
 });
 
 describe("markup compatibility XSD integration", { timeout: 240_000 }, () => {
+    it("keeps invalid directive tokens strict errors and non-blocking word-valid warnings (#296)", async () => {
+        for (const [directive, code] of [
+            ['mc:Ignorable="missing"', "mce-unbound-prefix"],
+            ['mc:ProcessContent="missing:child"', "mce-unbound-prefix"],
+            ['mc:MustUnderstand="missing"', "mce-unbound-prefix"],
+            ['mc:ProcessContent="w:p:extra"', "mce-invalid-token"],
+        ]) {
+            for (const profile of ["strict", "word-valid"] as const) {
+                const result = await check(
+                    {
+                        ...MINIMAL_PARTS,
+                        "word/document.xml": MINIMAL_PARTS["word/document.xml"].replace("<w:body>", `<w:body ${directive}>`),
+                    },
+                    profile,
+                );
+                expect(result.valid, JSON.stringify(result.issues)).toBe(profile === "word-valid");
+                expect(result.issues).toContainEqual(
+                    expect.objectContaining({ code, severity: profile === "strict" ? "error" : "warning", path: "word/document.xml" }),
+                );
+                expect(result.issues.some((issue) => issue.code === "mce-must-understand")).toBe(false);
+                expect(result.xsdWalk.parts).toContain("word/document.xml");
+            }
+        }
+    });
     it("diagnoses the real missing-Ignorable parts once each without changing package bytes", async () => {
         for (const [specimen, parts] of [
             ["empty.missing-content-type", ["word/document.xml"]],
