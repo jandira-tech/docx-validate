@@ -312,3 +312,30 @@ describe("markup compatibility: standalone extension parts (#288)", { timeout: 1
             }
         }));
 });
+
+describe("an unbound Ignorable prefix on a part's root is reported once (#309)", { timeout: 120_000 }, () => {
+    const W15 = "http://schemas.microsoft.com/office/word/2012/wordml";
+    const withRootIgnorable = (document: string) => ({ ...MINIMAL_PARTS, "word/document.xml": document });
+    const onPrefix = (issues: readonly { code?: string; path?: string; message: string }[], prefix: string) =>
+        issues
+            .filter((issue) => issue.path === "word/document.xml" && new RegExp(`\\b${prefix}\\b`).test(issue.message))
+            .map((issue) => issue.code);
+
+    for (const profile of ["lenient", "strict", "word-valid"] as const) {
+        it(`as ignorable-undeclared under ${profile}`, async () => {
+            const result = await check(
+                withRootIgnorable(MINIMAL_PARTS["word/document.xml"].replace('mc:Ignorable="w14"', 'mc:Ignorable="w14 w15"')),
+                profile,
+            );
+            expect(onPrefix(result.issues, "w15")).toEqual(["ignorable-undeclared"]);
+        });
+    }
+
+    it("keeps mce-unbound-prefix when the prefix is bound only on a descendant, out of the root's scope", async () => {
+        const document = MINIMAL_PARTS["word/document.xml"]
+            .replace('mc:Ignorable="w14"', 'mc:Ignorable="w14 w15"')
+            .replace("<w:p ", `<w:p xmlns:w15="${W15}" `);
+        const result = await check(withRootIgnorable(document), "strict");
+        expect(onPrefix(result.issues, "w15")).toEqual(["mce-unbound-prefix"]);
+    });
+});

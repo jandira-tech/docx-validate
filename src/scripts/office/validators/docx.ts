@@ -61,6 +61,7 @@ import {
     containRelationshipTarget,
     OFFICE_RELATIONSHIPS_NAMESPACE,
     PACKAGE_RELATIONSHIPS_NAMESPACE,
+    withoutRestatedIgnorablePrefixes,
     XML_NAMESPACE,
 } from "./base";
 
@@ -478,7 +479,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             // Word-valid judges what Word reads through structural checks
             // alone: no schema is compiled or walked.
             checks.push(this.validateWordOpenCompatibility());
-            return this.applyWordValidProfile(mergeResults(xmlOk, ...(await settle(checks))));
+            return this.applyWordValidProfile(withoutRestatedIgnorablePrefixes(mergeResults(xmlOk, ...(await settle(checks)))));
         }
 
         // Strict is a superset of word-valid: every Word-proven rejection
@@ -487,12 +488,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const xsd = this.validateAgainstXsd();
         checks.push(xsd);
         const results = await settle(checks);
-        if (!wordRules) return mergeResults(xmlOk, ...results);
+        if (!wordRules) return withoutRestatedIgnorablePrefixes(mergeResults(xmlOk, ...results));
         const rules = results[checks.indexOf(wordRules)]!;
         const schema = results[checks.indexOf(xsd)]!;
-        return mergeResults(
-            xmlOk,
-            ...results.map((result) => (result === schema ? withoutRepeatedCompatibilityFindings(schema, rules) : result)),
+        return withoutRestatedIgnorablePrefixes(
+            mergeResults(
+                xmlOk,
+                ...results.map((result) => (result === schema ? withoutRepeatedCompatibilityFindings(schema, rules) : result)),
+            ),
         );
     }
 

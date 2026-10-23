@@ -32,7 +32,13 @@ import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
 import { getElementsByTagNameNSAll, parseXmlBytes } from "../../../lib/xml-helpers";
 import type { BaseSchemaValidatorOptions } from "./base";
-import { BaseSchemaValidator, OFFICE_RELATIONSHIPS_NAMESPACE, PACKAGE_RELATIONSHIPS_NAMESPACE, walkFiles } from "./base";
+import {
+    BaseSchemaValidator,
+    OFFICE_RELATIONSHIPS_NAMESPACE,
+    PACKAGE_RELATIONSHIPS_NAMESPACE,
+    walkFiles,
+    withoutRestatedIgnorablePrefixes,
+} from "./base";
 
 export const PRESENTATIONML_NAMESPACE = "http://schemas.openxmlformats.org/presentationml/2006/main";
 
@@ -80,7 +86,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
             await this.validateNoBom(),
             await this.validateNoEmptyRelsParts(),
         ];
-        return mergeResults(...checks);
+        return withoutRestatedIgnorablePrefixes(mergeResults(...checks));
     }
 
     /**
