@@ -89,7 +89,8 @@ describe("the base.ts schema comments (#321)", () => {
     const source = readFileSync(path.join(SRC, "scripts", "office", "validators", "base.ts"), "utf-8");
 
     it("no longer claims the removed remote Dublin Core import is filtered", () => {
-        expect(source).not.toMatch(/remote\s+Dublin\s+Core\s+import/i);
+        // The stale wording spans comment lines, so allow `//` and `*` between the words.
+        expect(source).not.toMatch(/remote(?:\s|\/\/|\*)+Dublin(?:\s|\/\/|\*)+Core(?:\s|\/\/|\*)+import/i);
     });
 
     it("no longer claims word-valid consults the ignored-error list", () => {
