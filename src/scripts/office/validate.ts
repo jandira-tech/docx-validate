@@ -540,6 +540,7 @@ interface CliOptions {
     quick?: boolean;
     strict?: boolean;
     verifyWord?: boolean;
+    json?: boolean;
     /** Comma-separated check ids or group names. */
     checks?: string;
     listChecks?: boolean;
@@ -565,7 +566,8 @@ export function buildValidateCommand(): Command {
         .option("--strict", "Run the complete Word check set and require schema validation to complete", false)
         .option("--verify-word", "Also ask Microsoft Word to open the exact file; unavailable or inconclusive is not a pass", false)
         .option("--checks <ids-or-groups,...>", "Run only these named checks (or groups) plus their prerequisites")
-        .option("--list-checks", "List every named check with its id, groups, formats and description, then exit", false);
+        .option("--list-checks", "List every named check with its id, groups, formats and description, then exit", false)
+        .option("--json", "Print one JSON document (every issue plus execution metadata) on stdout, with no human text", false);
     return cmd;
 }
 
