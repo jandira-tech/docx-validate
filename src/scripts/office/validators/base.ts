@@ -43,7 +43,7 @@ import { existsSync, promises as fs, readdirSync, readFileSync, realpathSync, st
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { parseContentTypes, resolveContentType } from "../../../lib/content-types";
+import { parseContentTypes, partExtension, resolveContentType } from "../../../lib/content-types";
 import { withTempDir } from "../../../lib/run-cli";
 import type { Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
 import { DEFAULT_PROFILE, OK_RESULT } from "../../../lib/types";
@@ -120,8 +120,6 @@ const MC_NAMESPACE = "http://schemas.openxmlformats.org/markup-compatibility/200
 export const XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace";
 export const PACKAGE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/relationships";
 export const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
-const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types";
-
 const MAIN_CONTENT_FOLDERS = new Set(["word", "ppt", "xl"]);
 
 const OOXML_NAMESPACES = new Set<string>([
@@ -1024,41 +1022,11 @@ export class BaseSchemaValidator {
             };
         }
 
-        const declaredParts = new Set<string>();
-        const declaredExtensions = new Set<string>();
-        // OPC resolution table (Override first, then Default) — the media
-        // pass below resolves through it; the set-based lookups above it are
-        // still consulted by the XML-root and residual passes.
+        // Single OPC resolution table (Override first, then Default —
+        // ECMA-376 Part 2 §10.1.2.4) shared by every coverage pass below:
+        // declarable XML roots (ct-undeclared-part), known media extensions
+        // (ct-undeclared-ext) and the residual invariant (ct-uncovered-part).
         const table = parseContentTypes(dom);
-
-        const overrides = getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Override");
-        for (let i = 0; i < overrides.length; i += 1) {
-            const o = overrides[i];
-            if (!o) continue;
-            const partName = o.getAttribute("PartName");
-            // OPC PartName is a package-relative URI; the on-disk path is its
-            // decoded form, so decode before storing or an escaped PartName
-            // (%20 et al.) never matches the walked file list. Fall back to
-            // the raw value on malformed escapes — the lookup then simply
-            // misses and the residual pass reports the part.
-            if (partName) {
-                let decoded = partName.replace(/^\/+/, "");
-                try {
-                    decoded = decodeURIComponent(decoded);
-                } catch {
-                    // keep raw
-                }
-                declaredParts.add(decoded);
-            }
-        }
-
-        const defaults = getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Default");
-        for (let i = 0; i < defaults.length; i += 1) {
-            const d = defaults[i];
-            if (!d) continue;
-            const ext = d.getAttribute("Extension");
-            if (ext) declaredExtensions.add(ext.toLowerCase());
-        }
 
         const declarableRoots = new Set<string>([
             "sld",
@@ -1094,7 +1062,11 @@ export class BaseSchemaValidator {
                 const root = parseXml(await fs.readFile(xmlFile, "utf-8")).documentElement;
                 if (!root) continue;
                 const rootName = localName(root.tagName ?? root.nodeName);
-                if (declarableRoots.has(rootName) && !declaredParts.has(pathStr)) {
+                // A declarable root must be covered by an <Override PartName>
+                // (OPC-equivalent match — case-insensitive, percent-decoded);
+                // coverage through a bare <Default Extension> is not enough
+                // for parts Word opens by name.
+                if (declarableRoots.has(rootName) && resolveContentType(table, pathStr)?.source !== "override") {
                     issues.push({
                         severity: "error",
                         message: `File with <${rootName}> root not declared in [Content_Types].xml`,
@@ -1147,13 +1119,13 @@ export class BaseSchemaValidator {
         for (const filePath of allFiles) {
             if (path.basename(filePath) === "[Content_Types].xml") continue;
             const rel = this.relPath(filePath).replace(/\\/g, "/");
-            if (declaredParts.has(rel)) continue;
-            const base = rel.slice(rel.lastIndexOf("/") + 1);
-            const dot = base.lastIndexOf(".");
+            // One resolver call subsumes the old set lookups: an OPC-
+            // equivalent <Override PartName> (case-insensitive, decoded) or
+            // a <Default Extension> for the part's OPC extension covers it.
+            if (resolveContentType(table, rel) !== null) continue;
             // OPC extension = substring after the last dot of the part name's
             // last segment — unlike POSIX, `_rels/.rels` has extension "rels".
-            const extension = dot >= 0 ? base.slice(dot + 1).toLowerCase() : "";
-            if (extension !== "" && declaredExtensions.has(extension)) continue;
+            const extension = partExtension(rel);
             if (Object.hasOwn(mediaExtensions, extension)) continue;
             issues.push({
                 severity: "error",
