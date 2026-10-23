@@ -38,7 +38,7 @@ import JSZip from "jszip";
 
 import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
 import { runChecks } from "../../lib/check-scheduler";
-import { isPartialRequest, QUICK_CHECK_GROUPS, resolveMode, type ResolvedMode } from "../../lib/mode-policy";
+import { assertModeCoherent, isPartialRequest, QUICK_CHECK_GROUPS, resolveMode, type ResolvedMode } from "../../lib/mode-policy";
 import {
     mergeResults,
     xsdWalkNotStarted,
@@ -79,6 +79,8 @@ export interface ValidateOptions {
      * constructs). See {@link Profile}.
      */
     profile?: Profile;
+    /** `--strict`: shorthand for `profile: "strict"`. */
+    strict?: boolean;
     /** `--quick`: run the common-defect preset and disclose the omissions. */
     quick?: boolean;
     /** `--checks`: run these check ids or group names, plus their prerequisites. */
@@ -122,6 +124,13 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     const autoRepair = opts.autoRepair ?? false;
     const original = opts.original;
 
+    // Resolve the mode before touching the filesystem: a contradictory
+    // selection is a configuration error, not a verdict about a document.
+    const dispatchSuffix = path.extname(original ?? target).toLowerCase();
+    const format = formatForSuffix(dispatchSuffix);
+    const mode = resolveMode(format, opts);
+    const profile: Profile = mode.profile;
+
     await assertExists(target, `Error: ${target} does not exist`);
 
     let originalFile: string | null = null;
@@ -133,11 +142,6 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         }
         originalFile = path.resolve(original);
     }
-
-    const dispatchSuffix = path.extname(originalFile ?? target).toLowerCase();
-    const format = formatForSuffix(dispatchSuffix);
-    const mode = resolveMode(format, opts);
-    const profile: Profile = mode.profile;
 
     if (!SUPPORTED_SUFFIXES.has(dispatchSuffix)) {
         throw new Error(`Error: Cannot determine file type from ${target}. Use --original or provide a .docx/.docm/.pptx/.xlsx file.`);
@@ -474,6 +478,7 @@ interface CliOptions {
     author?: string;
     profile?: Profile;
     quick?: boolean;
+    strict?: boolean;
     /** Comma-separated check ids or group names. */
     checks?: string;
     listChecks?: boolean;
@@ -496,6 +501,7 @@ export function buildValidateCommand(): Command {
             "Validation profile: 'word-valid' (default for .docx/.docm), 'lenient' (default for every other format), or 'strict'",
         )
         .option("--quick", "Run the common-defect check preset and report the checks it omits", false)
+        .option("--strict", "Run the complete Word check set and require schema validation to complete", false)
         .option("--checks <ids-or-groups,...>", "Run only these named checks (or groups) plus their prerequisites")
         .option("--list-checks", "List every named check with its id, groups, formats and description, then exit", false);
     return cmd;
@@ -554,6 +560,15 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
 
     const checks = parseCheckList(opts.checks);
 
+    // Reject contradictory selectors before any validation work, so the caller
+    // gets one clear line instead of a verdict on a run they did not ask for.
+    try {
+        assertModeCoherent({ profile: opts.profile, strict: opts.strict, quick: opts.quick, checks });
+    } catch (err) {
+        process.stderr.write(`${err instanceof Error ? err.message : String(err)}\n`);
+        return 1;
+    }
+
     // Fail loudly at startup if the wasm-backed XSD engine is broken — otherwise
     // the per-file pipeline silently turns the same condition into per-file
     // "xsd-validation-failed" errors that look like document corruption. A
@@ -577,6 +592,7 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
             author: opts.author,
             verbose: opts.verbose,
             profile: opts.profile,
+            strict: opts.strict,
             quick: opts.quick,
             checks,
         });
