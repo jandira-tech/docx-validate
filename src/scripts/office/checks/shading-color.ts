@@ -120,7 +120,7 @@ const shadingParts = (storyParts: readonly string[], partNames: readonly string[
 ];
 
 export const wordShadingColorCheck: CheckDefinition = {
-    id: "shading-color",
+    id: "word-shading-color",
     description: "Every w:shd colour attribute in the Word story parts and styles.xml holds a value its schema type allows.",
     groups: ["story"],
     formats: ["docx"],
@@ -152,7 +152,7 @@ const shadingIssues = (shd: Element, part: string): ValidationIssue[] => {
         if (space === undefined || space.isValid(attr.value ?? "")) continue;
         issues.push({
             severity: "warning",
-            code: "shading-color",
+            code: "word-shading-color",
             path: part,
             message:
                 `${prefix}shd carries ${prefix}${attr.localName}="${attr.value}", which the schema does not allow: ` +

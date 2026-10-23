@@ -59,7 +59,7 @@ describe("shading-color check", () => {
         expect(issues).toHaveLength(5);
         for (const issue of issues) {
             expect(issue.severity).toBe("warning");
-            expect(issue.code).toBe("shading-color");
+            expect(issue.code).toBe("word-shading-color");
             expect(issue.path).toBe("word/document.xml");
         }
         expect(issues[0]!.message).toContain("w:fill");
@@ -132,7 +132,7 @@ describe("shading-color check", () => {
             `<word:shd word:val="clear" word:fill=""/></word:pPr></word:p></word:body></word:document>`;
         const issues = await findings({ "word/document.xml": strictDoc });
         expect(issues).toHaveLength(1);
-        expect(issues[0]!.code).toBe("shading-color");
+        expect(issues[0]!.code).toBe("word-shading-color");
         expect(issues[0]!.path).toBe("word/document.xml");
         expect(issues[0]!.message).toContain("fill");
     });

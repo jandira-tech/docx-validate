@@ -54,7 +54,7 @@ const validateBytes = async (bytes: Uint8Array, profile: Profile) =>
     });
 
 const advisories = (issues: readonly ValidationIssue[]): ValidationIssue[] =>
-    issues.filter((issue) => issue.code === "grid-column-attributes");
+    issues.filter((issue) => issue.code === "word-grid-column-attributes");
 
 describe("grid-column-attributes integration: synthetic single-defect package", { timeout: 120000 }, () => {
     it("the control (w:w alone) is clean under every profile", async () => {
@@ -74,7 +74,7 @@ describe("grid-column-attributes integration: synthetic single-defect package", 
         expect(advisories(wordValid.issues)).toHaveLength(1);
         expect(advisories(wordValid.issues)[0]).toMatchObject({
             severity: "warning",
-            code: "grid-column-attributes",
+            code: "word-grid-column-attributes",
             path: "word/document.xml",
         });
         // The width stays visible in the finding, so no information is lost.
@@ -107,7 +107,7 @@ describe("grid-column-attributes integration: jubarte 0.13.0 lane specimens", ()
             const issues = await wordGridColumnAttributesCheck.run(context);
             expect(issues).toHaveLength(count);
             for (const finding of issues) {
-                expect(finding.code).toBe("grid-column-attributes");
+                expect(finding.code).toBe("word-grid-column-attributes");
                 expect(finding.severity).toBe("warning");
                 expect(finding.path).toBe("word/document.xml");
                 expect(finding.message).toContain("w:type");

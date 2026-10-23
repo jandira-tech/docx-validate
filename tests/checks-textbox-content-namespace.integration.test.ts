@@ -26,7 +26,7 @@ import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const LANE = path.join(HERE, "lane", "jubarte-0.13.0");
 
-const CHECK_ID = "textbox-content-namespace";
+const CHECK_ID = "word-textbox-content-namespace";
 
 const WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
 const A = "http://schemas.openxmlformats.org/drawingml/2006/main";

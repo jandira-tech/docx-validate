@@ -39,7 +39,7 @@ const sectPrPlacement = (pgMar: Element): string => {
 };
 
 export const pageMarginAttributesCheck: CheckDefinition = {
-    id: "page-margin-attributes",
+    id: "word-page-margin-attributes",
     description: "Every w:pgMar in a w:sectPr carries the seven attributes CT_PageMar requires.",
     groups: ["story"],
     formats: ["docx"],
@@ -58,7 +58,7 @@ export const pageMarginAttributesCheck: CheckDefinition = {
                         }
                         issues.push({
                             severity: "warning",
-                            code: "page-margin-attributes",
+                            code: "word-page-margin-attributes",
                             path: part,
                             message:
                                 `The w:pgMar of ${sectPrPlacement(pgMar)} is missing the required w:${attribute} attribute. ` +

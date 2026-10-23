@@ -73,7 +73,7 @@ describe("math-run-deletion integration", { timeout: 120000 }, () => {
             const issues = await mathRunDeletionCheck.run(context);
             expect(issues).toHaveLength(count);
             expect(issues.map((issue) => [issue.path, issue.code, issue.severity])).toEqual(
-                Array.from({ length: count }, () => ["word/document.xml", "math-run-deletion", "warning"]),
+                Array.from({ length: count }, () => ["word/document.xml", "word-math-run-deletion", "warning"]),
             );
         });
     }

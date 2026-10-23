@@ -51,7 +51,7 @@ const checkTextbox = (txbx: Element, requiredNamespaces: readonly string[], part
         }
         issues.push({
             severity: "warning",
-            code: "textbox-content-namespace",
+            code: "word-textbox-content-namespace",
             path: part,
             message:
                 `${parentName} carries its text body as ${content.tagName} in namespace "${actual ?? ""}", ` +
@@ -63,7 +63,7 @@ const checkTextbox = (txbx: Element, requiredNamespaces: readonly string[], part
 };
 
 export const textboxContentNamespaceCheck: CheckDefinition = {
-    id: "textbox-content-namespace",
+    id: "word-textbox-content-namespace",
     description: "A textbox's txbxContent sits in the namespace its textbox model declares.",
     groups: ["drawings"],
     formats: ["docx"],
