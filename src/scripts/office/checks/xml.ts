@@ -15,8 +15,15 @@ import type { ValidationIssue } from "../../../lib/types";
 
 const XML_PART = /\.(?:xml|rels)$/i;
 
+/**
+ * The id of the XML well-formedness check. The validators' own XML pass
+ * does the same work on the same bytes, so they report it under this id
+ * when they disclose the checks a run executed (#319).
+ */
+export const XML_SYNTAX_CHECK_ID = "xml-syntax";
+
 export const xmlSyntaxCheck: CheckDefinition = {
-    id: "xml-syntax",
+    id: XML_SYNTAX_CHECK_ID,
     description: "Every XML part of the package is well-formed, parsed from its original bytes without recovery.",
     groups: ["xml"],
     formats: ["docx", "pptx", "xlsx"],

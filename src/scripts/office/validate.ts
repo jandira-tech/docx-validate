@@ -188,7 +188,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         return finish(await runSelectedChecks(target, targetIsPackedFile, dispatchSuffix, format, mode));
     }
 
-    const runWithUnpacked = async (unpackedDir: string): Promise<ValidateRunResult> => {
+    const runWithUnpacked = async (unpackedDir: string, extraExecuted: readonly string[] = []): Promise<ValidateRunResult> => {
         const subclassResult = await runValidators(unpackedDir, {
             originalFile,
             suffix: dispatchSuffix,
@@ -204,7 +204,8 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
             suffix: dispatchSuffix,
             metadata: {
                 profile,
-                executedChecks: executedCheckIds(format),
+                // Only the checks this run really executed (#319).
+                executedChecks: orderedExecutedChecks(format, [...subclassResult.executedChecks, ...extraExecuted]),
                 omittedChecks: [],
                 schemaCompleted: schemaWalkCompleted(subclassResult.xsdWalk, subclassResult.engineFailures),
             },
@@ -215,9 +216,8 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         return finish(
             await withTempDir(async (tempDir) => {
                 const buf = await fs.readFile(target);
-                const envelopeIssues: ValidationResult["issues"] = runsWordPackageChecks(profile)
-                    ? await zipEnvelopeIssues(buf, dispatchSuffix)
-                    : [];
+                const envelope = runsWordPackageChecks(profile) ? await zipEnvelopeRun(buf, dispatchSuffix) : EMPTY_ENVELOPE_RUN;
+                const envelopeIssues: ValidationResult["issues"] = envelope.issues;
                 let zip: JSZip;
                 try {
                     zip = await JSZip.loadAsync(buf);
@@ -267,13 +267,12 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                         metadata: { profile, executedChecks: [], omittedChecks: [], schemaCompleted: false },
                     };
                 }
-                const unpacked = await runWithUnpacked(tempDir);
+                const unpacked = await runWithUnpacked(tempDir, envelope.executed);
                 if (envelopeIssues.length === 0) return unpacked;
                 return {
                     ...unpacked,
                     valid: false,
                     issues: [...unpacked.issues, ...envelopeIssues],
-                    metadata: { ...(unpacked.metadata ?? {}), executedChecks: coveredEnvelopeChecks(unpacked.metadata, profile) },
                 };
             }),
         );
@@ -318,11 +317,19 @@ function applyWordVerification(result: ValidateRunResult, verification: WordVeri
     };
 }
 
-/** Every check id applicable to `format`, in registry order. */
-function executedCheckIds(format: PackageFormat): readonly string[] {
+/**
+ * The named checks a run executed, in registry order.
+ *
+ * The registry lists every check for a format, but a profile only reaches
+ * some of them — the Word rules run under `word-valid` and `strict` only —
+ * so the disclosure lists what ran, not what exists (#319).
+ */
+function orderedExecutedChecks(format: PackageFormat, executed: readonly string[]): readonly string[] {
+    const ran = new Set(executed);
     return createDefaultCheckRegistry()
         .list(format)
-        .map((def) => def.id);
+        .map((def) => def.id)
+        .filter((id) => ran.has(id));
 }
 
 /**
@@ -359,19 +366,6 @@ async function runSelectedChecks(
 }
 
 /**
- * The ZIP-envelope checks only cover the complete Word profiles and only run
- * for a packed file (an unpacked directory has no envelope), so the executed
- * set is empty for every other combination.
- */
-function coveredEnvelopeChecks(metadata: ValidationResult["metadata"], profile: Profile): readonly string[] {
-    const all = metadata?.executedChecks ?? [];
-    return runsWordPackageChecks(profile) ? all : all.filter((id) => !ENVELOPE_CHECK_IDS.includes(id));
-}
-
-/** Check ids that read the packed archive's ZIP envelope. */
-const ENVELOPE_CHECK_IDS = ["zip-bytes-after-eocd", "zip-eocd-comment-overrun"];
-
-/**
  * A schema walk "completed" when it started, offered every eligible part to
  * the engine, and the engine answered for each one (no schema failed to load).
  */
@@ -390,12 +384,18 @@ function runsWordPackageChecks(profile: Profile): boolean {
 }
 
 /** Findings of the archive-only `package` checks on the packed file's bytes. */
-async function zipEnvelopeIssues(archiveBytes: Uint8Array, suffix: string): Promise<ValidationResult["issues"]> {
+async function zipEnvelopeRun(
+    archiveBytes: Uint8Array,
+    suffix: string,
+): Promise<{ issues: ValidationResult["issues"]; executed: readonly string[] }> {
     const format: PackageFormat = suffix === ".pptx" ? "pptx" : suffix === ".xlsx" ? "xlsx" : "docx";
     const context = ValidationContext.fromEntries({}, { source: "archive", archiveBytes });
     const run = await runChecks(context, createDefaultCheckRegistry(), { format, select: ["package"] });
-    return [...run.issues];
+    return { issues: [...run.issues], executed: [...run.executed] };
 }
+
+/** An envelope run that never happened: no findings, no executed checks. */
+const EMPTY_ENVELOPE_RUN: { issues: ValidationResult["issues"]; executed: readonly string[] } = { issues: [], executed: [] };
 
 interface ValidatorRunner {
     repair(): Promise<number>;
@@ -417,7 +417,7 @@ interface RunValidatorsOptions {
 async function runValidators(
     unpackedDir: string,
     opts: RunValidatorsOptions,
-): Promise<ValidationResult & { repairs: number; xsdWalk: XsdWalkTrace; engineFailures: number }> {
+): Promise<ValidationResult & { repairs: number; xsdWalk: XsdWalkTrace; engineFailures: number; executedChecks: readonly string[] }> {
     const validators: ValidatorRunner[] = [];
     let schemaValidator: BaseSchemaValidator | undefined;
 
@@ -481,6 +481,8 @@ async function runValidators(
             repairs: 0,
             xsdWalk: xsdWalkNotStarted(),
             engineFailures: 0,
+            // Nothing ran: an unsupported file type never reaches a validator.
+            executedChecks: [],
         };
     }
 
@@ -513,6 +515,8 @@ async function runValidators(
         repairs,
         xsdWalk: schemaValidator?.xsdWalk ?? xsdWalkNotStarted(),
         engineFailures: schemaValidator?.xsdEngineFailures ?? 0,
+        // The named checks the validator really ran (#319).
+        executedChecks: schemaValidator?.executedChecks ?? [],
     };
 }
 

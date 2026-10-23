@@ -425,6 +425,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         this.xsdWalk = { started: false, parts: [], eligible: 0 };
         this.runContext = undefined;
         this.malformedParts = new Set();
+        this.resetExecutedChecks();
         const xmlOk = await this.validateXml();
         // Only lenient stops at a malformed part. Word-valid and strict keep
         // running the checks of every other part, so strict reports every
@@ -503,6 +504,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // xml-syntax runs as the rules' prerequisite; validateXml already
         // reports its findings, so keep only the rules' own (#307).
         const issues = run.outcomes.filter((outcome) => rules.has(outcome.id)).flatMap((outcome) => outcome.issues);
+        // Disclose the rules that really ran: a rule whose prerequisite
+        // failed was skipped, and a skipped rule did not run (#319).
+        this.recordExecutedChecks(run.executed);
         return { valid: issues.every((issue) => issue.severity !== "error"), issues };
     }
 
