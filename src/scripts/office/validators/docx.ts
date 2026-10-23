@@ -641,6 +641,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 return issue.message.includes("../customXml/") || /\/_rels\/|\.rels$/i.test(issue.message);
             case "rels-empty-element":
                 return issue.message.includes("missing required attribute");
+            case "mce-malformed":
+            case "mce-must-understand":
+                return true;
             case "xsd-error":
                 // A schema the engine could not load is not a Word-tolerated
                 // quirk. The ignore list already dropped the Dublin Core
