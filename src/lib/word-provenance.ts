@@ -130,6 +130,57 @@ export type WordAccuracyCounts = {
     readonly rejected: number;
     readonly unattributable: number;
 };
+/** Inputs to a manifest-entry word-column merge (see {@link mergeWordObservation}). */
+export type WordMergeInput = {
+    /** Parsed prior `word` column, when the entry existed before. */
+    readonly prior: WordObservation | null;
+    /** Prior retired observations (`history`), preserved as-is. */
+    readonly priorHistory?: readonly WordHistoryEntry[];
+    /** Fresh probe outcome, when the probe JSONL has one for this fixture. */
+    readonly freshOutcome?: string;
+    /** sha256 (hex) of the fixture bytes today. */
+    readonly currentSha256: string;
+    /** Optional timestamp/Word build stamped onto a fresh observation. */
+    readonly observedAt?: string;
+    readonly wordVersion?: string;
+};
+
+/** Merged `word` column plus its (possibly extended) `history` array. */
+export type WordMergeResult = {
+    readonly word: WordObservation;
+    readonly history: readonly WordHistoryEntry[];
+};
+
+export const mergeWordObservation = (input: WordMergeInput): WordMergeResult => {
+    const history: WordHistoryEntry[] = [...(input.priorHistory ?? [])];
+    const { prior } = input;
+    const priorIsCurrent = prior !== null && (prior.sha256 === undefined || prior.sha256 === input.currentSha256);
+
+    if (prior !== null && prior.sha256 !== undefined && prior.sha256 !== input.currentSha256) {
+        history.push({ outcome: prior.outcome, sha256: prior.sha256, observedAt: prior.observedAt, wordVersion: prior.wordVersion });
+    }
+
+    if (input.freshOutcome !== undefined) {
+        const word: WordObservation = { outcome: input.freshOutcome, sha256: input.currentSha256 };
+        if (input.observedAt !== undefined) {
+            word.observedAt = input.observedAt;
+        }
+        if (input.wordVersion !== undefined) {
+            word.wordVersion = input.wordVersion;
+        }
+        return { word, history };
+    }
+
+    if (prior === null) {
+        return { word: { outcome: UNKNOWN_OUTCOME, sha256: input.currentSha256 }, history };
+    }
+
+    if (priorIsCurrent) {
+        return { word: { ...prior, sha256: input.currentSha256 }, history };
+    }
+
+    return { word: { outcome: UNKNOWN_OUTCOME, sha256: input.currentSha256 }, history };
+};
 
 export const wordAccuracy = (fields: readonly { readonly field: unknown; readonly sha256: string | undefined }[]): WordAccuracyCounts => {
     const counts: { clean: number; rejected: number; unattributable: number } = { clean: 0, rejected: 0, unattributable: 0 };

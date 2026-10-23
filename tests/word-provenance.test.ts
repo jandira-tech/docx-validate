@@ -7,7 +7,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { classifyWordOutcome, effectiveOutcome, parseWordField, wordAccuracy } from "../src/lib/word-provenance";
+import { classifyWordOutcome, effectiveOutcome, mergeWordObservation, parseWordField, wordAccuracy } from "../src/lib/word-provenance";
 
 describe("effectiveOutcome", () => {
     it("binds a structured observation to its sha256: matching hash keeps the outcome, a differing hash is stale (unknown), never clean or rejected", () => {
@@ -36,5 +36,48 @@ describe("accuracy accounting", () => {
             { field: null, sha256: "aaaa" },
         ]);
         expect(counts).toEqual({ clean: 1, rejected: 0, unattributable: 4 });
+    });
+});
+
+describe("mergeWordObservation", () => {
+    it("never discards an existing observation: unchanged hash keeps it verbatim, changed hash retires it to history under its old hash", () => {
+        // Hash unchanged, no fresh probe: the prior observation (and its
+        // metadata) is kept and stays bound to the same bytes.
+        const kept = mergeWordObservation({
+            prior: { outcome: "clean-open", sha256: "aaaa", observedAt: "2026-10-01T00:00:00Z", wordVersion: "16.89" },
+            currentSha256: "aaaa",
+        });
+        expect(kept).toEqual({
+            word: { outcome: "clean-open", sha256: "aaaa", observedAt: "2026-10-01T00:00:00Z", wordVersion: "16.89" },
+            history: [],
+        });
+
+        // Hash changed, no fresh probe: the prior moves to `history` carrying
+        // its old hash; the new bytes carry no observation yet.
+        const retired = mergeWordObservation({
+            prior: { outcome: "open-error", sha256: "aaaa" },
+            priorHistory: [{ outcome: "password-required", sha256: "9999" }],
+            currentSha256: "bbbb",
+        });
+        expect(retired).toEqual({
+            word: { outcome: "unknown", sha256: "bbbb" },
+            history: [
+                { outcome: "password-required", sha256: "9999" },
+                { outcome: "open-error", sha256: "aaaa" },
+            ],
+        });
+
+        // Fresh probe outcome wins and is bound to the current bytes; a prior
+        // observation of different bytes is retired, not discarded.
+        const reProbed = mergeWordObservation({
+            prior: { outcome: "clean-open", sha256: "aaaa" },
+            freshOutcome: "open-error",
+            currentSha256: "bbbb",
+            observedAt: "2026-10-02T00:00:00Z",
+        });
+        expect(reProbed).toEqual({
+            word: { outcome: "open-error", sha256: "bbbb", observedAt: "2026-10-02T00:00:00Z" },
+            history: [{ outcome: "clean-open", sha256: "aaaa" }],
+        });
     });
 });
