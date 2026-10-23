@@ -59,7 +59,6 @@ import {
     BaseSchemaValidator,
     collectDeclaredPrefixes,
     containRelationshipTarget,
-    OFFICE_RELATIONSHIPS_NAMESPACE,
     PACKAGE_RELATIONSHIPS_NAMESPACE,
     withoutRestatedIgnorablePrefixes,
     XML_NAMESPACE,
@@ -68,7 +67,6 @@ import {
 import { runChecks } from "../../../lib/check-scheduler";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "../checks/index";
-import { wordRowWithoutCellCheck } from "../checks/tables";
 import { contextFromDirectory } from "../package-context";
 import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
 
@@ -129,7 +127,6 @@ const W14_NAMESPACE = "http://schemas.microsoft.com/office/word/2010/wordml";
 const W15_NAMESPACE = "http://schemas.microsoft.com/office/word/2012/wordml";
 const W16CEX_NAMESPACE = "http://schemas.microsoft.com/office/word/2018/wordml/cex";
 const W16CID_NAMESPACE = "http://schemas.microsoft.com/office/word/2016/wordml/cid";
-const MATH_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/math";
 const VML_NAMESPACE = "urn:schemas-microsoft-com:vml";
 const WP_NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
 const WP14_DRAWING_NAMESPACE = "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing";
@@ -471,18 +468,15 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             this.validateRelationshipIdStability(),
             this.validateRedundantRunProperties(),
         ];
+        // Strict runs the same Word-proven rules at their native severity.
         const wordRules = this.profile === "lenient" ? undefined : this.validateRegisteredWordRules();
         if (wordRules) checks.push(wordRules);
         if (this.profile === "word-valid") {
             // Word-valid judges what Word reads through structural checks
             // alone: no schema is compiled or walked.
-            checks.push(this.validateWordOpenCompatibility());
             return this.applyWordValidProfile(withoutRestatedIgnorablePrefixes(mergeResults(xmlOk, ...(await settle(checks)))));
         }
 
-        // Strict is a superset of word-valid: every Word-proven rejection
-        // rule runs here too, at its native error severity.
-        if (this.profile === "strict") checks.push(this.validateWordOpenCompatibility());
         const xsd = this.validateAgainstXsd();
         checks.push(xsd);
         const results = await settle(checks);
@@ -577,9 +571,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-position-offset-and-align":
             case "word-sdt-id-empty":
             case "word-attached-toolbar-utf8":
-            // A w:tr with no w:tc makes Word report an open error (fixture 1993).
-            // Removing w:gridBefore and leaving the row still errors. One cell
-            // opens clean, so gridBefore is not the cause.
             case "word-row-without-cell":
             case "word-cell-ends-with-table":
             case "word-textbox-deleted-text":
@@ -631,76 +622,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             default:
                 return false;
         }
-    }
-
-    private async validateWordOpenCompatibility(): Promise<ValidationResult> {
-        const issues: ValidationIssue[] = [];
-        // Every Word check reads through the run's context, so a part is read
-        // and parsed once however many checks inspect it.
-        const ctx = this.context();
-        const readXml = async (xmlFile: string): Promise<Document> => {
-            const parsed = ctx.xml(this.relPath(xmlFile));
-            if (!parsed) throw new Error(`Part not found: ${this.relPath(xmlFile)}`);
-            if (!parsed.ok) throw new Error(parsed.message);
-            return parsed.document;
-        };
-        await this.validateRowsWithoutCells(issues, readXml);
-        const documentXml = this.xmlFiles.find(
-            (xmlFile) => baseName(xmlFile) === "document.xml" && this.relPath(xmlFile).startsWith("word/"),
-        );
-        if (!documentXml) return finalize(issues);
-
-        let dom: Document;
-        try {
-            dom = await readXml(documentXml);
-        } catch (err) {
-            issues.push({
-                severity: "error",
-                message: `Error parsing XML: ${err instanceof Error ? err.message : String(err)}`,
-                path: this.relPath(documentXml),
-                code: "word-math-parse",
-            });
-            return finalize(issues);
-        }
-
-        let body: Element | null = null;
-        for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-            const node = getElementsByTagNameNSAll(dom, ns, "body")[0];
-            if (node) {
-                body = node;
-                break;
-            }
-        }
-        if (!body) return finalize(issues);
-        for (let i = 0; i < body.childNodes.length; i += 1) {
-            const node = body.childNodes[i];
-            if (!node || node.nodeType !== 1) continue;
-            const elem = node as Element;
-            const tagName = elem.localName || elem.tagName.split(":").pop() || elem.tagName;
-            if (elem.namespaceURI !== MATH_NAMESPACE || tagName !== "oMathPara") continue;
-            if (getElementsByTagNameNSAll(elem, MATH_NAMESPACE, "sPre").length === 0) continue;
-            issues.push({
-                severity: "error",
-                message:
-                    "Microsoft Word refuses to open documents with a body-level <m:oMathPara> " +
-                    "that contains <m:sPre>; wrap it in a paragraph or avoid m:sPre in display math.",
-                path: this.relPath(documentXml),
-                code: "word-math-spre-body",
-            });
-        }
-        return finalize(issues);
-    }
-
-    /**
-     * A `w:tr` with no `w:tc` descendant makes Word report an open error.
-     * One such row is enough. Removing `w:gridBefore` and leaving the row
-     * still errors. Inserting one `w:tc` opens clean. A cell inside
-     * `w:ins`, `w:del`, `w:sdt`, or a nested table still counts, because
-     * it is a descendant of that row.
-     */
-    /** Adapter: the rule lives in the named check `word-row-without-cell`. */
-    private async validateRowsWithoutCells(issues: ValidationIssue[], _readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
-        issues.push(...(await wordRowWithoutCellCheck.run(this.context())));
     }
 
     // ----- whitespace ---------------------------------------------------------
