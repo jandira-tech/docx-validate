@@ -58,10 +58,14 @@ export const normalizePartName = (name: string): string => name.replace(/\\/g, "
  * Why a ZIP item name places no part in the package, or `undefined` when it
  * does. Reading `\` as `/`, as part names do, the name is refused when it
  * starts with a slash or names a drive, which the ZIP format forbids
- * (APPNOTE 4.4.17.1) and System.IO.Packaging ignores (#372). It is also
- * refused when it has an empty or a dot-only segment, which OPC forbids in
- * part names ([M1.3], [M1.10]) and which JSZip or extraction would rewrite
- * into a name the package does not hold (#378).
+ * (APPNOTE 4.4.17.1) and System.IO.Packaging ignores (#372). A first segment
+ * that starts with a letter and `:` names a drive even without a slash
+ * (`c:doc/x.xml`): Windows resolves it against that drive's working
+ * directory, so it is refused on every platform. A name is also refused
+ * when it has an empty or a dot-only segment, which OPC forbids in part
+ * names ([M1.3]; [M1.9] and [M1.10] cover `...` too). JSZip and extraction
+ * rewrite `.`, `..` and empty segments, so the two views would otherwise
+ * judge a name the package does not hold (#378).
  */
 export const entryNameRefusal = (name: string): string | undefined => {
     const posix = name.replace(/\\/g, "/");
