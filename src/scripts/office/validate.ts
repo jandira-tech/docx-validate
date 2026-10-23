@@ -88,7 +88,9 @@ export interface ValidateOptions {
     /** Override XSD root (defaults to the path used by `BaseSchemaValidator`). */
     schemasDir?: string;
     /**
-     * Validation profile. Defaults to `"lenient"` to match real-world
+     * Validation profile. Defaults per format: `"word-valid"` for
+     * `.docx`/`.docm` (Microsoft Word openability, no XSD walk) and
+     * `"lenient"` for every other format, which matches real-world
      * Microsoft Office output. Pass `"strict"` for spec-purist behaviour
      * (flags BOM-prefixed parts and other tolerated-but-non-canonical
      * constructs). See {@link Profile}.
@@ -560,7 +562,7 @@ interface CliOptions {
 export function buildValidateCommand(): Command {
     const cmd = new Command();
     cmd.name("validate")
-        .description("Validate Office document XML files against XSD schemas and tracked changes")
+        .description("Validate an Office document: XML structure, tracked changes, and Microsoft Word compatibility")
         .argument("[path]", "Path to unpacked directory or packed Office file (.docx/.docm/.pptx/.xlsx)")
         .option(
             "--original <file>",

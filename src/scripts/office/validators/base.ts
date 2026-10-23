@@ -128,8 +128,9 @@ const STRICT_SCHEMA_MAPPINGS: Record<string, string> = {
 const IGNORED_VALIDATION_ERRORS: readonly string[] = [
     // Inherited from the Python validator with no recorded reason or
     // fixture; it hides every engine message that mentions the element.
-    // Lenient and word-valid keep it for compatibility. Strict never
-    // consults this list: its validity rests on unsuppressed schema issues.
+    // Lenient keeps it for compatibility. Strict never consults this list:
+    // its validity rests on unsuppressed schema issues. Word-valid runs no
+    // XSD at all, so it never consults the list either.
     "hyphenationZone",
     // opc-coreProperties.xsd's Dublin Core imports resolve to the bundled
     // schemas/dublincore/ copies (SOURCES.md), so the libxmljs2-era
@@ -173,8 +174,9 @@ const MAIN_CONTENT_FOLDERS = new Set(["word", "ppt", "xl"]);
  *
  * The bundled `iso-strict/` schemas cover these namespaces. Under
  * `profile: "strict"` `validateAgainstXsd` validates Strict parts against
- * them (namespace + part identity dispatch); lenient and word-valid keep
- * the historical info-level `xsd-strict-skipped` skip.
+ * them (namespace + part identity dispatch); lenient keeps the historical
+ * info-level `xsd-strict-skipped` skip, and word-valid walks no schema at
+ * all, so it emits no XSD issue.
  */
 const STRICT_OOXML_NS_PREFIX = "http://purl.oclc.org/ooxml/";
 
@@ -1273,8 +1275,8 @@ export class BaseSchemaValidator {
                 severity: "info",
                 message:
                     "Document uses ISO OOXML Strict conformance class namespace URIs; " +
-                    "XSD validation skipped (only Transitional schemas are bundled). " +
-                    "See PORT_NOTES.md § 'ISO OOXML Strict XSD validation'.",
+                    "XSD validation skipped under this profile. The bundled ISO Strict schemas " +
+                    "(schemas/iso-strict/) validate these parts under the strict profile.",
                 code: "xsd-strict-skipped",
             });
         };
@@ -1508,10 +1510,9 @@ export class BaseSchemaValidator {
             // A schema the engine could not load means it produced no verdict
             // for this part, so the walk is not "completed". Apply the same
             // IGNORED_VALIDATION_ERRORS filter used one layer up: the
-            // known-noisy bundled case (`opc-coreProperties.xsd`'s remote
-            // Dublin Core import) is filtered there, and counting it here
-            // would mark every document with docProps/core.xml as having an
-            // incomplete schema walk.
+            // bundled schemas load (opc-coreProperties.xsd's Dublin Core
+            // imports resolve to the local schemas/dublincore/ copies), so a
+            // load failure is a real infrastructure problem and must count.
             const engineFailure = errorIssues.find(
                 (i) => i.code === "xsd-schema-load-failed" && !IGNORED_VALIDATION_ERRORS.some((pattern) => i.message.includes(pattern)),
             );
