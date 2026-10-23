@@ -133,6 +133,43 @@ describe("validate CLI: --help", { timeout: 120_000 }, () => {
     });
 });
 
+describe("validate CLI: --json", { timeout: 120_000 }, () => {
+    const SPECIMEN = path.join(path.dirname(new URL(import.meta.url).pathname), "lane", "jubarte-0.13.0", "k06_1.redline.docx");
+
+    it("prints exactly one JSON document with every issue and the execution metadata", async () => {
+        const run = await capture([SPECIMEN, "--json"]);
+
+        expect(run.code).toBe(0);
+        // Parses only if nothing else shares stdout.
+        const doc = JSON.parse(run.stdout) as {
+            valid: boolean;
+            issues: { code?: string; severity: string; path?: string }[];
+            metadata: { profile?: string; executedChecks?: string[]; omittedChecks?: string[]; schemaCompleted?: boolean };
+        };
+        expect(doc.valid).toBe(true);
+        // Warnings, and the part each one came from, are present.
+        const warnings = doc.issues.filter((issue) => issue.code === "word-shading-color");
+        expect(warnings.length).toBeGreaterThan(0);
+        expect(warnings.every((issue) => issue.severity === "warning" && typeof issue.path === "string")).toBe(true);
+        expect(doc.metadata.profile).toBe("word-valid");
+        expect(doc.metadata.executedChecks?.length).toBeGreaterThan(0);
+        expect(doc.metadata.omittedChecks).toEqual([]);
+        expect(doc.metadata.schemaCompleted).toBe(true);
+        // No human text.
+        expect(run.stdout).not.toMatch(/All validations|Selected checks|WORD VERIFICATION/);
+    });
+
+    it("reports failures as JSON too, with no human text on stdout", async () => {
+        const run = await capture([path.join(BROKEN, "package.word-row-without-cell.docx"), "--json"]);
+
+        expect(run.code).toBe(1);
+        const doc = JSON.parse(run.stdout) as { valid: boolean; issues: { code?: string }[] };
+        expect(doc.valid).toBe(false);
+        expect(doc.issues.some((issue) => issue.code === "word-row-without-cell")).toBe(true);
+        expect(run.stdout).not.toMatch(/All validations|Selected checks/);
+    });
+});
+
 describe("validate CLI: strict mode", { timeout: 120_000 }, () => {
     it("--strict runs the complete Word check set and the schema walk", async () => {
         const run = await withTempDir(async (dir) => capture([await controlDocx(dir), "--strict"]));

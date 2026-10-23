@@ -667,6 +667,14 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
         return 1;
     }
 
+    // --json owns stdout: one document, every issue (warnings and their
+    // locations included) plus the execution metadata, and nothing else. The
+    // exit code still carries the verdict.
+    if (opts.json === true) {
+        process.stdout.write(`${JSON.stringify({ valid: result.valid, issues: result.issues, metadata: result.metadata ?? {} })}\n`);
+        return result.valid ? 0 : 1;
+    }
+
     if (opts.autoRepair && result.repairs > 0) {
         process.stdout.write(`Auto-repaired ${result.repairs} issue(s)\n`);
     }
