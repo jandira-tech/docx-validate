@@ -565,6 +565,12 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-picture-nvpicpr-missing":
             // header-with-rid-no-sidecar.docx: Word open-error without pic:spPr; the complete header scaffold in validators-docx.test.ts is tolerated.
             case "word-picture-sppr-missing":
+            // word-rejects-misplaced-run.docx: a w:r directly inside w:tc makes Word refuse the file (OPEN_ERROR probe); the same runs under w:p/w:ins/w:del open clean.
+            case "word-run-misplaced":
+            // 5Errors.docx (word: unreadable-content-warning): a second w:rPr inside one run makes Word offer recovery; a single leading w:rPr opens clean.
+            case "word-run-properties-misplaced":
+            // invalid-underline.docx (word: unreadable-content-warning): w:u directly inside w:pPr makes Word offer recovery; w:u inside w:rPr opens clean.
+            case "word-underline-misplaced":
             case "word-drawing-scalar-whitespace":
             case "word-drawing-arc-radius":
             case "word-empty-drawing":

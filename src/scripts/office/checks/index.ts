@@ -23,6 +23,7 @@ import { wordCustomPropertyFiletimeEmptyCheck } from "./word-custom-properties";
 import { wordDrawingExtentMissingCheck } from "./word-drawing";
 import { wordDrawingExtentMisplacedCheck } from "./word-drawing-extent-position";
 import { wordPictureNvpicprMissingCheck, wordPictureSpprMissingCheck } from "./word-picture";
+import { wordRunMisplacedCheck, wordRunPropertiesMisplacedCheck, wordUnderlineMisplacedCheck } from "./word-run-placement";
 import { xmlSyntaxCheck } from "./xml";
 
 /**
@@ -45,6 +46,9 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordDrawingExtentMisplacedCheck,
     wordPictureNvpicprMissingCheck,
     wordPictureSpprMissingCheck,
+    wordRunMisplacedCheck,
+    wordRunPropertiesMisplacedCheck,
+    wordUnderlineMisplacedCheck,
 ];
 
 export function createDefaultCheckRegistry(): CheckRegistry {
