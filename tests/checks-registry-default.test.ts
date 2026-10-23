@@ -69,6 +69,15 @@ describe("default check registry", () => {
         ]);
     });
 
+    it("leaves non-XML parts to other checks, whatever their bytes", async () => {
+        const ctx = ValidationContext.fromEntries({
+            ...MINIMAL_PARTS,
+            "word/media/image1.png": new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x26, 0x3c]),
+        });
+        const run = await runChecks(ctx, createDefaultCheckRegistry(), { format: "docx", select: ["xml-syntax"] });
+        expect(run.issues).toEqual([]);
+    });
+
     it("runs the ZIP envelope checks on archive bytes and reports one trailing byte", async () => {
         const docx = await buildDocx();
         const ctx = await ValidationContext.fromArchive(Buffer.concat([docx, Buffer.from([0x0a])]));

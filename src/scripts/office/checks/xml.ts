@@ -24,7 +24,9 @@ export const xmlSyntaxCheck: CheckDefinition = {
         const issues: ValidationIssue[] = [];
         for (const part of ctx.partNames) {
             const bytes = XML_PART.test(part) ? ctx.bytes(part) : undefined;
-            if (bytes !== undefined) issues.push(...(await checkXmlSyntax(bytes, part)));
+            if (bytes !== undefined) {
+                issues.push(...(await checkXmlSyntax(bytes, part)));
+            }
         }
         return issues;
     },
