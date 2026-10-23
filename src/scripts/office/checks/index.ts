@@ -15,6 +15,7 @@ import { mathRunDeletionCheck } from "./math-run-deletion";
 import { mathRunInsertionCheck } from "./math-run-insertion";
 import { zipBytesAfterEocdCheck, zipEocdCommentOverrunCheck } from "./package";
 import { wordShadingColorCheck } from "./shading-color";
+import { wordTablePropertiesRequiredCheck } from "./table-properties-required";
 import { wordRowWithoutCellCheck } from "./tables";
 import { xmlSyntaxCheck } from "./xml";
 
@@ -30,6 +31,7 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordShadingColorCheck,
     wordGridColumnAttributesCheck,
     wordCellMarginOrderCheck,
+    wordTablePropertiesRequiredCheck,
 ];
 
 export function createDefaultCheckRegistry(): CheckRegistry {
