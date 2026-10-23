@@ -22,6 +22,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Named `comments` selection now runs comment marker and threading integrity checks while full DOCX validation preserves its findings under every profile ([#384](https://github.com/jandira-tech/docx-validate/issues/384)).
+
 - Parse XML from original bytes without recovery, preserve available line/column diagnostics, support UTF-8/UTF-16, and diagnose undeclared prefixes and encoding failures with stable codes. BOMs alone never fail validation ([#268](https://github.com/jandira-tech/docx-validate/issues/268), [#290](https://github.com/jandira-tech/docx-validate/issues/290)).
 - Resolve content types with exact Override precedence and canonical OPC part-name comparison, including reserved-escape distinctions ([#208](https://github.com/jandira-tech/docx-validate/issues/208), [#297](https://github.com/jandira-tech/docx-validate/issues/297)).
 - Select markup-compatibility branches on validation-only clones, preserve schema-permitted extension payloads, and judge Word rules on the content Word consumes. Diagnose invalid tokens, unbound prefixes, and loss of required main roots without duplicate root Ignorable findings ([#239](https://github.com/jandira-tech/docx-validate/issues/239), [#250](https://github.com/jandira-tech/docx-validate/issues/250), [#287](https://github.com/jandira-tech/docx-validate/issues/287), [#291](https://github.com/jandira-tech/docx-validate/issues/291), [#296](https://github.com/jandira-tech/docx-validate/issues/296), [#309](https://github.com/jandira-tech/docx-validate/issues/309)).

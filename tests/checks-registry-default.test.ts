@@ -11,7 +11,7 @@ import { describe, expect, it, vi } from "vitest";
 import { runChecks } from "../src/lib/check-scheduler";
 import { withTempDir } from "../src/lib/run-cli";
 import { ValidationContext } from "../src/lib/validation-context";
-import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
+import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "../src/scripts/office/checks";
 import { contextFromArchive, contextFromDirectory } from "../src/scripts/office/package-context";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
@@ -125,15 +125,20 @@ describe("default check registry", () => {
         expect(run.valid).toBe(false);
     });
 
-    it("declares the xml-syntax prerequisite for every Word rule that reads a part's DOM", async () => {
+    it("declares the xml-syntax prerequisite for every check that reads a part's DOM", async () => {
         // Issue #298: a rule that reads a parsed part must be gated behind the
         // syntax check, or a part the lenient DOM parser recovers from silently
         // loses its findings. DOM reading is detected by spying on the shared
-        // context, so a newly added rule cannot regress unnoticed.
+        // context, so a newly added rule cannot regress unnoticed. The comment
+        // checks are the one exception (#384): they report their own parse
+        // failures, as the legacy comment rules did.
+        const ownParseDiagnostics = new Set(["comment-markers", "comment-threading"]);
+        // A comments part, so the comment checks reach their DOM reads too.
+        const probe = { ...MINIMAL_PARTS, "word/comments.xml": `<w:comments xmlns:w="${W}"/>` };
         const domReaders: string[] = [];
         for (const def of createDefaultCheckRegistry().list("docx")) {
             if (def.id === "xml-syntax") continue;
-            const ctx = ValidationContext.fromEntries(MINIMAL_PARTS);
+            const ctx = ValidationContext.fromEntries(probe);
             const xml = vi.spyOn(ctx, "xml");
             await def.run(ctx);
             if (xml.mock.calls.length === 0) {
@@ -141,13 +146,16 @@ describe("default check registry", () => {
                 continue;
             }
             domReaders.push(def.id);
-            expect(def.requires ?? [], `${def.id} reads a part DOM, so it must require xml-syntax`).toContain("xml-syntax");
+            if (!ownParseDiagnostics.has(def.id)) {
+                expect(def.requires ?? [], `${def.id} reads a part DOM, so it must require xml-syntax`).toContain("xml-syntax");
+            }
             xml.mockRestore();
         }
         // The probe package must actually exercise DOM reads, or this test
-        // would pass vacuously.
-        expect(domReaders).toEqual(expect.arrayContaining(["word-row-without-cell", "word-shading-color"]));
+        // would pass vacuously; and every exemption must still read a DOM.
+        expect(domReaders).toEqual(expect.arrayContaining(["word-row-without-cell", "word-shading-color", ...ownParseDiagnostics]));
         expect(domReaders.length).toBeGreaterThan(2);
+        expect(WORD_RULE_CHECKS.filter((def) => ownParseDiagnostics.has(def.id))).toEqual([]);
     });
 
     it("passes the clean minimal package", async () => {

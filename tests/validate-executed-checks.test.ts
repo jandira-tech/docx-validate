@@ -58,9 +58,9 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
             for (const id of WORD_RULE_IDS) {
                 expect(lenientChecks).not.toContain(id);
             }
-            // The only named check a lenient DOCX run reaches is the XML
-            // well-formedness pass; the ZIP-envelope checks are Word-only.
-            expect(lenientChecks).toEqual(["xml-syntax"]);
+            // Lenient runs XML syntax and the shared comment checks;
+            // the ZIP-envelope checks remain Word-only.
+            expect(lenientChecks).toEqual(["xml-syntax", "comment-markers", "comment-threading"]);
             // The finding that rule reports exists only in the profiles that run it.
             expect(lenient.issues.some((issue) => issue.code === "word-link-without-namespace")).toBe(false);
             expect(wordValid.issues.some((issue) => issue.code === "word-link-without-namespace")).toBe(true);
