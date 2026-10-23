@@ -47,6 +47,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `word-document-root` finds the main part behind an OPC-equivalent officeDocument target (`WORD/document.xml`, `word/%64ocument.xml`), which let a foreign main root pass Word-valid. The schema walk's main-part test compares canonical part names, so an escaped reserved character (`word%2Fdocument.xml`) no longer names `word/document.xml` ([#344](https://github.com/jandira-tech/docx-validate/issues/344)).
 
 - `word-document-root` and the schema walk's main-part test resolve the officeDocument target through one shared resolver (`resolvePartName`), so they agree: a backslash target (`word\document.xml`) now names the main part for the schema walk too, and an ignored main root behind it is an error again rather than info. Of two equivalent entries, only the one the target names is main; `findEquivalentPart` picks it whatever order the names come in ([#349](https://github.com/jandira-tech/docx-validate/issues/349)).
+- `word-attached-toolbar-utf8` reports a toolbar part under the package entry its target names, so a backslash or case-variant spelling of a part already reported adds no second finding and no finding names a part that does not exist; a case-variant target alone now finds its part ([#350](https://github.com/jandira-tech/docx-validate/issues/350)).
 
 ### Known limitations
 
