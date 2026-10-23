@@ -161,13 +161,12 @@ export const mergeWordObservation = (input: WordMergeInput): WordMergeResult => 
     }
 
     if (input.freshOutcome !== undefined) {
-        const word: WordObservation = { outcome: input.freshOutcome, sha256: input.currentSha256 };
-        if (input.observedAt !== undefined) {
-            word.observedAt = input.observedAt;
-        }
-        if (input.wordVersion !== undefined) {
-            word.wordVersion = input.wordVersion;
-        }
+        const word: WordObservation = {
+            outcome: input.freshOutcome,
+            sha256: input.currentSha256,
+            ...(input.observedAt !== undefined ? { observedAt: input.observedAt } : {}),
+            ...(input.wordVersion !== undefined ? { wordVersion: input.wordVersion } : {}),
+        };
         return { word, history };
     }
 
