@@ -47,6 +47,7 @@ import { wordSdtIdEmptyCheck } from "./word-sdt-id";
 import { wordAttachedToolbarUtf8Check } from "./word-attached-toolbar";
 import { wordNumberingPictureBulletCheck } from "./word-numbering-picture-bullet";
 import { wordFootnoteReferenceMissingCheck } from "./word-footnote-reference";
+import { wordMathParseCheck, wordMathSpreBodyCheck } from "./word-body-math";
 import { xmlSyntaxCheck } from "./xml";
 
 /**
@@ -78,6 +79,9 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordUnknownElementCheck,
     wordLinkWithoutNamespaceCheck,
     wordMarkupCompatibilityCheck,
+    wordRowWithoutCellCheck,
+    wordMathParseCheck,
+    wordMathSpreBodyCheck,
     wordFootnoteReferenceMissingCheck,
     wordNumberingPictureBulletCheck,
     wordAttachedToolbarUtf8Check,
@@ -102,11 +106,5 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
 ];
 
 export function createDefaultCheckRegistry(): CheckRegistry {
-    return new CheckRegistry([
-        zipBytesAfterEocdCheck,
-        zipEocdCommentOverrunCheck,
-        xmlSyntaxCheck,
-        wordRowWithoutCellCheck,
-        ...WORD_RULE_CHECKS,
-    ]);
+    return new CheckRegistry([zipBytesAfterEocdCheck, zipEocdCommentOverrunCheck, xmlSyntaxCheck, ...WORD_RULE_CHECKS]);
 }
