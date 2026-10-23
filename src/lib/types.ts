@@ -143,9 +143,11 @@ export type PackageFormat = "docx" | "pptx" | "xlsx";
  * - `"lenient"` (default): matches real-world Microsoft Office output. UTF-8
  *   BOMs at the start of XML parts are accepted (the XML spec permits them
  *   and Word/Office 365 routinely emits them).
- * - `"strict"`: spec-purist. Reports a `xml-bom-leading` error for any part
- *   that begins with a BOM and refuses to silently strip it. All other checks
- *   run identically.
+ * - `"strict"`: spec-purist. Reports every tolerated-but-non-canonical
+ *   construct it can see. A leading BOM is still only a `warning`
+ *   (`xml-bom-leading`) under every profile: XML 1.0 permits it and Microsoft
+ *   Office emits it, so it never fails a document on its own. All other
+ *   checks run identically.
  * - `"word-valid"`: empirical Microsoft Word openability profile. It keeps
  *   checks that correlate with Word's unreadable-content/open-error dialogs as
  *   errors and downgrades tolerated OOXML/schema quirks to warnings.

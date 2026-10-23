@@ -31,7 +31,8 @@
  *                     routinely emits these and the XML spec permits them).
  *                     Under the default lenient profile we silently strip
  *                     the BOM and the document validates as ok. Under the
- *                     strict profile we emit `xml-bom-leading` and reject.
+ *                     strict profile the BOM is still reported, but as a
+ *                     `warning` — a BOM never fails a document on its own.
  *                     Both cases are pinned below.
  *  - zipGeneration.docx → declares its only media part by an exact
  *                         <Override PartName="/word/media/image1.png"/> and no
@@ -72,7 +73,9 @@ const KNOWN_FAILURES_LENIENT: Record<string, ExpectedFailure> = {
 };
 
 const KNOWN_FAILURES_STRICT: Record<string, ExpectedFailure> = {
-    // Strict additionally surfaces xml-bom-leading (the canonical strict-only check).
+    // Strict surfaces xml-bom-leading as a WARNING (a BOM is XML-legal), so the
+    // strict rejection of office365.docx comes from the XSD sequence-order
+    // deviation alone — see KNOWN_FAILURES_LENIENT.
     "office365.docx": { codes: ["xml-bom-leading", "xsd-summary"] },
     "zipGeneration.docx": { codes: ["paraid-missing-element", "style-default-missing"] },
 };
@@ -147,6 +150,20 @@ describe("docx-templates corpus — strict profile flags BOM and other quirks", 
         const bomIssues = result.issues.filter((i) => i.code === "xml-bom-leading");
         expect(bomIssues.length).toBeGreaterThan(0);
         expect(bomIssues.every((i) => i.severity === "warning")).toBe(true);
+    });
+
+    it("office365.docx: strict also reports BOMs as warnings, never as errors", async () => {
+        // Same contract under strict: XML 1.0 §4.3.3 permits a leading BOM and
+        // Microsoft Office emits one in every part of this fixture, so it must
+        // not reject the document. It is still visible for callers that audit
+        // canonical bytes.
+        const result = await validate(path.join(FIXTURE_DIR, "office365.docx"), { profile: "strict" });
+        const bomIssues = result.issues.filter((i) => i.code === "xml-bom-leading");
+        expect(bomIssues.length).toBeGreaterThan(0);
+        expect(bomIssues.every((i) => i.severity === "warning")).toBe(true);
+        // The strict rejection is the Office XSD sequence-order deviation,
+        // never the BOM.
+        expect(result.issues.filter((i) => i.severity === "error").map((i) => i.code)).not.toContain("xml-bom-leading");
     });
 });
 
