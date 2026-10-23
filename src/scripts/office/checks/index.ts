@@ -42,6 +42,7 @@ import {
     wordDuplicateWebSettingsRelationshipCheck,
     wordDuplicateSettingsRelationshipCheck,
 } from "./word-duplicate-relationships";
+import { wordChoiceRequiresUndeclaredCheck } from "./word-choice-requires";
 import { xmlSyntaxCheck } from "./xml";
 
 /**
@@ -73,6 +74,7 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordUnknownElementCheck,
     wordLinkWithoutNamespaceCheck,
     wordMarkupCompatibilityCheck,
+    wordChoiceRequiresUndeclaredCheck,
     wordDuplicateThemeRelationshipCheck,
     wordDuplicateFontTableRelationshipCheck,
     wordDuplicateWebSettingsRelationshipCheck,

@@ -130,7 +130,6 @@ const W15_NAMESPACE = "http://schemas.microsoft.com/office/word/2012/wordml";
 const W16CEX_NAMESPACE = "http://schemas.microsoft.com/office/word/2018/wordml/cex";
 const W16CID_NAMESPACE = "http://schemas.microsoft.com/office/word/2016/wordml/cid";
 const MATH_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/math";
-const MC_NAMESPACE = "http://schemas.openxmlformats.org/markup-compatibility/2006";
 const VML_NAMESPACE = "urn:schemas-microsoft-com:vml";
 const WP_NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
 const WP14_DRAWING_NAMESPACE = "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing";
@@ -593,10 +592,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-cell-ends-with-table":
             case "word-textbox-deleted-text":
             case "word-move-from-deleted-text":
-            // mc:Choice @Requires names a prefix that is not declared on
-            // that element or an ancestor (fixture 0508). Word offers
-            // recovery. A declaration on a descendant, or on the fallback
-            // sibling, does not put the prefix in scope.
             case "word-choice-requires-undeclared":
             case "word-text-contains-paragraph":
             case "word-hyperlink-relationship":
@@ -667,7 +662,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             return parsed.document;
         };
         await this.validateRowsWithoutCells(issues, readXml);
-        await this.validateChoiceRequiresPrefixes(issues, readXml);
         await this.validateSdtIdEmpty(issues, readXml);
         await this.validateAttachedToolbarUtf8(issues, readXml);
         await this.validateNumberingPictureBullets(issues, readXml);
@@ -829,50 +823,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     }
 
     /**
-     * `mc:Choice` `@Requires` names a prefix that is not declared on that
-     * element or an ancestor. One such prefix makes Word offer to recover
-     * the file. Declaring the prefix on a descendant of the choice, or only
-     * on the fallback sibling, still warns. Declaring it on the choice or
-     * on an ancestor opens clean.
-     */
-    private async validateChoiceRequiresPrefixes(
-        issues: ValidationIssue[],
-        readXml: (xmlFile: string) => Promise<Document>,
-    ): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            const choices = getElementsByTagNameNSAll(dom, MC_NAMESPACE, "Choice");
-            for (let i = 0; i < choices.length; i += 1) {
-                const choice = choices[i];
-                if (!choice) continue;
-                const requires = choice.getAttribute("Requires");
-                if (requires === null) continue;
-                const missing: string[] = [];
-                for (const prefix of requires.split(/\s+/)) {
-                    if (prefix.length === 0) continue;
-                    if (this.prefixDeclaredInScope(choice, prefix)) continue;
-                    missing.push(prefix);
-                }
-                if (missing.length === 0) continue;
-                issues.push({
-                    severity: "error",
-                    message:
-                        `mc:Choice Requires lists undeclared prefix ${missing.join(", ")}. ` +
-                        "Microsoft Word offers to recover the file. " +
-                        "Declare the prefix on the Choice element or an ancestor.",
-                    path: this.relPath(xmlFile),
-                    code: "word-choice-requires-undeclared",
-                });
-            }
-        }
-    }
-
-    /**
      * A `w:sdtPr`/`w:id` whose `w:val` is empty makes Word refuse to open
      * the file. Setting that value to a number opens clean.
      */
@@ -981,22 +931,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 return;
             }
         }
-    }
-
-    private prefixDeclaredInScope(elem: Element, prefix: string): boolean {
-        // XML Namespaces predefines this binding, even without xmlns:xml.
-        if (prefix === "xml") return true;
-        const attrName = `xmlns:${prefix}`;
-        let current: Node | null = elem;
-        while (current && current.nodeType === 1) {
-            const attrs = (current as Element).attributes;
-            for (let i = 0; i < attrs.length; i += 1) {
-                const attr = attrs[i];
-                if (attr && attr.name === attrName) return true;
-            }
-            current = current.parentNode;
-        }
-        return false;
     }
 
     // ----- whitespace ---------------------------------------------------------
