@@ -246,7 +246,8 @@ describe("validate CLI: --json", { timeout: 120_000 }, () => {
         expect(doc.metadata.profile).toBe("word-valid");
         expect(doc.metadata.executedChecks?.length).toBeGreaterThan(0);
         expect(doc.metadata.omittedChecks).toEqual([]);
-        expect(doc.metadata.schemaCompleted).toBe(true);
+        // The default DOCX profile, word-valid, compiles no schema (#310).
+        expect(doc.metadata.schemaCompleted).toBe(false);
         // No human text.
         expect(run.stdout).not.toMatch(/All validations|Selected checks|WORD VERIFICATION/);
     });

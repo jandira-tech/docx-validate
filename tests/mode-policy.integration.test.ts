@@ -158,12 +158,26 @@ describe("quick mode runs the common-defect preset and discloses its omissions",
             "word-cell-margin-order",
             "word-table-properties-required",
             "word-textbox-content-namespace",
+            "word-drawing-extent-missing",
+            "word-drawing-extent-misplaced",
+            "word-picture-nvpicpr-missing",
+            "word-picture-sppr-missing",
+            "word-table-properties-misplaced",
+            "word-markup-compatibility",
         ]);
         expect(result.metadata?.omittedChecks).toEqual([
             "word-math-run-insertion",
             "word-math-run-deletion",
             "word-shading-color",
             "word-page-margin-attributes",
+            "word-custom-property-filetime-empty",
+            "word-run-misplaced",
+            "word-run-properties-misplaced",
+            "word-underline-misplaced",
+            "word-paragraph-properties-misplaced",
+            "word-section-properties-misplaced",
+            "word-unknown-element",
+            "word-link-without-namespace",
         ]);
     });
 
