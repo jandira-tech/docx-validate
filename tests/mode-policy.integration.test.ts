@@ -16,11 +16,12 @@ import { writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import JSZip from "jszip";
 
 import { withTempDir } from "../src/lib/run-cli";
+import * as xsdEngine from "../src/lib/xsd-validator";
 import type { XsdValidator } from "../src/lib/xsd-validator";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx } from "./support/minimal-docx";
@@ -129,3 +130,58 @@ async function buildPptx(): Promise<Buffer> {
     );
     return zip.generateAsync({ type: "nodebuffer" });
 }
+
+describe("quick mode runs the common-defect preset and discloses its omissions", { timeout: 120_000 }, () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    const quickDocx = async (dir: string, name = "control.docx"): Promise<string> => {
+        const file = path.join(dir, name);
+        writeFileSync(file, await buildDocx());
+        return file;
+    };
+
+    it("covers the quick preset groups and names every check it left out", async () => {
+        const result = await withTempDir(async (dir) => validate(await quickDocx(dir), { quick: true }));
+
+        expect(result.valid).toBe(true);
+        expect(result.metadata?.profile).toBe("word-valid");
+        expect(result.metadata?.schemaCompleted).toBe(false);
+        expect(result.metadata?.executedChecks).toEqual([
+            "zip-bytes-after-eocd",
+            "zip-eocd-comment-overrun",
+            "xml-syntax",
+            "word-row-without-cell",
+            "word-grid-column-attributes",
+            "word-cell-margin-order",
+            "word-table-properties-required",
+            "word-textbox-content-namespace",
+        ]);
+        expect(result.metadata?.omittedChecks).toEqual([
+            "word-math-run-insertion",
+            "word-math-run-deletion",
+            "word-shading-color",
+            "word-page-margin-attributes",
+        ]);
+    });
+
+    it("still rejects a defect the preset covers", async () => {
+        const result = await validate(path.join(BROKEN, "package.word-row-without-cell.docx"), { quick: true });
+
+        expect(result.valid).toBe(false);
+        expect(errorCodes(result.issues)).toContain("word-row-without-cell");
+    });
+
+    it("compiles no XSD schema", async () => {
+        const spy = vi.spyOn(xsdEngine, "createXsdValidator");
+
+        await withTempDir(async (dir) => {
+            const file = await quickDocx(dir);
+            await validate(file, { quick: true });
+            await validate(file, { checks: ["tables"] });
+        });
+
+        expect(spy).not.toHaveBeenCalled();
+    });
+});

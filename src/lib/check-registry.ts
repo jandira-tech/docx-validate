@@ -40,6 +40,27 @@ export type CheckGroup =
     | "settings"
     | "schema";
 
+/**
+ * Every declared group name. A group with no registered check yet is still a
+ * known name: resolving it selects nothing instead of raising
+ * {@link UnknownCheckError}, so a preset can name a whole family (say
+ * `content-types`) before its checks land in the registry.
+ */
+export const CHECK_GROUPS: readonly CheckGroup[] = [
+    "package",
+    "xml",
+    "content-types",
+    "relationships",
+    "tables",
+    "drawings",
+    "story",
+    "comments",
+    "tracked-changes",
+    "math",
+    "settings",
+    "schema",
+];
+
 export type CheckDefinition = {
     readonly id: string;
     readonly description: string;
@@ -145,7 +166,7 @@ export class CheckRegistry {
                 continue;
             }
             const members = this.definitions.filter((member) => (member.groups as readonly string[]).includes(name));
-            if (members.length === 0) {
+            if (members.length === 0 && !(CHECK_GROUPS as readonly string[]).includes(name)) {
                 unknown.push(name);
             }
             for (const member of members) {
