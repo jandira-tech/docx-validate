@@ -4324,8 +4324,10 @@ function finalize(issues: ValidationIssue[]): ValidationResult {
  * reported once, by the Word rule; the schema walk keeps what only its view
  * finds (a namespace Word understands but the schemas do not).
  */
-function withoutRepeatedCompatibilityFindings(schema: ValidationResult, rules: ValidationResult): ValidationResult {
-    const key = (issue: ValidationIssue): string => `${issue.code}\u0000${issue.path ?? ""}\u0000${issue.message}`;
+export function withoutRepeatedCompatibilityFindings(schema: ValidationResult, rules: ValidationResult): ValidationResult {
+    // The schema walk's path is path.relative output (backslashes on Windows);
+    // the Word rule's is the normalized part name.
+    const key = (issue: ValidationIssue): string => `${issue.code}\u0000${(issue.path ?? "").replace(/\\/g, "/")}\u0000${issue.message}`;
     const reported = new Map<string, number>();
     for (const issue of rules.issues) {
         if (!issue.code?.startsWith("mce-")) continue;
