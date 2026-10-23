@@ -83,7 +83,9 @@ export type ValidationMetadata = {
     /**
      * True only when every schema-eligible part was validated and no schema
      * failed to load. False when schema validation never started, stopped
-     * early, or the engine could not compile a schema.
+     * early, or the engine could not compile a schema. Always false under
+     * `word-valid`, which judges a package by structural Word checks and
+     * compiles no schema.
      */
     schemaCompleted?: boolean;
     /** Present when real-Word verification ran. */

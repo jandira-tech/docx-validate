@@ -101,7 +101,9 @@ describe("external fixtures — open-xml-sdk", () => {
     });
 
     it("rejects 5Errors.docx (five intentional schema validation errors)", async () => {
-        const result = await validate(fix("open-xml-sdk", "5Errors.docx"));
+        // Explicit lenient: pins the XSD summary, and word-valid (the DOCX
+        // default) compiles no schema.
+        const result = await validate(fix("open-xml-sdk", "5Errors.docx"), { profile: "lenient" });
         expect(result.valid).toBe(false);
         expect(result.issues.length).toBeGreaterThanOrEqual(1);
         expect(result.issues.some((i) => i.code === "xsd-summary")).toBe(true);
@@ -125,7 +127,9 @@ describe("external fixtures — open-xml-sdk", () => {
     });
 
     it("rejects UnknownElement.docx (unknown XML element under mc:ignorable)", async () => {
-        const result = await validate(fix("open-xml-sdk", "UnknownElement.docx"));
+        // Explicit lenient: pins the XSD summary, and word-valid (the DOCX
+        // default) compiles no schema.
+        const result = await validate(fix("open-xml-sdk", "UnknownElement.docx"), { profile: "lenient" });
         expect(result.valid).toBe(false);
         expect(result.issues.some((i) => i.code === "xsd-summary")).toBe(true);
     }, 20000);
@@ -142,7 +146,9 @@ describe("external fixtures — open-xml-sdk", () => {
         // Option A: Strict namespace URIs are detected and XSD validation is skipped
         // with a documented info-level issue. Transitional XSD schemas cannot
         // validate Strict URIs; full Strict schema support is a future improvement.
-        const result = await validate(fix("open-xml-sdk", "Strict01.docx"));
+        // Explicit lenient: the skip notice comes from lenient's schema walk;
+        // word-valid (the DOCX default) compiles no schema.
+        const result = await validate(fix("open-xml-sdk", "Strict01.docx"), { profile: "lenient" });
         expect(result.valid).toBe(true);
         expect(result.issues.some((i) => i.code === "xsd-strict-skipped")).toBe(true);
         expect(result.issues.every((i) => i.severity !== "error")).toBe(true);
