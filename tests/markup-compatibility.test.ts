@@ -240,3 +240,12 @@ describe("markup compatibility", () => {
         }
     });
 });
+
+describe("markup compatibility: understood extension namespaces (#288)", () => {
+    it("keeps the attributes of an understood Office namespace and reports nothing", () => {
+        const xml = `<w15:commentsEx xmlns:w15="${NS.W15}"><w15:commentEx w15:paraId="00000001" w15:done="0"/></w15:commentsEx>`;
+        const { document, issues } = applyMarkupCompatibility(parseXml(xml), { understood: new Set([...UNDERSTOOD_NAMESPACES, NS.W15]) });
+        expect(serializeXml(document)).toBe(serializeXml(parseXml(xml)));
+        expect(issues).toEqual([]);
+    });
+});
