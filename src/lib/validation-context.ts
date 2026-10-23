@@ -30,6 +30,7 @@
 import JSZip from "jszip";
 
 import { applyMarkupCompatibility, WORD_UNDERSTOOD_NAMESPACES } from "./markup-compatibility";
+import type { ValidationIssue } from "./types";
 import { decodeXmlBytes, parseXml } from "./xml-helpers";
 
 /** Where the package came from. Archive-only checks need `"archive"`. */
@@ -62,7 +63,7 @@ export class ValidationContext {
     private readonly byteCache = new Map<string, Uint8Array>();
     private readonly textCache = new Map<string, string>();
     private readonly xmlCache = new Map<string, XmlPart>();
-    private readonly effectiveCache = new Map<string, XmlPart>();
+    private readonly effectiveCache = new Map<string, { readonly part: XmlPart; readonly issues: readonly ValidationIssue[] }>();
     private readonly reads = new Map<string, number>();
     private readonly parses = new Map<string, number>();
 
@@ -170,17 +171,35 @@ export class ValidationContext {
      */
     public effectiveXml(part: string): XmlPart | undefined {
         const name = normalizePartName(part);
-        const cached = this.effectiveCache.get(name);
-        if (cached) {
-            return cached;
-        }
         const parsed = this.xml(name);
         if (!parsed?.ok) {
             return parsed;
         }
-        const effective: XmlPart = {
-            ok: true,
-            document: applyMarkupCompatibility(parsed.document, { understood: WORD_UNDERSTOOD_NAMESPACES }).document,
+        return this.effective(name, parsed.document).part;
+    }
+
+    /**
+     * What markup compatibility found while building {@link effectiveXml}'s
+     * view, with the part's path. Empty for a missing or unparseable part.
+     */
+    public compatibilityIssues(part: string): readonly ValidationIssue[] {
+        const name = normalizePartName(part);
+        const parsed = this.xml(name);
+        if (!parsed?.ok) {
+            return [];
+        }
+        return this.effective(name, parsed.document).issues;
+    }
+
+    private effective(name: string, document: Document): { readonly part: XmlPart; readonly issues: readonly ValidationIssue[] } {
+        const cached = this.effectiveCache.get(name);
+        if (cached) {
+            return cached;
+        }
+        const view = applyMarkupCompatibility(document, { understood: WORD_UNDERSTOOD_NAMESPACES });
+        const effective = {
+            part: { ok: true, document: view.document } as const,
+            issues: view.issues.map((issue) => ({ ...issue, path: name })),
         };
         this.effectiveCache.set(name, effective);
         return effective;
