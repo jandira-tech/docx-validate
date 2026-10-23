@@ -1314,6 +1314,9 @@ export class BaseSchemaValidator {
         try {
             const xmlContent = readFileSync(xmlFile, "utf-8");
             const cleanedString = this._preprocessXmlForXsd(xmlContent, xmlFile, compatibilityIssues);
+            if (compatibilityIssues.some((issue) => issue.code === "mce-root-ignored")) {
+                return { valid: true, errors: new Set(), issues: compatibilityIssues };
+            }
 
             const validator = await this._getXsdValidator();
             const issues = await validator.validate(cleanedString, schemaPath);
