@@ -84,6 +84,14 @@ describe("ValidationContext", () => {
         }
     });
 
+    it("decodes a UTF-16 part without a byte order mark by its XML declaration", () => {
+        const declared = `<?xml version="1.0" encoding="UTF-16"?>${DOCUMENT.replace(/^<\?xml[^>]*\?>/, "")}`;
+        const utf16le = new Uint8Array(Array.from(declared).flatMap((ch) => [ch.charCodeAt(0), 0]));
+        const ctx = ValidationContext.fromEntries({ "word/document.xml": utf16le });
+        expect(ctx.text("word/document.xml")).toBe(declared);
+        expect(ctx.xml("word/document.xml")?.ok).toBe(true);
+    });
+
     it("lists the Word story parts that carry user text", () => {
         const ctx = ValidationContext.fromEntries({
             "word/document.xml": DOCUMENT,

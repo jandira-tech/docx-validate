@@ -10,21 +10,21 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
+import { checkXmlSyntax } from "../../../lib/xml-syntax";
 import type { ValidationIssue } from "../../../lib/types";
 
 const XML_PART = /\.(?:xml|rels)$/i;
 
 export const xmlSyntaxCheck: CheckDefinition = {
     id: "xml-syntax",
-    description: "Every XML part of the package is well-formed.",
+    description: "Every XML part of the package is well-formed, parsed from its original bytes without recovery.",
     groups: ["xml"],
     formats: ["docx", "pptx", "xlsx"],
-    run: (ctx): ValidationIssue[] => {
+    run: async (ctx): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
         for (const part of ctx.partNames) {
-            if (!XML_PART.test(part)) continue;
-            const parsed = ctx.xml(part);
-            if (parsed && !parsed.ok) issues.push({ severity: "error", code: "xml-syntax", message: parsed.message, path: part });
+            const bytes = XML_PART.test(part) ? ctx.bytes(part) : undefined;
+            if (bytes !== undefined) issues.push(...(await checkXmlSyntax(bytes, part)));
         }
         return issues;
     },
