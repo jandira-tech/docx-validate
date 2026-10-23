@@ -32,6 +32,7 @@ const execFileAsync = promisify(execFile);
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "..");
 const FIXTURE = path.join(REPO, "tests/fixtures/working/sample-document.afterword-repaired-word-repaired.docx");
+const STRICT_FIXTURE = path.join(REPO, "tests/fixtures/working/word-clean-strict01.docx");
 
 const run = (command: string, args: readonly string[], options: { cwd: string; timeout?: number }) =>
     execFileAsync(command, args, { cwd: options.cwd, timeout: options.timeout ?? 120_000, maxBuffer: 16 * 1024 * 1024 });
@@ -80,6 +81,21 @@ assert(
     "Transitional wml.xsd is missing from the bundled schemas",
 );
 assert(existsSync(path.join(schemasDir, "mce", "mc.xsd")), "mce/mc.xsd (strict import closure) is missing from the bundled schemas");
+assert(existsSync(path.join(schemasDir, "iso-strict", "wml.xsd")), "iso-strict/wml.xsd is missing from the bundled schemas");
+assert(existsSync(path.join(schemasDir, "dublincore", "dc.xsd")), "dublincore/dc.xsd is missing from the bundled schemas");
+
+// An ISO Strict document schema-validates against iso-strict/ from inside
+// the installed package (its chart and textbox defects are genuine).
+const isoStrict = await validate(path.resolve("strict-fixture.docx"), { profile: "strict" });
+assert(isoStrict.xsdWalk.parts.includes("word/document.xml"), "the Strict main part was not schema-validated");
+assert(
+    !isoStrict.issues.some((issue) => issue.code === "xsd-schema-load-failed" || issue.code === "xsd-strict-skipped"),
+    "the bundled Strict schemas did not load from the installed package: " + JSON.stringify(isoStrict.issues.slice(0, 3)),
+);
+assert(
+    isoStrict.issues.some((issue) => issue.code === "xsd-error" && issue.path === "word/charts/chart1.xml"),
+    "the Strict chart defect was not reported",
+);
 
 console.log(JSON.stringify({ ok: true, eligible: strict.xsdWalk.eligible, schemasDir }));
 `;
@@ -116,6 +132,7 @@ gated("package artifact smoke (skipped unless PACKAGE_SMOKE=1)", { timeout: 600_
             // 3. Copy the fixture in and run the driver against the
             //    installed package only.
             copyFileSync(FIXTURE, path.join(consumer, "fixture.docx"));
+            copyFileSync(STRICT_FIXTURE, path.join(consumer, "strict-fixture.docx"));
             writeFileSync(path.join(consumer, "smoke.mjs"), CONSUMER_DRIVER);
             const driver = await run(process.execPath, ["smoke.mjs"], { cwd: consumer, timeout: 180_000 });
             const summary = JSON.parse(driver.stdout.trim().split(/\r?\n/).at(-1)!) as {
