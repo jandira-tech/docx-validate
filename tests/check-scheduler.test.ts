@@ -263,3 +263,42 @@ describe("runChecks", () => {
         );
     });
 });
+
+describe("runChecks: a prerequisite that gates by part (#307)", () => {
+    const parts = { "word/a.xml": DOCUMENT, "word/b.xml": DOCUMENT };
+    // Reports which parts it could read.
+    const reader = check("reader", {
+        requires: ["gate"],
+        run: (ctx) =>
+            ["word/a.xml", "word/b.xml"].map((part): ValidationIssue => ({
+                severity: "info",
+                code: ctx.xml(part)?.ok ? "read" : "unreadable",
+                message: ctx.xml(part)?.ok ? "read" : (ctx.xml(part) as { message: string }).message,
+                path: part,
+            })),
+    });
+
+    it("runs the dependents on the parts the gate passed, with the failed parts unparseable", async () => {
+        const gate = check("gate", { gatesByPart: true, run: () => [error("broken", "word/a.xml")] });
+        const ctx = ValidationContext.fromEntries(parts);
+        const run = await runChecks(ctx, new CheckRegistry([gate, reader]), { format: "docx" });
+        expect(run.executed).toEqual(["gate", "reader"]);
+        expect(run.issues.filter((issue) => issue.severity === "info")).toEqual([
+            expect.objectContaining({ code: "unreadable", path: "word/a.xml", message: expect.stringContaining("broken") }),
+            expect.objectContaining({ code: "read", path: "word/b.xml" }),
+        ]);
+        expect(run.valid).toBe(false);
+        // The shared context is not changed for checks outside the gate.
+        expect(ctx.xml("word/a.xml")?.ok).toBe(true);
+    });
+
+    it("still skips the dependents when the failing gate names no part, or does not gate by part", async () => {
+        for (const gate of [
+            check("gate", { gatesByPart: true, run: () => [error("broken")] }),
+            check("gate", { run: () => [error("broken", "word/a.xml")] }),
+        ]) {
+            const run = await runChecks(ValidationContext.fromEntries(parts), new CheckRegistry([gate, reader]), { format: "docx" });
+            expect(run.skipped).toEqual(["reader"]);
+        }
+    });
+});

@@ -503,11 +503,12 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      */
     private async validateRegisteredWordRules(): Promise<ValidationResult> {
         if (WORD_RULE_CHECKS.length === 0) return { valid: true, issues: [] };
-        const run = await runChecks(this.context(), createDefaultCheckRegistry(), {
-            format: "docx",
-            select: WORD_RULE_CHECKS.map((check) => check.id),
-        });
-        return { valid: run.valid, issues: [...run.issues] };
+        const rules = new Set(WORD_RULE_CHECKS.map((check) => check.id));
+        const run = await runChecks(this.context(), createDefaultCheckRegistry(), { format: "docx", select: [...rules] });
+        // xml-syntax runs as the rules' prerequisite; validateXml already
+        // reports its findings, so keep only the rules' own (#307).
+        const issues = run.outcomes.filter((outcome) => rules.has(outcome.id)).flatMap((outcome) => outcome.issues);
+        return { valid: issues.every((issue) => issue.severity !== "error"), issues };
     }
 
     private applyWordValidProfile(result: ValidationResult): ValidationResult {

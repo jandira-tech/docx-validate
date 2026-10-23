@@ -47,6 +47,11 @@ export type CheckDefinition = {
     readonly formats: readonly PackageFormat[];
     /** Checks that must pass first. Each must be registered before this one and apply to every format this check applies to. */
     readonly requires?: readonly string[];
+    /**
+     * A failure excludes the parts its error findings name from its
+     * dependents, instead of skipping them.
+     */
+    readonly gatesByPart?: boolean;
     /** Needs the packed archive bytes; unavailable for unpacked directories. */
     readonly archiveOnly?: boolean;
     readonly run: (ctx: ValidationContext) => readonly ValidationIssue[] | Promise<readonly ValidationIssue[]>;
