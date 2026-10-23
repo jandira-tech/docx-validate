@@ -22,8 +22,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import * as xsdEngine from "../src/lib/xsd-validator";
 import { ModeConflictError } from "../src/lib/mode-policy";
+import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
 import { runValidateFromArgv, validate, type ValidateOptions } from "../src/scripts/office/validate";
-import { buildDocx } from "./support/minimal-docx";
+import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const BROKEN = path.join(HERE, "fixtures", "broken");
@@ -130,6 +131,97 @@ describe("validate CLI: --help", { timeout: 120_000 }, () => {
         for (const flag of ["--strict", "--quick", "--checks", "--list-checks", "--verify-word", "--json"]) {
             expect(run.stdout).toContain(flag);
         }
+    });
+});
+
+describe("validate CLI: rejected invocations", { timeout: 120_000 }, () => {
+    it("exits 1 with one line when no path is given", async () => {
+        const run = await capture([]);
+
+        expect(run.code).toBe(1);
+        expect(run.stderr.trim()).toMatch(/missing required argument 'path'/);
+    });
+
+    it("exits 1 with one line for an unknown --profile value", async () => {
+        const run = await withTempDir(async (dir) => capture([await controlDocx(dir), "--profile", "picky"]));
+
+        expect(run.code).toBe(1);
+        expect(run.stderr.trim()).toMatch(/Invalid --profile: picky/);
+    });
+
+    it("exits 1 with one line when the target does not exist", async () => {
+        const run = await withTempDir(async (dir) => capture([path.join(dir, "missing.docx")]));
+
+        expect(run.code).toBe(1);
+        expect(run.stderr.trim()).toMatch(/does not exist/);
+    });
+
+    it("exits 1 with one line when the engine probe fails", async () => {
+        const probe = vi
+            .spyOn(BaseSchemaValidator, "assertXsdValidationAvailable")
+            .mockRejectedValue(new Error("XSD engine unavailable (libxml2-wasm): boom"));
+        try {
+            const run = await withTempDir(async (dir) => capture([await controlDocx(dir)]));
+            expect(run.code).toBe(1);
+            expect(run.stderr.trim()).toBe("XSD engine unavailable (libxml2-wasm): boom");
+        } finally {
+            probe.mockRestore();
+        }
+    });
+
+    it("reports the repair count on stdout when --auto-repair changes something", async () => {
+        const run = await withTempDir(async (dir) => {
+            const file = path.join(dir, "leading-space.docx");
+            // A <w:t> with leading whitespace and no xml:space="preserve" is
+            // the smallest thing the repairer rewrites.
+            writeFileSync(
+                file,
+                await buildDocx({
+                    ...MINIMAL_PARTS,
+                    "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace("<w:t>Hello</w:t>", "<w:t> Hello</w:t>"),
+                }),
+            );
+            return capture([file, "--auto-repair"]);
+        });
+
+        expect(run.stdout).toMatch(/Auto-repaired [1-9]\d* issue\(s\)/);
+    });
+
+    it("exits 1 with one line when --original is given without --author", async () => {
+        const run = await withTempDir(async (dir) => {
+            const file = await controlDocx(dir);
+            return capture([file, "--original", file]);
+        });
+
+        expect(run.code).toBe(1);
+        expect(run.stderr.trim()).toMatch(/`author` is required/);
+    });
+
+    it("keeps the library silent: validate() writes nothing to stdout or stderr", async () => {
+        const out: string[] = [];
+        const err: string[] = [];
+        const stdoutWrite = process.stdout.write.bind(process.stdout);
+        const stderrWrite = process.stderr.write.bind(process.stderr);
+        process.stdout.write = ((chunk: string | Uint8Array): boolean => {
+            out.push(typeof chunk === "string" ? chunk : "");
+            return true;
+        }) as typeof process.stdout.write;
+        process.stderr.write = ((chunk: string | Uint8Array): boolean => {
+            err.push(typeof chunk === "string" ? chunk : "");
+            return true;
+        }) as typeof process.stderr.write;
+        try {
+            await withTempDir(async (dir) => {
+                const file = await controlDocx(dir);
+                await validate(file);
+                await validate(file, { quick: true });
+            });
+        } finally {
+            process.stdout.write = stdoutWrite;
+            process.stderr.write = stderrWrite;
+        }
+        expect(out.join("")).toBe("");
+        expect(err.join("")).toBe("");
     });
 });
 
