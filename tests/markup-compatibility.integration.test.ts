@@ -79,6 +79,28 @@ describe("markup compatibility XSD integration", { timeout: 240_000 }, () => {
             ]);
         }
     });
+    it("finds the main part behind an OPC-equivalent target when its root is ignored (#344)", async () => {
+        const result = await check({
+            ...MINIMAL_PARTS,
+            "_rels/.rels": MINIMAL_PARTS["_rels/.rels"].replace('Target="word/document.xml"', 'Target="WORD/document.xml"'),
+            "word/document.xml": `<e:garbage xmlns:e="urn:future" xmlns:mc="${NS.MC}" mc:Ignorable="e"/>`,
+        });
+        expect(result.issues.filter((issue) => issue.code === "mce-main-root-ignored")).toEqual([
+            expect.objectContaining({ severity: "error", path: "word/document.xml" }),
+        ]);
+    });
+    it("does not take an escaped reserved character for its literal when finding the main part (#344)", async () => {
+        // `%2F` is an escaped "/": the target names a part other than word/document.xml.
+        const result = await check({
+            ...MINIMAL_PARTS,
+            "_rels/.rels": MINIMAL_PARTS["_rels/.rels"].replace('Target="word/document.xml"', 'Target="word%2Fdocument.xml"'),
+            "word/document.xml": `<e:garbage xmlns:e="urn:future" xmlns:mc="${NS.MC}" mc:Ignorable="e"/>`,
+        });
+        expect(result.issues.filter((issue) => issue.code === "mce-main-root-ignored")).toEqual([]);
+        expect(result.issues.filter((issue) => issue.path === "word/document.xml" && issue.code === "mce-root-ignored")).toEqual([
+            expect.objectContaining({ severity: "info" }),
+        ]);
+    });
     it("keeps invalid directive tokens strict errors and non-blocking word-valid warnings (#296)", async () => {
         for (const [directive, code] of [
             ['mc:Ignorable="missing"', "mce-unbound-prefix"],

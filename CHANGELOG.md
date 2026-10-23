@@ -44,6 +44,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Let an open that overran its budget settle before the cleanup close, so Word is never left holding a document opened after its close ([#328](https://github.com/jandira-tech/docx-validate/issues/328)).
 - Stamp `observedAt` and the crash-report open instant from wall time (`wallNow`, default `Date.now`) instead of the deadline clock, and stamp an unpacked directory's `unavailable` verification with the current time instead of the epoch ([#329](https://github.com/jandira-tech/docx-validate/issues/329)).
 - Return `unavailable` when a Word dialog is already showing before verification, without opening or closing anything; dismiss dialogs raised by this run during macOS cleanup so later probes remain attributable ([#315](https://github.com/jandira-tech/docx-validate/issues/315)).
+- `word-document-root` finds the main part behind an OPC-equivalent officeDocument target (`WORD/document.xml`, `word/%64ocument.xml`), which let a foreign main root pass Word-valid. The schema walk's main-part test compares canonical part names, so an escaped reserved character (`word%2Fdocument.xml`) no longer names `word/document.xml` ([#344](https://github.com/jandira-tech/docx-validate/issues/344)).
+
+### Known limitations
+
+- The relationship checks (`rels-broken`, `rels-unreferenced`, `rels-target-missing`) resolve targets through the filesystem, not by OPC part-name equivalence. An equivalent target spelling is reported as unreferenced or broken (errors under lenient and strict, warnings under Word-valid), and the result depends on the host filesystem's case sensitivity ([#346](https://github.com/jandira-tech/docx-validate/issues/346)).
 
 ### Security
 

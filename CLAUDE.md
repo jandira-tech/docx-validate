@@ -114,6 +114,8 @@ Content-type checks share `src/lib/content-types.ts`: exact `Override` precedes 
 
 ## Known gaps
 
+- **Relationship checks ignore OPC part-name equivalence (#346).** `rels-broken`, `rels-unreferenced` and `rels-target-missing` resolve a `Target` through the filesystem (`existsSync`, exact path strings) instead of matching package entries by `canonicalPartName`. An equivalent spelling (`WORD/document.xml`, `word/%64ocument.xml`) is reported as unreferenced or broken, and the code depends on the host filesystem's case sensitivity. `word-document-root` and the schema walk's main-part test already resolve by canonical name (#344).
+
 - **soffice end-to-end tests are gated on `process.env.SOFFICE_AVAILABLE`.** Both `tests/accept-changes.test.ts` and `tests/soffice.test.ts` skip real-LibreOffice invocations unless that env var is set; CI images typically don't include LibreOffice. Run with `SOFFICE_AVAILABLE=1 pnpm test` locally to exercise them.
 
 - **Three `eslint-plugin-functional` rules are disabled in `.oxlintrc.json`:** `functional/immutable-data`, `functional/no-mixed-types`, `functional/prefer-readonly-type`. All three are type-aware and call `getParserServices()`, but oxlint's JS-plugin runtime hard-codes `parserServices: ObjectFreeze({})` (see `node_modules/oxlint/dist/lint.js:13580`), so they crash the AST walker on any file containing a type alias / interface or an `arr.push(...)` call. `prefer-property-signatures` is the only functional rule left enabled because it's syntactic-only. Re-enable the three when oxlint either provides parser services to JS plugins or honors `requiresTypeChecking: true` for skip.
