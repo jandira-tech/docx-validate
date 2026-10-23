@@ -15,7 +15,12 @@
  */
 
 /**
- * Validator for Word document XML files against XSD schemas.
+ * Validator for Word documents.
+ *
+ * The default (`word-valid`) profile judges a package by what Microsoft Word
+ * reads — the structural checks below plus the registered Word rules — and
+ * compiles no schema; the `lenient` and `strict` profiles also walk the XSD
+ * schemas.
  *
  * 1:1 TypeScript port of `src/docx-validate/scripts/office/validators/docx.py`
  * (task #10). Subclasses `BaseSchemaValidator` and adds DOCX-specific checks:
