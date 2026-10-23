@@ -536,6 +536,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-custom-property-filetime-empty":
             // header-with-rid-no-sidecar.docx: Word open-error with missing wp:extent; the complete scaffold in validators-docx.test.ts opens clean.
             case "word-drawing-extent-missing":
+            // Historical WORD_BLOCKING_MISPLACED_LOCALS extent probe comment: misplaced extents are rejected; positive-extent drawing control opens clean.
+            case "word-drawing-extent-misplaced":
             // header-with-rid-no-sidecar.docx: Word open-error without pic:nvPicPr; the complete header scaffold in validators-docx.test.ts is tolerated.
             case "word-picture-nvpicpr-missing":
             // header-with-rid-no-sidecar.docx: Word open-error without pic:spPr; the complete header scaffold in validators-docx.test.ts is tolerated.
@@ -657,9 +659,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 // quirk. The ignore list already dropped the Dublin Core
                 // false positive before this issue was built.
                 if (issue.message.includes("Schema load failed") || issue.message.includes("XSD engine failed:")) return true;
-                // k07/k08/k09 lane files opened/exported in Word: tblBorders
-                // under style/tblStylePr[@type='firstRow']/tcPr is tolerated.
-                // Keep the legacy heuristic for    const issues: ValidationIssue[] = [];
+                return isWordBlockingXsdIssue(issue);
+            default:
+                return false;
+        }
+    }
+
+    private async validateWordOpenCompatibility(): Promise<ValidationResult> {
+        const issues: ValidationIssue[] = [];
         // Every Word check reads through the run's context, so a part is read
         // and parsed once however many checks inspect it.
         const ctx = this.context();
