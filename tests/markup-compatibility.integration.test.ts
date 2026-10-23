@@ -244,7 +244,8 @@ describe("markup compatibility XSD integration", { timeout: 240_000 }, () => {
         );
         expect(result.valid).toBe(false);
     });
-    for (const specimen of ["k02_1", "k02_2", "k03_1", "k03_2", "k05_1", "k05_2", "k12_1"]) {
+    // k04_2 carries five mc-wrapped wp:positionH/V sites (#254), like the others.
+    for (const specimen of ["k02_1", "k02_2", "k03_1", "k03_2", "k04_2", "k05_1", "k05_2", "k12_1"]) {
         it(`does not manufacture anchor or extension errors in ${specimen}`, async () => {
             const file = new URL(`./lane/jubarte-0.13.0/${specimen}.redline.docx`, import.meta.url);
             const before = await fs.readFile(file);
