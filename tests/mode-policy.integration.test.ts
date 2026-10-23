@@ -21,9 +21,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import JSZip from "jszip";
 
 import { withTempDir } from "../src/lib/run-cli";
+import type { WordOutcome } from "../src/lib/word-verifier";
 import * as xsdEngine from "../src/lib/xsd-validator";
 import type { XsdValidator } from "../src/lib/xsd-validator";
-import { validate } from "../src/scripts/office/validate";
+import { validate, type WordVerifier } from "../src/scripts/office/validate";
 import { buildDocx } from "./support/minimal-docx";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -183,5 +184,77 @@ describe("quick mode runs the common-defect preset and discloses its omissions",
         });
 
         expect(spy).not.toHaveBeenCalled();
+    });
+});
+
+/** A `verifyInWord` stand-in: records the bytes it was handed, returns a canned observation. */
+const fakeWordVerifier = (outcome: WordOutcome) => {
+    const seen: Uint8Array[] = [];
+    const verify: WordVerifier = async (bytes: Uint8Array) => {
+        seen.push(bytes);
+        return {
+            requested: true,
+            outcome,
+            satisfied: outcome === "clean-open",
+            fileSha256: "0".repeat(64),
+            platform: "darwin",
+            observedAt: "2026-10-23T00:00:00.000Z",
+            observationMs: 3000,
+            details: "injected",
+        };
+    };
+    return { verify, seen };
+};
+
+describe("--verify-word asks Microsoft Word about the exact bytes", { timeout: 120_000 }, () => {
+    it("satisfies a portable pass when Word opens the same bytes cleanly", async () => {
+        const { verify, seen } = fakeWordVerifier("clean-open");
+        const result = await withTempDir(async (dir) => {
+            const file = path.join(dir, "control.docx");
+            const bytes = await buildDocx();
+            writeFileSync(file, bytes);
+            return validate(file, { verifyWord: true, wordVerifier: verify });
+        });
+
+        expect(result.valid).toBe(true);
+        expect(result.metadata?.wordVerification).toMatchObject({ requested: true, outcome: "clean-open", satisfied: true });
+        expect(seen).toHaveLength(1);
+    });
+
+    it("is NOT satisfied when Word verification is unavailable", async () => {
+        const { verify } = fakeWordVerifier("unavailable");
+        const result = await withTempDir(async (dir) => {
+            const file = path.join(dir, "control.docx");
+            writeFileSync(file, await buildDocx());
+            return validate(file, { verifyWord: true, wordVerifier: verify });
+        });
+
+        expect(result.valid).toBe(false);
+        expect(result.metadata?.wordVerification).toMatchObject({ outcome: "unavailable", satisfied: false });
+    });
+
+    it("is NOT satisfied when Word reports a repair warning", async () => {
+        const { verify } = fakeWordVerifier("repair-warning");
+        const result = await withTempDir(async (dir) => {
+            const file = path.join(dir, "control.docx");
+            writeFileSync(file, await buildDocx());
+            return validate(file, { verifyWord: true, wordVerifier: verify });
+        });
+
+        expect(result.valid).toBe(false);
+        expect(result.metadata?.wordVerification?.outcome).toBe("repair-warning");
+    });
+
+    it("hands the verifier the exact file bytes", async () => {
+        const { verify, seen } = fakeWordVerifier("clean-open");
+        const bytes = await buildDocx();
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "control.docx");
+            writeFileSync(file, bytes);
+            await validate(file, { verifyWord: true, wordVerifier: verify });
+        });
+
+        expect(seen).toHaveLength(1);
+        expect(Buffer.from(seen[0] as Uint8Array).equals(bytes)).toBe(true);
     });
 });

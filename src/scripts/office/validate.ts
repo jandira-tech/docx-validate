@@ -48,6 +48,7 @@ import {
     type XsdWalkTrace,
 } from "../../lib/types";
 import type { XsdValidator } from "../../lib/xsd-validator";
+import { verifyInWord, type WordVerification } from "../../lib/word-verifier";
 import { ValidationContext } from "../../lib/validation-context";
 import { extractZipEntries } from "../../lib/zip-path";
 import { createDefaultCheckRegistry } from "./checks";
@@ -60,6 +61,13 @@ import { validateRedlining } from "./validators/redlining";
 import { explainWordError } from "./validators/word-error-explanations";
 
 const SUPPORTED_SUFFIXES = new Set([".docm", ".docx", ".pptx", ".xlsx"]);
+
+/**
+ * Side-effect boundary for real-Word verification. Defaults to
+ * `verifyInWord` (a temporary copy, opened through the injectable
+ * `WordTransport`); tests substitute their own so no lane opens Word.
+ */
+export type WordVerifier = (bytes: Uint8Array) => Promise<WordVerification>;
 
 export interface ValidateOptions {
     /** Path to the original packed Office file. Required for DOCX redlining. */
@@ -85,6 +93,14 @@ export interface ValidateOptions {
     quick?: boolean;
     /** `--checks`: run these check ids or group names, plus their prerequisites. */
     checks?: readonly string[];
+    /**
+     * `--verify-word`: after the portable mode passes, ask Microsoft Word
+     * about the exact bytes. Requested-but-unavailable or inconclusive
+     * verification is NOT satisfied, so the run reports `valid: false`.
+     */
+    verifyWord?: boolean;
+    /** Override the real-Word verifier. Defaults to {@link verifyInWord}. */
+    wordVerifier?: WordVerifier;
     /**
      * Override the XSD engine for every schema validator this run creates.
      * When omitted, `BaseSchemaValidator` lazy-creates the default
@@ -155,8 +171,14 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         throw new Error(`Error: ${target} is not a directory or Office file`);
     }
 
+    // Read the exact bytes once, before any validation work, so Word is asked
+    // about the same file the portable mode inspected.
+    const packedBytes = opts.verifyWord === true && targetIsPackedFile ? await fs.readFile(target) : undefined;
+    const finish = async (result: ValidateRunResult): Promise<ValidateRunResult> =>
+        opts.verifyWord === true ? withWordVerification(result, packedBytes, opts.wordVerifier) : result;
+
     if (mode.select !== undefined) {
-        return runSelectedChecks(target, targetIsPackedFile, dispatchSuffix, format, mode);
+        return finish(await runSelectedChecks(target, targetIsPackedFile, dispatchSuffix, format, mode));
     }
 
     const runWithUnpacked = async (unpackedDir: string): Promise<ValidateRunResult> => {
@@ -183,72 +205,110 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     };
 
     if (targetIsPackedFile) {
-        return withTempDir(async (tempDir) => {
-            const buf = await fs.readFile(target);
-            const envelopeIssues: ValidationResult["issues"] = runsWordPackageChecks(profile)
-                ? await zipEnvelopeIssues(buf, dispatchSuffix)
-                : [];
-            let zip: JSZip;
-            try {
-                zip = await JSZip.loadAsync(buf);
-            } catch (err) {
-                // The file is not a readable OPC (zip) package: encrypted OOXML
-                // (a CFB/OLE compound file), or a truncated/corrupted archive.
-                // Word refuses to open all of these, so this is an error — but
-                // `validate()` must NEVER throw here (a thrown validator silently
-                // crashes callers that shell out, e.g. python-jubarte, instead of
-                // reporting the file invalid). Surface it as a structured issue.
-                // Kept blocking under every profile: an unopenable package is not
-                // something Word tolerates.
-                const detail = err instanceof Error ? err.message : String(err);
+        return finish(
+            await withTempDir(async (tempDir) => {
+                const buf = await fs.readFile(target);
+                const envelopeIssues: ValidationResult["issues"] = runsWordPackageChecks(profile)
+                    ? await zipEnvelopeIssues(buf, dispatchSuffix)
+                    : [];
+                let zip: JSZip;
+                try {
+                    zip = await JSZip.loadAsync(buf);
+                } catch (err) {
+                    // The file is not a readable OPC (zip) package: encrypted OOXML
+                    // (a CFB/OLE compound file), or a truncated/corrupted archive.
+                    // Word refuses to open all of these, so this is an error — but
+                    // `validate()` must NEVER throw here (a thrown validator silently
+                    // crashes callers that shell out, e.g. python-jubarte, instead of
+                    // reporting the file invalid). Surface it as a structured issue.
+                    // Kept blocking under every profile: an unopenable package is not
+                    // something Word tolerates.
+                    const detail = err instanceof Error ? err.message : String(err);
+                    return {
+                        valid: false,
+                        issues: [
+                            ...envelopeIssues,
+                            {
+                                severity: "error" as const,
+                                message: `Cannot open ${target} as an OPC package (not a valid .docx/zip — encrypted, corrupted, or truncated): ${detail}`,
+                                code: "package-open-failed",
+                            },
+                        ],
+                        repairs: 0,
+                        suffix: dispatchSuffix,
+                        xsdWalk: xsdWalkNotStarted(),
+                        metadata: { profile, executedChecks: [], omittedChecks: [], schemaCompleted: false },
+                    };
+                }
+                try {
+                    await extractAll(zip, tempDir);
+                } catch (err) {
+                    const detail = err instanceof Error ? err.message : String(err);
+                    return {
+                        valid: false,
+                        issues: [
+                            ...envelopeIssues,
+                            {
+                                severity: "error" as const,
+                                message: `Cannot extract ${target}: ${detail}`,
+                                code: "package-extract-failed",
+                            },
+                        ],
+                        repairs: 0,
+                        suffix: dispatchSuffix,
+                        xsdWalk: xsdWalkNotStarted(),
+                        metadata: { profile, executedChecks: [], omittedChecks: [], schemaCompleted: false },
+                    };
+                }
+                const unpacked = await runWithUnpacked(tempDir);
+                if (envelopeIssues.length === 0) return unpacked;
                 return {
+                    ...unpacked,
                     valid: false,
-                    issues: [
-                        ...envelopeIssues,
-                        {
-                            severity: "error" as const,
-                            message: `Cannot open ${target} as an OPC package (not a valid .docx/zip — encrypted, corrupted, or truncated): ${detail}`,
-                            code: "package-open-failed",
-                        },
-                    ],
-                    repairs: 0,
-                    suffix: dispatchSuffix,
-                    xsdWalk: xsdWalkNotStarted(),
-                    metadata: { profile, executedChecks: [], omittedChecks: [], schemaCompleted: false },
+                    issues: [...unpacked.issues, ...envelopeIssues],
+                    metadata: { ...(unpacked.metadata ?? {}), executedChecks: coveredEnvelopeChecks(unpacked.metadata, profile) },
                 };
-            }
-            try {
-                await extractAll(zip, tempDir);
-            } catch (err) {
-                const detail = err instanceof Error ? err.message : String(err);
-                return {
-                    valid: false,
-                    issues: [
-                        ...envelopeIssues,
-                        {
-                            severity: "error" as const,
-                            message: `Cannot extract ${target}: ${detail}`,
-                            code: "package-extract-failed",
-                        },
-                    ],
-                    repairs: 0,
-                    suffix: dispatchSuffix,
-                    xsdWalk: xsdWalkNotStarted(),
-                    metadata: { profile, executedChecks: [], omittedChecks: [], schemaCompleted: false },
-                };
-            }
-            const unpacked = await runWithUnpacked(tempDir);
-            if (envelopeIssues.length === 0) return unpacked;
-            return {
-                ...unpacked,
-                valid: false,
-                issues: [...unpacked.issues, ...envelopeIssues],
-                metadata: { ...(unpacked.metadata ?? {}), executedChecks: coveredEnvelopeChecks(unpacked.metadata, profile) },
-            };
-        });
+            }),
+        );
     }
 
-    return runWithUnpacked(path.resolve(target));
+    return finish(await runWithUnpacked(path.resolve(target)));
+}
+
+/**
+ * Run the requested portable mode's verdict through real Microsoft Word when
+ * the caller asked for it. Verification that was requested but could not run
+ * (no bytes, another platform, Word not installed) or that stayed
+ * inconclusive (timeout, unknown dialog) is NOT satisfied, so the run reports
+ * `valid: false` — an unanswered question is not a pass.
+ */
+async function withWordVerification(
+    result: ValidateRunResult,
+    packedBytes: Uint8Array | undefined,
+    injected: WordVerifier | undefined,
+): Promise<ValidateRunResult> {
+    const verify = injected ?? verifyInWord;
+    if (packedBytes === undefined) {
+        return applyWordVerification(result, {
+            requested: true,
+            outcome: "unavailable",
+            satisfied: false,
+            fileSha256: "",
+            platform: process.platform,
+            observedAt: new Date(0).toISOString(),
+            observationMs: 0,
+            details: "Word verification needs a packed Office file; the validated target is an unpacked directory",
+        });
+    }
+    return applyWordVerification(result, await verify(packedBytes));
+}
+
+function applyWordVerification(result: ValidateRunResult, verification: WordVerification): ValidateRunResult {
+    return {
+        ...result,
+        valid: result.valid && verification.satisfied,
+        metadata: { ...(result.metadata ?? {}), wordVerification: { ...verification } },
+    };
 }
 
 /** Every check id applicable to `format`, in registry order. */
@@ -479,6 +539,7 @@ interface CliOptions {
     profile?: Profile;
     quick?: boolean;
     strict?: boolean;
+    verifyWord?: boolean;
     /** Comma-separated check ids or group names. */
     checks?: string;
     listChecks?: boolean;
@@ -502,6 +563,7 @@ export function buildValidateCommand(): Command {
         )
         .option("--quick", "Run the common-defect check preset and report the checks it omits", false)
         .option("--strict", "Run the complete Word check set and require schema validation to complete", false)
+        .option("--verify-word", "Also ask Microsoft Word to open the exact file; unavailable or inconclusive is not a pass", false)
         .option("--checks <ids-or-groups,...>", "Run only these named checks (or groups) plus their prerequisites")
         .option("--list-checks", "List every named check with its id, groups, formats and description, then exit", false);
     return cmd;
@@ -595,6 +657,7 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
             strict: opts.strict,
             quick: opts.quick,
             checks,
+            verifyWord: opts.verifyWord,
         });
     } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
@@ -633,6 +696,12 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
                 const explanation = explainWordError(issue.code);
                 if (explanation) process.stderr.write(`  ↳ ${explanation}\n`);
             }
+        }
+        // An unsatisfied Word observation carries no issue of its own — say
+        // so, so a non-zero exit is never silent.
+        const observed = result.metadata?.wordVerification;
+        if (observed && !observed.satisfied) {
+            process.stderr.write(`WORD VERIFICATION ${observed.outcome}: ${observed.details}\n`);
         }
     }
 
