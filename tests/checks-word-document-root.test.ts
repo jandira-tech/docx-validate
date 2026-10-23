@@ -90,6 +90,19 @@ describe(CODE, () => {
         },
     );
 
+    it.each(["word/document.xml#frag", "word/document.xml?x=1"])(
+        "finds the main part behind %s, whose query or fragment is not part of the path (#361)",
+        async (target) => {
+            expect(
+                await rootIssues({
+                    ...MINIMAL_PARTS,
+                    "_rels/.rels": relationships(`Type="${R}/officeDocument" Target="${target}"`),
+                    "word/document.xml": FOREIGN,
+                }),
+            ).toEqual([expect.objectContaining({ code: CODE, path: "word/document.xml", severity: "error" })]);
+        },
+    );
+
     it("does not equate an escaped reserved character with its literal (#344)", async () => {
         // `%2F` is an escaped "/", so this target names a different part.
         expect(
