@@ -21,6 +21,38 @@ const alternative = (axis: string) =>
     `<mc:AlternateContent><mc:Choice Requires="wp14"><wp:position${axis} relativeFrom="page"><wp14:pctPos${axis}Offset>45500</wp14:pctPos${axis}Offset></wp:position${axis}></mc:Choice><mc:Fallback><wp:position${axis} relativeFrom="page"><wp:posOffset>4576445</wp:posOffset></wp:position${axis}></mc:Fallback></mc:AlternateContent>`;
 
 describe("markup compatibility", () => {
+    it("preserves the application extension payload (#293)", () => {
+        const xml = wrap(
+            `<a:ext xmlns:a="${NS.A}" uri="test"><e:payload mc:MustUnderstand="e"><mc:AlternateContent><mc:Choice Requires="w"><w:p/></mc:Choice><mc:Fallback><e:backup/></mc:Fallback></mc:AlternateContent></e:payload></a:ext>`,
+            'xmlns:e="urn:future"',
+        );
+        const result = process(xml);
+        expect(result.issues).toEqual([]);
+        expect(serializeXml(result.document)).toBe(serializeXml(parseXml(xml)));
+    });
+    it("stops all MCE processing at every recognised extension boundary (#293)", () => {
+        for (const namespace of [
+            "http://schemas.openxmlformats.org/drawingml/2006/chart",
+            NS.A,
+            NS.P,
+            NS.S,
+            "http://purl.oclc.org/ooxml/drawingml/chart",
+            "http://purl.oclc.org/ooxml/drawingml/main",
+            "http://purl.oclc.org/ooxml/presentationml/main",
+            "http://purl.oclc.org/ooxml/spreadsheetml/main",
+        ]) {
+            const xml = wrap(
+                `<x:ext xmlns:x="${namespace}" uri="test" mc:Ignorable="missing"><wp14:payload wp14:flag="keep" mc:MustUnderstand="missing" mc:ProcessContent="w:p:extra"><mc:AlternateContent><mc:Fallback/></mc:AlternateContent></wp14:payload></x:ext>`,
+            );
+            const result = process(xml);
+            expect(result.issues).toEqual([]);
+            expect(serializeXml(result.document)).toBe(serializeXml(parseXml(xml)));
+        }
+    });
+    it("still processes an ext element outside recognised extension namespaces (#293)", () => {
+        const result = process(wrap('<e:ext xmlns:e="urn:future" mc:MustUnderstand="e"/>'));
+        expect(result.issues).toEqual([expect.objectContaining({ severity: "error", code: "mce-must-understand" })]);
+    });
     it("reports an unbound Ignorable prefix (#296)", () => {
         const result = process(wrap("<w:p/>", 'mc:Ignorable="missing"'));
         expect(result.issues).toContainEqual(expect.objectContaining({ severity: "error", code: "mce-unbound-prefix" }));

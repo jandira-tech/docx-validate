@@ -107,7 +107,6 @@ const EXTENSION_NAMESPACES = new Set([
 type Context = {
     ignorable: ReadonlySet<string>;
     processContent: ReadonlySet<string>;
-    extensionPayload: boolean;
 };
 const tokens = (value: string): string[] => value.trim().split(/\s+/).filter(Boolean);
 // XML 1.0 NCName: NameStartChar/NameChar without the namespace separator.
@@ -141,6 +140,10 @@ export const applyMarkupCompatibility = (
     const undeclaredExtensions = new Map<string, Set<string>>();
     let extensionAttributeCount = 0;
     const visit = (element: Element, inherited: Context, attributesOnly = false): void => {
+        // Application extension slots are opaque to MCE, including their directives.
+        if (element.localName === "ext" && EXTENSION_NAMESPACES.has(element.namespaceURI || "")) {
+            return;
+        }
         const directiveIssues: ValidationIssue[] = [];
         const ignorable = new Set(inherited.ignorable);
         const processContent = new Set(inherited.processContent);
@@ -170,7 +173,7 @@ export const applyMarkupCompatibility = (
             }
         }
         const elementNamespace = element.namespaceURI || "";
-        const ignored = !inherited.extensionPayload && ignorable.has(elementNamespace) && !opts.understood.has(elementNamespace);
+        const ignored = ignorable.has(elementNamespace) && !opts.understood.has(elementNamespace);
         if (ignored && !processContent.has(`${elementNamespace}#${element.localName}`) && !processContent.has(`${elementNamespace}#*`)) {
             element.parentNode!.removeChild(element);
             return;
@@ -194,8 +197,6 @@ export const applyMarkupCompatibility = (
         const context = {
             ignorable,
             processContent,
-            extensionPayload:
-                inherited.extensionPayload || (element.localName === "ext" && EXTENSION_NAMESPACES.has(element.namespaceURI || "")),
         };
         for (const attr of Array.from(element.attributes)) {
             // Word understands Office extension attributes even when the part
@@ -217,10 +218,7 @@ export const applyMarkupCompatibility = (
             }
             if (
                 attr.namespaceURI === NS.MC ||
-                (!inherited.extensionPayload &&
-                    attr.namespaceURI &&
-                    ignorable.has(attr.namespaceURI) &&
-                    !opts.understood.has(attr.namespaceURI))
+                (attr.namespaceURI && ignorable.has(attr.namespaceURI) && !opts.understood.has(attr.namespaceURI))
             ) {
                 element.removeAttributeNode(attr);
             }
@@ -310,7 +308,6 @@ export const applyMarkupCompatibility = (
         visit(document.documentElement, {
             ignorable: new Set(),
             processContent: new Set(),
-            extensionPayload: false,
         });
     }
     if (source.documentElement && !document.documentElement) {
