@@ -9,6 +9,7 @@
  */
 
 import { type CheckDefinition, CheckRegistry } from "../../../lib/check-registry";
+import { mathRunDeletionCheck } from "./math-run-deletion";
 import { mathRunInsertionCheck } from "./math-run-insertion";
 import { zipBytesAfterEocdCheck, zipEocdCommentOverrunCheck } from "./package";
 import { wordRowWithoutCellCheck } from "./tables";
@@ -20,7 +21,7 @@ import { xmlSyntaxCheck } from "./xml";
  * adding a rule here cannot change legacy output. Each rule skips parts that
  * do not parse; XML syntax is reported by its own check.
  */
-export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [mathRunInsertionCheck];
+export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [mathRunInsertionCheck, mathRunDeletionCheck];
 
 export function createDefaultCheckRegistry(): CheckRegistry {
     return new CheckRegistry([
