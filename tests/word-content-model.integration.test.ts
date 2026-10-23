@@ -34,6 +34,12 @@ import {
     wordUnderlineMisplacedCheck,
 } from "../src/scripts/office/checks/word-run-placement";
 import { SECTION_PROPERTIES_PARENTS, wordSectionPropertiesMisplacedCheck } from "../src/scripts/office/checks/word-section-properties";
+import {
+    TABLE_BORDERS_PARENTS,
+    TABLE_CELL_SPACING_PARENTS,
+    TBLPRBASE_ORDER,
+    wordTablePropertiesMisplacedCheck,
+} from "../src/scripts/office/checks/word-table-properties";
 import { validate, type ValidateRunResult } from "../src/scripts/office/validate";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -172,6 +178,22 @@ describe("content-model tables pinned to the bundled wml.xsd", { timeout: 30_000
         expect(legalParentsInWml(index, "u")).toEqual(UNDERLINE_PARENTS);
         expect(legalParentsInWml(index, "pPr")).toEqual(PARAGRAPH_PROPERTIES_PARENTS);
         expect(legalParentsInWml(index, "sectPr")).toEqual(SECTION_PROPERTIES_PARENTS);
+        // w:tcPr is deliberately WIDER than wml.xsd: Word opened the jubarte
+        // lane specimens that carry w:tblBorders under w:tcPr.
+        const borderParents = legalParentsInWml(index, "tblBorders");
+        expect(borderParents).toEqual(new Set(["tblPr", "tblPrEx"]));
+        expect(TABLE_BORDERS_PARENTS).toEqual(new Set([...borderParents, "tcPr"]));
+        expect(legalParentsInWml(index, "tblCellSpacing")).toEqual(TABLE_CELL_SPACING_PARENTS);
+    });
+
+    it("the tblPr child order matches CT_TblPrBase", async () => {
+        const schema = await loadSchema("wml.xsd");
+        const type = getElementsByTagNameNSAll(schema, XSD, "complexType").find((entry) => entry.getAttribute("name") === "CT_TblPrBase");
+        expect(type).toBeDefined();
+        const children = getElementsByTagNameNSAll(type!, XSD, "element")
+            .map((element) => element.getAttribute("name"))
+            .filter((name): name is string => Boolean(name));
+        expect(children).toEqual([...TBLPRBASE_ORDER]);
     });
 
     it("the math r and ctrlPr parents come from shared-math.xsd referencing w:EG_RPr", async () => {
@@ -203,6 +225,58 @@ describe("section-properties placement Word evidence", () => {
             await rejectingNoXsd(file, wordSectionPropertiesMisplacedCheck.id);
         });
         expect(await wordSectionPropertiesMisplacedCheck.run(await ValidationContext.fromEntries(MINIMAL_PARTS))).toEqual([]);
+    });
+});
+
+describe("table-properties placement Word evidence", { timeout: 120_000 }, () => {
+    const LANE = path.join(REPO, "tests/lane/jubarte-0.13.0");
+
+    it("rejects the reordered tblBorders of table_tests_v2.docx without any XSD diagnostic", async () => {
+        const probe = (await readFile(path.join(REPO, "word-invalid-fixtures/manifest.jsonl"), "utf8"))
+            .split("\n")
+            .find((line) => line.includes("tagged_tests__table_tests_v2"));
+        expect(probe).toMatch(/"verdict": "UNREADABLE_CONTENT"/);
+        const file = path.join(FIXTURES, "external/docx-parser-converter/tagged_tests/table_tests_v2.docx");
+        const result = await validate(file, { profile: "word-valid" });
+        expect(result.valid).toBe(false);
+        expect(errorCodes(result)).toContain(wordTablePropertiesMisplacedCheck.id);
+        await rejectingNoXsd(file, wordTablePropertiesMisplacedCheck.id);
+    });
+
+    it("rejects the reordered tblCellSpacing fixture and keeps the message-matched heuristic redundant there", async () => {
+        const file = path.join(FIXTURES, "broken/word-rejects-table-cellspacing.docx");
+        const result = await validate(file, { profile: "word-valid" });
+        expect(result.valid).toBe(false);
+        expect(errorCodes(result)).toContain(wordTablePropertiesMisplacedCheck.id);
+    });
+
+    it("tolerates the Word-opened jubarte lane specimens whose tblBorders sit under tcPr, and the 1993 styles-part control", async () => {
+        // The lane manifest records word_opened_and_exported=True for every
+        // k07/k08/k09 specimen; word-valid must not fail them any more (the
+        // tblBorders xsd-error was a message-matched false positive).
+        const rows = (await readFile(path.join(LANE, "manifest.csv"), "utf8")).split("\n");
+        const opened = rows.filter((row) => row.includes("True")).map((row) => row.match(/fixtures\/(k\d+_\d+\.redline\.docx)/)?.[1] ?? "");
+        for (const name of [
+            "k07_1.redline.docx",
+            "k07_2.redline.docx",
+            "k08_1.redline.docx",
+            "k08_2.redline.docx",
+            "k09_1.redline.docx",
+            "k09_2.redline.docx",
+        ]) {
+            expect(opened, `lane manifest must record ${name} as opened by Word`).toContain(name);
+            const bytes = await readFile(path.join(LANE, name));
+            const ctx = await ValidationContext.fromArchive(new Uint8Array(bytes));
+            expect(await wordTablePropertiesMisplacedCheck.run(ctx), name).toEqual([]);
+            const result = await validate(path.join(LANE, name), { profile: "word-valid" });
+            expect(
+                result.issues.filter((issue) => issue.severity === "error"),
+                `${name} must carry no word-valid error, got ${errorCodes(result).join(",")}`,
+            ).toEqual([]);
+            expect(result.valid).toBe(true);
+        }
+        const repaired = path.join(FIXTURES, "working/package.word-row-without-cell-repaired.docx");
+        expect((await validate(repaired, { profile: "word-valid" })).valid).toBe(true);
     });
 });
 
