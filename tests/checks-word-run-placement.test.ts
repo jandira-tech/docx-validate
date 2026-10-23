@@ -143,6 +143,21 @@ describe("word-run-properties-misplaced", () => {
         expect(await runPropertiesCheck.run(change)).toEqual([]);
     });
 
+    it("treats a parent whose namespace is named like an Object.prototype member as foreign", async () => {
+        for (const namespace of ["constructor", "__proto__", "toString"]) {
+            const ctx = ValidationContext.fromEntries({
+                "word/document.xml": document(`<w:p><x:wrap xmlns:x="${namespace}"><w:rPr/></x:wrap></w:p>`),
+            });
+            expect(ctx.xml("word/document.xml")?.ok).toBe(true);
+            await expect((async () => runPropertiesCheck.run(ctx))(), namespace).resolves.toEqual([
+                expect.objectContaining({
+                    code: runPropertiesCheck.id,
+                    message: expect.stringMatching(/w:rPr sits directly inside w:wrap;/),
+                }),
+            ]);
+        }
+    });
+
     it("leaves a part rooted at run properties and unparseable parts alone", async () => {
         const ctx = ValidationContext.fromEntries({
             "word/root.xml": `<w:rPr xmlns:w="${W}"/>`,
