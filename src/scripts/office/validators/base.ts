@@ -1302,7 +1302,11 @@ export class BaseSchemaValidator {
             return single;
         }
 
-        const originalErrors = await this._getOriginalFileErrors(xmlFile);
+        // Baseline subtraction diffs the modified part against --original so
+        // migrations don't fail on pre-existing defects. Under `strict` a
+        // schema defect is invalid whether or not the original had it, so
+        // subtraction is bypassed; lenient/word-valid keep the diff.
+        const originalErrors = this.profile === "strict" ? new Set<string>() : await this._getOriginalFileErrors(xmlFile);
         const newErrors = new Set<string>();
         for (const e of single.errors) {
             if (originalErrors.has(e)) continue;

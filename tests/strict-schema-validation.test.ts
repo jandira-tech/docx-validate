@@ -59,7 +59,7 @@ describe("strict profile — ISO Strict schema dispatch", () => {
             expect(result.issues.some((i) => i.code === "xsd-strict-skipped")).toBe(false);
             expect(result.valid).toBe(true);
         });
-    });
+    }, 60_000);
 
     it("fails a Strict document with an injected schema defect, naming the element", async () => {
         await withTempDir(async (dir) => {
@@ -72,5 +72,32 @@ describe("strict profile — ISO Strict schema dispatch", () => {
             expect(result.valid).toBe(false);
             expect(result.issues.some((i) => i.code === "xsd-error" && i.message.includes("notInSchema"))).toBe(true);
         });
+    }, 60_000);
+});
+
+describe("strict profile — original-baseline subtraction", () => {
+    const DEFECTIVE_PARTS: Readonly<Record<string, string>> = Object.freeze({
+        ...MINIMAL_PARTS,
+        "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace("</w:body>", "<w:notInSchema/></w:body>"),
     });
+
+    it("still reports a schema defect that is also present in --original", async () => {
+        await withTempDir(async (dir) => {
+            const original = await writeDocx(dir, "original.docx", DEFECTIVE_PARTS);
+            const modified = await writeDocx(dir, "modified.docx", DEFECTIVE_PARTS);
+            const result = await validate(modified, { profile: "strict", original, author: "Test" });
+            expect(result.valid).toBe(false);
+            expect(result.issues.some((i) => i.code === "xsd-error" && i.message.includes("notInSchema"))).toBe(true);
+        });
+    }, 60_000);
+
+    it("lenient keeps subtracting defects already present in --original", async () => {
+        await withTempDir(async (dir) => {
+            const original = await writeDocx(dir, "original.docx", DEFECTIVE_PARTS);
+            const modified = await writeDocx(dir, "modified.docx", DEFECTIVE_PARTS);
+            const result = await validate(modified, { profile: "lenient", original, author: "Test" });
+            expect(result.issues.some((i) => i.code === "xsd-error" && i.message.includes("notInSchema"))).toBe(false);
+            expect(result.valid).toBe(true);
+        });
+    }, 60_000);
 });
