@@ -38,6 +38,8 @@ export const COVERAGE_GATES: readonly CoverageGate[] = [
     { pattern: "src/lib/check-registry.ts", ...POLICY },
     // Result aggregation (`mergeResults`, `finalize`).
     { pattern: "src/lib/types.ts", ...POLICY },
+    // Which errors the word-valid profile keeps as errors.
+    { pattern: "src/scripts/office/validators/word-blocking.ts", ...POLICY },
     // Modules the plan adds.
     { pattern: "src/lib/content-types.ts", ...NEW_MODULE },
     { pattern: "src/lib/markup-compatibility.ts", ...NEW_MODULE },
