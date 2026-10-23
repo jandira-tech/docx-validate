@@ -1,0 +1,137 @@
+/*
+ * Copyright 2026 Jandira Technologies, LLC
+ * Licensed under the Apache License, Version 2.0.
+ */
+
+/**
+ * Unit tests for the shading colour value-space check
+ * (`src/scripts/office/checks/shading-color.ts`, Task 8 family 8c,
+ * lane issues #210, #215, #220, #221, #225, #229, #238, #242).
+ *
+ * Every defect case is paired with a nearby legal control that stays
+ * unreported. Matching is namespace-based, so the strict-namespace case uses
+ * the purl.oclc.org vocabulary with no `w:` prefix at all.
+ */
+
+import { describe, expect, it } from "vitest";
+
+import type { ValidationIssue } from "../src/lib/types";
+import { ValidationContext, type PartContent } from "../src/lib/validation-context";
+import { wordShadingColorCheck } from "../src/scripts/office/checks/shading-color";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const STRICT = "http://purl.oclc.org/ooxml/wordprocessingml/main";
+
+const documentXml = (body: string, ns: string = W): string =>
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` + `<w:document xmlns:w="${ns}"><w:body>${body}</w:body></w:document>`;
+
+const fromParts = (parts: Readonly<Record<string, PartContent>>): ValidationContext => ValidationContext.fromEntries(parts);
+
+const findings = async (parts: Readonly<Record<string, PartContent>>): Promise<readonly ValidationIssue[]> =>
+    wordShadingColorCheck.run(fromParts(parts));
+
+describe("shading-color check", () => {
+    it("reports every w:shd colour attribute outside the declared value space, once per occurrence", async () => {
+        const issues = await findings({
+            "word/document.xml": documentXml(
+                // Two identical empty fills must not collapse into one finding.
+                `<w:tbl><w:tblGrid><w:gridCol w:w="100"/></w:tblGrid>` +
+                    `<w:tr><w:tc><w:tcPr><w:shd w:val="clear" w:fill=""/></w:tcPr><w:p/></w:tc>` +
+                    `<w:tc><w:tcPr><w:shd w:val="clear" w:fill=""/></w:tcPr><w:p/></w:tc></w:tr></w:tbl>` +
+                    `<w:p><w:pPr><w:shd w:val="clear" w:color="DDDDD"/></w:pPr></w:p>` +
+                    `<w:p><w:r><w:rPr><w:shd w:val="clear" w:themeColor="sparkle"/></w:rPr><w:t>x</w:t></w:r></w:p>` +
+                    `<w:p><w:r><w:rPr><w:shd w:val="clear" w:themeTint="0"/></w:rPr><w:t>x</w:t></w:r></w:p>`,
+            ),
+        });
+        expect(issues).toHaveLength(5);
+        for (const issue of issues) {
+            expect(issue.severity).toBe("warning");
+            expect(issue.code).toBe("shading-color");
+            expect(issue.path).toBe("word/document.xml");
+        }
+        expect(issues[0]!.message).toContain("w:fill");
+        expect(issues[0]!.message).toContain(`""`);
+        expect(issues[2]!.message).toContain("w:color");
+        expect(issues[2]!.message).toContain(`"DDDDD"`);
+        expect(issues[3]!.message).toContain("w:themeColor");
+        expect(issues[3]!.message).toContain(`"sparkle"`);
+        expect(issues[4]!.message).toContain("w:themeTint");
+        expect(issues[4]!.message).toContain(`"0"`);
+    });
+
+    it("keeps every nearby legal shading control unreported", async () => {
+        const issues = await findings({
+            "word/document.xml": documentXml(
+                `<w:p><w:pPr><w:shd w:val="clear" w:fill="DDDDDD"/></w:pPr></w:p>` + // 6-hex RGB
+                    `<w:p><w:pPr><w:shd w:val="clear" w:fill="dddddd"/></w:pPr></w:p>` + // lowercase hex is still hexBinary
+                    `<w:p><w:pPr><w:shd w:val="clear"/></w:pPr></w:p>` + // optional attribute omitted
+                    `<w:p><w:pPr><w:shd w:val="clear" w:color="auto" w:fill="F7F7F7"/></w:pPr></w:p>` + // ST_HexColorAuto
+                    `<w:p><w:pPr><w:shd w:val="clear" w:themeFill="accent1" w:themeFillTint="66" w:themeFillShade="B2"/></w:pPr></w:p>` +
+                    `<w:p><w:pPr><w:shd w:val="clear" w:themeColor="background1" w:themeShade="9C"/></w:pPr></w:p>` +
+                    `<w:p><w:pPr><w:shd w:val="bogus-pattern" w:fill="auto"/></w:pPr></w:p>` + // w:val is not colour-typed
+                    // Attributes outside the element's namespace are not the
+                    // schema-declared ones, whatever their value: a w14: colour
+                    // and an unprefixed colour are extension/qualification
+                    // concerns, not colour value-space defects.
+                    `<w:p><w:pPr><w:shd xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" w:val="clear" w:fill="DDDDDD" w14:fill=""/></w:pPr></w:p>` +
+                    `<w:p><w:pPr><w:shd w:val="clear" w:fill="DDDDDD" fill=""/></w:pPr></w:p>`,
+            ),
+            // Default-namespace document: the shd element still matches by
+            // namespace, and its unprefixed attributes stay out of scope.
+            "word/footer1.xml":
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+                `<document xmlns="${W}"><ftr><p><pPr><shd val="clear" fill="auto"/></pPr></p></ftr></document>`,
+        });
+        expect(issues).toEqual([]);
+    });
+
+    it("scans headers, footers, footnotes, endnotes, comments, and styles.xml", async () => {
+        const defect = `<w:shd w:val="clear" w:fill=""/>`;
+        const parts: Record<string, PartContent> = {
+            "word/document.xml": documentXml(`<w:p><w:r><w:rPr>${defect}</w:rPr><w:t>x</w:t></w:r></w:p>`),
+            "word/header1.xml": documentXml(`<w:p><w:pPr>${defect}</w:pPr></w:p>`),
+            "word/footer1.xml": documentXml(`<w:p><w:pPr>${defect}</w:pPr></w:p>`),
+            "word/footnotes.xml": documentXml(`<w:footnote w:id="1"><w:p><w:pPr>${defect}</w:pPr></w:p></w:footnote>`),
+            "word/endnotes.xml": documentXml(`<w:endnote w:id="1"><w:p><w:pPr>${defect}</w:pPr></w:p></w:endnote>`),
+            "word/comments.xml": documentXml(`<w:comment w:id="1"><w:p><w:pPr>${defect}</w:pPr></w:p></w:comment>`),
+            "word/styles.xml":
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+                `<w:styles xmlns:w="${W}"><w:style w:type="paragraph" w:styleId="P"><w:pPr>${defect}</w:pPr></w:style></w:styles>`,
+            // Not a part where w:shd applies: ignored even with the defect present.
+            "word/numbering.xml": documentXml(`<w:p><w:pPr>${defect}</w:pPr></w:p>`),
+        };
+        const paths = (await findings(parts)).map((issue) => issue.path);
+        expect(paths).toEqual([
+            "word/comments.xml",
+            "word/document.xml",
+            "word/endnotes.xml",
+            "word/footer1.xml",
+            "word/footnotes.xml",
+            "word/header1.xml",
+            "word/styles.xml",
+        ]);
+    });
+
+    it("matches the strict WordprocessingML namespace whatever prefix carries it", async () => {
+        const strictDoc =
+            `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+            `<word:document xmlns:word="${STRICT}"><word:body><word:p><word:pPr>` +
+            `<word:shd word:val="clear" word:fill=""/></word:pPr></word:p></word:body></word:document>`;
+        const issues = await findings({ "word/document.xml": strictDoc });
+        expect(issues).toHaveLength(1);
+        expect(issues[0]!.code).toBe("shading-color");
+        expect(issues[0]!.path).toBe("word/document.xml");
+        expect(issues[0]!.message).toContain("fill");
+    });
+
+    it("skips a part that fails to parse without throwing, and still checks the others", async () => {
+        const issues = await wordShadingColorCheck.run(
+            fromParts({
+                "word/document.xml": `<w:document xmlns:w="${W}"><w:body>`, // unterminated
+                "word/footer1.xml": documentXml(`<w:p><w:pPr><w:shd w:val="clear" w:fill=""/></w:pPr></w:p>`),
+            }),
+        );
+        expect(issues).toHaveLength(1);
+        expect(issues[0]!.path).toBe("word/footer1.xml");
+    });
+});
