@@ -99,7 +99,11 @@ describe("page-margin-attributes check", () => {
         const xml = documentWith(`<w:sectPr><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr>`, W_STRICT);
         const issues = await run({ "word/document.xml": xml });
         expect(issues).toHaveLength(3);
-        expect(issues.map((issue) => issue.code)).toEqual(["word-page-margin-attributes", "word-page-margin-attributes", "word-page-margin-attributes"]);
+        expect(issues.map((issue) => issue.code)).toEqual([
+            "word-page-margin-attributes",
+            "word-page-margin-attributes",
+            "word-page-margin-attributes",
+        ]);
     });
 
     it("skips a part that does not parse instead of throwing", async () => {
