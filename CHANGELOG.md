@@ -35,6 +35,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Count only Word's verdicts as rejections: `crash`, `unavailable` and unmapped outcome spellings are unattributable, and verifier outcomes map to the manifest's spellings ([#316](https://github.com/jandira-tech/docx-validate/issues/316)).
 - Quick and named-check runs fail an archive that does not open with `package-open-failed`, as complete runs do, instead of passing the selected checks on an empty package. Their `executedChecks` lists the checks that ran ([#332](https://github.com/jandira-tech/docx-validate/issues/332)).
 - A Word verifier that throws yields an `unavailable`, unsatisfied verification instead of rejecting `validate` ([#333](https://github.com/jandira-tech/docx-validate/issues/333)).
+- Let an open that overran its budget settle before the cleanup close, so Word is never left holding a document opened after its close ([#328](https://github.com/jandira-tech/docx-validate/issues/328)).
+- Stamp `observedAt` and the crash-report open instant from wall time (`wallNow`, default `Date.now`) instead of the deadline clock, and stamp an unpacked directory's `unavailable` verification with the current time instead of the epoch ([#329](https://github.com/jandira-tech/docx-validate/issues/329)).
 - Return `unavailable` when a Word dialog is already showing before verification, without opening or closing anything; dismiss dialogs raised by this run during macOS cleanup so later probes remain attributable ([#315](https://github.com/jandira-tech/docx-validate/issues/315)).
 
 ### Security
