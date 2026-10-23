@@ -305,7 +305,7 @@ The processor and schema walk use these stable codes:
 | `mce-unbound-prefix`          | A directive names an unbound prefix. Error in lenient/strict schema processing; warning in full Word-valid. A repeated root Ignorable finding is retained once as `ignorable-undeclared`. |
 | `mce-invalid-token`           | An invalid ProcessContent QName. Error in lenient/strict schema processing; warning in full Word-valid.                                                                                   |
 | `mce-root-ignored`            | An ignorable root disappears from the schema view. Informational for non-main parts; not emitted by the full Word-valid path.                                                             |
-| `mce-main-root-ignored`       | The required main document root disappears from the schema view. Error in lenient/strict; not emitted by the full Word-valid path.                                                        |
+| `mce-main-root-ignored`       | The required main document root disappears from the schema view. Error in lenient/strict; not emitted by the full Word-valid path, which does not yet catch this case (#317).             |
 | `mce-extension-not-ignorable` | Office extension attributes lack an Ignorable declaration and are removed from the schema view. Warning from schema preprocessing; not emitted by the full Word-valid path.               |
 
 Strict bundles both Transitional and ISO Strict schema trees, with local Dublin
