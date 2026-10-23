@@ -40,6 +40,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
+import { classifyWordOutcome } from "../src/lib/word-provenance";
 import { validate } from "../src/scripts/office/validate";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -197,7 +198,12 @@ describe("jubarte 0.13.0 lane integration (manifest.csv)", { timeout: 120_000 },
         const hashes = new Set(rows.map((row) => row.sha256));
         expect(hashes.size).toBe(16);
         for (const hash of hashes) {
-            expect(observations[hash], `no Word observation bound to ${hash}`).toBeDefined();
+            const observation = observations[hash];
+            expect(observation, `no Word observation bound to ${hash}`).toBeDefined();
+            // A timeout or unknown outcome is no verdict; it must not pin one (#330).
+            expect(classifyWordOutcome(observation?.outcome ?? "unknown"), `${observation?.file}: ${observation?.outcome}`).not.toBe(
+                "unattributable",
+            );
         }
     });
 
@@ -240,7 +246,7 @@ describe("jubarte 0.13.0 lane integration (manifest.csv)", { timeout: 120_000 },
                 expect(observation, `${file} has no Word observation for its bytes`).toBeDefined();
                 const wordValid = await validate(path.join(LANE, file), { profile: "word-valid" });
                 expect(wordValid.valid, `${file} word-valid vs Word ${observation?.wordVersion}: ${observation?.outcome}`).toBe(
-                    observation?.outcome === "clean-open",
+                    classifyWordOutcome(observation?.outcome ?? "unknown") === "clean",
                 );
             },
         );

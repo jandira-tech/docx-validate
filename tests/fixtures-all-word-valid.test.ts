@@ -13,7 +13,9 @@
  * `clean-open` means valid, and a rejection (open error, unreadable-content
  * warning, password prompt, unknown dialog) means invalid. Observations that
  * carry no evidence (`unknown`, `timeout`) or no longer match the fixture
- * bytes are not asserted, as in `wordAccuracy`.
+ * bytes are not asserted, as in `wordAccuracy`. An observation with a verdict
+ * but no recorded sha256 is bound to no bytes, so it fails the binding guard
+ * instead of counting toward the floors (#330).
  *
  * The strict and lenient counterparts are `fixtures-all-strict.test.ts` and
  * `fixtures-all-lenient.test.ts`.
@@ -46,6 +48,13 @@ interface ManifestEntry {
 
 const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf-8")) as { entries: ManifestEntry[] };
 
+const unbound = manifest.entries.flatMap((entry) => {
+    const observation = parseWordField(entry.word);
+    return observation && classifyWordOutcome(observation.outcome) !== "unattributable" && observation.sha256 === undefined
+        ? [entry.relativePath]
+        : [];
+});
+
 const observed = manifest.entries.flatMap((entry) => {
     if (!/\.docx$/i.test(entry.relativePath)) return [];
     const bytes = readFileSync(path.join(FIXTURES, entry.relativePath));
@@ -55,6 +64,10 @@ const observed = manifest.entries.flatMap((entry) => {
 });
 
 describe("all fixtures — word-valid profile against Word's own verdict", () => {
+    it("binds every Word verdict in the manifest to the bytes it was observed on", () => {
+        expect(unbound, "word observations with a verdict but no sha256").toEqual([]);
+    });
+
     it(`asserts at least ${MIN_CLEAN} clean opens and ${MIN_REJECTED} rejections`, () => {
         expect(observed.filter((entry) => entry.clean).length).toBeGreaterThanOrEqual(MIN_CLEAN);
         expect(observed.filter((entry) => !entry.clean).length).toBeGreaterThanOrEqual(MIN_REJECTED);
