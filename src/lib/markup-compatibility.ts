@@ -114,10 +114,12 @@ const children = (element: Element): Element[] => Array.from(element.childNodes)
 const namespaceUri = (element: Element, prefix: string): string | null => (prefix === "xml" ? NS.XML : element.lookupNamespaceURI(prefix));
 const unwrap = (element: Element): void => {
     const parent = element.parentNode!;
-    while (element.firstChild) {
-        parent.insertBefore(element.firstChild, element);
-    }
+    const next = element.nextSibling;
+    // Detach first: a Document cannot contain both the old and selected roots.
     parent.removeChild(element);
+    while (element.firstChild) {
+        parent.insertBefore(element.firstChild, next);
+    }
 };
 
 /** Build a validation-only view; source XML and unselected branches remain untouched. */
