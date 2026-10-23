@@ -382,7 +382,8 @@ async function runSelectedChecks(
                 .filter((definition) => definition.archiveOnly === true)
                 .map((definition) => definition.id),
         );
-        const envelopeSelect = registry.resolve(select, format).filter((id) => archiveOnly.has(id));
+        const selected = registry.resolve(select, format);
+        const envelopeSelect = selected.filter((id) => archiveOnly.has(id));
         const envelope =
             envelopeSelect.length > 0 ? await runChecks(opened.context, registry, { format, select: envelopeSelect }) : undefined;
         const executed = envelope?.executed ?? [];
@@ -395,10 +396,13 @@ async function runSelectedChecks(
             metadata: {
                 profile: mode.profile,
                 executedChecks: [...executed],
+                // Omitted means "not selected", as for a package that opens; a
+                // selected check the archive kept from running is not an
+                // omission, and the error says why it did not run (Jules on #337).
                 omittedChecks: registry
                     .list(format)
                     .map((definition) => definition.id)
-                    .filter((id) => !executed.includes(id)),
+                    .filter((id) => !selected.includes(id)),
                 schemaCompleted: false,
             },
         };
