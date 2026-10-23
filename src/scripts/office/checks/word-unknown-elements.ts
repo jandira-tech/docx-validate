@@ -113,11 +113,7 @@ export const wordUnknownElementCheck: CheckDefinition = {
     groups: ["schema"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx): ValidationIssue[] =>
-        wmlPartDocuments(ctx).flatMap(({ part, document }) => [
-            ...unknownElementIssues(part, document),
-            ...linkWithoutNamespaceIssues(part, document),
-        ]),
+    run: (ctx): ValidationIssue[] => wmlPartDocuments(ctx).flatMap(({ part, document }) => unknownElementIssues(part, document)),
 };
 
 export const wordLinkWithoutNamespaceCheck: CheckDefinition = {
@@ -126,9 +122,5 @@ export const wordLinkWithoutNamespaceCheck: CheckDefinition = {
     groups: ["schema"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx): ValidationIssue[] =>
-        wmlPartDocuments(ctx).flatMap(({ part, document }) => [
-            ...unknownElementIssues(part, document),
-            ...linkWithoutNamespaceIssues(part, document),
-        ]),
+    run: (ctx): ValidationIssue[] => wmlPartDocuments(ctx).flatMap(({ part, document }) => linkWithoutNamespaceIssues(part, document)),
 };
