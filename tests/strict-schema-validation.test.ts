@@ -167,3 +167,48 @@ describe("strict profile — missing schemas never pass silently", () => {
         });
     }, 60_000);
 });
+
+const CORE_XML_HEAD =
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+    `<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties"` +
+    ` xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"` +
+    ` xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">`;
+
+const withCoreProps = (body: string): Readonly<Record<string, string>> =>
+    Object.freeze({
+        ...MINIMAL_PARTS,
+        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+            "</Types>",
+            `<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>`,
+        ),
+        "_rels/.rels": MINIMAL_PARTS["_rels/.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>`,
+        ),
+        "docProps/core.xml": `${CORE_XML_HEAD}${body}</cp:coreProperties>`,
+    });
+
+describe("strict profile — Dublin Core core properties", () => {
+    it("validates a clean core.xml against the bundled DC schemas", async () => {
+        await withTempDir(async (dir) => {
+            const file = await writeDocx(
+                dir,
+                "clean-core.docx",
+                withCoreProps(`<dc:title>T</dc:title><dcterms:created xsi:type="dcterms:W3CDTF">2026-01-01T00:00:00Z</dcterms:created>`),
+            );
+            const result = await validate(file, { profile: "strict" });
+            expect(result.issues.some((i) => i.code === "xsd-schema-load-failed")).toBe(false);
+            expect(result.issues.every((i) => !i.message.includes("dublincore.org") && !i.message.includes("purl.org/dc/"))).toBe(true);
+            expect(result.valid).toBe(true);
+        });
+    }, 60_000);
+
+    it("fails strict on a real Dublin Core defect in core.xml", async () => {
+        await withTempDir(async (dir) => {
+            const file = await writeDocx(dir, "bad-core.docx", withCoreProps(`<dc:title><dc:notAValidChild/></dc:title>`));
+            const result = await validate(file, { profile: "strict" });
+            expect(result.valid).toBe(false);
+            expect(result.issues.some((i) => i.code === "xsd-error" && i.message.includes("notAValidChild"))).toBe(true);
+        });
+    }, 60_000);
+});
