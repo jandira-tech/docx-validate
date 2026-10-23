@@ -17,9 +17,10 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
+import * as xsdEngine from "../src/lib/xsd-validator";
 import { ModeConflictError } from "../src/lib/mode-policy";
 import { runValidateFromArgv, validate, type ValidateOptions } from "../src/scripts/office/validate";
 import { buildDocx } from "./support/minimal-docx";
@@ -106,6 +107,29 @@ describe("validate CLI: named checks", { timeout: 120_000 }, () => {
         expect(run.stdout).toMatch(/formats/i);
         expect(run.stdout).toMatch(/Every XML part of the package is well-formed/);
         expect(run.stdout).toMatch(/docx/);
+    });
+});
+
+describe("validate CLI: --help", { timeout: 120_000 }, () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it("succeeds without initializing the XSD engine", async () => {
+        const spy = vi.spyOn(xsdEngine, "createXsdValidator");
+        const run = await capture(["--help"]);
+
+        expect(run.stdout).toMatch(/Usage:/);
+        expect(run.code).toBe(0);
+        expect(spy).not.toHaveBeenCalled();
+    });
+
+    it("advertises every mode selector", async () => {
+        const run = await capture(["--help"]);
+
+        for (const flag of ["--strict", "--quick", "--checks", "--list-checks", "--verify-word", "--json"]) {
+            expect(run.stdout).toContain(flag);
+        }
     });
 });
 
