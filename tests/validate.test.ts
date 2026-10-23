@@ -461,9 +461,11 @@ describe("word-valid profile — applyWordValidProfile coverage", () => {
         });
     });
 
-    it("word-valid profile flags malformed word/document.xml as word-math-parse error (Issue M)", async () => {
-        // When word/document.xml cannot be XML-parsed, validateWordOpenCompatibility
-        // emits word-math-parse (fatal) instead of proceeding to the m:sPre check.
+    it("word-valid profile reports a malformed word/document.xml once, as xml-syntax (Issue M)", async () => {
+        // validateWordOpenCompatibility cannot parse the part and emits
+        // word-math-parse. The XML diagnostics already reject the part, so
+        // that consequential parse failure is dropped and the part is
+        // reported once.
         await withTempDir(async (dir) => {
             const unpacked = path.join(dir, "unpacked");
             await writeMinimalDocxDir(unpacked, "<w:body><w:p/></w:body>");
@@ -475,10 +477,10 @@ describe("word-valid profile — applyWordValidProfile coverage", () => {
                 author: "Test",
             });
             expect(result.valid).toBe(false);
-            const mathParseIssue = result.issues.find((i) => i.code === "word-math-parse");
-            expect(mathParseIssue).toBeDefined();
-            expect(mathParseIssue?.severity).toBe("error");
-            expect(mathParseIssue?.path).toContain("word/document.xml");
+            const onDocument = result.issues.filter((i) => i.path === "word/document.xml");
+            expect(onDocument.length).toBeGreaterThan(0);
+            expect(new Set(onDocument.map((i) => i.code))).toEqual(new Set(["xml-syntax"]));
+            expect(onDocument.every((i) => i.severity === "error")).toBe(true);
         });
     });
 

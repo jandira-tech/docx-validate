@@ -324,6 +324,13 @@ export class BaseSchemaValidator {
     xsdWalk: XsdWalkTrace = { started: false, parts: [], eligible: 0 };
 
     /**
+     * Parts the running `validate()` found not well-formed. Their XML
+     * diagnostics already reject the package, so the schema walk does not
+     * parse them again.
+     */
+    protected malformedParts: ReadonlySet<string> = new Set();
+
+    /**
      * Subclasses override to map an element name → expected relationship type
      * (used by `validateAllRelationshipIds`). Mirrors
      * `BaseSchemaValidator.ELEMENT_RELATIONSHIP_TYPES`.
@@ -1219,6 +1226,7 @@ export class BaseSchemaValidator {
         };
 
         const countEligible = (xmlFile: string): boolean => {
+            if (this.malformedParts.has(this.relPath(xmlFile))) return false;
             // Strict-conformance parts are only skipped outside the strict
             // profile: lenient and word-valid keep the documented
             // `xsd-strict-skipped` info issue, while `strict` schema-validates

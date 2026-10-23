@@ -22,7 +22,7 @@ import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import type { Profile } from "../src/lib/types";
 import { validate } from "../src/scripts/office/validate";
-import { buildDocx } from "./support/minimal-docx";
+import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const BROKEN = path.join(HERE, "fixtures", "broken");
@@ -164,6 +164,40 @@ describe("validation contract: every Word rejection rule runs under strict", { t
             expect(specimen.valid).toBe(false);
         });
     }
+});
+
+describe("validation contract: strict keeps checking after an XML failure", { timeout: 120000 }, () => {
+    // A row with no cell in the body, and styles.xml cut off before its end tag.
+    const ROW_WITHOUT_CELL =
+        `<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/></w:tblPr><w:tblGrid><w:gridCol w:w="2000"/></w:tblGrid><w:tr/></w:tbl>` +
+        `<w:p w14:paraId="00000002" w14:textId="00000002"/>`;
+
+    it("strict reports every error code word-valid reports when another part is malformed", async () => {
+        const bytes = await buildDocx({
+            ...MINIMAL_PARTS,
+            "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace("<w:sectPr>", `${ROW_WITHOUT_CELL}<w:sectPr>`),
+            "word/styles.xml": MINIMAL_PARTS["word/styles.xml"]!.replace("</w:styles>", ""),
+        });
+        const [wordValid, strict] = await Promise.all([validateBytes(bytes, "word-valid"), validateBytes(bytes, "strict")]);
+        const wordValidCodes = errorCodes(wordValid.issues);
+        expect(wordValidCodes.has("word-row-without-cell")).toBe(true);
+        const strictCodes = errorCodes(strict.issues);
+        expect([...wordValidCodes].filter((code) => !strictCodes.has(code))).toEqual([]);
+        expect(strict.valid).toBe(false);
+    });
+
+    it("reports the malformed part once, through its XML diagnostics", async () => {
+        const bytes = await buildDocx({
+            ...MINIMAL_PARTS,
+            "word/styles.xml": MINIMAL_PARTS["word/styles.xml"]!.replace("</w:styles>", ""),
+        });
+        for (const profile of ["word-valid", "strict"] as const) {
+            const result = await validateBytes(bytes, profile);
+            const onPart = result.issues.filter((issue) => issue.path === "word/styles.xml").map((issue) => issue.code);
+            expect(new Set(onPart), profile).toEqual(new Set(["xml-syntax"]));
+            expect(result.valid, profile).toBe(false);
+        }
+    });
 });
 
 describe("validation contract: default DOCX profile", () => {

@@ -5773,7 +5773,7 @@
             "relativePath": "external/superdoc/super-editor/annotations_import_2.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["xml-undeclared-prefix"]
+                "errorCodes": ["paraid-missing-element", "rels-unreferenced", "xml-undeclared-prefix", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
