@@ -130,15 +130,18 @@ export class ValidationContext {
     /** Load a packed OPC archive, one entry per part name. Throws when the bytes are not a readable ZIP. */
     public static async fromArchive(bytes: Uint8Array): Promise<ValidationContext> {
         const zip = await JSZip.loadAsync(bytes);
-        const entries = indexByPartName(
-            Object.values(zip.files)
-                .filter((entry) => !entry.dir)
-                .map((entry) => [entry.name, entry] as const),
-        );
+        const files = Object.values(zip.files).filter((entry) => !entry.dir);
+        const kept = indexByPartName(files.map((entry) => [entry.name, entry] as const));
         const parts = new Map<string, PartContent>();
+        // Every entry is read, as extraction reads it, so an unreadable one
+        // rejects the archive even when another entry names its part (#369).
         await Promise.all(
-            [...entries].map(async ([part, entry]) => {
-                parts.set(part, await entry.async("uint8array"));
+            files.map(async (entry) => {
+                const content = await entry.async("uint8array");
+                const part = normalizePartName(entry.name);
+                if (kept.get(part) === entry) {
+                    parts.set(part, content);
+                }
             }),
         );
         return new ValidationContext(parts, { source: "archive", archiveBytes: bytes });

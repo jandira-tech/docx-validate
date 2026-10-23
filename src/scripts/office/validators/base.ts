@@ -404,7 +404,7 @@ export class BaseSchemaValidator {
         this.originalFile = opts.originalFile ? path.resolve(opts.originalFile) : null;
         this.verbose = opts.verbose ?? false;
         this.schemasDir = opts.schemasDir ?? defaultSchemasDir();
-        this.xmlFiles = walkFiles(this.unpackedDir, [".xml", ".rels"]);
+        this.xmlFiles = [...packageEntries(this.unpackedDir, [".xml", ".rels"]).values()];
         this.profile = opts.profile ?? DEFAULT_PROFILE;
         this.xsdValidatorRef = opts.xsdValidator;
     }
@@ -804,14 +804,14 @@ export class BaseSchemaValidator {
 
     async validateFileReferences(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const relsFiles = walkFiles(this.unpackedDir, [".rels"]);
+        const relsFiles = [...packageEntries(this.unpackedDir, [".rels"]).values()];
 
         if (relsFiles.length === 0) {
             return OK_RESULT;
         }
 
         const allFiles: string[] = [];
-        for (const f of walkFiles(this.unpackedDir)) {
+        for (const f of packageEntries(this.unpackedDir).values()) {
             const base = path.basename(f);
             if (base === "[Content_Types].xml" || f.endsWith(".rels")) continue;
             allFiles.push(path.resolve(f));
@@ -898,7 +898,7 @@ export class BaseSchemaValidator {
 
     async validateRelationshipElements(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const relsFiles = walkFiles(this.unpackedDir, [".rels"]);
+        const relsFiles = [...packageEntries(this.unpackedDir, [".rels"]).values()];
 
         for (const relsFile of relsFiles) {
             let dom: Document;
@@ -1169,7 +1169,7 @@ export class BaseSchemaValidator {
             emf: "image/x-emf",
         };
 
-        const allFiles = walkFiles(this.unpackedDir);
+        const allFiles = [...packageEntries(this.unpackedDir).values()];
 
         for (const xmlFile of this.xmlFiles) {
             const pathStr = this.relPath(xmlFile).replace(/\\/g, "/");
@@ -1484,7 +1484,7 @@ export class BaseSchemaValidator {
         try {
             // Indexed as `ValidationContext` indexes its entries, so both keep
             // the same file when several name one part (#366).
-            const kept = indexByPartName(walkFiles(this.unpackedDir).map((file) => [this.entryName(file), file] as const));
+            const kept = packageEntries(this.unpackedDir);
             const names = [...kept.keys()];
             // Read the package relationships as the package view does: found by
             // part name under OPC equivalence, so `_rels\.rels` and
@@ -1749,6 +1749,16 @@ export class BaseSchemaValidator {
 }
 
 // ===== module-level helpers ===================================================
+
+/**
+ * The files of `dir` by part name. Of several files naming one part
+ * (`word\document.xml` beside `word/document.xml`) only the one
+ * `ValidationContext` keeps is listed, so a full run judges the entries a
+ * quick run judges (#366, #368).
+ */
+export function packageEntries(dir: string, extensions?: ReadonlyArray<string>): Map<string, string> {
+    return indexByPartName(walkFiles(dir, extensions).map((file) => [path.relative(dir, file).split(path.sep).join("/"), file] as const));
+}
 
 /** Walk `dir` recursively, returning absolute paths. Optional `extensions` (with leading dot) filter. */
 export function walkFiles(dir: string, extensions?: ReadonlyArray<string>): string[] {
