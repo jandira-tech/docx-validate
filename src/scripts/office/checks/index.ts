@@ -8,11 +8,25 @@
  * order: a check appears after every check it requires.
  */
 
-import { CheckRegistry } from "../../../lib/check-registry";
+import { type CheckDefinition, CheckRegistry } from "../../../lib/check-registry";
 import { zipBytesAfterEocdCheck, zipEocdCommentOverrunCheck } from "./package";
 import { wordRowWithoutCellCheck } from "./tables";
 import { xmlSyntaxCheck } from "./xml";
 
+/**
+ * Word rules that `DOCXSchemaValidator` runs through the registry under the
+ * `word-valid` and `strict` profiles. Lenient callers never see them, so
+ * adding a rule here cannot change legacy output. Each rule skips parts that
+ * do not parse; XML syntax is reported by its own check.
+ */
+export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [];
+
 export function createDefaultCheckRegistry(): CheckRegistry {
-    return new CheckRegistry([zipBytesAfterEocdCheck, zipEocdCommentOverrunCheck, xmlSyntaxCheck, wordRowWithoutCellCheck]);
+    return new CheckRegistry([
+        zipBytesAfterEocdCheck,
+        zipEocdCommentOverrunCheck,
+        xmlSyntaxCheck,
+        wordRowWithoutCellCheck,
+        ...WORD_RULE_CHECKS,
+    ]);
 }
