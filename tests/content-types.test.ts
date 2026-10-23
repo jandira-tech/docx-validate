@@ -16,6 +16,7 @@ import { describe, expect, it } from "vitest";
 import {
     canonicalPartName,
     CONTENT_TYPES_NAMESPACE,
+    equivalentPartLookup,
     findEquivalentPart,
     resolvePartName,
     normalizePartName,
@@ -140,6 +141,24 @@ describe("findEquivalentPart (#344)", () => {
         const entries = ["word/document.xml", "WORD/document.xml", "word/%64ocument.xml"];
         expect(findEquivalentPart(entries, "Word/Document.xml")).toBe("WORD/document.xml");
         expect(findEquivalentPart([...entries].reverse(), "Word/Document.xml")).toBe("WORD/document.xml");
+    });
+});
+
+describe("equivalentPartLookup (#358)", () => {
+    const names = ["word/document.xml", "WORD/document.xml", "word/%64ocument.xml", "word/media/a~b.png", "word/a%2Fb.xml"];
+
+    it.each([
+        "word/document.xml",
+        "Word/Document.xml",
+        "word/%64ocument.xml",
+        "word/media/a%7Eb.png",
+        "word/a%2fb.xml",
+        "word%2Fdocument.xml",
+        "word/other.xml",
+        "",
+    ])("chooses what findEquivalentPart chooses for %j, in either order", (target) => {
+        expect(equivalentPartLookup(names)(target)).toBe(findEquivalentPart(names, target));
+        expect(equivalentPartLookup([...names].reverse())(target)).toBe(findEquivalentPart(names, target));
     });
 });
 

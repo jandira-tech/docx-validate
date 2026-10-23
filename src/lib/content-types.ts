@@ -191,6 +191,24 @@ export const findEquivalentPart = (names: readonly string[], partName: string): 
 };
 
 /**
+ * A lookup that makes {@link findEquivalentPart}'s choice over `names`, built
+ * once, so each lookup costs one canonicalization instead of a scan of every
+ * entry (#358).
+ */
+export const equivalentPartLookup = (names: readonly string[]): ((partName: string) => string | undefined) => {
+    const exact = new Set(names);
+    const byKey = new Map<string, string>();
+    for (const name of names) {
+        const key = canonicalPartName(name);
+        const found = byKey.get(key);
+        if (found === undefined || name < found) {
+            byKey.set(key, name);
+        }
+    }
+    return (partName) => (exact.has(partName) ? partName : byKey.get(canonicalPartName(partName)));
+};
+
+/**
  * The entry in `names` that a package-relative part reference names: `\`
  * reads as `/`, a leading `/` is dropped and dot segments are resolved, then
  * the OPC-equivalent entry is taken ({@link findEquivalentPart}). Falls back
