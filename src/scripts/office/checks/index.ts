@@ -45,6 +45,7 @@ import {
 import { wordChoiceRequiresUndeclaredCheck } from "./word-choice-requires";
 import { wordSdtIdEmptyCheck } from "./word-sdt-id";
 import { wordAttachedToolbarUtf8Check } from "./word-attached-toolbar";
+import { wordNumberingPictureBulletCheck } from "./word-numbering-picture-bullet";
 import { xmlSyntaxCheck } from "./xml";
 
 /**
@@ -76,6 +77,7 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordUnknownElementCheck,
     wordLinkWithoutNamespaceCheck,
     wordMarkupCompatibilityCheck,
+    wordNumberingPictureBulletCheck,
     wordAttachedToolbarUtf8Check,
     wordSdtIdEmptyCheck,
     wordChoiceRequiresUndeclaredCheck,

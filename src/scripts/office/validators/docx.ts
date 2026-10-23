@@ -591,10 +591,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "word-duplicate-font-table-relationship":
             case "word-duplicate-web-settings-relationship":
             case "word-duplicate-settings-relationship":
-            // w:lvlPicBulletId whose value is not a w:numPicBullet id in the
-            // same numbering part makes Word offer recovery (fixture 1541).
-            // Removing that element opens clean. The p16 restart and durableId
-            // attributes on the same part stayed, and Word still opened clean.
             case "word-numbering-picture-bullet":
             // A w:footnoteReference whose w:id is not a w:footnote w:id makes
             // Word offer recovery (fixture 1829). One such reference is enough.
@@ -654,7 +650,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             return parsed.document;
         };
         await this.validateRowsWithoutCells(issues, readXml);
-        await this.validateNumberingPictureBullets(issues, readXml);
         await this.validateDanglingFootnoteReferences(issues, readXml);
         const documentXml = this.xmlFiles.find(
             (xmlFile) => baseName(xmlFile) === "document.xml" && this.relPath(xmlFile).startsWith("word/"),
@@ -700,50 +695,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             });
         }
         return finalize(issues);
-    }
-
-    /**
-     * A `w:lvlPicBulletId` whose `w:val` is not the `w:numPicBulletId` of a
-     * `w:numPicBullet` in the same numbering part makes Word offer to recover
-     * the file. One such reference is enough. Removing the reference opens
-     * clean. The check does not flag a reference that names a picture bullet
-     * present in that part.
-     */
-    private async validateNumberingPictureBullets(
-        issues: ValidationIssue[],
-        readXml: (xmlFile: string) => Promise<Document>,
-    ): Promise<void> {
-        for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) !== "numbering.xml") continue;
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const defined = new Set<string>();
-                const bullets = getElementsByTagNameNSAll(dom, ns, "numPicBullet");
-                for (let i = 0; i < bullets.length; i += 1) {
-                    const id = bullets[i]?.getAttributeNS(ns, "numPicBulletId");
-                    if (id) defined.add(id);
-                }
-                const refs = getElementsByTagNameNSAll(dom, ns, "lvlPicBulletId");
-                for (let i = 0; i < refs.length; i += 1) {
-                    const val = refs[i]?.getAttributeNS(ns, "val");
-                    if (!val || defined.has(val)) continue;
-                    issues.push({
-                        severity: "error",
-                        message:
-                            `A numbering level references picture bullet ${val}, and this part has no w:numPicBullet with that id. ` +
-                            "Microsoft Word offers to recover the file. " +
-                            "Remove the w:lvlPicBulletId, or add the matching picture bullet.",
-                        path: this.relPath(xmlFile),
-                        code: "word-numbering-picture-bullet",
-                    });
-                }
-            }
-        }
     }
 
     /**
