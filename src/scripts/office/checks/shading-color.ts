@@ -19,8 +19,10 @@
  * This check reports each value outside its declared space as a warning.
  *
  * `w:shd` may appear wherever paragraph, run, table, and cell properties go:
- * story parts (document, headers, footers, footnotes, endnotes, comments) and
- * `styles.xml`. The `w:val` pattern is not colour-typed and stays out of scope.
+ * story parts (document, headers, footers, footnotes, endnotes, comments),
+ * `styles.xml`, and `numbering.xml` (its `CT_Lvl` admits `pPr`/`rPr`, which
+ * admit `CT_Shd` — issue #303). The `w:val` pattern is not colour-typed and
+ * stays out of scope.
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
@@ -113,15 +115,16 @@ const COLOUR_ATTRIBUTES: ReadonlyMap<string, ColourSpace> = new Map(
     } satisfies Record<string, ColourSpace>),
 );
 
-/** Story parts plus styles.xml, where `CT_Shd` may legally appear. */
+/** Story parts plus styles.xml and numbering.xml, where `CT_Shd` may legally appear. */
 const shadingParts = (storyParts: readonly string[], partNames: readonly string[]): readonly string[] => [
     ...storyParts,
-    ...partNames.filter((name) => /(?:^|\/)styles\.xml$/i.test(name)),
+    ...partNames.filter((name) => /(?:^|\/)(?:styles|numbering)\.xml$/i.test(name)),
 ];
 
 export const wordShadingColorCheck: CheckDefinition = {
     id: "word-shading-color",
-    description: "Every w:shd colour attribute in the Word story parts and styles.xml holds a value its schema type allows.",
+    description:
+        "Every w:shd colour attribute in the Word story parts, styles.xml, and numbering.xml holds a value its schema type allows.",
     groups: ["story"],
     formats: ["docx"],
     requires: ["xml-syntax"],
