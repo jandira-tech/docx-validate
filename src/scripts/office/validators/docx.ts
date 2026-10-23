@@ -316,6 +316,19 @@ export interface ParagraphCounts {
  * nesting context instead of checking `.parentNode` for every element,
  * eliminating O(N*D) worst-case scaling. Prunes drawings inside deletions.
  */
+/**
+ * Drop the `*-parse` findings a check reports for a part the XML diagnostics
+ * already rejected: the check could not read the part, which is the same
+ * defect reported again.
+ */
+const withoutConsequentialParseFailures = (result: ValidationResult, malformed: ReadonlySet<string>): ValidationResult => {
+    if (malformed.size === 0) return result;
+    const issues = result.issues.filter(
+        (issue) => !(issue.path !== undefined && malformed.has(issue.path) && issue.code?.endsWith("-parse")),
+    );
+    return issues.length === result.issues.length ? result : { valid: result.valid, issues };
+};
+
 const collectDeletedRunText = (root: Document | Element, localName: string): Element[] => {
     const out: Element[] = [];
     const stack: { node: Element; inDel: boolean }[] = [];
@@ -408,8 +421,18 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     async validate(): Promise<ValidationResult> {
         this.xsdWalk = { started: false, parts: [], eligible: 0 };
         this.runContext = undefined;
+        this.malformedParts = new Set();
         const xmlOk = await this.validateXml();
-        if (!xmlOk.valid && this.profile !== "word-valid") return xmlOk;
+        // Only lenient stops at a malformed part. Word-valid and strict keep
+        // running the checks of every other part, so strict reports every
+        // code word-valid does. The malformed part itself is reported once,
+        // by its XML diagnostics.
+        if (!xmlOk.valid && this.profile === "lenient") return xmlOk;
+        this.malformedParts = new Set(
+            xmlOk.issues.flatMap((issue) => (issue.severity === "error" && issue.path !== undefined ? [issue.path] : [])),
+        );
+        const settle = async (pending: Array<Promise<ValidationResult>>): Promise<ValidationResult[]> =>
+            (await Promise.all(pending)).map((result) => withoutConsequentialParseFailures(result, this.malformedParts));
 
         const checks: Array<Promise<ValidationResult>> = [
             this.validateNamespaces(),
@@ -446,7 +469,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         if (this.profile === "word-valid") {
             // Non-XSD checks first. A blocking no returns before XSD starts.
             checks.push(this.validateWordOpenCompatibility());
-            const profiled = this.applyWordValidProfile(mergeResults(xmlOk, ...(await Promise.all(checks))));
+            const profiled = this.applyWordValidProfile(mergeResults(xmlOk, ...(await settle(checks))));
             if (!profiled.valid) return profiled;
             const xsd = await this.validateAgainstXsd();
             return this.applyWordValidProfile(mergeResults(profiled, xsd));
@@ -456,7 +479,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // rule runs here too, at its native error severity.
         if (this.profile === "strict") checks.push(this.validateWordOpenCompatibility());
         checks.push(this.validateAgainstXsd());
-        return mergeResults(xmlOk, ...(await Promise.all(checks)));
+        return mergeResults(xmlOk, ...(await settle(checks)));
     }
 
     /**
