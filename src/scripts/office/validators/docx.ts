@@ -57,10 +57,12 @@ import {
     XML_NAMESPACE,
 } from "./base";
 
-export const WORD_2006_NAMESPACE = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
-export const WORD_STRICT_NAMESPACE = "http://purl.oclc.org/ooxml/wordprocessingml/main";
-/** Python: `WORD_PARAGRAPH_NAMESPACES = (WORD_2006_NAMESPACE, WORD_STRICT_NAMESPACE)` */
-export const WORD_PARAGRAPH_NAMESPACES: readonly [string, string] = [WORD_2006_NAMESPACE, WORD_STRICT_NAMESPACE];
+import type { ValidationContext } from "../../../lib/validation-context";
+import { wordRowWithoutCellCheck } from "../checks/tables";
+import { contextFromDirectory } from "../package-context";
+import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
+
+export { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
 /** OpenXmlPowerTools DocumentBuilder Insert — `PtOpenXml.ptOpenXml` in PtOpenXmlUtil.cs */
 const DOCUMENT_BUILDER_INSERT_NAMESPACE = "http://powertools.codeplex.com/documentbuilder/2011/insert";
 const DOCUMENT_BUILDER_INSERT_NAMESPACES: ReadonlySet<string> = new Set([DOCUMENT_BUILDER_INSERT_NAMESPACE]);
@@ -383,6 +385,18 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     private originalDocumentRoot: Element | null = null;
     private originalDocumentRootFailed = false;
 
+    /**
+     * The package as the named checks see it, built once per `validate()` run
+     * so its read and parse caches never outlive the run (auto-repair rewrites
+     * parts between runs).
+     */
+    private runContext: ValidationContext | undefined;
+
+    private context(): ValidationContext {
+        this.runContext ??= contextFromDirectory(this.unpackedDir);
+        return this.runContext;
+    }
+
     // ----- top-level entry point ----------------------------------------------
 
     /**
@@ -391,6 +405,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      */
     async validate(): Promise<ValidationResult> {
         this.xsdWalk = { started: false, parts: [], eligible: 0 };
+        this.runContext = undefined;
         const xmlOk = await this.validateXml();
         if (!xmlOk.valid && this.profile !== "word-valid") return xmlOk;
 
@@ -618,14 +633,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     private async validateWordOpenCompatibility(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const documents = new Map<string, Promise<Document>>();
-        const readXml = (xmlFile: string): Promise<Document> => {
-            let document = documents.get(xmlFile);
-            if (!document) {
-                document = fs.readFile(xmlFile, "utf-8").then((source) => parseXml(source));
-                documents.set(xmlFile, document);
-            }
-            return document;
+        // Every Word check reads through the run's context, so a part is read
+        // and parsed once however many checks inspect it.
+        const ctx = this.context();
+        const readXml = async (xmlFile: string): Promise<Document> => {
+            const parsed = ctx.xml(this.relPath(xmlFile));
+            if (!parsed) throw new Error(`Part not found: ${this.relPath(xmlFile)}`);
+            if (!parsed.ok) throw new Error(parsed.message);
+            return parsed.document;
         };
         await this.validateWordContentTypes(issues, readXml);
         await this.validateDrawingScalarTextWhitespace(issues, readXml);
@@ -977,30 +992,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * `w:ins`, `w:del`, `w:sdt`, or a nested table still counts, because
      * it is a descendant of that row.
      */
-    private async validateRowsWithoutCells(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const rows = getElementsByTagNameNSAll(dom, ns, "tr");
-                for (let i = 0; i < rows.length; i += 1) {
-                    const row = rows[i];
-                    if (!row) continue;
-                    if (getElementsByTagNameNSAll(row, ns, "tc").length > 0) continue;
-                    issues.push({
-                        severity: "error",
-                        message:
-                            "A table row contains no w:tc cell. Microsoft Word cannot open the file. " + "Remove the row or add a cell.",
-                        path: this.relPath(xmlFile),
-                        code: "word-row-without-cell",
-                    });
-                }
-            }
-        }
+    /** Adapter: the rule lives in the named check `word-row-without-cell`. */
+    private async validateRowsWithoutCells(issues: ValidationIssue[], _readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
+        issues.push(...(await wordRowWithoutCellCheck.run(this.context())));
     }
 
     /**
