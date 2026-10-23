@@ -83,10 +83,15 @@ export const decodeXmlBytes = (bytes: Uint8Array): string => {
     if (bytes.length >= 2 && bytes[0] === 0xfe && bytes[1] === 0xff) {
         return new TextDecoder("utf-16be").decode(bytes.subarray(2));
     }
-    // No BOM. Read the declaration as ASCII so the encoding name is legible
-    // even when the body is UTF-16 (whose NUL padding is dropped so the
-    // declaration reads as text rather than as interleaved bytes).
-    const head = new TextDecoder("latin1").decode(bytes.subarray(0, Math.min(bytes.length, 200))).replaceAll("\0", "");
+    // No BOM. A 16-bit entity puts a NUL beside its first (ASCII) character,
+    // so the byte order shows in the first two bytes (XML 1.0 Appendix F).
+    // Read the declaration with that decoder, in full: it may carry any
+    // amount of whitespace, so no fixed byte window is safe. Otherwise the
+    // declaration is ASCII and the first 200 bytes are plenty to name UTF-16.
+    const sixteenBit = bytes.length >= 2 && (bytes[0] === 0) !== (bytes[1] === 0);
+    const head = sixteenBit
+        ? new TextDecoder(bytes[0] === 0 ? "utf-16be" : "utf-16le").decode(bytes)
+        : new TextDecoder("latin1").decode(bytes.subarray(0, Math.min(bytes.length, 200)));
     const declared = /^\s*<\?xml[^>]*encoding\s*=\s*["']([^"']+)["']/i
         .exec(head)?.[1]
         ?.toLowerCase()
