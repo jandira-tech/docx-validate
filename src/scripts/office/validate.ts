@@ -708,16 +708,19 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
     // Only a run that walks schemas needs the engine. The default DOCX run is
     // `word-valid`, which judges the package with structural Word checks and
     // compiles no schema, so it must not fail because the engine is broken
-    // (#318). A partial run never touches the engine either, so it skips the
-    // probe (and so does any invocation that exits before validating).
+    // (#318). A PPTX walks its schemas under every profile, so it always
+    // probes; an XLSX reaches no validator, so it never does (#341). A partial
+    // run never touches the engine either, so it skips the probe (and so does
+    // any invocation that exits before validating).
     const dispatchSuffix = path.extname(opts.original ?? target).toLowerCase();
-    const profile = resolveMode(formatForSuffix(dispatchSuffix), {
+    const format = formatForSuffix(dispatchSuffix);
+    const profile = resolveMode(format, {
         profile: opts.profile,
         strict: opts.strict,
         quick: opts.quick,
         checks,
     }).profile;
-    if (!isPartialRequest({ quick: opts.quick, checks }) && profileWalksSchemas(profile)) {
+    if (!isPartialRequest({ quick: opts.quick, checks }) && profileWalksSchemas(format, profile)) {
         try {
             await BaseSchemaValidator.assertXsdValidationAvailable();
         } catch (err) {
@@ -759,17 +762,24 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
     }
 
     // A partial run is not a verdict on the whole document, so it discloses
-    // what it left out and never claims that every validation passed.
+    // what it left out and never claims that every validation passed. The
+    // omitted registry ids are only part of that: the format validator's own
+    // rules and the schema walk have no id, so they are named separately. A
+    // PPTX run omits no id at all, yet skips both (#339).
+    const partial = isPartialRequest({ quick: opts.quick, checks });
     const omitted = result.metadata?.omittedChecks ?? [];
-    if (omitted.length > 0) {
-        process.stdout.write(`Omitted checks (not run): ${omitted.join(", ")}\n`);
+    if (partial) {
+        if (omitted.length > 0) {
+            process.stdout.write(`Omitted checks (not run): ${omitted.join(", ")}\n`);
+        }
         if (opts.quick === true) {
             process.stdout.write(`Quick preset groups: ${QUICK_CHECK_GROUPS.join(", ")}\n`);
         }
+        process.stdout.write(`${partialRunGaps(dispatchSuffix, profile)}\n`);
     }
 
     if (result.valid) {
-        if (omitted.length === 0) {
+        if (!partial) {
             process.stdout.write("All validations PASSED!\n");
         } else {
             process.stdout.write(
@@ -795,6 +805,19 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
     }
 
     return result.valid ? 0 : 1;
+}
+
+/**
+ * What a partial run skipped beyond its omitted check ids: the rules of the
+ * format validator a full run would reach and, under a profile that walks
+ * schemas, the schema walk (#339). A suffix with no format validator (`.xlsx`)
+ * names none.
+ */
+function partialRunGaps(suffix: string, profile: Profile): string {
+    const validator = suffix === ".docx" || suffix === ".docm" ? "DOCX" : suffix === ".pptx" ? "PPTX" : undefined;
+    if (validator === undefined) return "Also not run: everything outside the selected checks.";
+    const schemaWalk = profileWalksSchemas(formatForSuffix(suffix), profile) ? " and its schema walk" : "";
+    return `Also not run: the ${validator} validator's own rules${schemaWalk}.`;
 }
 
 runCli(import.meta.url, () => runValidateFromArgv(process.argv.slice(2)));

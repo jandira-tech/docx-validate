@@ -107,14 +107,17 @@ export const defaultProfileForFormat = (format: PackageFormat): Profile => (form
 export const isPartialRequest = (request: ModeRequest): boolean => request.quick === true || (request.checks?.length ?? 0) > 0;
 
 /**
- * True when a run under this profile compiles and walks XSD schemas.
+ * True when a full run of this format under this profile compiles and walks
+ * XSD schemas.
  *
- * `lenient` and `strict` both walk the schemas. `word-valid` judges a
- * package with structural Word checks and compiles no schema, so it never
- * needs the XSD engine: a run under it must neither probe the engine nor
- * fail because the engine is broken (#318).
+ * A DOCX walks them under `lenient` and `strict`. Under `word-valid` it is
+ * judged by structural Word checks and compiles no schema, so it never needs
+ * the XSD engine: such a run must neither probe the engine nor fail because
+ * the engine is broken (#318). The PPTX validator walks its schemas under
+ * every profile, and no format validator runs for an XLSX (#341).
  */
-export const profileWalksSchemas = (profile: Profile): boolean => profile === "lenient" || profile === "strict";
+export const profileWalksSchemas = (format: PackageFormat, profile: Profile): boolean =>
+    format === "pptx" || (format === "docx" && (profile === "lenient" || profile === "strict"));
 
 /**
  * Reject a request whose selectors contradict each other. Strict is the
