@@ -1274,6 +1274,21 @@ describe("DOCXSchemaValidator", () => {
             });
         });
 
+        it("reports all three independent structural codes for the incomplete inline picture", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "header1.xml"), `<?xml version="1.0"?>${inlinePicture}`);
+                const result = await new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" }).validate();
+                expect(result.valid).toBe(false);
+                expect(result.issues).toEqual(
+                    expect.arrayContaining([
+                        expect.objectContaining({ code: "word-drawing-extent-missing", severity: "error", path: "word/header1.xml" }),
+                        expect.objectContaining({ code: "word-picture-nvpicpr-missing", severity: "error", path: "word/header1.xml" }),
+                        expect.objectContaining({ code: "word-picture-sppr-missing", severity: "error", path: "word/header1.xml" }),
+                    ]),
+                );
+            });
+        });
+
         it("repairs minimal inline pictures without changing the image relationship", async () => {
             await withTempDir(async (dir) => {
                 const headerXml = path.join(dir, "word", "header1.xml");
