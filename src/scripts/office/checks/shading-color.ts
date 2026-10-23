@@ -34,6 +34,10 @@ const HEX_COLOR_RGB = /^[0-9A-Fa-f]{6}$/;
 const UCHAR_HEX = /^[0-9A-Fa-f]{2}$/;
 /** `ST_HexColorAuto`: the enumeration's single member. */
 const HEX_COLOR_AUTO = "auto";
+// xsd:hexBinary fixes its whiteSpace facet to collapse, so the schema
+// validates hex colours after trimming XML whitespace; the xsd:string
+// enumerations ("auto", theme names) keep theirs.
+const collapseHex = (value: string): string => value.replace(/^[ \t\n\r]+|[ \t\n\r]+$/g, "");
 /** `ST_ThemeColor` enumeration, wml.xsd lines 3449-3469. */
 const THEME_COLORS: ReadonlySet<string> = new Set([
     "dark1",
@@ -69,12 +73,12 @@ const COLOUR_ATTRIBUTES: ReadonlyMap<string, ColourSpace> = new Map(
         color: {
             type: "ST_HexColor",
             allowed: `"auto" or exactly six hexadecimal digits (for example "DDDDDD")`,
-            isValid: (value): boolean => value === HEX_COLOR_AUTO || HEX_COLOR_RGB.test(value),
+            isValid: (value): boolean => value === HEX_COLOR_AUTO || HEX_COLOR_RGB.test(collapseHex(value)),
         },
         fill: {
             type: "ST_HexColor",
             allowed: `"auto" or exactly six hexadecimal digits (for example "DDDDDD")`,
-            isValid: (value): boolean => value === HEX_COLOR_AUTO || HEX_COLOR_RGB.test(value),
+            isValid: (value): boolean => value === HEX_COLOR_AUTO || HEX_COLOR_RGB.test(collapseHex(value)),
         },
         themeColor: {
             type: "ST_ThemeColor",
@@ -89,22 +93,22 @@ const COLOUR_ATTRIBUTES: ReadonlyMap<string, ColourSpace> = new Map(
         themeTint: {
             type: "ST_UcharHexNumber",
             allowed: `exactly two hexadecimal digits (for example "66")`,
-            isValid: (value): boolean => UCHAR_HEX.test(value),
+            isValid: (value): boolean => UCHAR_HEX.test(collapseHex(value)),
         },
         themeShade: {
             type: "ST_UcharHexNumber",
             allowed: `exactly two hexadecimal digits (for example "66")`,
-            isValid: (value): boolean => UCHAR_HEX.test(value),
+            isValid: (value): boolean => UCHAR_HEX.test(collapseHex(value)),
         },
         themeFillTint: {
             type: "ST_UcharHexNumber",
             allowed: `exactly two hexadecimal digits (for example "66")`,
-            isValid: (value): boolean => UCHAR_HEX.test(value),
+            isValid: (value): boolean => UCHAR_HEX.test(collapseHex(value)),
         },
         themeFillShade: {
             type: "ST_UcharHexNumber",
             allowed: `exactly two hexadecimal digits (for example "66")`,
-            isValid: (value): boolean => UCHAR_HEX.test(value),
+            isValid: (value): boolean => UCHAR_HEX.test(collapseHex(value)),
         },
     } satisfies Record<string, ColourSpace>),
 );
