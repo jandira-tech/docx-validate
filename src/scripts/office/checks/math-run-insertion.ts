@@ -15,6 +15,7 @@ export const mathRunInsertionCheck: CheckDefinition = {
     description: "Report tracked insertions nested directly inside math runs instead of wrapping the runs.",
     groups: ["math", "tracked-changes"],
     formats: ["docx"],
+    requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => {
         const issues: ValidationIssue[] = [];
         // Math runs occur in stories, not in the styles content model.

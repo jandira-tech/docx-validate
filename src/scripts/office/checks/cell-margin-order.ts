@@ -108,6 +108,7 @@ export const wordCellMarginOrderCheck: CheckDefinition = {
         "Every w:tblCellMar and w:tcMar lists its margins in the CT_TblCellMar / CT_TcMar sequence order top, start, left, bottom, end, right.",
     groups: ["tables"],
     formats: ["docx"],
+    requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => {
         const issues: ValidationIssue[] = [];
         for (const part of marginParts(ctx)) {

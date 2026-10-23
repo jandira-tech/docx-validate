@@ -15,6 +15,7 @@ const missingPictureChildCheck = (id: string, childName: string, position: strin
     description: `Pictures have direct pic:${childName} properties.`,
     groups: ["drawings"],
     formats: ["docx"],
+    requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => {
         const issues: ValidationIssue[] = [];
         for (const part of ctx.storyParts()) {
