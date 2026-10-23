@@ -33,6 +33,7 @@ import {
     wordRunPropertiesMisplacedCheck,
     wordUnderlineMisplacedCheck,
 } from "../src/scripts/office/checks/word-run-placement";
+import { SECTION_PROPERTIES_PARENTS, wordSectionPropertiesMisplacedCheck } from "../src/scripts/office/checks/word-section-properties";
 import { validate, type ValidateRunResult } from "../src/scripts/office/validate";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -170,6 +171,7 @@ describe("content-model tables pinned to the bundled wml.xsd", { timeout: 30_000
         expect(legalParentsInWml(index, "rPr")).toEqual(RUN_PROPERTIES_PARENTS[W]);
         expect(legalParentsInWml(index, "u")).toEqual(UNDERLINE_PARENTS);
         expect(legalParentsInWml(index, "pPr")).toEqual(PARAGRAPH_PROPERTIES_PARENTS);
+        expect(legalParentsInWml(index, "sectPr")).toEqual(SECTION_PROPERTIES_PARENTS);
     });
 
     it("the math r and ctrlPr parents come from shared-math.xsd referencing w:EG_RPr", async () => {
@@ -177,6 +179,30 @@ describe("content-model tables pinned to the bundled wml.xsd", { timeout: 30_000
         expect(math).toMatch(/<xsd:complexType name="CT_CtrlPr">[\s\S]*?<xsd:group ref="w:EG_RPrMath" minOccurs="0"\/>/);
         expect(math).toMatch(/<xsd:complexType name="CT_R">[\s\S]*?<xsd:group ref="w:EG_RPr" minOccurs="0"\/>/);
         expect(RUN_PROPERTIES_PARENTS[MATH]).toEqual(new Set(["ctrlPr", "r"]));
+    });
+});
+
+describe("section-properties placement Word evidence", () => {
+    it("rejects a synthetically misplaced sectPr through validate() without any XSD diagnostic", async () => {
+        // No vendored fixture isolates a misplaced w:sectPr; the rejection
+        // class is the corpus-probe one documented in word-invalid-fixtures/
+        // README.md. Build the single defect from the minimal package.
+        const { buildDocx, MINIMAL_PARTS } = await import("./support/minimal-docx");
+        const { writeFileSync } = await import("node:fs");
+        const { withTempDir } = await import("../src/lib/run-cli");
+        const defective = MINIMAL_PARTS["word/document.xml"]!.replace(
+            "<w:sectPr>",
+            '<w:p><w:sectPr><w:pgSz w:w="1" w:h="1"/></w:sectPr></w:p><w:sectPr>',
+        );
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "misplaced-sectpr.docx");
+            writeFileSync(file, await buildDocx({ ...MINIMAL_PARTS, "word/document.xml": defective }));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            expect(errorCodes(result)).toContain(wordSectionPropertiesMisplacedCheck.id);
+            await rejectingNoXsd(file, wordSectionPropertiesMisplacedCheck.id);
+        });
+        expect(await wordSectionPropertiesMisplacedCheck.run(await ValidationContext.fromEntries(MINIMAL_PARTS))).toEqual([]);
     });
 });
 
