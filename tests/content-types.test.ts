@@ -17,6 +17,7 @@ import {
     canonicalPartName,
     CONTENT_TYPES_NAMESPACE,
     findEquivalentPart,
+    resolvePartName,
     normalizePartName,
     parseContentTypes,
     partExtension,
@@ -133,6 +134,33 @@ describe("findEquivalentPart (#344)", () => {
 
     it.each(["word%2Fdocument.xml", "word/other.xml", ""])("finds nothing for %j", (target) => {
         expect(findEquivalentPart(names, target)).toBeUndefined();
+    });
+
+    it("picks the same equivalent entry whatever order the names come in (#349)", () => {
+        const entries = ["word/document.xml", "WORD/document.xml", "word/%64ocument.xml"];
+        expect(findEquivalentPart(entries, "Word/Document.xml")).toBe("WORD/document.xml");
+        expect(findEquivalentPart([...entries].reverse(), "Word/Document.xml")).toBe("WORD/document.xml");
+    });
+});
+
+describe("resolvePartName (#349)", () => {
+    const names = ["word/document.xml", "word/media/a~b.png"];
+
+    it.each([
+        ["word\\document.xml", "word/document.xml"],
+        ["/word/document.xml", "word/document.xml"],
+        ["word/./media/../document.xml", "word/document.xml"],
+        ["WORD\\Document.XML", "word/document.xml"],
+        ["word/media/a%7Eb.png", "word/media/a~b.png"],
+    ])("resolves %j to the entry it names", (target, entry) => {
+        expect(resolvePartName(names, target)).toBe(entry);
+    });
+
+    it.each([
+        ["word%2Fdocument.xml", "word%2Fdocument.xml"],
+        ["word\\other.xml", "word/other.xml"],
+    ])("falls back to the normalized name %j when no entry is equivalent", (target, normalized) => {
+        expect(resolvePartName(names, target)).toBe(normalized);
     });
 });
 

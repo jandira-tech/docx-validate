@@ -19,12 +19,9 @@
  * outside this rule; their mce-root-ignored remains informational.
  */
 
-import path from "node:path";
-
 import type { CheckDefinition } from "../../../lib/check-registry";
-import { findEquivalentPart } from "../../../lib/content-types";
+import { resolvePartName } from "../../../lib/content-types";
 import type { ValidationIssue } from "../../../lib/types";
-import { normalizePartName } from "../../../lib/validation-context";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
 
@@ -52,10 +49,9 @@ export const wordDocumentRootCheck: CheckDefinition = {
             ) {
                 continue;
             }
-            const target = path.posix.normalize(normalizePartName(relationship.getAttribute("Target") ?? ""));
             // OPC part names compare ASCII case-insensitively with unreserved
             // escapes decoded, so `WORD/document.xml` names word/document.xml (#344).
-            const part = findEquivalentPart(ctx.partNames, target) ?? target;
+            const part = resolvePartName(ctx.partNames, relationship.getAttribute("Target") ?? "");
             const parsed = ctx.effectiveXml(part);
             // XML syntax and missing targets belong to their existing checks.
             if (!parsed?.ok) continue;

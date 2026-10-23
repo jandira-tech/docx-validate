@@ -46,8 +46,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Return `unavailable` when a Word dialog is already showing before verification, without opening or closing anything; dismiss dialogs raised by this run during macOS cleanup so later probes remain attributable ([#315](https://github.com/jandira-tech/docx-validate/issues/315)).
 - `word-document-root` finds the main part behind an OPC-equivalent officeDocument target (`WORD/document.xml`, `word/%64ocument.xml`), which let a foreign main root pass Word-valid. The schema walk's main-part test compares canonical part names, so an escaped reserved character (`word%2Fdocument.xml`) no longer names `word/document.xml` ([#344](https://github.com/jandira-tech/docx-validate/issues/344)).
 
+- `word-document-root` and the schema walk's main-part test resolve the officeDocument target through one shared resolver (`resolvePartName`), so they agree: a backslash target (`word\document.xml`) now names the main part for the schema walk too, and an ignored main root behind it is an error again rather than info. Of two equivalent entries, only the one the target names is main; `findEquivalentPart` picks it whatever order the names come in ([#349](https://github.com/jandira-tech/docx-validate/issues/349)).
+
 ### Known limitations
 
+- A package that holds two equivalent part names (for example `WORD/document.xml` and `word/document.xml`), which ECMA-376 Part 2 forbids ([M1.12]), is not reported. The checks resolve to one entry deterministically, but nothing flags the package; how Word treats it has not been observed yet ([#351](https://github.com/jandira-tech/docx-validate/issues/351)).
 - The relationship checks (`rels-broken`, `rels-unreferenced`, `rels-target-missing`) resolve targets through the filesystem, not by OPC part-name equivalence. An equivalent target spelling is reported as unreferenced or broken (errors under lenient and strict, warnings under Word-valid), and the result depends on the host filesystem's case sensitivity ([#346](https://github.com/jandira-tech/docx-validate/issues/346)).
 
 ### Security

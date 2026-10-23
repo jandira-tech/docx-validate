@@ -89,6 +89,31 @@ describe("markup compatibility XSD integration", { timeout: 240_000 }, () => {
             expect.objectContaining({ severity: "error", path: "word/document.xml" }),
         ]);
     });
+    it("finds the main part behind a backslash target when its root is ignored (#349)", async () => {
+        const result = await check({
+            ...MINIMAL_PARTS,
+            "_rels/.rels": MINIMAL_PARTS["_rels/.rels"].replace('Target="word/document.xml"', 'Target="word\\document.xml"'),
+            "word/document.xml": `<e:garbage xmlns:e="urn:future" xmlns:mc="${NS.MC}" mc:Ignorable="e"/>`,
+        });
+        expect(result.issues.filter((issue) => issue.code === "mce-main-root-ignored")).toEqual([
+            expect.objectContaining({ severity: "error", path: "word/document.xml" }),
+        ]);
+    });
+    it("calls main only the entry the relationship names when two entries are equivalent (#349)", async () => {
+        // word/%64ocument.xml and word/document.xml are equivalent part names;
+        // the root check judges the exact entry, so the schema walk must too.
+        const result = await check({
+            ...MINIMAL_PARTS,
+            "_rels/.rels": MINIMAL_PARTS["_rels/.rels"].replace('Target="word/document.xml"', 'Target="word/%64ocument.xml"'),
+            "word/%64ocument.xml": MINIMAL_PARTS["word/document.xml"],
+            "word/document.xml": `<e:garbage xmlns:e="urn:future" xmlns:mc="${NS.MC}" mc:Ignorable="e"/>`,
+        });
+        expect(result.issues.filter((issue) => issue.code === "word-document-root")).toEqual([]);
+        expect(result.issues.filter((issue) => issue.code === "mce-main-root-ignored")).toEqual([]);
+        expect(result.issues.filter((issue) => issue.path === "word/document.xml" && issue.code === "mce-root-ignored")).toEqual([
+            expect.objectContaining({ severity: "info" }),
+        ]);
+    });
     it("does not take an escaped reserved character for its literal when finding the main part (#344)", async () => {
         // `%2F` is an escaped "/": the target names a part other than word/document.xml.
         const result = await check({
