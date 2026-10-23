@@ -36,6 +36,18 @@ describe("markup compatibility", () => {
         expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
         expect(getElementsByTagNameAll(result.document).map((node) => node.localName)).toEqual(["root", "p"]);
     });
+    it("does not inspect MustUnderstand on a discarded element (#295)", () => {
+        const result = process(wrap('<e:discard mc:MustUnderstand="e"/>', 'xmlns:e="urn:future" mc:Ignorable="e"'));
+        expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+        expect(getElementsByTagNameAll(result.document).map((node) => node.localName)).toEqual(["root"]);
+    });
+    it("still enforces MustUnderstand on retained and ProcessContent elements (#295)", () => {
+        for (const content of ['<w:p mc:MustUnderstand="e"/>', '<e:keep mc:MustUnderstand="e"><w:p/></e:keep>']) {
+            const result = process(wrap(content, 'xmlns:e="urn:future" mc:Ignorable="e" mc:ProcessContent="e:keep"'));
+            expect(result.issues).toEqual([expect.objectContaining({ severity: "error", code: "mce-must-understand" })]);
+            expect(getElementsByTagNameAll(result.document).map((node) => node.localName)).toEqual(["root", "p"]);
+        }
+    });
     it("removes non-ignorable Office attributes and aggregates one namespace-aware warning per part", () => {
         const source = parseXml(
             wrap(

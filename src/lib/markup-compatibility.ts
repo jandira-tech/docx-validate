@@ -147,6 +147,12 @@ export const applyMarkupCompatibility = (
                 processContent.add(`${uri}#${local}`);
             }
         }
+        const elementNamespace = element.namespaceURI || "";
+        const ignored = !inherited.extensionPayload && ignorable.has(elementNamespace) && !opts.understood.has(elementNamespace);
+        if (ignored && !processContent.has(`${elementNamespace}#${element.localName}`) && !processContent.has(`${elementNamespace}#*`)) {
+            element.parentNode!.removeChild(element);
+            return;
+        }
         for (const prefix of tokens(element.getAttributeNS(NS.MC, "MustUnderstand") || "")) {
             const uri = namespaceUri(element, prefix);
             if (!uri || !opts.understood.has(uri)) {
@@ -251,16 +257,11 @@ export const applyMarkupCompatibility = (
             unwrap(element);
             return;
         }
-        const elementNamespace = element.namespaceURI || "";
-        if (!inherited.extensionPayload && ignorable.has(elementNamespace) && !opts.understood.has(elementNamespace)) {
-            if (processContent.has(`${elementNamespace}#${element.localName}`) || processContent.has(`${elementNamespace}#*`)) {
-                for (const child of children(element)) {
-                    visit(child, context);
-                }
-                unwrap(element);
-            } else {
-                element.parentNode!.removeChild(element);
+        if (ignored) {
+            for (const child of children(element)) {
+                visit(child, context);
             }
+            unwrap(element);
             return;
         }
         for (const child of children(element)) {
