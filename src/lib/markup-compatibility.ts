@@ -124,7 +124,13 @@ export const applyMarkupCompatibility = (
             // Word understands Office extension attributes even when the part
             // omits Ignorable. The ISO schemas cannot validate these attributes;
             // remove them only from this clone and diagnose the missing directive.
-            if (attr.namespaceURI?.startsWith("http://schemas.microsoft.com/office/") && !ignorable.has(attr.namespaceURI)) {
+            // A namespace the consumer understands (a standalone extension
+            // part's own schema) keeps its attributes.
+            if (
+                attr.namespaceURI?.startsWith("http://schemas.microsoft.com/office/") &&
+                !ignorable.has(attr.namespaceURI) &&
+                !opts.understood.has(attr.namespaceURI)
+            ) {
                 const names = undeclaredExtensions.get(attr.namespaceURI) ?? new Set<string>();
                 names.add(attr.name);
                 undeclaredExtensions.set(attr.namespaceURI, names);

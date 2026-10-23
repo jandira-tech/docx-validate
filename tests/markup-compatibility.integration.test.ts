@@ -9,6 +9,7 @@ import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import { NS, type Profile } from "../src/lib/types";
 import { validate } from "../src/scripts/office/validate";
+import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
 const WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
@@ -222,4 +223,18 @@ describe("markup compatibility XSD integration", { timeout: 240_000 }, () => {
             expect(result.xsdWalk.parts, profile).toContain("word/txbx1.xml");
         }
     });
+});
+
+describe("markup compatibility: standalone extension parts (#288)", { timeout: 120_000 }, () => {
+    it("schema-validates word/commentsExtended.xml with its own w15 attributes intact", async () =>
+        withTempDir(async (dir) => {
+            const file = path.join(dir, "word", "commentsExtended.xml");
+            await fs.mkdir(path.dirname(file), { recursive: true });
+            await fs.writeFile(file, `<w15:commentsEx xmlns:w15="${NS.W15}"><w15:commentEx w15:paraId="00000001"/></w15:commentsEx>`);
+            for (const profile of ["lenient", "strict"] as const) {
+                const outcome = await new BaseSchemaValidator({ unpackedDir: dir, profile }).validateFileAgainstXsd(file);
+                expect(outcome.valid, profile).toBe(true);
+                expect(outcome.issues ?? [], profile).toEqual([]);
+            }
+        }));
 });
