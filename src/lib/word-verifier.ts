@@ -246,7 +246,11 @@ export const verifyInWord = async (bytes: Uint8Array, opts: WordVerifyOptions = 
 
     const platform = transport.platform();
     const fileSha256 = createHash("sha256").update(bytes).digest("hex");
-    const version = await transport.version();
+    // #320: version and availability are transport calls like any other, so
+    // they race the same total budget. An overrun of version() omits the
+    // version; an overrun of available() ends the run as timeout.
+    const versionReport = await callWithinDeadline(clock, deadline, () => transport.version());
+    const version = versionReport === deadlineExceeded ? undefined : versionReport;
     const observedAt = new Date(clock.now()).toISOString();
     const finish = (outcome: WordOutcome, details: string, elapsedMs: number): WordVerification => ({
         requested: true,
@@ -264,7 +268,11 @@ export const verifyInWord = async (bytes: Uint8Array, opts: WordVerifyOptions = 
     if (platform !== "darwin") {
         return finish("unavailable", `Word verification is macOS-only; platform is ${platform}`, 0);
     }
-    if (!(await transport.available())) {
+    const availability = await callWithinDeadline(clock, deadline, () => transport.available());
+    if (availability === deadlineExceeded) {
+        return finish("timeout", `the availability check did not settle within the ${timeoutMs} ms budget`, clock.now() - started);
+    }
+    if (!availability) {
         return finish("unavailable", "Microsoft Word is not installed", 0);
     }
 

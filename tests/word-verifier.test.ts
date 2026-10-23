@@ -745,6 +745,108 @@ describe("verifyInWord: a dialog already showing before the open (#315)", () => 
     });
 });
 
+describe("verifyInWord: the version and availability calls race the budget (#320)", () => {
+    it("keeps a version that settles within the budget", async () => {
+        const clock = new FakeClock();
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            version: async () => {
+                clock.advance(2_000);
+                return { version: "16.89", build: "24091315" };
+            },
+            available: async () => true,
+            open: async () => undefined,
+            observe: async (name) => openDoc(name),
+            close: async () => undefined,
+        };
+        const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 10_000 });
+        expect(result.outcome).toBe("clean-open");
+        expect(result.wordVersion).toBe("16.89");
+        expect(result.wordBuild).toBe("24091315");
+    });
+
+    it("omits the version when its call settles only after the budget is spent", async () => {
+        const clock = new FakeClock();
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            version: async () => {
+                // The budget expires while the call is in flight; it answers only after.
+                await Promise.resolve().then(() => clock.advance(5_000));
+                return { version: "16.89" };
+            },
+            available: async () => true,
+            open: async () => undefined,
+            observe: async (name) => openDoc(name),
+            close: async () => undefined,
+        };
+        const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 5_000 });
+        expect(result.outcome).toBe("timeout");
+        expect(result.wordVersion).toBeUndefined();
+        expect(result.observationMs).toBeLessThanOrEqual(5_000);
+    });
+
+    it("ends as timeout when the availability call settles only after the budget is spent", async () => {
+        const clock = new FakeClock();
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            version: async () => undefined,
+            available: async () => {
+                // The budget expires while the call is in flight; it answers only after.
+                await Promise.resolve().then(() => clock.advance(5_000));
+                return true;
+            },
+            open: async () => undefined,
+            observe: async (name) => openDoc(name),
+            close: async () => undefined,
+        };
+        const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 5_000 });
+        expect(result.outcome).toBe("timeout");
+        expect(result.details).toContain("the availability check did not settle");
+        expect(result.observationMs).toBeLessThanOrEqual(5_000);
+    });
+
+    it("settles within the budget when the availability call never settles", async () => {
+        const clock = new FakeClock();
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            version: async () => undefined,
+            available: () => {
+                const never = new Promise<boolean>(() => undefined);
+                // The budget expires while the call is still in flight.
+                queueMicrotask(() => clock.advance(5_000));
+                return never;
+            },
+            open: async () => undefined,
+            observe: async (name) => openDoc(name),
+            close: async () => undefined,
+        };
+        const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 5_000 });
+        expect(result.outcome).toBe("timeout");
+        expect(result.details).toContain("the availability check did not settle");
+        expect(clock.nowValue).toBeLessThanOrEqual(5_000);
+    });
+
+    it("settles within the budget when the version call never settles", async () => {
+        const clock = new FakeClock();
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            version: () => {
+                const never = new Promise<{ version: string }>(() => undefined);
+                queueMicrotask(() => clock.advance(5_000));
+                return never;
+            },
+            available: async () => true,
+            open: async () => undefined,
+            observe: async (name) => openDoc(name),
+            close: async () => undefined,
+        };
+        const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 5_000 });
+        expect(result.outcome).toBe("timeout");
+        expect(result.wordVersion).toBeUndefined();
+        expect(clock.nowValue).toBeLessThanOrEqual(5_000);
+    });
+});
+
 describe("classifyWordDialog", () => {
     it("returns null when no dialog text is present", () => {
         expect(classifyWordDialog("")).toBeNull();
