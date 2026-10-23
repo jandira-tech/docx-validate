@@ -142,6 +142,34 @@ describe("verifyInWord", () => {
         expect(transport.calls.filter((c) => c.startsWith("close:"))).toEqual([`close:${documentName}`]);
     });
 
+    it("identifies our document by its window title when Word's document list comes back empty", async () => {
+        // Real Word sometimes answers `name of every document` with `missing value`
+        // while the document window is up; the title is "<stem>  -  <mode>".
+        const windowOnly = (name: string): WordSnapshot => ({
+            processAlive: true,
+            documentNames: [],
+            windowNames: [`${name.replace(/\.docx$/, "")}  -  Compatibility Mode`],
+            dialogText: "",
+            dialogButtons: [],
+        });
+        const transport = new FakeTransport({ snapshots: [windowOnly, windowOnly, windowOnly, windowOnly, windowOnly] });
+        const result = await verifyInWord(BYTES, { transport, clock: new FakeClock() });
+        expect(result.outcome).toBe("clean-open");
+    });
+
+    it("does not accept a window whose title only resembles our document", async () => {
+        const lookalike = (name: string): WordSnapshot => ({
+            processAlive: true,
+            documentNames: [],
+            windowNames: [`${name.replace(/\.docx$/, "")}0  -  Compatibility Mode`, "Quarterly Report  -  Compatibility Mode"],
+            dialogText: "",
+            dialogButtons: [],
+        });
+        const transport = new FakeTransport({ snapshots: [lookalike] });
+        const result = await verifyInWord(BYTES, { transport, clock: new FakeClock(), timeoutMs: 5000 });
+        expect(result.outcome).toBe("timeout");
+    });
+
     it("does not count as open while only an unrelated document is visible (times out instead of clean-open)", async () => {
         const transport = new FakeTransport({
             snapshots: [() => ({ processAlive: true, documentNames: ["Someone Elses Doc.docx"], dialogText: "", dialogButtons: [] })],
@@ -371,6 +399,7 @@ describe("parseWordSnapshot", () => {
         expect(parseWordSnapshot(out)).toEqual({
             processAlive: true,
             documentNames: ["Report.docx", "Extra.docx"],
+            windowNames: ["Document1"],
             dialogText: "Some prompt text",
             dialogButtons: ["OK"],
         });
@@ -380,6 +409,7 @@ describe("parseWordSnapshot", () => {
         expect(parseWordSnapshot("process=0")).toEqual({
             processAlive: false,
             documentNames: [],
+            windowNames: [],
             dialogText: "",
             dialogButtons: [],
         });

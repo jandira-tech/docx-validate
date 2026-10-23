@@ -66,6 +66,12 @@ export type WordVerification = {
 export type WordSnapshot = {
     processAlive: boolean;
     documentNames: string[];
+    /**
+     * Titles of Word's windows ("<stem>  -  Compatibility Mode"). Word can
+     * answer its document list with `missing value` while the window is up,
+     * so the window title is a second identity signal.
+     */
+    windowNames?: string[];
     /** "" when no dialog/window text is showing. */
     dialogText: string;
     dialogButtons: string[];
@@ -147,6 +153,22 @@ const describeSnapshot = (snapshot: WordSnapshot): string => {
 };
 
 /**
+ * True when the snapshot shows this exact document: by name in Word's
+ * document list, or by a window whose title is the name (or its stem)
+ * followed by Word's "  -  " suffix. Generated names are unique, so a title
+ * that merely starts with the stem does not count.
+ */
+const showsDocument = (snapshot: WordSnapshot, documentName: string): boolean => {
+    if (snapshot.documentNames.includes(documentName)) {
+        return true;
+    }
+    const stem = documentName.replace(/\.docx$/i, "");
+    return (snapshot.windowNames ?? []).some((title) =>
+        [documentName, stem].some((name) => title === name || title.startsWith(`${name}  -  `)),
+    );
+};
+
+/**
  * Verify that `bytes` open cleanly in real Microsoft Word.
  *
  * The bytes are written to a uniquely named temporary copy (via
@@ -214,7 +236,7 @@ export const verifyInWord = async (bytes: Uint8Array, opts: WordVerifyOptions = 
                 outcome = dialog;
                 break;
             }
-            if (snapshot.processAlive && snapshot.documentNames.includes(documentName)) {
+            if (snapshot.processAlive && showsDocument(snapshot, documentName)) {
                 cleanSince ??= clock.now();
                 if (clock.now() - cleanSince >= observationMs) {
                     outcome = "clean-open";
@@ -240,10 +262,12 @@ export const verifyInWord = async (bytes: Uint8Array, opts: WordVerifyOptions = 
  * AppleScript into a `WordSnapshot`. Exported for unit tests.
  */
 export const parseWordSnapshot = (output: string): WordSnapshot => {
-    const snapshot: WordSnapshot = { processAlive: false, documentNames: [], dialogText: "", dialogButtons: [] };
+    const snapshot: WordSnapshot = { processAlive: false, documentNames: [], windowNames: [], dialogText: "", dialogButtons: [] };
     for (const line of output.split(/\r?\n/)) {
         if (line === "process=1") {
             snapshot.processAlive = true;
+        } else if (line.startsWith("window=")) {
+            snapshot.windowNames?.push(line.slice(7));
         } else if (line.startsWith("doc=")) {
             snapshot.documentNames.push(line.slice(4));
         } else if (line.startsWith("text=")) {
@@ -337,12 +361,15 @@ tell application "System Events"
     end repeat
   end tell
 end tell
+-- \`repeat with d in documents\` fails: Word's document collection does not
+-- answer \`count\` (-1708). Ask for the names in one event instead.
 tell application "Microsoft Word"
   try
-    repeat with d in documents
-      try
-        set linesOut to linesOut & "doc=" & (name of d as text) & linefeed
-      end try
+    with timeout of 10 seconds
+      set docNames to name of every document
+    end timeout
+    repeat with n in docNames
+      set linesOut to linesOut & "doc=" & (n as text) & linefeed
     end repeat
   end try
 end tell
@@ -356,7 +383,9 @@ return linesOut
             await osascript(`
 tell application "Microsoft Word"
   try
-    close document "${escaped}" saving no
+    with timeout of 10 seconds
+      close document "${escaped}" saving no
+    end timeout
   end try
 end tell
 `);
