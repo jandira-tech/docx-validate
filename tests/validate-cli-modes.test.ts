@@ -13,7 +13,7 @@
  * on stdout and stderr.
  */
 
-import { writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -115,6 +115,25 @@ describe("validate CLI: strict mode", { timeout: 120_000 }, () => {
 
         expect(run.code).toBe(0);
         expect(run.stdout).toContain("All validations PASSED!");
+    });
+});
+
+describe("validate CLI: --verify-word on an unpacked directory", { timeout: 120_000 }, () => {
+    it("reports an unsatisfied Word verification without opening Word", async () => {
+        // A directory has no exact bytes to hand Word, so verification is
+        // unavailable — and unavailable is not satisfied. No lane opens Word.
+        const run = await withTempDir(async (dir) => {
+            const unpacked = path.join(dir, "unpacked");
+            mkdirSync(path.join(unpacked, "word"), { recursive: true });
+            writeFileSync(
+                path.join(unpacked, "word", "document.xml"),
+                '<?xml version="1.0"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body/></w:document>',
+            );
+            return capture([unpacked, "--original", await controlDocx(dir), "--author", "Test Author", "--verify-word"]);
+        });
+
+        expect(run.code).toBe(1);
+        expect(run.stderr).toMatch(/WORD VERIFICATION unavailable/);
     });
 });
 
