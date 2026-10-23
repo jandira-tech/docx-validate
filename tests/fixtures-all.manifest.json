@@ -265,7 +265,7 @@
             "relativePath": "broken/word-rejects-misplaced-run.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "style-default-missing", "xsd-error", "xsd-summary"]
+                "errorCodes": ["paraid-missing-element", "style-default-missing", "word-run-misplaced", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -280,7 +280,14 @@
             "relativePath": "broken/word-rejects-table-cellspacing.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "style-default-missing", "word-cell-ends-with-table", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "paraid-missing-element",
+                    "style-default-missing",
+                    "word-cell-ends-with-table",
+                    "word-table-properties-misplaced",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -2683,7 +2690,14 @@
             "relativePath": "external/docx-parser-converter/tagged_tests/table_tests_v2.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "rels-empty-part", "word-cell-ends-with-table", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "paraid-missing-element",
+                    "rels-empty-part",
+                    "word-cell-ends-with-table",
+                    "word-table-properties-misplaced",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -2848,7 +2862,14 @@
             "relativePath": "external/docx-parser-converter/test_docx_files/table_advanced_demo.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "style-default-missing", "word-cell-ends-with-table", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "paraid-missing-element",
+                    "style-default-missing",
+                    "word-cell-ends-with-table",
+                    "word-table-properties-misplaced",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -4678,7 +4699,14 @@
             "relativePath": "external/open-xml-sdk/5Errors.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["comment-marker-missing", "paraid-missing-element", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "comment-marker-missing",
+                    "paraid-missing-element",
+                    "word-paragraph-properties-misplaced",
+                    "word-run-properties-misplaced",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -4753,7 +4781,7 @@
             "relativePath": "external/open-xml-sdk/UnknownElement.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["xsd-error", "xsd-summary"]
+                "errorCodes": ["word-run-misplaced", "word-unknown-element", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -6853,7 +6881,7 @@
             "relativePath": "external/superdoc/super-editor/hyperlink-exported.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": ["paraid-missing-element", "rels-unreferenced", "word-link-without-namespace", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -7003,7 +7031,14 @@
             "relativePath": "external/superdoc/super-editor/invalid-underline.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-uncovered-part", "paraid-missing-element", "rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "ct-uncovered-part",
+                    "paraid-missing-element",
+                    "rels-unreferenced",
+                    "word-underline-misplaced",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -8619,7 +8654,14 @@
             "relativePath": "word-regenerate-invalid/original/external/open-xml-sdk/5Errors.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["comment-marker-missing", "paraid-missing-element", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "comment-marker-missing",
+                    "paraid-missing-element",
+                    "word-paragraph-properties-misplaced",
+                    "word-run-properties-misplaced",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -8649,7 +8691,7 @@
             "relativePath": "word-regenerate-invalid/original/external/open-xml-sdk/UnknownElement.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["xsd-error", "xsd-summary"]
+                "errorCodes": ["word-run-misplaced", "word-unknown-element", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -8739,7 +8781,7 @@
             "relativePath": "word-regenerate-invalid/original/external/superdoc/super-editor/hyperlink-exported.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": ["paraid-missing-element", "rels-unreferenced", "word-link-without-namespace", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -8754,7 +8796,14 @@
             "relativePath": "word-regenerate-invalid/original/external/superdoc/super-editor/invalid-underline.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-uncovered-part", "paraid-missing-element", "rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "ct-uncovered-part",
+                    "paraid-missing-element",
+                    "rels-unreferenced",
+                    "word-underline-misplaced",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -9000,7 +9049,13 @@
             "relativePath": "word-regenerate-invalid/regenerated/external/open-xml-sdk/5Errors.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["comment-marker-missing", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "comment-marker-missing",
+                    "word-paragraph-properties-misplaced",
+                    "word-run-properties-misplaced",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -9030,7 +9085,7 @@
             "relativePath": "word-regenerate-invalid/regenerated/external/open-xml-sdk/UnknownElement.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["xsd-error", "xsd-summary"]
+                "errorCodes": ["word-run-misplaced", "word-unknown-element", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -9090,7 +9145,7 @@
             "relativePath": "word-regenerate-invalid/regenerated/external/superdoc/super-editor/hyperlink-exported.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": ["rels-unreferenced", "word-link-without-namespace", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -9105,7 +9160,7 @@
             "relativePath": "word-regenerate-invalid/regenerated/external/superdoc/super-editor/invalid-underline.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-uncovered-part", "rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": ["ct-uncovered-part", "rels-unreferenced", "word-underline-misplaced", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
