@@ -43,7 +43,7 @@ import { existsSync, promises as fs, readdirSync, readFileSync, realpathSync, st
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { parseContentTypes, partExtension, resolveContentType } from "../../../lib/content-types";
+import { normalizePartName, parseContentTypes, partExtension, resolveContentType } from "../../../lib/content-types";
 import { applyMarkupCompatibility, STRICT_UNDERSTOOD_NAMESPACES, UNDERSTOOD_NAMESPACES } from "../../../lib/markup-compatibility";
 import { withTempDir } from "../../../lib/run-cli";
 import type { Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
@@ -1396,6 +1396,28 @@ export class BaseSchemaValidator {
         }
     }
 
+    /** Identify the required main part by the package relationship, never its basename. */
+    private isMainDocumentPart(xmlFile: string): boolean {
+        try {
+            const relationships = parseXml(readFileSync(path.join(this.unpackedDir, "_rels", ".rels"), "utf-8"));
+            const part = normalizePartName(this.relPath(xmlFile).split(path.sep).join("/"));
+            return getElementsByTagNameNSAll(relationships, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship").some((relationship) => {
+                const type = relationship.getAttribute("Type");
+                if (
+                    relationship.getAttribute("TargetMode") === "External" ||
+                    (type !== `${OFFICE_RELATIONSHIPS_NAMESPACE}/officeDocument` &&
+                        type !== "http://purl.oclc.org/ooxml/officeDocument/relationships/officeDocument")
+                ) {
+                    return false;
+                }
+                return path.posix.normalize(normalizePartName(relationship.getAttribute("Target") || "")) === part;
+            });
+        } catch {
+            // Missing or malformed package relationships are diagnosed by their own checks.
+            return false;
+        }
+    }
+
     protected async _validateSingleFileXsd(xmlFile: string): Promise<XsdValidationOutcome> {
         const schemaPath = this._getSchemaPath(xmlFile);
         if (!schemaPath) return { valid: null, errors: new Set() };
@@ -1405,7 +1427,18 @@ export class BaseSchemaValidator {
             const xmlContent = decodeXmlBytes(readFileSync(xmlFile));
             const cleanedString = this._preprocessXmlForXsd(xmlContent, xmlFile, compatibilityIssues);
             if (compatibilityIssues.some((issue) => issue.code === "mce-root-ignored")) {
-                return { valid: true, errors: new Set(), issues: compatibilityIssues };
+                const main = this.isMainDocumentPart(xmlFile);
+                const issues = compatibilityIssues.map((issue): ValidationIssue =>
+                    main && issue.code === "mce-root-ignored"
+                        ? {
+                              ...issue,
+                              severity: "error",
+                              code: "mce-main-root-ignored",
+                              message: `Required main document part ${this.relPath(xmlFile)} has no root after markup compatibility processing.`,
+                          }
+                        : issue,
+                );
+                return { valid: true, errors: new Set(), issues };
             }
             const transformedView = cleanedString !== xmlContent;
 
