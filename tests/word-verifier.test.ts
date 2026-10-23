@@ -16,7 +16,7 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import type { WordSnapshot, WordTransport } from "../src/lib/word-verifier";
+import type { Clock, WordSnapshot, WordTransport } from "../src/lib/word-verifier";
 import { classifyWordDialog, parseWordSnapshot, verifyInWord } from "../src/lib/word-verifier";
 
 const BYTES = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0xde, 0xad, 0xbe, 0xef]);
@@ -91,6 +91,7 @@ class FakeTransport implements WordTransport {
 class FakeClock {
     nowValue = 0;
     readonly sleeps: number[] = [];
+    private timers: { at: number; resolve: () => void }[] = [];
 
     now(): number {
         return this.nowValue;
@@ -99,8 +100,42 @@ class FakeClock {
     async sleep(ms: number): Promise<void> {
         this.sleeps.push(ms);
         this.nowValue += ms;
+        this.fireDueTimers();
+    }
+
+    advance(ms: number): void {
+        this.nowValue += ms;
+        this.fireDueTimers();
+    }
+
+    timer(ms: number): Promise<void> {
+        return new Promise((resolve) => {
+            this.timers.push({ at: this.nowValue + ms, resolve });
+        });
+    }
+
+    private fireDueTimers(): void {
+        const due = this.timers.filter((t) => t.at <= this.nowValue);
+        if (due.length === 0) return;
+        this.timers = this.timers.filter((t) => t.at > this.nowValue);
+        for (const timer of due) timer.resolve();
     }
 }
+
+/** Wall-clock-backed fake: `now` advances with real time, `timer` uses real setTimeout. */
+const wallClock = (): Clock => {
+    const t0 = Date.now();
+    return {
+        now: () => Date.now() - t0,
+        sleep: async (ms) => {
+            await new Promise((resolve) => setTimeout(resolve, ms));
+        },
+        timer: (ms) =>
+            new Promise((resolve) => {
+                setTimeout(resolve, ms);
+            }),
+    };
+};
 
 describe("verifyInWord", () => {
     it("reports a clean open once the temporary document stays open and dialog-free for the observation period", async () => {
@@ -415,6 +450,139 @@ describe("verifyInWord", () => {
             },
         };
         await expect(verifyInWord(BYTES, { transport, clock: new FakeClock() })).rejects.toThrow("Apple event");
+    });
+
+    it("counts launch against the total budget", async () => {
+        const clock = new FakeClock();
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            available: async () => true,
+            version: async () => undefined,
+            open: async () => {
+                clock.advance(10_000);
+            },
+            observe: async (name) => ({
+                processAlive: true,
+                documentNames: [name],
+                dialogText: "",
+                dialogButtons: [],
+            }),
+            close: async () => undefined,
+        };
+        const result = await verifyInWord(new Uint8Array([1]), {
+            transport,
+            clock,
+            timeoutMs: 5_000,
+            observationMs: 1_000,
+        });
+        expect(result.outcome).toBe("timeout");
+    });
+
+    it("ends as timeout when an observation settles only after the deadline", async () => {
+        // The observe call resolves cleanly 40 ms in, but the 20 ms budget is
+        // already spent by then: the run must end as timeout instead of
+        // acting on the stale observation.
+        const t0 = Date.now();
+        const clock: Clock = {
+            now: () => Date.now() - t0,
+            sleep: async (ms) => {
+                await new Promise((resolve) => setTimeout(resolve, ms));
+            },
+            timer: (ms) =>
+                new Promise((resolve) => {
+                    setTimeout(resolve, ms);
+                }),
+        };
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            available: async () => true,
+            version: async () => undefined,
+            open: async () => undefined,
+            observe: async (name) => {
+                await new Promise((resolve) => setTimeout(resolve, 40));
+                return { processAlive: true, documentNames: [name], dialogText: "", dialogButtons: [] };
+            },
+            close: async () => undefined,
+        };
+        const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 20, pollMs: 5, observationMs: 0 });
+        expect(result.outcome).toBe("timeout");
+    });
+
+    it("resolves as timeout when launch never settles", async () => {
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            available: async () => true,
+            version: async () => undefined,
+            open: () => new Promise<void>(() => undefined),
+            observe: async (name) => ({
+                processAlive: true,
+                documentNames: [name],
+                dialogText: "",
+                dialogButtons: [],
+            }),
+            close: async () => undefined,
+        };
+        const result = await verifyInWord(BYTES, { transport, clock: wallClock(), timeoutMs: 20, pollMs: 5 });
+        expect(result.outcome).toBe("timeout");
+        expect(result.details).toContain("launch did not settle");
+    });
+
+    it("resolves as timeout when an observation never settles", async () => {
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            available: async () => true,
+            version: async () => undefined,
+            open: async () => undefined,
+            observe: () => new Promise<WordSnapshot>(() => undefined),
+            close: async () => undefined,
+        };
+        const result = await verifyInWord(BYTES, { transport, clock: wallClock(), timeoutMs: 20, pollMs: 5 });
+        expect(result.outcome).toBe("timeout");
+        expect(result.details).toContain("observation did not settle");
+    });
+
+    it("silences an observation that rejects after losing the race", async () => {
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            available: async () => true,
+            version: async () => undefined,
+            open: async () => undefined,
+            observe: () =>
+                new Promise<WordSnapshot>((_, reject) => {
+                    setTimeout(() => reject(new Error("late Apple event failure")), 40);
+                }),
+            close: async () => undefined,
+        };
+        const result = await verifyInWord(BYTES, { transport, clock: wallClock(), timeoutMs: 20, pollMs: 5 });
+        expect(result.outcome).toBe("timeout");
+        // Stay alive past the late rejection: an unhandled rejection fails the file.
+        await new Promise((resolve) => setTimeout(resolve, 60));
+    });
+
+    it("abandons a cleanup close that outlives the budget and keeps the outcome", async () => {
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            available: async () => true,
+            version: async () => undefined,
+            open: async () => undefined,
+            observe: async (name) => ({
+                processAlive: true,
+                documentNames: [name],
+                dialogText: "",
+                dialogButtons: [],
+            }),
+            close: () => new Promise<void>(() => undefined),
+        };
+        const result = await verifyInWord(BYTES, { transport, clock: wallClock(), timeoutMs: 20, pollMs: 5, observationMs: 0 });
+        expect(result.outcome).toBe("clean-open");
+        expect(result.details).toContain("cleanup close exceeded the budget");
+    });
+
+    it("awaits transport calls without a race when the clock provides no timer", async () => {
+        const transport = new FakeTransport({ snapshots: [(name) => openDoc(name)] });
+        const clock: Clock = { now: () => 0, sleep: async () => undefined };
+        const result = await verifyInWord(BYTES, { transport, clock, observationMs: 0 });
+        expect(result.outcome).toBe("clean-open");
     });
 
     it("uses the real clock and macOS transport defaults only through injection points", async () => {

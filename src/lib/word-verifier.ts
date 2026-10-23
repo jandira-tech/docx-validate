@@ -91,6 +91,16 @@ export type WordTransport = {
 export type Clock = {
     now: () => number;
     sleep: (ms: number) => Promise<void>;
+    /**
+     * Deadline racing (issue #301): resolves after `ms` WITHOUT advancing
+     * the logical clock — `now()` only moves when `sleep` is called. Used
+     * to race transport calls against the total budget so a call that
+     * never settles ends the run as `timeout` instead of hanging. When a
+     * clock provides no `timer`, transport calls are awaited without a
+     * race (pre-#301 behaviour). A pending timer must not keep the process
+     * alive: races leave the losing timer unresolved.
+     */
+    timer?: (ms: number) => Promise<void>;
 };
 
 export type WordVerifyOptions = {
@@ -111,6 +121,11 @@ export const WORD_VERIFY_POLL_MS = 1_000;
 const systemClock: Clock = {
     now: () => Date.now(),
     sleep: (ms: number) => new Promise((resolve) => setTimeout(resolve, ms)),
+    timer: (ms: number) =>
+        new Promise((resolve) => {
+            const handle = setTimeout(resolve, ms);
+            handle.unref();
+        }),
 };
 
 /**
@@ -168,6 +183,36 @@ const showsDocument = (snapshot: WordSnapshot, documentName: string): boolean =>
     );
 };
 
+/** Sentinel for a transport call that did not settle before the deadline. */
+const deadlineExceeded = Symbol("deadline-exceeded");
+type DeadlineRace<T> = T | typeof deadlineExceeded;
+
+/**
+ * Await `invoke()` bounded by the budget left before `deadline` (issue #301).
+ * The call is never started once the deadline has passed, and a call still
+ * pending when the time runs out loses the race against the clock's `timer`
+ * and resolves as `deadlineExceeded` (the caller reports outcome `timeout`).
+ * A losing call's eventual rejection is silenced so it cannot surface as an
+ * unhandled rejection after the run has moved on; a rejection that wins the
+ * race propagates normally. Clocks without a `timer` await the call without
+ * a race.
+ */
+const callWithinDeadline = async <T>(clock: Clock, deadline: number, invoke: () => Promise<T>): Promise<DeadlineRace<T>> => {
+    const left = deadline - clock.now();
+    if (left <= 0) {
+        return deadlineExceeded;
+    }
+    const call = invoke();
+    const expiry = clock.timer?.(left).then((): typeof deadlineExceeded => deadlineExceeded);
+    const winner = expiry === undefined ? await call : await Promise.race([call, expiry]);
+    if (winner !== deadlineExceeded) {
+        return winner;
+    }
+    // The losing call may still reject long after the run moved on.
+    call.catch(() => undefined);
+    return deadlineExceeded;
+};
+
 /**
  * Verify that `bytes` open cleanly in real Microsoft Word.
  *
@@ -182,6 +227,12 @@ export const verifyInWord = async (bytes: Uint8Array, opts: WordVerifyOptions = 
     const timeoutMs = opts.timeoutMs ?? WORD_VERIFY_TIMEOUT_MS;
     const observationMs = opts.observationMs ?? WORD_VERIFY_OBSERVATION_MS;
     const pollMs = opts.pollMs ?? WORD_VERIFY_POLL_MS;
+
+    // One deadline (issue #301): the total budget starts with the run, so
+    // launch, every observation poll and the cleanup close all count
+    // against it.
+    const started = clock.now();
+    const deadline = started + timeoutMs;
 
     const platform = transport.platform();
     const fileSha256 = createHash("sha256").update(bytes).digest("hex");
@@ -212,8 +263,6 @@ export const verifyInWord = async (bytes: Uint8Array, opts: WordVerifyOptions = 
         const tempFile = path.join(dir, documentName);
         writeFileSync(tempFile, bytes);
 
-        const started = clock.now();
-        const deadline = started + timeoutMs;
         let sawProcess = false;
         let cleanSince: number | undefined;
         let outcome: WordOutcome = "timeout";
@@ -222,32 +271,41 @@ export const verifyInWord = async (bytes: Uint8Array, opts: WordVerifyOptions = 
         let settled = false;
 
         try {
-            await transport.open(tempFile);
-
-            while (clock.now() < deadline) {
-                await clock.sleep(pollMs);
-                const snapshot = await transport.observe(documentName);
-                details = describeSnapshot(snapshot);
-                if (snapshot.processAlive) {
-                    sawProcess = true;
-                } else if (sawProcess) {
-                    outcome = "crash";
-                    details = `Word process exited after open; ${details}`;
-                    break;
-                }
-                const dialog = classifyWordDialog(snapshot.dialogText);
-                if (dialog !== null) {
-                    outcome = dialog;
-                    break;
-                }
-                if (snapshot.processAlive && showsDocument(snapshot, documentName)) {
-                    cleanSince ??= clock.now();
-                    if (clock.now() - cleanSince >= observationMs) {
-                        outcome = "clean-open";
+            const opened = await callWithinDeadline(clock, deadline, () => transport.open(tempFile));
+            if (opened === deadlineExceeded) {
+                outcome = "timeout";
+                details = `launch did not settle within the ${timeoutMs} ms budget`;
+            } else {
+                while (clock.now() < deadline) {
+                    await clock.sleep(pollMs);
+                    const snapshot = await callWithinDeadline(clock, deadline, () => transport.observe(documentName));
+                    if (snapshot === deadlineExceeded) {
+                        outcome = "timeout";
+                        details = `observation did not settle within the ${timeoutMs} ms budget`;
                         break;
                     }
-                } else {
-                    cleanSince = undefined;
+                    details = describeSnapshot(snapshot);
+                    if (snapshot.processAlive) {
+                        sawProcess = true;
+                    } else if (sawProcess) {
+                        outcome = "crash";
+                        details = `Word process exited after open; ${details}`;
+                        break;
+                    }
+                    const dialog = classifyWordDialog(snapshot.dialogText);
+                    if (dialog !== null) {
+                        outcome = dialog;
+                        break;
+                    }
+                    if (snapshot.processAlive && showsDocument(snapshot, documentName)) {
+                        cleanSince ??= clock.now();
+                        if (clock.now() - cleanSince >= observationMs) {
+                            outcome = "clean-open";
+                            break;
+                        }
+                    } else {
+                        cleanSince = undefined;
+                    }
                 }
             }
 
@@ -259,7 +317,10 @@ export const verifyInWord = async (bytes: Uint8Array, opts: WordVerifyOptions = 
             // before); during unwind it is swallowed so the original
             // error still propagates.
             try {
-                await transport.close(documentName);
+                const closed = await callWithinDeadline(clock, deadline, () => transport.close(documentName));
+                if (settled && closed === deadlineExceeded) {
+                    details = `${details}; cleanup close exceeded the budget and was abandoned`;
+                }
             } catch (err) {
                 if (settled) {
                     details = `${details}; cleanup close failed: ${err instanceof Error ? err.message : String(err)}`;
