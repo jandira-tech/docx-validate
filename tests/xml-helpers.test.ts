@@ -120,6 +120,20 @@ describe("decodeXmlBytes", () => {
         );
     });
 
+    it("reads a BOM-less UTF-16 declaration of any length, not just the first 200 bytes", () => {
+        // The declaration may carry arbitrary whitespace (XML 1.0 §2.8, S),
+        // so a fixed byte window can cut the encoding name off.
+        const decl = `<?xml version="1.0"${" ".repeat(70)}encoding="UTF-16"?>`;
+        expect(decodeXmlBytes(utf16(`${decl}${BODY}`, "le", false))).toBe(`${decl}${BODY}`);
+        expect(decodeXmlBytes(utf16(`${decl}${BODY}`, "be", false))).toBe(`${decl}${BODY}`);
+    });
+
+    it("keeps surrogate pairs and NUL-high-byte characters after a BOM-less UTF-16 declaration intact", () => {
+        const text = `<?xml version="1.0" encoding="UTF-16"?><r a="\u{1F600}">\u0100\u4E2D\u{1F600}</r>`;
+        expect(decodeXmlBytes(utf16(text, "le", false))).toBe(text);
+        expect(decodeXmlBytes(utf16(text, "be", false))).toBe(text);
+    });
+
     it("prefers the BOM over a contradicting declaration", () => {
         expect(decodeXmlBytes(utf16('<?xml version="1.0" encoding="UTF-16BE"?>' + BODY, "le", true))).toBe(
             `<?xml version="1.0" encoding="UTF-16BE"?>${BODY}`,
