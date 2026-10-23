@@ -47,8 +47,9 @@ import { parseContentTypes, partExtension, resolveContentType } from "../../../l
 import { withTempDir } from "../../../lib/run-cli";
 import type { Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
 import { DEFAULT_PROFILE, OK_RESULT } from "../../../lib/types";
-import { createXsdValidator, type XsdValidator } from "../../../lib/xsd-validator";
+import { allowSchemaResourceRoot, createXsdValidator, type XsdValidator } from "../../../lib/xsd-validator";
 import { getElementsByTagNameNSAll, getElementsByTagNameAll, parseXml, serializeXml } from "../../../lib/xml-helpers";
+import { checkXmlSyntax } from "../../../lib/xml-syntax";
 import { resolveSafeZipEntry } from "../../../lib/zip-path";
 
 /**
@@ -331,6 +332,10 @@ export class BaseSchemaValidator {
         if (this.xsdValidatorRef) {
             return this.xsdValidatorRef;
         }
+        // The engine's file access is restricted to allowed schema roots; a
+        // caller-supplied `schemasDir` must be one of them or its import
+        // closure would be refused.
+        allowSchemaResourceRoot(this.schemasDir);
         if (!this.xsdValidatorPromise) {
             this.xsdValidatorPromise = createXsdValidator();
         }
@@ -546,21 +551,31 @@ export class BaseSchemaValidator {
 
     // ----- well-formedness & namespaces ---------------------------------------
 
+    /**
+     * Well-formedness of every XML part, checked on the ORIGINAL BYTES.
+     *
+     * libxml2 parses bytes, so the part's own BOM and `encoding` declaration
+     * decide how it decodes (a UTF-16 part read as a UTF-8 string is garbage)
+     * and every diagnostic carries a 1-based line/column. Parsing runs
+     * WITHOUT `XML_PARSE_RECOVER` so content `@xmldom` silently recovers from
+     * (a bare `&`, an unquoted attribute value) is reported instead of
+     * accepted, and WITH `XML_PARSE_NONET | XML_PARSE_NO_XXE` so external
+     * entities are never fetched. See `src/lib/xml-syntax.ts`.
+     *
+     * Codes: `xml-syntax` (not well-formed), `xml-undeclared-prefix`
+     * (undeclared namespace prefix), `xml-encoding` (declared encoding
+     * unsupported / bytes do not decode in it).
+     */
     async validateXml(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
         for (const xmlFile of this.xmlFiles) {
+            let raw: Buffer;
             try {
-                const content = await fs.readFile(xmlFile, "utf-8");
-                parseXml(content);
-            } catch (err) {
-                const message = err instanceof Error ? err.message : String(err);
-                issues.push({
-                    severity: "error",
-                    message,
-                    path: this.relPath(xmlFile),
-                    code: "xml-syntax",
-                });
+                raw = await fs.readFile(xmlFile);
+            } catch {
+                continue;
             }
+            issues.push(...(await checkXmlSyntax(raw, this.relPath(xmlFile))));
         }
         return finalize(issues);
     }
