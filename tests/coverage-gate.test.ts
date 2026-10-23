@@ -48,6 +48,7 @@ describe("checkCoverageGates", () => {
         const patterns = COVERAGE_GATES.map((gate) => `${gate.pattern} ${gate.lines}/${gate.branches}`);
         expect(patterns).toEqual(
             expect.arrayContaining([
+                "src/lib/mode-policy.ts 90/85",
                 "src/lib/check-scheduler.ts 90/85",
                 "src/lib/check-registry.ts 90/85",
                 "src/lib/validation-context.ts 80/70",

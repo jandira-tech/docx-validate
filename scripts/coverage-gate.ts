@@ -31,6 +31,8 @@ const NEW_MODULE = { lines: 80, branches: 70 } as const;
 const POLICY = { lines: 90, branches: 85 } as const;
 
 export const COVERAGE_GATES: readonly CoverageGate[] = [
+    // Validity policy: which profile, defaults and selectors a run executes.
+    { pattern: "src/lib/mode-policy.ts", ...POLICY },
     // Check scheduling, and the registry it schedules from.
     { pattern: "src/lib/check-scheduler.ts", ...POLICY },
     { pattern: "src/lib/check-registry.ts", ...POLICY },
