@@ -59,6 +59,7 @@ import {
 } from "../../../lib/xml-helpers";
 import { checkXmlSyntax } from "../../../lib/xml-syntax";
 import { resolveSafeZipEntry } from "../../../lib/zip-path";
+import { XML_SYNTAX_CHECK_ID } from "../checks/xml";
 
 /**
  * Schema mapping table — file basename / suffix → relative path inside the
@@ -359,6 +360,27 @@ export class BaseSchemaValidator {
     xsdEngineFailures = 0;
 
     /**
+     * Ids of the named checks this validator executed, in the order they ran.
+     *
+     * The registry lists every check for a format, but a profile only reaches
+     * some of them: the Word rules run under `word-valid` and `strict` only.
+     * Recording what actually ran is what lets `metadata.executedChecks`
+     * distinguish a check that passed from one that never ran (#319).
+     *
+     * The XML well-formedness pass is the `xml-syntax` check; subclasses add
+     * the registry checks they run through the scheduler.
+     */
+    private readonly executedCheckIds = new Set<string>();
+
+    /**
+     * The named checks this validator executed, in the order they ran.
+     * Reset at the entry of every `validate()`.
+     */
+    public get executedChecks(): readonly string[] {
+        return [...this.executedCheckIds];
+    }
+
+    /**
      * Subclasses override to map an element name → expected relationship type
      * (used by `validateAllRelationshipIds`). Mirrors
      * `BaseSchemaValidator.ELEMENT_RELATIONSHIP_TYPES`.
@@ -642,7 +664,27 @@ export class BaseSchemaValidator {
             }
             issues.push(...(await checkXmlSyntax(raw, this.relPath(xmlFile))));
         }
+        // This pass is the `xml-syntax` check: the same bytes, the same
+        // diagnostics, under the check id callers select it by.
+        this.recordExecutedCheck(XML_SYNTAX_CHECK_ID);
         return finalize(issues);
+    }
+
+    /** Record that a named check ran, so the run can disclose it (#319). */
+    protected recordExecutedCheck(id: string): void {
+        this.executedCheckIds.add(id);
+    }
+
+    /** Record several named checks, in the order they ran. */
+    protected recordExecutedChecks(ids: readonly string[]): void {
+        for (const id of ids) {
+            this.recordExecutedCheck(id);
+        }
+    }
+
+    /** Forget the checks a previous run recorded. */
+    protected resetExecutedChecks(): void {
+        this.executedCheckIds.clear();
     }
 
     async validateNamespaces(): Promise<ValidationResult> {
