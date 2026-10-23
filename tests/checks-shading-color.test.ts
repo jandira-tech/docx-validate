@@ -31,6 +31,19 @@ const findings = async (parts: Readonly<Record<string, PartContent>>): Promise<r
     wordShadingColorCheck.run(fromParts(parts));
 
 describe("shading-color check", () => {
+    it('collapses whitespace around hexBinary colours as the schema does, but not around "auto" or theme names', async () => {
+        // ST_HexColorRGB and ST_UcharHexNumber restrict xsd:hexBinary, whose
+        // whiteSpace facet is fixed to collapse; ST_HexColorAuto and
+        // ST_ThemeColor restrict xsd:string, which preserves whitespace.
+        const issues = await findings({
+            "word/document.xml": documentXml(
+                `<w:p><w:pPr><w:shd w:val="clear" w:fill=" DDDDDD " w:color="&#9;0a0B0c&#10;" w:themeFillTint=" 66"/></w:pPr></w:p>` +
+                    `<w:p><w:pPr><w:shd w:val="clear" w:fill=" auto" w:themeFill="accent1 "/></w:pPr></w:p>`,
+            ),
+        });
+        expect(issues.map((issue) => issue.message.match(/carries (w:\w+)=/)?.[1])).toEqual(["w:fill", "w:themeFill"]);
+    });
+
     it("reports every w:shd colour attribute outside the declared value space, once per occurrence", async () => {
         const issues = await findings({
             "word/document.xml": documentXml(
