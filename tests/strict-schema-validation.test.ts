@@ -1,0 +1,76 @@
+/*
+ * Copyright 2026 Jandira Technologies, LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+/**
+ * Task 9 — strict-profile schema completeness.
+ *
+ * Under `profile: "strict"` an ISO OOXML Strict part is schema-validated
+ * against the bundled Strict XSDs (namespace + part identity dispatch), not
+ * skipped with `xsd-strict-skipped`. Lenient/word-valid keep the documented
+ * skip behaviour.
+ */
+
+import { promises as fs } from "node:fs";
+import path from "node:path";
+
+import { describe, expect, it } from "vitest";
+
+import { withTempDir } from "../src/lib/run-cli";
+import { validate } from "../src/scripts/office/validate";
+import { MINIMAL_PARTS, buildDocx } from "./support/minimal-docx";
+
+const TRANSITIONAL = "http://schemas.openxmlformats.org/";
+const STRICT = "http://purl.oclc.org/ooxml/";
+
+/** Rewrite the OOXML namespace URIs of the minimal package to Strict URIs. */
+const strictify = (xml: string): string =>
+    xml
+        .replaceAll(`${TRANSITIONAL}wordprocessingml/2006/main`, `${STRICT}wordprocessingml/main`)
+        .replaceAll(`${TRANSITIONAL}officeDocument/2006/relationships`, `${STRICT}officeDocument/relationships`);
+
+const STRICT_PARTS: Readonly<Record<string, string>> = Object.freeze({
+    ...MINIMAL_PARTS,
+    "_rels/.rels": strictify(MINIMAL_PARTS["_rels/.rels"]!),
+    "word/_rels/document.xml.rels": strictify(MINIMAL_PARTS["word/_rels/document.xml.rels"]!),
+    "word/document.xml": strictify(MINIMAL_PARTS["word/document.xml"]!),
+    "word/styles.xml": strictify(MINIMAL_PARTS["word/styles.xml"]!),
+});
+
+const writeDocx = async (dir: string, name: string, parts: Readonly<Record<string, string>>): Promise<string> => {
+    const file = path.join(dir, name);
+    await fs.writeFile(file, await buildDocx(parts));
+    return file;
+};
+
+const inject = (xml: string, element: string): string => xml.replace("</w:body>", `${element}</w:body>`);
+
+describe("strict profile — ISO Strict schema dispatch", () => {
+    it("schema-validates a clean Strict document without xsd-strict-skipped", async () => {
+        await withTempDir(async (dir) => {
+            const file = await writeDocx(dir, "strict-clean.docx", STRICT_PARTS);
+            const result = await validate(file, { profile: "strict" });
+            expect(result.issues.some((i) => i.code === "xsd-strict-skipped")).toBe(false);
+            expect(result.valid).toBe(true);
+        });
+    });
+
+    it("fails a Strict document with an injected schema defect, naming the element", async () => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...STRICT_PARTS,
+                "word/document.xml": inject(STRICT_PARTS["word/document.xml"]!, "<w:notInSchema/>"),
+            };
+            const file = await writeDocx(dir, "strict-defect.docx", parts);
+            const result = await validate(file, { profile: "strict" });
+            expect(result.valid).toBe(false);
+            expect(result.issues.some((i) => i.code === "xsd-error" && i.message.includes("notInSchema"))).toBe(true);
+        });
+    });
+});
