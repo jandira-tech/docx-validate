@@ -17,7 +17,7 @@
  * skip behaviour.
  */
 
-import { promises as fs } from "node:fs";
+import { existsSync, promises as fs } from "node:fs";
 import path from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -25,6 +25,9 @@ import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import { validate } from "../src/scripts/office/validate";
 import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
+import { schemaResourceRoots } from "../src/lib/xsd-validator";
+import { getElementsByTagNameNSAll, parseXml } from "../src/lib/xml-helpers";
+import { defaultSchemasDir, walkFiles } from "../src/scripts/office/validators/base";
 import { MINIMAL_PARTS, buildDocx } from "./support/minimal-docx";
 
 const TRANSITIONAL = "http://schemas.openxmlformats.org/";
@@ -211,4 +214,38 @@ describe("strict profile — Dublin Core core properties", () => {
             expect(result.issues.some((i) => i.code === "xsd-error" && i.message.includes("notAValidChild"))).toBe(true);
         });
     }, 60_000);
+});
+
+const XSD_NAMESPACE = "http://www.w3.org/2001/XMLSchema";
+
+describe("bundled schema trees resolve offline", () => {
+    it("the bundled schemas directory is an allowed libxml2 resource root", () => {
+        expect(schemaResourceRoots()).toContain(defaultSchemasDir());
+    });
+
+    it("every xs:import/include schemaLocation resolves to a bundled file", async () => {
+        const schemasDir = defaultSchemasDir();
+        const missing: string[] = [];
+        const remote: string[] = [];
+        for (const xsdFile of walkFiles(schemasDir, [".xsd"])) {
+            const dom = parseXml(await fs.readFile(xsdFile, "utf-8"));
+            for (const elem of [
+                ...getElementsByTagNameNSAll(dom, XSD_NAMESPACE, "import"),
+                ...getElementsByTagNameNSAll(dom, XSD_NAMESPACE, "include"),
+                ...getElementsByTagNameNSAll(dom, XSD_NAMESPACE, "redefine"),
+            ]) {
+                const location = elem.getAttribute("schemaLocation");
+                if (!location) continue;
+                if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(location)) {
+                    remote.push(`${xsdFile}: ${location}`);
+                    continue;
+                }
+                if (!existsSync(path.resolve(path.dirname(xsdFile), location))) {
+                    missing.push(`${xsdFile}: ${location}`);
+                }
+            }
+        }
+        expect(remote).toEqual([]);
+        expect(missing).toEqual([]);
+    });
 });
