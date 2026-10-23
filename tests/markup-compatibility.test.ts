@@ -21,6 +21,11 @@ const alternative = (axis: string) =>
     `<mc:AlternateContent><mc:Choice Requires="wp14"><wp:position${axis} relativeFrom="page"><wp14:pctPos${axis}Offset>45500</wp14:pctPos${axis}Offset></wp:position${axis}></mc:Choice><mc:Fallback><wp:position${axis} relativeFrom="page"><wp:posOffset>4576445</wp:posOffset></wp:position${axis}></mc:Fallback></mc:AlternateContent>`;
 
 describe("markup compatibility", () => {
+    it("unwraps root AlternateContent (#292)", () => {
+        const xml = `<mc:AlternateContent xmlns:mc="${NS.MC}" xmlns:w="${NS.W}"><mc:Choice Requires="w"><w:document><w:body/></w:document></mc:Choice></mc:AlternateContent>`;
+        expect(() => process(xml)).not.toThrow();
+        expect(process(xml).document.documentElement?.localName).toBe("document");
+    });
     it("removes non-ignorable Office attributes and aggregates one namespace-aware warning per part", () => {
         const source = parseXml(
             wrap(
