@@ -136,7 +136,8 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     if (targetIsPackedFile) {
         return withTempDir(async (tempDir) => {
             const buf = await fs.readFile(target);
-            const overrun = profile === "word-valid" ? zipEocdCommentOverrun(buf) : undefined;
+            const packageChecks = runsWordPackageChecks(profile);
+            const overrun = packageChecks ? zipEocdCommentOverrun(buf) : undefined;
             const envelopeIssues: ValidationResult["issues"] = overrun
                 ? [
                       {
@@ -194,7 +195,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                 };
             }
             const unpacked = await runWithUnpacked(tempDir);
-            if (profile !== "word-valid") return unpacked;
+            if (!packageChecks) return unpacked;
             const trailing = countZipBytesAfterEocd(buf);
             if (trailing === 0 && envelopeIssues.length === 0) return unpacked;
             return {
@@ -218,6 +219,16 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     }
 
     return runWithUnpacked(path.resolve(target));
+}
+
+/**
+ * ZIP-envelope checks (bytes after the EOCD record, EOCD comment overrun)
+ * describe packages Word refuses or repairs. `strict` is a superset of
+ * `word-valid`, so both run them; explicit `lenient` keeps its historical
+ * behaviour for callers that have not migrated.
+ */
+function runsWordPackageChecks(profile: Profile): boolean {
+    return profile === "word-valid" || profile === "strict";
 }
 
 interface ValidatorRunner {
