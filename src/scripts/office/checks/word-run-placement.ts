@@ -173,6 +173,7 @@ export const wordRunMisplacedCheck: CheckDefinition = {
     description: "Runs sit inside paragraph content, not directly in cells, rows, or the body.",
     groups: ["story"],
     formats: ["docx"],
+    requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => wmlPartDocuments(ctx).flatMap(runIssues),
 };
 
@@ -181,6 +182,7 @@ export const wordRunPropertiesMisplacedCheck: CheckDefinition = {
     description: "Run-properties blocks sit in their schema parents and lead their runs.",
     groups: ["story"],
     formats: ["docx"],
+    requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => wmlPartDocuments(ctx).flatMap(runPropertiesIssues),
 };
 
@@ -189,5 +191,6 @@ export const wordUnderlineMisplacedCheck: CheckDefinition = {
     description: "Underline run properties sit inside a run-properties block.",
     groups: ["story"],
     formats: ["docx"],
+    requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => wmlPartDocuments(ctx).flatMap(underlineIssues),
 };

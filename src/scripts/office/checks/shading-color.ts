@@ -124,6 +124,7 @@ export const wordShadingColorCheck: CheckDefinition = {
     description: "Every w:shd colour attribute in the Word story parts and styles.xml holds a value its schema type allows.",
     groups: ["story"],
     formats: ["docx"],
+    requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => {
         const issues: ValidationIssue[] = [];
         for (const part of shadingParts(ctx.storyParts(), ctx.partNames)) {
