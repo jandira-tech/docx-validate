@@ -36,6 +36,23 @@ describe("CheckRegistry", () => {
         expect(() => new CheckRegistry([check("a", { requires: ["b"] }), check("b")])).toThrow(/before/i);
     });
 
+    it("rejects a prerequisite that cannot run for the dependent check's format", () => {
+        // Issue #299: a docx-only dependent of a pptx-only prerequisite never
+        // runs — the scheduler would skip it for every docx package and report
+        // a valid run with nothing executed, so the configuration is rejected
+        // up front like an unknown prerequisite.
+        expect(() => new CheckRegistry([check("a", { formats: ["pptx"] }), check("b", { formats: ["docx"], requires: ["a"] })])).toThrow(
+            /"b" requires "a".*docx/,
+        );
+        expect(
+            () => new CheckRegistry([check("a", { formats: ["pptx"] }), check("b", { formats: ["docx", "pptx"], requires: ["a"] })]),
+        ).toThrow(/does not apply.*docx/);
+        // A prerequisite that covers every dependent format constructs fine.
+        expect(
+            () => new CheckRegistry([check("gate", { formats: ["docx", "pptx"] }), check("dependent", { requires: ["gate"] })]),
+        ).not.toThrow();
+    });
+
     it("resolves a selection to its checks and their prerequisites, in registration order", () => {
         const registry = new CheckRegistry([
             check("xml"),
