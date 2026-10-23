@@ -300,6 +300,21 @@ export interface XsdValidationOutcome {
     errors: Set<string>;
     /** Compatibility diagnostics keep their own stable codes, independent of XSD messages. */
     issues?: ValidationIssue[];
+    /**
+     * Structured engine findings for the part, one entry per error
+     * occurrence with `line` when libxml2 reports it. Populated by
+     * `_validateSingleFileXsd` on failure. The `strict` profile emits these
+     * verbatim (deduplicated message strings would collapse repeated
+     * identical defects onto one report and lose their locations).
+     */
+    schemaIssues?: ValidationIssue[];
+    /**
+     * True when the XML sent to the engine differs from the part bytes
+     * (template-tag stripping, the markup-compatibility view, or
+     * re-serialization). Reported `line` values then refer to the
+     * transformed view, not the source part.
+     */
+    transformedView?: boolean;
 }
 
 export class BaseSchemaValidator {
@@ -1243,17 +1258,37 @@ export class BaseSchemaValidator {
                 path: rel,
                 code: "xsd-summary",
             });
-            const list = this.xsdErrorsToReport(rel, outcome.errors);
-            for (const e of list) {
-                const truncated = e.length > 250 ? `${e.slice(0, 250)}...` : e;
-                issues.push({
-                    severity: "error",
-                    message: `  - ${truncated}`,
-                    path: rel,
-                    code: "xsd-error",
-                });
+            if (this.profile === "strict") {
+                // One issue per occurrence, with the engine's own line and
+                // code preserved. When preprocessing rewrote the XML the
+                // reported line belongs to the transformed view, not the
+                // source part — say so instead of inventing source lines.
+                for (const issue of outcome.schemaIssues ?? []) {
+                    const truncated = issue.message.length > 250 ? `${issue.message.slice(0, 250)}...` : issue.message;
+                    const suffix =
+                        outcome.transformedView && issue.line !== undefined ? " (line refers to the preprocessed validation view)" : "";
+                    issues.push({
+                        severity: "error",
+                        message: `  - ${truncated}${suffix}`,
+                        path: rel,
+                        ...(issue.line !== undefined ? { line: issue.line } : {}),
+                        code: !issue.code || issue.code === "xsd-validation-failed" ? "xsd-error" : issue.code,
+                    });
+                }
+                if (!this.shouldStopXsdWalk(rel, outcome.errors)) continue;
+            } else {
+                const list = this.xsdErrorsToReport(rel, outcome.errors);
+                for (const e of list) {
+                    const truncated = e.length > 250 ? `${e.slice(0, 250)}...` : e;
+                    issues.push({
+                        severity: "error",
+                        message: `  - ${truncated}`,
+                        path: rel,
+                        code: "xsd-error",
+                    });
+                }
+                if (!this.shouldStopXsdWalk(rel, outcome.errors)) continue;
             }
-            if (!this.shouldStopXsdWalk(rel, outcome.errors)) continue;
 
             for (let j = i + 1; j < files.length; j += 1) {
                 const rest = files[j];
@@ -1302,11 +1337,28 @@ export class BaseSchemaValidator {
             return single;
         }
 
+        if (this.profile === "strict") {
+            // Every structured finding survives — no baseline subtraction, no
+            // dedup of repeated messages — so repeated identical defects keep
+            // their own location. Known engine noise is still filtered.
+            const schemaIssues = (single.schemaIssues ?? []).filter(
+                (issue) => !IGNORED_VALIDATION_ERRORS.some((pattern) => issue.message.includes(pattern)),
+            );
+            if (schemaIssues.length === 0) {
+                return { ...single, valid: true, errors: new Set(), schemaIssues: [] };
+            }
+            return {
+                ...single,
+                valid: false,
+                errors: new Set(schemaIssues.map((issue) => issue.message.trim())),
+                schemaIssues,
+            };
+        }
+
         // Baseline subtraction diffs the modified part against --original so
-        // migrations don't fail on pre-existing defects. Under `strict` a
-        // schema defect is invalid whether or not the original had it, so
-        // subtraction is bypassed; lenient/word-valid keep the diff.
-        const originalErrors = this.profile === "strict" ? new Set<string>() : await this._getOriginalFileErrors(xmlFile);
+        // migrations don't fail on pre-existing defects; lenient/word-valid
+        // keep the diff.
+        const originalErrors = await this._getOriginalFileErrors(xmlFile);
         const newErrors = new Set<string>();
         for (const e of single.errors) {
             if (originalErrors.has(e)) continue;
@@ -1363,6 +1415,7 @@ export class BaseSchemaValidator {
             if (compatibilityIssues.some((issue) => issue.code === "mce-root-ignored")) {
                 return { valid: true, errors: new Set(), issues: compatibilityIssues };
             }
+            const transformedView = cleanedString !== xmlContent;
 
             const validator = await this._getXsdValidator();
             const issues = await validator.validate(cleanedString, schemaPath);
@@ -1378,10 +1431,21 @@ export class BaseSchemaValidator {
             for (const issue of errorIssues) {
                 errors.add(issue.message.trim());
             }
-            return { valid: false, errors, ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}) };
+            return {
+                valid: false,
+                errors,
+                schemaIssues: errorIssues,
+                transformedView,
+                ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}),
+            };
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
-            return { valid: false, errors: new Set([message]), ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}) };
+            return {
+                valid: false,
+                errors: new Set([message]),
+                schemaIssues: [{ severity: "error", message }],
+                ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}),
+            };
         }
     }
 
