@@ -365,10 +365,12 @@ be attributed to this file. Verification needs exclusive use of Word: runs must
 not overlap and Word must not be in use, because a dialog that appears after the
 pre-open observation is attributed to this file (#331). macOS cleanup dismisses
 the Word dialog showing at close, preferring Cancel, No, then OK; under exclusive
-use that is the dialog this run's open raised. It does not relaunch Word after a
-crash.
+use that is the dialog this run's open raised. When the open itself overran its
+budget, cleanup first lets it settle within the rest of the budget, so a late open
+never lands after the close (#328). It does not relaunch Word after a crash.
 The source implementation (`src/lib/word-verifier.ts`) supports injected transport
-and clock dependencies; public validation options accept a `wordVerifier` callback
+and clock dependencies, plus a `wallNow` source: `observedAt` and the crash-report
+open instant are wall time, independent of the deadline clock (#329); public validation options accept a `wordVerifier` callback
 for deterministic tests or a custom verifier.
 
 ### Compose individual checks with the validator classes

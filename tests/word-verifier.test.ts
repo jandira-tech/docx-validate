@@ -19,6 +19,9 @@ import { describe, expect, it } from "vitest";
 import type { Clock, WordSnapshot, WordTransport } from "../src/lib/word-verifier";
 import { classifyWordDialog, parseWordSnapshot, verifyInWord, WORD_VERIFY_CLEANUP_RESERVE_MS } from "../src/lib/word-verifier";
 
+/** A wall-clock instant, distinct from any deadline-clock reading (#329). */
+const OPEN_WALL_MS = Date.parse("2026-10-23T12:00:00.000Z");
+
 const BYTES = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0xde, 0xad, 0xbe, 0xef]);
 
 const PENDING: WordSnapshot = { processAlive: false, documentNames: [], dialogText: "", dialogButtons: [] };
@@ -771,13 +774,14 @@ describe("verifyInWord: a vanished Word process needs crash evidence (#305)", ()
     it("reports crash when the process disappears and a new Word crash report was written after the open", async () => {
         const transport = new FakeTransport({ crashReport: "report", snapshots: VANISHED });
         const clock = new FakeClock();
-        const result = await verifyInWord(BYTES, { transport, clock });
+        const result = await verifyInWord(BYTES, { transport, clock, wallNow: () => OPEN_WALL_MS });
         expect(result.outcome).toBe("crash");
         expect(result.satisfied).toBe(false);
         expect(result.details).toContain("crash report");
-        // Only a report written after this run's open counts; the lookup
-        // receives the open instant (FakeClock time starts at 0).
-        expect(transport.calls).toContain("crashReportedSince:0");
+        // Only a report written after this run's open counts. Report files
+        // carry wall-clock mtimes, so the lookup receives the open instant
+        // in wall time, not in the deadline clock's time (#329).
+        expect(transport.calls).toContain(`crashReportedSince:${OPEN_WALL_MS}`);
     });
 
     it("reports unavailable, not crash, when Word vanishes without a crash report (an external kill or quit)", async () => {
@@ -939,5 +943,70 @@ describe("parseWordSnapshot", () => {
     it("joins multiple static-text fragments into one dialog text", () => {
         const out = "process=1\ntext=First line\ntext=Second line";
         expect(parseWordSnapshot(out).dialogText).toBe("First line Second line");
+    });
+});
+
+describe("verifyInWord: a late-settling open is closed after it settles (#328)", () => {
+    it("waits for an open that lost its race before closing the document", async () => {
+        const clock = new FakeClock();
+        const calls: string[] = [];
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            version: async () => undefined,
+            available: async () => true,
+            open: () => {
+                calls.push("open");
+                // The work budget expires while the open is in flight; Word
+                // finishes opening the document only afterwards.
+                queueMicrotask(() => clock.advance(8_500));
+                return new Promise<void>((resolve) => {
+                    setTimeout(() => {
+                        calls.push("open settled");
+                        resolve();
+                    }, 20);
+                });
+            },
+            observe: async () => PENDING,
+            close: async () => {
+                calls.push("close");
+            },
+            crashReportedSince: async () => false,
+        };
+        const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 10_000 });
+        expect(result.outcome).toBe("timeout");
+        expect(result.details).toContain("launch did not settle");
+        // Closing first would leave the late-opened document open in Word.
+        expect(calls).toEqual(["open", "open settled", "close"]);
+    });
+
+    it("still closes, and says so, when the late open has not settled by the deadline", async () => {
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            version: async () => undefined,
+            available: async () => true,
+            open: () => new Promise<void>(() => undefined),
+            observe: async () => PENDING,
+            close: async () => undefined,
+            crashReportedSince: async () => false,
+        };
+        const result = await verifyInWord(BYTES, { transport, clock: wallClock(), timeoutMs: 40, pollMs: 5 });
+        expect(result.outcome).toBe("timeout");
+        expect(result.details).toContain("the late open had not settled when the cleanup close ran");
+    });
+});
+
+describe("verifyInWord: observedAt is wall time, not deadline time (#329)", () => {
+    it("stamps observedAt from the injected wall clock while the deadline clock reads 0", async () => {
+        const transport = new FakeTransport({ snapshots: [(name) => openDoc(name)] });
+        const result = await verifyInWord(BYTES, { transport, clock: new FakeClock(), wallNow: () => OPEN_WALL_MS });
+        expect(result.observedAt).toBe("2026-10-23T12:00:00.000Z");
+    });
+
+    it("defaults observedAt to the system wall clock, so a deadline clock at 0 never yields 1970", async () => {
+        const before = Date.now();
+        const transport = new FakeTransport({ snapshots: [(name) => openDoc(name)] });
+        const result = await verifyInWord(BYTES, { transport, clock: new FakeClock() });
+        expect(Date.parse(result.observedAt)).toBeGreaterThanOrEqual(before);
+        expect(Date.parse(result.observedAt)).toBeLessThanOrEqual(Date.now());
     });
 });

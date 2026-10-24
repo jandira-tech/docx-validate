@@ -299,7 +299,8 @@ async function withWordVerification(
             satisfied: false,
             fileSha256: "",
             platform: process.platform,
-            observedAt: new Date(0).toISOString(),
+            // Wall time of this answer, never the epoch (#329).
+            observedAt: new Date().toISOString(),
             observationMs: 0,
             details: "Word verification needs a packed Office file; the validated target is an unpacked directory",
         });

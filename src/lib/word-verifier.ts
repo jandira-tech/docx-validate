@@ -131,6 +131,13 @@ export type WordVerifyOptions = {
     observationMs?: number;
     /** Interval between observations. Default 1 000 ms. */
     pollMs?: number;
+    /**
+     * Wall-clock source for `observedAt` and for the open instant the
+     * crash-report lookup compares report mtimes against (#329). Separate
+     * from `clock`, which only measures the budget and may be monotonic.
+     * Default `Date.now`.
+     */
+    wallNow?: () => number;
 };
 
 export const WORD_VERIFY_TIMEOUT_MS = 45_000;
@@ -204,6 +211,9 @@ const showsDocument = (snapshot: WordSnapshot, documentName: string): boolean =>
     );
 };
 
+/** Settles a promise without caring how it settled. */
+const noop = (): void => undefined;
+
 /** Sentinel for a transport call that did not settle before the deadline. */
 const deadlineExceeded = Symbol("deadline-exceeded");
 type DeadlineRace<T> = T | typeof deadlineExceeded;
@@ -248,6 +258,7 @@ export const verifyInWord = async (bytes: Uint8Array, opts: WordVerifyOptions = 
     const timeoutMs = opts.timeoutMs ?? WORD_VERIFY_TIMEOUT_MS;
     const observationMs = opts.observationMs ?? WORD_VERIFY_OBSERVATION_MS;
     const pollMs = opts.pollMs ?? WORD_VERIFY_POLL_MS;
+    const wallNow = opts.wallNow ?? Date.now;
 
     // One deadline (issue #301): the total budget starts with the run, so
     // launch, every observation poll and the cleanup close all count
@@ -266,7 +277,8 @@ export const verifyInWord = async (bytes: Uint8Array, opts: WordVerifyOptions = 
     // version; an overrun of available() ends the run as timeout.
     const versionReport = await callWithinDeadline(clock, deadline, () => transport.version());
     const version = versionReport === deadlineExceeded ? undefined : versionReport;
-    const observedAt = new Date(clock.now()).toISOString();
+    // Provenance is wall time; the deadline clock may not be (#329).
+    const observedAt = new Date(wallNow()).toISOString();
     const finish = (outcome: WordOutcome, details: string, elapsedMs: number): WordVerification => ({
         requested: true,
         outcome,
@@ -323,15 +335,20 @@ export const verifyInWord = async (bytes: Uint8Array, opts: WordVerifyOptions = 
         let details = "no observation reached a conclusive state before the deadline";
         let elapsed = 0;
         let settled = false;
+        // An open that lost its race and may still finish (#328).
+        let lateOpen: Promise<void> | undefined;
 
         try {
             // The open instant: only a crash report written after THIS run
-            // opened the file is crash evidence (#305).
-            const openedAt = clock.now();
-            const opened = await callWithinDeadline(clock, workDeadline, () => transport.open(tempFile));
+            // opened the file is crash evidence (#305). Report mtimes are
+            // wall time, so the instant is too (#329).
+            const openedAt = wallNow();
+            let openCall: Promise<void> | undefined;
+            const opened = await callWithinDeadline(clock, workDeadline, () => (openCall = transport.open(tempFile)));
             if (opened === deadlineExceeded) {
                 outcome = "timeout";
                 details = `launch did not settle within the ${timeoutMs} ms budget`;
+                lateOpen = openCall;
             } else {
                 while (clock.now() < workDeadline) {
                     await clock.sleep(pollMs);
@@ -387,6 +404,16 @@ export const verifyInWord = async (bytes: Uint8Array, opts: WordVerifyOptions = 
             // before); during unwind it is swallowed so the original
             // error still propagates.
             try {
+                // #328: an open that lost its race can still complete, and a
+                // close that ran first would leave that document open in
+                // Word. Let it settle within the rest of the budget first.
+                const pendingOpen = lateOpen;
+                if (pendingOpen !== undefined) {
+                    const openSettled = await callWithinDeadline(clock, deadline, () => pendingOpen.then(noop, noop));
+                    if (openSettled === deadlineExceeded) {
+                        details = `${details}; the late open had not settled when the cleanup close ran`;
+                    }
+                }
                 // The close always starts: it gets the rest of the budget, or
                 // the reserve when a call overran its race.
                 const closeDeadline = Math.max(deadline, clock.now() + cleanupReserve);
