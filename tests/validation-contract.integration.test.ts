@@ -30,12 +30,14 @@ import { PPTXSchemaValidator } from "../src/scripts/office/validators/pptx";
 import { walkFiles } from "../src/scripts/office/validators/base";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import {
+    glossaryStylesParts,
     GLOSSARY_THEME_PART,
     glossaryThemeParts,
     GLOSSARY_STORY_SEGMENTS,
     glossaryStoryPart,
     glossaryStoryParts,
 } from "./support/glossary-content-type-specimens";
+import { MISMATCH_STORY_CASES, storyContentType, storyContentTypeParts } from "./support/story-content-type-specimens";
 import { buildRawZip } from "./support/raw-zip";
 import { DUPLICATE_MAIN_DOCUMENT_PARTS } from "./support/main-document-specimens";
 
@@ -4342,6 +4344,64 @@ describe("validation contract: reached glossary story inexact types (#596, #589,
                         const selected = !selection.checks || selection.checks.includes(code);
                         expect(partial.valid).toBe(selected ? full.valid : true);
                         expect(partial.issues.filter((issue) => issue.code === code)).toEqual(selected ? found : []);
+                        expect([...errorCodes(partial.issues)].every((error) => errorCodes(full.issues).has(error))).toBe(true);
+                    }
+                }
+            });
+        },
+        60_000,
+    );
+});
+
+// Session 24: keep the generic styles finding even when strict has unrelated paraId errors.
+it("validation contract: glossary generic styles (#601, #381)", async () => {
+    await withTempDir(async (dir) => {
+        const code = "word-part-content-type-generic";
+        for (const exact of [false, true]) {
+            const file = path.join(dir, `styles-${exact}.docx`);
+            writeFileSync(file, await buildDocx(glossaryStylesParts(exact)));
+            const full = await validate(file);
+            expect(full.valid).toBe(exact);
+            const found = full.issues.filter((issue) => issue.code === code);
+            expect(found).toEqual(exact ? [] : [expect.objectContaining({ severity: "error", path: "word/glossary/styles.xml" })]);
+            const strict = await validate(file, { profile: "strict" });
+            expect(strict.valid && !full.valid).toBe(false);
+            expect(strict.issues.filter((issue) => issue.code === code)).toEqual(found);
+            expect(
+                strict.issues.filter((issue) => issue.code === "ct-undeclared-part" && issue.path === "word/glossary/styles.xml"),
+            ).toEqual([]);
+            const lenient = await validate(file, { profile: "lenient" });
+            expect(lenient.issues.filter((issue) => issue.code === code)).toEqual(exact ? [] : [{ ...found[0], severity: "warning" }]);
+            for (const selection of [{ quick: true }, { checks: [code] }, { checks: ["content-types"] }]) {
+                const partial = await validate(file, selection);
+                expect(partial.valid).toBe(full.valid);
+                expect(partial.issues.filter((issue) => issue.code === code)).toEqual(found);
+            }
+        }
+    });
+}, 60_000);
+
+// Session 24: read header/footer swaps, including the reached glossary's parameterized footer.
+describe("validation contract: story content type mismatch (#600, #381)", () => {
+    it.each(MISMATCH_STORY_CASES)(
+        "full, quick and named agree for $via $segment ($declared)",
+        async ({ segment, via, declared }) => {
+            await withTempDir(async (dir) => {
+                const code = "word-part-content-type-mismatch";
+                for (const exact of [false, true]) {
+                    const file = path.join(dir, `story-${exact}.docx`);
+                    writeFileSync(file, await buildDocx(storyContentTypeParts(segment, exact ? storyContentType(segment) : declared, via)));
+                    const full = await validate(file);
+                    expect(full.valid).toBe(exact);
+                    const found = full.issues.filter((issue) => issue.code === code);
+                    expect(found).toHaveLength(exact ? 0 : 1);
+                    const strict = await validate(file, { profile: "strict" });
+                    expect(strict.valid && !full.valid).toBe(false);
+                    expect(strict.issues.filter((issue) => issue.code === code)).toHaveLength(found.length);
+                    for (const selection of [{ quick: true }, { checks: [code] }, { checks: ["content-types"] }]) {
+                        const partial = await validate(file, selection);
+                        expect(partial.valid).toBe(full.valid);
+                        expect(partial.issues.filter((issue) => issue.code === code)).toEqual(found);
                         expect([...errorCodes(partial.issues)].every((error) => errorCodes(full.issues).has(error))).toBe(true);
                     }
                 }

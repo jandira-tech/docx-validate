@@ -42,6 +42,7 @@ import { validate } from "../src/scripts/office/validate";
 import { isWordBlockingIssue } from "../src/scripts/office/validators/word-blocking";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import {
+    glossaryStylesParts,
     GLOSSARY_THEME_PART,
     glossaryThemeParts,
     GLOSSARY_STORY_SEGMENTS,
@@ -1987,7 +1988,6 @@ describe("reached glossary generic theme (#595)", () => {
 
     it("keeps other glossary generic relationships outside the observed scope", async () => {
         for (const segment of [
-            "styles",
             "settings",
             "fontTable",
             "webSettings",
@@ -2054,6 +2054,20 @@ describe("reached glossary referenced story inexact types (#596)", () => {
             expect(found[0]?.segment).toBe("footer");
             expect(found[0]?.issue.message).toContain("named by the glossary's footer relationship");
             expect(found[0]?.issue.message).toContain("Word 16.115 offers to recover the package.");
+        }
+    });
+});
+
+// Session 24: generic styles offers recovery; the exact Override opens clean (#601).
+describe("reached glossary generic styles (#601)", () => {
+    it("reports both scopes, names the glossary, blocks Word, and accepts the control", async () => {
+        for (const scope of ["observed", "spec"] as const) {
+            const found = await wordPartContentTypeGenericFindings(ValidationContext.fromEntries(glossaryStylesParts()), scope);
+            expect(found).toHaveLength(1);
+            expect(found[0]?.issue).toMatchObject({ code: ID, path: "word/glossary/styles.xml", severity: "error" });
+            expect(found[0]?.issue.message).toContain("the glossary's styles relationship");
+            expect(isWordBlockingIssue(found[0]!.issue)).toBe(true);
+            expect(await wordPartContentTypeGenericFindings(ValidationContext.fromEntries(glossaryStylesParts(true)), scope)).toEqual([]);
         }
     });
 });
