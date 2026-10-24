@@ -1289,6 +1289,17 @@ describe("DOCXSchemaValidator", () => {
             `<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>` +
             `</pic:pic></a:graphicData></a:graphic>` +
             `</wp:inline></w:drawing></w:r></w:p></w:hdr>`;
+        const MINIMAL_CONTENT_TYPES =
+            `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+            `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+            `<Default Extension="xml" ContentType="application/xml"/>` +
+            `<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>` +
+            `</Types>`;
+        const MINIMAL_PACKAGE_RELS =
+            `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+            `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>` +
+            `</Relationships>`;
+        const MINIMAL_DOCUMENT = `<w:document ${W_NS}><w:body/></w:document>`;
 
         it("treats an inline picture missing required scaffold children as word-blocking", async () => {
             await withTempDir(async (dir) => {
@@ -1343,6 +1354,13 @@ describe("DOCXSchemaValidator", () => {
 
         it("downgrades missing header image sidecars under word-valid because Word opens cleanly", async () => {
             await withTempDir(async (dir) => {
+                // A package scaffold: without [Content_Types].xml and a main
+                // part, word-valid now fails on ct-missing /
+                // word-main-document-part before the sidecar finding (#435,
+                // #380), which is what this test is about.
+                await writeFile(path.join(dir, "[Content_Types].xml"), `<?xml version="1.0"?>${MINIMAL_CONTENT_TYPES}`);
+                await writeFile(path.join(dir, "_rels", ".rels"), `<?xml version="1.0"?>${MINIMAL_PACKAGE_RELS}`);
+                await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?>${MINIMAL_DOCUMENT}`);
                 await writeFile(path.join(dir, "word", "header1.xml"), `<?xml version="1.0"?>${completeInlinePicture}`);
 
                 const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" });

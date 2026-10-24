@@ -40,8 +40,11 @@ describe("missing main document part across profiles (#380)", () => {
                 if (profile === "lenient") {
                     expect(issues).toEqual([]);
                 } else {
-                    expect(issues).toEqual([expect.objectContaining({ severity: profile === "strict" ? "error" : "warning" })]);
-                    if (profile === "strict") expect(result.valid).toBe(false);
+                    // Word 16.115 offers to recover these packages, so the
+                    // finding is blocking under strict and word-valid (#380;
+                    // session 3c in docs/plans/evidence/word-probes-2026-10-24.md).
+                    expect(issues).toEqual([expect.objectContaining({ severity: "error" })]);
+                    expect(result.valid).toBe(false);
                 }
             });
         });
@@ -59,12 +62,12 @@ describe("missing main document part across profiles (#380)", () => {
 });
 
 describe("a quick run judges a missing main part as the full run does (#380, #381)", () => {
-    it("word-valid quick reports it as a warning, and lenient quick does not run it", async () => {
+    it("word-valid quick reports it as an error, and lenient quick does not run it", async () => {
         await withTempDir(async (dir) => {
             const file = path.join(dir, "core-only.docx");
             await writeFile(file, await buildDocx(CORE_ONLY));
             const quick = await validate(file, { quick: true });
-            expect(quick.issues.filter((issue) => issue.code === CODE)).toEqual([expect.objectContaining({ severity: "warning" })]);
+            expect(quick.issues.filter((issue) => issue.code === CODE)).toEqual([expect.objectContaining({ severity: "error" })]);
             expect(quick.metadata?.executedChecks).toContain(CODE);
 
             const lenient = await validate(file, { profile: "lenient", quick: true });

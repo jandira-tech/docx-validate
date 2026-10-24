@@ -425,6 +425,26 @@ describe("a partial run of a refused package view still runs the stored-name che
             });
         },
     );
+
+    it("runs a selected envelope check on a refused view, as the full run does", async () => {
+        // An archive-only check reads the archive bytes, not the package view,
+        // so a refused view does not omit it (CodeRabbit on #440).
+        await withTempDir(async (dir) => {
+            const bytes = Buffer.concat([rawPackage([{ name: "word/a/../b.xml", content: "<x/>" }]), Buffer.from("trailing junk")]);
+            const file = await specimen(dir, "refused-trailing.docx", bytes);
+            const partial = await validate(file, { checks: ["zip-bytes-after-eocd"] });
+            const full = await validate(file, {});
+
+            expect(partial.metadata?.executedChecks).toEqual(["zip-bytes-after-eocd"]);
+            expect(partial.metadata?.omittedChecks).not.toContain("zip-bytes-after-eocd");
+            expect(partial.issues.map((issue) => issue.code)).toEqual(
+                expect.arrayContaining(["zip-bytes-after-eocd", "package-extract-failed"]),
+            );
+            expect(full.issues.map((issue) => issue.code)).toEqual(
+                expect.arrayContaining(["zip-bytes-after-eocd", "package-extract-failed"]),
+            );
+        });
+    });
 });
 
 describe("a partial run applies its profile's policy (#381)", { timeout: 120_000 }, () => {
