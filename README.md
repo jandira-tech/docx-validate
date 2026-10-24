@@ -539,6 +539,18 @@ left out by selection. `schemaCompleted` records completion of the eligible sche
 walk without schema-load failures; it is separate from whether schema findings
 made the document invalid. `wordVerification` is present only when requested.
 
+Full validation accepts unpacked directories, including POSIX files whose stored
+names contain literal backslashes (for example `word\document.xml`). Such inputs
+are validated in a temporary copy under package part names (`word/document.xml`),
+using the same duplicate selection and extraction guards as packed inputs.
+Directories with ordinary forward-slash names are validated directly. Validation
+leaves source files unchanged unless `autoRepair: true` / `--auto-repair` is used.
+For a staged directory, repairs write changed bytes back to each original stored
+file name and delete originals of parts removed by a repair; untouched files and
+dropped duplicate entries remain byte-identical. No forward-slash replacement
+files are added to the input directory. Quick and named-check runs continue to
+read the directory's package view directly ([#374](https://github.com/jandira-tech/docx-validate/issues/374)).
+
 `ValidateRunResult` extends this with `suffix` (e.g. `".docx"`), `repairs`
 (number of issues auto-repaired when `autoRepair: true`), and
 `xsdWalk: { started, parts, eligible }`. `Validate.run()` and `jubarte.validate()`

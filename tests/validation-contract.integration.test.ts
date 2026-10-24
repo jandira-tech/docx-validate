@@ -13,16 +13,18 @@
  * fixture error happened to make the result invalid.
  */
 
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, promises as fs, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
 import { defaultProfileForFormat } from "../src/lib/mode-policy";
 import type { Profile } from "../src/lib/types";
 import { validate } from "../src/scripts/office/validate";
+import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
+import { walkFiles } from "../src/scripts/office/validators/base";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
 /** The profile a `.docx` is validated under when the caller names none. */
@@ -489,4 +491,230 @@ describe("validation contract: a full run keeps every part's own name (#376, #37
             expect(errorCodes(full.issues)).toContain("package-extract-failed");
         });
     });
+});
+
+// These are filesystem integration tests: literal backslashes are file-name
+// characters on POSIX, and separators on Windows.
+describe.skipIf(process.platform === "win32")("directory package staging (#374)", { timeout: 120000 }, () => {
+    type Parts = Readonly<Record<string, string | Uint8Array>>;
+    const storedName = (name: string) => name.replaceAll("/", "\\");
+    const writeDirectory = async (root: string, parts: Parts, backslashes: boolean) => {
+        await fs.mkdir(root, { recursive: true });
+        for (const [part, bytes] of Object.entries(parts)) {
+            const file = path.join(root, backslashes ? storedName(part) : part);
+            await fs.mkdir(path.dirname(file), { recursive: true });
+            await fs.writeFile(file, bytes);
+        }
+        return root;
+    };
+    const snapshot = async (root: string) => {
+        const files: Record<string, Buffer> = {};
+        for (const file of walkFiles(root)) files[path.relative(root, file)] = await fs.readFile(file);
+        return files;
+    };
+    const findings = (result: Awaited<ReturnType<typeof validate>>) => result.issues.map((issue) => JSON.stringify(issue)).sort();
+    const assertSameVerdict = (actual: Awaited<ReturnType<typeof validate>>, control: Awaited<ReturnType<typeof validate>>) => {
+        expect(actual.valid).toBe(control.valid);
+        expect(findings(actual)).toEqual(findings(control));
+        expect(actual.metadata?.schemaCompleted).toBe(control.metadata?.schemaCompleted);
+    };
+
+    it.each([false, true])("schema-walks a backslash main part (invalid=%s), preserving every input byte", async (invalid) => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...MINIMAL_PARTS,
+                "word/document.xml": invalid
+                    ? MINIMAL_PARTS["word/document.xml"].replace("<w:body>", "<w:body><w:bogus/>")
+                    : MINIMAL_PARTS["word/document.xml"],
+            };
+            const controlDir = await writeDirectory(path.join(dir, "control.docx"), parts, false);
+            const input = await writeDirectory(path.join(dir, "input.docx"), parts, true);
+            const before = await snapshot(input);
+            const control = await validate(controlDir, { strict: true });
+            const actual = await validate(input, { strict: true });
+            expect(actual.xsdWalk.parts).toContain("word/document.xml");
+            expect(actual.xsdWalk).toEqual(control.xsdWalk);
+            expect(errorCodes(actual.issues).has("xsd-error")).toBe(invalid);
+            assertSameVerdict(actual, control);
+            expect(await snapshot(input)).toEqual(before);
+        });
+    });
+
+    it("finds backslash sidecars and image targets with the same findings as a normal directory", async () => {
+        await withTempDir(async (dir) => {
+            const r = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+            const parts = {
+                ...MINIMAL_PARTS,
+                "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"].replace(
+                    "</Types>",
+                    '<Default Extension="png" ContentType="image/png"/></Types>',
+                ),
+                "word/document.xml": MINIMAL_PARTS["word/document.xml"].replace(
+                    "<w:r><w:t>Hello</w:t></w:r>",
+                    `<w:r><w:drawing><a:blip xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="${r}" r:embed="rId9"/></w:drawing></w:r>`,
+                ),
+                "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"].replace(
+                    "</Relationships>",
+                    `<Relationship Id="rId9" Type="${r}/image" Target="media/image1.png"/></Relationships>`,
+                ),
+                "word/media/image1.png": new Uint8Array([1, 2, 3]),
+            };
+            const control = await validate(await writeDirectory(path.join(dir, "control.docx"), parts, false));
+            const input = await writeDirectory(path.join(dir, "input.docx"), parts, true);
+            const before = await snapshot(input);
+            const actual = await validate(input);
+            expect(actual.issues.filter((i) => i.code === "rels-missing-sidecar")).toEqual([]);
+            assertSameVerdict(actual, control);
+            expect(await snapshot(input)).toEqual(before);
+        });
+    });
+
+    it("judges only the kept duplicate, as the packed package does, and reports the duplicate (#351)", async () => {
+        await withTempDir(async (dir) => {
+            const parts = { ...MINIMAL_PARTS, "word\\document.xml": "<dropped" };
+            const input = await writeDirectory(path.join(dir, "input.docx"), parts, false);
+            const before = await snapshot(input);
+            const packed = path.join(dir, "packed.docx");
+            await fs.writeFile(packed, await buildDocx(parts));
+            const spy = vi.spyOn(DOCXSchemaValidator.prototype, "validate");
+            let actual;
+            try {
+                actual = await validate(input, { strict: true });
+                // Even a dropped backslash entry selects staging. The original
+                // directory must not be passed to the path-keyed validators.
+                expect(spy).toHaveBeenCalledOnce();
+                expect(spy.mock.contexts[0]).not.toHaveProperty("unpackedDir", input);
+            } finally {
+                spy.mockRestore();
+            }
+            const archive = await validate(packed, { strict: true });
+            const control = await validate(await writeDirectory(path.join(dir, "control.docx"), MINIMAL_PARTS, false), { strict: true });
+            expect(control.valid).toBe(true);
+            assertSameVerdict(actual, archive);
+            // Strict rejects the duplicate itself; every other finding is the
+            // forward-slash control's, so the dropped "<dropped" entry is not judged.
+            expect(actual.valid).toBe(false);
+            expect(actual.issues.filter((i) => i.code === "opc-equivalent-part-names")).toEqual([
+                expect.objectContaining({ severity: "error", path: "word/document.xml" }),
+            ]);
+            const withoutDuplicate = (result: typeof actual) => findings(result).filter((f) => !f.includes('"opc-equivalent-part-names"'));
+            expect(withoutDuplicate(actual)).toEqual(findings(control));
+            expect(await snapshot(input)).toEqual(before);
+        });
+    });
+
+    it("writes repaired bytes and deletions back to stored names, leaving every untouched file identical", async () => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...MINIMAL_PARTS,
+                "word/document.xml": MINIMAL_PARTS["word/document.xml"].replace(">Hello<", "> Hello <"),
+                "word/_rels/unused.xml.rels": '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>',
+                "word/media/untouched.bin": new Uint8Array([0, 255, 1, 2]),
+            };
+            const input = await writeDirectory(path.join(dir, "input.docx"), parts, true);
+            const normal = await writeDirectory(path.join(dir, "control.docx"), parts, false);
+            const before = await snapshot(input);
+            const control = await validate(normal, { strict: true, autoRepair: true });
+            const actual = await validate(input, { strict: true, autoRepair: true });
+            expect(actual.xsdWalk.parts).toContain("word/document.xml");
+            expect(actual.repairs).toBe(control.repairs);
+            expect(actual.repairs).toBe(2);
+            assertSameVerdict(actual, control);
+            const after = await snapshot(input);
+            const repaired = storedName("word/document.xml");
+            const deleted = storedName("word/_rels/unused.xml.rels");
+            expect(after[repaired]?.toString()).toContain('xml:space="preserve"');
+            expect(after[repaired]).toEqual(await fs.readFile(path.join(normal, "word/document.xml")));
+            expect(after).not.toHaveProperty(deleted);
+            expect(existsSync(path.join(input, "word/document.xml"))).toBe(false);
+            for (const [name, bytes] of Object.entries(before)) {
+                if (name !== repaired && name !== deleted) expect(after[name]).toEqual(bytes);
+            }
+            expect(Object.keys(after).sort()).toEqual(
+                Object.keys(before)
+                    .filter((name) => name !== deleted)
+                    .sort(),
+            );
+        });
+    });
+
+    it("does not stage a normal directory, and stages only the backslash control", async () => {
+        await withTempDir(async (dir) => {
+            const normal = await writeDirectory(path.join(dir, "normal.docx"), MINIMAL_PARTS, false);
+            const backslash = await writeDirectory(path.join(dir, "backslash.docx"), MINIMAL_PARTS, true);
+            // Observe the real validator's directory without replacing its behavior.
+            const spy = vi.spyOn(DOCXSchemaValidator.prototype, "validate");
+            try {
+                const control = await validate(normal);
+                const actual = await validate(backslash);
+                expect(spy).toHaveBeenCalledTimes(2);
+                expect(spy.mock.contexts[0]).toHaveProperty("unpackedDir", normal);
+                expect(spy.mock.contexts[1]).not.toHaveProperty("unpackedDir", backslash);
+                assertSameVerdict(actual, control);
+            } finally {
+                spy.mockRestore();
+            }
+        });
+    });
+
+    it.each([false, true])("keeps full/partial verdict and error-subset invariants (malformed=%s, #381)", async (malformed) => {
+        await withTempDir(async (dir) => {
+            const parts = { ...MINIMAL_PARTS, "word/document.xml": malformed ? "<w:document" : MINIMAL_PARTS["word/document.xml"] };
+            const normal = await writeDirectory(path.join(dir, "normal.docx"), parts, false);
+            const input = await writeDirectory(path.join(dir, "input.docx"), parts, true);
+            const full = await validate(input);
+            const control = await validate(normal);
+            assertSameVerdict(full, control);
+            expect(full.valid).toBe(!malformed);
+            const errors = (result: Awaited<ReturnType<typeof validate>>) =>
+                new Set(result.issues.filter((i) => i.severity === "error").map((i) => `${i.code}@${i.path}`));
+            for (const selection of [{ checks: ["xml-syntax", "relationships", "tables", "drawings"] }, { quick: true }]) {
+                const partial = await validate(input, { profile: "word-valid", ...selection });
+                const partialControl = await validate(normal, { profile: "word-valid", ...selection });
+                assertSameVerdict(partial, partialControl);
+                if (full.valid) expect(partial.valid).toBe(true);
+                for (const error of errors(partial)) expect(errors(full)).toContain(error);
+            }
+        });
+    });
+
+    it("stages a backslash PPTX slide and finds its sidecar as the normal directory does", async () => {
+        await withTempDir(async (dir) => {
+            const r = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+            const p = "http://schemas.openxmlformats.org/presentationml/2006/main";
+            const parts = {
+                "[Content_Types].xml":
+                    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="xml" ContentType="application/xml"/><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="png" ContentType="image/png"/></Types>',
+                "ppt/presentation.xml": `<p:presentation xmlns:p="${p}"><p:bogus/></p:presentation>`,
+                "ppt/slides/slide1.xml": `<p:sld xmlns:p="${p}" xmlns:r="${r}"><p:cSld><p:spTree><a:blip xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" r:embed="rId9"/></p:spTree></p:cSld></p:sld>`,
+                "ppt/slides/_rels/slide1.xml.rels": `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId9" Type="${r}/image" Target="../media/image1.png"/></Relationships>`,
+                "ppt/media/image1.png": new Uint8Array([1, 2, 3]),
+            };
+            const control = await validate(await writeDirectory(path.join(dir, "control.pptx"), parts, false));
+            const input = await writeDirectory(path.join(dir, "input.pptx"), parts, true);
+            const before = await snapshot(input);
+            const actual = await validate(input);
+            expect(actual.issues.filter((i) => i.code === "rels-missing-sidecar")).toEqual([]);
+            expect(actual.xsdWalk.parts).toContain("ppt/presentation.xml");
+            expect(actual.xsdWalk).toEqual(control.xsdWalk);
+            expect(errorCodes(actual.issues)).toContain("xsd-error");
+            assertSameVerdict(actual, control);
+            expect(await snapshot(input)).toEqual(before);
+        });
+    });
+
+    it.each(["word\\..\\escape.xml", "\\word\\bonus.xml"])(
+        "refuses unplaceable stored name %j without changing the source",
+        async (name) => {
+            await withTempDir(async (dir) => {
+                const input = await writeDirectory(path.join(dir, "input.docx"), { ...MINIMAL_PARTS, [name]: "<b/>" }, false);
+                const before = await snapshot(input);
+                const result = await validate(input, { autoRepair: true });
+                expect(errorCodes(result.issues)).toContain("package-extract-failed");
+                expect(result.metadata?.schemaCompleted).toBe(false);
+                expect(result.repairs).toBe(0);
+                expect(await snapshot(input)).toEqual(before);
+            });
+        },
+    );
 });
