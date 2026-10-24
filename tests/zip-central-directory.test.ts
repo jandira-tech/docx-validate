@@ -5,11 +5,56 @@
 
 import { describe, expect, it } from "vitest";
 
-import { zipCentralDirectoryEntries } from "../src/lib/zip-central-directory";
+import { zipCentralDirectoryEntries, lastStructuralEocdOffset } from "../src/lib/zip-central-directory";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+import JSZip from "jszip";
+
 import { buildRawZip } from "./support/raw-zip";
 
 const names = (bytes: Uint8Array) => zipCentralDirectoryEntries(bytes)?.map((entry) => entry.name);
+
+describe("the EOCD record behind more than 64 KiB of trailing data (#447)", () => {
+    const duplicate = () =>
+        buildRawZip([
+            { name: "a.xml", content: "<1/>" },
+            { name: "a.xml", content: "<2/>" },
+        ]);
+    const withTrailing = (bytes: Buffer, count: number, fake?: Buffer): Buffer =>
+        Buffer.concat(fake ? [bytes, fake, Buffer.alloc(count - fake.length)] : [bytes, Buffer.alloc(count)]);
+    // A signature with no readable central directory behind it.
+    const fakeEocd = (): Buffer => Buffer.concat([Buffer.from([0x50, 0x4b, 0x05, 0x06]), Buffer.alloc(18)]);
+
+    it("finds the last structural record however much data follows it", () => {
+        const bytes = duplicate();
+        const trailing = withTrailing(bytes, 70_000);
+        expect(lastStructuralEocdOffset(trailing)).toBe(bytes.length - 22);
+        expect(names(trailing)).toEqual(["a.xml", "a.xml"]);
+    });
+
+    it("agrees with JSZip, which loads the same archive from that record", async () => {
+        const trailing = withTrailing(duplicate(), 70_000);
+        const zip = await JSZip.loadAsync(trailing);
+        expect(Object.keys(zip.files).sort()).toEqual(["a.xml"]);
+        expect(fileNames(trailing)).toEqual(["a.xml", "a.xml"]);
+    });
+
+    it("skips a fake EOCD signature in the trailing data", () => {
+        const bytes = duplicate();
+        const trailing = withTrailing(bytes, 70_000, fakeEocd());
+        expect(lastStructuralEocdOffset(trailing)).toBe(bytes.length - 22);
+        expect(names(trailing)).toEqual(["a.xml", "a.xml"]);
+    });
+
+    it("reads the directory through a later structural record in the trailing data", () => {
+        const bytes = duplicate();
+        // A later record whose fields still point at the real central directory.
+        const copy = bytes.subarray(bytes.length - 22);
+        const trailing = withTrailing(bytes, 70_000, copy);
+        expect(lastStructuralEocdOffset(trailing)).toBe(bytes.length);
+        expect(names(trailing)).toEqual(["a.xml", "a.xml"]);
+    });
+});
+
 const fileNames = (bytes: Uint8Array) =>
     zipCentralDirectoryEntries(bytes)
         ?.filter((entry) => !entry.directory)
