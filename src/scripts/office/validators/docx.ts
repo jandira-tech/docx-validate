@@ -538,11 +538,13 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * context, at the severity the profile gives them: an error under
      * word-valid (Word 16.115 offers to recover the package) and under
      * strict (ECMA-376 Part 1, clause 11.3, gives every WordprocessingML
-     * part its own content type, so strict also judges the unprobed Part 1
-     * types — numbering, header, footer, endnotes, footnotes, comments and
-     * glossaryDocument; #506), a warning under lenient. A Default-typed main
-     * finding is dropped only when strict actually reports ct-undeclared-part
-     * for that same part (#535).
+     * part its own content type, so strict also judges the Part 1 types a
+     * check's probes have not observed; #506), a warning under lenient.
+     * Sessions 20 and 21 moved numbering and theme into the generic check's
+     * observed set (#571), and numbering, theme, footer, endnotes, footnotes
+     * and comments into the inexact check's (#570). A Default-typed main or
+     * theme finding is dropped only when strict actually reports
+     * ct-undeclared-part for that same part (#535, #571).
      */
     private async validateWordPartContentTypes(
         context: ValidationContext,
@@ -551,8 +553,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         contentTypes: Promise<ValidationResult>,
     ): Promise<ValidationResult> {
         const view = malformed.size > 0 ? context.withUnparseable(new Map([...malformed].map((part) => [part, "malformed"]))) : context;
-        // Strict judges every Part 1 WordprocessingML part type, not only
-        // the observed set (#506); word-valid and lenient keep that set.
+        // Strict judges the Part 1 WordprocessingML part types beyond the
+        // observed sets: for the generic check header, footer, endnotes,
+        // footnotes, comments and glossaryDocument (#506, #571), for the
+        // inexact check glossaryDocument only (#570). Word-valid and lenient
+        // keep the observed sets.
         const found = await wordPartContentTypeGenericFindings(view, this.profile === "strict" ? "spec" : "observed");
         const inexact = await wordPartContentTypeInexactFindings(view, this.profile === "strict" ? "spec" : "observed");
         this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_GENERIC);
