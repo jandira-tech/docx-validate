@@ -616,7 +616,14 @@ an inexact Override on its styles part — eagerly parsed, so related is
 enough — and on a header its `w:headerReference` uses gets the repair
 warning, and the finding names the glossary's relationship, not the main
 document's
-([#579](https://github.com/jandira-tech/docx-validate/issues/579)). The
+([#579](https://github.com/jandira-tech/docx-validate/issues/579)). Session 23
+observed the same recovery offer for a `; charset=utf-8` Override on a footer,
+footnotes, endnotes or comments the glossary references, with every exact
+type control opening clean
+([#596](https://github.com/jandira-tech/docx-validate/issues/596)). These
+stories are gated by `wordReadParts` just like the glossary's header:
+unreferenced parts stay silent under word-valid, while strict uses the
+spec text without a Word recovery claim (#589). The
 glossary's settings, fontTable, webSettings, numbering and theme were not
 probed for an inexact type and stay silent under word-valid; strict judges
 every Part 1 WordprocessingML relationship — and theme — on the glossary

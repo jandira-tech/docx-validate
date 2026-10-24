@@ -49,3 +49,49 @@ export const glossaryThemeParts = (exact = false, order?: "theme-first" | "foote
         exact ? theme.contentType : undefined,
     );
 };
+
+export const GLOSSARY_STORY_SEGMENTS = ["footer", "footnotes", "endnotes", "comments"] as const;
+export type GlossaryStorySegment = (typeof GLOSSARY_STORY_SEGMENTS)[number];
+export const glossaryStoryPart = (segment: GlossaryStorySegment): string =>
+    `word/glossary/${segment === "footer" ? "footer9" : segment}.xml`;
+
+const FOOTER = `<w:ftr xmlns:w="${W}"><w:p><w:r><w:t>Footer</w:t></w:r></w:p></w:ftr>`;
+const FOOTNOTES =
+    `<w:footnotes xmlns:w="${W}"><w:footnote w:type="separator" w:id="-1"><w:p><w:r><w:separator/></w:r></w:p></w:footnote>` +
+    `<w:footnote w:type="continuationSeparator" w:id="0"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:footnote>` +
+    `<w:footnote w:id="1"><w:p><w:r><w:t>Footnote</w:t></w:r></w:p></w:footnote></w:footnotes>`;
+const ENDNOTES =
+    `<w:endnotes xmlns:w="${W}"><w:endnote w:type="separator" w:id="-1"><w:p><w:r><w:separator/></w:r></w:p></w:endnote>` +
+    `<w:endnote w:type="continuationSeparator" w:id="0"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:endnote>` +
+    `<w:endnote w:id="1"><w:p><w:r><w:t>Endnote</w:t></w:r></w:p></w:endnote></w:endnotes>`;
+const COMMENTS = `<w:comments xmlns:w="${W}"><w:comment w:id="0" w:author="A"><w:p><w:r><w:t>Comment</w:t></w:r></w:p></w:comment></w:comments>`;
+
+/** s23a/s23b: exact story XML, without adding paraIds or repairing the comments control. */
+export const glossaryStoryParts = (
+    segment: GlossaryStorySegment,
+    exact = false,
+    referenced = true,
+    order?: "story-first" | "header-first",
+): Record<string, string> => {
+    const part = glossaryStoryPart(segment);
+    const file = part.slice("word/glossary/".length);
+    const id = segment === "footer" ? "rIdF" : "rIdS";
+    const references = {
+        footer: "",
+        footnotes: `<w:r><w:footnoteReference w:id="1"/></w:r>`,
+        endnotes: `<w:r><w:endnoteReference w:id="1"/></w:r>`,
+        comments: `<w:r><w:commentReference w:id="0"/></w:r>`,
+    };
+    const body =
+        `<w:p><w:r><w:t>Part</w:t></w:r>${referenced ? references[segment] : ""}</w:p>` +
+        `<w:sectPr>${referenced && segment === "footer" ? `<w:footerReference w:type="default" r:id="rIdF"/>` : ""}</w:sectPr>`;
+    const storyRel = rel(segment, file, id);
+    const headerRel = rel("header", file, "rIdH");
+    return viaGlossary(
+        glossary(body),
+        order === undefined ? storyRel : order === "story-first" ? storyRel + headerRel : headerRel + storyRel,
+        part,
+        { footer: FOOTER, footnotes: FOOTNOTES, endnotes: ENDNOTES, comments: COMMENTS }[segment],
+        `${WML}.${segment}+xml${exact ? "" : "; charset=utf-8"}`,
+    );
+};

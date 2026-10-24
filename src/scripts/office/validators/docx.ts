@@ -544,7 +544,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * observed set (#571), and numbering, theme, footer, endnotes, footnotes
      * and comments into the inexact check's (#570); sessions 21 and 22 moved
      * a reached glossary's styles part and referenced header into the
-     * inexact check's (#579). Strict's inexact findings cite clause 11.3
+     * inexact check's (#579). Session 23 adds the glossary's generic theme
+     * (#595) and referenced footer, footnotes, endnotes and comments with
+     * inexact types (#596). Strict's inexact findings cite clause 11.3
      * with no recovery claim for a lazy part `wordReadParts` does not
      * include — session 21 (s21b) observed those open clean (#589). A
      * Default-typed main or theme finding is dropped only when strict

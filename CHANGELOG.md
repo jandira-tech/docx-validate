@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+- Judge inexact content types on a reached glossary's referenced footer, footnotes, endnotes and comments ([#596](https://github.com/jandira-tech/docx-validate/issues/596)). Session 23 (s23a/s23b) observed recovery for each `; charset=utf-8` Override and clean exact-type controls. The existing typed `wordReadParts` gate keeps unreferenced stories silent under word-valid; strict retains spec wording without a Word sentence for those unread parts (#589). Settings, fontTable, webSettings and numbering remain unobserved. Findings keep glossary attribution, error/Word-blocking under word-valid, warning under lenient, and agreement across full/quick/named runs and both relationship orders (#381, #593).
+
 - Judge a reached glossary's theme typed by generic XML in `word-part-content-type-generic` ([#595](https://github.com/jandira-tech/docx-validate/issues/595)). Session 23 (s23a) observed recovery for the `application/xml` Default and a clean exact-Override control. Findings name the glossary's theme relationship, block word-valid, and warn under lenient; strict retains only a same-path `ct-undeclared-part` error when present (#535, #571). Only theme joins this glossary scope. Both relationship orders and full/quick/named agreement are covered (#593, #381).
 
 ### Added
