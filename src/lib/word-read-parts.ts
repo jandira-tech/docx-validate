@@ -270,6 +270,12 @@ export type WordTypedTarget = {
      * a story root and `relationships` for its own relationships part (#549).
      */
     readonly segment: string;
+    /**
+     * `"glossary"` when a reached glossary document's own relationship —
+     * not the main document's — names the part (#579). Absent for
+     * main-document targets.
+     */
+    readonly via?: "glossary";
 };
 
 /** Canonical names of the main document parts, wherever they are stored. */
@@ -328,6 +334,74 @@ export const wordTypedRelationshipTargets = async (
             if (target !== undefined) {
                 add(target, segment);
             }
+        }
+    }
+    return targets;
+};
+
+/**
+ * The parts a reached glossary document's own relationships part names
+ * (#579): every glossary a main-document `glossaryDocument` relationship
+ * reaches is a second story root (#549, session 17), and each of its
+ * relationships whose type segment is in `segments` yields its stored
+ * target, marked `via: "glossary"` so a finding can name the glossary's
+ * relationship rather than the main document's. One entry per part, in
+ * traversal order; a part reached twice keeps the entry that reached it
+ * first. A nested `glossaryDocument` is observed, not read (session 20),
+ * so the walk does not recurse, and `officeDocument` never matches: a
+ * glossary's relationship of that segment would misattribute the package
+ * root. The caller drops any part a main-document target already names.
+ */
+export const glossaryTypedRelationshipTargets = async (
+    context: ValidationContext,
+    segments: ReadonlySet<string>,
+): Promise<readonly WordTypedTarget[]> => {
+    const reach = await packageReach(context);
+    if (reach === undefined) {
+        return [];
+    }
+    const wanted = new Set([...segments].filter((segment) => segment !== "officeDocument"));
+    if (wanted.size === 0) {
+        return [];
+    }
+    // The reached glossaries, canonical name to stored spelling — the same
+    // discovery `wordReadParts` makes for its second story-root pass.
+    const glossaries = new Map<string, string>();
+    for (const mainPart of reach.mainParts) {
+        for (const relationship of relationshipsOf(context, sidecarOf(reach.names, mainPart))) {
+            if (relationship.getAttribute("TargetMode") === "External") {
+                continue;
+            }
+            if (officeRelationshipTypeSegment(relationship.getAttribute("Type") ?? "") !== "glossaryDocument") {
+                continue;
+            }
+            const target = resolveTarget(reach.lookup, path.posix.dirname(mainPart), relationship.getAttribute("Target") ?? "");
+            if (target !== undefined) {
+                glossaries.set(canonicalPartName(target), target);
+            }
+        }
+    }
+    const targets: WordTypedTarget[] = [];
+    const seen = new Set<string>();
+    for (const glossary of glossaries.values()) {
+        for (const relationship of relationshipsOf(context, sidecarOf(reach.names, glossary))) {
+            if (relationship.getAttribute("TargetMode") === "External") {
+                continue;
+            }
+            const segment = officeRelationshipTypeSegment(relationship.getAttribute("Type") ?? "");
+            if (segment === undefined || !wanted.has(segment)) {
+                continue;
+            }
+            const target = resolveTarget(reach.lookup, path.posix.dirname(glossary), relationship.getAttribute("Target") ?? "");
+            if (target === undefined) {
+                continue;
+            }
+            const canonical = canonicalPartName(target);
+            if (canonical === canonicalPartName(glossary) || seen.has(canonical)) {
+                continue;
+            }
+            seen.add(canonical);
+            targets.push({ part: target, segment, via: "glossary" });
         }
     }
     return targets;
