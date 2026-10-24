@@ -1754,7 +1754,8 @@ export class BaseSchemaValidator {
  * The files of `dir` by part name. Of several files naming one part
  * (`word\document.xml` beside `word/document.xml`) only the one
  * `ValidationContext` keeps is listed, so a full run judges the entries a
- * quick run judges (#366, #368).
+ * quick run judges (#366, #368). Only a directory given as input can hold
+ * several: a packed file is extracted under part names (#371).
  */
 export function packageEntries(dir: string, extensions?: ReadonlyArray<string>): Map<string, string> {
     return indexByPartName(walkFiles(dir, extensions).map((file) => [path.relative(dir, file).split(path.sep).join("/"), file] as const));

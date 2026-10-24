@@ -13,7 +13,7 @@
  * fixture error happened to make the result invalid.
  */
 
-import { writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -279,27 +279,116 @@ describe("validation contract: default DOCX profile", { timeout: 120000 }, () =>
     });
 });
 
-// A literal backslash name extracts to a file of its own only off Windows.
-describe.skipIf(process.platform === "win32")(
-    "validation contract: a full run judges the entries a quick run judges (#368)",
-    { timeout: 120000 },
-    () => {
-        it.each(["word-valid", "lenient", "strict"] as const)(
-            "%s judges only the entry the package view keeps when two entries name one part",
-            async (profile) => {
-                await withTempDir(async (dir) => {
-                    const file = path.join(dir, "specimen.docx");
-                    writeFileSync(file, await buildDocx({ ...MINIMAL_PARTS, "word\\document.xml": "<w:document" }));
-                    const quick = await validate(file, { checks: ["xml-syntax"] });
-                    const full = await validate(file, { profile });
-                    const syntax = (issues: readonly { code?: string; path?: string }[]): (string | undefined)[] =>
-                        issues.filter((issue) => issue.code === "xml-syntax").map((issue) => issue.path);
+describe("validation contract: a full run judges the entries a quick run judges (#368)", { timeout: 120000 }, () => {
+    it.each(["word-valid", "lenient", "strict"] as const)(
+        "%s judges only the entry the package view keeps when two entries name one part",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "specimen.docx");
+                writeFileSync(file, await buildDocx({ ...MINIMAL_PARTS, "word\\document.xml": "<w:document" }));
+                const quick = await validate(file, { checks: ["xml-syntax"] });
+                const full = await validate(file, { profile });
+                const syntax = (issues: readonly { code?: string; path?: string }[]): (string | undefined)[] =>
+                    issues.filter((issue) => issue.code === "xml-syntax").map((issue) => issue.path);
 
-                    expect(syntax(quick.issues)).toEqual([]);
-                    expect(syntax(full.issues)).toEqual([]);
-                    expect(full.issues.filter((issue) => issue.path?.includes("\\"))).toEqual([]);
-                });
+                expect(syntax(quick.issues)).toEqual([]);
+                expect(syntax(full.issues)).toEqual([]);
+                expect(full.issues.filter((issue) => issue.path?.includes("\\"))).toEqual([]);
+            });
+        },
+    );
+});
+
+describe("validation contract: a full run judges what the package view holds (#371, #372, #373)", { timeout: 120000 }, () => {
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    const withSpecimen = <T>(
+        parts: Readonly<Record<string, string | Uint8Array>>,
+        run: (file: string, dir: string) => Promise<T>,
+    ): Promise<T> =>
+        withTempDir(async (dir) => {
+            const file = path.join(dir, "specimen.docx");
+            writeFileSync(file, await buildDocx(parts));
+            return run(file, dir);
+        });
+    const withoutMain = (): Record<string, string> => {
+        const { "word/document.xml": _main, ...rest } = MINIMAL_PARTS;
+        return rest;
+    };
+
+    it.each(["/word/bonus.xml", "\\word\\bonus.xml", "C:/bonus.xml"])(
+        "a quick and a full run both refuse the item name %j, which places no part (#372)",
+        async (name) => {
+            await withSpecimen({ ...MINIMAL_PARTS, [name]: "<b/>" }, async (file) => {
+                const quick = await validate(file, { checks: ["xml-syntax"] });
+                const full = await validate(file, { profile: "lenient" });
+                expect(errorCodes(quick.issues)).toContain("package-open-failed");
+                expect(errorCodes(full.issues)).toContain("package-extract-failed");
+                expect([quick.valid, full.valid]).toEqual([false, false]);
+            });
+        },
+    );
+
+    it("schema-validates a main part stored only as word\\document.xml (#371)", async () => {
+        const main = MINIMAL_PARTS["word/document.xml"].replace("<w:body>", "<w:body><w:bogus/>");
+        await withSpecimen({ ...withoutMain(), "word\\document.xml": main }, async (file) => {
+            const full = await validate(file, { profile: "strict" });
+            expect(full.xsdWalk.parts).toContain("word/document.xml");
+            expect(errorCodes(full.issues)).toContain("xsd-error");
+        });
+    });
+
+    it("finds the sidecar of a part stored only as word\\header1.xml (#371)", async () => {
+        const header =
+            `<w:hdr xmlns:w="${W}" xmlns:r="${R}"><w:p><w:r><w:drawing>` +
+            `<a:blip xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" r:embed="rId9"/>` +
+            `</w:drawing></w:r></w:p></w:hdr>`;
+        const sidecar =
+            `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+            `<Relationship Id="rId9" Type="${R}/image" Target="media/i.png"/></Relationships>`;
+        await withSpecimen(
+            {
+                ...MINIMAL_PARTS,
+                "word\\header1.xml": header,
+                "word/_rels/header1.xml.rels": sidecar,
+                "word/media/i.png": new Uint8Array([1, 2, 3]),
+            },
+            async (file) => {
+                const full = await validate(file, { profile: "lenient" });
+                expect(full.issues.filter((issue) => issue.code === "rels-missing-sidecar")).toEqual([]);
             },
         );
-    },
-);
+    });
+
+    it.each([
+        ["the malformed entry first", "cafe\u0301.xml", "caf\u00e9.xml"],
+        ["the malformed entry last", "caf\u00e9.xml", "cafe\u0301.xml"],
+    ])("never judges bytes the filesystem merged from two entries (%s, #373)", async (_order, malformed, wellFormed) => {
+        // Both parts are referenced, so the malformed entry is the package's only defect.
+        const rels = MINIMAL_PARTS["word/_rels/document.xml.rels"].replace(
+            "</Relationships>",
+            `<Relationship Id="rId2" Type="${R}/customXml" Target="../customXml/${malformed}"/>` +
+                `<Relationship Id="rId3" Type="${R}/customXml" Target="../customXml/${wellFormed}"/></Relationships>`,
+        );
+        await withSpecimen(
+            {
+                ...MINIMAL_PARTS,
+                "word/_rels/document.xml.rels": rels,
+                [`customXml/${malformed}`]: "<broken",
+                [`customXml/${wellFormed}`]: "<x/>",
+            },
+            async (file, dir) => {
+                mkdirSync(path.join(dir, "probe"));
+                writeFileSync(path.join(dir, "probe", malformed), "");
+                const merges = existsSync(path.join(dir, "probe", wellFormed));
+                const quick = await validate(file, { checks: ["xml-syntax"] });
+                const full = await validate(file, { profile: "lenient" });
+                expect(quick.issues.filter((issue) => issue.code === "xml-syntax").map((issue) => issue.path)).toEqual([
+                    `customXml/${malformed}`,
+                ]);
+                expect(full.valid).toBe(false);
+                expect(errorCodes(full.issues)).toContain(merges ? "package-extract-failed" : "xml-syntax");
+            },
+        );
+    });
+});

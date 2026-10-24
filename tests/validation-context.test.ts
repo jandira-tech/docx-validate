@@ -7,6 +7,7 @@ import JSZip from "jszip";
 import { describe, expect, it } from "vitest";
 
 import { ValidationContext } from "../src/lib/validation-context";
+import { poisonEntry } from "./support/poison-entry";
 
 const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 const DOCUMENT = `<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="${W}"><w:body><w:p/></w:body></w:document>`;
@@ -241,14 +242,18 @@ describe("ValidationContext: two entries naming one part (#366)", () => {
         expect(ctx.text(kept)).toBe(kept);
     });
 
-    it.each(ORDERS)("fromArchive keeps the entry stored under the part name, whatever the ZIP order (%s)", async (_order, kept, names) => {
-        const zip = new JSZip();
-        for (const name of names) {
-            zip.file(name, name);
-        }
-        const ctx = await ValidationContext.fromArchive(await zip.generateAsync({ type: "uint8array" }));
-        expect(ctx.text(kept)).toBe(kept);
-    });
+    // A ZIP item that starts with `/` names no part, so an archive refuses it (#372).
+    it.each(ORDERS.filter(([, , names]) => names.every((name) => !name.startsWith("/"))))(
+        "fromArchive keeps the entry stored under the part name, whatever the ZIP order (%s)",
+        async (_order, kept, names) => {
+            const zip = new JSZip();
+            for (const name of names) {
+                zip.file(name, name);
+            }
+            const ctx = await ValidationContext.fromArchive(await zip.generateAsync({ type: "uint8array" }));
+            expect(ctx.text(kept)).toBe(kept);
+        },
+    );
 
     it.each([
         ["in order", ["/word\\a.xml", "word\\a.xml"]],
@@ -260,24 +265,6 @@ describe("ValidationContext: two entries naming one part (#366)", () => {
 });
 
 describe("ValidationContext.fromArchive: an unreadable entry (#369)", () => {
-    // Overwrites the first byte of the entry's DEFLATE stream with a reserved block type.
-    const poisonEntry = (archive: Uint8Array, name: string): Uint8Array => {
-        const bytes = Uint8Array.from(archive);
-        const view = new DataView(bytes.buffer);
-        const encoded = new TextEncoder().encode(name);
-        for (let at = 0; at + 30 <= bytes.length; at++) {
-            if (view.getUint32(at, true) !== 0x04034b50) {
-                continue;
-            }
-            const nameLength = view.getUint16(at + 26, true);
-            const extraLength = view.getUint16(at + 28, true);
-            if (nameLength === encoded.length && encoded.every((byte, i) => bytes[at + 30 + i] === byte)) {
-                bytes[at + 30 + nameLength + extraLength] = 0x07;
-                return bytes;
-            }
-        }
-        throw new Error(`no local header for ${name}`);
-    };
     const archiveWith = async (poisoned: string): Promise<Uint8Array> => {
         const zip = new JSZip();
         zip.file("word/document.xml", DOCUMENT);
@@ -291,5 +278,20 @@ describe("ValidationContext.fromArchive: an unreadable entry (#369)", () => {
 
     it("rejects the archive when an entry it drops for a duplicate name cannot be read, as extraction does", async () => {
         await expect(ValidationContext.fromArchive(await archiveWith("word\\document.xml"))).rejects.toThrow();
+    });
+});
+
+describe("ValidationContext.fromArchive: an item name that places no part (#372)", () => {
+    it.each(["/word/bonus.xml", "\\word\\bonus.xml", "C:/bonus.xml", "c:\\bonus.xml"])("rejects the archive holding %j", async (name) => {
+        const zip = new JSZip();
+        zip.file("word/document.xml", DOCUMENT);
+        zip.file(name, "<b/>");
+        await expect(ValidationContext.fromArchive(await zip.generateAsync({ type: "uint8array" }))).rejects.toThrow(
+            /names no package part/,
+        );
+    });
+
+    it("still reads a part name given in code with a leading slash", () => {
+        expect(ValidationContext.fromEntries({ "/word/document.xml": DOCUMENT }).partNames).toEqual(["word/document.xml"]);
     });
 });

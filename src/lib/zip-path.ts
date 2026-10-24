@@ -19,6 +19,8 @@ import path from "node:path";
 
 import type JSZip from "jszip";
 
+import { entryNameRefusal, indexByPartName, normalizePartName } from "./validation-context";
+
 /**
  * Resolve a zip entry against `outputDir` and refuse path-traversal names
  * (Zip Slip). Uses `path.relative` rather than `startsWith` so a sibling
@@ -54,5 +56,51 @@ export const extractZipEntries = async (zip: JSZip, outputDir: string): Promise<
         }
         await fs.mkdir(path.dirname(resolved), { recursive: true });
         await fs.writeFile(resolved, await file.async("nodebuffer"));
+    }
+};
+
+/**
+ * Extract the package view of `zip` for validation: each part once, under
+ * its part name, with the bytes of the entry `indexByPartName` keeps. An
+ * entry the view drops is read but not written, so no filesystem lets it
+ * overwrite a kept part, and an unreadable one still fails (#371, #369). An
+ * item name the view refuses stops the extraction (#372), and so does a part
+ * that would land on a file an earlier part wrote: a filesystem that folds
+ * case or Unicode normalization holds the two names as one file, and the
+ * merged bytes are not what the package holds (#373). `unpack` keeps the raw
+ * names (`extractZipEntries`).
+ */
+export const extractPackageParts = async (zip: JSZip, outputDir: string): Promise<void> => {
+    const files = Object.values(zip.files).filter((entry) => !entry.dir);
+    for (const entry of files) {
+        const refusal = entryNameRefusal(entry.name);
+        if (refusal !== undefined) {
+            throw new Error(refusal);
+        }
+    }
+    const kept = indexByPartName(files.map((entry) => [entry.name, entry] as const));
+    for (const entry of files) {
+        const content = await entry.async("nodebuffer");
+        const part = normalizePartName(entry.name);
+        if (kept.get(part) !== entry) {
+            continue;
+        }
+        const resolved = resolveSafeZipEntry(outputDir, part);
+        await fs.mkdir(path.dirname(resolved), { recursive: true });
+        try {
+            // Each part name is written once, so the file exists only when
+            // the filesystem holds this name and an earlier part's as one.
+            await fs.writeFile(resolved, content, { flag: "wx" });
+        } catch (err) {
+            if ((err as NodeJS.ErrnoException).code === "EEXIST") {
+                throw new Error(
+                    `Cannot write part ${JSON.stringify(part)}: this filesystem already holds another part under the same file name`,
+                    {
+                        cause: err,
+                    },
+                );
+            }
+            throw err;
+        }
     }
 };
