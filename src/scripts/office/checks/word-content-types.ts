@@ -8,6 +8,7 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
+import { findContentTypesStream } from "../../../lib/content-types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import type { ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
@@ -23,7 +24,8 @@ export const wordContentTypeInvalidCheck: CheckDefinition = {
     run: (ctx: ValidationContext): ValidationIssue[] => {
         const issues: ValidationIssue[] = [];
 
-        const contentTypesFile = "[Content_Types].xml";
+        const contentTypesFile = findContentTypesStream(ctx.partNames);
+        if (contentTypesFile === undefined) return issues;
         const parsed = ctx.effectiveXml(contentTypesFile);
         if (!parsed?.ok) {
             return issues;
@@ -38,7 +40,7 @@ export const wordContentTypeInvalidCheck: CheckDefinition = {
             issues.push({
                 severity: "error",
                 message: `Microsoft Word refuses content type '${contentType}' for ${target}`,
-                path: "[Content_Types].xml",
+                path: contentTypesFile,
                 code: "word-content-type-invalid",
             });
         };

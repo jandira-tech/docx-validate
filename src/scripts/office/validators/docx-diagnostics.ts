@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
+import { isContentTypesStreamName } from "../../../lib/content-types";
 import type { Profile, ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameNSAll, getElementsByTagNameAll, parseXmlBytes } from "../../../lib/xml-helpers";
 
@@ -80,7 +81,7 @@ export async function collectDocxSemanticInventory(unpackedDir: string, profile:
     const files = await walkFiles(unpackedDir);
     for (const file of files) {
         const rel = path.relative(unpackedDir, file).split(path.sep).join("/");
-        if (!rel.endsWith(".xml") && !rel.endsWith(".rels")) {
+        if (!isContentTypesStreamName(rel) && !rel.endsWith(".xml") && !rel.endsWith(".rels")) {
             await collectPackageAsset(file, rel, inventory);
             continue;
         }
@@ -164,7 +165,7 @@ function collectXmlPart(rel: string, dom: Document, inventory: MutableDocxSemant
         collectRelationships(rel, dom, inventory);
         return;
     }
-    if (rel === "[Content_Types].xml") collectContentTypes(rel, dom, inventory);
+    if (isContentTypesStreamName(rel)) collectContentTypes(rel, dom, inventory);
     collectDocumentStructure(rel, dom, inventory);
     collectText(rel, dom, inventory);
     collectFormatting(rel, dom, inventory);
