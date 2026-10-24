@@ -433,17 +433,26 @@ uses Markup Compatibility: an attribute in the MC namespace (`mc:Ignorable`,
 `mc:ProcessContent`, `mc:MustUnderstand`), an element in it
 (`mc:AlternateContent` and its branches), or an element or attribute in a
 namespace an `mc:Ignorable` lists. A bare `xmlns:mc` declaration that nothing
-uses is not reported. Microsoft Word 16.115 does not process Markup
+uses is not reported. The message lists every such element and attribute once
+per occurrence, in document order
+([#495](https://github.com/jandira-tech/docx-validate/issues/495)). Microsoft
+Word 16.115 does not process Markup
 Compatibility in this stream: it offers recovery for every shape probed — an
 `mc:Ignorable` attribute, an ignored foreign element, and an AlternateContent
 in either orientation — while the declared-only control opens clean
 ([#459](https://github.com/jandira-tech/docx-validate/issues/459); probe
 session 14, `docs/plans/evidence/word-probes-2026-10-24.md`). The check reads
 the raw stored stream, while `ct-duplicate-declaration`,
-`ct-override-partname-invalid`, `word-content-type-invalid` and content-type
+`ct-override-partname-invalid`, `ct-override-partname-word-refused`,
+`word-content-type-invalid`, `word-part-content-type-generic` and content-type
 resolution all judge the stream after Markup Compatibility processing, as OPC
 [M1.19] requires — so an `Override` in an ignored `mc:Choice` no longer draws
 a `ct-override-partname-invalid` finding, and a bad `mc:Fallback` still does.
+That processor understands the stream's own vocabulary: an `mc:Ignorable`
+naming the content-types namespace itself blinds no coverage or resolution
+pass, and `.rels` parts read through the same view add the
+package-relationships namespace
+([#493](https://github.com/jandira-tech/docx-validate/issues/493)).
 The finding is an error, and Word-blocking, under word-valid for DOCX/DOCM and
 under strict (whose schema walk already refuses the same stream); lenient and
 the unobserved PPTX/XLSX warn. Full, quick and named runs agree.
@@ -552,9 +561,15 @@ characters outside the URI path character set are encoded. Truly uncovered parts
 still produce `ct-uncovered-part`.
 
 Compatibility processing uses a validation-only clone. It selects the first
-understood `mc:Choice`, otherwise the fallback, including nested alternatives;
-inherited `Ignorable`, `ProcessContent`, and `MustUnderstand` directives apply.
-Word rules read `effectiveXml()` with `WORD_UNDERSTOOD_NAMESPACES`; checks of the
+`mc:Choice` whose non-empty `Requires` names only understood namespaces,
+otherwise the fallback, including nested alternatives; a `mc:Choice` without
+a usable `Requires` is malformed (`mce-malformed`) and never selected
+([#494](https://github.com/jandira-tech/docx-validate/issues/494)). Inherited
+`Ignorable`, `ProcessContent`, and `MustUnderstand` directives apply.
+Word rules read `effectiveXml()` with `WORD_UNDERSTOOD_NAMESPACES`; the
+content-types stream and `.rels` parts add their own vocabulary, which the
+processor applying those streams' rules understands
+([#493](https://github.com/jandira-tech/docx-validate/issues/493)); checks of the
 compatibility markup itself can read the raw DOM. Unselected branches do not
 produce structural Word findings. The schema view uses its own understood
 namespaces. Extension payloads in DrawingML/chart/presentation/spreadsheet `ext`

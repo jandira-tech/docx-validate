@@ -46,6 +46,29 @@ describe("word-duplicate-theme-relationship", () => {
             },
         ]);
     });
+    it("still reads the relationships through an mc:Ignorable naming the package-relationships namespace (#493)", async () => {
+        const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+        const PR = "http://schemas.openxmlformats.org/package/2006/relationships";
+        // The check reads the stream after Markup Compatibility processing;
+        // that processor applies the relationships vocabulary, so an
+        // Ignorable naming the stream's own namespace hides nothing (#493).
+        const ctx = ValidationContext.fromEntries({
+            "word/_rels/document.xml.rels":
+                `<Relationships xmlns="${PR}" xmlns:mc="${MC}" xmlns:pr="${PR}" mc:Ignorable="pr">` +
+                relation("rId1", "theme") +
+                relation("rId2", "theme") +
+                `</Relationships>`,
+        });
+        expect(await wordDuplicateThemeRelationshipCheck.run(ctx)).toEqual([
+            {
+                severity: "error",
+                code: "word-duplicate-theme-relationship",
+                path: "word/_rels/document.xml.rels",
+                message:
+                    "word/_rels/document.xml.rels contains 2 theme relationships (rId1, rId2). Microsoft Word offers to recover the file. Keep one theme relationship.",
+            },
+        ]);
+    });
     it("accepts the repaired control", async () => {
         const ctx = ValidationContext.fromEntries({
             "word/_rels/document.xml.rels": rels(relation("rId1", "theme") + relation("other", "image") + `<Relationship/>`),

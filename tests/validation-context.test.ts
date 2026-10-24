@@ -362,3 +362,57 @@ describe("ValidationContext.fromArchive: names the ZIP view drops or rewrites (#
         expect(ctx.storedNames).toEqual(["word/a.xml", "word/b.xml"]);
     });
 });
+
+describe("ValidationContext: a stream's own vocabulary is understood (#493)", () => {
+    const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+    const CT = "http://schemas.openxmlformats.org/package/2006/content-types";
+    const PR = "http://schemas.openxmlformats.org/package/2006/relationships";
+    const elementChildren = (document: Document): Element[] =>
+        Array.from(document.documentElement?.childNodes ?? []).filter((node) => node.nodeType === 1) as Element[];
+
+    it("keeps the content-types stream under an mc:Ignorable naming its own namespace", () => {
+        const ctx = ValidationContext.fromEntries({
+            "[Content_Types].xml":
+                `<Types xmlns="${CT}" xmlns:mc="${MC}" xmlns:t="${CT}" mc:Ignorable="t">` +
+                `<Default Extension="xml" ContentType="application/xml"/>` +
+                `<t:Default Extension="png" ContentType="image/png"/>` +
+                `</Types>`,
+        });
+        const view = ctx.effectiveXml("[Content_Types].xml");
+        expect(view?.ok).toBe(true);
+        // A processor applying OPC Part 2 §10 to this stream understands the
+        // content-types vocabulary itself, so the Ignorable cannot drop it.
+        expect(view?.ok ? view.document.documentElement?.localName : undefined).toBe("Types");
+        expect(view?.ok ? elementChildren(view.document).map((node) => node.getAttribute("Extension")) : []).toEqual(["xml", "png"]);
+        expect(ctx.compatibilityIssues("[Content_Types].xml")).toEqual([]);
+    });
+
+    it("keeps a relationships part under an mc:Ignorable naming the package-relationships namespace", () => {
+        const ctx = ValidationContext.fromEntries({
+            "word/_rels/document.xml.rels":
+                `<Relationships xmlns="${PR}" xmlns:mc="${MC}" xmlns:pr="${PR}" mc:Ignorable="pr">` +
+                `<Relationship Id="rId1" Type="urn:test:styles" Target="styles.xml"/>` +
+                `</Relationships>`,
+        });
+        const view = ctx.effectiveXml("word/_rels/document.xml.rels");
+        expect(view?.ok).toBe(true);
+        expect(view?.ok ? view.document.documentElement?.localName : undefined).toBe("Relationships");
+        expect(view?.ok ? elementChildren(view.document).map((node) => node.getAttribute("Id")) : []).toEqual(["rId1"]);
+        expect(ctx.compatibilityIssues("word/_rels/document.xml.rels")).toEqual([]);
+    });
+
+    it("still drops Word-part content an Ignorable names and the Word set does not understand", () => {
+        const ctx = ValidationContext.fromEntries({
+            "word/document.xml": `<w:document xmlns:w="${W}" xmlns:mc="${MC}" xmlns:e="urn:future" mc:Ignorable="e"><w:body><e:drop/><w:p/></w:body></w:document>`,
+        });
+        const view = ctx.effectiveXml("word/document.xml");
+        expect(view?.ok).toBe(true);
+        expect(
+            view?.ok
+                ? Array.from(view.document.documentElement!.firstChild!.childNodes)
+                      .filter((n) => n.nodeType === 1)
+                      .map((n) => (n as Element).nodeName)
+                : [],
+        ).toEqual(["w:p"]);
+    });
+});

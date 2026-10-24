@@ -60,7 +60,7 @@ import {
     applyMarkupCompatibility,
     STRICT_UNDERSTOOD_NAMESPACES,
     UNDERSTOOD_NAMESPACES,
-    WORD_UNDERSTOOD_NAMESPACES,
+    understoodNamespacesForPart,
 } from "../../../lib/markup-compatibility";
 import { opcNameIssueSeverity, wordObservedIssueSeverity } from "../../../lib/mode-policy";
 import { withTempDir } from "../../../lib/run-cli";
@@ -1175,10 +1175,12 @@ export class BaseSchemaValidator {
         // [M1.19]: coverage and duplicates judge the stream after Markup
         // Compatibility processing — the same view the named checks read
         // through `ctx.effectiveXml` — so declarations in an ignored branch
-        // name no part here either. Word refuses the markup itself, which
-        // `ct-markup-compatibility` reports (#459); the pass's own issues are
-        // not duplicated from the view.
-        const contentTypesDom = applyMarkupCompatibility(dom, { understood: WORD_UNDERSTOOD_NAMESPACES }).document;
+        // name no part here either. The processor understands the stream's
+        // own vocabulary, so an Ignorable naming it blinds no pass (#493).
+        // Word refuses the markup itself, which `ct-markup-compatibility`
+        // reports (#459); the pass's own issues are not duplicated from the
+        // view.
+        const contentTypesDom = applyMarkupCompatibility(dom, { understood: understoodNamespacesForPart(contentTypesName) }).document;
 
         // Single OPC resolution table (Override first, then Default —
         // ECMA-376 Part 2 §10.1.2.4) shared by every coverage pass below:
