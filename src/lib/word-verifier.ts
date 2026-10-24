@@ -270,6 +270,27 @@ export const verifyInWord = async (bytes: Uint8Array, opts: WordVerifyOptions = 
 
     return withTempDir(async (dir) => {
         const documentName = `docx-verify-${fileSha256.slice(0, 12)}-${nextSecureLongHexNumber().toString(16)}.docx`;
+
+        // Attribution guard (#315): the run gives any blocking dialog it sees
+        // to the file it opened, so a dialog left over from an earlier open
+        // must not be showing. Nothing is opened yet, so nothing is closed:
+        // a stale dialog belongs to someone else and stays where it is.
+        const before = await callWithinDeadline(clock, workDeadline, () => transport.observe(documentName));
+        if (before === deadlineExceeded) {
+            return finish(
+                "timeout",
+                `the observation before the open did not settle within the ${timeoutMs} ms budget`,
+                clock.now() - started,
+            );
+        }
+        if (classifyWordDialog(before.dialogText) !== null) {
+            return finish(
+                "unavailable",
+                `a Word dialog was already showing before the open, so no outcome can be attributed to this file; ${describeSnapshot(before)}`,
+                clock.now() - started,
+            );
+        }
+
         const tempFile = path.join(dir, documentName);
         writeFileSync(tempFile, bytes);
 
@@ -465,16 +486,50 @@ return linesOut
             return parseWordSnapshot(out);
         },
 
+        // A dialog still showing at close was raised by this run's own open:
+        // verifyInWord does not open while one is showing (#315). Dismiss it
+        // first (a modal dialog blocks Word's Apple events), preferring the
+        // button that declines: Cancel (password), No (recovery), OK (open
+        // error). Declining recovery can raise a follow-up alert, hence the
+        // short loop. Word is only addressed while running, so cleanup after
+        // a crash does not relaunch it.
         close: async (documentName: string) => {
             const escaped = escapeAppleScriptString(documentName);
             await osascript(`
-tell application "Microsoft Word"
-  try
-    with timeout of 10 seconds
-      close document "${escaped}" saving no
-    end timeout
-  end try
+tell application "System Events"
+  if exists process "Microsoft Word" then
+    tell process "Microsoft Word"
+      repeat 3 times
+        set dismissed to false
+        repeat with w in windows
+          try
+            if (count of static texts of w) > 0 then
+              repeat with label in {"Cancel", "No", "OK"}
+                if exists button (label as text) of w then
+                  click button (label as text) of w
+                  set dismissed to true
+                  exit repeat
+                end if
+              end repeat
+            end if
+          end try
+          if dismissed then exit repeat
+        end repeat
+        if not dismissed then exit repeat
+        delay 0.5
+      end repeat
+    end tell
+  end if
 end tell
+if application "Microsoft Word" is running then
+  tell application "Microsoft Word"
+    try
+      with timeout of 10 seconds
+        close document "${escaped}" saving no
+      end timeout
+    end try
+  end tell
+end if
 `);
         },
     };
