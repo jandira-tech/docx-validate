@@ -23,6 +23,12 @@ const relationships = (xml: string): string => `<Relationships xmlns="${NS.PR}">
 const context = (xml: string, name = "_rels/.rels"): ValidationContext => ValidationContext.fromEntries({ [name]: xml });
 
 describe("propertiesParts", () => {
+    it("does not read properties through nested package relationships (#434)", async () => {
+        expect(
+            await propertiesParts(context(relationships(`<x:Wrap xmlns:x="urn:x">${relationship("docProps/core.xml")}</x:Wrap>`))),
+        ).toEqual(new Set());
+    });
+
     it.each(TYPES)("recognizes %s", async (type) => {
         expect(await propertiesParts(context(relationships(relationship("docProps/core.xml", type))))).toEqual(
             new Set(["docprops/core.xml"]),

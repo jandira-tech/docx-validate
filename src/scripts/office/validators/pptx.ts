@@ -32,13 +32,7 @@ import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { mergeResults } from "../../../lib/types";
 import { getElementsByTagNameNSAll, parseXmlBytes } from "../../../lib/xml-helpers";
 import type { BaseSchemaValidatorOptions } from "./base";
-import {
-    BaseSchemaValidator,
-    OFFICE_RELATIONSHIPS_NAMESPACE,
-    PACKAGE_RELATIONSHIPS_NAMESPACE,
-    walkFiles,
-    withoutRestatedIgnorablePrefixes,
-} from "./base";
+import { BaseSchemaValidator, OFFICE_RELATIONSHIPS_NAMESPACE, walkFiles, withoutRestatedIgnorablePrefixes } from "./base";
 
 export const PRESENTATIONML_NAMESPACE = "http://schemas.openxmlformats.org/presentationml/2006/main";
 
@@ -205,7 +199,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
             }
 
             const validLayoutRids = new Set<string>();
-            const rels = getElementsByTagNameNSAll(relsDom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const rels = this.relationshipElements(relsDom);
             for (let i = 0; i < rels.length; i += 1) {
                 const rel = rels[i];
                 if (!rel) continue;
@@ -272,7 +266,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
                 continue;
             }
 
-            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const rels = this.relationshipElements(dom);
             let layoutCount = 0;
             for (let i = 0; i < rels.length; i += 1) {
                 const rel = rels[i];
@@ -333,7 +327,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
                 continue;
             }
 
-            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const rels = this.relationshipElements(dom);
             for (let i = 0; i < rels.length; i += 1) {
                 const rel = rels[i];
                 if (!rel) continue;

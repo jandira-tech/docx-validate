@@ -68,7 +68,6 @@ import {
     BaseSchemaValidator,
     collectDeclaredPrefixes,
     containRelationshipTarget,
-    PACKAGE_RELATIONSHIPS_NAMESPACE,
     packageEntries,
     withoutRestatedIgnorablePrefixes,
     XML_NAMESPACE,
@@ -1376,7 +1375,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             } catch {
                 continue;
             }
-            const list = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const list = this.relationshipElements(dom);
             for (let i = 0; i < list.length; i += 1) {
                 const elem = list[i];
                 if (!elem) continue;
@@ -1671,7 +1670,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             } catch {
                 continue;
             }
-            const relsList = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const relsList = this.relationshipElements(dom);
             const ids: number[] = [];
             let allIdsUseRidPattern = true;
             for (let i = 0; i < relsList.length; i += 1) {

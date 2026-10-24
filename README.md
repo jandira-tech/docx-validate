@@ -299,7 +299,7 @@ validation does not rewrite either name ([#408](https://github.com/jandira-tech/
 | `tables`                  | `word-grid-column-attributes`, `word-cell-margin-order`, `word-table-properties-required`, `word-table-properties-misplaced`, `word-row-without-cell`, `word-cell-ends-with-table`                                                                                                                                                                  |
 | `drawings`                | `word-textbox-content-namespace`, `word-drawing-extent-missing`, `word-drawing-extent-misplaced`, `word-picture-nvpicpr-missing`, `word-picture-sppr-missing`, `word-empty-drawing`, `word-anchor-missing-attribute`, `word-position-offset-and-align`, `word-drawing-scalar-whitespace`, `word-drawing-arc-radius`, `word-drawing-extent-negative` |
 | `content-types`           | `word-content-type-invalid`                                                                                                                                                                                                                                                                                                                         |
-| `relationships`           | `word-duplicate-theme-relationship`, `word-duplicate-font-table-relationship`, `word-duplicate-web-settings-relationship`, `word-duplicate-settings-relationship`, `word-hyperlink-relationship`, `word-main-document-part`                                                                                                                         |
+| `relationships`           | `word-duplicate-theme-relationship`, `word-duplicate-font-table-relationship`, `word-duplicate-web-settings-relationship`, `word-duplicate-settings-relationship`, `word-hyperlink-relationship`, `word-main-document-part`, `opc-relationships-structure`                                                                                          |
 | `tracked-changes`         | `word-textbox-deleted-text`, `word-move-from-deleted-text`                                                                                                                                                                                                                                                                                          |
 | `settings`                | `word-custom-property-filetime-empty`, `word-attached-toolbar-utf8`                                                                                                                                                                                                                                                                                 |
 | `xml`                     | `word-markup-compatibility`, `word-document-root`, `word-choice-requires-undeclared`                                                                                                                                                                                                                                                                |
@@ -403,13 +403,38 @@ file; an ignored root makes Word silently drop all content. Both are blocking
 errors in Word-valid and strict, and the check is included in the quick preset.
 
 `word-main-document-part` reports a package that names no main part: `_rels/.rels`
-is missing, or it parses and none of its internal `officeDocument` relationships
+is missing, or it parses and none of its direct internal `officeDocument` relationships
 targets a part in the package (an empty ZIP, a package of only `[Content_Types].xml`
 or only core properties). ECMA-376 requires the main document part. Strict fails on
 it; full and quick Word-valid report a warning until a real-Word observation shows
 Word refusing such a package; lenient runs no Word rule (#380). An `_rels/.rels`
 that does not parse is left to `xml-syntax`, which Word-valid reports as a blocking
 error, because Word offers to recover such a package (#388).
+
+`opc-relationships-structure` requires every relationships part to have a
+`Relationships` root in the package-relationships namespace and only `Relationship`
+elements in that namespace as direct children. It reports one finding for a wrong
+root, or one per offending child, at the stored part name. Malformed XML is left
+to `xml-syntax`. The check runs under Word-valid and strict, including quick and
+named relationships selections; explicit lenient keeps its existing checks.
+Word-valid blocks malformed package relationships (`_rels/.rels`, compared by OPC
+part-name equivalence) and malformed relationships parts under `word/`, and warns on
+other sidecars, which have no Word evidence yet. Strict reports errors on all of them. Main-part discovery also ignores nested
+relationships ([#433](https://github.com/jandira-tech/docx-validate/issues/433),
+[#434](https://github.com/jandira-tech/docx-validate/issues/434)).
+Properties discovery, hyperlink and toolbar resolution, duplicate counts, and
+the validators' semantic relationship checks likewise use direct children under
+Word-valid and strict. Legacy lenient traversal and raw repair-inventory collection
+remain unchanged.
+
+Word 16.115 (build 16.115.26100424, macOS, 2026-10-24) offered recovery for all
+three minimal package mutations: a foreign sibling with every relationship
+unchanged (`43205d2359aaac36`), a foreign wrapper around the main relationship
+(`176e6d8f133812b3`), and a root renamed to `Foo` (`1a5c659713cf7f9b`). These are
+SHA-256 prefixes from the [recorded Word probes](docs/plans/evidence/word-probes-2026-10-24.md);
+the unchanged minimal control (`0160dfc1db4c5ce1`) opened cleanly. A foreign element
+appended to `word/_rels/document.xml.rels` got recovery too (`e7dae629d3e792a1`,
+session 4), beside a clean control (`f67e18fa7a50dae1`).
 
 `word-markup-compatibility` reports processor errors for XML parts under `word/`.
 Root validation, the processor, and the schema walk use these stable codes:

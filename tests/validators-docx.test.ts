@@ -43,6 +43,35 @@ function wrapDocument(body: string, extraNs = ""): string {
     return `<?xml version="1.0"?><w:document ${W_NS} ${extraNs}><w:body>${body}</w:body></w:document>`;
 }
 
+describe("direct DOCX relationship diagnostics outside legacy lenient (#434)", () => {
+    it.each([
+        [
+            "validateOrphanedRelationships",
+            '<Relationship Id="nested" Type="urn:image" Target="missing.xml"/>',
+            "rels-target-missing",
+            "error",
+        ],
+        [
+            "validateRelationshipIdStability",
+            '<Relationship Id="rId2" Type="urn:styles" Target="styles.xml"/>',
+            "rel-ids-sequential",
+            "info",
+        ],
+    ] as const)("%s ignores nested entries and preserves lenient behavior", async (method, nested, code, severity) => {
+        await withTempDir(async (dir) => {
+            await writeFile(
+                path.join(dir, "_rels/.rels"),
+                `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="urn:main" Target="word/document.xml"/><x:Wrap xmlns:x="urn:x">${nested}</x:Wrap></Relationships>`,
+            );
+            await writeFile(path.join(dir, "word/document.xml"), wrapDocument(""));
+            const strict = await new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" })[method]();
+            expect(strict.issues.filter((issue) => issue.code === code)).toEqual([]);
+            const lenient = await new DOCXSchemaValidator({ unpackedDir: dir, profile: "lenient" })[method]();
+            expect(lenient.issues).toContainEqual(expect.objectContaining({ code, severity }));
+        });
+    });
+});
+
 describe("DOCXSchemaValidator", () => {
     describe("validateWhitespacePreservation", () => {
         it("flags <w:t> with leading whitespace and no xml:space=preserve", async () => {

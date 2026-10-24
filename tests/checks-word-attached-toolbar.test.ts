@@ -9,6 +9,17 @@ import { document, rels, relation, R } from "./support/word-rule-test-xml";
 import { wordAttachedToolbarUtf8Check } from "../src/scripts/office/checks/word-attached-toolbar";
 
 describe("word-attached-toolbar-utf8", () => {
+    it("does not discover toolbar bytes through a nested relationship (#434)", async () => {
+        const ctx = ValidationContext.fromEntries({
+            "word/fontTable.xml": document('<wne:toolbarData r:id="nested"/>'),
+            "word/_rels/fontTable.xml.rels": rels(
+                `<x:Wrap xmlns:x="urn:x">${relation("nested", "attachedToolbars", "", "attachedToolbars.bin")}</x:Wrap>`,
+            ),
+            "word/attachedToolbars.bin": new Uint8Array([0xef, 0xbf, 0xbd]),
+        });
+        expect(await wordAttachedToolbarUtf8Check.run(ctx)).toEqual([]);
+    });
+
     it("reports the Word-rejected shape with unchanged issue details", async () => {
         const ctx = ValidationContext.fromEntries({
             "word/fontTable.xml": document(`<wne:toolbarData r:id="rId1"/>`),

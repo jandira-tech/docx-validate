@@ -9,6 +9,16 @@ import { document, rels, relation } from "./support/word-rule-test-xml";
 import { wordHyperlinkRelationshipCheck } from "../src/scripts/office/checks/word-hyperlink";
 
 describe("word-hyperlink-relationship", () => {
+    it("does not resolve a hyperlink through a nested relationship (#434)", async () => {
+        const ctx = ValidationContext.fromEntries({
+            "word/document.xml": document('<w:p><w:hyperlink r:id="nested"/></w:p>'),
+            "word/_rels/document.xml.rels": rels(`<x:Wrap xmlns:x="urn:x">${relation("nested", "hyperlink", "External")}</x:Wrap>`),
+        });
+        expect(await wordHyperlinkRelationshipCheck.run(ctx)).toEqual([
+            expect.objectContaining({ code: "word-hyperlink-relationship", path: "word/document.xml", severity: "error" }),
+        ]);
+    });
+
     it.each(["RELS", "Rels", "%72els"])("resolves an OPC-equivalent .%s sidecar (#402)", async (extension) => {
         const entries = {
             "word/document.xml": document('<w:p><w:hyperlink r:id="rId2"/></w:p>'),
