@@ -935,11 +935,16 @@ archive-only check is not listed for an unpacked directory. An archive that does
 not open fails with `package-open-failed` in every mode, and only its envelope
 checks are listed (#332). A packed file that cannot be read at all — a mode-000
 file `fs.stat` still answers for — fails the same way, with no check listed
-([#422](https://github.com/jandira-tech/docx-validate/issues/422)). One that opens but whose package view cannot be read —
+([#422](https://github.com/jandira-tech/docx-validate/issues/422)). Its message says `Cannot read` followed by the system error;
+the encrypted, corrupted or truncated archive explanation is reserved for JSZip refusals
+([#547](https://github.com/jandira-tech/docx-validate/issues/547)). One that opens but whose package view cannot be read —
 a stored item name that places no part — judged on the central-directory name,
 never the local header's or the unicode-path field's (#445) — or an unreadable
 entry — fails with
-`package-extract-failed`, as the full run's extraction reports it (#413). Directory inputs apply the same stored-name refusal before either full or partial validation: literal backslash names with empty or dot-only segments are refused with the same code and message (#424). Its stored
+`package-extract-failed`, as the full run's extraction reports it (#413). Directory inputs apply the same stored-name refusal before either full or partial validation: literal backslash names with empty or dot-only segments are refused with the same code and message (#424).
+Direct `DOCXSchemaValidator.validate()` and `PPTXSchemaValidator.validate()` calls also return one error-severity
+`package-extract-failed` for such refused directory names, with the same message as `validate()`; programming errors still propagate
+([#548](https://github.com/jandira-tech/docx-validate/issues/548)). Its stored
 entry names and archive bytes are still read. Selected `opc-equivalent-part-names`,
 `opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, and
 `opc-part-name-word-refused` checks and
