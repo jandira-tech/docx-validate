@@ -397,20 +397,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     };
 
     /**
-     * Cached parse of `word/document.xml` from the original `.docx` zip.
-     * `null` means "not yet attempted"; `false` means "attempted and failed,
-     * don't try again". Forgotten with the archive it comes from (#503).
-     */
-    private originalDocumentRoot: Element | null = null;
-    private originalDocumentRootFailed = false;
-
-    protected override forgetOriginal(): void {
-        super.forgetOriginal();
-        this.originalDocumentRoot = null;
-        this.originalDocumentRootFailed = false;
-    }
-
-    /**
      * The package as the named checks see it, built once per `validate()` run
      * so its read and parse caches never outlive the run (auto-repair rewrites
      * parts between runs). Outside a run, a check method called directly
@@ -1370,28 +1356,35 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         return { original, modified, delta, originalUsesStrictNamespace: strict };
     }
 
+    /**
+     * Parse `word/document.xml` from the `--original` zip, memoized in the
+     * current baseline scope: one `validate()` run shares its parse, direct
+     * calls share the outside-run slot {@link BaseSchemaValidator.forgetOriginal}
+     * clears, and an overlapping run keeps its own (#481, #503, #520).
+     */
     private async loadOriginalDocumentRoot(): Promise<Element | null> {
-        if (this.originalDocumentRoot) return this.originalDocumentRoot;
-        if (this.originalDocumentRootFailed) return null;
+        const state = this.baselineState();
+        if (state.documentRoot) return state.documentRoot;
+        if (state.documentRootFailed) return null;
         if (!this.originalFile) {
-            this.originalDocumentRootFailed = true;
+            state.documentRootFailed = true;
             return null;
         }
         try {
             // Shares the archive `_getOriginalFileErrors` memoizes: one read
-            // and load per run instead of one per caller (#481, #503).
+            // and load per baseline scope instead of one per caller.
             const zip = await this._loadOriginalArchive();
             const entry = zip?.file("word/document.xml");
             if (!entry) {
-                this.originalDocumentRootFailed = true;
+                state.documentRootFailed = true;
                 return null;
             }
             const text = decodeXmlBytes(await entry.async("uint8array"));
             const dom = parseXml(text);
-            this.originalDocumentRoot = dom.documentElement;
-            return this.originalDocumentRoot;
+            state.documentRoot = dom.documentElement;
+            return state.documentRoot;
         } catch {
-            this.originalDocumentRootFailed = true;
+            state.documentRootFailed = true;
             return null;
         }
     }
