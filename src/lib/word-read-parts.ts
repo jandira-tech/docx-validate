@@ -323,7 +323,12 @@ export const wordReadParts = async (context: ValidationContext): Promise<Readonl
     // the document uses them. Usage is read from the effective view Word
     // consumes, after markup compatibility has selected its branches.
     for (const mainPart of reach.mainParts) {
-        const main = context.has(mainPart) ? context.effectiveXml(mainPart) : undefined;
+        // A DOM may recover bytes the XML checker rejects (for example an
+        // unsupported declared encoding). Such a main cannot establish that
+        // lazy targets are unused, in full, partial or fallback runs (#536).
+        const bytes = context.bytes(mainPart);
+        const readable = bytes !== undefined && !(await checkXmlSyntax(bytes, mainPart)).some((issue) => issue.severity === "error");
+        const main = readable ? context.effectiveXml(mainPart) : undefined;
         const footerIds = main?.ok ? referenceIds(main.document, "footerReference") : undefined;
         const headerIds = main?.ok ? referenceIds(main.document, "headerReference") : undefined;
         const usesComments = main?.ok ? hasReference(main.document, "commentReference") : undefined;
