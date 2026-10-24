@@ -1,6 +1,6 @@
 # Real-Word probes, 2026-10-24
 
-Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), and what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271).
+Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), and what session 26 settled for the items adversarial review AY suspected (#606, #607, #610).
 
 - Word: Microsoft Word for Mac 16.115 (build 16.115.26100424), platform `darwin`.
 - Transport, sessions 1 and 2: `verifyInWord` (`src/lib/word-verifier.ts`). It opens each specimen by path, reads Word's window and dialog state, and never saves.
@@ -173,6 +173,12 @@ Session 25 adds, for the drift the Validator Diff Report flagged on #322 (#271):
 
 - **#271: the profile-less default flips three diff-set fixtures to valid, and Word agrees.** `scripts/validate-diff.ts` calls `validate()` with no profile, and #322 makes word-valid the DOCX default, so `broken/footnotes.duplicate-paraid.docx`, `eigen/blue-bold-centered-demo.id-paraid-overflow.docx` and `eigen/1-5-line-spacing.id-paraid-overflow.docx` went from invalid (`id-paraid-overflow`) to valid. Their strict and word-valid verdicts are identical at the base (9aaeeeae) and the head (4f1372c5). Word opens all three clean, so the new default verdict matches Word. The `UNREADABLE_CONTENT` specimen in `word-invalid-fixtures/` is a different file, `unknown/unknown/footnotes.duplicate-paraid.docx`.
 
+Session 26 adds, for the items adversarial review AY (#602) left for a probe:
+
+- **#606: Word refuses a `w:headerReference` whose `r:id` names a footer-type relationship.** It offers recovery whether the target is a `w:hdr` part typed `footer+xml`, `footer+xml; charset=utf-8`, `header+xml` or `styles+xml`, or a well-formed `w:ftr` part typed `footer+xml`. The relationship type is the cause: a story part whose root is the other story's element, reached through a matching reference and relationship (a `w:hdr` part as a footer, a `w:ftr` part as a header), opens clean. The mirror (`w:footerReference` naming a header relationship) and glossary references were not probed.
+- **#607: an unused header relationship does not change what Word parses.** A footer the body reads through `w:footerReference`, which an unreferenced header relationship also targets, is refused when typed `header+xml` and opens clean when typed `footer+xml`.
+- **#610: a glossary header typed `footer+xml` is refused,** like session 24's glossary footer typed `header+xml`.
+
 ## Not observed
 
 Session 1. Another session began driving Word by 02:28Z: its first log line is at 02:28:14Z, and its map file was written at 02:27:55Z. Its preflight closes every open document, so rows observed from 02:26Z on were not treated as evidence. Session 2 observed all of them again (below).
@@ -220,6 +226,8 @@ Session 23 ran in the foreground (`s23a` 16:12Z, `s23b` 16:12Z–16:13Z), one dr
 Session 24 ran in the foreground (`s24a` 18:10Z–18:12Z, `s24b` 18:12Z), one driver run per chunk of at most eight. Nothing was set aside, and every row is attributed by an alert or a manifest entry naming its staged file. Before each chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`. Both preflights found a Word process the driver had not launched, with no open document (`word_pid=81589`, `launched_by_us=False`, `open_documents=0`). The four minimal controls hold the same entries as session 23's; each chunk's pair is byte-identical, and the two chunks' pairs differ only in ZIP entry timestamps, because each chunk was built by its own run.
 
 Session 25 ran in the foreground (`s25a` 18:37Z), one driver run. Nothing was set aside, and every row is attributed by a manifest entry naming its staged file; the watchdog saw no alert. Before the chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock` (a first guard matched codex's command line, whose prompt text mentions osascript, and was rerun on executable names). The preflight found a Word process the driver had not launched, with no open document (`word_pid=81589`, `launched_by_us=False`, `open_documents=0`). The specimens are the checked-in fixtures, copied byte for byte; no builder was used.
+
+Session 26 ran in the foreground (`s26a` 19:15Z, `s26b` 20:54Z), one driver run per chunk. Nothing was set aside, and every row is attributed by a manifest entry naming its staged file; the watchdog saw no alert. Before each chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`. Both preflights found a Word process the driver had not launched, with no open document (`word_pid=81589`, `launched_by_us=False`, `open_documents=0`). Both chunks were built at af20d641 with the session 26 builder below.
 
 Sessions 4–6 observed `main-relationship-missing` (#380), the #414 `PartName`s with `application/xml`, an escape in a folder segment (#408), a part-level relationships part (#433) and an unreferenced malformed `customXml/item9.xml` (#437). Still to be observed:
 
@@ -1560,6 +1568,50 @@ The fixtures whose profile-less verdict the Validator Diff Report on #322 flagge
 {"run": "s25a", "name": "s25a-1-eigen-blue-bold-centered", "sha256": "491a25750702125a22197bdcd5a83047da989d7b790d2443e9f115a5298655f6", "observedAt": "2026-10-24T18:37:54+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 {"run": "s25a", "name": "s25a-2-eigen-line-spacing", "sha256": "70bed70face08508b06953c9c238fe37236354b80c23d72f5d49987365cd71be", "observedAt": "2026-10-24T18:37:54+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 {"run": "s25a", "name": "s25a-3-control-broken-footnotes-dup-paraid", "sha256": "64bdd3aded1a507a71d55aa79f2591310832d3557faafb9b569d1ad173255d85", "observedAt": "2026-10-24T18:37:54+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 26: 19:15Z and 20:54Z, validator columns at af20d641
+
+The shapes adversarial review AY of #602 suspected (S-A, S-B) and the glossary header its finding F3 says session 24 never ran. `s26b` isolates S-A after `s26a` showed every `w:headerReference` through a footer relationship refused. af20d641 and its re-parented copy 697f9405 have the same tree.
+
+| Run    | Observed  | Specimen                                     | Issue        | Shape                                                                                                                                     | SHA-256 (first 16) | Word           | word-valid at af20d641                     | strict at af20d641                                                                       |
+| ------ | --------- | -------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| `s26a` | 19:19:19Z | `s26a-control-minimal`                       | control      | `MINIMAL_PARTS`                                                                                                                           | `74e942d9e276512e` | clean-open     | valid                                      | valid                                                                                    |
+| `s26a` | 19:18:28Z | `headerref-footer-rel-typed-footer-exact`    | #606         | body `w:headerReference` → footer relationship → `w:hdr` part, typed `footer+xml`                                                         | `ad88d9fb907fb2a7` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `rels-id-mismatch`                                    |
+| `s26a` | 19:17:39Z | `headerref-footer-rel-typed-footer-charset`  | #606         | the same, typed `footer+xml; charset=utf-8`                                                                                               | `8f48f8951350d6ff` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `rels-id-mismatch`, `word-part-content-type-inexact`  |
+| `s26a` | 19:19:17Z | `headerref-footer-rel-typed-header-exact`    | #606         | the same, typed `header+xml`                                                                                                              | `74288497762a4e8b` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `rels-id-mismatch`, `word-part-content-type-mismatch` |
+| `s26a` | 19:15:56Z | `footer-read-unused-header-rel-typed-header` | #607         | body `w:footerReference` → footer relationship → `w:ftr` part, which an unreferenced header relationship also targets, typed `header+xml` | `266e0d3ef8b10063` | repair-warning | valid                                      | invalid: `paraid-missing-element`                                                        |
+| `s26a` | 19:19:19Z | `footer-read-unused-header-rel-typed-footer` | #607 control | the same, typed `footer+xml`                                                                                                              | `51dc05ced962318f` | clean-open     | valid                                      | invalid: `paraid-missing-element`                                                        |
+| `s26a` | 19:16:48Z | `glossary-header-typed-footer-exact`         | #610         | a reached glossary's `w:docPartBody` `w:sectPr` `w:headerReference` → header relationship → `w:hdr` part, typed `footer+xml`              | `72d8ea23105b9b55` | repair-warning | invalid: `word-part-content-type-mismatch` | invalid: `paraid-missing-element`, `word-part-content-type-mismatch`                     |
+| `s26a` | 19:19:19Z | `s26a-control-minimal-end`                   | control      | `MINIMAL_PARTS`                                                                                                                           | `74e942d9e276512e` | clean-open     | valid                                      | valid                                                                                    |
+| `s26b` | 20:55:30Z | `s26b-control-minimal`                       | control      | `MINIMAL_PARTS`                                                                                                                           | `b00d699b9917b644` | clean-open     | valid                                      | valid                                                                                    |
+| `s26b` | 20:55:30Z | `headerref-header-rel-hdr-typed-header`      | #606 control | body `w:headerReference` → header relationship → `w:hdr` part, typed `header+xml`                                                         | `cc35191a6e3962f0` | clean-open     | valid                                      | invalid: `paraid-missing-element`                                                        |
+| `s26b` | 20:54:34Z | `headerref-footer-rel-ftr-typed-footer`      | #606         | body `w:headerReference` → footer relationship → `w:ftr` part, typed `footer+xml`                                                         | `07627be2f4abc499` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `rels-id-mismatch`                                    |
+| `s26b` | 20:55:30Z | `footerref-footer-rel-hdr-typed-footer`      | #606 control | body `w:footerReference` → footer relationship → `w:hdr` part, typed `footer+xml`                                                         | `057656e77a3123dd` | clean-open     | valid                                      | invalid: `paraid-missing-element`                                                        |
+| `s26b` | 20:55:30Z | `headerref-header-rel-ftr-typed-header`      | #606 control | body `w:headerReference` → header relationship → `w:ftr` part, typed `header+xml`                                                         | `b2d7f02e99a8f0b5` | clean-open     | valid                                      | invalid: `paraid-missing-element`                                                        |
+| `s26b` | 20:55:27Z | `headerref-footer-rel-hdr-typed-styles`      | #606         | body `w:headerReference` → footer relationship → `w:hdr` part, typed `styles+xml`                                                         | `ce63cb6fc4a34403` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `rels-id-mismatch`, `word-part-content-type-mismatch` |
+| `s26b` | 20:55:30Z | `s26b-control-minimal-end`                   | control      | `MINIMAL_PARTS`                                                                                                                           | `b00d699b9917b644` | clean-open     | valid                                      | valid                                                                                    |
+
+<details><summary>Raw records, session 26</summary>
+
+```jsonl
+{"run": "s26a", "name": "s26a-control-minimal", "sha256": "74e942d9e276512e1e829f0baab80800769af83e931bc25f775365fa19026e84", "observedAt": "2026-10-24T19:19:19+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s26a", "name": "headerref-footer-rel-typed-footer-exact", "sha256": "ad88d9fb907fb2a7d6684e83c4b3467615c3570d8b0211aa9b9ec6066756a016", "observedAt": "2026-10-24T19:18:28.377Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00004__wfv__headerref-footer-rel-typed-footer-exact.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00004__wfv__headerref-footer-rel-typed-footer-exact.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s26a", "name": "headerref-footer-rel-typed-footer-charset", "sha256": "8f48f8951350d6ff5ff374b36135f1bb22f3dcdc8413a9c7ba0281d88488a557", "observedAt": "2026-10-24T19:17:39.863Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["\"Word found unreadable content in 00003__wfv__headerref-footer-rel-typed-footer-charset.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s26a", "name": "headerref-footer-rel-typed-header-exact", "sha256": "74288497762a4e8bde336d170c32fb44447a51484f8bf0734a25cf9158a54dcb", "observedAt": "2026-10-24T19:19:17.925Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00005__wfv__headerref-footer-rel-typed-header-exact.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00005__wfv__headerref-footer-rel-typed-header-exact.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s26a", "name": "footer-read-unused-header-rel-typed-header", "sha256": "266e0d3ef8b100632da8eeccc0ef761d3c3fe623dd78653250f57007285a48b0", "observedAt": "2026-10-24T19:15:56.709Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__footer-read-unused-header-rel-typed-header.docx; refusing to guess", "dialogs": ["\"Word found unreadable content in 00001__wfv__footer-read-unused-header-rel-typed-header.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s26a", "name": "footer-read-unused-header-rel-typed-footer", "sha256": "51dc05ced962318fb788849065aee65ca755bbdf5aee9d3a5317f902a286a913", "observedAt": "2026-10-24T19:19:19+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s26a", "name": "glossary-header-typed-footer-exact", "sha256": "72d8ea23105b9b55e32dff7b5b6d67a31910d778b9b46fdd4a20c1be2815ad69", "observedAt": "2026-10-24T19:16:48.261Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00002__wfv__glossary-header-typed-footer-exact.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00002__wfv__glossary-header-typed-footer-exact.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__glossary-header-typed-footer-exact.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s26a", "name": "s26a-control-minimal-end", "sha256": "74e942d9e276512e1e829f0baab80800769af83e931bc25f775365fa19026e84", "observedAt": "2026-10-24T19:19:19+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s26b", "name": "s26b-control-minimal", "sha256": "b00d699b9917b6447d83dea6e64f81dcdc6346784ec9d2a5f83e8319f111861f", "observedAt": "2026-10-24T20:55:30+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s26b", "name": "headerref-header-rel-hdr-typed-header", "sha256": "cc35191a6e3962f0c9947973761298079dc52e5801810184744dcaa1aa957c22", "observedAt": "2026-10-24T20:55:30+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s26b", "name": "headerref-footer-rel-ftr-typed-footer", "sha256": "07627be2f4abc499683ddb53cd2bf770b6ae82cd5f27960652243ee206c4bb5f", "observedAt": "2026-10-24T20:54:34.839Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__headerref-footer-rel-ftr-typed-footer.docx; refusing to guess", "dialogs": ["\"Word found unreadable content in 00001__wfv__headerref-footer-rel-ftr-typed-footer.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s26b", "name": "footerref-footer-rel-hdr-typed-footer", "sha256": "057656e77a3123ddf0c15264e683d6000c88a8530bda09ce0f6c839af1ee700a", "observedAt": "2026-10-24T20:55:30+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s26b", "name": "headerref-header-rel-ftr-typed-header", "sha256": "b2d7f02e99a8f0b5a528a888a8c9c87836011b3143614261ac32a31907fd5235", "observedAt": "2026-10-24T20:55:30+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s26b", "name": "headerref-footer-rel-hdr-typed-styles", "sha256": "ce63cb6fc4a344038c441f67cdbce7131624efd33ad99cca3525c3c2418b6401", "observedAt": "2026-10-24T20:55:27.694Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["\"Word found unreadable content in 00002__wfv__headerref-footer-rel-hdr-typed-styles.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s26b", "name": "s26b-control-minimal-end", "sha256": "b00d699b9917b6447d83dea6e64f81dcdc6346784ec9d2a5f83e8319f111861f", "observedAt": "2026-10-24T20:55:30+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 ```
 
 </details>
@@ -5232,6 +5284,255 @@ for (const [name, issue, make] of specimens) {
         `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid}`,
     );
 }
+```
+
+The header comments of the session 8–26 builders write the optional filter as `[ONLY=a,b]`: a placeholder, not shell. Run a builder with `BUILD_DIR=<chunk>/src pnpm exec tsx s24builder.tmp.mts`, or filter it to exact specimen names with `BUILD_DIR=<chunk>/src ONLY=main-footer-typed-header-exact,main-footer-override-exact-control pnpm exec tsx s24builder.tmp.mts`. The builders are kept as they ran.
+
+Session 26's builder (`s26a`) is another standalone script, run the same way:
+
+```ts
+// Session 26 (2026-10-24): the items adversarial review AY (layer 128, #602) left for a Word probe.
+// s26a: S-A — a `w:headerReference` whose r:id names a FOOTER-type relationship to a `w:hdr` part, typed footer+xml
+//       (control), footer+xml; charset=utf-8, and header+xml; S-B — a footer the main document reads through a footer
+//       relationship that an unused header relationship also targets, typed header+xml, with its footer+xml control;
+//       F3 — a header a reached glossary references from its docPartBody's sectPr, typed footer+xml.
+// Shapes: as session 24 (`mainPart`, `docWith`, the glossary of session 23 with a header reference instead of a footer one).
+// Run from the stack worktree root as a copy: BUILD_DIR=<chunk>/src [ONLY=a,b] pnpm exec tsx s26builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const THEME_TYPE = "application/vnd.openxmlformats-officedocument.theme+xml";
+const CHARSET = "; charset=utf-8";
+const P = MINIMAL_PARTS as Record<string, string>;
+const CT = P["[Content_Types].xml"];
+const DOC = P["word/document.xml"];
+const DOC_RELS = P["word/_rels/document.xml.rels"];
+/** Well formed up to a missing end of the root element: namespaces stay declared, the part does not parse. */
+const unclosed = (xml: string) => xml.slice(0, xml.lastIndexOf("</"));
+const ct = (extra: string) => CT.replace("</Types>", `${extra}</Types>`);
+const rels = (extra: string) => DOC_RELS.replace("</Relationships>", `${extra}</Relationships>`);
+const relsPart = (body: string) =>
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${body}</Relationships>`;
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (!text.includes(from)) throw new Error(`missing ${from}`);
+    return text.replace(from, to);
+};
+
+const FOOTER = `<w:ftr xmlns:w="${W}"><w:p><w:r><w:t>Footer</w:t></w:r></w:p></w:ftr>`;
+const notes = (kind: "footnote" | "endnote") =>
+    `<w:${kind}s xmlns:w="${W}"><w:${kind} w:type="separator" w:id="-1"><w:p><w:r><w:separator/></w:r></w:p></w:${kind}>` +
+    `<w:${kind} w:type="continuationSeparator" w:id="0"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:${kind}>` +
+    `<w:${kind} w:id="1"><w:p><w:r><w:t>Note</w:t></w:r></w:p></w:${kind}></w:${kind}s>`;
+const FOOTNOTES = notes("footnote");
+const ENDNOTES = notes("endnote");
+const COMMENTS = `<w:comments xmlns:w="${W}"><w:comment w:id="0" w:author="A" w:initials="A"><w:p><w:r><w:t>Comment</w:t></w:r></w:p></w:comment></w:comments>`;
+const NUMBERING =
+    `<w:numbering xmlns:w="${W}"><w:abstractNum w:abstractNumId="0"><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="decimal"/>` +
+    `<w:lvlText w:val="%1."/></w:lvl></w:abstractNum><w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num></w:numbering>`;
+const glossary = (body = "") =>
+    `<w:glossaryDocument xmlns:w="${W}" xmlns:r="${REL}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+    `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+    `<w:docPartBody><w:p><w:r><w:t>Part</w:t></w:r>${body}</w:p></w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`;
+const GLOSSARY_TYPE = `${WML}.document.glossary+xml`;
+
+/** The minimal package plus a reached glossary whose own relationships part relates `segment` -> `target` (`stored`). */
+const glossaryRelating = (segment: string, target: string, stored: string, xml: string, override: string) =>
+    buildDocx({
+        ...P,
+        "word/glossary/document.xml": glossary(),
+        "word/glossary/_rels/document.xml.rels": relsPart(`<Relationship Id="rIdE" Type="${REL}/${segment}" Target="${target}"/>`),
+        [stored]: xml,
+        "word/_rels/document.xml.rels": rels(`<Relationship Id="rIdG" Type="${REL}/glossaryDocument" Target="glossary/document.xml"/>`),
+        "[Content_Types].xml": ct(`<Override PartName="/word/glossary/document.xml" ContentType="${GLOSSARY_TYPE}"/>${override}`),
+    });
+const ov = (part: string, type: string) => `<Override PartName="/${part}" ContentType="${type}"/>`;
+
+/** The main document with `r` declared, `run` added after the Hello run, and `sectPr` children prepended. */
+const docWith = (run: string, sect = "") =>
+    replaceOnce(
+        replaceOnce(
+            replaceOnce(DOC, `<w:document xmlns:w="${W}"`, `<w:document xmlns:w="${W}" xmlns:r="${REL}"`),
+            "<w:t>Hello</w:t></w:r>",
+            `<w:t>Hello</w:t></w:r>${run}`,
+        ),
+        "<w:sectPr>",
+        `<w:sectPr>${sect}`,
+    );
+/** A part the main document relates (and uses, through `doc`), typed by an Override with `type`, or by the Default when `type` is undefined. */
+const mainPart = (o: { segment: string; file: string; xml: string; type: string | undefined; doc?: string }) =>
+    buildDocx({
+        ...P,
+        "word/document.xml": o.doc ?? DOC,
+        [`word/${o.file}`]: o.xml,
+        "word/_rels/document.xml.rels": rels(`<Relationship Id="rIdX" Type="${REL}/${o.segment}" Target="${o.file}"/>`),
+        "[Content_Types].xml": o.type === undefined ? CT : ct(ov(`word/${o.file}`, o.type)),
+    });
+const USED = {
+    numbering: { segment: "numbering", file: "numbering.xml", xml: NUMBERING, type: `${WML}.numbering+xml` },
+    glossary: { segment: "glossaryDocument", file: "glossary/document.xml", xml: glossary(), type: GLOSSARY_TYPE },
+    footer: {
+        segment: "footer",
+        file: "footer9.xml",
+        xml: FOOTER,
+        type: `${WML}.footer+xml`,
+        doc: docWith("", `<w:footerReference w:type="default" r:id="rIdX"/>`),
+    },
+    footnotes: {
+        segment: "footnotes",
+        file: "footnotes.xml",
+        xml: FOOTNOTES,
+        type: `${WML}.footnotes+xml`,
+        doc: docWith(`<w:r><w:footnoteReference w:id="1"/></w:r>`),
+    },
+    endnotes: {
+        segment: "endnotes",
+        file: "endnotes.xml",
+        xml: ENDNOTES,
+        type: `${WML}.endnotes+xml`,
+        doc: docWith(`<w:r><w:endnoteReference w:id="1"/></w:r>`),
+    },
+    comments: {
+        segment: "comments",
+        file: "comments.xml",
+        xml: COMMENTS,
+        type: `${WML}.comments+xml`,
+        doc: docWith(`<w:r><w:commentReference w:id="0"/></w:r>`),
+    },
+} as const;
+type Used = keyof typeof USED;
+const charset = (k: Used) => mainPart({ ...USED[k], type: USED[k].type + CHARSET });
+const exact = (k: Used) => mainPart({ ...USED[k] });
+const generic = (k: Used) => mainPart({ ...USED[k], type: undefined });
+
+const HEADER = `<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header</w:t></w:r></w:p></w:hdr>`;
+const STYLES_TYPE = `${WML}.styles+xml`;
+const GLOSSARY_STYLES = `<w:styles xmlns:w="${W}"></w:styles>`;
+const padded = (k: Used) => mainPart({ ...USED[k], type: USED[k].type + " " });
+/** The part related from the main document but not used: no reference, the main document unchanged. */
+const unused = (segment: string, file: string, xml: string, type: string) => mainPart({ segment, file, xml, type: type + CHARSET });
+
+const T = (segment: string) => `${WML}.${segment}+xml`;
+const HEADER_REF = docWith("", `<w:headerReference w:type="default" r:id="rIdX"/>`);
+/** A header the main document references from its sectPr, typed `type`. */
+const mainHeader = (type: string) => mainPart({ segment: "header", file: "header9.xml", xml: HEADER, type, doc: HEADER_REF });
+/** Session 23's glossary that references footer9.xml from its docPartBody's sectPr. */
+const glossaryWithFooterRef = () =>
+    `<w:glossaryDocument xmlns:w="${W}" xmlns:r="${REL}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+    `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+    `<w:docPartBody><w:p><w:r><w:t>Part</w:t></w:r></w:p><w:sectPr><w:footerReference w:type="default" r:id="rIdF"/></w:sectPr></w:docPartBody>` +
+    `</w:docPart></w:docParts></w:glossaryDocument>`;
+const footerViaGlossary = (type: string) =>
+    buildDocx({
+        ...P,
+        "word/glossary/document.xml": glossaryWithFooterRef(),
+        "word/glossary/_rels/document.xml.rels": relsPart(`<Relationship Id="rIdF" Type="${REL}/footer" Target="footer9.xml"/>`),
+        "word/glossary/footer9.xml": FOOTER,
+        "word/_rels/document.xml.rels": rels(`<Relationship Id="rIdG" Type="${REL}/glossaryDocument" Target="glossary/document.xml"/>`),
+        "[Content_Types].xml": ct(
+            `<Override PartName="/word/glossary/document.xml" ContentType="${GLOSSARY_TYPE}"/>${ov("word/glossary/footer9.xml", type)}`,
+        ),
+    });
+
+/** S-A: the main document's `w:headerReference r:id="rIdX"` where rIdX is a footer-type relationship to a `w:hdr` part. */
+const headerViaFooterRel = (type: string) => mainPart({ segment: "footer", file: "header9.xml", xml: HEADER, type, doc: HEADER_REF });
+/** S-B: a footer read through rIdX (footer) that an unused header relationship rIdH also targets. */
+const footerAlsoUnusedHeader = (type: string) =>
+    buildDocx({
+        ...P,
+        "word/document.xml": USED.footer.doc,
+        "word/footer9.xml": FOOTER,
+        "word/_rels/document.xml.rels": rels(
+            `<Relationship Id="rIdX" Type="${REL}/footer" Target="footer9.xml"/><Relationship Id="rIdH" Type="${REL}/header" Target="footer9.xml"/>`,
+        ),
+        "[Content_Types].xml": ct(ov("word/footer9.xml", type)),
+    });
+/** F3: a reached glossary that references header9.xml from its docPartBody's sectPr. */
+const headerViaGlossary = (type: string) =>
+    buildDocx({
+        ...P,
+        "word/glossary/document.xml": glossaryWithFooterRef().replace(
+            `<w:footerReference w:type="default" r:id="rIdF"/>`,
+            `<w:headerReference w:type="default" r:id="rIdF"/>`,
+        ),
+        "word/glossary/_rels/document.xml.rels": relsPart(`<Relationship Id="rIdF" Type="${REL}/header" Target="header9.xml"/>`),
+        "word/glossary/header9.xml": HEADER,
+        "word/_rels/document.xml.rels": rels(`<Relationship Id="rIdG" Type="${REL}/glossaryDocument" Target="glossary/document.xml"/>`),
+        "[Content_Types].xml": ct(
+            `<Override PartName="/word/glossary/document.xml" ContentType="${GLOSSARY_TYPE}"/>${ov("word/glossary/header9.xml", type)}`,
+        ),
+    });
+
+const specimens: [string, string, () => Promise<Uint8Array> | Uint8Array][] = [
+    ["s26a-control-minimal", "control", () => buildDocx(P)],
+    ["headerref-footer-rel-typed-footer-exact", "S-A control", () => headerViaFooterRel(T("footer"))],
+    ["headerref-footer-rel-typed-footer-charset", "S-A", () => headerViaFooterRel(T("footer") + CHARSET)],
+    ["headerref-footer-rel-typed-header-exact", "S-A", () => headerViaFooterRel(T("header"))],
+    ["footer-read-unused-header-rel-typed-header", "S-B", () => footerAlsoUnusedHeader(T("header"))],
+    ["footer-read-unused-header-rel-typed-footer", "S-B control", () => footerAlsoUnusedHeader(T("footer"))],
+    ["glossary-header-typed-footer-exact", "F3", () => headerViaGlossary(T("footer"))],
+    ["s26a-control-minimal-end", "control", () => buildDocx(P)],
+];
+const only = new Set((process.env.ONLY ?? "").split(",").filter(Boolean));
+
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    if (only.size > 0 && !only.has(name)) continue;
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        const r = await validate(path.join(dir, file), { profile });
+        return {
+            valid: r.valid,
+            errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+        };
+    };
+    const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid}`,
+    );
+}
+```
+
+`s26b` was built by a copy with its own header line and this specimens list in place of `s26a`'s:
+
+```ts
+// Session 26, chunk s26b (2026-10-24): isolates S-A. Chunk s26a's builder is s26builder.mts.\n// Session 26 (2026-10-24): the items adversarial review AY (layer 128, #602) left for a Word probe.
+const specimens: [string, string, () => Promise<Uint8Array> | Uint8Array][] = [
+    ["s26b-control-minimal", "control", () => buildDocx(P)],
+    ["headerref-header-rel-hdr-typed-header", "control", () => mainHeader(T("header"))],
+    [
+        "headerref-footer-rel-ftr-typed-footer",
+        "S-A reference kind only",
+        () => mainPart({ segment: "footer", file: "footer9.xml", xml: FOOTER, type: T("footer"), doc: HEADER_REF }),
+    ],
+    [
+        "footerref-footer-rel-hdr-typed-footer",
+        "S-A root only",
+        () => mainPart({ segment: "footer", file: "footer9.xml", xml: HEADER, type: T("footer"), doc: USED.footer.doc }),
+    ],
+    [
+        "headerref-header-rel-ftr-typed-header",
+        "S-A root only (header side)",
+        () => mainPart({ segment: "header", file: "header9.xml", xml: FOOTER, type: T("header"), doc: HEADER_REF }),
+    ],
+    [
+        "headerref-footer-rel-hdr-typed-styles",
+        "S-A review AY shape",
+        () => mainPart({ segment: "footer", file: "header9.xml", xml: HEADER, type: T("styles"), doc: HEADER_REF }),
+    ],
+    ["s26b-control-minimal-end", "control", () => buildDocx(P)],
+];
 ```
 
 </details>
