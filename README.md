@@ -617,16 +617,18 @@ header through their `w:*Reference r:id`, comments through
 part wherever they are stored — offering repair or refusing the file when one
 is malformed — and opens a related-but-unused header or endnotes part clean,
 even under `word/` ([#516](https://github.com/jandira-tech/docx-validate/issues/516); probe session 15).
-A glossary document reached through a `glossaryDocument` relationship reads
-its own relationships part for `header` and `footer` relationships, used when
-its `w:docPartBody` `w:sectPr` carries the matching `w:headerReference` /
-`w:footerReference` `r:id` — Word 16.115 offers repair for a malformed
-glossary header so referenced, and opens the well-formed control and an
-endnotes part referenced only from inside a footnote clean
-([#539](https://github.com/jandira-tech/docx-validate/issues/539); probe session
-16; the footer is inference from the header observation). The glossary's
-comments, footnotes and endnotes relationships and its own relationships part
-are unobserved and stay unreached.
+A glossary document reached through a `glossaryDocument` relationship is a
+second story root: Word 16.115 reads its own relationships part — offering
+repair for one that is unclosed or zero bytes, even when the glossary
+references nothing — and reads the header, footer, comments, footnotes and
+endnotes it references (`w:headerReference` / `w:footerReference` `r:id` in
+its `w:docPartBody` `w:sectPr`; `w:commentReference`, `w:footnoteReference`
+or `w:endnoteReference` in its runs), while a header it relates but does not
+reference opens clean
+([#539](https://github.com/jandira-tech/docx-validate/issues/539),
+[#549](https://github.com/jandira-tech/docx-validate/issues/549); probe
+sessions 16 and 17). References from inside a footnote are not followed — an
+endnotes part referenced only from there opens clean.
 When the main document or a glossary fails byte-level XML checks, including an
 unsupported encoding declaration, lazy usage is unknown and those related
 parts stay reached in full, partial and staging-fallback runs
