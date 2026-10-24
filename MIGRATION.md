@@ -24,18 +24,22 @@ returns `xsdWalk: { started: false, parts: [], eligible: 0 }` on the path API an
 `metadata.schemaCompleted: false`; it no longer emits `xsd-strict-skipped` or
 applies XSD message suppression or original-baseline subtraction. Full lenient
 and strict CLI runs still compile a small startup probe schema; this engine check
-is outside the document trace. Word-valid, help, discovery, and partial runs
-bypass it, so a broken XSD engine no longer fails a default DOCX run (#318).
+is outside the document trace. Word-valid DOCX/DOCM, help, discovery, and partial
+runs bypass it, so a broken XSD engine no longer fails a default DOCX run (#318).
+A full PPTX run walks its schemas under every profile, so it always probes; an
+XLSX run never does (#341).
 
 ### Check selection and execution metadata
 
 `quick: true` / `--quick` and `checks: ["tables"]` / `--checks tables` select
 registered checks plus prerequisites, without XSD or the full validator's other
 checks and severity remapping. Read `metadata.omittedChecks` before treating a
-partial `valid: true` as a document verdict. `--list-checks` discovers ids and
-groups. Strict cannot be combined with partial selection, quick cannot be
-combined with named checks, and `--strict` cannot accompany a conflicting
-profile. API conflicts throw `ModeConflictError`.
+partial `valid: true` as a document verdict. A passing partial CLI run prints
+`Selected checks passed (N run, M omitted).` and never `All validations PASSED!`,
+even for a PPTX or XLSX run that omits no registered check (#339).
+`--list-checks` discovers ids and groups. Strict cannot be combined with partial
+selection, quick cannot be combined with named checks, and `--strict` cannot
+accompany a conflicting profile. API conflicts throw `ModeConflictError`.
 
 Results add optional `metadata` with `profile`, `executedChecks`, `omittedChecks`,
 `schemaCompleted`, and requested `wordVerification`. The byte APIs return this

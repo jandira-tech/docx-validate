@@ -83,9 +83,10 @@ export type ValidationMetadata = {
     /**
      * True only when every schema-eligible part was validated and no schema
      * failed to load. False when schema validation never started, stopped
-     * early, or the engine could not compile a schema. Always false under
-     * `word-valid`, which judges a package by structural Word checks and
-     * compiles no schema.
+     * early, or the engine could not compile a schema. Always false for a
+     * partial run, and for a DOCX/DOCM under `word-valid`, which judges the
+     * package by structural Word checks and compiles no schema. A PPTX walks
+     * its schemas under every profile, `word-valid` included (#340).
      */
     schemaCompleted?: boolean;
     /** Present when real-Word verification ran. */

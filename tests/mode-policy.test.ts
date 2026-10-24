@@ -50,11 +50,21 @@ describe("isPartialRequest", () => {
 });
 
 describe("profileWalksSchemas", () => {
-    it("is true for the two schema profiles and false for word-valid", () => {
-        expect(profileWalksSchemas("lenient")).toBe(true);
-        expect(profileWalksSchemas("strict")).toBe(true);
-        // word-valid compiles no schema, so it never needs the XSD engine.
-        expect(profileWalksSchemas("word-valid")).toBe(false);
+    it.each([
+        ["docx", "lenient", true],
+        ["docx", "strict", true],
+        // A DOCX under word-valid compiles no schema, so it never needs the XSD engine.
+        ["docx", "word-valid", false],
+        // The PPTX validator walks its schemas under every profile (#341).
+        ["pptx", "lenient", true],
+        ["pptx", "strict", true],
+        ["pptx", "word-valid", true],
+        // No format validator runs for XLSX, so nothing compiles a schema (#341).
+        ["xlsx", "lenient", false],
+        ["xlsx", "strict", false],
+        ["xlsx", "word-valid", false],
+    ] as const)("%s under %s: %s", (format, profile, walks) => {
+        expect(profileWalksSchemas(format, profile)).toBe(walks);
     });
 });
 
