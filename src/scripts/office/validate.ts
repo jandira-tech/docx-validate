@@ -400,7 +400,7 @@ function selectionUnderProfile(
         .filter((definition) => select.includes(definition.id) || definition.groups.some((group) => select.includes(group)))
         .map((definition) => definition.id);
     const ids = members.filter((id) => !outside.has(id));
-    // A recognized group with no registered check (`comments`) still runs
+    // A recognized group with no check applicable to this format still runs
     // nothing and omits everything, under every profile.
     if (members.length === 0) return select;
     if (ids.length === 0) {

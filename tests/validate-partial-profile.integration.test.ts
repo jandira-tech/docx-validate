@@ -115,16 +115,13 @@ describe("a partial run applies its profile's policy (#381)", { timeout: 120_000
         },
     );
 
-    it.each(["word-valid", "lenient"] as const)(
-        "still runs nothing and omits every check for a group with no registered check under %s",
-        async (profile) => {
-            const result = await validate(ROW_WITHOUT_CELL, { profile, checks: ["comments"] });
+    it.each(["word-valid", "lenient"] as const)("runs the shared comment checks under %s", async (profile) => {
+        const result = await validate(ROW_WITHOUT_CELL, { profile, checks: ["comments"] });
 
-            expect(result.valid).toBe(true);
-            expect(result.metadata?.executedChecks).toEqual([]);
-            expect(result.metadata?.omittedChecks).toContain("xml-syntax");
-        },
-    );
+        expect(result.valid).toBe(true);
+        expect(result.metadata?.executedChecks).toEqual(["comment-markers", "comment-threading"]);
+        expect(result.metadata?.omittedChecks).toContain("xml-syntax");
+    });
 
     it("runs the checks of a named group that lenient runs, and omits the rest", async () => {
         const result = await validate(ROW_WITHOUT_CELL, { profile: "lenient", checks: ["xml", "tables"] });

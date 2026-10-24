@@ -248,12 +248,12 @@ A failed prerequisite without part-scoped findings skips its dependents. A
 throwing check yields `check-crashed`. For unpacked directories, `runChecks()`
 marks archive-only checks `unavailable`; use packed input to check ZIP integrity.
 
-The complete named Word check catalogue is below. Except for
-`word-markup-compatibility`, each id is also its finding code. Package checks are
+The complete named check catalogue is below. Each Word check except
+`word-markup-compatibility` uses its id as its finding code. Package checks are
 `zip-bytes-after-eocd` and `zip-eocd-comment-overrun`; `xml-syntax` is the shared
 XML prerequisite. All `word-*` checks apply to DOCX/DOCM only.
 
-| Group                     | Named Word checks                                                                                                                                                                                                                                                                                                                                   |
+| Group                     | Named checks                                                                                                                                                                                                                                                                                                                                        |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `math`, `tracked-changes` | `word-math-run-insertion`, `word-math-run-deletion`                                                                                                                                                                                                                                                                                                 |
 | `math`                    | `word-math-parse`, `word-math-spre-body`                                                                                                                                                                                                                                                                                                            |
@@ -265,11 +265,18 @@ XML prerequisite. All `word-*` checks apply to DOCX/DOCM only.
 | `tracked-changes`         | `word-textbox-deleted-text`, `word-move-from-deleted-text`                                                                                                                                                                                                                                                                                          |
 | `settings`                | `word-custom-property-filetime-empty`, `word-attached-toolbar-utf8`                                                                                                                                                                                                                                                                                 |
 | `xml`                     | `word-markup-compatibility`, `word-document-root`, `word-choice-requires-undeclared`                                                                                                                                                                                                                                                                |
+| `comments`                | `comment-markers`, `comment-threading`                                                                                                                                                                                                                                                                                                              |
 | `schema`                  | `word-unknown-element`, `word-link-without-namespace`                                                                                                                                                                                                                                                                                               |
 
-The `schema` group contains structural checks, not an XSD walk. `comments` is a
-recognized group with no registered checks yet; selecting it alone runs nothing
-and reports all applicable ids as omitted.
+The `schema` group contains structural checks, not an XSD walk. The `comments`
+group runs `comment-markers` (range pairing and references to existing comments)
+and `comment-threading` (marker counts, paragraph ids, parent ids, and durable ids
+across comment extension parts). Both apply to DOCX/DOCM under every profile,
+including lenient; they are separate from `WORD_RULE_CHECKS`. They retain their
+own `comment-marker-parse` / `comment-thread-parse` diagnostics rather than
+requiring `xml-syntax`. Full validation runs them once and records their ids in
+`executedChecks`; `--quick` does not select them. Like every other check, they
+find a comment part under an OPC-equivalent name (`word/comments.XML`).
 
 The math-run insertion/deletion, shading-color, grid-column-attributes,
 cell-margin-order, table-properties-required, page-margin-attributes, and
