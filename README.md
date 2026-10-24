@@ -180,8 +180,15 @@ can stop a lenient run before XSD. The XML part list uses OPC-equivalent
 extensions: ASCII case is ignored and unreserved escapes are decoded, so `.XML`,
 `.RELS` and `.%72els` parts are seen by the passes that iterate that list and by
 the XSD walk. DOCX relationships validation passes use the same OPC-equivalent
-`.rels` predicate; empty-part auto-repair retains its exact lowercase `.rels`
-scope. The trace describes the schema walk, not a Microsoft Word invocation. Under `strict`, ISO Strict OOXML parts use the bundled
+`.rels` predicate. Relationship-id and hyperlink checks also resolve sidecars
+by OPC part-name equivalence in packed and directory inputs, including full,
+named and quick runs: a `.RELS` sidecar resolves like `.rels`, matching Word
+16.115's clean open. An escaped stored name such as `.%72els` still fails full
+Word-valid and strict validation, and quick Word-valid runs, through
+`opc-part-name-escaped-unreserved` (OPC [M1.8]),
+even though sidecar lookup resolves it ([#402](https://github.com/jandira-tech/docx-validate/issues/402)).
+Named selections diagnose the escaped name when they include that check.
+Empty-part auto-repair retains its exact lowercase `.rels` scope. The trace describes the schema walk, not a Microsoft Word invocation. Under `strict`, ISO Strict OOXML parts use the bundled
 `schemas/iso-strict/` schemas. Lenient skips those parts with the info-level
 `xsd-strict-skipped`; Word-valid emits no XSD skip issue because it runs no XSD.
 
