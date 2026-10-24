@@ -566,6 +566,16 @@ dropped duplicate entries remain byte-identical. No forward-slash replacement
 files are added to the input directory. Quick and named-check runs continue to
 read the directory's package view directly ([#374](https://github.com/jandira-tech/docx-validate/issues/374)).
 
+A stored file that cannot be read fails the run with `package-extract-failed`,
+naming the stored file — the package view cannot be staged. (Under ordinary
+forward-slash names the direct path reads parts lazily, so the same file yields
+`check-crashed` warnings instead.) When a write-back cannot reach its stored
+file — a read-only file, or one removed mid-run — the run reports a
+`repair-write-back-failed` error naming the part and keeps writing back the
+remaining repairs; the stored file is left untouched. `repairs` counts repairs
+applied to the package view, so a repair whose write-back failed still counts
+([#412](https://github.com/jandira-tech/docx-validate/issues/412)).
+
 `ValidateRunResult` extends this with `suffix` (e.g. `".docx"`), `repairs`
 (number of issues auto-repaired when `autoRepair: true`), and
 `xsdWalk: { started, parts, eligible }`. `Validate.run()` and `jubarte.validate()`
