@@ -24,7 +24,8 @@ const isXmlnsAttribute = (attr: Attr): boolean => attr.name === "xmlns" || attr.
  * `mc:ProcessContent`, `mc:MustUnderstand`), an element in that namespace
  * (`mc:AlternateContent` and its branches), or an element or attribute in a
  * namespace an `mc:Ignorable` lists. A bare `xmlns:mc` declaration that
- * nothing uses is not a finding.
+ * nothing uses is not a finding. The message lists every such element and
+ * attribute once per occurrence, in document order (#495).
  *
  * Microsoft Word 16.115 does not process Markup Compatibility in this stream;
  * it offers recovery for every shape probed (session 14a in
@@ -50,7 +51,10 @@ export const ctMarkupCompatibilityCheck: CheckDefinition = {
         const parsed = ctx.xml(stream);
         if (!parsed?.ok || !parsed.document.documentElement) return [];
 
-        const found = new Set<string>();
+        // One entry per occurrence, in document order: the message lists
+        // every Markup Compatibility element and attribute the stream holds
+        // (#495), not one mention per tag kind.
+        const found: string[] = [];
         const visit = (element: Element, inherited: ReadonlySet<string>): void => {
             // mc:Ignorable applies to the element it sits on and its
             // descendants, as applyMarkupCompatibility merges it.
@@ -62,24 +66,24 @@ export const ctMarkupCompatibilityCheck: CheckDefinition = {
             for (const attr of Array.from(element.attributes)) {
                 if (isXmlnsAttribute(attr)) continue;
                 if (attr.namespaceURI === NS.MC) {
-                    found.add(`${attr.name} attribute on <${element.tagName}>`);
+                    found.push(`${attr.name} attribute on <${element.tagName}>`);
                 } else if (attr.namespaceURI && attr.namespaceURI !== NS.XML && ignorable.has(attr.namespaceURI)) {
-                    found.add(
+                    found.push(
                         `${attr.name} attribute on <${element.tagName}> in the ignorable namespace ${JSON.stringify(attr.namespaceURI)}`,
                     );
                 }
             }
             if (element.namespaceURI === NS.MC) {
-                found.add(`<${element.tagName}> element`);
+                found.push(`<${element.tagName}> element`);
             } else if (element.namespaceURI && ignorable.has(element.namespaceURI)) {
-                found.add(`element <${element.tagName}> in the ignorable namespace ${JSON.stringify(element.namespaceURI)}`);
+                found.push(`element <${element.tagName}> in the ignorable namespace ${JSON.stringify(element.namespaceURI)}`);
             }
             for (let child = element.firstChild; child; child = child.nextSibling) {
                 if (child.nodeType === 1 /* ELEMENT_NODE */) visit(child as Element, ignorable);
             }
         };
         visit(parsed.document.documentElement, new Set());
-        if (found.size === 0) return [];
+        if (found.length === 0) return [];
         return [
             {
                 severity: "error",

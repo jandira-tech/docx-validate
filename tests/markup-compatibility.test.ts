@@ -213,6 +213,36 @@ describe("markup compatibility", () => {
             expect(Array.from(node.attributes).some((attr) => attr.namespaceURI === NS.MC || attr.namespaceURI === WP14)).toBe(false);
         }
     });
+    it("never selects a Choice without Requires; the Fallback wins, or nothing (#494)", () => {
+        for (const [label, choice] of [
+            ["absent Requires", "<mc:Choice><w:chosen/></mc:Choice>"],
+            ["empty Requires", '<mc:Choice Requires=""><w:chosen/></mc:Choice>'],
+            ["blank Requires", '<mc:Choice Requires="   "><w:chosen/></mc:Choice>'],
+        ] as const) {
+            const withFallback = process(
+                wrap(`<mc:AlternateContent>${choice}<mc:Fallback><w:fallback/></mc:Fallback></mc:AlternateContent>`),
+            );
+            // mc.xsd declares Requires use="required": a Choice without it
+            // is malformed and must not win over the well-formed Fallback.
+            expect(
+                getElementsByTagNameAll(withFallback.document).map((node) => node.localName),
+                label,
+            ).toEqual(["root", "fallback"]);
+            expect(withFallback.issues, label).toContainEqual(expect.objectContaining({ code: "mce-malformed", severity: "error" }));
+            const withoutFallback = process(wrap(`<mc:AlternateContent>${choice}</mc:AlternateContent>`));
+            expect(withoutFallback.document.documentElement!.childNodes.length, label).toBe(0);
+            expect(withoutFallback.issues, label).toContainEqual(expect.objectContaining({ code: "mce-malformed", severity: "error" }));
+        }
+    });
+    it("still selects a later well-formed Choice when an earlier one lacks Requires (#494)", () => {
+        const result = process(
+            wrap(
+                `<mc:AlternateContent><mc:Choice><w:first/></mc:Choice><mc:Choice Requires="w"><w:second/></mc:Choice></mc:AlternateContent>`,
+            ),
+        );
+        expect(getElementsByTagNameAll(result.document).map((node) => node.localName)).toEqual(["root", "second"]);
+        expect(result.issues).toContainEqual(expect.objectContaining({ code: "mce-malformed", severity: "error" }));
+    });
     it("diagnoses malformed compatibility structures, including unselected choices", () => {
         for (const content of [
             "<mc:Fallback/>",
