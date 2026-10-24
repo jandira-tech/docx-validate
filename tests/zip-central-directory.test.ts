@@ -545,6 +545,36 @@ describe("a compressed size that reads negative (#555)", () => {
         expect(zipBytesBeforeArchive(bytes)).toBe(64);
         expect(names(bytes)).toEqual(["a.xml"]);
     });
+
+    // `readLocalPart` bounds the local name and the extra field on their own
+    // reads — `readData(fileNameLength)`, then `skip(localExtraFieldsLength)`
+    // — before the compressed read. A small negative resolved size (a ZIP64
+    // 0x0001 extra resolving to -8, or the 32-bit field 0xFFFFFFF8, which
+    // `readInt(4)` reads as -8) shortens only the combined local-part end, so
+    // an overrun of up to |size| bytes past the buffer still throws there
+    // (#566).
+    describe("a local name/extra overrun a small negative size masks (#566)", () => {
+        // The local header sits at archive offset 0 — buffer offset 64 with
+        // the prefix — and the declared local extra length ends the local
+        // name and extra field `overrun` bytes past the buffer's end.
+        const withLocalExtraOverrun = (bytes: Buffer, overrun: number): Buffer => {
+            const nameLength = bytes.readUInt16LE(64 + 26);
+            bytes.writeUInt16LE(bytes.length + overrun - (64 + 30 + nameLength), 64 + 28);
+            return bytes;
+        };
+
+        it.each([
+            ["a ZIP64 extra resolving the size to -8", () => withZip64Compressed(-8n)],
+            ["the 32-bit compressed-size field 0xFFFFFFF8", () => withBaseCompressed(0xfffffff8)],
+        ])("returns undefined where JSZip's name/extra reads throw: %s", async (_label, make) => {
+            for (const overrun of [1, 8]) {
+                const bytes = withLocalExtraOverrun(prefixed(make()), overrun);
+                await expect(JSZip.loadAsync(bytes), `overrun=${overrun}`).rejects.toThrow();
+                expect(zipBytesBeforeArchive(bytes), `overrun=${overrun}`).toBeUndefined();
+                expect(zipCentralDirectoryEntries(bytes), `overrun=${overrun}`).toBeUndefined();
+            }
+        });
+    });
 });
 
 // 46-byte fixed header: JSZip's `readCentralPart` reads every field through a
