@@ -350,6 +350,22 @@ describe("--verify-word asks Microsoft Word about the exact bytes", { timeout: 1
         });
     });
 
+    it("stamps an unpacked directory's unavailable verification with the current time, not the epoch (#329)", async () => {
+        const before = Date.now();
+        const result = await withTempDir(async (dir) => {
+            // A directory named like a package: unpacked, so it has no bytes to verify.
+            const unpacked = path.join(dir, "unpacked.docx");
+            for (const [name, xml] of Object.entries(MINIMAL_PARTS)) {
+                mkdirSync(path.dirname(path.join(unpacked, name)), { recursive: true });
+                writeFileSync(path.join(unpacked, name), xml);
+            }
+            return validate(unpacked, { verifyWord: true });
+        });
+
+        expect(result.metadata?.wordVerification?.outcome).toBe("unavailable");
+        expect(Date.parse(result.metadata?.wordVerification?.observedAt ?? "")).toBeGreaterThanOrEqual(before);
+    });
+
     it("hands the verifier the exact file bytes", async () => {
         const { verify, seen } = fakeWordVerifier("clean-open");
         const bytes = await buildDocx();
