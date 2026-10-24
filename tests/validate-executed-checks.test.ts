@@ -22,6 +22,7 @@
 import { writeFileSync } from "node:fs";
 import path from "node:path";
 
+import JSZip from "jszip";
 import { describe, expect, it } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
@@ -94,5 +95,38 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
         expect(result.metadata?.executedChecks).toContain("word-row-without-cell");
         expect(result.metadata?.executedChecks).not.toContain("word-shading-color");
         expect(result.metadata?.executedChecks).not.toContain("word-link-without-namespace");
+    });
+
+    it("lists the envelope checks that ran before the package failed to extract (CodeRabbit on #335)", async () => {
+        const originalLoadAsync = JSZip.loadAsync;
+        // A zip-slip entry makes extraction refuse the package after it opened.
+        JSZip.loadAsync = async function loadAsyncPatched(data, options) {
+            const loaded = await originalLoadAsync.call(this, data, options);
+            loaded.files["../../escaped.txt"] = {
+                name: "../../escaped.txt",
+                dir: false,
+                async: async () => Buffer.from("malicious"),
+            } as unknown as JSZip.JSZipObject;
+            return loaded;
+        };
+        try {
+            await withTempDir(async (dir) => {
+                const file = await writeSpecimen(dir, "slip.docx", MINIMAL_PARTS["word/document.xml"]!);
+                for (const profile of ["word-valid", "strict"] as const) {
+                    const result = await validate(file, { profile });
+                    expect(
+                        result.issues.map((issue) => issue.code),
+                        profile,
+                    ).toEqual(["package-extract-failed"]);
+                    // The ZIP envelope is read from the bytes before extraction, so its checks ran.
+                    expect(result.metadata?.executedChecks, profile).toEqual(["zip-bytes-after-eocd", "zip-eocd-comment-overrun"]);
+                }
+                // Lenient never runs the envelope checks.
+                const lenient = await validate(file, { profile: "lenient" });
+                expect(lenient.metadata?.executedChecks).toEqual([]);
+            });
+        } finally {
+            JSZip.loadAsync = originalLoadAsync;
+        }
     });
 });
