@@ -59,6 +59,7 @@ import {
 } from "../../../lib/xml-helpers";
 import { checkXmlSyntax } from "../../../lib/xml-syntax";
 import { resolveSafeZipEntry } from "../../../lib/zip-path";
+import { XML_SYNTAX_CHECK_ID } from "../checks/xml";
 
 /**
  * Schema mapping table — file basename / suffix → relative path inside the
@@ -127,8 +128,9 @@ const STRICT_SCHEMA_MAPPINGS: Record<string, string> = {
 const IGNORED_VALIDATION_ERRORS: readonly string[] = [
     // Inherited from the Python validator with no recorded reason or
     // fixture; it hides every engine message that mentions the element.
-    // Lenient and word-valid keep it for compatibility. Strict never
-    // consults this list: its validity rests on unsuppressed schema issues.
+    // Lenient keeps it for compatibility. Strict never consults this list:
+    // its validity rests on unsuppressed schema issues. Word-valid runs no
+    // XSD at all, so it never consults the list either.
     "hyphenationZone",
     // opc-coreProperties.xsd's Dublin Core imports resolve to the bundled
     // schemas/dublincore/ copies (SOURCES.md), so the libxmljs2-era
@@ -172,8 +174,9 @@ const MAIN_CONTENT_FOLDERS = new Set(["word", "ppt", "xl"]);
  *
  * The bundled `iso-strict/` schemas cover these namespaces. Under
  * `profile: "strict"` `validateAgainstXsd` validates Strict parts against
- * them (namespace + part identity dispatch); lenient and word-valid keep
- * the historical info-level `xsd-strict-skipped` skip.
+ * them (namespace + part identity dispatch); lenient keeps the historical
+ * info-level `xsd-strict-skipped` skip, and word-valid walks no schema at
+ * all, so it emits no XSD issue.
  */
 const STRICT_OOXML_NS_PREFIX = "http://purl.oclc.org/ooxml/";
 
@@ -357,6 +360,27 @@ export class BaseSchemaValidator {
      * this to be 0 before reporting `schemaCompleted: true`.
      */
     xsdEngineFailures = 0;
+
+    /**
+     * Ids of the named checks this validator executed, in the order they ran.
+     *
+     * The registry lists every check for a format, but a profile only reaches
+     * some of them: the Word rules run under `word-valid` and `strict` only.
+     * Recording what actually ran is what lets `metadata.executedChecks`
+     * distinguish a check that passed from one that never ran (#319).
+     *
+     * The XML well-formedness pass is the `xml-syntax` check; subclasses add
+     * the registry checks they run through the scheduler.
+     */
+    private readonly executedCheckIds = new Set<string>();
+
+    /**
+     * The named checks this validator executed, in the order they ran.
+     * Reset at the entry of every `validate()`.
+     */
+    public get executedChecks(): readonly string[] {
+        return [...this.executedCheckIds];
+    }
 
     /**
      * Subclasses override to map an element name → expected relationship type
@@ -642,7 +666,27 @@ export class BaseSchemaValidator {
             }
             issues.push(...(await checkXmlSyntax(raw, this.relPath(xmlFile))));
         }
+        // This pass is the `xml-syntax` check: the same bytes, the same
+        // diagnostics, under the check id callers select it by.
+        this.recordExecutedCheck(XML_SYNTAX_CHECK_ID);
         return finalize(issues);
+    }
+
+    /** Record that a named check ran, so the run can disclose it (#319). */
+    protected recordExecutedCheck(id: string): void {
+        this.executedCheckIds.add(id);
+    }
+
+    /** Record several named checks, in the order they ran. */
+    protected recordExecutedChecks(ids: readonly string[]): void {
+        for (const id of ids) {
+            this.recordExecutedCheck(id);
+        }
+    }
+
+    /** Forget the checks a previous run recorded. */
+    protected resetExecutedChecks(): void {
+        this.executedCheckIds.clear();
     }
 
     async validateNamespaces(): Promise<ValidationResult> {
@@ -1231,8 +1275,8 @@ export class BaseSchemaValidator {
                 severity: "info",
                 message:
                     "Document uses ISO OOXML Strict conformance class namespace URIs; " +
-                    "XSD validation skipped (only Transitional schemas are bundled). " +
-                    "See PORT_NOTES.md § 'ISO OOXML Strict XSD validation'.",
+                    "XSD validation skipped under this profile. The bundled ISO Strict schemas " +
+                    "(schemas/iso-strict/) validate these parts under the strict profile.",
                 code: "xsd-strict-skipped",
             });
         };
@@ -1466,10 +1510,9 @@ export class BaseSchemaValidator {
             // A schema the engine could not load means it produced no verdict
             // for this part, so the walk is not "completed". Apply the same
             // IGNORED_VALIDATION_ERRORS filter used one layer up: the
-            // known-noisy bundled case (`opc-coreProperties.xsd`'s remote
-            // Dublin Core import) is filtered there, and counting it here
-            // would mark every document with docProps/core.xml as having an
-            // incomplete schema walk.
+            // bundled schemas load (opc-coreProperties.xsd's Dublin Core
+            // imports resolve to the local schemas/dublincore/ copies), so a
+            // load failure is a real infrastructure problem and must count.
             const engineFailure = errorIssues.find(
                 (i) => i.code === "xsd-schema-load-failed" && !IGNORED_VALIDATION_ERRORS.some((pattern) => i.message.includes(pattern)),
             );

@@ -225,9 +225,10 @@ docx-validate --checks tables,word-run-misplaced --json contract.docx
 docx-validate --strict contract.docx
 ```
 
-Full CLI invocations still compile a small startup probe schema to check the XSD
-engine, including under Word-valid. This is separate from document validation and
-is not recorded in `xsdWalk`. Help, discovery, and partial runs bypass that probe.
+Full lenient and strict CLI runs first compile a small startup probe schema to
+check the XSD engine. This is separate from document validation and is not
+recorded in `xsdWalk`. Word-valid runs compile no schema, so they skip that probe,
+as do help, discovery, and partial runs (#318).
 
 The registry in `src/scripts/office/checks/index.ts` includes `WORD_RULE_CHECKS`,
 which full DOCX validation runs under `word-valid` and `strict`, alongside its
@@ -455,8 +456,10 @@ interface ValidationResult {
 ```
 
 `ValidationMetadata` has optional `profile`, `executedChecks`, `omittedChecks`,
-`schemaCompleted`, and `wordVerification` fields. `executedChecks` reports resolved
-registry ids (the applicable registry list for ordinary complete runs), not a
+`schemaCompleted`, and `wordVerification` fields. `executedChecks` reports the
+registry ids a complete run executed (#319): lenient lists `xml-syntax`; Word-valid
+and strict add the ZIP-envelope checks for a packed file and every Word rule whose
+prerequisites passed. A partial run lists its resolved selection. It is not a
 per-method execution trace. In the source scheduler, use `runChecks().outcomes`
 for individual
 `passed` / `failed` / `skipped` / `unavailable` statuses. `omittedChecks` names ids
