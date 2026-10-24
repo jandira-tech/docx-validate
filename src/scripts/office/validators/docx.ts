@@ -48,14 +48,15 @@
 
 import { promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
-import { isRelationshipsPartName, resolvePartName } from "../../../lib/content-types";
+import { canonicalPartName, isRelationshipsPartName, resolvePartName } from "../../../lib/content-types";
+import { opcNameIssueSeverity } from "../../../lib/mode-policy";
 import { nextSecureLongHexNumber } from "../../../lib/secure-id";
-import type { ValidationIssue, ValidationResult } from "../../../lib/types";
+import type { PackageFormat, ValidationIssue, ValidationResult } from "../../../lib/types";
 import { withoutConsequentialParseFailures } from "../../../lib/parse-failures";
 import { mergeResults } from "../../../lib/types";
 import { promoteFullCheckIssue } from "../../../lib/mode-policy";
 import { propertiesParts } from "../../../lib/properties-parts";
-import { wordReadParts } from "../../../lib/word-read-parts";
+import { wordMainDocumentParts, wordReadParts } from "../../../lib/word-read-parts";
 import { isWordBlockingIssue } from "./word-blocking";
 import {
     decodeXmlBytes,
@@ -77,6 +78,7 @@ import {
 import { runChecks } from "../../../lib/check-scheduler";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "../checks/index";
+import { WORD_PART_CONTENT_TYPE_GENERIC, wordPartContentTypeGenericCheck } from "../checks/word-part-content-type-generic";
 import { contextFromDirectory } from "../package-context";
 import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
 import { loadCentralNamedArchive } from "../../../lib/zip-central-names";
@@ -463,6 +465,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             this.validateContentTypes(),
             this.validateOverridePartNames(this.context(), "docx", this.malformedParts),
             this.validateContentTypesMarkupCompatibility(this.context(), "docx", this.malformedParts),
+            this.validateWordPartContentTypes(this.context(), "docx", this.malformedParts),
             this.validateWhitespacePreservation(),
             this.validateDeletions(),
             this.validateInsertions(),
@@ -527,6 +530,32 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // failed was skipped, and a skipped rule did not run (#319).
         this.recordExecutedChecks(run.executed);
         return { valid: issues.every((issue) => issue.severity !== "error"), issues };
+    }
+
+    /**
+     * The `word-part-content-type-generic` rule (#432) over the shared
+     * context, at the severity the profile gives it: an error under
+     * word-valid (Word 16.115 offers to recover the package) and under
+     * strict (ECMA-376 Part 1 gives each of these parts its own content
+     * type), a warning under lenient. Strict already rejects the main
+     * document through `ct-undeclared-part`, so that one finding is dropped
+     * here instead of reporting the same defect twice.
+     */
+    private async validateWordPartContentTypes(
+        context: ValidationContext,
+        format: PackageFormat,
+        malformed: ReadonlySet<string>,
+    ): Promise<ValidationResult> {
+        const view = malformed.size > 0 ? context.withUnparseable(new Map([...malformed].map((part) => [part, "malformed"]))) : context;
+        const findings = await wordPartContentTypeGenericCheck.run(view);
+        this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_GENERIC);
+        const mainDocuments = this.profile === "strict" ? await wordMainDocumentParts(view) : undefined;
+        const judged =
+            mainDocuments === undefined
+                ? findings
+                : findings.filter((issue) => !(issue.path !== undefined && mainDocuments.has(canonicalPartName(issue.path))));
+        const severity = opcNameIssueSeverity(this.profile, format);
+        return finalize([...judged].map((issue): ValidationIssue => (severity === "warning" ? { ...issue, severity: "warning" } : issue)));
     }
 
     private async applyWordValidProfile(result: ValidationResult): Promise<ValidationResult> {
