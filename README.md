@@ -330,8 +330,8 @@ full XLSX validation remains unsupported.
 
 `ct-override-partname-invalid` reports every `Override` whose `PartName` is not
 a valid OPC part name (ECMA-376 Part 2 §6.2.2.2): a name that does not start
-with `/`, holds an empty or a `.`/`..` segment, ends with `/` or `.`, has a
-folder segment ending with `.`, carries a `?`, a `#` or a `\`, percent-encodes a
+with `/`, holds an empty, a `.`/`..` or a dot-only (`...`) segment, ends with
+`/` or `.`, has a folder segment ending with `.`, carries a `?`, a `#` or a `\`, percent-encodes a
 separator (OPC [M1.7]) or an unreserved character (OPC [M1.8]), or holds a
 character outside the RFC 3986 `pchar` set. Such a PartName names no part, so
 the declaration is malformed whatever its content type, and the resolution is
@@ -342,10 +342,13 @@ named only when no other rule is broken. A content-types stream that does not
 parse is reported by the XML syntax gate instead, and nothing is reported from
 it here. Word 16.115 offers to recover a package for every shape probed, even
 when nothing is stored under that name and the content type is well formed,
-except a folder segment ending with `.`, which it opens clean, as it opens a
-well-formed PartName for a missing part ([#414](https://github.com/jandira-tech/docx-validate/issues/414),
-[#450](https://github.com/jandira-tech/docx-validate/issues/450); probe
-sessions 3c, 4, 5 and 7 in `docs/plans/evidence/word-probes-2026-10-24.md`).
+except a folder segment ending with `.` that holds another character
+(`/word./x.xml`), which it opens clean, as it opens a well-formed PartName for a
+missing part. A dot-only folder segment (`/word/.../x.xml`) is refused
+([#414](https://github.com/jandira-tech/docx-validate/issues/414),
+[#450](https://github.com/jandira-tech/docx-validate/issues/450),
+[#453](https://github.com/jandira-tech/docx-validate/issues/453); probe
+sessions 3c, 4, 5, 7 and 12 in `docs/plans/evidence/word-probes-2026-10-24.md`).
 The finding is an error under strict, and an error and Word-blocking under
 word-valid for DOCX/DOCM, where a folder segment ending with `.` is a warning;
 lenient and the unobserved PPTX/XLSX report a warning. Full, quick and named

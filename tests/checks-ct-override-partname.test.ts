@@ -66,6 +66,11 @@ const SPECIMENS: readonly Specimen[] = [
     { label: "space", partName: "/word/no there.xml", rule: "must contain only RFC 3986 pchar characters" },
     { label: "bracket", partName: "/word/no[there].xml", rule: "must contain only RFC 3986 pchar characters", anyUriRefused: true },
     { label: "non-ASCII", partName: "/word/café.xml", rule: "must contain only RFC 3986 pchar characters" },
+    // Session 12 (#453): a segment made only of dots makes Word offer
+    // recovery, even as a folder segment, unlike `/word./`.
+    { label: "three-dot folder segment", partName: "/word/.../nothere.xml", rule: "must not have a dot-only segment (OPC [M1.10])" },
+    { label: "four-dot folder segment", partName: "/word/..../nothere.xml", rule: "must not have a dot-only segment (OPC [M1.10])" },
+    { label: "three-dot first segment", partName: "/.../nothere.xml", rule: "must not have a dot-only segment (OPC [M1.10])" },
 ];
 
 /**

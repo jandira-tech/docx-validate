@@ -142,7 +142,8 @@ export const isWordBlockingIssue = (issue: ValidationIssue, propertiesParts: Rea
         // docs/plans/evidence/word-probes-2026-10-24.md). A well-formed
         // PartName for a missing part opens clean (#401), so the PartName
         // alone decides it. A folder segment ending with a dot opens clean
-        // too (#450, session 7). The message ends with the rule broken, after
+        // too (#450, session 7); a dot-only one does not, and carries its own
+        // rule (#453, session 12). The message ends with the rule broken, after
         // the quoted PartName, so only its end is read.
         case "ct-override-partname-invalid":
             return !issue.message.endsWith(`it ${PART_NAME_FOLDER_SEGMENT_DOT}.`);
