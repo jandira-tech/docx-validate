@@ -1978,6 +1978,32 @@ export interface UnreadableEntry {
 const directoryIdentity = (st: Stats): string => `${st.dev}:${st.ino}`;
 
 /**
+ * The canonical path of `target`, or `undefined` when it cannot be resolved.
+ * The canonical path is what decides whether a link leaves the input root
+ * (#576): a lexical path cannot tell, since the link's own spelling stays
+ * inside the root. `realpath(3)` returns the on-disk case; Node's JS
+ * `realpathSync` keeps the case a path is written in, so on a
+ * case-insensitive volume a root spelled in another case than a link's
+ * absolute target would read that link as leaving the root.
+ */
+function canonicalPath(target: string): string | undefined {
+    try {
+        return realpathSync.native(target);
+    } catch {
+        return undefined;
+    }
+}
+
+/** Whether the canonical path `resolved` lies inside the canonical `root`. */
+function isInsideRoot(root: string, resolved: string): boolean {
+    const relative = path.relative(root, resolved);
+    if (relative === "") return true;
+    if (path.isAbsolute(relative)) return false;
+    // A sibling named "..foo" is inside; a parent named ".." is not.
+    return relative !== ".." && !relative.startsWith(`..${path.sep}`);
+}
+
+/**
  * Walk `dir` recursively the way {@link walkFiles} does, without dropping
  * what that walk silently skips (#426): stored entries that cannot be read
  * — a broken symbolic link, or anything that resolves to neither a regular
@@ -1992,7 +2018,11 @@ const directoryIdentity = (st: Stats): string => `${st.dev}:${st.ino}`;
  * loop"` at the link's stored name, so the walk stops there instead of
  * descending until the kernel's symlink budget runs out (#546); an `ELOOP`
  * from resolving a symlink (a chain that loops without reaching a
- * directory) is never labelled a broken link. `holdsHardLinks` marks a
+ * directory) is never labelled a broken link. A link whose target resolves
+ * outside the input root is not followed at all: it is reported as `"a
+ * symbolic link outside the input directory"` at the link's stored name, so
+ * foreign files never become package parts and a link to an ancestor of the
+ * root is named at the link itself (#576). `holdsHardLinks` marks a
  * regular file with more than one directory entry, whose write-back must
  * not modify an unnamed alias (#545). `files` is exactly what `walkFiles`
  * returns.
@@ -2014,6 +2044,10 @@ export function walkDirectory(
     } catch {
         // readdirSync below reports the unreadable input directory (#543).
     }
+    // The input root's canonical path bounds the walk: a link whose target
+    // resolves outside it is not followed (#576). A root that cannot be
+    // canonicalized bounds nothing, and the walk reads as it did before.
+    const rootReal = canonicalPath(dir);
     const stack: { dir: string; ancestors: ReadonlySet<string> }[] = [{ dir, ancestors: rootAncestors }];
     while (stack.length > 0) {
         const current = stack.pop();
@@ -2054,6 +2088,21 @@ export function walkDirectory(
                 else reason = code === "ELOOP" ? "a symbolic link loop" : "a broken symbolic link";
                 unreadable.push({ file: full, kind: "file", reason });
                 continue;
+            }
+            // A link out of the input root is not followed: its target is in
+            // no package this input holds, so the walk refuses it at the
+            // link's stored name instead of judging foreign files as parts
+            // (#576).
+            if (listed.isSymbolicLink() && rootReal !== undefined) {
+                const resolved = canonicalPath(full);
+                if (resolved !== undefined && !isInsideRoot(rootReal, resolved)) {
+                    unreadable.push({
+                        file: full,
+                        kind: st.isDirectory() ? "directory" : "file",
+                        reason: "a symbolic link outside the input directory",
+                    });
+                    continue;
+                }
             }
             if (st.isDirectory()) {
                 const identity = directoryIdentity(st);

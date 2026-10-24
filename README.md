@@ -1027,7 +1027,17 @@ using the same duplicate selection and extraction guards as packed inputs.
 Directories whose tree holds a symbolic link — a stored entry or a directory
 segment — are staged the same way: the stored bytes are read through the link
 into the package view, while the write-back never follows it
-([#425](https://github.com/jandira-tech/docx-validate/issues/425)). A stored
+([#425](https://github.com/jandira-tech/docx-validate/issues/425)). A link
+whose target resolves outside the input root is not followed at all: the walk
+refuses it at the link's stored name (`a symbolic link outside the input
+directory`), so foreign files never become package parts, content outside the
+root never decides the verdict, and a link to an ancestor of the root is named
+at the link itself rather than under a path inside it
+([#576](https://github.com/jandira-tech/docx-validate/issues/576)). A link that
+resolves inside the root keeps the behaviour above: the loop detection of
+[#546](https://github.com/jandira-tech/docx-validate/issues/546) and the
+write-back refusal of
+[#544](https://github.com/jandira-tech/docx-validate/issues/544). A stored
 destination is refused when any path segment between the input root and that
 destination is a symbolic link. When several stored paths name one physical
 file and any of them reaches it through a link, the whole group is refused, so
@@ -1063,7 +1073,9 @@ name no package holds
 is already on the path into it, or a link chain that never resolves — is
 reported as `a symbolic link loop` at the link's stored name (`word/self`),
 not as a broken link under a synthetic multi-level path
-([#546](https://github.com/jandira-tech/docx-validate/issues/546)). When several
+([#546](https://github.com/jandira-tech/docx-validate/issues/546)). A link out
+of the input root fails the same way, naming the link's own stored name
+([#576](https://github.com/jandira-tech/docx-validate/issues/576)). When several
 entries are unreadable, the message names them one clause each, in code-unit
 order — the order the file list uses — so the same input yields the same
 message on every host, whatever the host's locale collation is

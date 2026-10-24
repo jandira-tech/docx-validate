@@ -128,6 +128,7 @@ describe.skipIf(process.platform === "win32")("direct validators return director
             ["dangling symlink", "Cannot read word/dangling.xml: a broken symbolic link"],
             ["unreadable subdirectory", "Cannot read customXml: an unreadable directory (EACCES)"],
             ["symlink loop", "Cannot read word/self: a symbolic link loop"],
+            ["symlink outside the input root", "Cannot read word/ext: a symbolic link outside the input directory"],
         ])("%s (#557)", (defect, detail) => {
             it.skipIf(defect === "unreadable subdirectory" && process.getuid?.() === 0).each(PROFILES)(
                 "returns exactly the wrapper's issues before checks under %s",
@@ -141,7 +142,11 @@ describe.skipIf(process.platform === "win32")("direct validators return director
                         const customXml = path.join(root, "customXml");
                         if (defect === "dangling symlink") symlinkSync("nowhere.xml", path.join(root, "word/dangling.xml"));
                         else if (defect === "symlink loop") symlinkSync(".", path.join(root, "word/self"));
-                        else {
+                        else if (defect === "symlink outside the input root") {
+                            const outside = path.join(dir, "outside");
+                            mkdirSync(outside);
+                            symlinkSync(outside, path.join(root, "word/ext"));
+                        } else {
                             mkdirSync(customXml);
                             writeFileSync(path.join(customXml, "item.xml"), "<x/>");
                             chmodSync(customXml, 0o000);

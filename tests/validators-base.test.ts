@@ -1445,4 +1445,145 @@ describe("walkDirectory (#426, #543, #546, #573, #575, #576)", () => {
         },
         60_000,
     );
+    it.skipIf(process.platform === "win32")(
+        "refuses a directory link whose target lies outside the input root, at the link's stored name (#576)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = path.join(dir, "input.docx");
+                await fs.mkdir(path.join(root, "word"), { recursive: true });
+                const outside = path.join(dir, "outside");
+                await fs.mkdir(outside, { recursive: true });
+                await fs.writeFile(path.join(outside, "note.txt"), "outside");
+                await fs.symlink(outside, path.join(root, "word", "ext"));
+                const walked = walkDirectory(root);
+                expect(walked.unreadable).toEqual([
+                    expect.objectContaining({
+                        file: path.join(root, "word", "ext"),
+                        reason: "a symbolic link outside the input directory",
+                    }),
+                ]);
+                // The foreign tree is never enumerated.
+                expect(walked.files.some((file) => file.includes("note.txt"))).toBe(false);
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "refuses a file link whose target lies outside the input root (#576)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = path.join(dir, "input.docx");
+                await fs.mkdir(path.join(root, "word"), { recursive: true });
+                const outside = path.join(dir, "outside.txt");
+                await fs.writeFile(outside, "outside");
+                await fs.symlink(outside, path.join(root, "word", "linked.xml"));
+                const walked = walkDirectory(root);
+                expect(walked.unreadable).toEqual([
+                    expect.objectContaining({
+                        file: path.join(root, "word", "linked.xml"),
+                        reason: "a symbolic link outside the input directory",
+                    }),
+                ]);
+                expect(walked.files.some((file) => file.endsWith("linked.xml"))).toBe(false);
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "refuses a link to an ancestor of the input root, at the link's stored name (#576)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = path.join(dir, "input.docx");
+                await fs.mkdir(path.join(root, "word"), { recursive: true });
+                await fs.symlink("..", path.join(root, "up"));
+                const walked = walkDirectory(root);
+                expect(walked.unreadable).toEqual([
+                    expect.objectContaining({
+                        file: path.join(root, "up"),
+                        reason: "a symbolic link outside the input directory",
+                    }),
+                ]);
+                // The parent is never enumerated.
+                expect(walked.files.some((file) => file.includes(`${path.sep}up${path.sep}`))).toBe(false);
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "keeps following a link that resolves inside the input root (#546, #576)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = path.join(dir, "input.docx");
+                await fs.mkdir(path.join(root, "word"), { recursive: true });
+                await fs.mkdir(path.join(root, "real"), { recursive: true });
+                await fs.writeFile(path.join(root, "real", "note.txt"), "inside");
+                await fs.symlink("../real", path.join(root, "word", "inside"));
+                const walked = walkDirectory(root);
+                expect(walked.unreadable).toEqual([]);
+                expect(walked.files).toEqual([path.join(root, "real", "note.txt"), path.join(root, "word", "inside", "note.txt")]);
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "keeps reporting a link to its own directory as a symbolic link loop (#546, #576)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = path.join(dir, "input.docx");
+                await fs.mkdir(path.join(root, "word"), { recursive: true });
+                await fs.symlink(".", path.join(root, "word", "self"));
+                const walked = walkDirectory(root);
+                expect(walked.unreadable).toEqual([
+                    expect.objectContaining({ file: path.join(root, "word", "self"), reason: "a symbolic link loop" }),
+                ]);
+            });
+        },
+        60_000,
+    );
+});
+
+/**
+ * `root` respelled in upper case, when the volume names the same directory
+ * that way; `undefined` on a case-sensitive volume, where it does not.
+ */
+const respelledRoot = async (root: string): Promise<string | undefined> => {
+    const respelled = path.join(path.dirname(root), path.basename(root).toUpperCase());
+    try {
+        const [stored, other] = await Promise.all([fs.stat(root), fs.stat(respelled)]);
+        return stored.dev === other.dev && stored.ino === other.ino ? respelled : undefined;
+    } catch {
+        return undefined;
+    }
+};
+
+/** An input root holding `word/media/a.png` and `word/m`, an absolute link to `word/media` spelled as stored. */
+const rootWithAbsoluteLink = async (dir: string): Promise<string> => {
+    const root = path.join(dir, "input.docx");
+    await fs.mkdir(path.join(root, "word", "media"), { recursive: true });
+    await fs.writeFile(path.join(root, "word", "media", "a.png"), "x");
+    await fs.symlink(path.join(root, "word", "media"), path.join(root, "word", "m"));
+    return root;
+};
+
+// Node's JS realpathSync resolves links but keeps the case a path is written
+// in, so on a case-insensitive volume a root spelled in another case than a
+// link's absolute target read the link as leaving the root.
+describe("canonical paths ignore how the input root is spelled (#576)", () => {
+    it.skipIf(process.platform === "win32")(
+        "follows an in-root link when the root is spelled in another case (#576)",
+        async ({ skip }) => {
+            await withTempDir(async (dir) => {
+                const respelled = await respelledRoot(await rootWithAbsoluteLink(dir));
+                if (respelled === undefined) return skip();
+                const walked = walkDirectory(respelled);
+                expect(walked.unreadable).toEqual([]);
+                expect(walked.files).toEqual([path.join(respelled, "word", "m", "a.png"), path.join(respelled, "word", "media", "a.png")]);
+            });
+        },
+        60_000,
+    );
 });

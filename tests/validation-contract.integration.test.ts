@@ -2365,6 +2365,52 @@ describe.skipIf(process.platform === "win32")("directory package staging (#374)"
         });
     });
 
+    it("refuses a stored symlink out of the input root before any repair (#425, #576)", async () => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...MINIMAL_PARTS,
+                "word/document.xml": MINIMAL_PARTS["word/document.xml"].replace(">Hello<", "> Hello <"),
+                "word/_rels/unused.xml.rels": '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>',
+            };
+            const input = path.join(dir, "input.docx");
+            await fs.mkdir(input, { recursive: true });
+            for (const [part, bytes] of Object.entries(parts)) {
+                if (part === "word/document.xml") continue;
+                await fs.writeFile(path.join(input, storedName(part)), bytes);
+            }
+            // The main part's stored file is a symlink to a regular file
+            // OUTSIDE the input directory: the walk does not follow a link
+            // out of the root (#576), so the run refuses it before any part
+            // is read and the outside target is never touched.
+            const outside = path.join(dir, "outside");
+            await fs.mkdir(outside);
+            const target = path.join(outside, "document-target.xml");
+            await fs.writeFile(target, parts["word/document.xml"]);
+            const targetBefore = await fs.readFile(target);
+            await fs.symlink(target, path.join(input, storedName("word/document.xml")));
+
+            const actual = await validateResolves(input, { strict: true, autoRepair: true });
+            expect(actual.valid).toBe(false);
+            expect(actual.issues).toEqual([
+                expect.objectContaining({
+                    severity: "error",
+                    code: "package-extract-failed",
+                    message: expect.stringContaining(
+                        `Cannot read ${storedName("word/document.xml")}: a symbolic link outside the input directory`,
+                    ),
+                }),
+            ]);
+            // The link itself still stands and its outside target is byte-identical.
+            expect((await fs.lstat(path.join(input, storedName("word/document.xml")))).isSymbolicLink()).toBe(true);
+            expect(await fs.readFile(target)).toEqual(targetBefore);
+            expect(targetBefore.toString()).not.toContain('xml:space="preserve"');
+            expect(actual.repairs).toBe(0);
+            // The other repair never ran either: the run failed before the
+            // package view was staged.
+            expect(existsSync(path.join(input, storedName("word/_rels/unused.xml.rels")))).toBe(true);
+        });
+    });
+
     it("never writes an auto-repair through a stored symlink, reports the refused write-back, and still applies the other repairs (#425)", async () => {
         await withTempDir(async (dir) => {
             const parts = {
@@ -2379,21 +2425,28 @@ describe.skipIf(process.platform === "win32")("directory package staging (#374)"
                 await fs.writeFile(path.join(input, storedName(part)), bytes);
             }
             // The main part's stored file is a symlink to a regular file
-            // OUTSIDE the input directory: reading follows it, so the package
+            // inside the input directory: reading follows it, so the package
             // view holds the part, but the repair must never reach the target.
-            const outside = path.join(dir, "outside");
-            await fs.mkdir(outside);
-            const target = path.join(outside, "document-target.xml");
+            const target = path.join(input, "document-target.xml");
             await fs.writeFile(target, parts["word/document.xml"]);
             const targetBefore = await fs.readFile(target);
             await fs.symlink(target, path.join(input, storedName("word/document.xml")));
 
-            const control = await validate(await writeDirectory(path.join(dir, "control.docx"), parts, true), {
-                strict: true,
-                autoRepair: true,
-            });
+            const control = await validate(
+                await writeDirectory(
+                    path.join(dir, "control.docx"),
+                    // The control holds the link's target as a stored file of
+                    // its own, so both runs repair the same number of parts.
+                    { ...parts, "document-target.xml": parts["word/document.xml"] },
+                    true,
+                ),
+                {
+                    strict: true,
+                    autoRepair: true,
+                },
+            );
             const actual = await validateResolves(input, { strict: true, autoRepair: true });
-            // The link itself still stands and its outside target is byte-identical.
+            // The link itself still stands and its target is byte-identical.
             expect((await fs.lstat(path.join(input, storedName("word/document.xml")))).isSymbolicLink()).toBe(true);
             expect(await fs.readFile(target)).toEqual(targetBefore);
             expect(targetBefore.toString()).not.toContain('xml:space="preserve"');
@@ -2417,15 +2470,15 @@ describe.skipIf(process.platform === "win32")("directory package staging (#374)"
         });
     });
 
-    it("never writes an auto-repair through a symlinked directory segment, with the same findings as a plain directory (#425)", async () => {
+    it("refuses a symlinked directory segment out of the input root before any repair (#425, #576)", async () => {
         await withTempDir(async (dir) => {
             const parts: Parts = {
                 ...MINIMAL_PARTS,
                 "word/document.xml": MINIMAL_PARTS["word/document.xml"].replace(">Hello<", "> Hello <"),
             };
             // The whole word/ tree lives outside the input; a symlink inside
-            // the input carries the segment, so the stored files themselves
-            // are regular files reached through a link.
+            // the input carries the segment, and the walk does not follow a
+            // link out of the root (#576).
             const wordDir = path.join(dir, "outside-word");
             await fs.mkdir(path.join(wordDir, "_rels"), { recursive: true });
             await fs.writeFile(path.join(wordDir, "document.xml"), parts["word/document.xml"]);
@@ -2442,19 +2495,16 @@ describe.skipIf(process.platform === "win32")("directory package staging (#374)"
             const actual = await validateResolves(input, { strict: true, autoRepair: true });
             // Nothing outside the input directory changed...
             expect(await snapshot(wordDir)).toEqual(outsideBefore);
-            // ...while the repair still counts (it landed on the staged
-            // package view) and the refused write-back fails the run.
-            expect(actual.repairs).toBe(1);
+            // ...and the run refuses the segment before any part is read.
             expect(actual.valid).toBe(false);
-            expect(actual.issues).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({ severity: "error", code: "repair-write-back-failed", path: "word/document.xml" }),
-                ]),
-            );
-            // Without --auto-repair the layout reports what the plain (and
-            // plain-staged) control does: only the write path may differ.
-            const control = await validate(await writeDirectory(path.join(dir, "control.docx"), parts, false), { strict: true });
-            assertSameVerdict(await validateResolves(input, { strict: true }), control);
+            expect(actual.issues).toEqual([
+                expect.objectContaining({
+                    severity: "error",
+                    code: "package-extract-failed",
+                    message: expect.stringContaining("Cannot read word: a symbolic link outside the input directory"),
+                }),
+            ]);
+            expect(actual.repairs).toBe(0);
         });
     });
 
@@ -3182,6 +3232,153 @@ describe.skipIf(process.platform === "win32")("directory package staging (#374)"
                 // host locale never decides the order of the message.
                 expect(message).toContain("Cannot read word/z: an unreadable directory (EACCES); Cannot read word/ä");
                 expect(message.indexOf("word/z")).toBeLessThan(message.indexOf("word/ä"));
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(runsAsRoot || process.platform === "win32")(
+        "keeps strict a superset of word-valid for a walk refusal, in full and partial runs (#573, #576, #381)",
+        async () => {
+            const errors = (result: Awaited<ReturnType<typeof validate>>) =>
+                new Set(result.issues.filter((i) => i.severity === "error").map((i) => i.code ?? ""));
+            await withTempDir(async (dir) => {
+                // The unreadable directory (#573) and the link out of the
+                // input root (#576): each is one refusal under every profile.
+                const unreadableInput = await writeDirectory(path.join(dir, "unreadable.docx"), MINIMAL_PARTS, false);
+                const unreadable = path.join(unreadableInput, "word", "café");
+                await fs.mkdir(unreadable, { recursive: true });
+                await fs.chmod(unreadable, 0o000);
+                const linkedInput = await writeDirectory(path.join(dir, "linked.docx"), MINIMAL_PARTS, false);
+                const outside = path.join(dir, "outside");
+                await fs.mkdir(outside, { recursive: true });
+                await fs.symlink(outside, path.join(linkedInput, "word", "ext"));
+                try {
+                    for (const input of [unreadableInput, linkedInput]) {
+                        const word = await validateResolves(input, { profile: "word-valid" });
+                        const strict = await validateResolves(input, { profile: "strict" });
+                        expect(word.valid).toBe(false);
+                        expect(strict.valid).toBe(false);
+                        // Strict is a superset of word-valid: every error the
+                        // Word-valid profile reports, strict reports too.
+                        for (const code of errors(word)) expect(errors(strict)).toContain(code);
+                        // #381: a partial run reports no error the full run does not.
+                        for (const selection of [{ quick: true }, { checks: ["xml-syntax"] }]) {
+                            const partial = await validateResolves(input, { profile: "word-valid", ...selection });
+                            expect(partial.valid).toBe(false);
+                            for (const code of errors(partial)) expect(errors(word)).toContain(code);
+                        }
+                    }
+                } finally {
+                    await fs.chmod(unreadable, 0o755);
+                }
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32").each(["strict", "word-valid", "lenient"] as const)(
+        "fails with package-extract-failed naming a link out of the input root (%s, #576)",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                const input = await writeDirectory(path.join(dir, `input-${profile}.docx`), MINIMAL_PARTS, false);
+                // The link leaves the input root: its target is not part of
+                // this package, so the walk must not follow it (#576).
+                const outside = path.join(dir, "outside");
+                await fs.mkdir(outside, { recursive: true });
+                await fs.writeFile(path.join(outside, "note.txt"), "outside");
+                await fs.symlink(outside, path.join(input, "word", "ext"));
+                const result = await validateResolves(input, { profile });
+                expect(result.valid).toBe(false);
+                expect(result.issues).toEqual([
+                    expect.objectContaining({
+                        severity: "error",
+                        code: "package-extract-failed",
+                        message: expect.stringContaining("Cannot read word/ext: a symbolic link outside the input directory"),
+                    }),
+                ]);
+                // The foreign file is never judged as a part of this package.
+                expect(result.issues.map((issue) => issue.code)).not.toContain("ct-uncovered-part");
+                expect(result.issues.map((issue) => issue.code)).not.toContain("rels-unreferenced");
+                expect(result.xsdWalk.started).toBe(false);
+                expect(result.metadata?.schemaCompleted).toBe(false);
+                expect(result.repairs).toBe(0);
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "reports a link to an ancestor of the input root at the link's stored name (#576)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const input = await writeDirectory(path.join(dir, "input.docx"), MINIMAL_PARTS, false);
+                // A sibling specimen beside the input: the walk must not
+                // descend into it and must not judge its contents.
+                const sibling = path.join(dir, "sibling.docx");
+                await writeDirectory(sibling, MINIMAL_PARTS, false);
+                await fs.symlink("..", path.join(input, "up"));
+                const result = await validateResolves(input, { profile: "word-valid" });
+                expect(result.valid).toBe(false);
+                expect(result.issues).toEqual([
+                    expect.objectContaining({
+                        severity: "error",
+                        code: "package-extract-failed",
+                        // The link's own stored name, not a path under it.
+                        message: expect.stringContaining("Cannot read up: a symbolic link outside the input directory"),
+                    }),
+                ]);
+                expect(result.issues[0]?.message).not.toContain("up/sibling.docx");
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "quick and named partial runs report the link out of the root, never more than the full run (#576, #381)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const input = await writeDirectory(path.join(dir, "input.docx"), MINIMAL_PARTS, false);
+                const outside = path.join(dir, "outside");
+                await fs.mkdir(outside, { recursive: true });
+                await fs.writeFile(path.join(outside, "note.txt"), "outside");
+                await fs.symlink(outside, path.join(input, "word", "ext"));
+                const full = await validateResolves(input, { profile: "word-valid" });
+                expect(full.valid).toBe(false);
+                const errors = (result: Awaited<ReturnType<typeof validate>>) =>
+                    new Set(result.issues.filter((i) => i.severity === "error").map((i) => `${i.code}@${i.path ?? ""}`));
+                for (const selection of [{ quick: true }, { checks: ["xml-syntax"] }, { checks: ["package"] }]) {
+                    const partial = await validateResolves(input, { profile: "word-valid", ...selection });
+                    expect(partial.valid).toBe(false);
+                    expect(partial.issues).toEqual(
+                        expect.arrayContaining([
+                            expect.objectContaining({
+                                severity: "error",
+                                code: "package-extract-failed",
+                                message: expect.stringContaining("Cannot read word/ext: a symbolic link outside the input directory"),
+                            }),
+                        ]),
+                    );
+                    // #381: a partial run never reports an error the full run does not.
+                    for (const error of errors(partial)) expect(errors(full)).toContain(error);
+                }
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "keeps following a link that resolves inside the input root (#576)",
+        async () => {
+            await withTempDir(async (dir) => {
+                // The control: the link resolves inside the root, so the walk
+                // follows it and the tree stays one package (#546, #544).
+                const input = await writeDirectory(path.join(dir, "input.docx"), MINIMAL_PARTS, false);
+                await fs.mkdir(path.join(input, "real"), { recursive: true });
+                await fs.writeFile(path.join(input, "real", "note.txt"), "inside");
+                await fs.symlink("../real", path.join(input, "word", "inside"));
+                const result = await validateResolves(input, { profile: "word-valid" });
+                expect(result.issues.map((issue) => issue.code)).not.toContain("package-extract-failed");
             });
         },
         60_000,
