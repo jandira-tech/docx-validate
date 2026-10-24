@@ -31,6 +31,7 @@ import {
 } from "../src/lib/content-types";
 import { parseXml } from "../src/lib/xml-helpers";
 import * as contentTypes from "../src/lib/content-types";
+import * as publicApi from "../src/index";
 
 const typesXml = (inner: string): Document => parseXml(`<?xml version="1.0"?><Types xmlns="${CONTENT_TYPES_NAMESPACE}">${inner}</Types>`);
 
@@ -507,4 +508,9 @@ describe("content-types stream names (#396)", () => {
         // A one-shot iterable verifies that exact preference needs only one pass.
         expect(findContentTypesStream(new Set(names).values())).toBe(expected);
     });
+});
+
+it("does not publish the orphaned hasContentTypeParameter helper (#580)", () => {
+    expect(publicApi).not.toHaveProperty("hasContentTypeParameter");
+    expect(publicApi.contentTypeMediaType(" Application/XML; charset=utf-8 ")).toBe("application/xml");
 });

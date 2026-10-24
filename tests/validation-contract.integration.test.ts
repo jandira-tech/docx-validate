@@ -3601,3 +3601,74 @@ describe("validation contract: numbering/theme generic Default (#571, #432, #535
         60_000,
     );
 });
+
+// session 22 in docs/plans/evidence/word-probes-2026-10-24.md (#581).
+describe("validation contract: empty main-document content type (#581, #381)", () => {
+    const mainType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
+    const stream = MINIMAL_PARTS["[Content_Types].xml"]!;
+    const findings = (result: Awaited<ReturnType<typeof validate>>) =>
+        result.issues.filter((issue) => issue.code === "word-content-type-invalid");
+
+    it("blocks word-valid and strict, leaves lenient to its XSD pass, and agrees across full/quick/named Word-valid", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "empty-main.docx");
+            writeFileSync(file, await buildDocx({ ...MINIMAL_PARTS, "[Content_Types].xml": stream.replace(mainType, "") }));
+            const full = await validate(file);
+            expect(full.valid).toBe(false);
+            expect(findings(full)).toEqual([
+                expect.objectContaining({
+                    severity: "error",
+                    path: "[Content_Types].xml",
+                    message: expect.stringContaining("empty content type '' for word/document.xml"),
+                }),
+            ]);
+            const strict = await validate(file, { profile: "strict" });
+            expect(strict.valid).toBe(false);
+            expect(findings(strict)).toEqual(findings(full));
+            expect(errorCodes(strict.issues)).toContain("xsd-error");
+            // Lenient runs no Word rule, fully or partially (#381); its XSD
+            // pass already rejects the empty value.
+            const lenient = await validate(file, { profile: "lenient" });
+            expect(findings(lenient)).toEqual([]);
+            expect(lenient.valid).toBe(false);
+            expect(errorCodes(lenient.issues)).toContain("xsd-error");
+            expect(findings(await validate(file, { profile: "lenient", quick: true }))).toEqual([]);
+            for (const selection of [{ quick: true }, { checks: ["word-content-type-invalid"] }, { checks: ["content-types"] }]) {
+                const partial = await validate(file, selection);
+                expect(partial.valid).toBe(false);
+                expect(findings(partial)).toEqual(findings(full));
+            }
+        });
+    }, 60_000);
+
+    it.each([
+        ["proper Override control", stream, true],
+        ["empty styles Override", stream.replace("application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml", ""), false],
+        ["empty xml Default", stream.replace('ContentType="application/xml"', 'ContentType=""'), false],
+        [
+            "main typed by empty Default",
+            stream
+                .replace(`<Override PartName="/word/document.xml" ContentType="${mainType}"/>`, "")
+                .replace('ContentType="application/xml"', 'ContentType=""'),
+            false,
+        ],
+    ])(
+        "keeps %s outside the new finding",
+        async (_label, contentTypes, strictValid) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "control.docx");
+                writeFileSync(file, await buildDocx({ ...MINIMAL_PARTS, "[Content_Types].xml": contentTypes }));
+                for (const selection of [{}, { quick: true }, { checks: ["word-content-type-invalid"] }]) {
+                    const result = await validate(file, selection);
+                    expect(findings(result)).toEqual([]);
+                    expect(result.valid).toBe(true);
+                }
+                const strict = await validate(file, { profile: "strict" });
+                expect(findings(strict)).toEqual([]);
+                expect(strict.valid).toBe(strictValid);
+                if (!strictValid) expect(errorCodes(strict.issues)).toContain("xsd-error");
+            });
+        },
+        60_000,
+    );
+});
