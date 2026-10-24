@@ -5,11 +5,11 @@
 
 import { describe, expect, it } from "vitest";
 
-import { zipCentralDirectoryEntries } from "../src/lib/zip-central-directory";
+import { zipBytesBeforeArchive, zipCentralDirectoryEntries } from "../src/lib/zip-central-directory";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import JSZip from "jszip";
 
-import { buildRawZip } from "./support/raw-zip";
+import { absoluteOffsetsAfter, buildRawZip } from "./support/raw-zip";
 import {
     extensibleDataArchive,
     multiVolumeArchive,
@@ -236,5 +236,110 @@ describe("zipCentralDirectoryEntries", () => {
         ],
     ])("returns undefined on %s", (_label, bytes) => {
         expect(zipCentralDirectoryEntries(bytes)).toBeUndefined();
+    });
+});
+
+describe("zipBytesBeforeArchive: bytes in front of the archive JSZip loads (#464)", () => {
+    const JUNK = Buffer.alloc(4096, 0x20);
+    const FAKE_SIG_STUB = Buffer.concat([Buffer.from([0x50, 0x4b, 0x03, 0x04]), Buffer.alloc(4092)]);
+    const DOCX_NAMES = [...Object.keys(MINIMAL_PARTS)].sort();
+    const zipPrefix = () =>
+        buildRawZip([
+            { name: "pad.bin", content: Buffer.alloc(600) },
+            { name: "ok.xml", content: "<x/>" },
+        ]);
+    const loaded = async (bytes: Uint8Array) => {
+        const files = (await JSZip.loadAsync(bytes)).files;
+        return Object.keys(files)
+            .filter((name) => !files[name]!.dir)
+            .sort();
+    };
+
+    it("counts none for an archive that begins at the file's first byte", async () => {
+        const bytes = await buildDocx();
+        expect(await loaded(bytes)).toEqual(DOCX_NAMES);
+        expect(zipBytesBeforeArchive(bytes)).toBe(0);
+    });
+
+    // [label, bytes, expected prefix, the names JSZip loads]
+    const CASES: readonly (readonly [string, () => Promise<Buffer>, () => number, readonly string[]])[] = [
+        [
+            "a whole prepended ZIP archive",
+            async () => Buffer.concat([zipPrefix(), await buildDocx()]),
+            () => zipPrefix().length,
+            DOCX_NAMES,
+        ],
+        ["junk, the archive's offsets left relative", async () => Buffer.concat([JUNK, await buildDocx()]), () => JUNK.length, DOCX_NAMES],
+        [
+            "junk, the absolute offsets a self-extractor writes",
+            async () => Buffer.concat([JUNK, absoluteOffsetsAfter(await buildDocx(), JUNK.length)]),
+            () => JUNK.length,
+            DOCX_NAMES,
+        ],
+        ["a single byte", async () => Buffer.concat([Buffer.from([0x0a]), await buildDocx()]), () => 1, DOCX_NAMES],
+        [
+            "junk whose first bytes fake a local-header signature",
+            async () => Buffer.concat([FAKE_SIG_STUB, await buildDocx()]),
+            () => FAKE_SIG_STUB.length,
+            DOCX_NAMES,
+        ],
+        ["an empty archive", async () => Buffer.concat([JUNK, buildRawZip([])]), () => JUNK.length, []],
+    ];
+
+    it.each(CASES)("counts the prefix in front of the archive behind %s", async (_label, make, prefix, names) => {
+        const bytes = await make();
+        expect(await loaded(bytes), "JSZip loads the archive behind the prefix").toEqual(names);
+        expect(zipBytesBeforeArchive(bytes)).toBe(prefix());
+    });
+
+    it("counts the prefix behind a ZIP64 archive", async () => {
+        const live = buildRawZip(
+            Object.entries(MINIMAL_PARTS).map(([name, content]) => ({ name, content })),
+            { zip64: true },
+        );
+        const bytes = Buffer.concat([JUNK, live]);
+        expect(await loaded(bytes)).toEqual(DOCX_NAMES);
+        expect(zipBytesBeforeArchive(live)).toBe(0);
+        expect(zipBytesBeforeArchive(bytes)).toBe(JUNK.length);
+    });
+
+    it("counts a whole document in front of a smaller archive appended after it", async () => {
+        const docx = await buildDocx();
+        const bytes = Buffer.concat([docx, zipPrefix()]);
+        expect(await loaded(bytes)).toEqual(["ok.xml", "pad.bin"]);
+        expect(zipBytesBeforeArchive(bytes)).toBe(docx.length);
+    });
+
+    it("takes the lowest stored local-header offset among the entries, not the first directory record's", async () => {
+        // b.xml is stored first; swapping the two equal-size central records
+        // makes the first record name a.xml, whose local header sits later.
+        const bytes = buildRawZip([
+            { name: "b.xml", content: "<b/>" },
+            { name: "a.xml", content: "<a/>" },
+        ]);
+        const eocd = bytes.length - 22;
+        expect(bytes.readUInt16LE(eocd + 10)).toBe(2);
+        const cd = bytes.readUInt32LE(eocd + 16);
+        const span = 46 + "b.xml".length;
+        const first = Buffer.from(bytes.subarray(cd, cd + span));
+        bytes.set(bytes.subarray(cd + span, cd + 2 * span), cd);
+        bytes.set(first, cd + span);
+        const prefixed = Buffer.concat([JUNK, absoluteOffsetsAfter(bytes, JUNK.length)]);
+        expect(await loaded(prefixed)).toEqual(["a.xml", "b.xml"]);
+        expect(zipBytesBeforeArchive(prefixed)).toBe(JUNK.length);
+    });
+
+    it.each([
+        ["no EOCD at all", Buffer.from("not a zip at all")],
+        ["a truncated archive", buildRawZip([{ name: "a.xml", content: "<a/>" }]).subarray(0, 12)],
+        [
+            "a later copy of the record, whose offsets JSZip rebases and refuses",
+            (() => {
+                const archive = buildRawZip([{ name: "a.xml", content: "<a/>" }]);
+                return Buffer.concat([archive, Buffer.alloc(70), archive.subarray(archive.length - 22)]);
+            })(),
+        ],
+    ])("returns undefined on %s", (_label, bytes) => {
+        expect(zipBytesBeforeArchive(bytes)).toBeUndefined();
     });
 });

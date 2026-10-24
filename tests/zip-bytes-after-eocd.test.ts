@@ -45,10 +45,16 @@ describe("word-valid ZIP bytes after the end of central directory", { timeout: 3
         });
     });
 
-    it("rejects a second copy of the archive appended after the end-of-central-directory record", async () => {
+    // A concatenated package is the prefixed shape of #464: JSZip loads the
+    // appended copy, the original archive becomes the prefix, and one check
+    // reports it — zip-bytes-before-archive, never also zip-bytes-after-eocd.
+    it("reports a second copy of the archive appended after the end-of-central-directory record once, as bytes before the archive", async () => {
         const result = await validate(CONCATENATED, { profile: "word-valid" });
         expect(result.valid).toBe(false);
-        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "zip-bytes-after-eocd")).toBe(true);
+        expect(result.issues.filter((issue) => issue.severity === "error").map((issue) => issue.code)).toEqual([
+            "zip-bytes-before-archive",
+        ]);
+        expect(result.issues.some((issue) => issue.code === "zip-bytes-after-eocd")).toBe(false);
     });
 
     it("does not reject that package once the appended copy is deleted", async () => {
@@ -62,19 +68,23 @@ describe("word-valid ZIP bytes after the end of central directory", { timeout: 3
         const padded = new Uint8Array(concatenated.length + 32);
         padded.set(concatenated, 16);
         const view = padded.subarray(16, 16 + concatenated.length);
-        expect(countZipBytesAfterEocd(view)).toBe(concatenated.length / 2);
+        // The earlier archive lies wholly in front of the archive JSZip loads,
+        // so it is zip-bytes-before-archive's finding, not trailing data (#464).
+        expect(countZipBytesAfterEocd(view)).toBe(0);
         expect(countZipBytesAfterEocd(readFileSync(CONCATENATED_REMOVED))).toBe(0);
     });
 
     it("does not report the concatenated copy on lenient", async () => {
         const result = await validate(CONCATENATED, { profile: "lenient" });
-        expect(result.issues.some((issue) => issue.code === "zip-bytes-after-eocd")).toBe(false);
+        expect(result.issues.some((issue) => issue.code === "zip-bytes-after-eocd" || issue.code === "zip-bytes-before-archive")).toBe(
+            false,
+        );
     });
 
     // strict includes every Word-valid check (validation contract, Task 1).
     it("reports the concatenated copy on strict", async () => {
         const result = await validate(CONCATENATED, { profile: "strict" });
-        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "zip-bytes-after-eocd")).toBe(true);
+        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "zip-bytes-before-archive")).toBe(true);
     });
 
     it("does not report the cause on lenient", async () => {

@@ -92,6 +92,7 @@ describe("default check registry", () => {
         const run = await runChecks(ctx, createDefaultCheckRegistry(), { format: "docx", select: ["package"] });
         expect(run.executed).toEqual([
             "zip-bytes-after-eocd",
+            "zip-bytes-before-archive",
             "zip-eocd-comment-overrun",
             "opc-equivalent-part-names",
             "opc-part-name-escaped-unreserved",
@@ -183,7 +184,7 @@ describe("default check registry", () => {
             expect(ctx.source).toBe("directory");
             expect(ctx.partNames).toEqual(Object.keys(MINIMAL_PARTS).sort());
             const run = await runChecks(ctx, createDefaultCheckRegistry(), { format: "docx" });
-            expect(run.unavailable).toEqual(["zip-bytes-after-eocd", "zip-eocd-comment-overrun"]);
+            expect(run.unavailable).toEqual(["zip-bytes-after-eocd", "zip-bytes-before-archive", "zip-eocd-comment-overrun"]);
             expect(run.valid).toBe(true);
         });
     });

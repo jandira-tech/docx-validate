@@ -25,9 +25,11 @@
  * order, keeping duplicates. Loading loses them: JSZip keeps only the last
  * entry under a given name and rewrites `.`/`..`/empty segments before that
  * (`utils.resolve`), so the stored-name diagnosis and the item-name refusal
- * need this view (#411). Everything fails soft: a malformed envelope or
- * central directory yields `undefined`, and callers keep the loaded view's
- * names — a broken envelope is already diagnosed by the ZIP envelope checks.
+ * need this view (#411). `zipBytesBeforeArchive` measures the prefix in front
+ * of the archive JSZip loads through the same shared read (#464). Everything
+ * fails soft: a malformed envelope or central directory yields `undefined`,
+ * and callers keep the loaded view's names — a broken envelope is already
+ * diagnosed by the ZIP envelope checks.
  */
 
 export const EOCD_SIGNATURE = 0x06054b50;
@@ -312,4 +314,28 @@ export const readCentralDirectoryView = (buf: Uint8Array): CentralDirectoryView 
         zero,
         zip64,
     };
+};
+
+/**
+ * The bytes in front of the archive JSZip loads, or `undefined` when the
+ * central directory cannot be read (#464). JSZip reads each entry's local
+ * header at `zero + localHeaderOffset` (`dataReader`'s `byteAt` adds the
+ * rebase), so the archive it loads begins at the lowest of those positions —
+ * the rebase `zero` plus the lowest stored local-header offset, which covers
+ * a self-extractor's absolute offsets (`zero` 0, first offset raised) and a
+ * prepended archive (`zero` raised, offsets relative). An empty directory
+ * names no local header; the rebase alone is the prefix. The base field only:
+ * a per-entry ZIP64 extra field can override a saturated offset, but an
+ * archive that large cannot be read as doubles anyway.
+ */
+export const zipBytesBeforeArchive = (buf: Uint8Array): number | undefined => {
+    const view = readCentralDirectoryView(buf);
+    if (view === undefined) {
+        return undefined;
+    }
+    let lowest: number | undefined = undefined;
+    for (const record of view.records) {
+        lowest = lowest === undefined ? record.localHeaderOffset : Math.min(lowest, record.localHeaderOffset);
+    }
+    return lowest === undefined ? view.zero : view.zero + lowest;
 };
