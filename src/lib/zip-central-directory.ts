@@ -51,6 +51,13 @@ const ZIP64_COUNT = 0xffff;
 /** `utils.MAX_VALUE_32BITS`: a saturated 4-byte field as `readJszipInt` reads it. */
 const JSZIP_MAX_32 = -1;
 const CENTRAL_HEADER_FIXED_LENGTH = 46;
+const LOCAL_HEADER_FIXED_LENGTH = 30;
+const LOCAL_NAME_LENGTH_OFFSET = 26;
+const LOCAL_EXTRA_LENGTH_OFFSET = 28;
+const COMPRESSION_METHOD_OFFSET = 10;
+/** The compression methods JSZip knows (`compressions.js`): store and deflate. */
+const STORE_METHOD = 0x0000;
+const DEFLATE_METHOD = 0x0008;
 const ZIP64_EXTRA_FIELD = 0x0001;
 const UTF8_NAME_FLAG = 0x0800;
 const DOS_DIRECTORY_ATTRIBUTE = 0x10;
@@ -221,7 +228,9 @@ export type CentralDirectoryView = {
  * matches, a record whose 46-byte fixed header the buffer cuts off refuses
  * as `readCentralPart`'s bounded reads refuse (#498), a record whose
  * declared name, extra or comment fields would run past the buffer refuses
- * as `readData` refuses, fewer than four bytes left
+ * as `readData` refuses, a field inside the extra region that declares more
+ * data than the buffer holds refuses as `readExtraFields`' own `readData`
+ * refuses (#525), fewer than four bytes left
  * for the next signature read refuses too, and the declared count only
  * refuses when no record at all is found (#478). ZIP64 follows JSZip too: the
  * last locator, its record or else the last ZIP64 record, and an expected
@@ -322,6 +331,18 @@ export const readCentralDirectoryView = (buf: Uint8Array): CentralDirectoryView 
         if (flags % 2 === 1) {
             return undefined;
         }
+        // `readExtraFields` walks the extra region field by field, and each
+        // field's declared length is bounds-checked against the whole buffer
+        // by `readData` — a field inside a fitting region can declare more
+        // data than the buffer holds, and JSZip throws there (#525).
+        const extraEnd = nameEnd + extraLength;
+        for (let cursor = nameEnd; cursor + 4 < extraEnd;) {
+            const length = readU16(buf, cursor + 2);
+            if (cursor + 4 + length > buf.length) {
+                return undefined;
+            }
+            cursor += 4 + length;
+        }
         const name = decodeName(buf, nameStart, nameLength, flags);
         records.push({
             name,
@@ -362,7 +383,10 @@ export const readCentralDirectoryView = (buf: Uint8Array): CentralDirectoryView 
  * compressed sizes consume first, in that order. `undefined` where JSZip's
  * `load` throws: no 0x0001 field for a saturated value, a value too short
  * for the read, a size still -1 after resolution, a negative effective
- * offset, or no local signature at the resolved position (#490).
+ * offset, no local signature at the resolved position, or a local part
+ * `readLocalPart` cannot finish — its fixed 30-byte header, local name or
+ * extra field past the buffer, a compressed stream past the buffer, or a
+ * compression method JSZip does not know (#490, #524).
  */
 const localHeaderOffsetOf = (buf: Uint8Array, view: CentralDirectoryView, record: ZipCentralRecord): number | undefined => {
     const nameEnd = record.recordOffset + CENTRAL_HEADER_FIXED_LENGTH + record.nameBytes.length;
@@ -430,12 +454,30 @@ const localHeaderOffsetOf = (buf: Uint8Array, view: CentralDirectoryView, record
     if (!hasSignature(buf, view.zero + offset, LOCAL_HEADER_SIGNATURE)) {
         return undefined;
     }
+    // `readLocalPart` reads on: the fixed 30-byte header plus the local name
+    // and extra field, then the central-declared compressed stream, each
+    // bounds-checked against `zero + position` by `checkIndex`; and the
+    // compression method must be one JSZip knows — store (0) or deflate (8),
+    // read from the central record (`compressions.js`) (#524).
+    const header = view.zero + offset;
+    if (header + LOCAL_HEADER_FIXED_LENGTH > buf.length) {
+        return undefined;
+    }
+    const nameAndExtra = readU16(buf, header + LOCAL_NAME_LENGTH_OFFSET) + readU16(buf, header + LOCAL_EXTRA_LENGTH_OFFSET);
+    if (header + LOCAL_HEADER_FIXED_LENGTH + nameAndExtra + compressed > buf.length) {
+        return undefined;
+    }
+    const method = readU16(buf, record.recordOffset + COMPRESSION_METHOD_OFFSET);
+    if (method !== STORE_METHOD && method !== DEFLATE_METHOD) {
+        return undefined;
+    }
     return offset;
 };
 
 /**
  * The bytes in front of the archive JSZip loads, or `undefined` where its
- * reader throws (#464, #490). JSZip reads each entry's local header at
+ * reader throws — through `readLocalPart`'s own bounded reads, not just the
+ * signature check (#464, #490, #524). JSZip reads each entry's local header at
  * `zero + localHeaderOffset` (`dataReader`'s `byteAt` adds the rebase), the
  * offset resolved as {@link localHeaderOffsetOf} resolves it — the ZIP64
  * extra field's value where the base field is saturated — so the archive it
