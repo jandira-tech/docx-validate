@@ -48,7 +48,7 @@ export const isContentTypesStreamName = (name: string): boolean =>
  * stored streams, System.IO.Packaging keeps the last matching ZIP item in
  * central-directory order; this follows the rule the package view applies to
  * equivalent entries (#366), which a directory input, having no ZIP order,
- * can apply too. Nothing reports the second stream (#351).
+ * can apply too. The opc-equivalent-part-names check reports duplicates (#351).
  */
 export const findContentTypesStream = (names: Iterable<string>): string | undefined => {
     let found: string | undefined;

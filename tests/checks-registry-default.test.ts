@@ -90,7 +90,7 @@ describe("default check registry", () => {
         const docx = await buildDocx();
         const ctx = await ValidationContext.fromArchive(Buffer.concat([docx, Buffer.from([0x0a])]));
         const run = await runChecks(ctx, createDefaultCheckRegistry(), { format: "docx", select: ["package"] });
-        expect(run.executed).toEqual(["zip-bytes-after-eocd", "zip-eocd-comment-overrun"]);
+        expect(run.executed).toEqual(["zip-bytes-after-eocd", "zip-eocd-comment-overrun", "opc-equivalent-part-names"]);
         expect(run.issues.map((i) => i.code)).toEqual(["zip-bytes-after-eocd"]);
     });
 

@@ -58,9 +58,9 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
             for (const id of WORD_RULE_IDS) {
                 expect(lenientChecks).not.toContain(id);
             }
-            // Lenient runs XML syntax and the shared comment checks;
+            // Lenient runs stored-name diagnosis, XML syntax and shared comment checks;
             // the ZIP-envelope checks remain Word-only.
-            expect(lenientChecks).toEqual(["xml-syntax", "comment-markers", "comment-threading"]);
+            expect(lenientChecks).toEqual(["opc-equivalent-part-names", "xml-syntax", "comment-markers", "comment-threading"]);
             // The finding that rule reports exists only in the profiles that run it.
             expect(lenient.issues.some((issue) => issue.code === "word-link-without-namespace")).toBe(false);
             expect(wordValid.issues.some((issue) => issue.code === "word-link-without-namespace")).toBe(true);
@@ -120,11 +120,15 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
                         profile,
                     ).toEqual(["package-extract-failed"]);
                     // The ZIP envelope is read from the bytes before extraction, so its checks ran.
-                    expect(result.metadata?.executedChecks, profile).toEqual(["zip-bytes-after-eocd", "zip-eocd-comment-overrun"]);
+                    expect(result.metadata?.executedChecks, profile).toEqual([
+                        "zip-bytes-after-eocd",
+                        "zip-eocd-comment-overrun",
+                        "opc-equivalent-part-names",
+                    ]);
                 }
                 // Lenient never runs the envelope checks.
                 const lenient = await validate(file, { profile: "lenient" });
-                expect(lenient.metadata?.executedChecks).toEqual([]);
+                expect(lenient.metadata?.executedChecks).toEqual(["opc-equivalent-part-names"]);
             });
         } finally {
             JSZip.loadAsync = originalLoadAsync;
