@@ -16,6 +16,7 @@ import {
     defaultProfileForFormat,
     isPartialRequest,
     ModeConflictError,
+    profileWalksSchemas,
     QUICK_CHECK_GROUPS,
     resolveMode,
     type ModeRequest,
@@ -45,6 +46,15 @@ describe("isPartialRequest", () => {
         expect(isPartialRequest({ checks: [] })).toBe(false);
         expect(isPartialRequest({ quick: true })).toBe(true);
         expect(isPartialRequest({ checks: ["tables"] })).toBe(true);
+    });
+});
+
+describe("profileWalksSchemas", () => {
+    it("is true for the two schema profiles and false for word-valid", () => {
+        expect(profileWalksSchemas("lenient")).toBe(true);
+        expect(profileWalksSchemas("strict")).toBe(true);
+        // word-valid compiles no schema, so it never needs the XSD engine.
+        expect(profileWalksSchemas("word-valid")).toBe(false);
     });
 });
 

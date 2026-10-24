@@ -22,9 +22,10 @@ schema-invalid constructs as warnings. For schema conformance, use
 `{ strict: true }`, `{ profile: "strict" }`, or `--strict`. Word-valid always
 returns `xsdWalk: { started: false, parts: [], eligible: 0 }` on the path API and
 `metadata.schemaCompleted: false`; it no longer emits `xsd-strict-skipped` or
-applies XSD message suppression or original-baseline subtraction. Full CLI
-invocations still compile a small startup probe schema; this engine check is
-outside the document trace. Help, discovery, and partial runs bypass it.
+applies XSD message suppression or original-baseline subtraction. Full lenient
+and strict CLI runs still compile a small startup probe schema; this engine check
+is outside the document trace. Word-valid, help, discovery, and partial runs
+bypass it, so a broken XSD engine no longer fails a default DOCX run (#318).
 
 ### Check selection and execution metadata
 
