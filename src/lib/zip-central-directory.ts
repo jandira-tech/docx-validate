@@ -25,11 +25,14 @@
  * order, keeping duplicates. Loading loses them: JSZip keeps only the last
  * entry under a given name and rewrites `.`/`..`/empty segments before that
  * (`utils.resolve`), so the stored-name diagnosis and the item-name refusal
- * need this view (#411). `zipBytesBeforeArchive` measures the prefix in front
- * of the archive JSZip loads through the same shared read (#464). Everything
- * fails soft: a malformed envelope or central directory yields `undefined`,
- * and callers keep the loaded view's names — a broken envelope is already
- * diagnosed by the ZIP envelope checks.
+ * need this view (#411). The walk mirrors JSZip's `readCentralDir`: the
+ * declared size only feeds the rebase, records are read while the signature
+ * matches, and a count mismatch is tolerated unless no record is found (#478).
+ * `zipBytesBeforeArchive` measures the prefix in front of the archive JSZip
+ * loads through the same shared read (#464). Everything fails soft: a
+ * directory JSZip's reader would throw on yields `undefined`, and callers keep
+ * the loaded view's names — a broken envelope is already diagnosed by the ZIP
+ * envelope checks.
  */
 
 export const EOCD_SIGNATURE = 0x06054b50;
@@ -143,9 +146,9 @@ export type ZipStoredEntry = {
 
 /**
  * The central directory's stored entry names, in order, duplicates kept, or
- * `undefined` when the envelope or directory cannot be read. The entry count
- * and declared size must match what the walk finds — a directory that lies is
- * not read at all.
+ * `undefined` when the envelope or directory cannot be read — exactly where
+ * JSZip's reader throws. A directory whose declared size or count does not
+ * match the records walked is read anyway, as JSZip reads it (#478).
  */
 export const zipCentralDirectoryEntries = (buf: Uint8Array): readonly ZipStoredEntry[] | undefined =>
     readCentralDirectoryView(buf)?.records.map((record) => ({ name: record.name, directory: record.directory }));
@@ -181,7 +184,11 @@ export type CentralDirectoryView = {
     readonly eocdEnd: number;
     /** Where the central directory starts in the buffer. */
     readonly cdOffset: number;
-    /** One past the central directory. */
+    /**
+     * One past the walked central directory: where the first non-header
+     * signature sits, not the declared end. A directory whose declared size
+     * spans more than its records ends before it (#478).
+     */
     readonly cdEnd: number;
     /**
      * The bytes before the archive, which every stored offset is relative to:
@@ -203,7 +210,12 @@ export type CentralDirectoryView = {
  * offset minus where its directory says it should sit — rebase every offset
  * (`reader.zero`). A prepended archive is skipped, a fake signature behind the
  * record yields JSZip's empty directory, and a record whose directory would
- * end past it is refused, as JSZip refuses it. ZIP64 follows JSZip too: the
+ * end past it is refused, as JSZip refuses it. The walk is JSZip's
+ * `readCentralDir`: records are read while the central-header signature
+ * matches, a record whose declared name, extra or comment fields would run
+ * past the buffer refuses as `readData` refuses, fewer than four bytes left
+ * for the next signature read refuses too, and the declared count only
+ * refuses when no record at all is found (#478). ZIP64 follows JSZip too: the
  * last locator, its record or else the last ZIP64 record, and an expected
  * position that counts the locator and the ZIP64 record. Every 4- and 8-byte
  * field is read with JSZip's 32-bit arithmetic (`readJszipInt`), and what
@@ -267,13 +279,19 @@ export const readCentralDirectoryView = (buf: Uint8Array): CentralDirectoryView 
     }
     offset += zero;
     const cdOffset = offset;
-    // The directory ends where JSZip expects it, at or before the record:
-    // `end` is `eocd` less the ZIP64 structures between them.
-    const end = offset + size;
+    // The walk is `readCentralDir`: records are read while the central-header
+    // signature matches, and the declared size does not bound them — it only
+    // fed the rebase. Every read is bounded by the buffer as JSZip's reader
+    // bounds it: `readAndCheckSignature` throws when fewer than four bytes
+    // remain, and `readData`/`skip`/`setIndex` throw when the record's fields
+    // would run past the buffer.
     const records: ZipCentralRecord[] = [];
-    while (offset + CENTRAL_HEADER_FIXED_LENGTH <= end) {
-        if (!hasSignature(buf, offset, CENTRAL_DIRECTORY_SIGNATURE)) {
+    for (;;) {
+        if (offset + 4 > buf.length) {
             return undefined;
+        }
+        if (!hasSignature(buf, offset, CENTRAL_DIRECTORY_SIGNATURE)) {
+            break;
         }
         const flags = readU16(buf, offset + 8);
         const nameLength = readU16(buf, offset + 28);
@@ -283,7 +301,11 @@ export const readCentralDirectoryView = (buf: Uint8Array): CentralDirectoryView 
         const nameStart = offset + CENTRAL_HEADER_FIXED_LENGTH;
         const nameEnd = nameStart + nameLength;
         const recordEnd = nameEnd + extraLength + commentLength;
-        if (recordEnd > end) {
+        if (recordEnd > buf.length) {
+            return undefined;
+        }
+        // `readCentralPart` refuses the encrypted bit inside the same walk.
+        if (flags % 2 === 1) {
             return undefined;
         }
         const name = decodeName(buf, nameStart, nameLength, flags);
@@ -302,7 +324,9 @@ export const readCentralDirectoryView = (buf: Uint8Array): CentralDirectoryView 
         });
         offset = recordEnd;
     }
-    if (offset !== end || records.length !== count) {
+    // JSZip tolerates a count mismatch, but a count that names records where
+    // none are found is "Corrupted zip or bug" — nothing is read.
+    if (count !== 0 && records.length === 0) {
         return undefined;
     }
     return {
@@ -310,7 +334,7 @@ export const readCentralDirectoryView = (buf: Uint8Array): CentralDirectoryView 
         eocdOffset: eocd,
         eocdEnd: eocd + EOCD_FIXED_LENGTH + readU16(buf, eocd + 20),
         cdOffset,
-        cdEnd: end,
+        cdEnd: offset,
         zero,
         zip64,
     };

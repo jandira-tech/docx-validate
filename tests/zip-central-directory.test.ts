@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { zipBytesBeforeArchive, zipCentralDirectoryEntries } from "../src/lib/zip-central-directory";
+import { readCentralDirectoryView, zipBytesBeforeArchive, zipCentralDirectoryEntries } from "../src/lib/zip-central-directory";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import JSZip from "jszip";
 
@@ -195,23 +195,15 @@ describe("zipCentralDirectoryEntries", () => {
         ["no EOCD at all", Buffer.from("not a zip at all")],
         ["a truncated archive", buildRawZip([{ name: "a.xml", content: "<a/>" }]).subarray(0, 12)],
         [
-            "a central-directory entry count that lies",
-            (() => {
-                const bytes = buildRawZip([{ name: "a.xml", content: "<a/>" }]);
-                // The EOCD's record counts are 12 bytes and 10 bytes before its end.
-                bytes.writeUInt16LE(7, bytes.length - 14);
-                bytes.writeUInt16LE(7, bytes.length - 12);
-                return bytes;
-            })(),
-        ],
-        [
-            "a central directory cut short",
+            "a central directory declared past its record",
             (() => {
                 const bytes = buildRawZip([
                     { name: "a.xml", content: "<a/>" },
                     { name: "b.xml", content: "<b/>" },
                 ]);
-                // Claim a larger directory than the records hold.
+                // A directory whose declared span ends 30 bytes after its
+                // record sits: the rebase is negative and JSZip throws before
+                // it ever walks (`extraBytes < 0` in `readEndOfCentral`).
                 bytes.writeUInt32LE(bytes.readUInt32LE(bytes.length - 10) + 30, bytes.length - 10);
                 return bytes;
             })(),
@@ -341,5 +333,114 @@ describe("zipBytesBeforeArchive: bytes in front of the archive JSZip loads (#464
         ],
     ])("returns undefined on %s", (_label, bytes) => {
         expect(zipBytesBeforeArchive(bytes)).toBeUndefined();
+    });
+});
+
+// JSZip's `readCentralDir` (zipEntries.js): the walk starts at the rebased
+// directory offset and reads records while the signature matches. The
+// declared size only feeds `reader.zero`, and a count mismatch is tolerated
+// unless no record at all is found. The names mirror that exactly: they are
+// what JSZip loads when it loads, and `undefined` exactly where JSZip throws
+// (#478).
+describe("the central-directory walk JSZip runs (#478)", () => {
+    const pair = () =>
+        buildRawZip([
+            { name: "a.xml", content: "<1/>" },
+            { name: "a.xml", content: "<2/>" },
+        ]);
+    const loaded = async (bytes: Uint8Array) => Object.keys((await JSZip.loadAsync(bytes)).files).sort();
+    // The EOCD record's fields: the record count JSZip consults is 10 bytes
+    // before its end, the directory size 6 bytes before that.
+    const withDeclaredCount = (bytes: Buffer, count: number): Buffer => {
+        bytes.writeUInt16LE(count, bytes.length - 12);
+        return bytes;
+    };
+    const withDeclaredSize = (bytes: Buffer, size: number): Buffer => {
+        bytes.writeUInt32LE(size, bytes.length - 10);
+        return bytes;
+    };
+
+    it("walks the records and stops at the original record when an appended record overstates the size", async () => {
+        const base = pair();
+        const eocd = base.length - 22;
+        const size = base.readUInt32LE(eocd + 12);
+        // A second copy of the record whose directory size covers the first:
+        // the walk it describes ends at the original record, not at itself.
+        const appended = Buffer.from(base.subarray(eocd));
+        appended.writeUInt32LE(size + 22, 12);
+        const bytes = Buffer.concat([base, appended]);
+        expect(await loaded(bytes)).toEqual(["a.xml"]);
+        expect(names(bytes)).toEqual(["a.xml", "a.xml"]);
+        // The walked directory ends at the original record's offset.
+        expect(readCentralDirectoryView(bytes)?.cdEnd).toBe(eocd);
+    });
+
+    it.each([5, 1, 0])("tolerates a declared count of %i, as JSZip does", async (count) => {
+        const bytes = withDeclaredCount(pair(), count);
+        expect(await loaded(bytes)).toEqual(["a.xml"]);
+        expect(names(bytes)).toEqual(["a.xml", "a.xml"]);
+    });
+
+    it.each([
+        [
+            "a corrupted first central-header signature",
+            (() => {
+                const bytes = pair();
+                bytes.writeUInt32LE(0x04034b50, bytes.readUInt32LE(bytes.length - 6));
+                return bytes;
+            })(),
+        ],
+        [
+            "a rebased directory offset that lands mid-record",
+            (() => {
+                // The declared span shrinks by 8, so the walk starts eight
+                // bytes into the first record, where no signature sits.
+                const bytes = pair();
+                return withDeclaredSize(bytes, bytes.readUInt32LE(bytes.length - 10) - 8);
+            })(),
+        ],
+    ])("reads nothing where JSZip throws on %s with no record found", async (_label, bytes) => {
+        await expect(JSZip.loadAsync(bytes)).rejects.toThrow();
+        expect(names(bytes)).toBeUndefined();
+    });
+
+    it.each([
+        ["name", 28],
+        ["extra field", 30],
+        ["comment", 32],
+    ])("reads nothing where JSZip throws: a record's %s overruns the buffer", async (_label, field) => {
+        const bytes = pair();
+        // The second record sits 51 bytes into the directory (46 + "a.xml").
+        bytes.writeUInt16LE(0x4000, bytes.readUInt32LE(bytes.length - 6) + 51 + field);
+        await expect(JSZip.loadAsync(bytes)).rejects.toThrow();
+        expect(names(bytes)).toBeUndefined();
+    });
+
+    it("reads nothing where JSZip throws: fewer than four bytes left for the next signature read", async () => {
+        const bytes = pair();
+        const eocd = bytes.length - 22;
+        const cdOffset = bytes.readUInt32LE(eocd + 16);
+        const cdSize = bytes.readUInt32LE(eocd + 12);
+        const fake = eocd - 46;
+        // A record header ending at the record: its name field is the
+        // record's own first 20 bytes, so the walk stops two bytes short of
+        // the buffer's end, where a signature cannot be read.
+        bytes.writeUInt32LE(0x02014b50, fake);
+        bytes.writeUInt16LE(0, fake + 8);
+        bytes.writeUInt16LE(20, fake + 28);
+        bytes.writeUInt16LE(0, fake + 30);
+        bytes.writeUInt16LE(0, fake + 32);
+        bytes.writeUInt32LE(cdOffset, eocd + 16);
+        bytes.writeUInt32LE(cdSize + 46, eocd + 12);
+        await expect(JSZip.loadAsync(bytes)).rejects.toThrow();
+        expect(names(bytes)).toBeUndefined();
+    });
+
+    it("reads nothing where JSZip throws: an entry flagged encrypted", async () => {
+        const bytes = pair();
+        // `readCentralPart` refuses the encrypted bit, in the same walk.
+        bytes.writeUInt16LE(1, bytes.readUInt32LE(bytes.length - 6) + 8);
+        await expect(JSZip.loadAsync(bytes)).rejects.toThrow();
+        expect(names(bytes)).toBeUndefined();
     });
 });
