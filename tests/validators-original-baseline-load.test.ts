@@ -21,6 +21,10 @@
  *
  * #503 — and only once per run: a re-run on the same validator, or a direct
  * `validateAgainstXsd()` call, reads the `--original` as it is now.
+ *
+ * #520 — and each run keeps the `--original` it loaded: an overlapping
+ * `validate()` on the same validator must never replace the baseline an
+ * in-flight run is still subtracting against.
  */
 
 import { promises as fs } from "node:fs";
@@ -30,8 +34,9 @@ import JSZip from "jszip";
 import { describe, expect, it, vi } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
+import type { ValidationResult } from "../src/lib/types";
 import { validate } from "../src/scripts/office/validate";
-import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
+import { BaseSchemaValidator, type BaseSchemaValidatorOptions } from "../src/scripts/office/validators/base";
 import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
 import { PPTXSchemaValidator } from "../src/scripts/office/validators/pptx";
 
@@ -268,4 +273,180 @@ describe("original archive lifetime (#503)", () => {
             expect(loads).toBe(1);
         });
     }, 60_000);
+});
+
+interface Deferred {
+    promise: Promise<void>;
+    resolve: () => void;
+}
+
+const deferred = (): Deferred => {
+    let resolve!: () => void;
+    const promise = new Promise<void>((r) => {
+        resolve = r;
+    });
+    return { promise, resolve };
+};
+
+/** `validate()` verdict reduced to what `--original` baseline subtraction controls. */
+const baselineSummary = (result: ValidationResult): { valid: boolean; xsdErrors: string[] } => ({
+    valid: result.valid,
+    xsdErrors: result.issues
+        .flatMap((issue) =>
+            issue.code === "xsd-error" && issue.severity === "error" && issue.path !== undefined ? [`xsd-error@${issue.path}`] : [],
+        )
+        .sort(),
+});
+
+const DEFECTIVE_DOCX_PARTS: Readonly<Record<string, string>> = {
+    ...DEFECTIVE_PARTS,
+    "word/styles.xml": MINIMAL_PARTS["word/styles.xml"]!.replace("</w:styles>", "<w:bogus/></w:styles>"),
+};
+
+const DEFECTIVE_PPTX_PARTS: Readonly<Record<string, string>> = {
+    ...MINIMAL_PPTX_PARTS,
+    "ppt/presentation.xml": MINIMAL_PPTX_PARTS["ppt/presentation.xml"]!.replace("</p:presentation>", "<p:bogus/></p:presentation>"),
+    // A second schema-mapped part under ppt/ so the walk subtracts twice.
+    "ppt/z-extra.xml": MINIMAL_PPTX_PARTS["ppt/presentation.xml"]!.replace("</p:presentation>", "<p:bogus/></p:presentation>"),
+};
+
+interface OverlapSpec {
+    readonly extension: "docx" | "pptx";
+    /** Part whose XSD failure loads the baseline and trips the pause gate. */
+    readonly firstPart: string;
+    /** Part that fails XSD after the gate, so the swapped baseline shows. */
+    readonly secondPart: string;
+    readonly minimal: Readonly<Record<string, string>>;
+    readonly defective: Readonly<Record<string, string>>;
+    readonly cleanSecondPart: string;
+    readonly build: (parts: Readonly<Record<string, string>>) => Promise<Buffer>;
+    readonly control: (options: BaseSchemaValidatorOptions) => { validate(): Promise<ValidationResult> };
+    readonly gated: (options: BaseSchemaValidatorOptions, paused: Deferred, resume: Deferred) => { validate(): Promise<ValidationResult> };
+}
+
+interface OverlapOutcome {
+    expectedA: { valid: boolean; xsdErrors: string[] };
+    expectedB: { valid: boolean; xsdErrors: string[] };
+    runA: { valid: boolean; xsdErrors: string[] };
+    runB: { valid: boolean; xsdErrors: string[] };
+}
+
+/**
+ * Review AO's barrier pattern (#520): run A pauses after the first failing
+ * part has consulted the original; the `--original` bytes are then replaced
+ * and run B executes to completion on the SAME validator; A resumes and both
+ * results are compared against fresh-validator controls.
+ *
+ * - `remove-defects`: original A holds both defects, then a clean original
+ *   replaces it — A must still subtract both.
+ * - `add-defects`: original A lacks the second part's defect, then a fully
+ *   defective original replaces it — A must still report the second part's
+ *   error as new.
+ */
+async function overlappingBaselineRun(dir: string, spec: OverlapSpec, scenario: "remove-defects" | "add-defects"): Promise<OverlapOutcome> {
+    const unpackedDir = path.join(dir, "unpacked");
+    await unpackTo(unpackedDir, spec.defective);
+
+    const originalFile = path.join(dir, `original.${spec.extension}`);
+    const firstOriginal = scenario === "remove-defects" ? spec.defective : { ...spec.defective, [spec.secondPart]: spec.cleanSecondPart };
+    await fs.writeFile(originalFile, await spec.build(firstOriginal));
+
+    // Fresh-validator control for A, seeing the same original A will see.
+    const expectedA = await spec.control({ unpackedDir, originalFile, profile: "lenient" }).validate();
+
+    const paused = deferred();
+    const resume = deferred();
+    const validator = spec.gated({ unpackedDir, originalFile, profile: "lenient" }, paused, resume);
+    const runA = validator.validate();
+    await paused.promise;
+
+    await fs.writeFile(originalFile, await spec.build(scenario === "remove-defects" ? spec.minimal : spec.defective));
+    // Fresh-validator control for B, seeing the replaced original.
+    const expectedB = await spec.control({ unpackedDir, originalFile, profile: "lenient" }).validate();
+
+    const runB = validator.validate().then((result) => {
+        resume.resolve();
+        return result;
+    });
+    const [runAResult, runBResult] = await Promise.all([runA, runB]);
+    return {
+        expectedA: baselineSummary(expectedA),
+        expectedB: baselineSummary(expectedB),
+        runA: baselineSummary(runAResult),
+        runB: baselineSummary(runBResult),
+    };
+}
+
+const docxOverlap: OverlapSpec = {
+    extension: "docx",
+    firstPart: "word/document.xml",
+    secondPart: "word/styles.xml",
+    minimal: MINIMAL_PARTS,
+    defective: DEFECTIVE_DOCX_PARTS,
+    cleanSecondPart: MINIMAL_PARTS["word/styles.xml"]!,
+    build: buildDocx,
+    control: (options) => new DOCXSchemaValidator(options),
+    gated: (options, paused, resume) =>
+        new (class extends DOCXSchemaValidator {
+            didPause = false;
+            override async validateFileAgainstXsd(file: string) {
+                const outcome = await super.validateFileAgainstXsd(file);
+                if (!this.didPause && this.relPath(file).split(path.sep).join("/") === docxOverlap.firstPart) {
+                    this.didPause = true;
+                    paused.resolve();
+                    await resume.promise;
+                }
+                return outcome;
+            }
+        })(options),
+};
+
+const pptxOverlap: OverlapSpec = {
+    extension: "pptx",
+    firstPart: "ppt/presentation.xml",
+    secondPart: "ppt/z-extra.xml",
+    minimal: MINIMAL_PPTX_PARTS,
+    defective: DEFECTIVE_PPTX_PARTS,
+    cleanSecondPart: MINIMAL_PPTX_PARTS["ppt/presentation.xml"]!,
+    build: buildPptx,
+    control: (options) => new PPTXSchemaValidator(options),
+    gated: (options, paused, resume) =>
+        new (class extends PPTXSchemaValidator {
+            didPause = false;
+            override async validateFileAgainstXsd(file: string) {
+                const outcome = await super.validateFileAgainstXsd(file);
+                if (!this.didPause && this.relPath(file).split(path.sep).join("/") === pptxOverlap.firstPart) {
+                    this.didPause = true;
+                    paused.resolve();
+                    await resume.promise;
+                }
+                return outcome;
+            }
+        })(options),
+};
+
+describe("overlapping runs keep their own --original (#520)", () => {
+    it.each(["remove-defects", "add-defects"] as const)(
+        "DOCX run A keeps the baseline it loaded when run B overlaps (%s)",
+        async (scenario) => {
+            await withTempDir(async (dir) => {
+                const outcome = await overlappingBaselineRun(dir, docxOverlap, scenario);
+                expect(outcome.runA).toEqual(outcome.expectedA);
+                expect(outcome.runB).toEqual(outcome.expectedB);
+            });
+        },
+        60_000,
+    );
+
+    it.each(["remove-defects", "add-defects"] as const)(
+        "PPTX run A keeps the baseline it loaded when run B overlaps (%s)",
+        async (scenario) => {
+            await withTempDir(async (dir) => {
+                const outcome = await overlappingBaselineRun(dir, pptxOverlap, scenario);
+                expect(outcome.runA).toEqual(outcome.expectedA);
+                expect(outcome.runB).toEqual(outcome.expectedB);
+            });
+        },
+        60_000,
+    );
 });
