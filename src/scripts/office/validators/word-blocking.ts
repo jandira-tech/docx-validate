@@ -21,6 +21,13 @@ import type { ValidationIssue } from "../../../lib/types";
 const isWordFolderPart = (partName: string | undefined): boolean =>
     partName !== undefined && canonicalPartName(partName).startsWith("word/");
 
+/**
+ * Whether a path names the content-types stream. It is a ZIP item, not a
+ * part, so it is matched as System.IO.Packaging's `ZipPackage` matches it:
+ * ASCII case-insensitively, with no escape decoding (review Q of layer 43).
+ */
+const isContentTypesStream = (name: string | undefined): boolean => name !== undefined && /^\[content_types\]\.xml$/i.test(name);
+
 export const isWordBlockingIssue = (issue: ValidationIssue): boolean => {
     switch (issue.code) {
         // NB: run-content-misplaced is NOT Word-blocking — a real Word probe
@@ -113,7 +120,7 @@ export const isWordBlockingIssue = (issue: ValidationIssue): boolean => {
         // malformed part — Word reports unreadable content — so it follows
         // the identical word/ vs non-word/ policy.
         case "xml-undeclared-prefix":
-            return isWordFolderPart(issue.path) || issue.path === "[Content_Types].xml";
+            return isWordFolderPart(issue.path) || isContentTypesStream(issue.path);
         case "rels-broken":
             // NB: a broken media/ rel (image Target absent) is NOT word-blocking:
             // real Word shows a missing-image placeholder and opens cleanly

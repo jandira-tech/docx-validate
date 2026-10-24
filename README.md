@@ -294,11 +294,13 @@ and profile-specific severities are described below.
 XML syntax is checked from original part bytes with libxml2, without parser
 recovery. UTF-8 and UTF-16 parts are decoded by BOM/declaration for the DOM layer.
 Diagnostics use `xml-syntax`, `xml-undeclared-prefix`, and `xml-encoding`, with the
-original part path and available 1-based line/column. Every part whose extension is
-`.xml` or `.rels`, in any case (`word/COMMENTS.XML`), is checked, by full and partial
-runs alike ([#390](https://github.com/jandira-tech/docx-validate/issues/390)). Word-valid blocks on a malformed part under `word/` or on
-`[Content_Types].xml`; `word/` is matched as OPC compares part names, so
-`WORD/document.xml` counts ([#392](https://github.com/jandira-tech/docx-validate/issues/392)). External entities are not
+part name and available 1-based line/column. Every part whose extension is `.xml` or
+`.rels` as OPC compares part names (any case, `word/COMMENTS.XML`; escaped,
+`word/comments.%78ml`) is checked, by full and partial runs alike
+([#390](https://github.com/jandira-tech/docx-validate/issues/390)). Word-valid blocks on a malformed part under `word/` or on
+the content-types stream; `word/` is matched as OPC compares part names, so
+`WORD/document.xml` counts, and the stream is matched in any case
+(`[CONTENT_TYPES].XML`), as System.IO.Packaging finds it ([#392](https://github.com/jandira-tech/docx-validate/issues/392)). External entities are not
 loaded or expanded; XSD imports resolve through allowed local schema roots.
 Validation leaves source bytes unchanged unless you request `autoRepair`.
 

@@ -10,6 +10,7 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
+import { canonicalPartName } from "../../../lib/content-types";
 import { checkXmlSyntax } from "../../../lib/xml-syntax";
 import type { ValidationIssue } from "../../../lib/types";
 
@@ -17,11 +18,12 @@ const XML_PART = /\.(?:xml|rels)$/i;
 
 /**
  * Whether a part is one the XML syntax gate parses: its extension is `.xml`
- * or `.rels` in any case, as OPC compares part names ASCII
- * case-insensitively. The full run's own XML pass uses this predicate too,
- * so both judge the same parts (#390).
+ * or `.rels` as OPC compares part names, ASCII case-insensitively and with
+ * escapes of unreserved characters decoded, so `word/COMMENTS.XML` and
+ * `word/comments.%78ml` are XML parts. The full run's own XML pass uses this
+ * predicate too, so both judge the same parts (#390).
  */
-export const isXmlPartName = (partName: string): boolean => XML_PART.test(partName);
+export const isXmlPartName = (partName: string): boolean => XML_PART.test(canonicalPartName(partName));
 
 /**
  * The id of the XML well-formedness check. The validators' own XML pass

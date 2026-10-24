@@ -85,6 +85,11 @@ describe("isWordBlockingIssue", () => {
         ["wordy/document.xml", false],
         ["DOCPROPS/APP.XML", false],
         ["[Content_Types].xml", true],
+        // The content-types stream is a ZIP item, matched as System.IO.Packaging
+        // matches it: ASCII case-insensitively, with no escape decoding (review Q).
+        ["[CONTENT_TYPES].XML", true],
+        ["[content_types].xml", true],
+        ["%5BContent_Types%5D.xml", false],
         ["docProps/app.xml", false],
         [undefined, false],
     ] as const)("judges xml-syntax and xml-undeclared-prefix in %s as blocking: %s", (path, blocking) => {

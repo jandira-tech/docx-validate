@@ -664,8 +664,10 @@ export class BaseSchemaValidator {
      */
     async validateXml(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        // The parts the `xml-syntax` check parses, whatever the case of their
-        // extension: `word/COMMENTS.XML` is no less an XML part (#390).
+        // The parts the `xml-syntax` check parses, whatever the spelling of
+        // their extension: `word/COMMENTS.XML` is no less an XML part (#390).
+        // Findings name the part, as that check's do, so a file stored as
+        // `word\\foo.xml` is judged as the `word/` part it is (review Q).
         for (const [part, xmlFile] of packageEntries(this.unpackedDir)) {
             if (!isXmlPartName(part)) continue;
             let raw: Buffer;
@@ -674,7 +676,7 @@ export class BaseSchemaValidator {
             } catch {
                 continue;
             }
-            issues.push(...(await checkXmlSyntax(raw, this.relPath(xmlFile))));
+            issues.push(...(await checkXmlSyntax(raw, part)));
         }
         // This pass is the `xml-syntax` check: the same bytes, the same
         // diagnostics, under the check id callers select it by.
