@@ -54,6 +54,30 @@ describe("default check registry", () => {
         expect(run.issues.map((i) => [i.code, i.path])).toEqual([["xml-syntax", "word/document.xml"]]);
     });
 
+    it("reports content the DOM parser would recover from, with its line and column", async () => {
+        const body = `<w:document xmlns:w="${W}">\n<w:body><w:p><w:r><w:t>a & b</w:t></w:r></w:p></w:body></w:document>`;
+        const ctx = ValidationContext.fromEntries({ ...MINIMAL_PARTS, "word/document.xml": body });
+        const run = await runChecks(ctx, createDefaultCheckRegistry(), { format: "docx", select: ["xml-syntax"] });
+        expect(run.issues).toEqual([
+            expect.objectContaining({
+                severity: "error",
+                code: "xml-syntax",
+                path: "word/document.xml",
+                line: 2,
+                column: expect.any(Number),
+            }),
+        ]);
+    });
+
+    it("leaves non-XML parts to other checks, whatever their bytes", async () => {
+        const ctx = ValidationContext.fromEntries({
+            ...MINIMAL_PARTS,
+            "word/media/image1.png": new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x26, 0x3c]),
+        });
+        const run = await runChecks(ctx, createDefaultCheckRegistry(), { format: "docx", select: ["xml-syntax"] });
+        expect(run.issues).toEqual([]);
+    });
+
     it("runs the ZIP envelope checks on archive bytes and reports one trailing byte", async () => {
         const docx = await buildDocx();
         const ctx = await ValidationContext.fromArchive(Buffer.concat([docx, Buffer.from([0x0a])]));

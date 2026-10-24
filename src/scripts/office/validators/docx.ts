@@ -625,6 +625,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "rels-missing-sidecar":
                 return !/^word\/(?:header|footer)\d*\.xml$/i.test(issue.path ?? "");
             case "xml-syntax":
+            // An undeclared namespace prefix is the same class of defect as a
+            // malformed part — Word reports unreadable content — so it follows
+            // the identical word/ vs non-word/ policy.
+            case "xml-undeclared-prefix":
                 return issue.path?.startsWith("word/") || issue.path === "[Content_Types].xml";
             case "rels-broken":
                 // NB: a broken media/ rel (image Target absent) is NOT word-blocking:
