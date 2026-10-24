@@ -99,6 +99,19 @@ describe("markup compatibility XSD integration", { timeout: 240_000 }, () => {
             expect.objectContaining({ severity: "error", path: "word/document.xml" }),
         ]);
     });
+    it.each(["word/document.xml#frag", "word/document.xml?x=1"])(
+        "finds the main part behind %s when its root is ignored (#361)",
+        async (target) => {
+            const result = await check({
+                ...MINIMAL_PARTS,
+                "_rels/.rels": MINIMAL_PARTS["_rels/.rels"].replace('Target="word/document.xml"', `Target="${target}"`),
+                "word/document.xml": `<e:garbage xmlns:e="urn:future" xmlns:mc="${NS.MC}" mc:Ignorable="e"/>`,
+            });
+            expect(result.issues.filter((issue) => issue.code === "mce-main-root-ignored")).toEqual([
+                expect.objectContaining({ severity: "error", path: "word/document.xml" }),
+            ]);
+        },
+    );
     it("calls main only the entry the relationship names when two entries are equivalent (#349)", async () => {
         // word/%64ocument.xml and word/document.xml are equivalent part names;
         // the root check judges the exact entry, so the schema walk must too.

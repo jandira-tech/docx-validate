@@ -182,6 +182,19 @@ describe("resolvePartName (#349)", () => {
         expect(resolvePartName(names, target)).toBe(normalized);
     });
 
+    it.each([
+        ["word/document.xml#frag", "word/document.xml"],
+        ["word/document.xml?x=1", "word/document.xml"],
+        ["WORD/document.xml?x#y", "word/document.xml"],
+        ["word/media/a%7Eb.png#p", "word/media/a~b.png"],
+    ])("resolves only the path of %j, as System.IO.Packaging does (#361)", (target, entry) => {
+        expect(resolvePartName(names, target)).toBe(entry);
+    });
+
+    it.each(["#frag", "?x=1", "/#frag"])("names no part for %j, which has no path (#361)", (target) => {
+        expect(resolvePartName(names, target)).toBeUndefined();
+    });
+
     it.each(["", "/", ".", "word/..", "../word/document.xml", "word/../../word/document.xml"])(
         "names no part for %j, which is empty or climbs out of the package (#356)",
         (target) => {
