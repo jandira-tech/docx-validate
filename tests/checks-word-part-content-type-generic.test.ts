@@ -19,9 +19,8 @@
  * relationship that reaches it and the content type the part needs. It is an
  * error — and Word-blocking — under word-valid for DOCX/DOCM, an error under
  * strict (ECMA-376 Part 1 gives each of these parts its own content type),
- * and a warning under lenient. Strict already rejects the main document
- * through `ct-undeclared-part`, so a full strict run does not report the same
- * defect twice.
+ * and a warning under lenient. When strict rejects the same main path
+ * through `ct-undeclared-part`, it suppresses the duplicate generic finding.
  */
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -37,6 +36,8 @@ import { WORD_PART_CONTENT_TYPE_GENERIC } from "../src/scripts/office/checks/wor
 import { validate } from "../src/scripts/office/validate";
 import { isWordBlockingIssue } from "../src/scripts/office/validators/word-blocking";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+
+import { GENERIC_RENAMED_MAIN_PARTS } from "./support/word-profile-regression-specimens";
 
 const ID = WORD_PART_CONTENT_TYPE_GENERIC;
 
@@ -596,4 +597,22 @@ it("names the Word main-document content types, including the macro-enabled one,
         expect(finding?.message).toContain("application/vnd.ms-word.document.macroEnabled.main+xml");
         expect(finding?.message).toContain(CT.document);
     });
+});
+
+describe("generic renamed main parts (#535)", () => {
+    it.each(GENERIC_RENAMED_MAIN_PARTS)(
+        "retains strict's error for $part typed by $contentType",
+        async ({ part, parts }) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "specimen.docx");
+                writeFileSync(file, await buildDocx(parts));
+                const word = await validate(file, { profile: "word-valid" });
+                const strict = await validate(file, { profile: "strict" });
+                expect(word.valid).toBe(false);
+                expect(strict.valid && !word.valid, "strict success must imply word-valid success").toBe(false);
+                expect(strict.issues).toContainEqual(expect.objectContaining({ code: ID, path: part, severity: "error" }));
+            });
+        },
+        60_000,
+    );
 });

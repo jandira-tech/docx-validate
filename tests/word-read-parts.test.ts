@@ -32,6 +32,8 @@ import { wordReadParts, wordTypedRelationshipTargets } from "../src/lib/word-rea
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
+import { BYTE_REJECTED_MAIN_PARTS } from "./support/word-profile-regression-specimens";
+
 const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 const RELS_NS = "http://schemas.openxmlformats.org/package/2006/relationships";
@@ -898,4 +900,33 @@ describe("xml errors are Word-blocking by reachability (#437)", () => {
             }
         });
     });
+});
+
+describe("wordReadParts: byte-rejected main usage (#536)", () => {
+    it.each(BYTE_REJECTED_MAIN_PARTS)("keeps $segment reached when the main DOM parses but its bytes fail", async ({ part, parts }) => {
+        // In-memory integration with the byte parser: the recovering DOM alone
+        // cannot establish usage for an unsupported declared encoding.
+        const context = ValidationContext.fromEntries(parts);
+        expect(context.effectiveXml("word/document.xml")?.ok).toBe(true);
+        expect(await wordReadParts(context), "usage must remain unknown after byte-parser rejection").toContain(canonicalPartName(part));
+    });
+
+    it.each(BYTE_REJECTED_MAIN_PARTS.slice(0, 2))(
+        "retains the malformed $segment error in a full run",
+        async ({ part, parts }) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "specimen.docx");
+                writeFileSync(file, await buildDocx(parts));
+                const result = await validate(file, { profile: "word-valid" });
+                expect(result.issues).toContainEqual(
+                    expect.objectContaining({ code: "xml-encoding", path: "word/document.xml", severity: "error" }),
+                );
+                expect(
+                    result.issues.find((issue) => issue.path === part && issue.code === "xml-syntax")?.severity,
+                    "usage must remain unknown after byte-parser rejection",
+                ).toBe("error");
+            });
+        },
+        60_000,
+    );
 });

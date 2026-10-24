@@ -447,15 +447,16 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 issues: withoutConsequentialParseFailures(result.issues, this.malformedParts),
             }));
 
+        const contentTypes = this.validateContentTypes();
         const checks: Array<Promise<ValidationResult>> = [
             this.validateNamespaces(),
             this.validateUniqueIds(),
             this.validateFileReferences(),
             this.validateRelationshipElements(),
-            this.validateContentTypes(),
+            contentTypes,
             this.validateOverridePartNames(this.context(), "docx", this.malformedParts),
             this.validateContentTypesMarkupCompatibility(this.context(), "docx", this.malformedParts),
-            this.validateWordPartContentTypes(this.context(), "docx", this.malformedParts),
+            this.validateWordPartContentTypes(this.context(), "docx", this.malformedParts, contentTypes),
             this.validateWhitespacePreservation(),
             this.validateDeletions(),
             this.validateInsertions(),
@@ -529,29 +530,35 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * strict (ECMA-376 Part 1, clause 11.3, gives every WordprocessingML
      * part its own content type, so strict also judges the unprobed Part 1
      * types — numbering, header, footer, endnotes, footnotes, comments and
-     * glossaryDocument; #506), a warning under lenient. Strict already
-     * rejects a Default-typed main document through `ct-undeclared-part`, so
-     * that one finding is dropped here instead of reporting the same defect
-     * twice.
+     * glossaryDocument; #506), a warning under lenient. A Default-typed main
+     * finding is dropped only when strict actually reports ct-undeclared-part
+     * for that same part (#535).
      */
     private async validateWordPartContentTypes(
         context: ValidationContext,
         format: PackageFormat,
         malformed: ReadonlySet<string>,
+        contentTypes: Promise<ValidationResult>,
     ): Promise<ValidationResult> {
         const view = malformed.size > 0 ? context.withUnparseable(new Map([...malformed].map((part) => [part, "malformed"]))) : context;
         // Strict judges every Part 1 WordprocessingML part type, not only
         // the probed five (#506); word-valid and lenient keep the probed set.
         const found = await wordPartContentTypeGenericFindings(view, this.profile === "strict" ? "spec" : "observed");
         this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_GENERIC);
-        // Strict already rejects a main document resolved through a Default
-        // through ct-undeclared-part, so that finding is dropped instead of
-        // reporting the same defect twice; a main document carrying a generic
-        // Override is reported once, here (#517).
-        const judged =
-            this.profile === "strict"
-                ? found.filter((finding) => !(finding.segment === "officeDocument" && finding.source === "default"))
-                : found;
+        // The base pass skips non-XML names and docProps/. Suppress a
+        // Default-typed main only if its own path has a replacement error;
+        // otherwise strict must retain the Word-blocking finding (#535).
+        const replacements = this.profile === "strict" ? (await contentTypes).issues : [];
+        const judged = found.filter(
+            (finding) =>
+                !(
+                    finding.segment === "officeDocument" &&
+                    finding.source === "default" &&
+                    replacements.some(
+                        (issue) => issue.code === "ct-undeclared-part" && issue.severity === "error" && issue.path === finding.issue.path,
+                    )
+                ),
+        );
         const severity = opcNameIssueSeverity(this.profile, format);
         return finalize(
             judged.map((finding): ValidationIssue => (severity === "warning" ? { ...finding.issue, severity: "warning" } : finding.issue)),
