@@ -220,3 +220,38 @@ describe("equivalent-name package integration", { timeout: 120_000 }, () => {
         });
     });
 });
+
+describe("M1.8 and M1.12 diagnose independent stored-name defects (#408)", { timeout: 120_000 }, () => {
+    it("reports both checks for an escaped spelling beside its decoded twin", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "both.docx");
+            writeFileSync(file, await buildDocx(duplicateParts(...PAIRS[1])));
+            const result = await validate(file);
+            expect(result.issues).toContainEqual(
+                expect.objectContaining({ code: "opc-part-name-escaped-unreserved", path: PAIRS[1][1], severity: "error" }),
+            );
+            expect(findings(result.issues)).toEqual([expected(PAIRS[1], PAIRS[1][0], "error")]);
+        });
+    });
+
+    it("retains the M1.8 finding when a case collision prevents extraction", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "collision.docx");
+            const bytes = await buildDocx({ ...duplicateParts(...PAIRS[0]), "word/%78tra.xml": "<root/>" });
+            writeFileSync(file, bytes);
+            for (const profile of ["word-valid", "lenient", "strict"] as const) {
+                const result = await validate(file, { profile });
+                expect(result.issues).toContainEqual(
+                    expect.objectContaining({
+                        code: "opc-part-name-escaped-unreserved",
+                        path: "word/%78tra.xml",
+                        severity: profile === "lenient" ? "warning" : "error",
+                    }),
+                );
+                expect(result.issues.map((issue) => issue.code)).toContain("package-extract-failed");
+                expect(findings(result.issues)).toHaveLength(1);
+            }
+            expect(readFileSync(file)).toEqual(bytes);
+        });
+    });
+});

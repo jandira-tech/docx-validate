@@ -66,6 +66,7 @@ import { extractPackageParts } from "../../lib/zip-path";
 import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "./checks";
 import { XML_SYNTAX_CHECK_ID } from "./checks/xml";
 import { OPC_EQUIVALENT_PART_NAMES } from "./checks/opc-equivalent-part-names";
+import { OPC_PART_NAME_ESCAPED_UNRESERVED } from "./checks/opc-part-name-escaped-unreserved";
 import { contextFromArchive, contextFromDirectory } from "./package-context";
 import { BaseSchemaValidator, walkFiles } from "./validators/base";
 import { DOCXSchemaValidator } from "./validators/docx";
@@ -317,7 +318,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         const names = Object.values(zip.files)
             .filter((entry) => !entry.dir)
             .map((entry) => [entry.unsafeOriginalName ?? entry.name, ""] as const);
-        const diagnostic = await equivalentNamesRun(ValidationContext.fromEntries(names), format, profile);
+        const diagnostic = await storedNamesRun(ValidationContext.fromEntries(names), format, profile);
         return finish(
             await runStaged(zip, {
                 issues: [...envelope.issues, ...diagnostic.issues],
@@ -327,7 +328,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     }
 
     const dir = path.resolve(target);
-    const diagnostic = await equivalentNamesRun(contextFromDirectory(dir), format, profile);
+    const diagnostic = await storedNamesRun(contextFromDirectory(dir), format, profile);
     const entries = walkFiles(dir).map((file) => [path.relative(dir, file).split(path.sep).join("/"), file] as const);
     if (entries.some(([name]) => name !== normalizePartName(name))) {
         // JSZip is only an in-memory entry collection here: no ZIP is written.
@@ -463,11 +464,13 @@ function selectionUnderProfile(
  * keep their severity (#381).
  */
 function findingsUnderProfile(run: CheckRun, registry: CheckRegistry, format: PackageFormat, profile: Profile): ValidationIssue[] {
-    // Equivalent stored names are Word-blocking for DOCX/DOCM (#351). Lenient
-    // keeps the earlier policy and runs no Word rule, and no PowerPoint or
-    // Excel behaviour has been observed, so those only warn.
+    // Equivalent names and escaped unreserved characters are Word-blocking for
+    // DOCX/DOCM (#351, #408). Lenient keeps the earlier policy and runs no
+    // Word rule. No PowerPoint or Excel behaviour has been observed, so those
+    // only warn.
     const advisory = (issue: ValidationIssue): ValidationIssue =>
-        issue.code === OPC_EQUIVALENT_PART_NAMES && (profile === "lenient" || (profile === "word-valid" && format !== "docx"))
+        (issue.code === OPC_EQUIVALENT_PART_NAMES || issue.code === OPC_PART_NAME_ESCAPED_UNRESERVED) &&
+        (profile === "lenient" || (profile === "word-valid" && format !== "docx"))
             ? { ...issue, severity: "warning" }
             : issue;
     if (profile !== "word-valid" || format !== "docx") return run.issues.map(advisory);
@@ -647,13 +650,13 @@ async function zipEnvelopeRun(
 }
 
 /** Stored-name diagnosis for every full profile, before any XML/extraction gate. */
-async function equivalentNamesRun(
+async function storedNamesRun(
     context: ValidationContext,
     format: PackageFormat,
     profile: Profile,
 ): Promise<{ issues: ValidationIssue[]; executed: readonly string[] }> {
     const registry = createDefaultCheckRegistry();
-    const run = await runChecks(context, registry, { format, select: [OPC_EQUIVALENT_PART_NAMES] });
+    const run = await runChecks(context, registry, { format, select: [OPC_EQUIVALENT_PART_NAMES, OPC_PART_NAME_ESCAPED_UNRESERVED] });
     return { issues: findingsUnderProfile(run, registry, format, profile), executed: run.executed };
 }
 

@@ -254,7 +254,8 @@ marks archive-only checks `unavailable`; use packed input to check ZIP integrity
 
 The complete named check catalogue is below. Each Word check except
 `word-markup-compatibility` uses its id as its finding code. Package checks are
-`zip-bytes-after-eocd`, `zip-eocd-comment-overrun`, and `opc-equivalent-part-names`; `xml-syntax` is the shared
+`zip-bytes-after-eocd`, `zip-eocd-comment-overrun`, `opc-equivalent-part-names`,
+and `opc-part-name-escaped-unreserved`; `xml-syntax` is the shared
 XML prerequisite. All `word-*` checks apply to DOCX/DOCM only.
 
 `opc-equivalent-part-names` applies to DOCX/DOCM, PPTX, and XLSX package selections,
@@ -266,9 +267,19 @@ duplicate probed, even when both spellings hold identical bytes ([#351](https://
 Lenient, and word-valid for PPTX/XLSX, report a warning. The existing entry choice
 is unchanged.
 
+`opc-part-name-escaped-unreserved` uses the same formats, package-group selection,
+pre-extraction timing, directory support, and severity policy. It reports one
+finding per stored name containing a percent-encoded unreserved character
+(`A–Z`, `a–z`, `0–9`, `-`, `.`, `_`, `~`), as OPC [M1.8] forbids, in code-unit
+order with the stored name as `path`. Word 16.115 offers recovery even for an
+unreferenced extra item (`word/%78tra.xml`). Other escapes such as `%20`,
+`%2F`, `%25`, and `%5B`, malformed escapes, and plain names do not trigger this
+check. An escaped spelling beside its decoded twin reports both M1.8 and M1.12;
+validation does not rewrite either name ([#408](https://github.com/jandira-tech/docx-validate/issues/408)).
+
 | Group                     | Named checks                                                                                                                                                                                                                                                                                                                                        |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `package`                 | `zip-bytes-after-eocd`, `zip-eocd-comment-overrun`, `opc-equivalent-part-names`                                                                                                                                                                                                                                                                     |
+| `package`                 | `zip-bytes-after-eocd`, `zip-eocd-comment-overrun`, `opc-equivalent-part-names`, `opc-part-name-escaped-unreserved`                                                                                                                                                                                                                                 |
 | `math`, `tracked-changes` | `word-math-run-insertion`, `word-math-run-deletion`                                                                                                                                                                                                                                                                                                 |
 | `math`                    | `word-math-parse`, `word-math-spre-body`                                                                                                                                                                                                                                                                                                            |
 | `story`                   | `word-shading-color`, `word-page-margin-attributes`, `word-run-misplaced`, `word-run-properties-misplaced`, `word-underline-misplaced`, `word-paragraph-properties-misplaced`, `word-section-properties-misplaced`, `word-footnote-reference-missing`, `word-numbering-picture-bullet`, `word-sdt-id-empty`, `word-text-contains-paragraph`         |
@@ -333,8 +344,10 @@ code-unit order, where System.IO.Packaging reads the last in ZIP order; the seco
 stream is reported by `opc-equivalent-part-names` ([#351](https://github.com/jandira-tech/docx-validate/issues/351)).
 Content-type coverage resolves an exact `Override` before an extension `Default`.
 An image covered only by `Override` needs no matching `Default`. Part-name
-comparison is ASCII case-insensitive and decodes unreserved percent escapes;
-reserved escapes stay distinct (`%40` differs from `@`), while spaces and other
+comparison is ASCII case-insensitive and decodes unreserved percent escapes.
+The comparison rule does not make those stored spellings legal: the
+`opc-part-name-escaped-unreserved` check diagnoses them separately ([#408](https://github.com/jandira-tech/docx-validate/issues/408)).
+Reserved escapes stay distinct (`%40` differs from `@`), while spaces and other
 characters outside the URI path character set are encoded. Truly uncovered parts
 still produce `ct-uncovered-part`.
 

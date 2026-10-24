@@ -60,7 +60,13 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
             }
             // Lenient runs stored-name diagnosis, XML syntax and shared comment checks;
             // the ZIP-envelope checks remain Word-only.
-            expect(lenientChecks).toEqual(["opc-equivalent-part-names", "xml-syntax", "comment-markers", "comment-threading"]);
+            expect(lenientChecks).toEqual([
+                "opc-equivalent-part-names",
+                "opc-part-name-escaped-unreserved",
+                "xml-syntax",
+                "comment-markers",
+                "comment-threading",
+            ]);
             // The finding that rule reports exists only in the profiles that run it.
             expect(lenient.issues.some((issue) => issue.code === "word-link-without-namespace")).toBe(false);
             expect(wordValid.issues.some((issue) => issue.code === "word-link-without-namespace")).toBe(true);
@@ -124,11 +130,12 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
                         "zip-bytes-after-eocd",
                         "zip-eocd-comment-overrun",
                         "opc-equivalent-part-names",
+                        "opc-part-name-escaped-unreserved",
                     ]);
                 }
                 // Lenient never runs the envelope checks.
                 const lenient = await validate(file, { profile: "lenient" });
-                expect(lenient.metadata?.executedChecks).toEqual(["opc-equivalent-part-names"]);
+                expect(lenient.metadata?.executedChecks).toEqual(["opc-equivalent-part-names", "opc-part-name-escaped-unreserved"]);
             });
         } finally {
             JSZip.loadAsync = originalLoadAsync;

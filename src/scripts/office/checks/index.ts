@@ -15,6 +15,7 @@ import { mathRunDeletionCheck } from "./math-run-deletion";
 import { mathRunInsertionCheck } from "./math-run-insertion";
 import { zipBytesAfterEocdCheck, zipEocdCommentOverrunCheck } from "./package";
 import { opcEquivalentPartNamesCheck } from "./opc-equivalent-part-names";
+import { opcPartNameEscapedUnreservedCheck } from "./opc-part-name-escaped-unreserved";
 import { pageMarginAttributesCheck } from "./page-margin-attributes";
 import { wordShadingColorCheck } from "./shading-color";
 import { wordTablePropertiesRequiredCheck } from "./table-properties-required";
@@ -115,6 +116,7 @@ export function createDefaultCheckRegistry(): CheckRegistry {
         zipBytesAfterEocdCheck,
         zipEocdCommentOverrunCheck,
         opcEquivalentPartNamesCheck,
+        opcPartNameEscapedUnreservedCheck,
         xmlSyntaxCheck,
         commentMarkersCheck,
         commentThreadingCheck,
