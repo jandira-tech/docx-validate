@@ -625,9 +625,11 @@ not open fails with `package-open-failed` in every mode, and only its envelope
 checks are listed (#332). One that opens but whose package view cannot be read —
 a stored item name that places no part, or an unreadable entry — fails with
 `package-extract-failed`, as the full run's extraction reports it (#413). Its stored
-entry names are still read: selected `opc-equivalent-part-names` and
-`opc-part-name-escaped-unreserved` checks run and report what the full run reports,
-while every other selected check is omitted ([#420](https://github.com/jandira-tech/docx-validate/issues/420)). It is not a
+entry names and archive bytes are still read. Selected `opc-equivalent-part-names`
+and `opc-part-name-escaped-unreserved` checks and selected envelope checks (such as
+`zip-bytes-after-eocd`) run and report what the full run reports. Every other
+selected check needs the package's parts and is listed in `omittedChecks`
+([#420](https://github.com/jandira-tech/docx-validate/issues/420)). It is not a
 per-method execution trace. In the source scheduler, use `runChecks().outcomes`
 for individual
 `passed` / `failed` / `skipped` / `unavailable` statuses. `omittedChecks` names ids
