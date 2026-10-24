@@ -1221,7 +1221,7 @@ describe("validation contract: header, endnotes, theme and glossaryDocument are 
     });
 });
 
-describe("validation contract: a header the glossary references is read (#539)", { timeout: 120000 }, () => {
+describe("validation contract: the glossary is a second story root (#539, #549)", { timeout: 120000 }, () => {
     const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
     const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
     const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
@@ -1239,15 +1239,87 @@ describe("validation contract: a header the glossary references is read (#539)",
         `<w:docPartBody><w:p><w:r><w:t>Part</w:t></w:r></w:p>` +
         `<w:sectPr><w:headerReference w:type="default" r:id="rIdH"/></w:sectPr></w:docPartBody>` +
         `</w:docPart></w:docParts></w:glossaryDocument>`;
-    const headerViaGlossary = (header: string): Promise<Buffer> =>
+    const withoutRootEndTag = (xml: string): string => xml.slice(0, xml.lastIndexOf("</"));
+    const relsPart = (body: string): string =>
+        `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${body}</Relationships>`;
+    /** The session-17 glossary: `w:docPartBody` carries `run` in its paragraph, `sectPr` in its `w:sectPr`. */
+    const glossaryWith = (run: string, sectPr: string): string =>
+        `<w:glossaryDocument xmlns:w="${W}" xmlns:r="${R}"><w:docParts><w:docPart>` +
+        `<w:docPartPr><w:name w:val="Part"/><w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category>` +
+        `<w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+        `<w:docPartBody><w:p><w:r><w:t>Part</w:t></w:r>${run}</w:p><w:sectPr>${sectPr}</w:sectPr></w:docPartBody>` +
+        `</w:docPart></w:docParts></w:glossaryDocument>`;
+    const STORY_SEGMENTS = ["footer", "comments", "footnotes", "endnotes"] as const;
+    const STORY_FILE: Readonly<Record<(typeof STORY_SEGMENTS)[number], string>> = {
+        footer: "footer9.xml",
+        comments: "comments.xml",
+        footnotes: "footnotes.xml",
+        endnotes: "endnotes.xml",
+    };
+    const STORY_ROOT: Readonly<Record<(typeof STORY_SEGMENTS)[number], string>> = {
+        footer: "ftr",
+        comments: "comments",
+        footnotes: "footnotes",
+        endnotes: "endnotes",
+    };
+    /** The glossary that uses each lazy story segment, as session 17 references it. */
+    const STORY_GLOSSARY: Readonly<Record<(typeof STORY_SEGMENTS)[number], string>> = {
+        footer: glossaryWith("", `<w:footerReference w:type="default" r:id="rIdH"/>`),
+        comments: glossaryWith(`<w:r><w:commentReference w:id="0"/></w:r>`, ""),
+        footnotes: glossaryWith(`<w:r><w:footnoteReference w:id="1"/></w:r>`, ""),
+        endnotes: glossaryWith(`<w:r><w:endnoteReference w:id="1"/></w:r>`, ""),
+    };
+    const STORY_WELLFORMED: Readonly<Record<(typeof STORY_SEGMENTS)[number], string>> = {
+        footer: `<w:ftr xmlns:w="${W}"><w:p><w:r><w:t>Footer</w:t></w:r></w:p></w:ftr>`,
+        comments: `<w:comments xmlns:w="${W}"><w:comment w:id="0" w:author="A"><w:p><w:r><w:t>Comment</w:t></w:r></w:p></w:comment></w:comments>`,
+        footnotes:
+            `<w:footnotes xmlns:w="${W}"><w:footnote w:type="separator" w:id="-1"><w:p><w:r><w:separator/></w:r></w:p></w:footnote>` +
+            `<w:footnote w:type="continuationSeparator" w:id="0"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:footnote>` +
+            `<w:footnote w:id="1"><w:p><w:r><w:t>Footnote</w:t></w:r></w:p></w:footnote></w:footnotes>`,
+        endnotes:
+            `<w:endnotes xmlns:w="${W}"><w:endnote w:type="separator" w:id="-1"><w:p><w:r><w:separator/></w:r></w:p></w:endnote>` +
+            `<w:endnote w:type="continuationSeparator" w:id="0"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:endnote>` +
+            `<w:endnote w:id="1"><w:p><w:r><w:t>Endnote</w:t></w:r></w:p></w:endnote></w:endnotes>`,
+    };
+    /**
+     * The session-17 `<segment>-ref-in-glossary` shape: `word/glossary/document.xml`
+     * reached through a main-document `glossaryDocument` relationship, whose own
+     * relationships part names `word/glossary/<file>` as `rIdH`.
+     */
+    const storyViaGlossary = (
+        segment: (typeof STORY_SEGMENTS)[number],
+        xml: string,
+        glossaryRels?: string,
+        glossary?: string,
+    ): Promise<Buffer> =>
         buildDocx({
             ...MINIMAL_PARTS,
-            "word/glossary/document.xml": GLOSSARY,
+            "word/glossary/document.xml": glossary ?? STORY_GLOSSARY[segment],
             "word/glossary/_rels/document.xml.rels":
+                glossaryRels ?? relsPart(`<Relationship Id="rIdH" Type="${R}/${segment}" Target="${STORY_FILE[segment]}"/>`),
+            [`word/glossary/${STORY_FILE[segment]}`]: xml,
+            "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                "</Relationships>",
+                `<Relationship Id="rIdG" Type="${R}/glossaryDocument" Target="glossary/document.xml"/></Relationships>`,
+            ),
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                `<Override PartName="/word/glossary/document.xml" ContentType="${WML}.document.glossary+xml"/>` +
+                    `<Override PartName="/word/glossary/${STORY_FILE[segment]}" ContentType="${WML}.${segment}+xml"/></Types>`,
+            ),
+        });
+
+    const headerViaGlossary = (header: string, glossaryRels?: string, glossary?: string): Promise<Buffer> =>
+        buildDocx({
+            ...MINIMAL_PARTS,
+            "word/glossary/document.xml": glossary ?? GLOSSARY,
+            "word/glossary/_rels/document.xml.rels":
+                glossaryRels ??
                 `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
-                `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
-                `<Relationship Id="rIdH" Type="${R}/header" Target="header9.xml"/>` +
-                `</Relationships>`,
+                    `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                    `<Relationship Id="rIdH" Type="${R}/header" Target="header9.xml"/>` +
+                    `</Relationships>`,
             "word/glossary/header9.xml": header,
             "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
                 "</Relationships>",
@@ -1337,6 +1409,118 @@ describe("validation contract: a header the glossary references is read (#539)",
         expect(strict.issues.find((issue) => issue.code === "xml-syntax" && issue.path === "word/endnotes.xml")?.severity).toBe("error");
         expect(strict.valid).toBe(false);
     });
+
+    it.each(STORY_SEGMENTS)(
+        "word-valid and strict both fail a malformed %s part the glossary references (#549)",
+        { timeout: 120000 },
+        async (segment) => {
+            // Session 17: `*-ref-in-glossary-malformed` all get repair-warning
+            // — the footer, comments, footnotes and endnotes the glossary
+            // references are Word-read.
+            const bytes = await storyViaGlossary(segment, unclosed(`<w:${STORY_ROOT[segment]} xmlns:w="${W}">`));
+            for (const profile of ["word-valid", "strict"] as const) {
+                const result = await validateBytes(bytes, profile);
+                expect(
+                    result.issues.find((issue) => issue.code === "xml-syntax" && issue.path === `word/glossary/${STORY_FILE[segment]}`)
+                        ?.severity,
+                    profile,
+                ).toBe("error");
+                expect(result.valid, profile).toBe(false);
+            }
+        },
+    );
+
+    it.each(STORY_SEGMENTS)(
+        "keeps a well-formed %s part the glossary references word-valid (#549 control)",
+        { timeout: 120000 },
+        async (segment) => {
+            // Session 17: every `*-ref-in-glossary-wellformed-control` opens
+            // clean — the malformed part is what makes Word repair.
+            const result = await validateBytes(await storyViaGlossary(segment, STORY_WELLFORMED[segment]), "word-valid");
+            expect(
+                result.issues.find((issue) => issue.code === "xml-syntax" && issue.path === `word/glossary/${STORY_FILE[segment]}`),
+            ).toBeUndefined();
+            expect(result.valid).toBe(true);
+        },
+    );
+
+    it.each([
+        [
+            "missing its root end tag",
+            withoutRootEndTag(relsPart(`<Relationship Id="rIdH" Type="${R}/header" Target="header9.xml"/>`)),
+            undefined,
+        ],
+        ["zero bytes", "", undefined],
+        [
+            "missing its root end tag with nothing referenced",
+            withoutRootEndTag(relsPart(`<Relationship Id="rIdH" Type="${R}/header" Target="header9.xml"/>`)),
+            glossaryWith("", ""),
+        ],
+    ] as const)(
+        "word-valid and strict both fail a glossary relationships part that is %s (#549)",
+        { timeout: 120000 },
+        async (_shape, glossaryRels, glossary) => {
+            // Session 17: `glossary-rels-unclosed`, `glossary-rels-zero-byte` and
+            // `glossary-rels-unclosed-unreferenced` all get repair-warning — Word
+            // reads a reached glossary's relationships part as eagerly as the
+            // main document's (#514).
+            const bytes = await headerViaGlossary(HEADER, glossaryRels, glossary);
+            for (const profile of ["word-valid", "strict"] as const) {
+                const result = await validateBytes(bytes, profile);
+                expect(
+                    result.issues.find((issue) => issue.code === "xml-syntax" && issue.path === "word/glossary/_rels/document.xml.rels")
+                        ?.severity,
+                    profile,
+                ).toBe("error");
+                expect(result.valid, profile).toBe(false);
+            }
+        },
+    );
+
+    it("keeps a malformed header the glossary relates but does not reference word-valid (#549)", { timeout: 120000 }, async () => {
+        // Session 17: `header-related-from-glossary-unused-malformed` opens
+        // clean — related-but-unused stays unreached on a glossary root too.
+        const bytes = await headerViaGlossary(MALFORMED_HEADER, undefined, glossaryWith("", ""));
+        const wordValid = await validateBytes(bytes, "word-valid");
+        expect(wordValid.issues.find((issue) => issue.code === "xml-syntax" && issue.path === "word/glossary/header9.xml")?.severity).toBe(
+            "warning",
+        );
+        expect(wordValid.valid).toBe(true);
+        const strict = await validateBytes(bytes, "strict");
+        expect(strict.issues.find((issue) => issue.code === "xml-syntax" && issue.path === "word/glossary/header9.xml")?.severity).toBe(
+            "error",
+        );
+        expect(strict.valid).toBe(false);
+    });
+
+    it(
+        "word-valid and named xml-syntax runs agree on the glossary's relationships part and stories (#549, #381)",
+        { timeout: 120000 },
+        async () => {
+            const relsBytes = await headerViaGlossary(
+                HEADER,
+                withoutRootEndTag(relsPart(`<Relationship Id="rIdH" Type="${R}/header" Target="header9.xml"/>`)),
+            );
+            const commentsBytes = await storyViaGlossary("comments", unclosed(`<w:comments xmlns:w="${W}">`));
+            for (const [bytes, part] of [
+                [relsBytes, "word/glossary/_rels/document.xml.rels"],
+                [commentsBytes, "word/glossary/comments.xml"],
+            ] as const) {
+                await withTempDir(async (dir) => {
+                    const file = path.join(dir, "specimen.docx");
+                    writeFileSync(file, bytes);
+                    for (const selection of [{}, { checks: ["xml-syntax"] }] as const) {
+                        const result = await validate(file, { profile: "word-valid", ...selection });
+                        const tag = JSON.stringify(selection);
+                        expect(result.issues.find((issue) => issue.code === "xml-syntax" && issue.path === part)?.severity, tag).toBe(
+                            "error",
+                        );
+                        expect(result.valid, tag).toBe(false);
+                    }
+                });
+            }
+        },
+    );
 });
 
 // These are filesystem integration tests: literal backslashes are file-name

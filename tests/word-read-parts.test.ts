@@ -471,33 +471,80 @@ const movedOutOfWord = (): Parts => {
 const relsPart = (body: string): string =>
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="${RELS_NS}">${body}</Relationships>`;
 
-/** The session-16 glossary: a `w:docPartBody` `w:sectPr` carrying `w:<localName> r:id="rIdH"` (s16builder.mts). */
-const glossaryReferencing = (localName: "headerReference" | "footerReference"): string =>
+/**
+ * The session-17 glossary shape (s17builder.mts): a `w:docPartBody` whose
+ * paragraph carries `run` and whose `w:sectPr` carries `sectPr`.
+ */
+const glossaryWith = (run: string, sectPr: string): string =>
     `<w:glossaryDocument xmlns:w="${W}" xmlns:r="${R}"><w:docParts><w:docPart>` +
     `<w:docPartPr><w:name w:val="Part"/><w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category>` +
     `<w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
-    `<w:docPartBody><w:p><w:r><w:t>Part</w:t></w:r></w:p>` +
-    `<w:sectPr><w:${localName} w:type="default" r:id="rIdH"/></w:sectPr></w:docPartBody>` +
+    `<w:docPartBody><w:p><w:r><w:t>Part</w:t></w:r>${run}</w:p><w:sectPr>${sectPr}</w:sectPr></w:docPartBody>` +
     `</w:docPart></w:docParts></w:glossaryDocument>`;
+
+/** The session-16 glossary: a `w:docPartBody` `w:sectPr` carrying `w:<localName> r:id="rIdH"` (s16builder.mts). */
+const glossaryReferencing = (localName: "headerReference" | "footerReference"): string =>
+    glossaryWith("", `<w:${localName} w:type="default" r:id="rIdH"/>`);
 
 /** A glossary that references nothing. */
 const GLOSSARY_PLAIN = `<w:glossaryDocument xmlns:w="${W}"><w:docParts/></w:glossaryDocument>`;
 
-/** A glossary that also carries a story-level `w:<ref>` (commentReference, footnoteReference, endnoteReference) in a run. */
-const glossaryAlsoReferencing = (ref: "commentReference" | "footnoteReference" | "endnoteReference"): string =>
-    glossaryReferencing("headerReference").replace("<w:t>Part</w:t></w:r>", `<w:t>Part</w:t></w:r><w:r><w:${ref} w:id="1"/></w:r>`);
+/** The lazy story segments a glossary's relationships part can name. */
+const STORY_SEGMENTS = ["header", "footer", "comments", "footnotes", "endnotes"] as const;
+type StorySegment = (typeof STORY_SEGMENTS)[number];
+
+/** The file each session-17 specimen stores the story under (s17builder.mts). */
+const STORY_FILE: Readonly<Record<StorySegment, string>> = {
+    header: "header9.xml",
+    footer: "footer9.xml",
+    comments: "comments.xml",
+    footnotes: "footnotes.xml",
+    endnotes: "endnotes.xml",
+};
 
 /**
- * The session-16 `ar-<segment>-ref-in-glossary` shape: `word/glossary/document.xml`,
- * reached through a main-document `glossaryDocument` relationship, whose own
- * relationships part names `word/glossary/<segment>9.xml` as `rIdH`. Pass
- * `glossary` to replace the referencing glossary document.
+ * The glossary that uses each lazy segment, the session-17 way: a
+ * `w:headerReference` / `w:footerReference` `r:id` in the `w:docPartBody`
+ * `w:sectPr`, or a `w:commentReference` / `w:footnoteReference` /
+ * `w:endnoteReference` in a run.
  */
-const storyViaGlossary = (segment: "header" | "footer", xml: string, glossary?: string): Parts => ({
+const STORY_GLOSSARY: Readonly<Record<StorySegment, string>> = {
+    header: glossaryReferencing("headerReference"),
+    footer: glossaryReferencing("footerReference"),
+    comments: glossaryWith(`<w:r><w:commentReference w:id="0"/></w:r>`, ""),
+    footnotes: glossaryWith(`<w:r><w:footnoteReference w:id="1"/></w:r>`, ""),
+    endnotes: glossaryWith(`<w:r><w:endnoteReference w:id="1"/></w:r>`, ""),
+};
+
+/** A well-formed story part of each kind, as session 17's controls carry them. */
+const WELLFORMED_STORY: Readonly<Record<StorySegment, string>> = {
+    header: WELLFORMED_HEADER,
+    footer: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:ftr xmlns:w="${W}"><w:p><w:r><w:t>Footer</w:t></w:r></w:p></w:ftr>`,
+    comments: `<w:comments xmlns:w="${W}"><w:comment w:id="0" w:author="A"><w:p><w:r><w:t>Comment</w:t></w:r></w:p></w:comment></w:comments>`,
+    footnotes:
+        `<w:footnotes xmlns:w="${W}"><w:footnote w:type="separator" w:id="-1"><w:p><w:r><w:separator/></w:r></w:p></w:footnote>` +
+        `<w:footnote w:type="continuationSeparator" w:id="0"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:footnote>` +
+        `<w:footnote w:id="1"><w:p><w:r><w:t>Footnote</w:t></w:r></w:p></w:footnote></w:footnotes>`,
+    endnotes:
+        `<w:endnotes xmlns:w="${W}"><w:endnote w:type="separator" w:id="-1"><w:p><w:r><w:separator/></w:r></w:p></w:endnote>` +
+        `<w:endnote w:type="continuationSeparator" w:id="0"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:endnote>` +
+        `<w:endnote w:id="1"><w:p><w:r><w:t>Endnote</w:t></w:r></w:p></w:endnote></w:endnotes>`,
+};
+
+/**
+ * The session-16/17 glossary-reach shape: `word/glossary/document.xml`,
+ * reached through a main-document `glossaryDocument` relationship, whose own
+ * relationships part names `word/glossary/<file>` as `rIdH`. The glossary
+ * defaults to the one that uses `segment`. Pass `glossary` to replace it (a
+ * glossary that references nothing, or one that does not parse) and
+ * `glossaryRels` to replace its relationships part.
+ */
+const storyViaGlossary = (segment: StorySegment, xml: string, glossary?: string, glossaryRels?: string): Parts => ({
     ...MINIMAL_PARTS,
-    "word/glossary/document.xml": glossary ?? glossaryReferencing(segment === "header" ? "headerReference" : "footerReference"),
-    "word/glossary/_rels/document.xml.rels": relsPart(`<Relationship Id="rIdH" Type="${R}/${segment}" Target="${segment}9.xml"/>`),
-    [`word/glossary/${segment}9.xml`]: xml,
+    "word/glossary/document.xml": glossary ?? STORY_GLOSSARY[segment],
+    "word/glossary/_rels/document.xml.rels":
+        glossaryRels ?? relsPart(`<Relationship Id="rIdH" Type="${R}/${segment}" Target="${STORY_FILE[segment]}"/>`),
+    [`word/glossary/${STORY_FILE[segment]}`]: xml,
     "word/_rels/document.xml.rels": (MINIMAL_PARTS["word/_rels/document.xml.rels"] as string).replace(
         "</Relationships>",
         `<Relationship Id="rIdG" Type="${R}/glossaryDocument" Target="glossary/document.xml"/></Relationships>`,
@@ -505,7 +552,7 @@ const storyViaGlossary = (segment: "header" | "footer", xml: string, glossary?: 
     "[Content_Types].xml": (MINIMAL_PARTS["[Content_Types].xml"] as string).replace(
         "</Types>",
         `<Override PartName="/word/glossary/document.xml" ContentType="${CT.glossary}"/>` +
-            `<Override PartName="/word/glossary/${segment}9.xml" ContentType="${CT[segment]}"/></Types>`,
+            `<Override PartName="/word/glossary/${STORY_FILE[segment]}" ContentType="${CT[segment]}"/></Types>`,
     ),
 });
 
@@ -542,64 +589,54 @@ const endnoteViaFootnote = (endnotes: string): Parts =>
         "endnotes.xml",
     );
 
-describe("wordReadParts: a header or footer the glossary references (#539)", () => {
+describe("wordReadParts: a reached glossary is a second story root (#539, #549)", () => {
     // Session 16: Word 16.115 follows a glossaryDocument relationship to the
     // glossary's own relationships part and reads the header its
     // `w:docPartBody` `w:sectPr` names by r:id (`ar-header-ref-in-glossary-malformed`,
-    // repair-warning; the well-formed control opens clean). The footer is
-    // inference from the same mechanism. The glossary's comments, footnotes
-    // and endnotes relationships are unobserved and stay unreached, as does
-    // its relationships part.
-    it.each(["header", "footer"] as const)("reaches a glossary's %s when the glossary references it", async (segment) => {
+    // repair-warning; the well-formed control opens clean). Session 17
+    // answers its open questions: the glossary's relationships part is read
+    // even when the glossary references nothing (`glossary-rels-unclosed`,
+    // `glossary-rels-zero-byte`, `glossary-rels-unclosed-unreferenced` — all
+    // repair-warning), and the comments, footnotes and endnotes it references
+    // are read (`*-ref-in-glossary-malformed` — repair-warning; the
+    // well-formed controls open clean). A header it relates but does not
+    // reference is not read (`header-related-from-glossary-unused-malformed`
+    // opens clean), and references from inside a footnote stay unfollowed
+    // (session 16's `ar-endnote-ref-in-footnote`).
+    it.each(STORY_SEGMENTS)("reaches a glossary's %s when the glossary references it", async (segment) => {
         const parts = storyViaGlossary(segment, MALFORMED[segment]!);
-        expect(await wordReadParts(ValidationContext.fromEntries(parts))).toContain(canonicalPartName(`word/glossary/${segment}9.xml`));
+        expect(await wordReadParts(ValidationContext.fromEntries(parts))).toContain(
+            canonicalPartName(`word/glossary/${STORY_FILE[segment]}`),
+        );
     });
 
-    it.each(["header", "footer"] as const)(
-        "does not reach a glossary's %s the glossary relates but does not reference",
-        async (segment) => {
-            const parts = storyViaGlossary(segment, MALFORMED[segment]!, GLOSSARY_PLAIN);
-            const reached = await wordReadParts(ValidationContext.fromEntries(parts));
-            expect(reached).toContain(canonicalPartName("word/glossary/document.xml"));
-            expect(reached).not.toContain(canonicalPartName(`word/glossary/${segment}9.xml`));
-        },
-    );
+    it.each(STORY_SEGMENTS)("does not reach a glossary's %s the glossary relates but does not reference", async (segment) => {
+        const parts = storyViaGlossary(segment, MALFORMED[segment]!, GLOSSARY_PLAIN);
+        const reached = await wordReadParts(ValidationContext.fromEntries(parts));
+        expect(reached).toContain(canonicalPartName("word/glossary/document.xml"));
+        expect(reached).not.toContain(canonicalPartName(`word/glossary/${STORY_FILE[segment]}`));
+    });
 
-    it.each(["header", "footer"] as const)("keeps a glossary's %s reached when the glossary does not parse", async (segment) => {
+    it.each(STORY_SEGMENTS)("keeps a glossary's %s reached when the glossary does not parse", async (segment) => {
         // An unparseable glossary leaves usage unknown — the glossary's bytes
         // are checked the way #536 checks the main's — so the target stays
         // reached and no false negative opens.
         const parts = storyViaGlossary(segment, MALFORMED[segment]!, MALFORMED.glossary!);
-        expect(await wordReadParts(ValidationContext.fromEntries(parts))).toContain(canonicalPartName(`word/glossary/${segment}9.xml`));
-    });
-
-    it.each([
-        ["comments", "commentReference"],
-        ["footnotes", "footnoteReference"],
-        ["endnotes", "endnoteReference"],
-    ] as const)("does not reach a glossary's %s target, even when the glossary references it", async (segment, ref) => {
-        // Unobserved: Word was not observed reading the stories a glossary
-        // relates — the session-16 inverse is `ar-endnote-ref-in-footnote`,
-        // which opened clean while malformed.
-        const parts: Parts = {
-            ...storyViaGlossary("header", MALFORMED.header!, glossaryAlsoReferencing(ref)),
-            "word/glossary/_rels/document.xml.rels": relsPart(
-                `<Relationship Id="rIdH" Type="${R}/header" Target="header9.xml"/>` +
-                    `<Relationship Id="rIdG2" Type="${R}/${segment}" Target="${segment}.xml"/>`,
-            ),
-            [`word/glossary/${segment}.xml`]: MALFORMED[segment]!,
-        };
-        const reached = await wordReadParts(ValidationContext.fromEntries(parts));
-        expect(reached).toContain(canonicalPartName("word/glossary/header9.xml"));
-        expect(reached).not.toContain(canonicalPartName(`word/glossary/${segment}.xml`));
-    });
-
-    it("does not reach the glossary's own relationships part", async () => {
-        // Unobserved, unlike the main document's sidecar (#514).
-        const parts = storyViaGlossary("header", MALFORMED.header!);
-        expect(await wordReadParts(ValidationContext.fromEntries(parts))).not.toContain(
-            canonicalPartName("word/glossary/_rels/document.xml.rels"),
+        expect(await wordReadParts(ValidationContext.fromEntries(parts))).toContain(
+            canonicalPartName(`word/glossary/${STORY_FILE[segment]}`),
         );
+    });
+
+    it("reaches the glossary's own relationships part, used or not (#549)", async () => {
+        // Session 17: as the main document's sidecar is read (#514), so is a
+        // reached glossary's — `glossary-rels-unclosed-unreferenced` gets a
+        // repair warning while its header goes unreferenced.
+        for (const glossary of [STORY_GLOSSARY.header, glossaryWith("", "")]) {
+            const parts = storyViaGlossary("header", MALFORMED.header!, glossary);
+            expect(await wordReadParts(ValidationContext.fromEntries(parts))).toContain(
+                canonicalPartName("word/glossary/_rels/document.xml.rels"),
+            );
+        }
     });
 });
 
@@ -885,7 +922,7 @@ const SPECIMENS: readonly Specimen[] = [
         blocking: true,
     },
     {
-        label: "a malformed footer a glossary's sectPr references (#539, inference)",
+        label: "a malformed footer a glossary's sectPr references (#549, repair-warning)",
         parts: () => storyViaGlossary("footer", MALFORMED.footer!),
         part: "word/glossary/footer9.xml",
         blocking: true,
@@ -896,6 +933,60 @@ const SPECIMENS: readonly Specimen[] = [
         part: "word/endnotes.xml",
         blocking: false,
     },
+    {
+        label: "a malformed comments part a glossary references (#549, repair-warning)",
+        parts: () => storyViaGlossary("comments", MALFORMED.comments!),
+        part: "word/glossary/comments.xml",
+        blocking: true,
+    },
+    {
+        label: "a malformed footnotes part a glossary references (#549, repair-warning)",
+        parts: () => storyViaGlossary("footnotes", MALFORMED.footnotes!),
+        part: "word/glossary/footnotes.xml",
+        blocking: true,
+    },
+    {
+        label: "a malformed endnotes part a glossary references (#549, repair-warning)",
+        parts: () => storyViaGlossary("endnotes", MALFORMED.endnotes!),
+        part: "word/glossary/endnotes.xml",
+        blocking: true,
+    },
+    {
+        label: "a malformed header a glossary relates but does not reference (#549, clean-open)",
+        parts: () => storyViaGlossary("header", MALFORMED.header!, GLOSSARY_PLAIN),
+        part: "word/glossary/header9.xml",
+        blocking: false,
+    },
+    {
+        label: "the glossary's relationships part missing its root end tag (#549, repair-warning)",
+        parts: () =>
+            storyViaGlossary(
+                "header",
+                MALFORMED.header!,
+                undefined,
+                withoutRootEndTag(relsPart(`<Relationship Id="rIdH" Type="${R}/header" Target="header9.xml"/>`)),
+            ),
+        part: "word/glossary/_rels/document.xml.rels",
+        blocking: true,
+    },
+    {
+        label: "the glossary's relationships part zero bytes (#549, repair-warning)",
+        parts: () => storyViaGlossary("header", MALFORMED.header!, undefined, ""),
+        part: "word/glossary/_rels/document.xml.rels",
+        blocking: true,
+    },
+    {
+        label: "the glossary's relationships part malformed with nothing referenced (#549, repair-warning)",
+        parts: () =>
+            storyViaGlossary(
+                "header",
+                MALFORMED.header!,
+                glossaryWith("", ""),
+                withoutRootEndTag(relsPart(`<Relationship Id="rIdH" Type="${R}/header" Target="header9.xml"/>`)),
+            ),
+        part: "word/glossary/_rels/document.xml.rels",
+        blocking: true,
+    },
 ];
 
 const FOOTER_UNUSED = SPECIMENS[2]!;
@@ -904,6 +995,9 @@ const specimenByLabel = (label: string): Specimen => SPECIMENS.find((specimen) =
 const USED_HEADER_OUTSIDE = specimenByLabel("a used header stored outside word/ (#516, open-error)");
 const HEADER_UNUSED = specimenByLabel("an unused header under word/, related but not referenced (#516, clean-open)");
 const GLOSSARY_HEADER_USED = specimenByLabel("a malformed header a glossary's sectPr references (#539, repair-warning)");
+const GLOSSARY_COMMENTS_USED = specimenByLabel("a malformed comments part a glossary references (#549, repair-warning)");
+const GLOSSARY_RELS_BROKEN = specimenByLabel("the glossary's relationships part missing its root end tag (#549, repair-warning)");
+const GLOSSARY_HEADER_UNUSED = specimenByLabel("a malformed header a glossary relates but does not reference (#549, clean-open)");
 
 describe("xml errors are Word-blocking by reachability (#437)", () => {
     it.each(SPECIMENS)("$label", { timeout: 120_000 }, async (specimen) => {
@@ -930,7 +1024,16 @@ describe("xml errors are Word-blocking by reachability (#437)", () => {
         });
     });
 
-    it.each([FOOTER_UNUSED, CUSTOMXML, USED_HEADER_OUTSIDE, HEADER_UNUSED, GLOSSARY_HEADER_USED])(
+    it.each([
+        FOOTER_UNUSED,
+        CUSTOMXML,
+        USED_HEADER_OUTSIDE,
+        HEADER_UNUSED,
+        GLOSSARY_HEADER_USED,
+        GLOSSARY_COMMENTS_USED,
+        GLOSSARY_RELS_BROKEN,
+        GLOSSARY_HEADER_UNUSED,
+    ])(
         "agrees between full, quick and named runs, packed and directory, .docx and .docm: $label",
         { timeout: 240_000 },
         async (specimen) => {
@@ -1045,6 +1148,21 @@ describe("xml errors are Word-blocking by reachability (#437)", () => {
             expect(result.valid).toBe(true);
         });
     });
+
+    it.each(STORY_SEGMENTS)(
+        "keeps a well-formed story a glossary references word-valid (#539/#549 controls)",
+        { timeout: 120_000 },
+        async (segment) => {
+            // Session 16/17: every `*-ref-in-glossary-wellformed-control`
+            // opens clean in Word.
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "specimen.docx");
+                writeFileSync(file, await buildDocx(storyViaGlossary(segment, WELLFORMED_STORY[segment])));
+                const result = await validate(file, { profile: "word-valid" });
+                expect(result.valid).toBe(true);
+            });
+        },
+    );
 
     it("keeps the packed input bytes unchanged after validation", { timeout: 120_000 }, async () => {
         await withTempDir(async (dir) => {

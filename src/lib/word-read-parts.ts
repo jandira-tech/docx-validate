@@ -27,14 +27,18 @@
  *    endnotes through any `w:endnoteReference`) — related-but-unused opens
  *    clean, even under `word/` (#516, session 15);
  *  - a glossary document, reached through a main-document
- *    `glossaryDocument` relationship, reads its own relationships part for
- *    `header` and `footer` relationships, used when its effective XML
- *    carries a `w:headerReference` / `w:footerReference` with that `r:id`
- *    (#539, session 16; the footer is inference from the header
- *    observation). The glossary's comments, footnotes and endnotes
- *    relationships and its own relationships part are unobserved — an
- *    endnotes part referenced only from inside a footnote opens clean — so
- *    they stay unreached;
+ *    `glossaryDocument` relationship, is a second story root: its own
+ *    relationships part is read even when the glossary references nothing
+ *    (#549, session 17 — unclosed, zero-byte and unreferenced sidecars all
+ *    get repair), and its `header` / `footer` relationships are used when
+ *    its effective XML carries a `w:headerReference` / `w:footerReference`
+ *    with that `r:id`, its `comments` / `footnotes` / `endnotes`
+ *    relationships when it carries any `w:commentReference` /
+ *    `w:footnoteReference` / `w:endnoteReference` — every referenced story
+ *    gets repair when malformed, every well-formed control opens clean
+ *    (#539 session 16, header; #549 session 17, the rest). A header it
+ *    relates but does not reference is not read (clean open), and
+ *    references from inside a footnote are not followed (session 16);
  *  - a part under `word/` that any relationship of a KNOWN Office type names
  *    with none of the observed types above (people, chart, image, …). These
  *    are unobserved, so they keep the old `word/`-folder behaviour —
@@ -48,7 +52,8 @@
  * docs/plans/evidence/word-probes-2026-10-24.md, sessions 3c, 4, 5, 8b, 9a;
  * session 15 (the main document's own relationships part, #514; header and
  * endnotes lazy, theme and glossaryDocument eager, #516); session 16 (the
- * glossary's header reference, #539).
+ * glossary's header reference, #539); session 17 (the glossary's
+ * relationships part and its comments, footnotes and endnotes, #549).
  */
 
 import path from "node:path";
@@ -303,6 +308,86 @@ export const wordTypedRelationshipTargets = async (
 };
 
 /**
+ * The parts a story root — the main document or a reached glossary document
+ * — reads through its own relationships part: the sidecar itself, and each
+ * relationship's stored target as `{ part, segment }`. `followEager` adds
+ * the targets of eagerly parsed types and is a main-document rule only: an
+ * eager relationship from a glossary is unobserved (#549).
+ *
+ * Lazy usage comes from the effective XML Word consumes, after markup
+ * compatibility has selected its branches, but only once the part's bytes
+ * pass the XML checker — a DOM may recover bytes the checker rejects (for
+ * example an unsupported declared encoding), and such a root cannot
+ * establish that lazy targets are unused, so they stay reached in full,
+ * partial and fallback runs (#536).
+ */
+const storyRootReadParts = async (
+    context: ValidationContext,
+    reach: PackageReach,
+    root: string,
+    followEager: boolean,
+): Promise<readonly WordTypedTarget[]> => {
+    const targets: WordTypedTarget[] = [{ part: root, segment: "officeDocument" }];
+    const sidecar = sidecarOf(reach.names, root);
+    if (sidecar !== undefined) {
+        // Word reads a story root's own relationships part to reach its
+        // stories, and offers recovery when it does not parse — the main
+        // document's (#514, session 15) and a reached glossary's (#549,
+        // session 17) alike.
+        targets.push({ part: sidecar, segment: "relationships" });
+    }
+    const bytes = context.bytes(root);
+    const readable = bytes !== undefined && !(await checkXmlSyntax(bytes, root)).some((issue) => issue.severity === "error");
+    const story = readable ? context.effectiveXml(root) : undefined;
+    const footerIds = story?.ok ? referenceIds(story.document, "footerReference") : undefined;
+    const headerIds = story?.ok ? referenceIds(story.document, "headerReference") : undefined;
+    const usesComments = story?.ok ? hasReference(story.document, "commentReference") : undefined;
+    const usesFootnotes = story?.ok ? hasReference(story.document, "footnoteReference") : undefined;
+    const usesEndnotes = story?.ok ? hasReference(story.document, "endnoteReference") : undefined;
+    // Whether a lazily parsed relationship's target is used; `undefined`
+    // when that cannot be decided, which keeps the target reached (#437).
+    const lazyUsed = (segment: string, id: string): boolean | undefined => {
+        switch (segment) {
+            case "footer":
+                return footerIds?.has(id);
+            case "header":
+                return headerIds?.has(id);
+            case "comments":
+                return usesComments;
+            case "footnotes":
+                return usesFootnotes;
+            case "endnotes":
+                return usesEndnotes;
+            default:
+                return undefined;
+        }
+    };
+
+    const baseDir = path.posix.dirname(root);
+    for (const relationship of relationshipsOf(context, sidecar)) {
+        if (relationship.getAttribute("TargetMode") === "External") {
+            continue;
+        }
+        const segment = officeRelationshipTypeSegment(relationship.getAttribute("Type") ?? "");
+        if (segment === undefined) {
+            continue;
+        }
+        const target = resolveTarget(reach.lookup, baseDir, relationship.getAttribute("Target") ?? "");
+        if (target === undefined) {
+            continue;
+        }
+        if (EAGER_TYPES.has(segment)) {
+            if (followEager) {
+                targets.push({ part: target, segment });
+            }
+        } else if (LAZY_TYPES.has(segment) && lazyUsed(segment, relationship.getAttribute("Id") ?? "") !== false) {
+            targets.push({ part: target, segment });
+        }
+    }
+    return targets;
+};
+
+/**
  * Canonical names of the parts Word reads at open through relationships.
  * Mirrors `propertiesParts`: a package relationships part that does not parse
  * yields nothing (its own diagnostics already block the run, #388), and a
@@ -318,114 +403,30 @@ export const wordReadParts = async (context: ValidationContext): Promise<Readonl
     const { names, lookup } = reach;
     // Glossary documents reached eagerly through a main-document
     // glossaryDocument relationship, canonical name to stored spelling, for
-    // the second-level pass below (#539).
+    // the second story-root pass below (#539).
     const glossaryParts = new Map<string, string>();
 
     for (const mainPart of reach.mainParts) {
-        parts.add(canonicalPartName(mainPart));
-        // #514: Word reads the main document's own relationships part to
-        // reach styles, settings, headers and footers, wherever the main
-        // document is stored, and offers recovery when it does not parse
-        // (session 15). Other parts' relationships parts stay unreached.
-        const sidecar = sidecarOf(names, mainPart);
-        if (sidecar !== undefined) {
-            parts.add(canonicalPartName(sidecar));
-        }
-    }
-
-    // Main-document relationships: eager types always, lazy types only when
-    // the document uses them. Usage is read from the effective view Word
-    // consumes, after markup compatibility has selected its branches.
-    for (const mainPart of reach.mainParts) {
-        // A DOM may recover bytes the XML checker rejects (for example an
-        // unsupported declared encoding). Such a main cannot establish that
-        // lazy targets are unused, in full, partial or fallback runs (#536).
-        const bytes = context.bytes(mainPart);
-        const readable = bytes !== undefined && !(await checkXmlSyntax(bytes, mainPart)).some((issue) => issue.severity === "error");
-        const main = readable ? context.effectiveXml(mainPart) : undefined;
-        const footerIds = main?.ok ? referenceIds(main.document, "footerReference") : undefined;
-        const headerIds = main?.ok ? referenceIds(main.document, "headerReference") : undefined;
-        const usesComments = main?.ok ? hasReference(main.document, "commentReference") : undefined;
-        const usesFootnotes = main?.ok ? hasReference(main.document, "footnoteReference") : undefined;
-        const usesEndnotes = main?.ok ? hasReference(main.document, "endnoteReference") : undefined;
-        // Whether a lazily parsed relationship's target is used; `undefined`
-        // when that cannot be decided, which keeps the target reached (#437).
-        const lazyUsed = (segment: string, id: string): boolean | undefined => {
-            switch (segment) {
-                case "footer":
-                    return footerIds?.has(id);
-                case "header":
-                    return headerIds?.has(id);
-                case "comments":
-                    return usesComments;
-                case "footnotes":
-                    return usesFootnotes;
-                case "endnotes":
-                    return usesEndnotes;
-                default:
-                    return undefined;
-            }
-        };
-
-        const baseDir = path.posix.dirname(mainPart);
-        for (const relationship of relationshipsOf(context, sidecarOf(names, mainPart))) {
-            if (relationship.getAttribute("TargetMode") === "External") {
-                continue;
-            }
-            const segment = officeRelationshipTypeSegment(relationship.getAttribute("Type") ?? "");
-            if (segment === undefined) {
-                continue;
-            }
-            const target = resolveTarget(lookup, baseDir, relationship.getAttribute("Target") ?? "");
-            if (target === undefined) {
-                continue;
-            }
-            if (EAGER_TYPES.has(segment)) {
-                parts.add(canonicalPartName(target));
-                if (segment === "glossaryDocument") {
-                    glossaryParts.set(canonicalPartName(target), target);
-                }
-            } else if (LAZY_TYPES.has(segment)) {
-                if (lazyUsed(segment, relationship.getAttribute("Id") ?? "") !== false) {
-                    parts.add(canonicalPartName(target));
-                }
+        for (const { part, segment } of await storyRootReadParts(context, reach, mainPart, true)) {
+            parts.add(canonicalPartName(part));
+            if (segment === "glossaryDocument") {
+                glossaryParts.set(canonicalPartName(part), part);
             }
         }
     }
 
-    // Session 16 (#539): Word follows a main-document glossaryDocument
-    // relationship to the glossary's own relationships part and reads the
-    // header it references — a `w:headerReference r:id` in a `w:docPartBody`
-    // `w:sectPr` (`ar-header-ref-in-glossary-malformed` gets a repair warning;
-    // the well-formed control opens clean). The footer is the same mechanism,
-    // inferred from the header observation. The glossary's comments, footnotes
-    // and endnotes relationships are unobserved — an endnotes part referenced
-    // only from inside a footnote opens clean — so they are not followed, and
-    // neither is the glossary's relationships part itself. A glossary that
-    // fails byte-level XML checks leaves usage unknown, as an unparseable main
-    // does (#536), so its lazy targets stay reached.
+    // Each reached glossary document is a second story root (#549, session
+    // 17): its own relationships part is read — even when the glossary
+    // references nothing (unclosed, zero-byte and unreferenced sidecars all
+    // get repair) — and so are the header, footer, comments, footnotes and
+    // endnotes its effective XML uses, as a main document's are. A header it
+    // relates but does not reference is not read (clean open), and
+    // references from inside a footnote are not followed (session 16). A
+    // glossary that fails byte-level XML checks leaves usage unknown, as an
+    // unparseable main does (#536), so its lazy targets stay reached.
     for (const glossaryPart of glossaryParts.values()) {
-        const bytes = context.bytes(glossaryPart);
-        const readable = bytes !== undefined && !(await checkXmlSyntax(bytes, glossaryPart)).some((issue) => issue.severity === "error");
-        const glossary = readable ? context.effectiveXml(glossaryPart) : undefined;
-        const headerIds = glossary?.ok ? referenceIds(glossary.document, "headerReference") : undefined;
-        const footerIds = glossary?.ok ? referenceIds(glossary.document, "footerReference") : undefined;
-        for (const relationship of relationshipsOf(context, sidecarOf(names, glossaryPart))) {
-            if (relationship.getAttribute("TargetMode") === "External") {
-                continue;
-            }
-            const segment = officeRelationshipTypeSegment(relationship.getAttribute("Type") ?? "");
-            if (segment !== "header" && segment !== "footer") {
-                continue;
-            }
-            const target = resolveTarget(lookup, path.posix.dirname(glossaryPart), relationship.getAttribute("Target") ?? "");
-            if (target === undefined) {
-                continue;
-            }
-            const used = (segment === "header" ? headerIds : footerIds)?.has(relationship.getAttribute("Id") ?? "");
-            if (used !== false) {
-                parts.add(canonicalPartName(target));
-            }
+        for (const { part } of await storyRootReadParts(context, reach, glossaryPart, false)) {
+            parts.add(canonicalPartName(part));
         }
     }
 
