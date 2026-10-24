@@ -14,6 +14,7 @@ export const opcPartNameEscapedUnreservedCheck: CheckDefinition = {
     description: "Stored part-name segments contain no percent-encoded unreserved characters (OPC [M1.8]).",
     groups: ["package"],
     formats: ["docx", "pptx", "xlsx"],
+    storedNamesOnly: true,
     run: (ctx) =>
         // Each distinct stored spelling once: two entries may share a name (#411).
         [...new Set(ctx.storedNames)].filter(hasEscapedUnreservedCharacter).map((name) => ({

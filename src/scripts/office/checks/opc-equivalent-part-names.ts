@@ -26,6 +26,7 @@ export const opcEquivalentPartNamesCheck: CheckDefinition = {
     description: "Stored part names and content-types stream spellings are unique under OPC [M1.12] equivalence.",
     groups: ["package"],
     formats: ["docx", "pptx", "xlsx"],
+    storedNamesOnly: true,
     run: (ctx): ValidationIssue[] => {
         const groups = new Map<string, string[]>();
         for (const name of ctx.storedNames) {

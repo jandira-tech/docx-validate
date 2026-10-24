@@ -36,6 +36,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - A quick or named-check run now reports an archive whose package view cannot be read — a stored item name that places no part (`word//x.xml`, `c:doc/x.xml`, a `.` or `..` segment) or an unreadable entry — as `package-extract-failed`, with the same code and message the full run reports, instead of `package-open-failed` ([#413](https://github.com/jandira-tech/docx-validate/issues/413)).
 
+- On such an archive the run still executes the selected stored-name checks (`opc-equivalent-part-names`, `opc-part-name-escaped-unreserved`), which read only the stored entry names and report the same findings the full run reports, and every selected check that could not run is listed in `omittedChecks` instead of appearing in neither `executedChecks` nor `omittedChecks` ([#420](https://github.com/jandira-tech/docx-validate/issues/420)).
+
 - Full validation stages directory inputs with literal backslashes in stored file names under package part names, sharing the packed-input extraction guards and duplicate selection. `--auto-repair` writes modified bytes and deletions back to their original stored names; untouched files remain byte-identical and validation without repair leaves the source unchanged ([#374](https://github.com/jandira-tech/docx-validate/issues/374)).
 
 - `validate()` no longer throws on staged-directory I/O: a stored file that cannot be read into the package view fails with `package-extract-failed` naming the file, and a failed `--auto-repair` write-back — a read-only or vanished stored file — is reported as a `repair-write-back-failed` error while the remaining repairs are still written back ([#412](https://github.com/jandira-tech/docx-validate/issues/412)).

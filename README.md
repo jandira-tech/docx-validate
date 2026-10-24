@@ -582,11 +582,15 @@ archive-only check is not listed for an unpacked directory. An archive that does
 not open fails with `package-open-failed` in every mode, and only its envelope
 checks are listed (#332). One that opens but whose package view cannot be read —
 a stored item name that places no part, or an unreadable entry — fails with
-`package-extract-failed`, as the full run's extraction reports it (#413). It is not a
+`package-extract-failed`, as the full run's extraction reports it (#413). Its stored
+entry names are still read: selected `opc-equivalent-part-names` and
+`opc-part-name-escaped-unreserved` checks run and report what the full run reports,
+while every other selected check is omitted ([#420](https://github.com/jandira-tech/docx-validate/issues/420)). It is not a
 per-method execution trace. In the source scheduler, use `runChecks().outcomes`
 for individual
 `passed` / `failed` / `skipped` / `unavailable` statuses. `omittedChecks` names ids
-left out by selection. `schemaCompleted` records completion of the eligible schema
+left out by selection and, when the package view cannot be read, selected ids that
+could not run. `schemaCompleted` records completion of the eligible schema
 walk without schema-load failures; it is separate from whether schema findings
 made the document invalid. `wordVerification` is present only when requested.
 

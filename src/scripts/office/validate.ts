@@ -596,22 +596,29 @@ async function runSelectedChecks(
         // An archive that does not open has no parts: only the selected
         // envelope checks can read its bytes, and nothing else ran (#332).
         // One that opens but whose package view cannot be read fails as the
-        // full run's extraction does, not as an open failure (#413).
-        const archiveOnly = new Set(
+        // full run's extraction does, not as an open failure (#413) — but its
+        // context still carries the stored entry names, so the checks that
+        // need only them run and report what the full run's storedNamesRun
+        // reports (#420).
+        const runnable = new Set(
             registry
                 .list(format)
-                .filter((definition) => definition.archiveOnly === true)
+                .filter(
+                    (definition) =>
+                        definition.archiveOnly === true || (opened.extractFailed === true && definition.storedNamesOnly === true),
+                )
                 .map((definition) => definition.id),
         );
         const resolved = registry.resolve(select, format);
-        const envelopeSelect = resolved.filter((id) => archiveOnly.has(id));
-        const envelope =
-            envelopeSelect.length > 0 ? await runChecks(opened.context, registry, { format, select: envelopeSelect }) : undefined;
-        const executed = envelope?.executed ?? [];
+        const runnableSelect = resolved.filter((id) => runnable.has(id));
+        const run = runnableSelect.length > 0 ? await runChecks(opened.context, registry, { format, select: runnableSelect }) : undefined;
+        // A refused view has no parts, so no properties part to block (#409).
+        const issues = run === undefined ? [] : findingsUnderProfile(run, registry, format, mode.profile, new Set());
+        const executed = run?.executed ?? [];
         return {
             valid: false,
             issues: [
-                ...(envelope?.issues ?? []),
+                ...issues,
                 opened.extractFailed === true
                     ? packageExtractFailedIssue(target, opened.openError)
                     : packageOpenFailedIssue(target, opened.openError),
@@ -622,13 +629,14 @@ async function runSelectedChecks(
             metadata: {
                 profile: mode.profile,
                 executedChecks: [...executed],
-                // Omitted means "not selected", as for a package that opens; a
-                // selected check the archive kept from running is not an
-                // omission, and the error says why it did not run (Jules on #337).
                 omittedChecks: registry
                     .list(format)
                     .map((definition) => definition.id)
-                    .filter((id) => !resolved.includes(id)),
+                    // An archive that does not open keeps "omitted means not
+                    // selected" (Jules on #337). A refused package view
+                    // omits everything that did not run, so no selected id is
+                    // in neither list (#420).
+                    .filter((id) => (opened.extractFailed === true ? !executed.includes(id) : !resolved.includes(id))),
                 schemaCompleted: false,
             },
         };
@@ -745,7 +753,12 @@ async function storedNamesRun(
     profile: Profile,
 ): Promise<{ issues: ValidationIssue[]; executed: readonly string[] }> {
     const registry = createDefaultCheckRegistry();
-    const run = await runChecks(context, registry, { format, select: [OPC_EQUIVALENT_PART_NAMES, OPC_PART_NAME_ESCAPED_UNRESERVED] });
+    // The same flag picks what a partial run of a refused package view runs (#420).
+    const select = registry
+        .list(format)
+        .filter((definition) => definition.storedNamesOnly === true)
+        .map((definition) => definition.id);
+    const run = await runChecks(context, registry, { format, select });
     return { issues: findingsUnderProfile(run, registry, format, profile, new Set()), executed: run.executed };
 }
 
