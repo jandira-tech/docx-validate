@@ -100,13 +100,67 @@ describe(CODE, () => {
         },
     );
 
-    it("accepts the package when any one internal officeDocument relationship names a part", async () => {
+    it("counts relationships even when one target is missing (#515)", async () => {
         expect(
             await mainPartIssues({
                 ...MINIMAL_PARTS,
                 "_rels/.rels": relationships(
                     `Type="${OFFICE_DOCUMENT}" Target="word/missing.xml"`,
                     `Type="${OFFICE_DOCUMENT}" Target="word/document.xml"`,
+                ),
+            }),
+        ).toEqual([
+            expect.objectContaining({ code: CODE, severity: "error", path: "_rels/.rels", message: expect.stringMatching(/rId1.*rId2/) }),
+        ]);
+    });
+
+    it.each([
+        [OFFICE_DOCUMENT, OFFICE_DOCUMENT],
+        [STRICT_OFFICE_DOCUMENT, STRICT_OFFICE_DOCUMENT],
+        [OFFICE_DOCUMENT, STRICT_OFFICE_DOCUMENT],
+        [STRICT_OFFICE_DOCUMENT, OFFICE_DOCUMENT],
+    ])("counts the two officeDocument spellings together: %s and %s (#515)", async (first, second) => {
+        expect(
+            await mainPartIssues({
+                ...MINIMAL_PARTS,
+                "_rels/.rels": relationships(`Type="${first}" Target="word/document.xml"`, `Type="${second}" Target="word/document.xml"`),
+            }),
+        ).toEqual([
+            expect.objectContaining({ code: CODE, severity: "error", path: "_rels/.rels", message: expect.stringMatching(/rId1.*rId2/) }),
+        ]);
+    });
+
+    it("names every internal officeDocument Id, excluding external and unrelated relationships (#515)", async () => {
+        const { "_rels/.rels": _rels, ...parts } = MINIMAL_PARTS;
+        const issues = await mainPartIssues({
+            ...parts,
+            "_RELS/.RELS": relationships(
+                `Type="${OFFICE_DOCUMENT}" Target="word/document.xml"`,
+                `Type="${CORE}" Target="docProps/core.xml"`,
+                `Type="${OFFICE_DOCUMENT}" Target="https://example.com/main.xml" TargetMode="External"`,
+                `Type="${STRICT_OFFICE_DOCUMENT}" Target="word/document.xml"`,
+                `Type="${OFFICE_DOCUMENT}" Target="word/document.xml"`,
+            ),
+        });
+        expect(issues).toEqual([
+            expect.objectContaining({
+                code: CODE,
+                severity: "error",
+                path: "_RELS/.RELS",
+                message: expect.stringMatching(/rId1.*rId4.*rId5/),
+            }),
+        ]);
+        expect(issues[0]!.message).not.toMatch(/rId2|rId3/);
+    });
+
+    it("ignores additional External officeDocument relationships (#515)", async () => {
+        expect(
+            await mainPartIssues({
+                ...MINIMAL_PARTS,
+                "_rels/.rels": relationships(
+                    `Type="${OFFICE_DOCUMENT}" Target="word/document.xml"`,
+                    `Type="${OFFICE_DOCUMENT}" Target="https://example.com/main.xml" TargetMode="External"`,
+                    `Type="${STRICT_OFFICE_DOCUMENT}" Target="https://example.com/other.xml" TargetMode="External"`,
                 ),
             }),
         ).toEqual([]);

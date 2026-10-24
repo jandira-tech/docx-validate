@@ -62,6 +62,8 @@ export const isWordBlockingIssue = (
         // Word 16.115 offers recovery for an empty archive and for a package
         // whose main document part is gone (#380, session 3c, same file), and
         // for one whose officeDocument relationship is removed (session 4).
+        // Multiple internal officeDocument relationships also get recovery,
+        // even with the same target (#515, Word probes session 15, s15b/s15d).
         case "word-main-document-part":
         // A part with no Override and no Default makes Word offer recovery
         // ([trash]/0000.dat). A part that has a content type but no

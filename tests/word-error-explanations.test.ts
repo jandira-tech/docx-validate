@@ -10,6 +10,12 @@ import { describe, expect, it } from "vitest";
 import { WORD_ERROR_EXPLANATIONS, explainWordError } from "../src/scripts/office/validators/word-error-explanations";
 
 describe("word error explanations", () => {
+    it("explains both absent and multiple main relationships (#515)", () => {
+        const explanation = explainWordError("word-main-document-part");
+        expect(explanation).toContain("exactly one internal officeDocument relationship");
+        expect(explanation).toContain("Remove extra");
+    });
+
     it("explains the unconditional Word-blocking codes", () => {
         // The codes isWordBlockingIssue always treats as Word-blocking must each
         // carry a user-facing explanation so the CLI can tell the user why Word fails.
