@@ -21,6 +21,8 @@ import {
     findEquivalentPart,
     isContentTypesStreamName,
     isRelationshipsPartName,
+    PART_NAME_FOLDER_SEGMENT_DOT,
+    partNameViolation,
     resolvePartName,
     normalizePartName,
     parseContentTypes,
@@ -256,6 +258,66 @@ describe("resolvePartName (#349)", () => {
             expect(resolvePartName(names, target)).toBeUndefined();
         },
     );
+});
+
+describe("partNameViolation: ECMA-376 Part 2, 4th edition §9.1.1.1 (#455)", () => {
+    const PCHAR_RULE = "must contain only RFC 3986 pchar characters";
+    const M1_8_RULE = "must not percent-encode an unreserved character (OPC [M1.8])";
+
+    // A part name shall be an IRI and shall be encoded as either a Part IRI
+    // (§9.1.1.1.1, RFC 3987 isegment/ipchar: literal ucschar allowed) or a
+    // Part URI (§9.1.1.1.2, RFC 3986 segment/pchar). A name passes when it
+    // is either; both forbid percent-encoded (i)unreserved characters [M1.8].
+    it.each([
+        "/word/café.xml", // Part IRI: a literal ucschar (é is U+00E9, in %xA0-D7FF)
+        "/a/%D1%86.xml", // Part URI: ECMA-376 Part 2, 4th edition, Example 9–1
+        "/word/caf%C3%A9.xml", // Part URI: the escape encodes non-ASCII, not an unreserved character
+        "/word/caf%c3%a9.xml", // the same escape in lowercase hex
+        "/word/x¡y.xml", // ucschar starts at U+00A0 (¡ is U+00A1)
+        "/word/x\u{D7FF}y.xml", // top of %xA0-D7FF
+        "/word/x\u{F900}y.xml", // %xF900-FDCF (CJK ideographs)
+        "/word/x\u{FFEF}y.xml", // top of %xFDF0-FFEF
+        "/word/x\u{10000}y.xml", // %x10000-1FFFD, astral: two UTF-16 code units
+        "/word/x\u{EFFFD}y.xml", // top of %xE0000-EFFFD
+        "/word/cafe\u0301.xml", // a combining mark (U+0301) is ucschar too
+        "/word/%E9-é.xml", // a malformed UTF-8 escape is pct-encoded data, not an encoded iunreserved
+    ])("%s names a part: a valid Part IRI or Part URI", (name) => {
+        expect(partNameViolation(name)).toBeUndefined();
+    });
+
+    it.each([
+        // A literal ucschar makes the name a Part IRI only, and [M1.8] reads
+        // "iunreserved" there: %C3%A9 encodes é, which is iunreserved.
+        ["/word/caf%C3%A9-é.xml", M1_8_RULE],
+        ["/word/caf%c3%a9-é.xml", M1_8_RULE], // lowercase hex decodes the same
+        ["/word/é%20%C3%A9.xml", M1_8_RULE], // an escape run still encodes é after a space
+        ["/word/cafe%CC%81-é.xml", M1_8_RULE], // the combining acute is iunreserved too
+        // An ASCII unreserved escape is iunreserved, so both forms refuse it.
+        ["/word/n%6F-é.xml", M1_8_RULE],
+        // A literal non-ASCII character that is not ucschar is in neither grammar.
+        ["/word/x\u{0080}y.xml", PCHAR_RULE], // C1 control
+        ["/word/x\u{009F}y.xml", PCHAR_RULE], // top of the C1 range, just below ucschar
+        ["/word/x\u{E000}y.xml", PCHAR_RULE], // private use is not ucschar
+        ["/word/x\u{F8FF}y.xml", PCHAR_RULE], // top of the private-use area
+        ["/word/x\u{FFFD}y.xml", PCHAR_RULE], // replacement character
+        ["/word/x\u{FFFE}y.xml", PCHAR_RULE], // noncharacters are not ucschar
+        ["/word/x\u{FFFF}y.xml", PCHAR_RULE],
+        ["/word/é no.xml", PCHAR_RULE], // a space is in neither grammar, ucschar beside it or not
+        ["/word/caf%C3%A9 no.xml", PCHAR_RULE], // the pchar rule outranks an escaped iunreserved beside a space
+    ])("%s breaks both grammars: it %s", (name, rule) => {
+        expect(partNameViolation(name)).toBe(rule);
+    });
+
+    it.each([
+        ["/word/café.xml?x=1", "must not contain '?', '#' or '\\'"],
+        ["/word/café%2F.xml", "must not percent-encode '/' or '\\' (OPC [M1.7])"],
+        ["/word/é/../a.xml", "must not have a '.' or '..' segment"],
+        ["/word/.../éa.xml", "must not have a dot-only segment (OPC [M1.10])"],
+        ["/word/café.xml.", "must not end with '.'"],
+        ["/word/café./a.xml", PART_NAME_FOLDER_SEGMENT_DOT],
+    ])("keeps every other rule's message and order for %s", (name, rule) => {
+        expect(partNameViolation(name)).toBe(rule);
+    });
 });
 
 describe("parseContentTypes", () => {

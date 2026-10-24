@@ -110,8 +110,12 @@ describe.each(["packed", "directory"] as const)("Word-refused Override PartNames
                 if (extension === "xlsx" && profile === "strict") continue;
                 const full = await validate(target, { profile, ...(extension === "xlsx" ? { checks: ["content-types"] } : {}) });
                 const found = full.issues.filter((i) => i.code === ID);
-                expect(found, `${extension} ${profile}`).toHaveLength(REFUSED.length);
-                expect(full.issues.filter((i) => i.code === "ct-override-partname-invalid")).toHaveLength(1);
+                // #455: "/word/café.xml" is a valid Part IRI under ECMA-376
+                // Part 2 §9.1.1.1, so the grammar check stays silent and this
+                // check reports its literal non-ASCII instead — one more
+                // finding than REFUSED alone.
+                expect(found, `${extension} ${profile}`).toHaveLength(REFUSED.length + 1);
+                expect(full.issues.filter((i) => i.code === "ct-override-partname-invalid")).toHaveLength(0);
                 const severity = (extension === "docx" || extension === "docm") && profile !== "lenient" ? "error" : "warning";
                 expect(found.every((i) => i.severity === severity)).toBe(true);
                 if (profile !== "strict")
@@ -171,6 +175,32 @@ describe.each(["packed", "directory"] as const)("Word-refused Override PartNames
 });
 
 describe("Word-refused Override PartNames: message scope (#473)", { timeout: 120_000 }, () => {
+    it("reports a literal-ucschar PartName the §9.1.1.1 grammar accepts (#455)", async () => {
+        await withTempDir(async (dir) => {
+            const parts = withOverrides(MINIMAL_PARTS, ["/word/café.xml"]);
+            const check = createDefaultCheckRegistry().get(ID);
+            expect(check).toBeDefined();
+            const issues = await check!.run(ValidationContext.fromEntries(parts));
+            expect(issues).toHaveLength(1);
+            expect(issues[0]).toMatchObject({ code: ID, severity: "error", path: "[Content_Types].xml" });
+            expect(issues[0]!.message).toContain("literal non-ASCII characters");
+            // The grammar accepting the name is what un-suppresses the reason.
+            const target = path.join(dir, "part-iri.docx");
+            writeFileSync(target, await buildDocx(parts));
+            for (const profile of ["word-valid", "strict"] as const) {
+                const found = (await validate(target, { profile })).issues.filter((i) => i.code === ID);
+                expect(found, profile).toHaveLength(1);
+                expect(found[0]!.severity, profile).toBe("error");
+                expect(found[0]!.message, profile).toContain("literal non-ASCII characters");
+            }
+            const pptx = path.join(dir, "part-iri.pptx");
+            writeFileSync(pptx, await buildDocx(withOverrides(MINIMAL_PPTX_PARTS, ["/ppt/café.xml"])));
+            const pptxFinding = (await validate(pptx, { profile: "strict" })).issues.filter((i) => i.code === ID);
+            expect(pptxFinding).toHaveLength(1);
+            expect(pptxFinding[0]!.severity).toBe("warning");
+        });
+    });
+
     it("scopes the recovery claim to a DOCX package for a PPTX finding", async () => {
         await withTempDir(async (dir) => {
             const target = path.join(dir, "scope.pptx");

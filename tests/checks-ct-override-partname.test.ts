@@ -67,7 +67,9 @@ const SPECIMENS: readonly Specimen[] = [
     { label: "trailing dot", partName: "/word/nothere.xml.", rule: "must not end with '.'" },
     { label: "space", partName: "/word/no there.xml", rule: "must contain only RFC 3986 pchar characters" },
     { label: "bracket", partName: "/word/no[there].xml", rule: "must contain only RFC 3986 pchar characters", anyUriRefused: true },
-    { label: "non-ASCII", partName: "/word/café.xml", rule: "must contain only RFC 3986 pchar characters" },
+    // `/word/café.xml` is no longer a specimen: a literal ucschar is a valid
+    // Part IRI under ECMA-376 Part 2 §9.1.1.1 (#455); the describe below
+    // covers it and the names that stay invalid.
     // Session 12 (#453): a segment made only of dots makes Word offer
     // recovery, even as a folder segment, unlike `/word./`.
     { label: "three-dot folder segment", partName: "/word/.../nothere.xml", rule: "must not have a dot-only segment (OPC [M1.10])" },
@@ -455,6 +457,145 @@ describe.each(["docx", "docm"] as const)("ct-override-partname-invalid in a %s p
             const file = await specimen(dir, "strict", withOverride("/word/../word/nothere.xml", "application/xml"));
             for (const selection of [{ quick: true }, { checks: ["content-types"] }, { checks: [ID] }]) {
                 await expect(validate(file, { profile: "strict", ...selection }), JSON.stringify(selection)).rejects.toThrow(/strict/i);
+            }
+        });
+    });
+});
+
+describe("ct-override-partname-invalid under ECMA-376 Part 2 §9.1.1.1 (4th edition, #455)", () => {
+    /** Names the 4th edition accepts: each is a valid Part URI or a valid Part IRI. */
+    const PART_IRI_OR_URI_NAMES = ["/word/café.xml", "/a/%D1%86.xml", "/word/caf%C3%A9.xml", "/word/caf%c3%a9.xml"] as const;
+
+    it.each(PART_IRI_OR_URI_NAMES)("accepts %s, a valid Part IRI or Part URI", async (partName) => {
+        const ctx = ValidationContext.fromEntries(withOverride(partName, "application/xml"));
+        expect(await diagnose(ctx)).toEqual([]);
+    });
+
+    it.each([
+        // A literal ucschar leaves only the Part IRI form, and [M1.8] reads
+        // "iunreserved" there: %C3%A9 encodes é.
+        ["/word/caf%C3%A9-é.xml", "must not percent-encode an unreserved character (OPC [M1.8])"],
+        // A literal non-ASCII character that is not ucschar is in neither grammar.
+        ["/word/x\u{0080}y.xml", "must contain only RFC 3986 pchar characters"],
+        ["/word/x\u{E000}y.xml", "must contain only RFC 3986 pchar characters"],
+        ["/word/x\u{FFFE}y.xml", "must contain only RFC 3986 pchar characters"],
+    ])("still reports %s", async (partName, rule) => {
+        const ctx = ValidationContext.fromEntries(withOverride(partName, "application/xml"));
+        expect(await diagnose(ctx)).toEqual([expected(partName, rule, "error")]);
+    });
+
+    it("keeps the escaped-iunreserved finding Word-blocking, as every other [M1.8] finding is", async () => {
+        const [issue] = await diagnose(ValidationContext.fromEntries(withOverride("/word/caf%C3%A9-é.xml", "application/xml")));
+        expect(issue).toBeDefined();
+        expect(isWordBlockingIssue(issue!, new Set())).toBe(true);
+    });
+});
+
+describe("a literal-ucschar Override PartName through validate() (#455)", { timeout: 120_000 }, () => {
+    const CAFE = "/word/café.xml";
+    const MIXED = "/word/caf%C3%A9-é.xml";
+    const MIXED_RULE = "must not percent-encode an unreserved character (OPC [M1.8])";
+
+    const withPptxOverride = (partName: string): Readonly<Record<string, string>> => ({
+        ...MINIMAL_PPTX_PARTS,
+        "[Content_Types].xml": MINIMAL_PPTX_PARTS["[Content_Types].xml"]!.replace(
+            "</Types>",
+            `<Override PartName="${partName}" ContentType="application/xml"/></Types>`,
+        ),
+    });
+
+    it("no longer reports /word/café.xml for PPTX under any profile, and strict stays valid", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "part-iri.pptx");
+            writeFileSync(file, await buildPptx(withPptxOverride(CAFE)));
+            for (const profile of ["word-valid", "lenient", "strict"] as const) {
+                const result = await validate(file, { profile });
+                const tag = `${profile}`;
+                expect(findings(result.issues), tag).toEqual([]);
+                // Word 16.115 offers recovery for this spelling (probe sessions
+                // 7–12), so the Word-specific rule reports it as a warning (#451).
+                const refused = result.issues.filter((issue) => issue.code === "ct-override-partname-word-refused");
+                expect(refused, tag).toHaveLength(1);
+                expect(refused[0]).toMatchObject({ severity: "warning", path: "[Content_Types].xml" });
+                expect(refused[0]!.message).toContain("literal non-ASCII characters");
+                expect(
+                    result.issues.filter((issue) => issue.severity === "error"),
+                    tag,
+                ).toEqual([]);
+                expect(result.valid, tag).toBe(true);
+            }
+            for (const profile of ["word-valid", "lenient"] as const) {
+                const full = await validate(file, { profile });
+                for (const selection of [{ quick: true }, { checks: ["content-types"] }, { checks: [ID] }]) {
+                    const partial = await validate(file, { profile, ...selection });
+                    const tag = `${profile} ${JSON.stringify(selection)}`;
+                    expect(findings(partial.issues), tag).toEqual([]);
+                    expect(
+                        partial.issues.filter((issue) => issue.code === "ct-override-partname-word-refused"),
+                        tag,
+                    ).toHaveLength(selection.checks?.includes(ID) ? 0 : 1);
+                    // #381: a warning-only full run keeps every partial run valid.
+                    expect(partial.valid, tag).toBe(true);
+                    expect(errorPairs(full.issues), tag).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
+                }
+            }
+        });
+    });
+
+    it.each(["docx", "docm"] as const)(
+        "still refuses /word/café.xml for a %s under word-valid and strict, through the Word rule",
+        async (extension) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, `part-iri.${extension}`);
+                writeFileSync(file, await buildDocx(withOverride(CAFE, "application/xml")));
+                for (const profile of ["word-valid", "lenient", "strict"] as const) {
+                    const result = await validate(file, { profile });
+                    const tag = `${profile}`;
+                    expect(findings(result.issues), tag).toEqual([]);
+                    const refused = result.issues.filter((issue) => issue.code === "ct-override-partname-word-refused");
+                    expect(refused, tag).toHaveLength(1);
+                    expect(refused[0]!.severity, tag).toBe(profile === "lenient" ? "warning" : "error");
+                    expect(refused[0]!.message).toContain("literal non-ASCII characters");
+                    expect(result.valid, tag).toBe(profile === "lenient");
+                    if (profile !== "strict")
+                        for (const selection of [{ quick: true }, { checks: ["content-types"] }, { checks: [ID] }]) {
+                            const partial = await validate(file, { profile, ...selection });
+                            const partialTag = `${profile} ${JSON.stringify(selection)}`;
+                            expect(findings(partial.issues), partialTag).toEqual([]);
+                            expect(errorPairs(result.issues), partialTag).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
+                        }
+                }
+            });
+        },
+    );
+
+    it.each([
+        ["docx", buildDocx, () => withOverride(MIXED, "application/xml")],
+        ["pptx", buildPptx, () => withPptxOverride(MIXED)],
+    ] as const)("%s strict errors on the mixed spelling /word/caf%C3%A9-é.xml", async (extension, build, parts) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, `mixed.${extension}`);
+            writeFileSync(file, await build(parts()));
+            const result = await validate(file, { profile: "strict" });
+            expect(findings(result.issues)).toEqual([expected(MIXED, MIXED_RULE, "error")]);
+            expect(result.valid).toBe(false);
+        });
+    });
+
+    it("keeps full and partial runs agreeing on the mixed spelling for a DOCX (#381)", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "mixed.docx");
+            writeFileSync(file, await buildDocx(withOverride(MIXED, "application/xml")));
+            for (const profile of ["word-valid", "lenient"] as const) {
+                const full = await validate(file, { profile });
+                const severity = profile === "lenient" ? "warning" : "error";
+                expect(findings(full.issues)).toEqual([expected(MIXED, MIXED_RULE, severity)]);
+                for (const selection of [{ quick: true }, { checks: ["content-types"] }, { checks: [ID] }]) {
+                    const partial = await validate(file, { profile, ...selection });
+                    const tag = `${profile} ${JSON.stringify(selection)}`;
+                    expect(findings(partial.issues), tag).toEqual([expected(MIXED, MIXED_RULE, severity)]);
+                    expect(errorPairs(full.issues), tag).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
+                }
             }
         });
     });

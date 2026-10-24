@@ -97,6 +97,24 @@ describe("validation contract: Word-refused names also fail strict", { timeout: 
             }
         });
     }
+
+    // #455: once the grammar follows ECMA-376 Part 2 §9.1.1.1 and accepts a
+    // literal-ucschar PartName, only the Word-specific rule keeps refusing it,
+    // so the superset contract runs through that rule alone.
+    it("a literal Part IRI PartName Word refuses fails both profiles through ct-override-partname-word-refused", async () => {
+        const parts = {
+            ...MINIMAL_PARTS,
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                '<Override PartName="/word/café.xml" ContentType="application/xml"/></Types>',
+            ),
+        };
+        for (const profile of ["word-valid", "strict"] as const) {
+            const result = await validateBytes(await buildDocx(parts), profile);
+            expect(errorCodes(result.issues)).toEqual(new Set(["ct-override-partname-word-refused"]));
+            expect(result.valid).toBe(false);
+        }
+    });
 });
 
 /**
