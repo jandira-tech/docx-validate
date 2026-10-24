@@ -278,7 +278,12 @@ the rebase offset plus the lowest local-header offset as JSZip resolves it,
 so a prepended ZIP, junk with relative offsets, junk with the absolute
 offsets a self-extractor writes, and the ZIP64 spelling (a saturated offset
 whose 0x0001 extra field carries the value) all measure the same prefix — as
-one blocking error under strict and Word-valid. Word 16.115 offers to recover
+one blocking error under strict and Word-valid. The measure is undefined
+exactly where JSZip's reader throws — the local header's extent, its name and
+extra fields, the central-declared compressed stream, and a known compression
+method (store or deflate) are modelled too — so a package whose local part
+JSZip cannot read reports no prefix
+([#524](https://github.com/jandira-tech/docx-validate/issues/524)). Word 16.115 offers to recover
 every prefixed package probed
 ([#464](https://github.com/jandira-tech/docx-validate/issues/464);
 probe session 14 in
@@ -311,8 +316,12 @@ general-purpose bit 11 and UTF-8 for flagged names (#480). Re-keying uses the
 central spelling, as Word 16.115 does, and ignores the local file header's name
 and the Info-ZIP unicode-path extra field (0x7075) (#445). Re-keying covers
 ZIP64 packages: the ZIP64 end-of-central-directory record's directory size and
-offset and its locator's record offset are rebased with the directory, while
-the 32-bit record keeps its saturated fields (#479). If re-keying is
+offset are rebased with the directory, while the 32-bit record keeps its
+saturated fields and the locator's record offset keeps naming the record's
+absolute position — JSZip reads that field before its rebase, so a prefixed
+self-extractor package whose locator names the record absolutely, even one
+whose EOCD comment carries a fake ZIP64-record signature, still loads after
+re-keying (#479, #521). If re-keying is
 unavailable (for example, an entry whose local-header offset or compressed
 size lives in a ZIP64 extra field), JSZip still prefers a valid central Unicode
 Path field. An entry's kind follows the central name as well: JSZip decides

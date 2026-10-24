@@ -121,9 +121,12 @@ type Zip64Tail = {
  * named by the locator's offset field (`isSignature`, whose `zero` is still 0
  * there) or, failing that, the last record signature — adjacent, the record
  * before the locator, the locator before the EOCD, and the record declaring
- * its fixed 44 bytes. Anything else — extensible data, a record away from its
- * locator, a later signature in a comment — is left to JSZip as given, since
- * the rebuild moves only a tail it can re-point at itself (#479).
+ * its fixed 44 bytes. Anything else — extensible data, or a record away from
+ * its locator — is left to JSZip as given, since the rebuild moves only a
+ * tail it can re-point at itself (#479). The tail never looks past the named
+ * record: a later record signature rides in the EOCD comment, which moves
+ * verbatim and cannot hijack the load — the rewrite names the moved record
+ * absolutely, so JSZip's signature check never falls back (#521).
  */
 const zip64Tail = (bytes: Uint8Array, view: CentralDirectoryView): Zip64Tail | undefined => {
     const locator = view.eocdOffset - ZIP64_LOCATOR_LENGTH;
@@ -196,11 +199,14 @@ const withoutUnicodePathField = (extra: Uint8Array): Uint8Array => {
  *
  * A ZIP64 package is rebuilt too (#479): its record and locator — the last of
  * each signature, the record adjacent to the locator, the locator to the EOCD
- * — move with the directory, and the record's directory size and offset and
- * the locator's record offset are rebased like the 32-bit EOCD's fields,
- * counting any bytes a declared size spans past its records (#478). The
- * 32-bit EOCD keeps its saturated directory fields as stored: JSZip reads
- * them only to decide to follow the ZIP64 structures.
+ * — move with the directory, the record's directory size and offset rebased
+ * like the 32-bit EOCD's fields, counting any bytes a declared size spans
+ * past its records (#478), and the locator's record offset kept absolute:
+ * JSZip reads that field before its rebase, so a relative value would send
+ * its signature check to the last-signature fallback, which a moved EOCD
+ * comment can win (#521). The 32-bit EOCD keeps its saturated directory
+ * fields as stored: JSZip reads them only to decide to follow the ZIP64
+ * structures.
  *
  * Archives the rewrite cannot honor are returned as given, so their findings
  * stay JSZip's: a central directory `readCentralDirectoryView` cannot parse,
@@ -329,8 +335,13 @@ export const centralKeyedArchive = (bytes: Uint8Array): Uint8Array => {
         record.writeBigUInt64LE(BigInt(zip64RecordOffset - cdOffset), ZIP64_EOCD_CD_SIZE_OFFSET);
         record.writeBigUInt64LE(BigInt(cdOffset - view.zero), ZIP64_EOCD_CD_OFFSET_OFFSET);
         push(record);
+        // The locator's record offset names the record's absolute position in
+        // the buffer, not a rebased one: JSZip tests it before `reader.zero`
+        // is assigned, so a relative value would miss and send the load to
+        // the last-signature fallback, which a re-keyed EOCD comment can win
+        // (#521).
         const locator = Buffer.from(bytes.subarray(zip64.locator, view.eocdOffset));
-        locator.writeBigUInt64LE(BigInt(zip64RecordOffset - view.zero), ZIP64_LOCATOR_RECORD_OFFSET_OFFSET);
+        locator.writeBigUInt64LE(BigInt(zip64RecordOffset), ZIP64_LOCATOR_RECORD_OFFSET_OFFSET);
         push(locator);
         // The 32-bit EOCD keeps its saturated directory fields as stored:
         // JSZip reads them only to decide to follow the ZIP64 structures,

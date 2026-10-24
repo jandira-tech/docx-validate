@@ -29,6 +29,7 @@ import { centralKeyedArchive, loadCentralNamedArchive } from "../src/lib/zip-cen
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { buildRawZip, type RawZipEntry } from "./support/raw-zip";
+import { selfExtractorZip64Archive } from "./support/zip64-specimens";
 
 const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 
@@ -519,18 +520,49 @@ describe("the central-keyed view handles ZIP64 (#479)", { timeout: 120_000 }, ()
         expect(Object.keys(zip.files)).toContain("word/extra.xml");
         expect(Object.keys(zip.files)).not.toContain("evil.xml");
         expect(await zip.file("word/document.xml")!.async("string")).toBe(MINIMAL_PARTS["word/document.xml"]);
-        // The ZIP64 record's directory size and offset and the locator's
-        // record offset are rebased like the 32-bit EOCD's fields: the record
+        // The ZIP64 record's directory size and offset are rebased like the
+        // 32-bit EOCD's fields, while the locator's record offset keeps naming
+        // the record's absolute buffer position — JSZip reads that field
+        // before its rebase (#521) — so the re-keyed bytes load, the record
         // and locator still end exactly 76 bytes before the EOCD, and every
         // stored offset stays relative to the archive behind the prefix.
         const buf = Buffer.from(normalized);
         const eocd = buf.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
         const locator = eocd - 20;
-        const record = Number(buf.readBigUInt64LE(locator + 8)) + PREFIX.length;
+        const record = Number(buf.readBigUInt64LE(locator + 8));
         expect(buf.subarray(record, record + 4).equals(Buffer.from([0x50, 0x4b, 0x06, 0x06]))).toBe(true);
+        await expect(JSZip.loadAsync(normalized)).resolves.toBeDefined();
         const cdSize = Number(buf.readBigUInt64LE(record + 40));
         const cdOffset = Number(buf.readBigUInt64LE(record + 48));
         expect(eocd - (cdOffset + cdSize + 76)).toBe(PREFIX.length);
+    });
+
+    it("loads a prefixed self-extractor ZIP64 package whose EOCD comment fakes a record signature (#521)", async () => {
+        const entries = minimalEntries().map((entry) =>
+            entry.name === "word/document.xml" ? { ...entry, localName: "word/document.xnl" } : entry,
+        );
+        const bytes = selfExtractorZip64Archive(entries, PREFIX.length);
+        // JSZip loads the original: the locator names the record absolutely,
+        // so its signature check hits before any fallback can reach the fake
+        // record signature the EOCD comment carries.
+        expect(Object.keys((await JSZip.loadAsync(bytes)).files)).toContain("word/document.xnl");
+        // The re-keyed bytes must load too: the rewritten locator has to name
+        // the moved record the way JSZip consumes it, before its rebase.
+        const normalized = centralKeyedArchive(bytes);
+        expect(normalized).not.toBe(bytes);
+        await expect(JSZip.loadAsync(normalized)).resolves.toBeDefined();
+        const zip = await loadCentralNamedArchive(bytes);
+        expect(Object.keys(zip.files)).toContain("word/document.xml");
+        expect(Object.keys(zip.files)).not.toContain("word/document.xnl");
+        await withTempDir(async (dir) => {
+            const file = specimen(dir, "self-extractor-zip64.docx", bytes);
+            for (const profile of ["word-valid", "strict"] as const) {
+                const result = await validate(file, { profile });
+                expect(codes(result), profile).not.toContain("package-open-failed");
+                expect(codes(result), profile).toContain("zip-bytes-before-archive");
+            }
+            expect(readFileSync(file)).toEqual(bytes);
+        });
     });
 
     it("keeps the slack a declared directory size spans past its records (#478)", async () => {

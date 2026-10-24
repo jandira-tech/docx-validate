@@ -443,6 +443,56 @@ describe("the ZIP64 extra field's local-header offset (#490)", () => {
     });
 });
 
+// JSZip's `readLocalPart` (zipEntry.js) keeps reading past the local
+// signature: the fixed 30-byte header, the local name and extra field, the
+// central-declared compressed stream, and a compression method it knows. A
+// measure for an archive whose local part throws there claims a prefix for a
+// package that never opens (#524).
+describe("the local part JSZip reads past the signature (#524)", () => {
+    const single = () => buildRawZip([{ name: "a.xml", content: "<a/>" }]);
+    const cdOf = (bytes: Buffer): number => bytes.readUInt32LE(bytes.length - 22 + 16);
+
+    it.each([
+        [
+            "a compressed size past the buffer",
+            (() => {
+                const bytes = single();
+                bytes.writeUInt32LE(0x7fff0000, cdOf(bytes) + 20);
+                return bytes;
+            })(),
+        ],
+        [
+            "a local signature at the very end of the buffer",
+            (() => {
+                // The record's local header points at a `50 4B 03 04`
+                // appended as the EOCD's four-byte comment: the signature
+                // reads, the 30-byte header after it does not.
+                const bytes = single();
+                bytes.writeUInt32LE(bytes.length, cdOf(bytes) + 42);
+                bytes.writeUInt16LE(4, bytes.length - 2);
+                return Buffer.concat([bytes, Buffer.from([0x50, 0x4b, 0x03, 0x04])]);
+            })(),
+        ],
+        [
+            "an unknown compression method",
+            (() => {
+                const bytes = single();
+                bytes.writeUInt16LE(99, cdOf(bytes) + 10);
+                return bytes;
+            })(),
+        ],
+    ])("returns undefined where JSZip throws: %s", async (_label, bytes) => {
+        await expect(JSZip.loadAsync(bytes)).rejects.toThrow();
+        expect(zipBytesBeforeArchive(bytes)).toBeUndefined();
+    });
+
+    it("still measures the archive whose local parts fit", async () => {
+        const bytes = single();
+        expect(Object.keys((await JSZip.loadAsync(bytes)).files)).toEqual(["a.xml"]);
+        expect(zipBytesBeforeArchive(bytes)).toBe(0);
+    });
+});
+
 // 46-byte fixed header: JSZip's `readCentralPart` reads every field through a
 // bounds-checked read, so it throws; the walk must refuse the same bytes
 // instead of reading `undefined` fields into a phantom record (#498).
@@ -572,5 +622,24 @@ describe("the central-directory walk JSZip runs (#478)", () => {
         bytes.writeUInt16LE(1, bytes.readUInt32LE(bytes.length - 6) + 8);
         await expect(JSZip.loadAsync(bytes)).rejects.toThrow();
         expect(names(bytes)).toBeUndefined();
+    });
+
+    it("reads nothing where JSZip throws: an extra field inside a fitting region declaring more data than the buffer holds (#525)", async () => {
+        const base = buildRawZip([{ name: "a.xml", content: "<a/>" }]);
+        const eocd = base.length - 22;
+        const cd = base.readUInt32LE(eocd + 16);
+        // An 8-byte extra region — the declared size grows with it — whose
+        // first field (0x0001) declares 0xFFF0 bytes: the region fits the
+        // buffer, the field's `readData` does not.
+        const region = Buffer.from([0x01, 0x00, 0xf0, 0xff, 0x00, 0x00, 0x00, 0x00]);
+        const bytes = Buffer.concat([base.subarray(0, eocd), region, base.subarray(eocd)]);
+        bytes.writeUInt16LE(region.length, cd + 30);
+        const shifted = eocd + region.length;
+        bytes.writeUInt32LE(bytes.readUInt32LE(shifted + 12) + region.length, shifted + 12);
+        await expect(JSZip.loadAsync(bytes)).rejects.toThrow();
+        expect(names(bytes)).toBeUndefined();
+        // The measure's own extra-field scan already bounds the declared
+        // length; only the names view used to disagree.
+        expect(zipBytesBeforeArchive(bytes)).toBeUndefined();
     });
 });
