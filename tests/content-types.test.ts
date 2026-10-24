@@ -13,7 +13,14 @@
 
 import { describe, expect, it } from "vitest";
 
-import { CONTENT_TYPES_NAMESPACE, normalizePartName, parseContentTypes, partExtension, resolveContentType } from "../src/lib/content-types";
+import {
+    canonicalPartName,
+    CONTENT_TYPES_NAMESPACE,
+    normalizePartName,
+    parseContentTypes,
+    partExtension,
+    resolveContentType,
+} from "../src/lib/content-types";
 import { parseXml } from "../src/lib/xml-helpers";
 
 const typesXml = (inner: string): Document => parseXml(`<?xml version="1.0"?><Types xmlns="${CONTENT_TYPES_NAMESPACE}">${inner}</Types>`);
@@ -74,6 +81,38 @@ describe("partExtension", () => {
     });
 });
 
+describe("canonicalPartName", () => {
+    it("decodes escapes of unreserved characters only", () => {
+        expect(canonicalPartName("/word/media/a%7Ebin")).toBe("word/media/a~bin");
+        expect(canonicalPartName("word/media/a~bin")).toBe("word/media/a~bin");
+        expect(canonicalPartName("word/media/a%7ebin")).toBe("word/media/a~bin");
+    });
+
+    it("keeps escapes of reserved characters distinct from their literals", () => {
+        expect(canonicalPartName("/word/media/a%40b.bin")).toBe("word/media/a%40b.bin");
+        expect(canonicalPartName("word/media/a@b.bin")).toBe("word/media/a@b.bin");
+        expect(canonicalPartName("/word/a%2Fb.xml")).toBe("word/a%2fb.xml");
+        expect(canonicalPartName("word/a/b.xml")).toBe("word/a/b.xml");
+    });
+
+    it("encodes characters outside pchar as uppercase-hex UTF-8 escapes", () => {
+        expect(canonicalPartName("word/media/my img.jpeg")).toBe("word/media/my%20img.jpeg");
+        expect(canonicalPartName("/word/media/my%20img.jpeg")).toBe("word/media/my%20img.jpeg");
+        expect(canonicalPartName("word/média.png")).toBe("word/m%c3%a9dia.png");
+        expect(canonicalPartName("word/media/a?b#c.xml")).toBe("word/media/a%3fb%23c.xml");
+    });
+
+    it("encodes a percent not followed by two hex digits", () => {
+        expect(canonicalPartName("/word/a%zzb.xml")).toBe("word/a%25zzb.xml");
+        expect(canonicalPartName("/word/a%.xml")).toBe("word/a%25.xml");
+    });
+
+    it("uppercases escape hex and then compares ASCII case-insensitively", () => {
+        expect(canonicalPartName("/Word/Media/IMAGE1.JPEG")).toBe("word/media/image1.jpeg");
+        expect(canonicalPartName("a%2fb")).toBe(canonicalPartName("a%2Fb"));
+    });
+});
+
 describe("parseContentTypes", () => {
     it("indexes Overrides by normalized part name", () => {
         const table = parseContentTypes(typesXml(overrideEntry("/Word/Media/IMAGE1.JPEG", "image/jpeg")));
@@ -131,6 +170,17 @@ describe("parseContentTypes", () => {
 });
 
 describe("resolveContentType", () => {
+    it("keeps escapes of reserved characters distinct from their literal form", () => {
+        // Issue #297: OPC compares part names as case-insensitive ASCII
+        // strings, and RFC 3986 does not make an escaped reserved character
+        // equivalent to its literal — an Override for /word/media/a%40b.bin
+        // must not swallow the distinct part word/media/a@b.bin.
+        const table = parseContentTypes(
+            typesXml(overrideEntry("/word/media/a%40b.bin", "application/custom") + defaultEntry("bin", "application/octet-stream")),
+        );
+        expect(resolveContentType(table, "word/media/a@b.bin")).toEqual({ contentType: "application/octet-stream", source: "default" });
+        expect(resolveContentType(table, "/word/media/a%40b.bin")).toEqual({ contentType: "application/custom", source: "override" });
+    });
     it("gives an exact Override precedence over a Default for the same part", () => {
         const table = parseContentTypes(
             typesXml(overrideEntry("/word/media/x.png", "image/custom-override") + defaultEntry("png", "image/png")),

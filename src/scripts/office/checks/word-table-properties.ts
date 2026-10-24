@@ -163,6 +163,7 @@ export const wordTablePropertiesMisplacedCheck: CheckDefinition = {
         "Table borders and table cell spacing sit in their schema containers and their CT_TblPrBase order; borders under tcPr stay tolerated as Word-opened evidence shows.",
     groups: ["tables"],
     formats: ["docx"],
+    requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => {
         const storyParts = new Set(ctx.storyParts());
         return wmlPartDocuments(ctx).flatMap((partDocument) => tablePropertyIssues(partDocument, storyParts));

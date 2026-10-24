@@ -43,13 +43,20 @@ import { existsSync, promises as fs, readdirSync, readFileSync, realpathSync, st
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { parseContentTypes, partExtension, resolveContentType } from "../../../lib/content-types";
+import { normalizePartName, parseContentTypes, partExtension, resolveContentType } from "../../../lib/content-types";
 import { applyMarkupCompatibility, STRICT_UNDERSTOOD_NAMESPACES, UNDERSTOOD_NAMESPACES } from "../../../lib/markup-compatibility";
 import { withTempDir } from "../../../lib/run-cli";
 import type { Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
 import { DEFAULT_PROFILE, NS, OK_RESULT } from "../../../lib/types";
 import { allowSchemaResourceRoot, createXsdValidator, type XsdValidator } from "../../../lib/xsd-validator";
-import { getElementsByTagNameNSAll, getElementsByTagNameAll, parseXml, serializeXml } from "../../../lib/xml-helpers";
+import {
+    decodeXmlBytes,
+    getElementsByTagNameNSAll,
+    getElementsByTagNameAll,
+    parseXml,
+    parseXmlBytes,
+    serializeXml,
+} from "../../../lib/xml-helpers";
 import { checkXmlSyntax } from "../../../lib/xml-syntax";
 import { resolveSafeZipEntry } from "../../../lib/zip-path";
 
@@ -307,6 +314,14 @@ export interface XsdValidationOutcome {
      * transformed view, not the source part.
      */
     transformedView?: boolean;
+    /**
+     * True when the failure is an infrastructure finding — the schema failed
+     * to load (`xsd-schema-load-failed`) or the engine itself failed — rather
+     * than a document defect. Baseline subtraction against `--original` must
+     * never erase these: they surface as error-severity issues and keep the
+     * part invalid under every profile (#289).
+     */
+    infrastructure?: boolean;
 }
 
 export class BaseSchemaValidator {
@@ -438,7 +453,7 @@ export class BaseSchemaValidator {
             if (!xmlFile.endsWith(".rels")) continue;
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 // Malformed rels files surface elsewhere via xml-syntax /
                 // rels-broken codes; don't double-report here.
@@ -502,7 +517,7 @@ export class BaseSchemaValidator {
             }
             let isEmpty = false;
             try {
-                const dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                const dom = parseXmlBytes(await fs.readFile(xmlFile));
                 const root = dom.documentElement;
                 if (root) {
                     const rels = getElementsByTagNameNSAll(
@@ -546,7 +561,7 @@ export class BaseSchemaValidator {
 
         for (const xmlFile of this.xmlFiles) {
             try {
-                const content = await fs.readFile(xmlFile, "utf-8");
+                const content = decodeXmlBytes(await fs.readFile(xmlFile));
                 const dom = parseXml(content);
                 let modified = false;
 
@@ -622,7 +637,7 @@ export class BaseSchemaValidator {
         for (const xmlFile of this.xmlFiles) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 continue;
             }
@@ -661,7 +676,7 @@ export class BaseSchemaValidator {
         for (const xmlFile of this.xmlFiles) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -748,7 +763,7 @@ export class BaseSchemaValidator {
         for (const relsFile of relsFiles) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(relsFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(relsFile));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -829,7 +844,7 @@ export class BaseSchemaValidator {
         for (const relsFile of relsFiles) {
             let dom: Document;
             try {
-                dom = parseXml(await fs.readFile(relsFile, "utf-8"));
+                dom = parseXmlBytes(await fs.readFile(relsFile));
             } catch {
                 continue;
             }
@@ -897,7 +912,7 @@ export class BaseSchemaValidator {
             if (!existsSync(relsFile)) {
                 let xmlDomCheck: Document;
                 try {
-                    xmlDomCheck = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                    xmlDomCheck = parseXmlBytes(await fs.readFile(xmlFile));
                 } catch {
                     continue;
                 }
@@ -926,7 +941,7 @@ export class BaseSchemaValidator {
 
             let relsDom: Document;
             try {
-                relsDom = parseXml(await fs.readFile(relsFile, "utf-8"));
+                relsDom = parseXmlBytes(await fs.readFile(relsFile));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -959,7 +974,7 @@ export class BaseSchemaValidator {
 
             let xmlDom: Document;
             try {
-                xmlDom = parseXml(await fs.readFile(xmlFile, "utf-8"));
+                xmlDom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -1052,7 +1067,7 @@ export class BaseSchemaValidator {
 
         let dom: Document;
         try {
-            dom = parseXml(await fs.readFile(contentTypesFile, "utf-8"));
+            dom = parseXmlBytes(await fs.readFile(contentTypesFile));
         } catch (err) {
             return {
                 valid: false,
@@ -1104,7 +1119,7 @@ export class BaseSchemaValidator {
             }
 
             try {
-                const root = parseXml(await fs.readFile(xmlFile, "utf-8")).documentElement;
+                const root = parseXmlBytes(await fs.readFile(xmlFile)).documentElement;
                 if (!root) continue;
                 const rootName = localName(root.tagName ?? root.nodeName);
                 // A declarable root must be covered by an <Override PartName>
@@ -1288,7 +1303,7 @@ export class BaseSchemaValidator {
 
     private detectStrictRoot(xmlFile: string): boolean {
         try {
-            const content = readFileSync(xmlFile, "utf-8");
+            const content = decodeXmlBytes(readFileSync(xmlFile));
             const dom = parseXml(content);
             const root = dom.documentElement;
             if (!root) return false;
@@ -1305,6 +1320,14 @@ export class BaseSchemaValidator {
             return { valid: null, errors: new Set() };
         }
         if (single.valid) {
+            return single;
+        }
+
+        // Infrastructure failures (schema load / engine failure) are never
+        // part of the --original baseline subtraction: they surface as
+        // error-severity issues and keep the part invalid under every
+        // profile (#289).
+        if (single.infrastructure) {
             return single;
         }
 
@@ -1373,16 +1396,49 @@ export class BaseSchemaValidator {
         }
     }
 
+    /** Identify the required main part by the package relationship, never its basename. */
+    private isMainDocumentPart(xmlFile: string): boolean {
+        try {
+            const relationships = parseXml(readFileSync(path.join(this.unpackedDir, "_rels", ".rels"), "utf-8"));
+            const part = normalizePartName(this.relPath(xmlFile).split(path.sep).join("/"));
+            return getElementsByTagNameNSAll(relationships, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship").some((relationship) => {
+                const type = relationship.getAttribute("Type");
+                if (
+                    relationship.getAttribute("TargetMode") === "External" ||
+                    (type !== `${OFFICE_RELATIONSHIPS_NAMESPACE}/officeDocument` &&
+                        type !== "http://purl.oclc.org/ooxml/officeDocument/relationships/officeDocument")
+                ) {
+                    return false;
+                }
+                return path.posix.normalize(normalizePartName(relationship.getAttribute("Target") || "")) === part;
+            });
+        } catch {
+            // Missing or malformed package relationships are diagnosed by their own checks.
+            return false;
+        }
+    }
+
     protected async _validateSingleFileXsd(xmlFile: string): Promise<XsdValidationOutcome> {
         const schemaPath = this._getSchemaPath(xmlFile);
         if (!schemaPath) return { valid: null, errors: new Set() };
 
         const compatibilityIssues: ValidationIssue[] = [];
         try {
-            const xmlContent = readFileSync(xmlFile, "utf-8");
+            const xmlContent = decodeXmlBytes(readFileSync(xmlFile));
             const cleanedString = this._preprocessXmlForXsd(xmlContent, xmlFile, compatibilityIssues);
             if (compatibilityIssues.some((issue) => issue.code === "mce-root-ignored")) {
-                return { valid: true, errors: new Set(), issues: compatibilityIssues };
+                const main = this.isMainDocumentPart(xmlFile);
+                const issues = compatibilityIssues.map((issue): ValidationIssue =>
+                    main && issue.code === "mce-root-ignored"
+                        ? {
+                              ...issue,
+                              severity: "error",
+                              code: "mce-main-root-ignored",
+                              message: `Required main document part ${this.relPath(xmlFile)} has no root after markup compatibility processing.`,
+                          }
+                        : issue,
+                );
+                return { valid: true, errors: new Set(), issues };
             }
             const transformedView = cleanedString !== xmlContent;
 
@@ -1404,11 +1460,15 @@ export class BaseSchemaValidator {
             for (const issue of errorIssues) {
                 errors.add(issue.message.trim());
             }
+            const infrastructure = errorIssues.some(
+                (issue) => issue.code === "xsd-schema-load-failed" || issue.message.startsWith("XSD engine failed"),
+            );
             return {
                 valid: false,
                 errors,
                 schemaIssues: errorIssues,
                 transformedView,
+                ...(infrastructure ? { infrastructure } : {}),
                 ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}),
             };
         } catch (err) {
@@ -1416,6 +1476,11 @@ export class BaseSchemaValidator {
             return {
                 valid: false,
                 errors: new Set([message]),
+                // A throw means the engine never measured the part — unreadable
+                // bytes, preprocessing failure, or an engine-level error. Every
+                // one of those stays blocking: baseline subtraction must not
+                // erase it (#289).
+                infrastructure: true,
                 schemaIssues: [{ severity: "error", message }],
                 ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}),
             };
@@ -1653,6 +1718,38 @@ export function collectDeclaredPrefixes(root: Element): Set<string> {
         }
     }
     return declared;
+}
+
+const IGNORABLE_UNDECLARED_MESSAGE = /^Namespace '(.+)' in Ignorable but not declared$/;
+const UNBOUND_IGNORABLE_MESSAGE = /^Unbound prefix in mc:Ignorable: (.+)$/;
+
+/**
+ * `validateNamespaces` reports an undeclared prefix in a part root's
+ * `Ignorable` as `ignorable-undeclared`, and the markup-compatibility
+ * processor reports the same prefix as `mce-unbound-prefix`. Keep the
+ * established code, once: one processor finding is dropped per
+ * `ignorable-undeclared` on the same part and prefix (#309). A prefix only the
+ * processor sees unbound (an `Ignorable` below the root, or a root prefix
+ * bound only on a descendant) keeps its finding.
+ */
+export function withoutRestatedIgnorablePrefixes(result: ValidationResult): ValidationResult {
+    // validateNamespaces reports path.relative paths (backslashes on Windows);
+    // the Word rule reports the normalized part name.
+    const key = (issue: ValidationIssue, prefix: string): string => `${(issue.path ?? "").replace(/\\/g, "/")}\u0000${prefix}`;
+    const undeclared = new Map<string, number>();
+    for (const issue of result.issues) {
+        const prefix = issue.code === "ignorable-undeclared" ? IGNORABLE_UNDECLARED_MESSAGE.exec(issue.message)?.[1] : undefined;
+        if (prefix !== undefined) undeclared.set(key(issue, prefix), (undeclared.get(key(issue, prefix)) ?? 0) + 1);
+    }
+    if (undeclared.size === 0) return result;
+    const issues = result.issues.filter((issue) => {
+        const prefix = issue.code === "mce-unbound-prefix" ? UNBOUND_IGNORABLE_MESSAGE.exec(issue.message)?.[1] : undefined;
+        const remaining = prefix === undefined ? 0 : (undeclared.get(key(issue, prefix)) ?? 0);
+        if (remaining === 0) return true;
+        undeclared.set(key(issue, prefix!), remaining - 1);
+        return false;
+    });
+    return finalize(issues);
 }
 
 function removeMcAlternateContent(dom: Document): void {

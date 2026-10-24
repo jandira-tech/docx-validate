@@ -47,6 +47,65 @@ const chartParts = (extension: string): Record<string, string> => ({
 });
 
 describe("markup compatibility XSD integration", { timeout: 240_000 }, () => {
+    it("rejects loss of the required main root (#287)", async () => {
+        const result = await check({
+            ...MINIMAL_PARTS,
+            "word/document.xml": `<e:garbage xmlns:e="urn:future" xmlns:mc="${NS.MC}" mc:Ignorable="e"/>`,
+        });
+        expect(result.valid).toBe(false);
+        expect(result.issues).toContainEqual(
+            expect.objectContaining({ code: "mce-main-root-ignored", severity: "error", path: "word/document.xml" }),
+        );
+        expect(result.issues.filter((issue) => issue.code === "xsd-error")).toEqual([]);
+    });
+    it("identifies a renamed main part from the package relationship and keeps other ignored roots informational (#287)", async () => {
+        for (const type of [
+            "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
+            "http://purl.oclc.org/ooxml/officeDocument/relationships/officeDocument",
+        ]) {
+            const ignored = `<e:garbage xmlns:e="urn:future" xmlns:mc="${NS.MC}" mc:Ignorable="e"/>`;
+            const result = await check({
+                ...MINIMAL_PARTS,
+                "_rels/.rels": `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="main" Type="${type}" Target="/word/./main.xml"/></Relationships>`,
+                "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"].replace("/word/document.xml", "/word/main.xml"),
+                "word/document.xml": ignored,
+                "word/main.xml": ignored,
+            });
+            expect(result.issues.filter((issue) => issue.code === "mce-main-root-ignored")).toEqual([
+                expect.objectContaining({ severity: "error", path: "word/main.xml" }),
+            ]);
+            expect(result.issues.filter((issue) => issue.path === "word/document.xml" && issue.code?.startsWith("mce-"))).toEqual([
+                expect.objectContaining({ code: "mce-root-ignored", severity: "info" }),
+            ]);
+        }
+    });
+    it("keeps invalid directive tokens strict errors and non-blocking word-valid warnings (#296)", async () => {
+        for (const [directive, code] of [
+            ['mc:Ignorable="missing"', "mce-unbound-prefix"],
+            ['mc:ProcessContent="missing:child"', "mce-unbound-prefix"],
+            ['mc:MustUnderstand="missing"', "mce-unbound-prefix"],
+            ['mc:ProcessContent="w:p:extra"', "mce-invalid-token"],
+        ]) {
+            for (const profile of ["strict", "word-valid"] as const) {
+                const result = await check(
+                    {
+                        ...MINIMAL_PARTS,
+                        "word/document.xml": MINIMAL_PARTS["word/document.xml"].replace("<w:body>", `<w:body ${directive}>`),
+                    },
+                    profile,
+                );
+                expect(result.valid, JSON.stringify(result.issues)).toBe(profile === "word-valid");
+                expect(result.issues).toContainEqual(
+                    expect.objectContaining({ code, severity: profile === "strict" ? "error" : "warning", path: "word/document.xml" }),
+                );
+                expect(result.issues.some((issue) => issue.code === "mce-must-understand")).toBe(false);
+                // Strict reads the finding from the schema walk; word-valid,
+                // which walks no schema, from its Word rule.
+                expect(result.xsdWalk.started).toBe(profile === "strict");
+                expect(result.issues.filter((issue) => issue.code === code)).toHaveLength(1);
+            }
+        }
+    });
     it("diagnoses the real missing-Ignorable parts once each without changing package bytes", async () => {
         for (const [specimen, parts] of [
             ["empty.missing-content-type", ["word/document.xml"]],
@@ -252,4 +311,31 @@ describe("markup compatibility: standalone extension parts (#288)", { timeout: 1
                 expect(outcome.issues ?? [], profile).toEqual([]);
             }
         }));
+});
+
+describe("an unbound Ignorable prefix on a part's root is reported once (#309)", { timeout: 120_000 }, () => {
+    const W15 = "http://schemas.microsoft.com/office/word/2012/wordml";
+    const withRootIgnorable = (document: string) => ({ ...MINIMAL_PARTS, "word/document.xml": document });
+    const onPrefix = (issues: readonly { code?: string; path?: string; message: string }[], prefix: string) =>
+        issues
+            .filter((issue) => issue.path === "word/document.xml" && new RegExp(`\\b${prefix}\\b`).test(issue.message))
+            .map((issue) => issue.code);
+
+    for (const profile of ["lenient", "strict", "word-valid"] as const) {
+        it(`as ignorable-undeclared under ${profile}`, async () => {
+            const result = await check(
+                withRootIgnorable(MINIMAL_PARTS["word/document.xml"].replace('mc:Ignorable="w14"', 'mc:Ignorable="w14 w15"')),
+                profile,
+            );
+            expect(onPrefix(result.issues, "w15")).toEqual(["ignorable-undeclared"]);
+        });
+    }
+
+    it("keeps mce-unbound-prefix when the prefix is bound only on a descendant, out of the root's scope", async () => {
+        const document = MINIMAL_PARTS["word/document.xml"]
+            .replace('mc:Ignorable="w14"', 'mc:Ignorable="w14 w15"')
+            .replace("<w:p ", `<w:p xmlns:w15="${W15}" `);
+        const result = await check(withRootIgnorable(document), "strict");
+        expect(onPrefix(result.issues, "w15")).toEqual(["mce-unbound-prefix"]);
+    });
 });

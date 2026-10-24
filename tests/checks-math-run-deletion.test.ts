@@ -15,6 +15,21 @@ const xml = (body: string): string => `<w:document xmlns:w="${W}" xmlns:m="${M}"
 const parts = ["word/document.xml", "word/header1.xml", "word/footer2.xml", "word/footnotes.xml", "word/endnotes.xml", "word/comments.xml"];
 
 describe("word-math-run-deletion", () => {
+    it("reports deletions in Strict-conformance math runs", async () => {
+        // Issue #302: the Strict class spells the WML and math namespaces
+        // under purl.oclc.org; iso-strict/shared-math.xsd gives CT_R the same
+        // revision-free content model, so the defect is identical there.
+        const STRICT_W = "http://purl.oclc.org/ooxml/wordprocessingml/main";
+        const STRICT_M = "http://purl.oclc.org/ooxml/officeDocument/math";
+        const strict =
+            `<w:document xmlns:w="${STRICT_W}" xmlns:m="${STRICT_M}"><w:body><w:p><m:oMath><m:r>` +
+            `<w:ins w:id="1" w:author="A"/><w:del w:id="2" w:author="A"/>` +
+            `</m:r></m:oMath></w:p></w:body></w:document>`;
+        const ctx = ValidationContext.fromEntries({ "word/document.xml": strict });
+        const issues = await mathRunDeletionCheck.run(ctx);
+        expect(issues).toHaveLength(1);
+        expect(issues[0]).toMatchObject({ code: "word-math-run-deletion", path: "word/document.xml", severity: "warning" });
+    });
     it("reports each direct WML deletion in a math run in every story, independently of prefix spelling", async () => {
         const defect = `<m:oMath><m:r><w:del w:id="1" w:author="A"><m:t>x</m:t></w:del><w:del w:id="2" w:author="A"/></m:r></m:oMath>`;
         const ctx = ValidationContext.fromEntries({

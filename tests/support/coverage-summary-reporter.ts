@@ -5,9 +5,10 @@
 
 /**
  * Prints one line per coverage run: `Coverage: 92.1% lines, 87.3% branches`.
- * Vitest hands reporters the istanbul coverage map after the coverage
- * reporters have written; with `reportOnFailure` that happens on failed runs
- * too, so red runs print their coverage as well as green ones.
+ * Vitest hands reporters the istanbul coverage map before the coverage
+ * provider writes its reports, on failed runs as well as green ones
+ * (`reportOnFailure` gates only the provider's reports), so red runs print
+ * their coverage too.
  */
 
 import type { Reporter } from "vitest/node";

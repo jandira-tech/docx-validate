@@ -110,7 +110,9 @@ describe("shading-color check", () => {
             "word/styles.xml":
                 `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
                 `<w:styles xmlns:w="${W}"><w:style w:type="paragraph" w:styleId="P"><w:pPr>${defect}</w:pPr></w:style></w:styles>`,
-            // Not a part where w:shd applies: ignored even with the defect present.
+            // numbering.xml is scanned with the story parts: CT_Lvl's
+            // pPr/rPr admit CT_Shd (issue #303), so the defect is reported
+            // there like anywhere else.
             "word/numbering.xml": documentXml(`<w:p><w:pPr>${defect}</w:pPr></w:p>`),
         };
         const paths = (await findings(parts)).map((issue) => issue.path);
@@ -121,6 +123,7 @@ describe("shading-color check", () => {
             "word/footer1.xml",
             "word/footnotes.xml",
             "word/header1.xml",
+            "word/numbering.xml",
             "word/styles.xml",
         ]);
     });
@@ -135,6 +138,20 @@ describe("shading-color check", () => {
         expect(issues[0]!.code).toBe("word-shading-color");
         expect(issues[0]!.path).toBe("word/document.xml");
         expect(issues[0]!.message).toContain("fill");
+    });
+
+    it("checks shading in numbering properties", async () => {
+        // Issue #303: numbering's CT_Lvl admits pPr/rPr, which admit CT_Shd,
+        // so an empty w:fill there is the same value-space defect wml.xsd
+        // rejects — the part cannot be excluded from the scan.
+        const numbering =
+            `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+            `<w:numbering xmlns:w="${W}"><w:abstractNum w:abstractNumId="0">` +
+            `<w:lvl w:ilvl="0"><w:rPr><w:shd w:val="clear" w:fill=""/></w:rPr></w:lvl>` +
+            `</w:abstractNum></w:numbering>`;
+        const issues = await findings({ "word/numbering.xml": numbering });
+        expect(issues).toHaveLength(1);
+        expect(issues[0]).toMatchObject({ code: "word-shading-color", path: "word/numbering.xml", severity: "warning" });
     });
 
     it("skips a part that fails to parse without throwing, and still checks the others", async () => {

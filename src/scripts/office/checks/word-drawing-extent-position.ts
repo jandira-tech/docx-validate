@@ -21,6 +21,7 @@ export const wordDrawingExtentMisplacedCheck: CheckDefinition = {
     description: "Drawing extents occupy their CT_Inline or CT_Anchor sequence position.",
     groups: ["drawings"],
     formats: ["docx"],
+    requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => {
         const issues: ValidationIssue[] = [];
         for (const part of ctx.storyParts()) {

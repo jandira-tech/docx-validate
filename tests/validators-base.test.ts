@@ -20,7 +20,9 @@ import path from "node:path";
 import JSZip from "jszip";
 import { describe, expect, it, vi } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
-import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
+import { BaseSchemaValidator, withoutRestatedIgnorablePrefixes } from "../src/scripts/office/validators/base";
+
+import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
 class HarnessValidator extends BaseSchemaValidator {
     originalErrors(xmlFile: string): Promise<Set<string>> {
@@ -284,6 +286,28 @@ describe("BaseSchemaValidator", () => {
                 const outcome = await v.validateFileAgainstXsd(path.join(dir, "_rels", ".rels"));
                 expect(outcome.valid).toBe(false);
                 expect(outcome.errors.size).toBeGreaterThan(0);
+            });
+        });
+
+        it("never subtracts schema-load failures (#289)", async () => {
+            // Infrastructure findings (xsd-schema-load-failed, engine
+            // failures) are never part of the --original baseline
+            // subtraction: they always surface as error-severity issues and
+            // make the part invalid, under every profile.
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "word", "document.xml");
+                await writeFile(file, MINIMAL_PARTS["word/document.xml"]!);
+                const original = path.join(dir, "original.docx");
+                await fs.writeFile(original, await buildDocx());
+                const schemasDir = path.join(dir, "empty-schemas");
+                await fs.mkdir(schemasDir);
+                const validator = new BaseSchemaValidator({
+                    unpackedDir: dir,
+                    originalFile: original,
+                    schemasDir,
+                    profile: "word-valid",
+                });
+                expect((await validator.validateFileAgainstXsd(file)).valid).toBe(false);
             });
         });
     });
@@ -962,5 +986,55 @@ describe("BaseSchemaValidator", () => {
                 ).toBe(true);
             });
         });
+    });
+});
+
+describe("withoutRestatedIgnorablePrefixes (#309)", () => {
+    const undeclared = (prefix: string, path = "word/document.xml") => ({
+        severity: "error" as const,
+        code: "ignorable-undeclared",
+        path,
+        message: `Namespace '${prefix}' in Ignorable but not declared`,
+    });
+    const unbound = (directive: string, prefix: string, path = "word/document.xml") => ({
+        severity: "error" as const,
+        code: "mce-unbound-prefix",
+        path,
+        message: `Unbound prefix in mc:${directive}: ${prefix}`,
+    });
+
+    it("drops one processor finding per namespace-check finding on the same part and prefix", () => {
+        const result = withoutRestatedIgnorablePrefixes({
+            valid: false,
+            issues: [undeclared("w15"), unbound("Ignorable", "w15"), unbound("Ignorable", "w15")],
+        });
+        expect(result.issues).toEqual([undeclared("w15"), unbound("Ignorable", "w15")]);
+        expect(result.valid).toBe(false);
+    });
+
+    it("keeps findings on another part, another prefix, or another directive", () => {
+        const issues = [
+            undeclared("w15"),
+            unbound("Ignorable", "w15", "word/styles.xml"),
+            unbound("Ignorable", "wp14"),
+            unbound("ProcessContent", "w15"),
+            unbound("MustUnderstand", "w15"),
+        ];
+        expect(withoutRestatedIgnorablePrefixes({ valid: false, issues }).issues).toEqual(issues);
+    });
+
+    it("matches a namespace-check path written with Windows separators (#310 review)", () => {
+        // validateNamespaces reports path.relative paths (backslashes on
+        // Windows); the Word rule reports the normalized part name.
+        const result = withoutRestatedIgnorablePrefixes({
+            valid: false,
+            issues: [undeclared("w15", "word\\document.xml"), unbound("Ignorable", "w15")],
+        });
+        expect(result.issues).toEqual([undeclared("w15", "word\\document.xml")]);
+    });
+
+    it("returns the result unchanged when the namespace check found nothing", () => {
+        const result = { valid: false, issues: [unbound("Ignorable", "w15")] };
+        expect(withoutRestatedIgnorablePrefixes(result)).toBe(result);
     });
 });

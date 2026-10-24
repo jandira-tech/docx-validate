@@ -43,6 +43,7 @@ export const pageMarginAttributesCheck: CheckDefinition = {
     description: "Every w:pgMar in a w:sectPr carries the seven attributes CT_PageMar requires.",
     groups: ["story"],
     formats: ["docx"],
+    requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => {
         const issues: ValidationIssue[] = [];
         for (const part of ctx.storyParts()) {

@@ -6,7 +6,7 @@
 import path from "node:path";
 import { writeFileSync, mkdirSync } from "node:fs";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { runChecks } from "../src/lib/check-scheduler";
 import { withTempDir } from "../src/lib/run-cli";
@@ -44,12 +44,14 @@ describe("default check registry", () => {
         expect(run.valid).toBe(false);
     });
 
-    it("skips the table check instead of crashing when the story XML is malformed", async () => {
+    it("judges no malformed story XML instead of crashing on it", async () => {
         const ctx = ValidationContext.fromEntries({ ...MINIMAL_PARTS, "word/document.xml": `<w:document xmlns:w="${W}"><w:body>` });
         const run = await runChecks(ctx, createDefaultCheckRegistry(), { format: "docx", select: ["word-row-without-cell"] });
+        // xml-syntax gates by part (#307): the table check runs, and the
+        // malformed part is hidden from it.
         expect(run.outcomes.map((o) => [o.id, o.status])).toEqual([
             ["xml-syntax", "failed"],
-            ["word-row-without-cell", "skipped"],
+            ["word-row-without-cell", "passed"],
         ]);
         expect(run.issues.map((i) => [i.code, i.path])).toEqual([["xml-syntax", "word/document.xml"]]);
     });
@@ -101,6 +103,45 @@ describe("default check registry", () => {
         expect(openError).toBeUndefined();
         expect(context.source).toBe("archive");
         expect(context.partNames).toContain("word/document.xml");
+    });
+
+    it("gates a DOM-reading rule behind the syntax check when selected alone", async () => {
+        // Issue #298: the lenient DOM parser recovers from the unquoted
+        // attribute value, so the shading rule itself reports nothing — only
+        // the syntax prerequisite can surface the defect when the rule is
+        // selected on its own.
+        const ctx = ValidationContext.fromEntries({
+            ...MINIMAL_PARTS,
+            "word/document.xml": `<?xml version="1.0"?><w:document xmlns:w="${W}"><w:body><w:p unquoted=yes/></w:body></w:document>`,
+        });
+        const run = await runChecks(ctx, createDefaultCheckRegistry(), { format: "docx", select: ["word-shading-color"] });
+        expect(run.executed).toContain("xml-syntax");
+        expect(run.valid).toBe(false);
+    });
+
+    it("declares the xml-syntax prerequisite for every Word rule that reads a part's DOM", async () => {
+        // Issue #298: a rule that reads a parsed part must be gated behind the
+        // syntax check, or a part the lenient DOM parser recovers from silently
+        // loses its findings. DOM reading is detected by spying on the shared
+        // context, so a newly added rule cannot regress unnoticed.
+        const domReaders: string[] = [];
+        for (const def of createDefaultCheckRegistry().list("docx")) {
+            if (def.id === "xml-syntax") continue;
+            const ctx = ValidationContext.fromEntries(MINIMAL_PARTS);
+            const xml = vi.spyOn(ctx, "xml");
+            await def.run(ctx);
+            if (xml.mock.calls.length === 0) {
+                xml.mockRestore();
+                continue;
+            }
+            domReaders.push(def.id);
+            expect(def.requires ?? [], `${def.id} reads a part DOM, so it must require xml-syntax`).toContain("xml-syntax");
+            xml.mockRestore();
+        }
+        // The probe package must actually exercise DOM reads, or this test
+        // would pass vacuously.
+        expect(domReaders).toEqual(expect.arrayContaining(["word-row-without-cell", "word-shading-color"]));
+        expect(domReaders.length).toBeGreaterThan(2);
     });
 
     it("passes the clean minimal package", async () => {

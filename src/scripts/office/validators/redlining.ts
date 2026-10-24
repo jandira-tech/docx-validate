@@ -35,7 +35,7 @@ import JSZip from "jszip";
 import { withTempDir } from "../../../lib/run-cli";
 import type { ValidationResult } from "../../../lib/types";
 import { NS } from "../../../lib/types";
-import { getElementsByTagNameNSAll, parseXml } from "../../../lib/xml-helpers";
+import { decodeXmlBytes, getElementsByTagNameNSAll, parseXml, parseXmlBytes } from "../../../lib/xml-helpers";
 import { extractZipEntries } from "../../../lib/zip-path";
 
 const ELEMENT_NODE = 1;
@@ -68,7 +68,7 @@ export async function validateRedlining(options: RedliningOptions): Promise<Vali
 
     let modifiedText: string;
     try {
-        modifiedText = await fs.readFile(modifiedFile, "utf8");
+        modifiedText = decodeXmlBytes(await fs.readFile(modifiedFile));
     } catch {
         return failure(`FAILED - Modified document.xml not found at ${modifiedFile}`);
     }
@@ -119,8 +119,8 @@ export async function validateRedlining(options: RedliningOptions): Promise<Vali
         let modifiedDoc: Document;
         let originalDoc: Document;
         try {
-            modifiedDoc = parseXml(await fs.readFile(modifiedFile, "utf8"));
-            originalDoc = parseXml(await fs.readFile(originalFile, "utf8"));
+            modifiedDoc = parseXmlBytes(await fs.readFile(modifiedFile));
+            originalDoc = parseXmlBytes(await fs.readFile(originalFile));
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
             return failure(`FAILED - Error parsing XML files: ${message}`);

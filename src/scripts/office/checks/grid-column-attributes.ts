@@ -34,6 +34,7 @@ export const wordGridColumnAttributesCheck: CheckDefinition = {
     description: "Every w:gridCol in a Word story carries only the w:w attribute that CT_TblGridCol declares.",
     groups: ["tables"],
     formats: ["docx"],
+    requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => {
         const issues: ValidationIssue[] = [];
         for (const part of ctx.storyParts()) {

@@ -67,6 +67,7 @@ export const textboxContentNamespaceCheck: CheckDefinition = {
     description: "A textbox's txbxContent sits in the namespace its textbox model declares.",
     groups: ["drawings"],
     formats: ["docx"],
+    requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => {
         const issues: ValidationIssue[] = [];
         for (const part of ctx.storyParts()) {

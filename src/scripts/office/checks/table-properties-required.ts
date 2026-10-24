@@ -157,6 +157,7 @@ export const wordTablePropertiesRequiredCheck: CheckDefinition = {
     description: "Every w:tbl carries its required w:tblPr and w:tblGrid in the CT_Tbl order: range markup, w:tblPr, w:tblGrid, rows.",
     groups: ["tables"],
     formats: ["docx"],
+    requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => {
         const issues: ValidationIssue[] = [];
         for (const part of ctx.storyParts()) {

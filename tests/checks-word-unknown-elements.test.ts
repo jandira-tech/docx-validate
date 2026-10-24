@@ -104,6 +104,14 @@ describe("word-link-without-namespace", () => {
         ]);
     });
 
+    it("keeps each check to its own issue family when a part carries both defects", async () => {
+        const ctx = ValidationContext.fromEntries({
+            "word/document.xml": document(`<w:p2/><w:p><w:r><w:rPr><link /></w:rPr><w:t>Click</w:t></w:r></w:p>`),
+        });
+        expect((await check.run(ctx)).map((issue) => issue.code)).toEqual([check.id]);
+        expect((await linkCheck.run(ctx)).map((issue) => issue.code)).toEqual([linkCheck.id]);
+    });
+
     it("accepts the namespaced w:link style child and foreign link elements, and skips broken parts", async () => {
         const ctx = ValidationContext.fromEntries({
             "word/styles.xml": `<?xml version="1.0"?><w:styles xmlns:w="${W}"><w:style w:type="character"><w:link w:val="Strong"/></w:style></w:styles>`,

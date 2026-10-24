@@ -65,5 +65,6 @@ export const wordParagraphPropertiesMisplacedCheck: CheckDefinition = {
     description: "Paragraph-properties blocks sit in their schema parents; duplicates inside one paragraph are tolerated.",
     groups: ["story"],
     formats: ["docx"],
+    requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => wmlPartDocuments(ctx).flatMap(paragraphPropertiesIssues),
 };
