@@ -77,6 +77,30 @@ describe(CODE, () => {
         },
     );
 
+    it.each(["WORD/document.xml", "/Word/Document.XML", "word/%64ocument.xml"])(
+        "finds the main part behind the OPC-equivalent target %s (#344)",
+        async (target) => {
+            expect(
+                await rootIssues({
+                    ...MINIMAL_PARTS,
+                    "_rels/.rels": relationships(`Type="${R}/officeDocument" Target="${target}"`),
+                    "word/document.xml": FOREIGN,
+                }),
+            ).toEqual([expect.objectContaining({ code: CODE, path: "word/document.xml", severity: "error" })]);
+        },
+    );
+
+    it("does not equate an escaped reserved character with its literal (#344)", async () => {
+        // `%2F` is an escaped "/", so this target names a different part.
+        expect(
+            await rootIssues({
+                ...MINIMAL_PARTS,
+                "_rels/.rels": relationships(`Type="${R}/officeDocument" Target="word%2Fdocument.xml"`),
+                "word/document.xml": FOREIGN,
+            }),
+        ).toEqual([]);
+    });
+
     it("leaves a non-main ignored root as processor info", async () => {
         const parts = { ...MINIMAL_PARTS, "word/styles.xml": IGNORED };
         expect(await rootIssues(parts)).toEqual([]);

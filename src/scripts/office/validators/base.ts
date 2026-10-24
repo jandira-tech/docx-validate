@@ -43,7 +43,7 @@ import { existsSync, promises as fs, readdirSync, readFileSync, realpathSync, st
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { normalizePartName, parseContentTypes, partExtension, resolveContentType } from "../../../lib/content-types";
+import { canonicalPartName, parseContentTypes, partExtension, resolveContentType } from "../../../lib/content-types";
 import { applyMarkupCompatibility, STRICT_UNDERSTOOD_NAMESPACES, UNDERSTOOD_NAMESPACES } from "../../../lib/markup-compatibility";
 import { withTempDir } from "../../../lib/run-cli";
 import type { Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
@@ -1458,7 +1458,9 @@ export class BaseSchemaValidator {
     private isMainDocumentPart(xmlFile: string): boolean {
         try {
             const relationships = parseXml(readFileSync(path.join(this.unpackedDir, "_rels", ".rels"), "utf-8"));
-            const part = normalizePartName(this.relPath(xmlFile).split(path.sep).join("/"));
+            // Compare canonical names, which keep reserved escapes distinct:
+            // `word%2Fdocument.xml` does not name word/document.xml (#344).
+            const part = canonicalPartName(this.relPath(xmlFile).split(path.sep).join("/"));
             return getElementsByTagNameNSAll(relationships, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship").some((relationship) => {
                 const type = relationship.getAttribute("Type");
                 if (
@@ -1468,7 +1470,7 @@ export class BaseSchemaValidator {
                 ) {
                     return false;
                 }
-                return path.posix.normalize(normalizePartName(relationship.getAttribute("Target") || "")) === part;
+                return canonicalPartName(path.posix.normalize((relationship.getAttribute("Target") || "").replace(/^\/+/, ""))) === part;
             });
         } catch {
             // Missing or malformed package relationships are diagnosed by their own checks.
