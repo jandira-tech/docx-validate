@@ -13,7 +13,7 @@
  * on stdout and stderr.
  */
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, symlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -259,12 +259,56 @@ describe("validate CLI: rejected invocations", { timeout: 120_000 }, () => {
         expect(run.stderr.trim()).toMatch(/Invalid --profile: picky/);
     });
 
-    it("exits 1 with one line when the target does not exist", async () => {
-        const run = await withTempDir(async (dir) => capture([path.join(dir, "missing.docx")]));
+    it.each(["ENOENT", "ENOTDIR"])(
+        "exits 1 with the missing-target line for %s (#574)",
+        async (code) => {
+            await withTempDir(async (dir) => {
+                const holder = path.join(dir, "holder");
+                if (code === "ENOTDIR") writeFileSync(holder, "a regular file");
+                const target = path.join(holder, "missing.docx");
+                const run = await capture([target]);
+                expect(run).toEqual({ code: 1, stdout: "", stderr: `Error: ${target} does not exist\n` });
+            });
+        },
+        60_000,
+    );
 
-        expect(run.code).toBe(1);
-        expect(run.stderr.trim()).toMatch(/does not exist/);
-    });
+    it.skipIf(process.platform === "win32" || process.getuid?.() === 0)(
+        "exits 1 with one EACCES line when the target's parent cannot be traversed (#574)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const holder = path.join(dir, "holder");
+                const target = path.join(holder, "packed.docx");
+                mkdirSync(holder);
+                writeFileSync(target, await buildDocx());
+                chmodSync(holder, 0o000);
+                try {
+                    const run = await capture([target]);
+                    expect(run.code).toBe(1);
+                    expect(run.stdout).toBe("");
+                    expect(run.stderr.trim().split("\n")).toEqual([expect.stringContaining(`Error: Cannot access ${target}: EACCES:`)]);
+                } finally {
+                    chmodSync(holder, 0o755);
+                }
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "exits 1 with one ELOOP line for an unresolvable target (#574)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const target = path.join(dir, "loop.docx");
+                symlinkSync("loop.docx", target);
+                const run = await capture([target]);
+                expect(run.code).toBe(1);
+                expect(run.stdout).toBe("");
+                expect(run.stderr.trim().split("\n")).toEqual([expect.stringContaining(`Error: Cannot access ${target}: ELOOP:`)]);
+            });
+        },
+        60_000,
+    );
 
     it("exits 1 with one line when the engine probe fails", async () => {
         const probe = vi

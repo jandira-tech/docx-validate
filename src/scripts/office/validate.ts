@@ -82,7 +82,7 @@ import { OPC_PART_NAME_ESCAPED_UNRESERVED } from "./checks/opc-part-name-escaped
 import { CT_OVERRIDE_PARTNAME_INVALID } from "./checks/ct-override-partname";
 import { CT_MARKUP_COMPATIBILITY } from "./checks/ct-markup-compatibility";
 import { WORD_PART_CONTENT_TYPE_GENERIC } from "./checks/word-part-content-type-generic";
-import { contextFromArchive, openDirectoryContext, packageExtractFailedIssue } from "./package-context";
+import { contextFromArchive, openDirectoryContext, packageExtractFailedIssue, storedNamesRun } from "./package-context";
 import {
     BaseSchemaValidator,
     containRelationshipTarget,
@@ -1120,22 +1120,6 @@ async function zipEnvelopeRun(
     return { issues: [...run.issues], executed: [...run.executed] };
 }
 
-/** Stored-name diagnosis for every full profile, before any XML/extraction gate. */
-async function storedNamesRun(
-    context: ValidationContext,
-    format: PackageFormat,
-    profile: Profile,
-): Promise<{ issues: ValidationIssue[]; executed: readonly string[] }> {
-    const registry = createDefaultCheckRegistry();
-    // The same flag picks what a partial run of a refused package view runs (#420).
-    const select = registry
-        .list(format)
-        .filter((definition) => definition.storedNamesOnly === true)
-        .map((definition) => definition.id);
-    const run = await runChecks(context, registry, { format, select });
-    return { issues: findingsUnderProfile(run, registry, format, profile, new Set()), executed: run.executed };
-}
-
 /** An envelope run that never happened: no findings, no executed checks. */
 const EMPTY_ENVELOPE_RUN: { issues: ValidationResult["issues"]; executed: readonly string[] } = { issues: [], executed: [] };
 
@@ -1268,8 +1252,11 @@ async function runValidators(
 async function assertExists(p: string, message: string): Promise<void> {
     try {
         await fs.access(p);
-    } catch {
-        throw new Error(message);
+    } catch (err) {
+        const code = (err as NodeJS.ErrnoException).code;
+        if (code === "ENOENT" || code === "ENOTDIR") throw new Error(message);
+        const detail = err instanceof Error ? err.message : String(err);
+        throw new Error(`Error: Cannot access ${p}: ${detail}`, { cause: err });
     }
 }
 

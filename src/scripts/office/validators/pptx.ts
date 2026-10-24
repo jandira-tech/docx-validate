@@ -33,7 +33,7 @@ import { mergeResults } from "../../../lib/types";
 import { getElementsByTagNameNSAll, parseXmlBytes } from "../../../lib/xml-helpers";
 import type { BaseSchemaValidatorOptions } from "./base";
 import { BaseSchemaValidator, OFFICE_RELATIONSHIPS_NAMESPACE, walkFiles, withoutRestatedIgnorablePrefixes } from "./base";
-import { openDirectoryContext, packageExtractFailedIssue } from "../package-context";
+import { openDirectoryContext, packageExtractFailedIssue, storedNamesRun } from "../package-context";
 
 export const PRESENTATIONML_NAMESPACE = "http://schemas.openxmlformats.org/presentationml/2006/main";
 
@@ -68,7 +68,9 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
         this.resetExecutedChecks();
         const opened = openDirectoryContext(this.unpackedDir);
         if (opened.openError !== undefined) {
-            return { valid: false, issues: [packageExtractFailedIssue(this.unpackedDir, opened.openError)] };
+            const diagnostic = await storedNamesRun(opened.context, "pptx", this.profile);
+            this.recordExecutedChecks(diagnostic.executed);
+            return { valid: false, issues: [...diagnostic.issues, packageExtractFailedIssue(this.unpackedDir, opened.openError)] };
         }
         const context = opened.context;
         const xml = await this.validateXml();
