@@ -29,14 +29,12 @@
 import { spawnSync } from "node:child_process";
 import { promises as fs } from "node:fs";
 import path from "node:path";
-
-import JSZip from "jszip";
-
 import { withTempDir } from "../../../lib/run-cli";
 import type { ValidationResult } from "../../../lib/types";
 import { NS } from "../../../lib/types";
 import { decodeXmlBytes, getElementsByTagNameNSAll, parseXml, parseXmlBytes } from "../../../lib/xml-helpers";
 import { extractZipEntries } from "../../../lib/zip-path";
+import { loadCentralNamedArchive } from "../../../lib/zip-central-names";
 
 const ELEMENT_NODE = 1;
 
@@ -102,7 +100,7 @@ export async function validateRedlining(options: RedliningOptions): Promise<Vali
     return withTempDir(async (tempDir) => {
         try {
             const data = await fs.readFile(originalDocx);
-            const zip = await JSZip.loadAsync(data);
+            const zip = await loadCentralNamedArchive(data);
             await extractZipEntries(zip, tempDir);
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
