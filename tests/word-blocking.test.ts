@@ -12,6 +12,22 @@ import { isWordBlockingIssue } from "../src/scripts/office/validators/word-block
 const issue = (code: string, rest: Partial<ValidationIssue> = {}): ValidationIssue => ({ severity: "error", code, message: "", ...rest });
 
 describe("isWordBlockingIssue", () => {
+    it("blocks duplicate relationship Ids only in package and resolved main sidecars (#615)", () => {
+        const main = new Set([canonicalPartName("word/main.xml"), canonicalPartName("stories/body.xml")]);
+        const read = new Set(["word/_rels/header9.xml.rels", "word/glossary/_rels/document.xml.rels"]);
+        for (const path of ["_rels/.rels", "_RELS/.RELS", "_rels\\.rels", "word/_rels/main.xml.rels", "STORIES/_RELS/body.xml.RELS"]) {
+            expect.soft(isWordBlockingIssue(issue("rels-id-duplicate", { path }), new Set(), read, main), path).toBe(true);
+        }
+        for (const path of [
+            undefined,
+            "word/_rels/document.xml.rels",
+            "word/_rels/header9.xml.rels",
+            "word/glossary/_rels/document.xml.rels",
+        ]) {
+            expect.soft(isWordBlockingIssue(issue("rels-id-duplicate", { path }), new Set(), read, main), path).toBe(false);
+        }
+    });
+
     it("blocks relationships structure in the package relationships part and under word/ (#433)", () => {
         // Word 16.115 offers recovery for a foreign element in _rels/.rels and in
         // word/_rels/document.xml.rels (session 4c); other sidecars are unobserved.

@@ -56,7 +56,7 @@ import { withoutConsequentialParseFailures } from "../../../lib/parse-failures";
 import { mergeResults } from "../../../lib/types";
 import { promoteFullCheckIssue } from "../../../lib/mode-policy";
 import { propertiesParts } from "../../../lib/properties-parts";
-import { wordReadParts } from "../../../lib/word-read-parts";
+import { wordMainDocumentParts, wordReadParts } from "../../../lib/word-read-parts";
 import { isWordBlockingIssue } from "./word-blocking";
 import {
     decodeXmlBytes,
@@ -626,11 +626,15 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     private async applyWordValidProfile(result: ValidationResult): Promise<ValidationResult> {
         const context = this.context();
-        // Both reachability sets are computed once per run, from the shared
-        // context, and given to the one predicate every issue passes through.
-        const [properties, read] = await Promise.all([propertiesParts(context), wordReadParts(context)]);
+        // Resolve each part set once per run and share the blocking predicate
+        // with partial validation (#381, #615).
+        const [properties, read, main] = await Promise.all([
+            propertiesParts(context),
+            wordReadParts(context),
+            wordMainDocumentParts(context),
+        ]);
         const issues = result.issues.map((issue): ValidationIssue => {
-            if (issue.severity !== "error" || isWordBlockingIssue(issue, properties, read)) return issue;
+            if (issue.severity !== "error" || isWordBlockingIssue(issue, properties, read, main)) return issue;
             return { ...issue, severity: "warning" };
         });
         return finalize(issues);

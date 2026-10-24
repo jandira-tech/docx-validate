@@ -34,6 +34,7 @@ export const isWordBlockingIssue = (
     issue: ValidationIssue,
     propertiesParts: ReadonlySet<string> = new Set(),
     wordReadParts: ReadonlySet<string> = new Set(),
+    mainDocumentParts: ReadonlySet<string> = new Set(),
 ): boolean => {
     switch (issue.code) {
         // NB: run-content-misplaced is NOT Word-blocking — a real Word probe
@@ -184,6 +185,18 @@ export const isWordBlockingIssue = (
         // Session 24: a read header/footer declared with the other story's type (#600).
         case "word-part-content-type-mismatch":
             return true;
+        case "rels-id-duplicate": {
+            // #615: Word 16.115 offers recovery for duplicate Ids in the
+            // package and main-document relationships, even unreferenced or
+            // identical (session 29, s29a/s29b in
+            // docs/plans/evidence/word-probes-2026-10-24.md). The header's own
+            // sidecar opened CLEAN: other sidecars keep their strict error
+            // and word-valid warning, even if Word reads their owner.
+            const part = issue.path?.replace(/\\/g, "/");
+            if (isPackageRelationshipsPart(part)) return true;
+            const source = part === undefined ? undefined : canonicalPartName(part).match(/^(.*\/)?_rels\/([^/]+)\.rels$/);
+            return source !== undefined && source !== null && mainDocumentParts.has(`${source[1] ?? ""}${source[2]}`);
+        }
         // NB: comment-orphan-start/end and comment-marker-missing are NOT
         // promoted here. Empirically Word TOLERATES an orphan comment-range
         // marker (a commentRangeStart with no End, referencing a missing

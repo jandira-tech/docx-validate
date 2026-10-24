@@ -1015,6 +1015,36 @@ export class BaseSchemaValidator {
         const issues: ValidationIssue[] = [];
         const entries = packageEntries(this.unpackedDir);
         const findPart = equivalentPartLookup([...entries.keys()]);
+        const reportDuplicates = (document: Document, relsFile: string): void => {
+            const seen = new Set<string>();
+            for (const relationship of this.relationshipElements(document)) {
+                const id = relationship.getAttribute("Id");
+                if (!id) continue;
+                if (seen.has(id)) {
+                    issues.push({
+                        severity: "error",
+                        message: `Duplicate relationship ID '${id}' (IDs must be unique)`,
+                        path: this.relPath(relsFile),
+                        code: "rels-id-duplicate",
+                    });
+                }
+                seen.add(id);
+            }
+        };
+        // The package has no owner XML part, so the sidecar walk below never
+        // visits its relationships. Lenient retains its historical XSD-only
+        // diagnosis here (#615); XML checks own missing/malformed parts.
+        if (this.profile !== "lenient") {
+            const packageRels = findPart("_rels/.rels");
+            const packageRelsFile = packageRels === undefined ? undefined : entries.get(packageRels);
+            if (packageRelsFile !== undefined) {
+                try {
+                    reportDuplicates(parseXmlBytes(await fs.readFile(packageRelsFile)), packageRelsFile);
+                } catch {
+                    // XML syntax diagnostics already report this part.
+                }
+            }
+        }
 
         for (const xmlFile of this.xmlFiles) {
             const part = this.entryName(xmlFile);
@@ -1067,6 +1097,7 @@ export class BaseSchemaValidator {
                 continue;
             }
 
+            reportDuplicates(relsDom, relsFile);
             const ridToType = new Map<string, string>();
             const rels = this.relationshipElements(relsDom);
             for (let i = 0; i < rels.length; i += 1) {
@@ -1075,14 +1106,6 @@ export class BaseSchemaValidator {
                 const rid = rel.getAttribute("Id");
                 const relType = rel.getAttribute("Type") ?? "";
                 if (!rid) continue;
-                if (ridToType.has(rid)) {
-                    issues.push({
-                        severity: "error",
-                        message: `Duplicate relationship ID '${rid}' (IDs must be unique)`,
-                        path: this.relPath(relsFile),
-                        code: "rels-id-duplicate",
-                    });
-                }
                 const typeName = relType.includes("/") ? (relType.split("/").pop() ?? relType) : relType;
                 ridToType.set(rid, typeName);
             }

@@ -192,6 +192,19 @@ Empty-part auto-repair retains its exact lowercase `.rels` scope. The trace desc
 `schemas/iso-strict/` schemas. Lenient skips those parts with the info-level
 `xsd-strict-skipped`; Word-valid emits no XSD skip issue because it runs no XSD.
 
+Full DOCX/DOCM validation reports duplicate relationship `Id` values as
+`rels-id-duplicate`. Under `word-valid`, duplicates block opening only in the
+package relationships part (`_rels/.rels`) and the main document's own
+relationships part. The main document is resolved through the package's
+Transitional or ISO Strict `officeDocument` relationship, wherever it is stored.
+Word 16.115 offers recovery even for identical or unreferenced duplicates there;
+a header part's own duplicate unreferenced hyperlinks opened clean
+([#615](https://github.com/jandira-tech/docx-validate/issues/615), session 29 in
+[the Word probe evidence](docs/plans/evidence/word-probes-2026-10-24.md)). Other
+sidecars retain their strict error and Word-valid warning. Lenient keeps its
+existing sidecar errors and XSD-only package diagnosis. This legacy ID walk is
+outside the named-check registry, so named and quick runs omit it.
+
 Named checks and quick checks use the same options in the path and byte APIs:
 
 ```ts
