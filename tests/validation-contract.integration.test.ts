@@ -1111,6 +1111,124 @@ describe("validation contract: header, endnotes, theme and glossaryDocument are 
     });
 });
 
+describe("validation contract: a header the glossary references is read (#539)", { timeout: 120000 }, () => {
+    const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+    const unclosed = (rootOpen: string): string => `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n${rootOpen}`;
+    const HEADER = `<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header</w:t></w:r></w:p></w:hdr>`;
+    const MALFORMED_HEADER = unclosed(`<w:hdr xmlns:w="${W}"><w:p>`);
+    // The session-16 `ar-header-ref-in-glossary` shape: the glossary's own
+    // relationships part names word/glossary/header9.xml, and its
+    // w:docPartBody w:sectPr carries the w:headerReference. The main
+    // document reaches the glossary through a glossaryDocument relationship.
+    const GLOSSARY =
+        `<w:glossaryDocument xmlns:w="${W}" xmlns:r="${R}"><w:docParts><w:docPart>` +
+        `<w:docPartPr><w:name w:val="Part"/><w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category>` +
+        `<w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+        `<w:docPartBody><w:p><w:r><w:t>Part</w:t></w:r></w:p>` +
+        `<w:sectPr><w:headerReference w:type="default" r:id="rIdH"/></w:sectPr></w:docPartBody>` +
+        `</w:docPart></w:docParts></w:glossaryDocument>`;
+    const headerViaGlossary = (header: string): Promise<Buffer> =>
+        buildDocx({
+            ...MINIMAL_PARTS,
+            "word/glossary/document.xml": GLOSSARY,
+            "word/glossary/_rels/document.xml.rels":
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+                `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                `<Relationship Id="rIdH" Type="${R}/header" Target="header9.xml"/>` +
+                `</Relationships>`,
+            "word/glossary/header9.xml": header,
+            "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                "</Relationships>",
+                `<Relationship Id="rIdG" Type="${R}/glossaryDocument" Target="glossary/document.xml"/></Relationships>`,
+            ),
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                `<Override PartName="/word/glossary/document.xml" ContentType="${WML}.document.glossary+xml"/>` +
+                    `<Override PartName="/word/glossary/header9.xml" ContentType="${WML}.header+xml"/></Types>`,
+            ),
+        });
+
+    it("word-valid and strict both fail a malformed header the glossary references", { timeout: 120000 }, async () => {
+        // Word 16.115 offers to repair `ar-header-ref-in-glossary-malformed`
+        // (a9d3c660c1ba09c1, session 16): the glossary's headerReference makes
+        // the header Word-read, so its xml-syntax error blocks.
+        const bytes = await headerViaGlossary(MALFORMED_HEADER);
+        for (const profile of ["word-valid", "strict"] as const) {
+            const result = await validateBytes(bytes, profile);
+            expect(
+                result.issues.find((issue) => issue.code === "xml-syntax" && issue.path === "word/glossary/header9.xml")?.severity,
+                profile,
+            ).toBe("error");
+            expect(result.valid, profile).toBe(false);
+        }
+    });
+
+    it("word-valid and a named xml-syntax run agree on the glossary header", { timeout: 120000 }, async () => {
+        // #381: a partial run applies the profile the full run applies — the
+        // reached set must name the glossary header in both.
+        const bytes = await headerViaGlossary(MALFORMED_HEADER);
+        const named = await withTempDir(async (dir) => {
+            const file = path.join(dir, "specimen.docx");
+            writeFileSync(file, bytes);
+            return validate(file, { profile: "word-valid", checks: ["xml-syntax"] });
+        });
+        expect(named.issues.find((issue) => issue.code === "xml-syntax" && issue.path === "word/glossary/header9.xml")?.severity).toBe(
+            "error",
+        );
+        expect(named.valid).toBe(false);
+    });
+
+    it("keeps the well-formed glossary-referenced header word-valid (control)", { timeout: 120000 }, async () => {
+        // `ar-header-ref-in-glossary-wellformed-control` (acbbb90b2033c15f)
+        // opens clean in Word.
+        const result = await validateBytes(await headerViaGlossary(HEADER), "word-valid");
+        expect(result.issues.find((issue) => issue.code === "xml-syntax" && issue.path === "word/glossary/header9.xml")).toBeUndefined();
+        expect(result.valid).toBe(true);
+    });
+
+    it("keeps endnotes referenced only from a footnote unreached (session 16)", { timeout: 120000 }, async () => {
+        // `ar-endnote-ref-in-footnote-malformed` (40c5524a7ee87ebe) opened
+        // clean in Word while malformed: Word does not follow every story's
+        // references, so the endnotes part stays unreached and warns.
+        const footnotes =
+            `<w:footnotes xmlns:w="${W}">` +
+            `<w:footnote w:type="separator" w:id="-1"><w:p><w:r><w:separator/></w:r></w:p></w:footnote>` +
+            `<w:footnote w:type="continuationSeparator" w:id="0"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:footnote>` +
+            `<w:footnote w:id="1"><w:p><w:r><w:t>Footnote</w:t></w:r><w:r><w:endnoteReference w:id="1"/></w:r></w:p></w:footnote>` +
+            `</w:footnotes>`;
+        const document = MINIMAL_PARTS["word/document.xml"]!.replace(
+            "<w:r><w:t>Hello</w:t></w:r>",
+            '<w:r><w:footnoteReference w:id="1"/></w:r>',
+        );
+        const bytes = await buildDocx({
+            ...MINIMAL_PARTS,
+            "word/document.xml": document,
+            "word/footnotes.xml": footnotes,
+            "word/endnotes.xml": unclosed(`<w:endnotes xmlns:w="${W}">`),
+            "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                "</Relationships>",
+                `<Relationship Id="rIdF" Type="${R}/footnotes" Target="footnotes.xml"/>` +
+                    `<Relationship Id="rIdE" Type="${R}/endnotes" Target="endnotes.xml"/></Relationships>`,
+            ),
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                `<Override PartName="/word/footnotes.xml" ContentType="${WML}.footnotes+xml"/>` +
+                    `<Override PartName="/word/endnotes.xml" ContentType="${WML}.endnotes+xml"/></Types>`,
+            ),
+        });
+        const wordValid = await validateBytes(bytes, "word-valid");
+        expect(wordValid.issues.find((issue) => issue.code === "xml-syntax" && issue.path === "word/endnotes.xml")?.severity).toBe(
+            "warning",
+        );
+        expect(wordValid.valid).toBe(true);
+        const strict = await validateBytes(bytes, "strict");
+        expect(strict.issues.find((issue) => issue.code === "xml-syntax" && issue.path === "word/endnotes.xml")?.severity).toBe("error");
+        expect(strict.valid).toBe(false);
+    });
+});
+
 // These are filesystem integration tests: literal backslashes are file-name
 // characters on POSIX, and separators on Windows.
 describe.skipIf(process.platform === "win32")("directory package staging (#374)", { timeout: 120000 }, () => {

@@ -26,6 +26,15 @@
  *    `w:commentReference`, footnotes through any `w:footnoteReference`,
  *    endnotes through any `w:endnoteReference`) — related-but-unused opens
  *    clean, even under `word/` (#516, session 15);
+ *  - a glossary document, reached through a main-document
+ *    `glossaryDocument` relationship, reads its own relationships part for
+ *    `header` and `footer` relationships, used when its effective XML
+ *    carries a `w:headerReference` / `w:footerReference` with that `r:id`
+ *    (#539, session 16; the footer is inference from the header
+ *    observation). The glossary's comments, footnotes and endnotes
+ *    relationships and its own relationships part are unobserved — an
+ *    endnotes part referenced only from inside a footnote opens clean — so
+ *    they stay unreached;
  *  - a part under `word/` that any relationship of a KNOWN Office type names
  *    with none of the observed types above (people, chart, image, …). These
  *    are unobserved, so they keep the old `word/`-folder behaviour —
@@ -38,7 +47,8 @@
  * `isWordBlockingIssue`, so full and partial runs agree (#381). Evidence:
  * docs/plans/evidence/word-probes-2026-10-24.md, sessions 3c, 4, 5, 8b, 9a;
  * session 15 (the main document's own relationships part, #514; header and
- * endnotes lazy, theme and glossaryDocument eager, #516).
+ * endnotes lazy, theme and glossaryDocument eager, #516); session 16 (the
+ * glossary's header reference, #539).
  */
 
 import path from "node:path";
@@ -306,6 +316,10 @@ export const wordReadParts = async (context: ValidationContext): Promise<Readonl
         return parts;
     }
     const { names, lookup } = reach;
+    // Glossary documents reached eagerly through a main-document
+    // glossaryDocument relationship, canonical name to stored spelling, for
+    // the second-level pass below (#539).
+    const glossaryParts = new Map<string, string>();
 
     for (const mainPart of reach.mainParts) {
         parts.add(canonicalPartName(mainPart));
@@ -368,10 +382,49 @@ export const wordReadParts = async (context: ValidationContext): Promise<Readonl
             }
             if (EAGER_TYPES.has(segment)) {
                 parts.add(canonicalPartName(target));
+                if (segment === "glossaryDocument") {
+                    glossaryParts.set(canonicalPartName(target), target);
+                }
             } else if (LAZY_TYPES.has(segment)) {
                 if (lazyUsed(segment, relationship.getAttribute("Id") ?? "") !== false) {
                     parts.add(canonicalPartName(target));
                 }
+            }
+        }
+    }
+
+    // Session 16 (#539): Word follows a main-document glossaryDocument
+    // relationship to the glossary's own relationships part and reads the
+    // header it references — a `w:headerReference r:id` in a `w:docPartBody`
+    // `w:sectPr` (`ar-header-ref-in-glossary-malformed` gets a repair warning;
+    // the well-formed control opens clean). The footer is the same mechanism,
+    // inferred from the header observation. The glossary's comments, footnotes
+    // and endnotes relationships are unobserved — an endnotes part referenced
+    // only from inside a footnote opens clean — so they are not followed, and
+    // neither is the glossary's relationships part itself. A glossary that
+    // fails byte-level XML checks leaves usage unknown, as an unparseable main
+    // does (#536), so its lazy targets stay reached.
+    for (const glossaryPart of glossaryParts.values()) {
+        const bytes = context.bytes(glossaryPart);
+        const readable = bytes !== undefined && !(await checkXmlSyntax(bytes, glossaryPart)).some((issue) => issue.severity === "error");
+        const glossary = readable ? context.effectiveXml(glossaryPart) : undefined;
+        const headerIds = glossary?.ok ? referenceIds(glossary.document, "headerReference") : undefined;
+        const footerIds = glossary?.ok ? referenceIds(glossary.document, "footerReference") : undefined;
+        for (const relationship of relationshipsOf(context, sidecarOf(names, glossaryPart))) {
+            if (relationship.getAttribute("TargetMode") === "External") {
+                continue;
+            }
+            const segment = officeRelationshipTypeSegment(relationship.getAttribute("Type") ?? "");
+            if (segment !== "header" && segment !== "footer") {
+                continue;
+            }
+            const target = resolveTarget(lookup, path.posix.dirname(glossaryPart), relationship.getAttribute("Target") ?? "");
+            if (target === undefined) {
+                continue;
+            }
+            const used = (segment === "header" ? headerIds : footerIds)?.has(relationship.getAttribute("Id") ?? "");
+            if (used !== false) {
+                parts.add(canonicalPartName(target));
             }
         }
     }
