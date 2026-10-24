@@ -276,21 +276,29 @@ export function defaultSchemasDir(): string {
 
 /**
  * Containment check for relationship targets resolved from untrusted OOXML
- * parts (CWE-22). Two layers:
+ * parts (CWE-22). Two layers, and the canonical one decides (#594):
  *
- * 1. Lexical: the resolved path must stay under `unpackedDir`
- *    (`path.relative` must not escape via `..` or go absolute).
- * 2. Symlinks: a purely lexical check is defeated by a symlink inside the
- *    unpacked tree pointing outward (`link/secret` where `link` → `/etc`).
- *    The deepest EXISTING ancestor of the target is resolved with
- *    `realpathSync.native` and re-checked; non-existent trailing components
- *    cannot change the verdict (callers report missing targets as broken
- *    anyway). The root and the probe both take `realpath(3)`'s on-disk case:
- *    Node's JS `realpathSync` keeps the case a path is written in, so on a
- *    case-insensitive volume a root spelled in another case than an in-root
- *    link's absolute target would read as an escape (#587).
+ * 1. Lexical: the resolved path, as spelled, must stay under `unpackedDir`
+ *    (`path.relative` must not escape via `..` or go absolute). This judges
+ *    the spellings as passed, so on a case-insensitive volume it reads an
+ *    in-root target spelled unlike the root as an escape — it is a filter,
+ *    never the verdict, while layer 2 can run.
+ * 2. Symlinks and case: a purely lexical check is defeated by a symlink
+ *    inside the unpacked tree pointing outward (`link/secret` where `link`
+ *    → `/etc`), and blind to spelling: Node's JS `realpathSync` keeps the
+ *    case a path is written in, so only `realpathSync.native` reports the
+ *    on-disk case (#587). The root is canonicalized and the deepest
+ *    EXISTING ancestor of the target is resolved with `realpathSync.native`
+ *    and re-checked against it: a target whose canonical path lies under
+ *    the canonical root is contained under any spelling; non-existent
+ *    trailing components cannot change the verdict (callers report missing
+ *    targets as broken anyway).
  *
- * Returns the original resolved path when contained, `null` on escape.
+ * The lexical layer decides only when the realpath layer cannot run — when
+ * the root itself cannot be canonicalized, or when nothing along the target
+ * resolves — and it fails closed for a lexical escape in both cases.
+ *
+ * Returns the target as passed when contained, `null` on escape.
  * Not race-resistant across the check and a later open — acceptable for a
  * validator scanning an unpacked tree it controls; flagged for any future
  * fd-based (`O_NOFOLLOW`) hardening.
@@ -299,16 +307,18 @@ export function containRelationshipTarget(unpackedDir: string, resolvedPath: str
     const root = path.resolve(unpackedDir);
     const target = path.resolve(resolvedPath);
     const rel = path.relative(root, target);
-    if (rel === ".." || rel.startsWith(`..${path.sep}`) || path.isAbsolute(rel)) return null;
+    const escapesLexically = rel === ".." || rel.startsWith(`..${path.sep}`) || path.isAbsolute(rel);
 
-    let realRoot = root;
+    let realRoot: string;
     try {
         realRoot = realpathSync.native(root);
     } catch {
-        // Root itself unreachable — the lexical verdict stands.
-        return target;
+        // Root itself unreachable — the lexical verdict on the spellings as
+        // passed is all that remains, failing closed for an escape.
+        return escapesLexically ? null : target;
     }
     let probe = target;
+    let resolved = false;
     for (;;) {
         let real: string | null = null;
         try {
@@ -319,12 +329,16 @@ export function containRelationshipTarget(unpackedDir: string, resolvedPath: str
         if (real !== null) {
             const realRel = path.relative(realRoot, real);
             if (realRel === ".." || realRel.startsWith(`..${path.sep}`) || path.isAbsolute(realRel)) return null;
+            resolved = true;
             break;
         }
         const parent = path.dirname(probe);
         if (parent === probe) break;
         probe = parent;
     }
+    // The realpath layer could not run on anything along the target; the
+    // lexical verdict stands, failing closed for an escape.
+    if (!resolved && escapesLexically) return null;
     return target;
 }
 
