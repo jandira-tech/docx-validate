@@ -61,17 +61,40 @@ export interface RawZipEntry {
     readonly utf8?: boolean;
     /** Set the MS-DOS directory attribute bit, as a folder entry does. */
     readonly directory?: boolean;
+    /**
+     * Store the sentinel 0xFFFFFFFF in this central record's local-header
+     * offset, with the real offset in a ZIP64 (0x0001) extra field in the
+     * central record, as an entry of an archive past 4 GiB does. JSZip loads
+     * the entry through the extra field; the re-keying rewrite bails on the
+     * sentinel (#479).
+     */
+    readonly zip64LocalOffset?: boolean;
 }
 
 const encoder = new TextEncoder();
+
+/** The ZIP64 (0x0001) extra field holding the local-header offset, as an archive past 4 GiB stores per entry (#479). */
+const zip64OffsetField = (offset: number): Buffer => {
+    const field = Buffer.alloc(12);
+    field.writeUInt16LE(0x0001, 0);
+    field.writeUInt16LE(8, 2);
+    field.writeBigUInt64LE(BigInt(offset), 4);
+    return field;
+};
 
 /**
  * The archive bytes: local headers, then the central directory, then the
  * EOCD record. `zip64` emits a ZIP64 EOCD record and locator — the EOCD's
  * central-directory fields saturated — around the same directory, so readers
- * exercise the ZIP64 path without a multi-gigabyte file.
+ * exercise the ZIP64 path without a multi-gigabyte file. `cdSlack` (ZIP64
+ * only) stores junk between the directory and the ZIP64 record that the
+ * record's declared directory size counts, as a size spanning past its
+ * records does (#478).
  */
-export const buildRawZip = (entries: readonly RawZipEntry[], options: { readonly zip64?: boolean } = {}): Buffer => {
+export const buildRawZip = (
+    entries: readonly RawZipEntry[],
+    options: { readonly zip64?: boolean; readonly cdSlack?: number } = {},
+): Buffer => {
     const local: Buffer[] = [];
     const central: Buffer[] = [];
     let offset = 0;
@@ -83,6 +106,10 @@ export const buildRawZip = (entries: readonly RawZipEntry[], options: { readonly
         const flags = entry.utf8 === true ? 0x0800 : 0;
         const attributes = entry.directory === true ? 0x10 : 0;
         const unicodePath = entry.unicodePath === undefined ? new Uint8Array() : unicodePathField(localNameBytes, entry.unicodePath);
+        const centralExtra =
+            entry.zip64LocalOffset === true
+                ? Buffer.concat([Buffer.from(unicodePath), zip64OffsetField(offset)])
+                : Buffer.from(unicodePath);
 
         const lh = Buffer.alloc(30);
         lh.writeUInt32LE(0x04034b50, 0);
@@ -104,16 +131,20 @@ export const buildRawZip = (entries: readonly RawZipEntry[], options: { readonly
         ch.writeUInt32LE(data.length, 20);
         ch.writeUInt32LE(data.length, 24);
         ch.writeUInt16LE(nameBytes.length, 28);
-        ch.writeUInt16LE(unicodePath.length, 30);
+        ch.writeUInt16LE(centralExtra.length, 30);
         ch.writeUInt32LE(attributes, 38);
-        ch.writeUInt32LE(offset, 42);
-        central.push(ch, Buffer.from(nameBytes), Buffer.from(unicodePath));
+        ch.writeUInt32LE(entry.zip64LocalOffset === true ? 0xffffffff : offset, 42);
+        central.push(ch, Buffer.from(nameBytes), centralExtra);
 
         offset += 30 + localNameBytes.length + unicodePath.length + data.length;
     }
     const cd = Buffer.concat(central);
     const zip64 = options.zip64 === true;
+    const slack = Math.max(0, options.cdSlack ?? 0);
     const records: Buffer[] = [...local, cd];
+    if (slack > 0) {
+        records.push(Buffer.alloc(slack, 0x5a));
+    }
     if (zip64) {
         const eocd64 = Buffer.alloc(56);
         eocd64.writeUInt32LE(0x06064b50, 0);
@@ -122,11 +153,11 @@ export const buildRawZip = (entries: readonly RawZipEntry[], options: { readonly
         eocd64.writeUInt16LE(45, 14);
         eocd64.writeBigUInt64LE(BigInt(entries.length), 24);
         eocd64.writeBigUInt64LE(BigInt(entries.length), 32);
-        eocd64.writeBigUInt64LE(BigInt(cd.length), 40);
+        eocd64.writeBigUInt64LE(BigInt(cd.length + slack), 40);
         eocd64.writeBigUInt64LE(BigInt(offset), 48);
         const locator = Buffer.alloc(20);
         locator.writeUInt32LE(0x07064b50, 0);
-        locator.writeBigUInt64LE(BigInt(offset + cd.length), 8);
+        locator.writeBigUInt64LE(BigInt(offset + cd.length + slack), 8);
         locator.writeUInt32LE(1, 16);
         records.push(eocd64, locator);
     }
