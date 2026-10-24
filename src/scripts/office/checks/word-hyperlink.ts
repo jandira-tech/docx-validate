@@ -13,6 +13,7 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
+import { equivalentPartLookup } from "../../../lib/content-types";
 import type { ValidationIssue } from "../../../lib/types";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
 import path from "node:path";
@@ -27,9 +28,10 @@ const PACKAGE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/packa
 const externalHyperlinkRelationshipIds = (
     ctx: ValidationContext,
     xmlFile: string,
+    findPart: (partName: string) => string | undefined,
 ): Map<string, { type: string; targetMode: string; externalHyperlink: boolean }> | null => {
-    const relsFile = path.posix.join(path.posix.dirname(xmlFile), "_rels", `${path.posix.basename(xmlFile)}.rels`);
-    const parsed = ctx.effectiveXml(relsFile);
+    const relsFile = findPart(path.posix.join(path.posix.dirname(xmlFile), "_rels", `${path.posix.basename(xmlFile)}.rels`));
+    const parsed = relsFile === undefined ? undefined : ctx.effectiveXml(relsFile);
     if (parsed && !parsed.ok) {
         return null;
     }
@@ -57,6 +59,7 @@ export const wordHyperlinkRelationshipCheck: CheckDefinition = {
     requires: ["xml-syntax"],
     run: (ctx: ValidationContext): ValidationIssue[] => {
         const issues: ValidationIssue[] = [];
+        const findPart = equivalentPartLookup(ctx.partNames);
 
         const relationshipNamespaces = [OFFICE_RELATIONSHIPS_NAMESPACE, "http://purl.oclc.org/ooxml/officeDocument/relationships"];
         for (const xmlFile of ctx.storyParts()) {
@@ -65,7 +68,7 @@ export const wordHyperlinkRelationshipCheck: CheckDefinition = {
                 continue;
             }
             const dom = parsed.document;
-            const rels = externalHyperlinkRelationshipIds(ctx, xmlFile);
+            const rels = externalHyperlinkRelationshipIds(ctx, xmlFile, findPart);
             if (!rels) {
                 continue;
             }
