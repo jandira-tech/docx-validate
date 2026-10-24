@@ -111,6 +111,13 @@ export const opcNameIssueSeverity = (profile: Profile, format: PackageFormat): "
     profile === "strict" || (profile === "word-valid" && format === "docx") ? "error" : "warning";
 
 /**
+ * Word-specific name refusals are spec-valid for the unobserved PPTX/XLSX.
+ * Strict includes every Word-blocking DOCX/DOCM defect by contract.
+ */
+export const wordNameIssueSeverity = (profile: Profile, format: PackageFormat): "error" | "warning" =>
+    format === "docx" && (profile === "word-valid" || profile === "strict") ? "error" : "warning";
+
+/**
  * True when the request asks for part of the check set rather than all of it.
  * A partial run never constructs a schema validator, so callers use this to
  * skip the XSD-engine startup probe as well.

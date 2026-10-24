@@ -46,6 +46,7 @@ import {
     isPartialRequest,
     ModeConflictError,
     opcNameIssueSeverity,
+    wordNameIssueSeverity,
     profileWalksSchemas,
     QUICK_CHECK_GROUPS,
     resolveMode,
@@ -73,6 +74,8 @@ import { extractPackageParts } from "../../lib/zip-path";
 import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "./checks";
 import { XML_SYNTAX_CHECK_ID } from "./checks/xml";
 import { OPC_EQUIVALENT_PART_NAMES } from "./checks/opc-equivalent-part-names";
+import { OPC_PART_NAME_WORD_REFUSED } from "./checks/opc-part-name-word-refused";
+import { CT_OVERRIDE_PARTNAME_WORD_REFUSED } from "./checks/ct-override-partname-word-refused";
 import { OPC_PART_NAME_ESCAPED_SLASH } from "./checks/opc-part-name-escaped-slash";
 import { OPC_PART_NAME_ESCAPED_UNRESERVED } from "./checks/opc-part-name-escaped-unreserved";
 import { CT_OVERRIDE_PARTNAME_INVALID } from "./checks/ct-override-partname";
@@ -576,9 +579,11 @@ function findingsUnderProfile(
     // Excel behaviour has been observed, so those only warn. Duplicate content-
     // type declarations follow the same policy (#431, Word 16.115 session 3).
     const advisory = (issue: ValidationIssue): ValidationIssue =>
-        issue.code !== undefined && ADVISORY_CODES.has(issue.code) && opcNameIssueSeverity(profile, format) === "warning"
-            ? { ...issue, severity: "warning" }
-            : issue;
+        issue.code === OPC_PART_NAME_WORD_REFUSED || issue.code === CT_OVERRIDE_PARTNAME_WORD_REFUSED
+            ? { ...issue, severity: wordNameIssueSeverity(profile, format) }
+            : issue.code !== undefined && ADVISORY_CODES.has(issue.code) && opcNameIssueSeverity(profile, format) === "warning"
+              ? { ...issue, severity: "warning" }
+              : issue;
     if (profile !== "word-valid" || format !== "docx") return run.issues.map(advisory);
     return run.outcomes
         .flatMap((outcome) =>

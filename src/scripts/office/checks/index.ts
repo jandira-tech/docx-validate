@@ -16,6 +16,8 @@ import { mathRunInsertionCheck } from "./math-run-insertion";
 import { zipBytesAfterEocdCheck, zipEocdCommentOverrunCheck } from "./package";
 import { opcEquivalentPartNamesCheck } from "./opc-equivalent-part-names";
 import { opcRelationshipsStructureCheck } from "./opc-relationships-structure";
+import { opcPartNameWordRefusedCheck } from "./opc-part-name-word-refused";
+import { ctOverridePartnameWordRefusedCheck } from "./ct-override-partname-word-refused";
 import { opcPartNameEscapedSlashCheck } from "./opc-part-name-escaped-slash";
 import { opcPartNameEscapedUnreservedCheck } from "./opc-part-name-escaped-unreserved";
 import { pageMarginAttributesCheck } from "./page-margin-attributes";
@@ -122,9 +124,11 @@ export function createDefaultCheckRegistry(): CheckRegistry {
         opcEquivalentPartNamesCheck,
         opcPartNameEscapedUnreservedCheck,
         opcPartNameEscapedSlashCheck,
+        opcPartNameWordRefusedCheck,
         xmlSyntaxCheck,
         ctDuplicateDeclarationCheck,
         ctOverridePartnameInvalidCheck,
+        ctOverridePartnameWordRefusedCheck,
         commentMarkersCheck,
         commentThreadingCheck,
         ...WORD_RULE_CHECKS,

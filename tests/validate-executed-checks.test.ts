@@ -65,9 +65,11 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
                 "opc-equivalent-part-names",
                 "opc-part-name-escaped-unreserved",
                 "opc-part-name-escaped-slash",
+                "opc-part-name-word-refused",
                 "xml-syntax",
                 "ct-duplicate-declaration",
                 "ct-override-partname-invalid",
+                "ct-override-partname-word-refused",
                 "comment-markers",
                 "comment-threading",
             ]);
@@ -136,6 +138,7 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
                         "opc-equivalent-part-names",
                         "opc-part-name-escaped-unreserved",
                         "opc-part-name-escaped-slash",
+                        "opc-part-name-word-refused",
                     ]);
                 }
                 // Lenient never runs the envelope checks.
@@ -144,6 +147,7 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
                     "opc-equivalent-part-names",
                     "opc-part-name-escaped-unreserved",
                     "opc-part-name-escaped-slash",
+                    "opc-part-name-word-refused",
                 ]);
             });
         } finally {
