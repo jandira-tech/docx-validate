@@ -40,26 +40,17 @@ const duplicate = (): Buffer =>
     ]);
 const withTrailing = (archive: Buffer, count: number, fake?: Buffer): Buffer =>
     Buffer.concat(fake ? [archive, fake, Buffer.alloc(count - fake.length)] : [archive, Buffer.alloc(count)]);
-// An EOCD signature with no readable central directory behind it.
-const fakeEocd = (): Buffer => Buffer.concat([Buffer.from([0x50, 0x4b, 0x05, 0x06]), Buffer.alloc(18)]);
 
-// `lastStructuralEocdOffset` scans the whole buffer, as JSZip does, so the
-// stored names stay readable however much undeclared data follows the record
-// (#447). 100 trailing bytes sit inside the old 64 KiB comment window; 70 000
-// do not. Behind a fake signature the real record is still found, because the
-// structural check rejects the fake. The garbage fake leaves JSZip holding an
-// empty archive (it trusts the last record it finds), so the staged run also
-// reports the missing parts.
+// The stored names come from the record JSZip uses, the last EOCD signature
+// in the whole buffer, so they stay readable however much undeclared data
+// follows it (#447). 100 trailing bytes sit inside the old 64 KiB comment
+// window; 70 000 do not. Behind a fake signature JSZip loads an empty archive,
+// and so do the stored names (tests/zip-shadowed-directory.integration.test.ts,
+// #462).
 const KINDS = [
     { label: "no trailing bytes", bytes: duplicate(), trailing: 0, lenientValid: true },
     { label: "100 trailing bytes", bytes: withTrailing(duplicate(), 100), trailing: 100, lenientValid: true },
     { label: "70000 trailing bytes", bytes: withTrailing(duplicate(), 70_000), trailing: 70_000, lenientValid: true },
-    {
-        label: "70000 trailing bytes behind a fake EOCD signature",
-        bytes: withTrailing(duplicate(), 70_000, fakeEocd()),
-        trailing: 70_000,
-        lenientValid: false,
-    },
 ] as const;
 
 describe("identical stored names behind trailing data (#447)", { timeout: 300_000 }, () => {
@@ -121,10 +112,9 @@ describe("identical stored names behind trailing data (#447)", { timeout: 300_00
         });
     });
 
-    // A later record that still points at the real central directory is
-    // structural, so the stored names are readable — but JSZip rebases on it
-    // and refuses the archive, so every profile reports the open failure and
-    // no stored-name finding is invented (#447).
+    // A later copy of the record is the last signature: JSZip rebases its
+    // offsets and refuses the archive, so every profile reports the open
+    // failure and no stored-name finding is invented (#447, #462).
     it("reports the open failure, not a duplicate, when a later structural record hides the directory", async () => {
         await withTempDir(async (dir) => {
             const archive = duplicate();
