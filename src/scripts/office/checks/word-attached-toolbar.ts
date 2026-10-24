@@ -13,7 +13,7 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
-import { findEquivalentPart } from "../../../lib/content-types";
+import { equivalentPartLookup } from "../../../lib/content-types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import type { ValidationIssue } from "../../../lib/types";
 import path from "node:path";
@@ -24,8 +24,9 @@ const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/office
 const PACKAGE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/relationships";
 
 const resolveToolbarTarget = (relsFile: string, target: string): string | null => {
-    // `\` reads as `/`, as it does everywhere in the package view (#350).
-    const [name] = target.replace(/\\/g, "/").split("#", 1);
+    // `\` reads as `/`, as it does everywhere in the package view (#350). A
+    // query, like a fragment, is not part of the path (#359).
+    const [name] = target.replace(/\\/g, "/").split(/[?#]/, 1);
     if (!name) {
         return null;
     }
@@ -48,6 +49,7 @@ export const wordAttachedToolbarUtf8Check: CheckDefinition = {
         // seen before its bytes are read, so a clean part named again is not
         // scanned again (Jules on #345).
         const seen = new Set<string>();
+        let lookup: ((partName: string) => string | undefined) | undefined;
 
         const wordmlNs = "http://schemas.microsoft.com/office/word/2006/wordml";
         const relationshipNamespaces = [OFFICE_RELATIONSHIPS_NAMESPACE, "http://purl.oclc.org/ooxml/officeDocument/relationships"];
@@ -96,7 +98,11 @@ export const wordAttachedToolbarUtf8Check: CheckDefinition = {
                     if (!type.endsWith("/attachedToolbars")) {
                         continue;
                     }
-                    target = rel.getAttribute("Target");
+                    // An External target is a URI outside the package: it
+                    // names no part whose bytes this check reads (#359).
+                    if (rel.getAttribute("TargetMode") !== "External") {
+                        target = rel.getAttribute("Target");
+                    }
                     break;
                 }
                 if (!target) {
@@ -106,7 +112,9 @@ export const wordAttachedToolbarUtf8Check: CheckDefinition = {
                 // The entry the target names is both the key and the reported
                 // path, so two spellings of one part yield one finding under
                 // its real name (#350).
-                const part = resolved && (findEquivalentPart(ctx.partNames, resolved) ?? resolved);
+                // One index per run, not a scan of every entry per reference (#358).
+                lookup ??= equivalentPartLookup(ctx.partNames);
+                const part = resolved && (lookup(resolved) ?? resolved);
                 if (!part || seen.has(part)) {
                     continue;
                 }
