@@ -30,6 +30,8 @@ import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { buildRawZip } from "./support/raw-zip";
 import { DUPLICATE_MAIN_DOCUMENT_PARTS } from "./support/main-document-specimens";
 
+import { BYTE_REJECTED_MAIN_PARTS, GENERIC_RENAMED_MAIN_PARTS } from "./support/word-profile-regression-specimens";
+
 /** The profile a `.docx` is validated under when the caller names none. */
 const DEFAULT_DOCX_PROFILE = defaultProfileForFormat("docx");
 
@@ -1901,6 +1903,69 @@ describe("validation contract: portable collisions include strict (#441)", () =>
                 expect(result.metadata?.executedChecks).not.toContain("xml-syntax");
                 expect(result.xsdWalk.started).toBe(false);
             }
+        },
+        60_000,
+    );
+});
+
+describe("validation contract: generic renamed main parts (#535, #381)", () => {
+    it.each(GENERIC_RENAMED_MAIN_PARTS)(
+        "rejects $part typed by $contentType in full and selected runs",
+        async ({ part, parts }) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "specimen.docx");
+                writeFileSync(file, await buildDocx(parts));
+                const code = "word-part-content-type-generic";
+                const word = await validate(file, { profile: "word-valid" });
+                const strict = await validate(file, { profile: "strict" });
+                expect(word.valid).toBe(false);
+                expect(strict.valid && !word.valid, "strict success must imply word-valid success").toBe(false);
+                expect(strict.issues).toContainEqual(expect.objectContaining({ code, path: part, severity: "error" }));
+                for (const selection of [{ quick: true }, { checks: [code] }, { checks: ["content-types"] }]) {
+                    const partial = await validate(file, { profile: "word-valid", ...selection });
+                    expect(partial.valid).toBe(word.valid);
+                    expect(partial.issues.filter((issue) => issue.code === code)).toEqual(
+                        word.issues.filter((issue) => issue.code === code),
+                    );
+                    expect([...errorCodes(partial.issues)].every((error) => errorCodes(word.issues).has(error))).toBe(true);
+                }
+            });
+        },
+        60_000,
+    );
+});
+
+describe.each([false, true])("validation contract: byte-rejected main usage, staging fallback=%s (#536, #381)", (fallback) => {
+    it.each(BYTE_REJECTED_MAIN_PARTS.slice(0, 2))(
+        "keeps $segment errors in full and selected runs",
+        async ({ part, parts }) => {
+            const entries = Object.entries(parts).map(([name, content]) => ({ name, content }));
+            // A filename beyond the filesystem component limit forces archiveFindings
+            // after extraction fails, while the in-memory package stays readable.
+            if (fallback) entries.push({ name: `word/${"a".repeat(300)}.xml`, content: "<x/>" });
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "specimen.docx");
+                writeFileSync(file, buildRawZip(entries));
+                const word = await validate(file, { profile: "word-valid" });
+                const strict = await validate(file, { profile: "strict" });
+                expect(strict.valid && !word.valid).toBe(false);
+                for (const full of [word, strict]) {
+                    expect(full.valid).toBe(false);
+                    expect(full.issues).toContainEqual(
+                        expect.objectContaining({ code: "xml-encoding", path: "word/document.xml", severity: "error" }),
+                    );
+                    expect(full.issues).toContainEqual(expect.objectContaining({ code: "xml-syntax", path: part, severity: "error" }));
+                }
+                expect(errorCodes(word.issues).has("package-extract-failed")).toBe(fallback);
+                for (const selection of [{ quick: true }, { checks: ["xml-syntax"] }, { checks: ["xml"] }]) {
+                    const partial = await validate(file, { profile: "word-valid", ...selection });
+                    expect(partial.valid).toBe(word.valid);
+                    expect(partial.issues.filter((issue) => issue.code === "xml-syntax" && issue.path === part)).toEqual(
+                        word.issues.filter((issue) => issue.code === "xml-syntax" && issue.path === part),
+                    );
+                    expect([...errorCodes(partial.issues)].every((error) => errorCodes(word.issues).has(error))).toBe(true);
+                }
+            });
         },
         60_000,
     );

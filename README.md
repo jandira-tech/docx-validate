@@ -515,7 +515,10 @@ WordprocessingML part type a main-document relationship names — numbering,
 header, footer, endnotes, footnotes, comments and glossaryDocument — whose
 findings cite the content type ECMA-376 Part 1 (4th edition), clause 11.3,
 assigns rather than a Word observation
-([#506](https://github.com/jandira-tech/docx-validate/issues/506)). One finding
+([#506](https://github.com/jandira-tech/docx-validate/issues/506)). Under strict, a Default-typed main finding is suppressed only when
+`ct-undeclared-part` actually reports an error on that same path; renamed
+main parts, including non-XML names and parts under `docProps/`, retain their
+generic-type error ([#535](https://github.com/jandira-tech/docx-validate/issues/535)). One finding
 is reported per part, at the part's path, naming the relationship type and
 the content type the part needs — for the main document, all four Word
 main-document content types, since the package does not say whether it is
@@ -532,8 +535,8 @@ spelling; the Override and `text/xml` spellings for settings, fontTable and
 webSettings are inference from the same resolution ([#517](https://github.com/jandira-tech/docx-validate/issues/517)).
 The finding
 is an error, and Word-blocking, under word-valid for DOCX/DOCM, and an error
-under strict, where a main document resolved through a Default is not
-reported twice because `ct-undeclared-part` already rejects it; lenient
+under strict, where a Default-typed main is not reported twice when
+`ct-undeclared-part` rejects that same path; lenient
 reports a warning. Full,
 quick and named runs agree.
 
@@ -585,6 +588,10 @@ header through their `w:*Reference r:id`, comments through
 part wherever they are stored — offering repair or refusing the file when one
 is malformed — and opens a related-but-unused header or endnotes part clean,
 even under `word/` ([#516](https://github.com/jandira-tech/docx-validate/issues/516); probe session 15).
+When the main document fails byte-level XML checks, including an unsupported
+encoding declaration, lazy usage is unknown and those related parts stay
+reached in full, partial and staging-fallback runs
+([#536](https://github.com/jandira-tech/docx-validate/issues/536)).
 Any other part under `word/` that a known Office relationship of an unobserved
 type names also blocks — a type has an Office segment only when it is exactly
 an Office relationship-type namespace plus one segment, so
