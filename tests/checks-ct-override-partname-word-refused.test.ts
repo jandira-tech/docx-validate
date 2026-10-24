@@ -29,6 +29,18 @@ const withOverrides = (parts: Readonly<Record<string, string>>, names: readonly 
     ),
 });
 
+/** An AlternateContent Override pair: the Choice requires an unknown namespace, so a processor takes the Fallback (#459). */
+const withAlternate = (choice: string, fallback: string) => ({
+    ...MINIMAL_PARTS,
+    "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(/<Types [^>]*>/, (open) =>
+        open.replace(/>$/, ` xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:x="urn:x:unknown">`),
+    ).replace(
+        "</Types>",
+        `<mc:AlternateContent><mc:Choice Requires="x"><Override PartName="${choice}" ContentType="application/xml"/></mc:Choice>` +
+            `<mc:Fallback><Override PartName="${fallback}" ContentType="application/xml"/></mc:Fallback></mc:AlternateContent></Types>`,
+    ),
+});
+
 describe("Word-refused Override PartNames: deterministic check", () => {
     it("registers after the XML syntax prerequisite in content-types", () => {
         expect(createDefaultCheckRegistry().get(ID)).toMatchObject({
@@ -61,6 +73,14 @@ describe("Word-refused Override PartNames: deterministic check", () => {
         const issues = await check!.run(ValidationContext.fromEntries({ "[content_types].XML": parts["[Content_Types].xml"] }));
         expect(issues).toHaveLength(1);
         expect(issues[0]!.path).toBe("[content_types].XML");
+    });
+    it("judges the stream after Markup Compatibility processing, as ct-override-partname-invalid does (#459)", async () => {
+        const check = createDefaultCheckRegistry().get(ID);
+        expect(check).toBeDefined();
+        const ignored = await check!.run(ValidationContext.fromEntries(withAlternate(REFUSED[0]!, "/word/fallback.xml")));
+        expect(ignored).toEqual([]);
+        const both = await check!.run(ValidationContext.fromEntries(withAlternate(REFUSED[0]!, REFUSED[1]!)));
+        expect(both.map((issue) => issue.message)).toEqual([expect.stringContaining(JSON.stringify(REFUSED[1]))]);
     });
 });
 
@@ -125,6 +145,27 @@ describe.each(["packed", "directory"] as const)("Word-refused Override PartNames
                     result.issues.filter((i) => i.code === code),
                     code,
                 ).toHaveLength(1);
+        });
+    });
+    it("judges only the selected AlternateContent branch in full and partial runs (#459)", async () => {
+        await withTempDir(async (dir) => {
+            const parts = withAlternate(REFUSED[0]!, REFUSED[1]!);
+            const target = path.join(dir, "alternate.docx");
+            if (input === "packed") writeFileSync(target, await buildDocx(parts));
+            else
+                for (const [name, text] of Object.entries(parts)) {
+                    mkdirSync(path.dirname(path.join(target, name)), { recursive: true });
+                    writeFileSync(path.join(target, name), text);
+                }
+            for (const selection of [{}, { checks: ["content-types"] }, { checks: [ID] }]) {
+                const result = await validate(target, { profile: "word-valid", ...selection });
+                const found = result.issues.filter((i) => i.code === ID);
+                expect(
+                    found.map((i) => i.message),
+                    JSON.stringify(selection),
+                ).toEqual([expect.stringContaining(JSON.stringify(REFUSED[1]))]);
+                expect(found[0]!.severity).toBe("error");
+            }
         });
     });
 });

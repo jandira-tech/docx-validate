@@ -46,10 +46,10 @@ import {
     isPartialRequest,
     ModeConflictError,
     opcNameIssueSeverity,
-    wordNameIssueSeverity,
     profileWalksSchemas,
     QUICK_CHECK_GROUPS,
     resolveMode,
+    wordObservedIssueSeverity,
     type ResolvedMode,
 } from "../../lib/mode-policy";
 import {
@@ -79,6 +79,7 @@ import { CT_OVERRIDE_PARTNAME_WORD_REFUSED } from "./checks/ct-override-partname
 import { OPC_PART_NAME_ESCAPED_SLASH } from "./checks/opc-part-name-escaped-slash";
 import { OPC_PART_NAME_ESCAPED_UNRESERVED } from "./checks/opc-part-name-escaped-unreserved";
 import { CT_OVERRIDE_PARTNAME_INVALID } from "./checks/ct-override-partname";
+import { CT_MARKUP_COMPATIBILITY } from "./checks/ct-markup-compatibility";
 import { contextFromArchive, contextFromDirectory } from "./package-context";
 import { BaseSchemaValidator, walkFiles } from "./validators/base";
 import { DOCXSchemaValidator } from "./validators/docx";
@@ -105,6 +106,17 @@ const ADVISORY_CODES: ReadonlySet<string> = new Set([
     OPC_PART_NAME_ESCAPED_SLASH,
     CT_DUPLICATE_DECLARATION,
     CT_OVERRIDE_PARTNAME_INVALID,
+]);
+
+/**
+ * The findings for spec-valid markup Word refuses, whose severity is
+ * {@link wordObservedIssueSeverity}: Word-refused part-name spellings (#451,
+ * #408, #443) and Markup Compatibility in the content-types stream (#459).
+ */
+const WORD_OBSERVED_CODES: ReadonlySet<string> = new Set([
+    OPC_PART_NAME_WORD_REFUSED,
+    CT_OVERRIDE_PARTNAME_WORD_REFUSED,
+    CT_MARKUP_COMPATIBILITY,
 ]);
 
 /**
@@ -593,8 +605,8 @@ function findingsUnderProfile(
     // Excel behaviour has been observed, so those only warn. Duplicate content-
     // type declarations follow the same policy (#431, Word 16.115 session 3).
     const advisory = (issue: ValidationIssue): ValidationIssue =>
-        issue.code === OPC_PART_NAME_WORD_REFUSED || issue.code === CT_OVERRIDE_PARTNAME_WORD_REFUSED
-            ? { ...issue, severity: wordNameIssueSeverity(profile, format) }
+        issue.code !== undefined && WORD_OBSERVED_CODES.has(issue.code)
+            ? { ...issue, severity: wordObservedIssueSeverity(profile, format) }
             : issue.code !== undefined && ADVISORY_CODES.has(issue.code) && opcNameIssueSeverity(profile, format) === "warning"
               ? { ...issue, severity: "warning" }
               : issue;

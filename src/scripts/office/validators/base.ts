@@ -56,8 +56,13 @@ import {
     resolveContentType,
     resolvePartName,
 } from "../../../lib/content-types";
-import { applyMarkupCompatibility, STRICT_UNDERSTOOD_NAMESPACES, UNDERSTOOD_NAMESPACES } from "../../../lib/markup-compatibility";
-import { opcNameIssueSeverity, wordNameIssueSeverity } from "../../../lib/mode-policy";
+import {
+    applyMarkupCompatibility,
+    STRICT_UNDERSTOOD_NAMESPACES,
+    UNDERSTOOD_NAMESPACES,
+    WORD_UNDERSTOOD_NAMESPACES,
+} from "../../../lib/markup-compatibility";
+import { opcNameIssueSeverity, wordObservedIssueSeverity } from "../../../lib/mode-policy";
 import { withTempDir } from "../../../lib/run-cli";
 import { indexByPartName, type ValidationContext } from "../../../lib/validation-context";
 import type { PackageFormat, Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
@@ -79,6 +84,7 @@ import { CT_OVERRIDE_PARTNAME_WORD_REFUSED, ctOverridePartnameWordRefusedCheck }
 import { CT_OVERRIDE_PARTNAME_INVALID, ctOverridePartnameInvalidCheck } from "../checks/ct-override-partname";
 import { ctDuplicateDeclarationCheck } from "../checks/word-content-types";
 import { loadCentralNamedArchive } from "../../../lib/zip-central-names";
+import { CT_MARKUP_COMPATIBILITY, ctMarkupCompatibilityCheck } from "../checks/ct-markup-compatibility";
 
 /**
  * Schema mapping table — file basename / suffix → relative path inside the
@@ -1183,13 +1189,21 @@ export class BaseSchemaValidator {
             };
         }
 
+        // [M1.19]: coverage and duplicates judge the stream after Markup
+        // Compatibility processing — the same view the named checks read
+        // through `ctx.effectiveXml` — so declarations in an ignored branch
+        // name no part here either. Word refuses the markup itself, which
+        // `ct-markup-compatibility` reports (#459); the pass's own issues are
+        // not duplicated from the view.
+        const contentTypesDom = applyMarkupCompatibility(dom, { understood: WORD_UNDERSTOOD_NAMESPACES }).document;
+
         // Single OPC resolution table (Override first, then Default —
         // ECMA-376 Part 2 §10.1.2.4) shared by every coverage pass below:
         // declarable XML roots (ct-undeclared-part), known media extensions
         // (ct-undeclared-ext) and the residual invariant (ct-uncovered-part).
-        const table = parseContentTypes(dom);
+        const table = parseContentTypes(contentTypesDom);
         issues.push(
-            ...duplicateContentTypeDeclarations(dom, contentTypesName).map((issue) => ({
+            ...duplicateContentTypeDeclarations(contentTypesDom, contentTypesName).map((issue) => ({
                 ...issue,
                 severity: this.duplicateContentTypeSeverity,
             })),
@@ -1343,7 +1357,7 @@ export class BaseSchemaValidator {
         this.recordExecutedCheck(CT_OVERRIDE_PARTNAME_WORD_REFUSED);
         return finalize([
             ...issues.map((issue): ValidationIssue => ({ ...issue, severity })),
-            ...wordIssues.map((issue): ValidationIssue => ({ ...issue, severity: wordNameIssueSeverity(this.profile, format) })),
+            ...wordIssues.map((issue): ValidationIssue => ({ ...issue, severity: wordObservedIssueSeverity(this.profile, format) })),
         ]);
     }
 
@@ -1359,6 +1373,29 @@ export class BaseSchemaValidator {
         const issues = await ctDuplicateDeclarationCheck.run(view);
         this.recordExecutedCheck(CT_DUPLICATE_DECLARATION);
         return finalize([...issues].map((issue): ValidationIssue => ({ ...issue, severity: this.duplicateContentTypeSeverity })));
+    }
+
+    /**
+     * Markup Compatibility in the content-types stream (#459): Word 16.115
+     * offers recovery for every usage probed — `mc:Ignorable`, an ignored
+     * element, `mc:AlternateContent` in either orientation (probe session 14a,
+     * docs/plans/evidence/word-probes-2026-10-24.md) — while a bare `xmlns:mc`
+     * declaration opens clean. The named check reads the raw stream, so a full
+     * run and a partial run report the same finding at the severity
+     * {@link wordObservedIssueSeverity} gives it: an error for DOCX/DOCM under
+     * word-valid and strict, a warning under lenient and for PPTX. The parts
+     * that do not parse are hidden, as in {@link validateOverridePartNames}.
+     */
+    protected async validateContentTypesMarkupCompatibility(
+        context: ValidationContext,
+        format: PackageFormat,
+        malformed: ReadonlySet<string>,
+    ): Promise<ValidationResult> {
+        const view = malformed.size > 0 ? context.withUnparseable(new Map([...malformed].map((part) => [part, "malformed"]))) : context;
+        const issues = await ctMarkupCompatibilityCheck.run(view);
+        this.recordExecutedCheck(CT_MARKUP_COMPATIBILITY);
+        const severity = wordObservedIssueSeverity(this.profile, format);
+        return finalize([...issues].map((issue): ValidationIssue => (severity === "warning" ? { ...issue, severity: "warning" } : issue)));
     }
 
     // ----- XSD validation -----------------------------------------------------

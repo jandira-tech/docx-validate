@@ -111,13 +111,6 @@ export const opcNameIssueSeverity = (profile: Profile, format: PackageFormat): "
     profile === "strict" || (profile === "word-valid" && format === "docx") ? "error" : "warning";
 
 /**
- * Word-specific name refusals are spec-valid for the unobserved PPTX/XLSX.
- * Strict includes every Word-blocking DOCX/DOCM defect by contract.
- */
-export const wordNameIssueSeverity = (profile: Profile, format: PackageFormat): "error" | "warning" =>
-    format === "docx" && (profile === "word-valid" || profile === "strict") ? "error" : "warning";
-
-/**
  * True when the request asks for part of the check set rather than all of it.
  * A partial run never constructs a schema validator, so callers use this to
  * skip the XSD-engine startup probe as well.
@@ -180,3 +173,17 @@ export const resolveMode = (format: PackageFormat, request: ModeRequest): Resolv
         select: request.quick === true ? QUICK_CHECK_GROUPS : request.checks?.length ? [...request.checks] : undefined,
     };
 };
+/**
+ * The severity a finding for spec-valid markup Word was observed to refuse
+ * carries under a profile and a format: an error under word-valid and strict
+ * for DOCX/DOCM — Word 16.115 offers recovery for Markup Compatibility in the
+ * content-types stream (#459; probe session 14a) and for the part-name
+ * spellings `opc-part-name-word-refused` and `ct-override-partname-word-refused`
+ * report (#408, #443, #451; sessions 6–12), and strict is the superset of
+ * word-valid — and a warning under lenient, and under every profile for the
+ * unobserved PPTX/XLSX. Unlike {@link opcNameIssueSeverity}, strict does not
+ * raise the severity for the other formats: the markup is spec-valid and
+ * nothing is observed there.
+ */
+export const wordObservedIssueSeverity = (profile: Profile, format: PackageFormat): "error" | "warning" =>
+    format === "docx" && (profile === "word-valid" || profile === "strict") ? "error" : "warning";

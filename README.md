@@ -266,9 +266,9 @@ The complete named check catalogue is below. Each Word check except
 `opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, and
 `opc-part-name-word-refused`; `xml-syntax` is the shared
 XML prerequisite. All `word-*` checks apply to DOCX/DOCM only.
-`ct-duplicate-declaration`, `ct-override-partname-invalid`, and
-`ct-override-partname-word-refused` apply to every
-package format; `word-content-type-invalid` applies to DOCX/DOCM only.
+`ct-duplicate-declaration`, `ct-override-partname-invalid`,
+`ct-override-partname-word-refused` and `ct-markup-compatibility` apply to
+every package format; `word-content-type-invalid` applies to DOCX/DOCM only.
 
 `opc-equivalent-part-names` applies to DOCX/DOCM, PPTX, and XLSX package selections,
 including the `package` quick group. It reads stored ZIP item names before full-run
@@ -345,7 +345,7 @@ names and input bytes unchanged.
 | `story`                   | `word-shading-color`, `word-page-margin-attributes`, `word-run-misplaced`, `word-run-properties-misplaced`, `word-underline-misplaced`, `word-paragraph-properties-misplaced`, `word-section-properties-misplaced`, `word-footnote-reference-missing`, `word-numbering-picture-bullet`, `word-sdt-id-empty`, `word-text-contains-paragraph`         |
 | `tables`                  | `word-grid-column-attributes`, `word-cell-margin-order`, `word-table-properties-required`, `word-table-properties-misplaced`, `word-row-without-cell`, `word-cell-ends-with-table`                                                                                                                                                                  |
 | `drawings`                | `word-textbox-content-namespace`, `word-drawing-extent-missing`, `word-drawing-extent-misplaced`, `word-picture-nvpicpr-missing`, `word-picture-sppr-missing`, `word-empty-drawing`, `word-anchor-missing-attribute`, `word-position-offset-and-align`, `word-drawing-scalar-whitespace`, `word-drawing-arc-radius`, `word-drawing-extent-negative` |
-| `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`, `ct-override-partname-invalid`, `ct-override-partname-word-refused`                                                                                                                                                                                                                        |
+| `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`, `ct-override-partname-invalid`, `ct-override-partname-word-refused`, `ct-markup-compatibility`                                                                                                                                                                                             |
 | `relationships`           | `word-duplicate-theme-relationship`, `word-duplicate-font-table-relationship`, `word-duplicate-web-settings-relationship`, `word-duplicate-settings-relationship`, `word-hyperlink-relationship`, `word-main-document-part`, `opc-relationships-structure`                                                                                          |
 | `tracked-changes`         | `word-textbox-deleted-text`, `word-move-from-deleted-text`                                                                                                                                                                                                                                                                                          |
 | `settings`                | `word-custom-property-filetime-empty`, `word-attached-toolbar-utf8`                                                                                                                                                                                                                                                                                 |
@@ -396,6 +396,26 @@ The finding is an error under strict, and an error and Word-blocking under
 word-valid for DOCX/DOCM, where a folder segment ending with `.` is a warning;
 lenient and the unobserved PPTX/XLSX report a warning. Full, quick and named
 runs agree.
+
+`ct-markup-compatibility` reports one finding for a content-types stream that
+uses Markup Compatibility: an attribute in the MC namespace (`mc:Ignorable`,
+`mc:ProcessContent`, `mc:MustUnderstand`), an element in it
+(`mc:AlternateContent` and its branches), or an element or attribute in a
+namespace an `mc:Ignorable` lists. A bare `xmlns:mc` declaration that nothing
+uses is not reported. Microsoft Word 16.115 does not process Markup
+Compatibility in this stream: it offers recovery for every shape probed — an
+`mc:Ignorable` attribute, an ignored foreign element, and an AlternateContent
+in either orientation — while the declared-only control opens clean
+([#459](https://github.com/jandira-tech/docx-validate/issues/459); probe
+session 14, `docs/plans/evidence/word-probes-2026-10-24.md`). The check reads
+the raw stored stream, while `ct-duplicate-declaration`,
+`ct-override-partname-invalid`, `word-content-type-invalid` and content-type
+resolution all judge the stream after Markup Compatibility processing, as OPC
+[M1.19] requires — so an `Override` in an ignored `mc:Choice` no longer draws
+a `ct-override-partname-invalid` finding, and a bad `mc:Fallback` still does.
+The finding is an error, and Word-blocking, under word-valid for DOCX/DOCM and
+under strict (whose schema walk already refuses the same stream); lenient and
+the unobserved PPTX/XLSX warn. Full, quick and named runs agree.
 
 The `schema` group contains structural checks, not an XSD walk. The `comments`
 group runs `comment-markers` (range pairing and references to existing comments)

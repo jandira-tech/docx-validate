@@ -193,6 +193,25 @@ describe("validation contract: every Word rejection rule runs under strict", { t
     }
 });
 
+describe("validation contract: Markup Compatibility in the content-types stream (#459)", { timeout: 120000 }, () => {
+    // Session 14a (docs/plans/evidence/word-probes-2026-10-24.md): Word 16.115
+    // offers recovery for `mc:Ignorable` in [Content_Types].xml, so word-valid
+    // must fail it and strict — the superset — must report the same check.
+    const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+    const withIgnorable = MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+        /<Types ([^>]*)>/,
+        `<Types $1 xmlns:mc="${MC}" xmlns:x="urn:x:unknown" mc:Ignorable="x">`,
+    );
+
+    for (const profile of ["word-valid", "strict"] as const) {
+        it(`${profile}: mc:Ignorable in the content-types stream is rejected as ct-markup-compatibility`, async () => {
+            const result = await validateBytes(await buildDocx({ ...MINIMAL_PARTS, "[Content_Types].xml": withIgnorable }), profile);
+            expect(errorCodes(result.issues).has("ct-markup-compatibility")).toBe(true);
+            expect(result.valid).toBe(false);
+        });
+    }
+});
+
 describe("validation contract: strict keeps checking after an XML failure", { timeout: 120000 }, () => {
     // A row with no cell in the body, and styles.xml cut off before its end tag.
     const ROW_WITHOUT_CELL =

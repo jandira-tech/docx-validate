@@ -58,6 +58,7 @@ import { wordFootnoteReferenceMissingCheck } from "./word-footnote-reference";
 import { wordMathParseCheck, wordMathSpreBodyCheck } from "./word-body-math";
 import { commentMarkersCheck, commentThreadingCheck } from "./comments";
 import { xmlSyntaxCheck } from "./xml";
+import { ctMarkupCompatibilityCheck } from "./ct-markup-compatibility";
 
 /**
  * Word rules that `DOCXSchemaValidator` runs through the registry under the
@@ -129,6 +130,7 @@ export function createDefaultCheckRegistry(): CheckRegistry {
         ctDuplicateDeclarationCheck,
         ctOverridePartnameInvalidCheck,
         ctOverridePartnameWordRefusedCheck,
+        ctMarkupCompatibilityCheck,
         commentMarkersCheck,
         commentThreadingCheck,
         ...WORD_RULE_CHECKS,
