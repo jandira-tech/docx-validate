@@ -52,6 +52,7 @@ export const wordDocumentRootCheck: CheckDefinition = {
             // OPC part names compare ASCII case-insensitively with unreserved
             // escapes decoded, so `WORD/document.xml` names word/document.xml (#344).
             const part = resolvePartName(ctx.partNames, relationship.getAttribute("Target") ?? "");
+            if (part === undefined) continue;
             const parsed = ctx.effectiveXml(part);
             // XML syntax and missing targets belong to their existing checks.
             if (!parsed?.ok) continue;
