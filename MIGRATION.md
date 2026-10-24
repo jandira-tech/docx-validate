@@ -33,7 +33,10 @@ XLSX run never does (#341).
 
 `quick: true` / `--quick` and `checks: ["tables"]` / `--checks tables` select
 registered checks plus prerequisites, without XSD or the full validator's other
-checks and severity remapping. Read `metadata.omittedChecks` before treating a
+checks. They apply the profile as a full run does (#381): under `lenient` they
+run no Word rule and no ZIP-envelope check, and naming one is a
+`ModeConflictError`; under `word-valid` an error Word tolerates is a warning.
+Read `metadata.omittedChecks` before treating a
 partial `valid: true` as a document verdict. A passing partial CLI run prints
 `Selected checks passed (N run, M omitted).` and never `All validations PASSED!`,
 even for a PPTX or XLSX run that omits no registered check (#339).

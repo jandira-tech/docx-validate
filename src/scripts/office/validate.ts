@@ -38,10 +38,12 @@ import { Command } from "commander";
 import JSZip from "jszip";
 
 import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
-import { runChecks } from "../../lib/check-scheduler";
+import type { CheckRegistry } from "../../lib/check-registry";
+import { runChecks, type CheckRun } from "../../lib/check-scheduler";
 import {
     assertModeCoherent,
     isPartialRequest,
+    ModeConflictError,
     profileWalksSchemas,
     QUICK_CHECK_GROUPS,
     resolveMode,
@@ -60,13 +62,14 @@ import type { XsdValidator } from "../../lib/xsd-validator";
 import { verifyInWord, type WordVerification } from "../../lib/word-verifier";
 import { ValidationContext } from "../../lib/validation-context";
 import { extractPackageParts } from "../../lib/zip-path";
-import { createDefaultCheckRegistry } from "./checks";
+import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "./checks";
 import { contextFromArchive, contextFromDirectory } from "./package-context";
 import { BaseSchemaValidator } from "./validators/base";
 import { DOCXSchemaValidator } from "./validators/docx";
 import { buildRepairPlanIssues, collectDocxSemanticInventory, compareDocxSemanticInventories } from "./validators/docx-diagnostics";
 import { PPTXSchemaValidator } from "./validators/pptx";
 import { validateRedlining } from "./validators/redlining";
+import { isWordBlockingIssue } from "./validators/word-blocking";
 import { explainWordError } from "./validators/word-error-explanations";
 
 const SUPPORTED_SUFFIXES = new Set([".docm", ".docx", ".pptx", ".xlsx"]);
@@ -358,6 +361,75 @@ function orderedExecutedChecks(format: PackageFormat, executed: readonly string[
 }
 
 /**
+ * The named checks a full run under `profile` never reaches. Lenient runs
+ * neither the ZIP-envelope checks ({@link runsWordPackageChecks}) nor the Word
+ * rules (`WORD_RULE_CHECKS`), so a partial lenient run leaves them out too and
+ * is never stricter than the full run (#381).
+ */
+function checksOutsideProfile(registry: CheckRegistry, profile: Profile): ReadonlySet<string> {
+    if (profile !== "lenient") return new Set();
+    const envelope = registry.list().filter((definition) => (definition.groups as readonly string[]).includes("package"));
+    return new Set([...WORD_RULE_CHECKS, ...envelope].map((definition) => definition.id));
+}
+
+/**
+ * The ids a partial run selects under its profile: each named check, and each
+ * member of a named group, that the full run under that profile reaches.
+ * Naming a check the profile never runs, or only groups with no check it runs,
+ * asks for something the profile does not do (#381).
+ *
+ * @throws {ModeConflictError}
+ */
+function selectionUnderProfile(
+    registry: CheckRegistry,
+    select: readonly string[],
+    format: PackageFormat,
+    profile: Profile,
+): readonly string[] {
+    // Unknown and inapplicable names fail as they always have.
+    registry.resolve(select, format);
+    const outside = checksOutsideProfile(registry, profile);
+    const refused = select.filter((name) => outside.has(name));
+    if (refused.length > 0) {
+        throw new ModeConflictError(
+            `Cannot run ${refused.join(", ")} under profile '${profile}': it runs neither the Word rules nor the ZIP-envelope checks. Use --profile word-valid.`,
+        );
+    }
+    const members = registry
+        .list(format)
+        .filter((definition) => select.includes(definition.id) || definition.groups.some((group) => select.includes(group)))
+        .map((definition) => definition.id);
+    const ids = members.filter((id) => !outside.has(id));
+    // A recognized group with no registered check (`comments`) still runs
+    // nothing and omits everything, under every profile.
+    if (members.length === 0) return select;
+    if (ids.length === 0) {
+        throw new ModeConflictError(
+            `No check in ${select.join(", ")} runs under profile '${profile}': it runs neither the Word rules nor the ZIP-envelope checks. Use --profile word-valid.`,
+        );
+    }
+    return ids;
+}
+
+/**
+ * A partial run's findings as the full run reports them. Under `word-valid`, an
+ * error from a DOCX check that Word tolerates is a warning
+ * ({@link isWordBlockingIssue}), as `DOCXSchemaValidator` reports it. A full run
+ * also reads the ZIP envelope outside that validator, so the envelope checks
+ * keep their severity (#381).
+ */
+function findingsUnderProfile(run: CheckRun, registry: CheckRegistry, format: PackageFormat, profile: Profile): ValidationIssue[] {
+    if (profile !== "word-valid" || format !== "docx") return [...run.issues];
+    return run.outcomes.flatMap((outcome) =>
+        registry.get(outcome.id)?.archiveOnly === true
+            ? outcome.issues
+            : outcome.issues.map((issue): ValidationIssue =>
+                  issue.severity === "error" && !isWordBlockingIssue(issue) ? { ...issue, severity: "warning" } : issue,
+              ),
+    );
+}
+
+/**
  * A partial run: only the selected named checks, against a context built from
  * the package. No schema validator is constructed, so nothing compiles an XSD
  * and no rule outside the selection runs. Everything the selection left out is
@@ -371,7 +443,7 @@ async function runSelectedChecks(
     mode: ResolvedMode,
 ): Promise<ValidateRunResult> {
     const registry = createDefaultCheckRegistry();
-    const select = mode.select ?? [];
+    const select = selectionUnderProfile(registry, mode.select ?? [], format, mode.profile);
     const opened = packed ? await contextFromArchive(await fs.readFile(target)) : { context: contextFromDirectory(path.resolve(target)) };
     if (opened.openError !== undefined) {
         // An archive that does not open has no parts: only the selected
@@ -408,9 +480,10 @@ async function runSelectedChecks(
         };
     }
     const run = await runChecks(opened.context, registry, { format, select });
+    const issues = findingsUnderProfile(run, registry, format, mode.profile);
     return {
-        valid: run.valid,
-        issues: [...run.issues],
+        valid: issues.every((issue) => issue.severity !== "error"),
+        issues,
         repairs: 0,
         suffix,
         xsdWalk: xsdWalkNotStarted(),
