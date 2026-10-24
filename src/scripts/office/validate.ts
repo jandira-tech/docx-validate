@@ -367,7 +367,8 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         // still holds after the extraction failed (#454).
         onExtractFailure?: (err: unknown) => Promise<{ issues: readonly ValidationIssue[]; executed: readonly string[] }>,
         // The input directory a staged directory's write-back may modify;
-        // its destinations are guarded against symlinks (#425).
+        // its destinations are guarded against symlinks and hard links
+        // (#425, #545).
         writeBackRoot?: string,
     ): Promise<ValidateRunResult> =>
         withTempDir(async (tempDir) => {
@@ -582,10 +583,11 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     }
     const diagnostic = await storedNamesRun(opened.context, format, profile);
     const entries = walked.files.map((file) => [path.relative(dir, file).split(path.sep).join("/"), file] as const);
-    // A symlink in the tree stages too (#425): the stored bytes are read
-    // through it into the package view, while every write-back destination
-    // is guarded against following it.
-    if (entries.some(([name]) => name !== normalizePartName(name)) || walked.holdsSymlinks) {
+    // A symlink or hard link in the tree stages too (#425, #545): the stored
+    // bytes are read into the package view, while every write-back
+    // destination is guarded against following a link or modifying an
+    // unnamed hard-link alias.
+    if (entries.some(([name]) => name !== normalizePartName(name)) || walked.holdsSymlinks || walked.holdsHardLinks) {
         // JSZip is only an in-memory entry collection here: no ZIP is written.
         const zip = new JSZip();
         for (const [name, file] of entries) {
@@ -1022,12 +1024,12 @@ interface WriteBackDestinationInspection {
 }
 
 /**
- * Inspect one staged auto-repair write-back destination (#425, #544). The
- * stored file itself must be regular, no path segment below the input root
- * may be a symbolic link, and the resolved path must stay under the root.
- * The physical identity lets the caller refuse every alias of one file
- * together. A destination that no longer exists keeps the write-back's own
- * ENOENT handling.
+ * Inspect one staged auto-repair write-back destination (#425, #544, #545).
+ * The stored file itself must be regular, no path segment below the input
+ * root may be a symbolic link, its link count must be one, and its resolved
+ * path must stay under the root. The physical identity lets the caller
+ * refuse every alias of one file together. A destination that no longer
+ * exists keeps the write-back's own ENOENT handling.
  */
 async function inspectWriteBackDestination(root: string, file: string): Promise<WriteBackDestinationInspection> {
     let listed: Stats;
@@ -1063,6 +1065,13 @@ async function inspectWriteBackDestination(root: string, file: string): Promise<
             identity,
             refusal: new Error(`${file} passes through symbolic-link path segment ${linkSegment}; the write-back never follows it`),
             throughSymbolicLink: true,
+        };
+    }
+    if (followed !== undefined && followed.nlink > 1) {
+        return {
+            identity,
+            refusal: new Error(`${file} has link count ${followed.nlink}; the write-back refuses a hard-linked file`),
+            throughSymbolicLink: false,
         };
     }
     if (containRelationshipTarget(root, file) === null) {

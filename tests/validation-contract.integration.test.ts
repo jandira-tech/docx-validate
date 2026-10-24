@@ -2062,6 +2062,72 @@ describe.skipIf(process.platform === "win32")("directory package staging (#374)"
         for (const code of wordValidErrors) expect(strictErrors.has(code)).toBe(true);
     }, 60_000);
 
+    it("refuses a hard-linked write-back destination and leaves its outside target untouched (#545)", async () => {
+        const runCase = async (profile: "word-valid" | "strict") => {
+            return withTempDir(async (dir) => {
+                const parts: Parts = {
+                    ...MINIMAL_PARTS,
+                    "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace("<w:t>Hello</w:t>", "<w:t> Hello</w:t>"),
+                    "custom/item.xml":
+                        '<root xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:t> Custom</w:t></root>',
+                };
+                const input = await writeDirectory(path.join(dir, "input.docx"), parts, false);
+                const outside = path.join(dir, "outside");
+                const outsideTarget = path.join(outside, "target.xml");
+                await fs.mkdir(outside);
+                await fs.writeFile(outsideTarget, parts["word/document.xml"]!);
+                await fs.rm(path.join(input, "word", "document.xml"));
+                await fs.link(outsideTarget, path.join(input, "word", "document.xml"));
+
+                const stored = path.join(input, "word", "document.xml");
+                const regular = path.join(input, "custom", "item.xml");
+                const outsideBefore = await fs.readFile(outsideTarget);
+                const storedBefore = await fs.readFile(stored);
+                const regularBefore = await fs.readFile(regular);
+                const partial = profile === "word-valid" ? await validateResolves(input, { profile, quick: true }) : undefined;
+                const full = await validateResolves(input, { profile });
+                const actual = await validateResolves(input, { profile, autoRepair: true });
+
+                // The hard link's other name lives outside the input tree. It
+                // and the stored file keep their original bytes.
+                expect(await fs.readFile(outsideTarget)).toEqual(outsideBefore);
+                expect(await fs.readFile(stored)).toEqual(storedBefore);
+                expect(outsideBefore.toString()).not.toContain('xml:space="preserve"');
+
+                // The refusal names the stored path and says why a
+                // multiply-linked inode is not a safe destination.
+                const refusals = actual.issues.filter((issue) => issue.code === "repair-write-back-failed");
+                expect(refusals).toEqual(
+                    expect.arrayContaining([
+                        expect.objectContaining({
+                            severity: "error",
+                            code: "repair-write-back-failed",
+                            path: "word/document.xml",
+                            message: expect.stringMatching(/word\/document\.xml.*(?:link count|hard link)/i),
+                        }),
+                    ]),
+                );
+                expect(actual.valid).toBe(false);
+
+                // A separate, singly-linked repair still lands.
+                expect(await fs.readFile(regular)).not.toEqual(regularBefore);
+                expect((await fs.readFile(regular)).toString()).toContain('xml:space="preserve"');
+
+                // Strict remains a superset of Word-valid, and a partial run
+                // reports no error the corresponding full run omits (#381).
+                if (profile === "word-valid") {
+                    for (const code of errorCodes(full.issues)) expect(errorCodes(actual.issues).has(code)).toBe(true);
+                    for (const code of errorCodes(partial?.issues ?? [])) expect(errorCodes(full.issues).has(code)).toBe(true);
+                }
+                return errorCodes(actual.issues);
+            });
+        };
+
+        const wordValidErrors = await runCase("word-valid");
+        const strictErrors = await runCase("strict");
+        for (const code of wordValidErrors) expect(strictErrors.has(code)).toBe(true);
+    }, 60_000);
+
     it("does not stage a normal directory, and stages only the backslash control", async () => {
         await withTempDir(async (dir) => {
             const normal = await writeDirectory(path.join(dir, "normal.docx"), MINIMAL_PARTS, false);

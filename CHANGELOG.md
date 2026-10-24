@@ -37,6 +37,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Auto-repair write-back refuses a hard-linked stored file whose link count is greater than one ([#545](https://github.com/jandira-tech/docx-validate/issues/545)). Such a directory input is staged so the repair reaches the guarded write-back instead of modifying the input inode in place; the refused destination reports `repair-write-back-failed` with its stored path and link count, the file's other name outside the input stays untouched, and unrelated repairs still land. The path and inode checks remain check-then-use operations: a link swapped in after the check and before the write can still be followed, the same non-race-resistant limit documented by `containRelationshipTarget`.
+
 - Auto-repair write-back no longer follows a symlinked directory segment that resolves inside the input root ([#544](https://github.com/jandira-tech/docx-validate/issues/544)). Every stored destination whose root-relative path contains a symbolic-link segment is refused with `repair-write-back-failed`; when several stored paths name one physical file and any path reaches it through a link, the whole group is refused, so the link and its target stay untouched, one physical file is written at most once, and unrelated repairs still land.
 
 - Direct DOCX and PPTX validators return one `package-extract-failed` error for a refused directory stored name instead of rejecting with `PackageViewError`. The message matches `validate()` under every profile, before XML checks; programming errors still propagate ([#548](https://github.com/jandira-tech/docx-validate/issues/548)).
