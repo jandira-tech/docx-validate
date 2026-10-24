@@ -1037,7 +1037,10 @@ at the link itself rather than under a path inside it
 resolves inside the root keeps the behaviour above: the loop detection of
 [#546](https://github.com/jandira-tech/docx-validate/issues/546) and the
 write-back refusal of
-[#544](https://github.com/jandira-tech/docx-validate/issues/544). A stored
+[#544](https://github.com/jandira-tech/docx-validate/issues/544). The bound
+fails closed: an input root `realpath(3)` cannot resolve is refused as an
+unreadable directory, and a link it cannot resolve is refused (`a symbolic
+link the walk cannot resolve`) rather than followed. A stored
 destination is refused when any path segment between the input root and that
 destination is a symbolic link. When several stored paths name one physical
 file and any of them reaches it through a link, the whole group is refused, so

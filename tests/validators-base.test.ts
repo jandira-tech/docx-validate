@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { promises as fs } from "node:fs";
+import { promises as fs, realpathSync, type PathLike } from "node:fs";
 import path from "node:path";
 
 import JSZip from "jszip";
@@ -1607,6 +1607,96 @@ describe("canonical paths ignore how the input root is spelled (#576, #587)", ()
                 expect(containRelationshipTarget(root, path.join(root, "word", "m", "a.png"))).toBe(path.join(root, "word", "m", "a.png"));
                 expect(containRelationshipTarget(respelled, path.join(respelled, "word", "out", "b.png"))).toBeNull();
                 expect(containRelationshipTarget(root, path.join(root, "word", "out", "b.png"))).toBeNull();
+            });
+        },
+        60_000,
+    );
+});
+
+// realpath(3) can fail where listing the directory still works; a bound that
+// cannot be computed must refuse, never let the walk run unbounded (#576).
+describe("the walk fails closed when a canonical path cannot be resolved (#576)", () => {
+    /** Make realpath(3) fail with EACCES for `failing`; every other path resolves as usual. */
+    const failRealpathFor = (failing: string) => {
+        const native = realpathSync.native;
+        return vi.spyOn(realpathSync, "native").mockImplementation(((target: PathLike, options?: never) => {
+            if (String(target) === failing) throw Object.assign(new Error(`EACCES: realpath '${failing}'`), { code: "EACCES" });
+            return native(target, options);
+        }) as typeof realpathSync.native);
+    };
+
+    /** An input root holding `word/document.xml` and `word/ext`, an absolute link to a directory outside it. */
+    const rootWithOutsideLink = async (dir: string): Promise<string> => {
+        const root = path.join(dir, "input.docx");
+        await fs.mkdir(path.join(root, "word"), { recursive: true });
+        await fs.writeFile(path.join(root, "word", "document.xml"), "<w/>");
+        await fs.mkdir(path.join(dir, "outside"));
+        await fs.writeFile(path.join(dir, "outside", "note.txt"), "outside");
+        await fs.symlink(path.join(dir, "outside"), path.join(root, "word", "ext"));
+        return root;
+    };
+
+    it.skipIf(process.platform === "win32")(
+        "refuses the input directory whose root cannot be canonicalized, and lists nothing",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = await rootWithOutsideLink(dir);
+                const spy = failRealpathFor(root);
+                try {
+                    const walked = walkDirectory(root);
+                    expect(walked.unreadable).toEqual([{ file: root, kind: "directory", reason: "an unreadable directory (EACCES)" }]);
+                    expect(walked.files).toEqual([]);
+                } finally {
+                    spy.mockRestore();
+                }
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "refuses a link whose target cannot be canonicalized instead of following it",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = await rootWithOutsideLink(dir);
+                const link = path.join(root, "word", "ext");
+                const spy = failRealpathFor(link);
+                try {
+                    const walked = walkDirectory(root);
+                    expect(walked.unreadable).toEqual([
+                        { file: link, kind: "directory", reason: "a symbolic link the walk cannot resolve (EACCES)" },
+                    ]);
+                    expect(walked.files).toEqual([path.join(root, "word", "document.xml")]);
+                } finally {
+                    spy.mockRestore();
+                }
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "fails validate() with the one package-extract-failed naming the input directory",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = path.join(dir, "input.docx");
+                await fs.mkdir(root);
+                for (const [name, xml] of Object.entries(MINIMAL_PARTS)) {
+                    await fs.mkdir(path.dirname(path.join(root, name)), { recursive: true });
+                    await fs.writeFile(path.join(root, name), xml);
+                }
+                await fs.mkdir(path.join(dir, "outside"));
+                await fs.writeFile(path.join(dir, "outside", "note.xml"), "<x/>");
+                await fs.symlink(path.join(dir, "outside"), path.join(root, "word", "ext"));
+                const spy = failRealpathFor(root);
+                try {
+                    const result = await validate(root);
+                    expect(result.valid).toBe(false);
+                    expect(result.issues.map((issue) => issue.code)).toEqual(["package-extract-failed"]);
+                    expect(result.issues[0]!.message).toContain("an unreadable directory (EACCES)");
+                } finally {
+                    spy.mockRestore();
+                }
             });
         },
         60_000,

@@ -1966,8 +1966,9 @@ export interface UnreadableEntry {
     file: string;
     /** Why it cannot be read: `"a broken symbolic link"`, `"not a regular file"`,
      * `"a symbolic link loop"`, `"a symbolic link outside the input directory"`,
-     * or `"an unreadable directory (…)"` for a directory the walk cannot list
-     * (#543, #546, #576). */
+     * `"a symbolic link the walk cannot resolve (…)"`, or `"an unreadable
+     * directory (…)"` for a directory the walk cannot list or an input root
+     * it cannot canonicalize (#543, #546, #576). */
     reason: string;
     /**
      * What the entry is. A directory names no stored file entry, so it
@@ -1982,19 +1983,19 @@ export interface UnreadableEntry {
 const directoryIdentity = (st: Stats): string => `${st.dev}:${st.ino}`;
 
 /**
- * The canonical path of `target`, or `undefined` when it cannot be resolved.
- * The canonical path is what decides whether a link leaves the input root
- * (#576): a lexical path cannot tell, since the link's own spelling stays
- * inside the root. `realpath(3)` returns the on-disk case; Node's JS
+ * The canonical path of `target`, or the error code resolving it failed
+ * with. The canonical path is what decides whether a link leaves the input
+ * root (#576): a lexical path cannot tell, since the link's own spelling
+ * stays inside the root. `realpath(3)` returns the on-disk case; Node's JS
  * `realpathSync` keeps the case a path is written in, so on a
  * case-insensitive volume a root spelled in another case than a link's
  * absolute target would read that link as leaving the root.
  */
-function canonicalPath(target: string): string | undefined {
+function canonicalPath(target: string): { readonly path: string } | { readonly code: string } {
     try {
-        return realpathSync.native(target);
-    } catch {
-        return undefined;
+        return { path: realpathSync.native(target) };
+    } catch (err) {
+        return { code: (err as NodeJS.ErrnoException).code ?? "error" };
     }
 }
 
@@ -2050,9 +2051,14 @@ export function walkDirectory(
     }
     // The input root's canonical path bounds the walk: a link whose target
     // resolves outside it is not followed (#576). A root that cannot be
-    // canonicalized bounds nothing, and the walk reads as it did before.
-    const rootReal = canonicalPath(dir);
-    const stack: { dir: string; ancestors: ReadonlySet<string> }[] = [{ dir, ancestors: rootAncestors }];
+    // canonicalized cannot bound anything, so the walk fails closed: it
+    // refuses the input directory and lists nothing.
+    const root = canonicalPath(dir);
+    const rootReal = "path" in root ? root.path : undefined;
+    if ("code" in root) {
+        unreadable.push({ file: dir, kind: "directory", reason: `an unreadable directory (${root.code})` });
+    }
+    const stack: { dir: string; ancestors: ReadonlySet<string> }[] = rootReal === undefined ? [] : [{ dir, ancestors: rootAncestors }];
     while (stack.length > 0) {
         const current = stack.pop();
         if (current === undefined) break;
@@ -2099,7 +2105,17 @@ export function walkDirectory(
             // (#576).
             if (listed.isSymbolicLink() && rootReal !== undefined) {
                 const resolved = canonicalPath(full);
-                if (resolved !== undefined && !isInsideRoot(rootReal, resolved)) {
+                // A link that cannot be canonicalized cannot be bounded, so
+                // it is refused, never followed (#576).
+                if ("code" in resolved) {
+                    unreadable.push({
+                        file: full,
+                        kind: st.isDirectory() ? "directory" : "file",
+                        reason: `a symbolic link the walk cannot resolve (${resolved.code})`,
+                    });
+                    continue;
+                }
+                if (!isInsideRoot(rootReal, resolved.path)) {
                     unreadable.push({
                         file: full,
                         kind: st.isDirectory() ? "directory" : "file",
