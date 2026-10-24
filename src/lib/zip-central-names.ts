@@ -16,6 +16,7 @@
 import JSZip from "jszip";
 
 import {
+    decodeCp437,
     hasSignature,
     readCentralDirectoryView,
     readU16,
@@ -232,9 +233,15 @@ export const centralKeyedArchive = (bytes: Uint8Array): Uint8Array => {
  * given are loaded first, so an archive JSZip refuses is refused with JSZip's
  * error: re-keying never turns a package that does not open into one that
  * does (#468).
+ * Both loads share the stored-name reader's CP437 fallback (#480). JSZip
+ * still handles bit-11 UTF-8 and valid central Unicode Path fields before
+ * calling it; re-keying deliberately strips the latter (#445). The callback
+ * also decodes ZIP comments, which the validator does not judge.
  */
 export const loadCentralNamedArchive = async (bytes: Uint8Array): Promise<JSZip> => {
-    const zip = await JSZip.loadAsync(bytes);
+    // JSZip supplies Uint8Array on Node/Bun; its types also list string[].
+    const options = { decodeFileName: (name: Uint8Array | string[]) => decodeCp437(name as Uint8Array) };
+    const zip = await JSZip.loadAsync(bytes, options);
     const keyed = centralKeyedArchive(bytes);
-    return keyed === bytes ? zip : JSZip.loadAsync(keyed);
+    return keyed === bytes ? zip : JSZip.loadAsync(keyed, options);
 };

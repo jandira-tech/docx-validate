@@ -22,6 +22,8 @@ import { describe, expect, it } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
 import { unpack } from "../src/scripts/office/unpack";
+import { MINIMAL_PARTS } from "./support/minimal-docx";
+import { buildRawZip } from "./support/raw-zip";
 
 const W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
 
@@ -60,6 +62,23 @@ async function buildDocx(target: string, parts: DocxParts): Promise<void> {
 }
 
 describe("unpack", () => {
+    it("keeps raw JSZip's UTF-8 fallback for flag-less CP437 names (#480)", async () => {
+        await withTempDir(async (dir) => {
+            const inputFile = path.join(dir, "cp437.docx");
+            const outputDir = path.join(dir, "out");
+            await fs.writeFile(
+                inputFile,
+                buildRawZip([
+                    ...Object.entries(MINIMAL_PARTS).map(([name, content]) => ({ name, content })),
+                    { name: "café.xml", nameBytes: Uint8Array.from([0x63, 0x61, 0x66, 0x82, 0x2e, 0x78, 0x6d, 0x6c]), content: "<x/>" },
+                ]),
+            );
+            expect((await unpack(inputFile, outputDir, { mergeRuns: false, simplifyRedlines: false })).ok).toBe(true);
+            expect(await fs.readdir(outputDir)).toContain("caf�.xml");
+            expect(await fs.readdir(outputDir)).not.toContain("café.xml");
+        });
+    });
+
     it("returns an error when the input file does not exist", async () => {
         await withTempDir(async (dir) => {
             const result = await unpack(path.join(dir, "missing.docx"), path.join(dir, "out"));

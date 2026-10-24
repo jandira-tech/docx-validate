@@ -23,6 +23,7 @@ import { ModeConflictError } from "../src/lib/mode-policy";
 import { withTempDir } from "../src/lib/run-cli";
 import type { ValidationIssue } from "../src/lib/types";
 import { ValidationContext } from "../src/lib/validation-context";
+import { zipCentralDirectoryEntries } from "../src/lib/zip-central-directory";
 import { extractPackageParts } from "../src/lib/zip-path";
 import { centralKeyedArchive, loadCentralNamedArchive } from "../src/lib/zip-central-names";
 import { validate } from "../src/scripts/office/validate";
@@ -68,6 +69,54 @@ const codes = (result: { issues: readonly ValidationIssue[] }, severity?: string
 /** Error findings as `code@path`, for the #381 subset invariant. */
 const errorPairs = (issues: readonly ValidationIssue[]): string[] =>
     [...new Set(issues.filter((issue) => issue.severity === "error").map((issue) => `${issue.code ?? ""}@${issue.path ?? ""}`))].sort();
+
+describe("central and package name decoding (#480)", () => {
+    const cp437 = Uint8Array.from([0x63, 0x61, 0x66, 0x82, 0x2e, 0x78, 0x6d, 0x6c]);
+
+    it.each([
+        { label: "as-given", localName: undefined, unicodePath: undefined },
+        { label: "re-keyed local name", localName: "other.xml", unicodePath: undefined },
+        { label: "re-keyed Unicode Path", localName: undefined, unicodePath: "unicode.xml" },
+    ])("uses the stored CP437 spelling in the $label package view", async ({ localName, unicodePath }) => {
+        const bytes = buildRawZip([{ name: "café.xml", nameBytes: cp437, localName, unicodePath, content: "<x/>" }]);
+        const stored = zipCentralDirectoryEntries(bytes)!.map((entry) => entry.name);
+        expect(stored).toEqual(["café.xml"]);
+        const zip = await loadCentralNamedArchive(bytes);
+        expect(Object.keys(zip.files)).toEqual(stored);
+        expect(await zip.file("café.xml")!.async("string")).toBe("<x/>");
+        const keyed = centralKeyedArchive(bytes);
+        expect(zipCentralDirectoryEntries(keyed)!.map((entry) => entry.name)).toEqual(stored);
+    });
+
+    it("uses one CP437 spelling for every finding on the part", async () => {
+        const bytes = buildRawZip([...minimalEntries(), { name: "café.xml", nameBytes: cp437, content: "<x/>" }]);
+        await withTempDir(async (dir) => {
+            const result = await validate(specimen(dir, "cp437.docx", bytes), { profile: "word-valid" });
+            const findings = result.issues.filter((issue) => issue.path?.startsWith("caf"));
+            expect(findings.map((issue) => issue.path)).toEqual(["café.xml", "café.xml"]);
+            expect(findings).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({ code: "rels-unreferenced", severity: "warning", path: "café.xml" }),
+                    expect.objectContaining({ code: "opc-part-name-word-refused", severity: "error", path: "café.xml" }),
+                ]),
+            );
+            expect(JSON.stringify(result.issues)).not.toContain("caf�.xml");
+        });
+    });
+
+    it.each([undefined, "other.xml"])("keeps bit-11 names UTF-8 with local name %s", async (localName) => {
+        const bytes = buildRawZip([{ name: "café.xml", utf8: true, localName, content: "<x/>" }]);
+        expect(Object.keys((await loadCentralNamedArchive(bytes)).files)).toEqual(["café.xml"]);
+    });
+
+    it("keeps JSZip's valid central Unicode Path preference when re-keying is unavailable", async () => {
+        // ZIP64 stays as given: the decoder must not override JSZip's valid
+        // 0x7075 field. Re-keyable archives deliberately strip it (#445).
+        const bytes = buildRawZip([{ name: "café.xml", nameBytes: cp437, unicodePath: "unicode-é.xml", content: "<x/>" }], { zip64: true });
+        expect(centralKeyedArchive(bytes)).toBe(bytes);
+        expect(Object.keys((await loadCentralNamedArchive(bytes)).files)).toEqual(["unicode-é.xml"]);
+    });
+});
 
 describe("the package view reads central-directory names (#445, #446)", { timeout: 120_000 }, () => {
     describe.each([

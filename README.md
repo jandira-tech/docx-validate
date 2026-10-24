@@ -301,11 +301,17 @@ and the package view reads the last stored entry (#411). The stored names come
 from the central directory of the archive JSZip loads: the last end-of-central-directory
 signature, with its offsets rebased past any prepended bytes, so the names always
 describe the package view, even behind trailing data or a prepended archive (#447, #462).
-This check, the item-name refusal and the package view the checks judge all read
-those central-directory names, as Word 16.115 does, and ignore the local file
-header's name and the Info-ZIP unicode-path extra field (0x7075) (#445). `unpack` is
-the exception: it extracts under JSZip's own names, the local header's or the
-unicode-path field's (#469).
+This check, the item-name refusal and the package view the checks judge all use
+those central-directory names, with one shared CP437 decoder for names without
+general-purpose bit 11 and UTF-8 for flagged names (#480). Re-keying uses the
+central spelling, as Word 16.115 does, and ignores the local file header's name
+and the Info-ZIP unicode-path extra field (0x7075) (#445). If re-keying is
+unavailable (for example, ZIP64), JSZip still prefers a valid central Unicode
+Path field. `unpack` is the exception: it extracts under raw JSZip's own names,
+the local header's or the unicode-path field's (#469), with UTF-8 as its default
+decoder. A flag-less CP437 `caf\x82.xml` therefore extracts as `caf�.xml`, while
+the validator's archive view uses `café.xml`; directory validation of that
+extracted tree sees `caf�.xml` (#480).
 
 `opc-part-name-escaped-unreserved` uses the same formats, package-group selection,
 pre-extraction timing, directory support, and severity policy. It reports one
