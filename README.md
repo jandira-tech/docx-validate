@@ -283,6 +283,11 @@ and the package view reads the last stored entry (#411). The stored names come
 from the central directory of the archive JSZip loads: the last end-of-central-directory
 signature, with its offsets rebased past any prepended bytes, so the names always
 describe the package view, even behind trailing data or a prepended archive (#447, #462).
+This check, the item-name refusal and the package view the checks judge all read
+those central-directory names, as Word 16.115 does, and ignore the local file
+header's name and the Info-ZIP unicode-path extra field (0x7075) (#445). `unpack` is
+the exception: it extracts under JSZip's own names, the local header's or the
+unicode-path field's (#469).
 
 `opc-part-name-escaped-unreserved` uses the same formats, package-group selection,
 pre-extraction timing, directory support, and severity policy. It reports one
@@ -698,7 +703,9 @@ prerequisites passed. A partial run lists the selected checks that ran, so an
 archive-only check is not listed for an unpacked directory. An archive that does
 not open fails with `package-open-failed` in every mode, and only its envelope
 checks are listed (#332). One that opens but whose package view cannot be read —
-a stored item name that places no part, or an unreadable entry — fails with
+a stored item name that places no part — judged on the central-directory name,
+never the local header's or the unicode-path field's (#445) — or an unreadable
+entry — fails with
 `package-extract-failed`, as the full run's extraction reports it (#413). Its stored
 entry names and archive bytes are still read. Selected `opc-equivalent-part-names`,
 `opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, and

@@ -32,10 +32,11 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-import JSZip from "jszip";
+import type JSZip from "jszip";
 
 import { NS } from "../../../lib/types";
 import { getElementsByTagNameNSAll, parseXml, serializeXml } from "../../../lib/xml-helpers";
+import { loadCentralNamedArchive } from "../../../lib/zip-central-names";
 
 const ELEMENT_NODE = 1;
 const TEXT_NODE = 3;
@@ -177,7 +178,7 @@ async function getAuthorsFromDocx(docxPath: string): Promise<Map<string, number>
 
     let zip: JSZip;
     try {
-        zip = await JSZip.loadAsync(buf);
+        zip = await loadCentralNamedArchive(buf);
     } catch {
         return new Map();
     }

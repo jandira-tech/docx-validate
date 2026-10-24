@@ -78,6 +78,7 @@ import { isXmlPartName, XML_SYNTAX_CHECK_ID } from "../checks/xml";
 import { CT_OVERRIDE_PARTNAME_WORD_REFUSED, ctOverridePartnameWordRefusedCheck } from "../checks/ct-override-partname-word-refused";
 import { CT_OVERRIDE_PARTNAME_INVALID, ctOverridePartnameInvalidCheck } from "../checks/ct-override-partname";
 import { ctDuplicateDeclarationCheck } from "../checks/word-content-types";
+import { loadCentralNamedArchive } from "../../../lib/zip-central-names";
 
 /**
  * Schema mapping table — file basename / suffix → relative path inside the
@@ -1822,14 +1823,13 @@ export class BaseSchemaValidator {
         // inside the original .docx zip and validate it standalone.
         const rel = path.relative(this.unpackedDir, xmlFile);
 
-        const { default: JSZip } = await import("jszip");
         let zipContent: Buffer;
         try {
             zipContent = await fs.readFile(this.originalFile);
         } catch {
             return new Set();
         }
-        const zip = await JSZip.loadAsync(zipContent);
+        const zip = await loadCentralNamedArchive(zipContent);
         const entry = zip.file(rel.replace(/\\/g, "/"));
         if (!entry) return new Set();
 
