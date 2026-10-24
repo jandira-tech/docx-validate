@@ -213,8 +213,9 @@ formats other than their default `.docx` (for example, `.pptx` or `.docm`).
   partial run prints “Selected checks passed”, followed by counts, never “All
   validations PASSED!”, even when it omitted no registered check (a PPTX or XLSX
   registers only the envelope and XML syntax checks). An `Also not run:` line names
-  what has no check id: the format validator's own rules and, where a full run walks
-  schemas, the schema walk. It does not establish full-document validity. Selections run the registered
+  what has no check id: the format validator's own rules, where a full run walks
+  schemas the schema walk, and for a DOCX given `--original` the redlining
+  validation against it. It does not establish full-document validity. Selections run the registered
   checks only, without the full validator's other checks or severity remapping.
 - `--json` emits `{ valid, issues, metadata }` for a completed validation, including
   warnings and available locations. Exit status is 0 for valid and 1 for invalid;

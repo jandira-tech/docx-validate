@@ -791,7 +791,7 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
         if (opts.quick === true) {
             process.stdout.write(`Quick preset groups: ${QUICK_CHECK_GROUPS.join(", ")}\n`);
         }
-        process.stdout.write(`${partialRunGaps(dispatchSuffix, profile)}\n`);
+        process.stdout.write(`${partialRunGaps(dispatchSuffix, profile, opts.original !== undefined)}\n`);
     }
 
     if (result.valid) {
@@ -825,15 +825,19 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
 
 /**
  * What a partial run skipped beyond its omitted check ids: the rules of the
- * format validator a full run would reach and, under a profile that walks
- * schemas, the schema walk (#339). A suffix with no format validator (`.xlsx`)
- * names none.
+ * format validator a full run would reach, under a profile that walks
+ * schemas the schema walk (#339), and for a DOCX given an original the
+ * redlining validation against it (#353). A suffix with no format validator
+ * (`.xlsx`) names none.
  */
-function partialRunGaps(suffix: string, profile: Profile): string {
+function partialRunGaps(suffix: string, profile: Profile, hasOriginal: boolean): string {
     const validator = suffix === ".docx" || suffix === ".docm" ? "DOCX" : suffix === ".pptx" ? "PPTX" : undefined;
     if (validator === undefined) return "Also not run: everything outside the selected checks.";
-    const schemaWalk = profileWalksSchemas(formatForSuffix(suffix), profile) ? " and its schema walk" : "";
-    return `Also not run: the ${validator} validator's own rules${schemaWalk}.`;
+    const gaps = [`the ${validator} validator's own rules`];
+    if (profileWalksSchemas(formatForSuffix(suffix), profile)) gaps.push("its schema walk");
+    if (validator === "DOCX" && hasOriginal) gaps.push("the redlining validation against the original");
+    const last = gaps.pop();
+    return `Also not run: ${gaps.length > 0 ? `${gaps.join(", ")} and ${last}` : last}.`;
 }
 
 runCli(import.meta.url, () => runValidateFromArgv(process.argv.slice(2)));

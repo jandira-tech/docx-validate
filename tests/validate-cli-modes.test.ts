@@ -151,6 +151,30 @@ describe("validate CLI: quick mode output", { timeout: 120_000 }, () => {
         expect(run.code).toBe(0);
     });
 
+    it.each([
+        ["word-valid", "Also not run: the DOCX validator's own rules and the redlining validation against the original.\n"],
+        ["lenient", "Also not run: the DOCX validator's own rules, its schema walk and the redlining validation against the original.\n"],
+    ])("discloses the skipped redlining validation when --original is given under %s (#353)", async (profile, gaps) => {
+        const run = await withTempDir(async (dir) => {
+            const file = await controlDocx(dir);
+            return capture([file, "--quick", "--profile", profile, "--original", file, "--author", "Reviewer"]);
+        });
+
+        expect(run.stdout).toContain(gaps);
+        expect(run.stdout).toContain("Selected checks passed");
+        expect(run.code).toBe(0);
+    });
+
+    it("names no redlining validation for a PPTX run given --original (#353)", async () => {
+        const run = await withTempDir(async (dir) => {
+            const file = await uuidDefectPptx(dir);
+            return capture([file, "--checks", "package", "--original", file]);
+        });
+
+        expect(run.stdout).toContain("Also not run: the PPTX validator's own rules and its schema walk.\n");
+        expect(run.stdout).not.toContain("redlining");
+    });
+
     it("exits 1 and reports the defect when a selected check fails", async () => {
         const run = await capture([path.join(BROKEN, "package.word-row-without-cell.docx"), "--quick"]);
 
