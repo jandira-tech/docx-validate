@@ -29,6 +29,11 @@ const rootIssues = async (parts: Readonly<Record<string, string>>) => {
 };
 
 describe(CODE, () => {
+    it("does not judge a main root through a nested package relationship (#434)", async () => {
+        const rels = MINIMAL_PARTS["_rels/.rels"]!.replace(/(<Relationship\s[^>]*\/>)/, '<x:Wrap xmlns:x="urn:x">$1</x:Wrap>');
+        expect(await rootIssues({ ...MINIMAL_PARTS, "_rels/.rels": rels, "word/document.xml": FOREIGN })).toEqual([]);
+    });
+
     it.each([FOREIGN, `<x:document xmlns:x="urn:x"/>`, `<w:foo xmlns:w="${W}"/>`, "<document/>"])(
         "rejects a non-document effective root: %s",
         async (xml) => {

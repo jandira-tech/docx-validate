@@ -27,6 +27,13 @@ const mainPartIssues = async (parts: Readonly<Record<string, string>>) => {
 };
 
 describe(CODE, () => {
+    it("does not count a nested main relationship (#434)", async () => {
+        const rels = MINIMAL_PARTS["_rels/.rels"]!.replace(/(<Relationship\s[^>]*\/>)/, '<x:Wrap xmlns:x="urn:x">$1</x:Wrap>');
+        expect(await mainPartIssues({ ...MINIMAL_PARTS, "_rels/.rels": rels })).toEqual([
+            expect.objectContaining({ code: CODE, severity: "error", path: "_rels/.rels" }),
+        ]);
+    });
+
     it("is a registered Word rule in the relationships group, so --quick runs it", () => {
         const check = WORD_RULE_CHECKS.find((definition) => definition.id === CODE);
         expect(check).toMatchObject({ formats: ["docx"], groups: ["relationships"] });

@@ -17,6 +17,20 @@ import {
     wordDuplicateSettingsRelationshipCheck,
 } from "../src/scripts/office/checks/word-duplicate-relationships";
 
+describe("direct relationship duplicate counts (#434)", () => {
+    it.each([
+        [wordDuplicateThemeRelationshipCheck, "theme"],
+        [wordDuplicateFontTableRelationshipCheck, "fontTable"],
+        [wordDuplicateWebSettingsRelationshipCheck, "webSettings"],
+        [wordDuplicateSettingsRelationshipCheck, "settings"],
+    ] as const)("ignores a nested second %s / %s relationship", async (check, type) => {
+        const ctx = ValidationContext.fromEntries({
+            "word/_rels/document.xml.rels": rels(relation("direct", type) + `<x:Wrap xmlns:x="urn:x">${relation("nested", type)}</x:Wrap>`),
+        });
+        expect(await check.run(ctx)).toEqual([]);
+    });
+});
+
 describe("word-duplicate-theme-relationship", () => {
     it("reports the Word-rejected shape with unchanged issue details", async () => {
         const ctx = ValidationContext.fromEntries({

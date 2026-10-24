@@ -127,6 +127,14 @@ export const isWordBlockingIssue = (issue: ValidationIssue, propertiesParts: Rea
         // orphan marker does not predict Word rejection; keep it a warning.
         case "rels-missing-sidecar":
             return !/^word\/(?:header|footer)\d*\.xml$/i.test(issue.path ?? "");
+        case "opc-relationships-structure": {
+            // #433: Word 16.115 offers recovery for a wrong root or a foreign
+            // child in _rels/.rels (session 3c) and in word/_rels/document.xml.rels
+            // (session 4c). Relationships parts outside word/ are unobserved and
+            // only warn, as xml-syntax does there.
+            const path = issue.path?.replace(/\\/g, "/");
+            return isPackageRelationshipsPart(path) || isWordFolderPart(path);
+        }
         case "xml-syntax":
         // An undeclared namespace prefix is the same class of defect as a
         // malformed part — Word reports unreadable content — so it follows

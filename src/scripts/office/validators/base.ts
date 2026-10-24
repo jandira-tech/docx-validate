@@ -64,6 +64,7 @@ import {
     decodeXmlBytes,
     getElementsByTagNameNSAll,
     getElementsByTagNameAll,
+    getRelationshipChildren,
     parseXml,
     parseXmlBytes,
     serializeXml,
@@ -859,7 +860,7 @@ export class BaseSchemaValidator {
             const relsDir = path.dirname(relsFile);
             const broken: string[] = [];
 
-            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const rels = this.relationshipElements(dom);
             for (let i = 0; i < rels.length; i += 1) {
                 const rel = rels[i];
                 if (!rel) continue;
@@ -932,7 +933,7 @@ export class BaseSchemaValidator {
                 continue;
             }
 
-            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const rels = this.relationshipElements(dom);
             for (let i = 0; i < rels.length; i += 1) {
                 const rel = rels[i];
                 if (!rel) continue;
@@ -1039,7 +1040,7 @@ export class BaseSchemaValidator {
             }
 
             const ridToType = new Map<string, string>();
-            const rels = getElementsByTagNameNSAll(relsDom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const rels = this.relationshipElements(relsDom);
             for (let i = 0; i < rels.length; i += 1) {
                 const rel = rels[i];
                 if (!rel) continue;
@@ -1488,6 +1489,13 @@ export class BaseSchemaValidator {
         }
     }
 
+    /** Semantic relationship readers use direct children; lenient retains its historical scan. */
+    protected relationshipElements(document: Document): Element[] {
+        return this.profile === "lenient"
+            ? getElementsByTagNameNSAll(document, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship")
+            : getRelationshipChildren(document);
+    }
+
     /** Identify the required main part by the package relationship, never its basename. */
     private isMainDocumentPart(xmlFile: string): boolean {
         // Resolved once per validator: this runs for every part whose root is
@@ -1528,7 +1536,7 @@ export class BaseSchemaValidator {
                 return parts;
             }
             const relationships = parseXmlBytes(readFileSync(relsFile));
-            for (const relationship of getElementsByTagNameNSAll(relationships, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship")) {
+            for (const relationship of this.relationshipElements(relationships)) {
                 const type = relationship.getAttribute("Type");
                 if (
                     relationship.getAttribute("TargetMode") === "External" ||

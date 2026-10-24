@@ -43,6 +43,29 @@ async function writeFile(p: string, content: string): Promise<void> {
     await fs.writeFile(p, content, "utf-8");
 }
 
+describe("direct relationships outside legacy lenient (#434)", () => {
+    it.each([
+        ["validateFileReferences", '<Relationship Id="nested" Type="urn:image" Target="../customXml/missing.xml"/>', "rels-broken"],
+        ["validateRelationshipElements", '<Relationship Id="nested"/>', "rels-empty-element"],
+        ["validateAllRelationshipIds", '<Relationship Id="rId1" Type="urn:styles" Target="styles.xml"/>', "rels-id-duplicate"],
+    ] as const)("%s ignores nested entries and preserves lenient behavior", async (method, nested, code) => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...MINIMAL_PARTS,
+                "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                    "</Relationships>",
+                    `<x:Wrap xmlns:x="urn:x">${nested}</x:Wrap></Relationships>`,
+                ),
+            };
+            for (const [part, xml] of Object.entries(parts)) await writeFile(path.join(dir, part), xml);
+            const strict = await new HarnessValidator({ unpackedDir: dir, profile: "strict" })[method]();
+            expect(strict.issues.filter((issue) => issue.code === code)).toEqual([]);
+            const lenient = await new HarnessValidator({ unpackedDir: dir, profile: "lenient" })[method]();
+            expect(lenient.issues).toContainEqual(expect.objectContaining({ code, severity: "error" }));
+        });
+    });
+});
+
 describe("BaseSchemaValidator", () => {
     describe("original-file extraction", () => {
         it("rejects an out-of-root part before reading or writing its ZIP payload", async () => {

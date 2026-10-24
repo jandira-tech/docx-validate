@@ -45,6 +45,43 @@ function makeValidator(unpackedDir: string): PPTXSchemaValidator {
     return new PPTXSchemaValidator({ unpackedDir, verbose: false });
 }
 
+describe("direct PPTX relationships outside legacy lenient (#434)", () => {
+    it("does not resolve a slide layout ID through a nested relationship", async () => {
+        await withTempDir(async (dir) => {
+            await writeFile(
+                path.join(dir, "ppt/slideMasters/slideMaster1.xml"),
+                `<p:sldMaster xmlns:p="${PRESENTATIONML_NAMESPACE}" xmlns:r="${R_NS}"><p:sldLayoutIdLst><p:sldLayoutId id="1" r:id="nested"/></p:sldLayoutIdLst></p:sldMaster>`,
+            );
+            await writeFile(
+                path.join(dir, "ppt/slideMasters/_rels/slideMaster1.xml.rels"),
+                relsXml(
+                    `<x:Wrap xmlns:x="urn:x"><Relationship Id="nested" Type="${R_NS}/slideLayout" Target="../slideLayouts/slideLayout1.xml"/></x:Wrap>`,
+                ),
+            );
+            const strict = await new PPTXSchemaValidator({ unpackedDir: dir, profile: "strict" }).validateSlideLayoutIds();
+            expect(strict.issues).toContainEqual(expect.objectContaining({ code: "sldlayout-missing-rid", severity: "error" }));
+            expect((await makeValidator(dir).validateSlideLayoutIds()).issues).toEqual([]);
+        });
+    });
+
+    it.each([
+        ["validateNoDuplicateSlideLayouts", "slideLayout", "slide-layout-duplicate"],
+        ["validateNotesSlideReferences", "notesSlide", "notes-shared"],
+    ] as const)("%s ignores a nested second reference and preserves lenient behavior", async (method, type, code) => {
+        await withTempDir(async (dir) => {
+            const relationship = `<Relationship Id="nested" Type="${R_NS}/${type}" Target="../parts/shared.xml"/>`;
+            await writeFile(
+                path.join(dir, "ppt/slides/_rels/slide1.xml.rels"),
+                relsXml(relationship + `<x:Wrap xmlns:x="urn:x">${relationship}</x:Wrap>`),
+            );
+            const strict = await new PPTXSchemaValidator({ unpackedDir: dir, profile: "strict" })[method]();
+            expect(strict.issues.filter((issue) => issue.code === code)).toEqual([]);
+            const lenient = await makeValidator(dir)[method]();
+            expect(lenient.issues).toContainEqual(expect.objectContaining({ code, severity: "error" }));
+        });
+    });
+});
+
 describe("PPTXSchemaValidator.validateUuidIds", () => {
     it("passes when no UUID-shaped IDs are present", async () => {
         await withTempDir(async (dir) => {

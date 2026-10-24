@@ -47,6 +47,18 @@ const chartParts = (extension: string): Record<string, string> => ({
 });
 
 describe("markup compatibility XSD integration", { timeout: 240_000 }, () => {
+    it("does not classify an ignored root as main through a nested relationship (#434)", async () => {
+        const result = await check({
+            ...MINIMAL_PARTS,
+            "_rels/.rels": MINIMAL_PARTS["_rels/.rels"]!.replace(/(<Relationship\s[^>]*\/>)/, '<x:Wrap xmlns:x="urn:x">$1</x:Wrap>'),
+            "word/document.xml": `<e:garbage xmlns:e="urn:future" xmlns:mc="${NS.MC}" mc:Ignorable="e"/>`,
+        });
+        expect(result.issues.filter((issue) => issue.code === "mce-main-root-ignored")).toEqual([]);
+        expect(result.issues).toContainEqual(
+            expect.objectContaining({ code: "mce-root-ignored", path: "word/document.xml", severity: "info" }),
+        );
+    });
+
     it("rejects loss of the required main root (#287)", async () => {
         const result = await check({
             ...MINIMAL_PARTS,
