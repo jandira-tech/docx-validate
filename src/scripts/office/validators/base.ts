@@ -1984,16 +1984,19 @@ const directoryIdentity = (st: Stats): string => `${st.dev}:${st.ino}`;
  * loop"` at the link's stored name, so the walk stops there instead of
  * descending until the kernel's symlink budget runs out (#546); an `ELOOP`
  * from resolving a symlink (a chain that loops without reaching a
- * directory) is never labelled a broken link. `files` is exactly what
- * `walkFiles` returns.
+ * directory) is never labelled a broken link. `holdsHardLinks` marks a
+ * regular file with more than one directory entry, whose write-back must
+ * not modify an unnamed alias (#545). `files` is exactly what `walkFiles`
+ * returns.
  */
 export function walkDirectory(
     dir: string,
     extensions?: ReadonlyArray<string>,
-): { files: string[]; unreadable: UnreadableEntry[]; holdsSymlinks: boolean } {
+): { files: string[]; unreadable: UnreadableEntry[]; holdsSymlinks: boolean; holdsHardLinks: boolean } {
     const files: string[] = [];
     const unreadable: UnreadableEntry[] = [];
     let holdsSymlinks = false;
+    let holdsHardLinks = false;
     // The input directory's own identity anchors the path: a link back to it
     // loops too. A directory the walk cannot even stat carries no identity,
     // so only the deeper directories guard against loops there.
@@ -2056,6 +2059,7 @@ export function walkDirectory(
                 ancestors.add(identity);
                 stack.push({ dir: full, ancestors });
             } else if (st.isFile()) {
+                if (st.nlink > 1) holdsHardLinks = true;
                 if (!extensions || extensions.some((e) => full.endsWith(e))) {
                     files.push(full);
                 }
@@ -2068,6 +2072,7 @@ export function walkDirectory(
         files: files.sort(),
         unreadable: unreadable.sort((a, b) => a.file.localeCompare(b.file)),
         holdsSymlinks,
+        holdsHardLinks,
     };
 }
 

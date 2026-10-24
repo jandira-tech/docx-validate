@@ -1982,6 +1982,152 @@ describe.skipIf(process.platform === "win32")("directory package staging (#374)"
         60_000,
     );
 
+    it("refuses a symlinked directory segment and its target without double-writing one physical file (#544)", async () => {
+        const runCase = async (profile: "word-valid" | "strict") => {
+            return withTempDir(async (dir) => {
+                const input = path.join(dir, "input.docx");
+                const real = path.join(input, "real");
+                const custom = path.join(input, "custom");
+                await fs.mkdir(path.join(input, "_rels"), { recursive: true });
+                await fs.mkdir(path.join(real, "_rels"), { recursive: true });
+                await fs.mkdir(custom, { recursive: true });
+                await fs.writeFile(path.join(input, "[Content_Types].xml"), MINIMAL_PARTS["[Content_Types].xml"]!);
+                await fs.writeFile(path.join(input, "_rels", ".rels"), MINIMAL_PARTS["_rels/.rels"]!);
+                await fs.writeFile(
+                    path.join(real, "document.xml"),
+                    MINIMAL_PARTS["word/document.xml"]!.replace("<w:t>Hello</w:t>", "<w:t> Hello</w:t>"),
+                );
+                await fs.writeFile(path.join(real, "_rels", "document.xml.rels"), MINIMAL_PARTS["word/_rels/document.xml.rels"]!);
+                await fs.writeFile(path.join(real, "styles.xml"), MINIMAL_PARTS["word/styles.xml"]!);
+                await fs.writeFile(
+                    path.join(custom, "item.xml"),
+                    '<root xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:t> Custom</w:t></root>',
+                );
+                // Both stored paths name one physical file: word/ is a link to
+                // real/, so the walk sees real/document.xml and
+                // word/document.xml as separate package entries.
+                await fs.symlink("real", path.join(input, "word"), "dir");
+
+                const target = path.join(real, "document.xml");
+                const regular = path.join(custom, "item.xml");
+                const targetBefore = await fs.readFile(target);
+                const regularBefore = await fs.readFile(regular);
+                const partial = profile === "word-valid" ? await validateResolves(input, { profile, quick: true }) : undefined;
+                const full = await validateResolves(input, { profile });
+                const actual = await validateResolves(input, { profile, autoRepair: true });
+
+                // The link remains a link and its physical target is neither
+                // rewritten through the link nor rewritten through its direct
+                // alias. One physical file therefore receives no duplicate
+                // write-back.
+                expect((await fs.lstat(path.join(input, "word"))).isSymbolicLink()).toBe(true);
+                expect(await fs.readFile(target)).toEqual(targetBefore);
+                expect(targetBefore.toString()).not.toContain('xml:space="preserve"');
+
+                // Every stored path for that physical file is refused with
+                // the operational error, while a separate repair still lands.
+                const refusals = actual.issues.filter((issue) => issue.code === "repair-write-back-failed");
+                expect(refusals).toEqual(
+                    expect.arrayContaining([
+                        expect.objectContaining({
+                            severity: "error",
+                            code: "repair-write-back-failed",
+                            path: "word/document.xml",
+                            message: expect.stringContaining("word/document.xml"),
+                        }),
+                        expect.objectContaining({
+                            severity: "error",
+                            code: "repair-write-back-failed",
+                            path: "real/document.xml",
+                            message: expect.stringContaining("real/document.xml"),
+                        }),
+                    ]),
+                );
+                expect(actual.valid).toBe(false);
+                expect(await fs.readFile(regular)).not.toEqual(regularBefore);
+                expect((await fs.readFile(regular)).toString()).toContain('xml:space="preserve"');
+
+                // Strict remains a superset of Word-valid, and a partial run
+                // reports no error the corresponding full run omits (#381).
+                if (profile === "word-valid") {
+                    for (const code of errorCodes(full.issues)) expect(errorCodes(actual.issues).has(code)).toBe(true);
+                    for (const code of errorCodes(partial?.issues ?? [])) expect(errorCodes(full.issues).has(code)).toBe(true);
+                }
+                return errorCodes(actual.issues);
+            });
+        };
+
+        const wordValidErrors = await runCase("word-valid");
+        const strictErrors = await runCase("strict");
+        for (const code of wordValidErrors) expect(strictErrors.has(code)).toBe(true);
+    }, 60_000);
+
+    it("refuses a hard-linked write-back destination and leaves its outside target untouched (#545)", async () => {
+        const runCase = async (profile: "word-valid" | "strict") => {
+            return withTempDir(async (dir) => {
+                const parts: Parts = {
+                    ...MINIMAL_PARTS,
+                    "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace("<w:t>Hello</w:t>", "<w:t> Hello</w:t>"),
+                    "custom/item.xml":
+                        '<root xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:t> Custom</w:t></root>',
+                };
+                const input = await writeDirectory(path.join(dir, "input.docx"), parts, false);
+                const outside = path.join(dir, "outside");
+                const outsideTarget = path.join(outside, "target.xml");
+                await fs.mkdir(outside);
+                await fs.writeFile(outsideTarget, parts["word/document.xml"]!);
+                await fs.rm(path.join(input, "word", "document.xml"));
+                await fs.link(outsideTarget, path.join(input, "word", "document.xml"));
+
+                const stored = path.join(input, "word", "document.xml");
+                const regular = path.join(input, "custom", "item.xml");
+                const outsideBefore = await fs.readFile(outsideTarget);
+                const storedBefore = await fs.readFile(stored);
+                const regularBefore = await fs.readFile(regular);
+                const partial = profile === "word-valid" ? await validateResolves(input, { profile, quick: true }) : undefined;
+                const full = await validateResolves(input, { profile });
+                const actual = await validateResolves(input, { profile, autoRepair: true });
+
+                // The hard link's other name lives outside the input tree. It
+                // and the stored file keep their original bytes.
+                expect(await fs.readFile(outsideTarget)).toEqual(outsideBefore);
+                expect(await fs.readFile(stored)).toEqual(storedBefore);
+                expect(outsideBefore.toString()).not.toContain('xml:space="preserve"');
+
+                // The refusal names the stored path and says why a
+                // multiply-linked inode is not a safe destination.
+                const refusals = actual.issues.filter((issue) => issue.code === "repair-write-back-failed");
+                expect(refusals).toEqual(
+                    expect.arrayContaining([
+                        expect.objectContaining({
+                            severity: "error",
+                            code: "repair-write-back-failed",
+                            path: "word/document.xml",
+                            message: expect.stringMatching(/word\/document\.xml.*(?:link count|hard link)/i),
+                        }),
+                    ]),
+                );
+                expect(actual.valid).toBe(false);
+
+                // A separate, singly-linked repair still lands.
+                expect(await fs.readFile(regular)).not.toEqual(regularBefore);
+                expect((await fs.readFile(regular)).toString()).toContain('xml:space="preserve"');
+
+                // Strict remains a superset of Word-valid, and a partial run
+                // reports no error the corresponding full run omits (#381).
+                if (profile === "word-valid") {
+                    for (const code of errorCodes(full.issues)) expect(errorCodes(actual.issues).has(code)).toBe(true);
+                    for (const code of errorCodes(partial?.issues ?? [])) expect(errorCodes(full.issues).has(code)).toBe(true);
+                }
+                return errorCodes(actual.issues);
+            });
+        };
+
+        const wordValidErrors = await runCase("word-valid");
+        const strictErrors = await runCase("strict");
+        for (const code of wordValidErrors) expect(strictErrors.has(code)).toBe(true);
+    }, 60_000);
+
     it("does not stage a normal directory, and stages only the backslash control", async () => {
         await withTempDir(async (dir) => {
             const normal = await writeDirectory(path.join(dir, "normal.docx"), MINIMAL_PARTS, false);
