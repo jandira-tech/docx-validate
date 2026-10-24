@@ -37,6 +37,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Auto-repair write-back no longer follows a symlinked directory segment that resolves inside the input root ([#544](https://github.com/jandira-tech/docx-validate/issues/544)). Every stored destination whose root-relative path contains a symbolic-link segment is refused with `repair-write-back-failed`; when several stored paths name one physical file and any path reaches it through a link, the whole group is refused, so the link and its target stay untouched, one physical file is written at most once, and unrelated repairs still land.
+
 - Direct DOCX and PPTX validators return one `package-extract-failed` error for a refused directory stored name instead of rejecting with `PackageViewError`. The message matches `validate()` under every profile, before XML checks; programming errors still propagate ([#548](https://github.com/jandira-tech/docx-validate/issues/548)).
 
 - Unreadable packed inputs report `Cannot read` with the system error instead of describing the archive as encrypted, corrupted or truncated. Full and partial runs keep the same `package-open-failed` error, with no checks executed or Word verifier invoked ([#547](https://github.com/jandira-tech/docx-validate/issues/547)).

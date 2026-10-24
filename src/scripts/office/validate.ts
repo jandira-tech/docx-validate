@@ -402,16 +402,55 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                     }
                 }
             }
+            // Inspect every source before writing any of them. A symlinked
+            // directory segment makes two stored paths name one physical file;
+            // that physical file and all of its aliases are refused together,
+            // so the link's target is untouched and no inode is written twice
+            // (#544).
+            const writeBackRefusals = new Map<string, Error>();
+            const writeBackIdentities = new Map<string, string>();
+            if (autoRepair && sources && writeBackRoot !== undefined) {
+                const symlinkedPhysicalFiles = new Set<string>();
+                for (const [part, file] of sources) {
+                    const inspection = await inspectWriteBackDestination(writeBackRoot, file);
+                    if (inspection.refusal !== undefined) writeBackRefusals.set(part, inspection.refusal);
+                    if (inspection.identity === undefined) continue;
+                    writeBackIdentities.set(part, inspection.identity);
+                    if (inspection.throughSymbolicLink) symlinkedPhysicalFiles.add(inspection.identity);
+                }
+                for (const [part, file] of sources) {
+                    const identity = writeBackIdentities.get(part);
+                    if (identity === undefined || !symlinkedPhysicalFiles.has(identity) || writeBackRefusals.has(part)) continue;
+                    writeBackRefusals.set(
+                        part,
+                        new Error(
+                            `${file} is the same physical file as a symbolic-link path; the write-back never modifies a symbolic link's target`,
+                        ),
+                    );
+                }
+            }
             const unpacked = await runWithUnpacked(tempDir, envelope);
             // A staged directory still repairs its source, under stored names.
             // Bytes are compared so untouched files are never rewritten, and a
             // dropped duplicate entry has no write-back destination at all.
             if (autoRepair && sources) {
+                const attemptedPhysicalFiles = new Set<string>();
+                const claimPhysicalFile = (part: string, file: string): Error | undefined => {
+                    const identity = writeBackIdentities.get(part);
+                    if (identity === undefined) return undefined;
+                    if (attemptedPhysicalFiles.has(identity)) {
+                        return new Error(
+                            `${file} is the same physical file as another write-back destination; one physical file is written at most once`,
+                        );
+                    }
+                    attemptedPhysicalFiles.add(identity);
+                    return undefined;
+                };
                 for (const [part, file] of sources) {
-                    // #425: a destination the input directory does not
-                    // directly hold — a symbolic link, or a path that
-                    // resolves outside it — receives nothing.
-                    const refusal = writeBackRoot === undefined ? undefined : await refusedWriteBackDestination(writeBackRoot, file);
+                    // #425, #544: a destination the input directory does not
+                    // directly hold — a symbolic link at any path segment, or
+                    // a path that resolves outside it — receives nothing.
+                    const refusal = writeBackRefusals.get(part);
                     let repaired: Buffer;
                     try {
                         repaired = await fs.readFile(path.join(tempDir, part));
@@ -424,6 +463,11 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                             // The repair removed the part: its source goes too.
                             // A source already removed mid-run is the desired
                             // end state, so only a different rm failure reports.
+                            const duplicate = claimPhysicalFile(part, file);
+                            if (duplicate !== undefined) {
+                                writeBackFailed(part, file, duplicate);
+                                continue;
+                            }
                             try {
                                 await fs.rm(file);
                             } catch (rmErr) {
@@ -439,7 +483,11 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                     try {
                         if (!repaired.equals(previous)) {
                             if (refusal !== undefined) writeBackFailed(part, file, refusal);
-                            else await fs.writeFile(file, repaired);
+                            else {
+                                const duplicate = claimPhysicalFile(part, file);
+                                if (duplicate !== undefined) writeBackFailed(part, file, duplicate);
+                                else await fs.writeFile(file, repaired);
+                            }
                         }
                     } catch (err) {
                         writeBackFailed(part, file, err);
@@ -964,29 +1012,87 @@ function unreadableStoredDetail(dir: string, unreadable: readonly UnreadableEntr
         .join("; ");
 }
 
+interface WriteBackDestinationInspection {
+    /** The physical file's device/inode identity, when it can be read. */
+    readonly identity: string | undefined;
+    /** Why this destination cannot receive a write-back, when it cannot. */
+    readonly refusal: Error | undefined;
+    /** Whether the stored path reaches the file through a symbolic link. */
+    readonly throughSymbolicLink: boolean;
+}
+
 /**
- * The reason `file` may not receive a staged auto-repair's write-back, or
- * `undefined` when it may (#425): the stored file itself must be a regular
- * one — a symbolic link is never followed, wherever its target lives — and
- * its resolved path must stay under the input `root`, so a link on a
- * directory segment cannot carry the repair outside either. A destination
- * that no longer exists keeps the write-back's own ENOENT handling.
+ * Inspect one staged auto-repair write-back destination (#425, #544). The
+ * stored file itself must be regular, no path segment below the input root
+ * may be a symbolic link, and the resolved path must stay under the root.
+ * The physical identity lets the caller refuse every alias of one file
+ * together. A destination that no longer exists keeps the write-back's own
+ * ENOENT handling.
  */
-async function refusedWriteBackDestination(root: string, file: string): Promise<Error | undefined> {
+async function inspectWriteBackDestination(root: string, file: string): Promise<WriteBackDestinationInspection> {
     let listed: Stats;
     try {
         listed = await fs.lstat(file);
     } catch {
-        return undefined;
+        return { identity: undefined, refusal: undefined, throughSymbolicLink: false };
     }
+
+    let followed: Stats | undefined;
+    try {
+        followed = await fs.stat(file);
+    } catch {
+        // lstat succeeded, so the entry exists; a failed stat cannot identify
+        // its physical file, but the entry-kind and path checks still apply.
+    }
+    const identity = followed === undefined ? undefined : `${followed.dev}:${followed.ino}`;
+
     if (listed.isSymbolicLink()) {
-        return new Error(`${file} is a symbolic link; the write-back never follows it`);
+        return {
+            identity,
+            refusal: new Error(`${file} is a symbolic link; the write-back never follows it`),
+            throughSymbolicLink: true,
+        };
     }
     if (!listed.isFile()) {
-        return new Error(`${file} is not a regular file`);
+        return { identity, refusal: new Error(`${file} is not a regular file`), throughSymbolicLink: false };
+    }
+
+    const linkSegment = await symbolicLinkPathSegment(root, file);
+    if (linkSegment !== undefined) {
+        return {
+            identity,
+            refusal: new Error(`${file} passes through symbolic-link path segment ${linkSegment}; the write-back never follows it`),
+            throughSymbolicLink: true,
+        };
     }
     if (containRelationshipTarget(root, file) === null) {
-        return new Error(`${file} resolves outside the input directory`);
+        return { identity, refusal: new Error(`${file} resolves outside the input directory`), throughSymbolicLink: false };
+    }
+    return { identity, refusal: undefined, throughSymbolicLink: false };
+}
+
+/**
+ * The first symbolic-link path segment below `root` on the way to `file`, or
+ * `undefined` when the path has none. The root itself is outside this
+ * check: only segments between the input root and the stored destination
+ * are write-back paths the validator must not traverse.
+ */
+async function symbolicLinkPathSegment(root: string, file: string): Promise<string | undefined> {
+    const rootPath = path.resolve(root);
+    const relative = path.relative(rootPath, path.resolve(file));
+    if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) return undefined;
+
+    const segments = relative.split(path.sep);
+    segments.pop();
+    let current = rootPath;
+    for (const segment of segments) {
+        current = path.join(current, segment);
+        try {
+            const listed = await fs.lstat(current);
+            if (listed.isSymbolicLink()) return current;
+        } catch {
+            return undefined;
+        }
     }
     return undefined;
 }
