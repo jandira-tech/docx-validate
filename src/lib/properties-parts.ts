@@ -4,9 +4,8 @@
  */
 
 import { canonicalPartName, findEquivalentPart, resolvePartName } from "./content-types";
-import { NS } from "./types";
 import type { ValidationContext } from "./validation-context";
-import { getElementsByTagNameNSAll } from "./xml-helpers";
+import { getRelationshipChildren } from "./xml-helpers";
 import { checkXmlSyntax } from "./xml-syntax";
 
 const PROPERTIES_RELATIONSHIP_TYPES: ReadonlySet<string> = new Set([
@@ -44,7 +43,7 @@ export const propertiesParts = async (context: ValidationContext): Promise<Reado
     if (!parsed?.ok) {
         return parts;
     }
-    for (const relationship of getElementsByTagNameNSAll(parsed.document, NS.PR, "Relationship")) {
+    for (const relationship of getRelationshipChildren(parsed.document)) {
         if (
             relationship.getAttribute("TargetMode") === "External" ||
             !PROPERTIES_RELATIONSHIP_TYPES.has(relationship.getAttribute("Type") ?? "")

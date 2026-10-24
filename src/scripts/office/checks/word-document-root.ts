@@ -22,10 +22,9 @@
 import type { CheckDefinition } from "../../../lib/check-registry";
 import { findEquivalentPart, resolvePartName } from "../../../lib/content-types";
 import type { ValidationIssue } from "../../../lib/types";
-import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
+import { getRelationshipChildren } from "../../../lib/xml-helpers";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
 
-const PACKAGE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/relationships";
 const OFFICE_DOCUMENT_TYPES = new Set([
     "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
     "http://purl.oclc.org/ooxml/officeDocument/relationships/officeDocument",
@@ -44,7 +43,7 @@ export const wordDocumentRootCheck: CheckDefinition = {
         if (!relationships?.ok) return [];
 
         const issues: ValidationIssue[] = [];
-        for (const relationship of getElementsByTagNameNSAll(relationships.document, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship")) {
+        for (const relationship of getRelationshipChildren(relationships.document)) {
             if (
                 relationship.getAttribute("TargetMode") === "External" ||
                 !OFFICE_DOCUMENT_TYPES.has(relationship.getAttribute("Type") ?? "")
@@ -102,18 +101,16 @@ export const wordMainDocumentPartCheck: CheckDefinition = {
         const relationships = ctx.xml(relationshipsPart);
         if (!relationships?.ok) return [];
 
-        const hasMainPart = getElementsByTagNameNSAll(relationships.document, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship").some(
-            (relationship) => {
-                if (
-                    relationship.getAttribute("TargetMode") === "External" ||
-                    !OFFICE_DOCUMENT_TYPES.has(relationship.getAttribute("Type") ?? "")
-                ) {
-                    return false;
-                }
-                const part = resolvePartName(ctx.partNames, relationship.getAttribute("Target") ?? "");
-                return part !== undefined && ctx.partNames.includes(part);
-            },
-        );
+        const hasMainPart = getRelationshipChildren(relationships.document).some((relationship) => {
+            if (
+                relationship.getAttribute("TargetMode") === "External" ||
+                !OFFICE_DOCUMENT_TYPES.has(relationship.getAttribute("Type") ?? "")
+            ) {
+                return false;
+            }
+            const part = resolvePartName(ctx.partNames, relationship.getAttribute("Target") ?? "");
+            return part !== undefined && ctx.partNames.includes(part);
+        });
         if (hasMainPart) return [];
 
         return [

@@ -2,6 +2,8 @@ import { execFile } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { describe, expect, it } from "vitest";
+import * as xmlHelpers from "../src/lib/xml-helpers";
+import { NS } from "../src/lib/types";
 
 import {
     decodeXmlBytes,
@@ -17,6 +19,23 @@ const DOC = `<?xml version="1.0"?>
     <pkga:body><pkga:p>one</pkga:p><pkga:p>two<pkga:r>run</pkga:r></pkga:p></pkga:body>
     <pkgb:body><pkgb:p>three</pkgb:p></pkgb:body>
 </pkg:document>`;
+
+describe("getRelationshipChildren (#434)", () => {
+    it("returns only direct Relationship children of a package Relationships root", () => {
+        expect(xmlHelpers.getRelationshipChildren).toBeTypeOf("function");
+        const dom = parseXml(
+            `<p:Relationships xmlns:p="${NS.PR}">\n<!--keep--><?ok yes?><p:Relationship Id="first"/><x:Wrap xmlns:x="urn:x"><p:Relationship Id="nested"/></x:Wrap><Relationship xmlns="urn:x"/><p:Relationship Id="last"/></p:Relationships>`,
+        );
+        const before = xmlHelpers.serializeXml(dom);
+        expect(xmlHelpers.getRelationshipChildren(dom).map((rel) => rel.getAttribute("Id"))).toEqual(["first", "last"]);
+        expect(xmlHelpers.serializeXml(dom)).toBe(before);
+        for (const xml of [`<Foo xmlns="${NS.PR}"><Relationship/></Foo>`, '<Relationships xmlns="urn:x"/>', "<Relationships/>"]) {
+            expect(xmlHelpers.getRelationshipChildren(parseXml(xml))).toEqual([]);
+        }
+        dom.removeChild(dom.documentElement);
+        expect(xmlHelpers.getRelationshipChildren(dom)).toEqual([]);
+    });
+});
 
 describe("xml-helpers element collectors", () => {
     it("getElementsByTagNameNSAll returns matching descendants in document order", () => {

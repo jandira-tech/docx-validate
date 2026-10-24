@@ -25,7 +25,7 @@
 import { DOMParser, XMLSerializer, type Node as XmldomNode } from "@xmldom/xmldom";
 import * as xpath from "xpath";
 
-import { XPATH_NS } from "./types";
+import { NS, XPATH_NS } from "./types";
 
 /**
  * Parse an XML string into a DOM `Document`. Mirrors the Python
@@ -264,6 +264,25 @@ export const getElementsByTagNameNSAll = (root: Document | Element, namespaceURI
  * the NS-filtered form must never drift apart.
  */
 export const getElementsByTagNameAll = (root: Document | Element): Element[] => getElementsByTagNameNSAll(root, "*", "*");
+
+/** OPC relationships are direct children of the package Relationships root (#434). */
+export const getRelationshipChildren = (document: Document): Element[] => {
+    const root = document.documentElement;
+    if (!root || root.localName !== "Relationships" || root.namespaceURI !== NS.PR) {
+        return [];
+    }
+    const relationships: Element[] = [];
+    for (let child = root.firstChild; child; child = child.nextSibling) {
+        if (child.nodeType !== 1) {
+            continue;
+        }
+        const element = child as Element;
+        if (element.localName === "Relationship" && element.namespaceURI === NS.PR) {
+            relationships.push(element);
+        }
+    }
+    return relationships;
+};
 
 /**
  * Build a namespace-aware xpath selector pre-bound to the OOXML prefixes in

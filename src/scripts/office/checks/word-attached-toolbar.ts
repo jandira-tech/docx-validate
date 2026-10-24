@@ -17,11 +17,9 @@ import { equivalentPartLookup } from "../../../lib/content-types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import type { ValidationIssue } from "../../../lib/types";
 import path from "node:path";
-import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
+import { getElementsByTagNameNSAll, getRelationshipChildren } from "../../../lib/xml-helpers";
 
 const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
-
-const PACKAGE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/relationships";
 
 const resolveToolbarTarget = (relsFile: string, target: string): string | null => {
     // `\` reads as `/`, as it does everywhere in the package view (#350). A
@@ -73,7 +71,7 @@ export const wordAttachedToolbarUtf8Check: CheckDefinition = {
                 continue;
             }
             const relDom = parsedRels.document;
-            const relationships = getElementsByTagNameNSAll(relDom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const relationships = getRelationshipChildren(relDom);
             for (const elem of toolbarData) {
                 let rid: string | null = null;
                 for (const relNs of relationshipNamespaces) {

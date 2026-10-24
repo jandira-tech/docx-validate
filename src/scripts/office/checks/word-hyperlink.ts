@@ -18,11 +18,9 @@ import type { ValidationIssue } from "../../../lib/types";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
 import path from "node:path";
 import type { ValidationContext } from "../../../lib/validation-context";
-import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
+import { getElementsByTagNameNSAll, getRelationshipChildren } from "../../../lib/xml-helpers";
 
 const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
-
-const PACKAGE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/relationships";
 
 /** An absent sidecar leaves every id unresolved; an unparseable sidecar is diagnosed by xml-syntax. */
 const externalHyperlinkRelationshipIds = (
@@ -39,7 +37,7 @@ const externalHyperlinkRelationshipIds = (
     if (!parsed) {
         return out;
     }
-    for (const rel of getElementsByTagNameNSAll(parsed.document, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship")) {
+    for (const rel of getRelationshipChildren(parsed.document)) {
         const id = rel.getAttribute("Id");
         if (!id) {
             continue;

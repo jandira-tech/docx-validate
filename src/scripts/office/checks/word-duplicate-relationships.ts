@@ -30,9 +30,7 @@ import type { CheckDefinition } from "../../../lib/check-registry";
 import { isRelationshipsPartName } from "../../../lib/content-types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import type { ValidationIssue } from "../../../lib/types";
-import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
-
-const PACKAGE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/relationships";
+import { getRelationshipChildren } from "../../../lib/xml-helpers";
 
 export const wordDuplicateThemeRelationshipCheck: CheckDefinition = {
     id: "word-duplicate-theme-relationship",
@@ -52,7 +50,7 @@ export const wordDuplicateThemeRelationshipCheck: CheckDefinition = {
                 continue;
             }
             const dom = parsed.document;
-            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const rels = getRelationshipChildren(dom);
             const themeIds: string[] = [];
             for (const rel of rels) {
                 const type = rel.getAttribute("Type") ?? "";
@@ -96,7 +94,7 @@ export const wordDuplicateFontTableRelationshipCheck: CheckDefinition = {
                 continue;
             }
             const dom = parsed.document;
-            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const rels = getRelationshipChildren(dom);
             const fontIds: string[] = [];
             for (const rel of rels) {
                 const type = rel.getAttribute("Type") ?? "";
@@ -140,7 +138,7 @@ export const wordDuplicateWebSettingsRelationshipCheck: CheckDefinition = {
                 continue;
             }
             const dom = parsed.document;
-            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const rels = getRelationshipChildren(dom);
             const webIds: string[] = [];
             for (const rel of rels) {
                 const type = rel.getAttribute("Type") ?? "";
@@ -184,7 +182,7 @@ export const wordDuplicateSettingsRelationshipCheck: CheckDefinition = {
                 continue;
             }
             const dom = parsed.document;
-            const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+            const rels = getRelationshipChildren(dom);
             const settingsIds: string[] = [];
             for (const rel of rels) {
                 const type = rel.getAttribute("Type") ?? "";

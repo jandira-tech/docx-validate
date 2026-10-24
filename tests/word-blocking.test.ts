@@ -12,6 +12,26 @@ import { isWordBlockingIssue } from "../src/scripts/office/validators/word-block
 const issue = (code: string, rest: Partial<ValidationIssue> = {}): ValidationIssue => ({ severity: "error", code, message: "", ...rest });
 
 describe("isWordBlockingIssue", () => {
+    it("blocks relationships structure in the package relationships part and under word/ (#433)", () => {
+        // Word 16.115 offers recovery for a foreign element in _rels/.rels and in
+        // word/_rels/document.xml.rels (session 4c); other sidecars are unobserved.
+        for (const path of [
+            "_rels/.rels",
+            "_RELS/.RELS",
+            "_rels/.%72els",
+            "_rels\\.rels",
+            "word/_rels/document.xml.rels",
+            "WORD/_RELS/document.xml.RELS",
+            "word\\_rels\\document.xml.rels",
+            "word/_rels/.rels",
+        ]) {
+            expect(isWordBlockingIssue(issue("opc-relationships-structure", { path })), path).toBe(true);
+        }
+        for (const path of [undefined, "_rels/a.rels", "customXml/_rels/item1.xml.rels", "docProps/_rels/app.xml.rels"]) {
+            expect(isWordBlockingIssue(issue("opc-relationships-structure", { path })), path).toBe(false);
+        }
+    });
+
     it.each([
         "comment-thread-commentid-paraid-orphan",
         "comment-thread-commentid-missing-paraid",
