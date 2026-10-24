@@ -91,8 +91,10 @@ timing, details, and available Word version/build. Directories and unsupported
 platforms return `unavailable`.
 
 A pre-existing Word dialog now yields `unavailable` before any open/close, rather
-than being misattributed to the input. macOS cleanup dismisses dialogs raised by
-its own open; it never quits or force-kills Word or relaunches it after a crash.
+than being misattributed to the input. Verification needs exclusive use of Word:
+overlapping runs, or a user working in Word, can still have a dialog attributed to
+the wrong file (#331). macOS cleanup dismisses the Word dialog showing at close; it
+never quits or force-kills Word or relaunches it after a crash.
 
 ### Contributor coverage and fixture evidence
 
