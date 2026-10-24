@@ -1503,6 +1503,42 @@ describe("validation contract: the glossary is a second story root (#539, #549)"
             ),
         });
 
+    // Session 19 (#562): the eagerly parsed types a reached glossary's
+    // relationships part can carry — stored file, content type and root local
+    // name (`fontTable` is `w:fonts`), as `s19builder.mts` has them.
+    const GLOSSARY_EAGER_SEGMENTS = ["styles", "settings", "fontTable", "webSettings", "numbering"] as const;
+    const GLOSSARY_EAGER: Readonly<Record<(typeof GLOSSARY_EAGER_SEGMENTS)[number], { readonly file: string; readonly root: string }>> = {
+        styles: { file: "styles.xml", root: "styles" },
+        settings: { file: "settings.xml", root: "settings" },
+        fontTable: { file: "fontTable.xml", root: "fonts" },
+        webSettings: { file: "webSettings.xml", root: "webSettings" },
+        numbering: { file: "numbering.xml", root: "numbering" },
+    };
+    /**
+     * The session-19 `glossary-<segment>` shape: a glossary that references no
+     * story, reached through a main-document `glossaryDocument` relationship,
+     * whose own relationships part relates `word/glossary/<file>` as `rIdE`
+     * with a matching Override.
+     */
+    const eagerViaGlossary = (segment: keyof typeof GLOSSARY_EAGER, xml: string): Promise<Buffer> => {
+        const { file } = GLOSSARY_EAGER[segment];
+        return buildDocx({
+            ...MINIMAL_PARTS,
+            "word/glossary/document.xml": glossaryWith("", ""),
+            "word/glossary/_rels/document.xml.rels": relsPart(`<Relationship Id="rIdE" Type="${R}/${segment}" Target="${file}"/>`),
+            [`word/glossary/${file}`]: xml,
+            "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                "</Relationships>",
+                `<Relationship Id="rIdG" Type="${R}/glossaryDocument" Target="glossary/document.xml"/></Relationships>`,
+            ),
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                `<Override PartName="/word/glossary/document.xml" ContentType="${WML}.document.glossary+xml"/>` +
+                    `<Override PartName="/word/glossary/${file}" ContentType="${WML}.${segment}+xml"/></Types>`,
+            ),
+        });
+    };
+
     it("word-valid and strict both fail a malformed header the glossary references", { timeout: 120000 }, async () => {
         // Word 16.115 offers to repair `ar-header-ref-in-glossary-malformed`
         // (a9d3c660c1ba09c1, session 16): the glossary's headerReference makes
@@ -1692,6 +1728,59 @@ describe("validation contract: the glossary is a second story root (#539, #549)"
             }
         },
     );
+
+    it.each(GLOSSARY_EAGER_SEGMENTS)(
+        "word-valid and strict both fail a malformed %s part a reached glossary relates (#562)",
+        { timeout: 120000 },
+        async (segment) => {
+            // Session 19 (`s19builder.mts`, `glossary-<segment>-malformed`):
+            // Word 16.115 offers repair for a reached glossary's malformed
+            // styles, settings, fontTable, webSettings or numbering part even
+            // when the glossary references no story — its eager relationships
+            // are parsed at open like the main document's.
+            const { file, root } = GLOSSARY_EAGER[segment];
+            const bytes = await eagerViaGlossary(segment, unclosed(`<w:${root} xmlns:w="${W}">`));
+            for (const profile of ["word-valid", "strict"] as const) {
+                const result = await validateBytes(bytes, profile);
+                expect(
+                    result.issues.find((issue) => issue.code === "xml-syntax" && issue.path === `word/glossary/${file}`)?.severity,
+                    profile,
+                ).toBe("error");
+                expect(result.valid, profile).toBe(false);
+            }
+        },
+    );
+
+    it.each(GLOSSARY_EAGER_SEGMENTS)(
+        "keeps a well-formed %s part a reached glossary relates word-valid (#562 control)",
+        { timeout: 120000 },
+        async (segment) => {
+            // Session 19: every `glossary-<segment>-wellformed-control` opens
+            // clean in Word.
+            const { file, root } = GLOSSARY_EAGER[segment];
+            const result = await validateBytes(await eagerViaGlossary(segment, `<w:${root} xmlns:w="${W}"></w:${root}>`), "word-valid");
+            expect(result.issues.find((issue) => issue.code === "xml-syntax" && issue.path === `word/glossary/${file}`)).toBeUndefined();
+            expect(result.valid).toBe(true);
+        },
+    );
+
+    it("word-valid full, quick and named runs agree on a glossary's eager part (#562, #381)", { timeout: 120000 }, async () => {
+        const { file, root } = GLOSSARY_EAGER.styles;
+        const bytes = await eagerViaGlossary("styles", unclosed(`<w:${root} xmlns:w="${W}">`));
+        await withTempDir(async (dir) => {
+            const target = path.join(dir, "specimen.docx");
+            writeFileSync(target, bytes);
+            for (const selection of [{}, { quick: true }, { checks: ["xml-syntax"] }] as const) {
+                const result = await validate(target, { profile: "word-valid", ...selection });
+                const tag = JSON.stringify(selection);
+                expect(
+                    result.issues.find((issue) => issue.code === "xml-syntax" && issue.path === `word/glossary/${file}`)?.severity,
+                    tag,
+                ).toBe("error");
+                expect(result.valid, tag).toBe(false);
+            }
+        });
+    });
 });
 
 // These are filesystem integration tests: literal backslashes are file-name
