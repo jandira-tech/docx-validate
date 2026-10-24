@@ -54,6 +54,35 @@ const STORY_PART = /(?:^|\/)(?:document|comments|footnotes|endnotes|header\d*|fo
 /** Part names are package-relative: forward slashes, no leading slash. */
 export const normalizePartName = (name: string): string => name.replace(/\\/g, "/").replace(/^\/+/, "");
 
+/**
+ * Of two stored names for one part, the one to keep: the name that already is
+ * the part name (no `\`, no leading `/`), else the smaller in code-unit
+ * order. The choice never depends on entry order, so a packed archive and its
+ * extracted directory keep the same entry (#366).
+ */
+const preferredStoredName = (a: string, b: string): string => {
+    const aIsPartName = a === normalizePartName(a);
+    if (aIsPartName !== (b === normalizePartName(b))) {
+        return aIsPartName ? a : b;
+    }
+    return a < b ? a : b;
+};
+
+/** Index entries by part name, keeping for each part the entry {@link preferredStoredName} picks. */
+export const indexByPartName = <T>(entries: Iterable<readonly [string, T]>): Map<string, T> => {
+    const stored = new Map<string, string>();
+    const parts = new Map<string, T>();
+    for (const [name, value] of entries) {
+        const part = normalizePartName(name);
+        const kept = stored.get(part);
+        if (kept === undefined || preferredStoredName(kept, name) === name) {
+            stored.set(part, name);
+            parts.set(part, value);
+        }
+    }
+    return parts;
+};
+
 export class ValidationContext {
     public readonly source: PackageSource;
     public readonly archiveBytes: Uint8Array | undefined;
@@ -95,23 +124,22 @@ export class ValidationContext {
         opts: ValidationContextOptions = {},
     ): ValidationContext {
         const pairs: Iterable<readonly [string, PartContent]> = Symbol.iterator in entries ? entries : Object.entries(entries);
-        const parts = new Map<string, PartContent>();
-        for (const [name, content] of pairs) {
-            parts.set(normalizePartName(name), content);
-        }
-        return new ValidationContext(parts, opts);
+        return new ValidationContext(indexByPartName(pairs), opts);
     }
 
-    /** Load every entry of a packed OPC archive. Throws when the bytes are not a readable ZIP. */
+    /** Load a packed OPC archive, one entry per part name. Throws when the bytes are not a readable ZIP. */
     public static async fromArchive(bytes: Uint8Array): Promise<ValidationContext> {
         const zip = await JSZip.loadAsync(bytes);
-        const parts = new Map<string, PartContent>();
-        await Promise.all(
+        const entries = indexByPartName(
             Object.values(zip.files)
                 .filter((entry) => !entry.dir)
-                .map(async (entry) => {
-                    parts.set(normalizePartName(entry.name), await entry.async("uint8array"));
-                }),
+                .map((entry) => [entry.name, entry] as const),
+        );
+        const parts = new Map<string, PartContent>();
+        await Promise.all(
+            [...entries].map(async ([part, entry]) => {
+                parts.set(part, await entry.async("uint8array"));
+            }),
         );
         return new ValidationContext(parts, { source: "archive", archiveBytes: bytes });
     }
