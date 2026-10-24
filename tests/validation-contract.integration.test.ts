@@ -1879,6 +1879,109 @@ describe.skipIf(process.platform === "win32")("directory package staging (#374)"
         },
     );
 
+    it.each(["strict", "word-valid", "lenient"] as const)(
+        "fails with package-extract-failed naming a directory symlink loop as stored, without descending into it (%s, #546)",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                const input = await writeDirectory(path.join(dir, `loop-${profile}.docx`), MINIMAL_PARTS, false);
+                await fs.symlink(".", path.join(input, "word", "self"));
+                const result = await validateResolves(input, { profile });
+                expect(result.valid).toBe(false);
+                expect(result.issues).toEqual([
+                    expect.objectContaining({
+                        severity: "error",
+                        code: "package-extract-failed",
+                        // The link is named as stored, at one level — not the
+                        // 35-level synthetic path the kernel's symlink budget left.
+                        message: expect.stringContaining("Cannot read word/self: a symbolic link loop"),
+                    }),
+                ]);
+                expect(result.issues[0]?.message).not.toContain("self/self");
+                expect(result.xsdWalk.started).toBe(false);
+                expect(result.metadata?.schemaCompleted).toBe(false);
+                expect(result.repairs).toBe(0);
+            });
+        },
+        60_000,
+    );
+
+    it("names the first stored link that re-enters an ancestor in a mutual directory loop (#546)", async () => {
+        await withTempDir(async (dir) => {
+            const input = await writeDirectory(path.join(dir, "mutual.docx"), MINIMAL_PARTS, false);
+            await fs.mkdir(path.join(input, "a"), { recursive: true });
+            await fs.mkdir(path.join(input, "b"), { recursive: true });
+            await fs.symlink("../b", path.join(input, "a", "to-b"));
+            await fs.symlink("../a", path.join(input, "b", "to-a"));
+            const result = await validateResolves(input, { strict: true });
+            expect(result.valid).toBe(false);
+            const failed = result.issues.filter((issue) => issue.code === "package-extract-failed");
+            expect(failed).toHaveLength(1);
+            const message = failed[0]?.message ?? "";
+            // Each named link is three segments deep, not a budget-length chain.
+            expect(message).toContain("a symbolic link loop");
+            expect(message).toContain("a/to-b/to-a");
+            expect(message).toContain("b/to-a/to-b");
+            expect(message).not.toContain("to-b/to-a/to-b");
+        });
+    }, 60_000);
+
+    it("reports a symlink chain loop as a loop, never as a broken symbolic link (#546)", async () => {
+        await withTempDir(async (dir) => {
+            const input = await writeDirectory(path.join(dir, "chain.docx"), MINIMAL_PARTS, false);
+            await fs.symlink("two", path.join(input, "one"));
+            await fs.symlink("one", path.join(input, "two"));
+            const result = await validateResolves(input, { strict: true });
+            expect(result.valid).toBe(false);
+            expect(result.issues[0]?.message).toContain("a symbolic link loop");
+            expect(result.issues[0]?.message).not.toContain("a broken symbolic link");
+        });
+    }, 60_000);
+
+    it("still reports a genuinely broken symbolic link as broken (#546)", async () => {
+        await withTempDir(async (dir) => {
+            const input = await writeDirectory(path.join(dir, "broken.docx"), MINIMAL_PARTS, false);
+            await fs.symlink("../missing.xml", path.join(input, "word", "gone.xml"));
+            const result = await validateResolves(input, { strict: true });
+            expect(result.valid).toBe(false);
+            expect(result.issues).toEqual([
+                expect.objectContaining({
+                    severity: "error",
+                    code: "package-extract-failed",
+                    message: expect.stringContaining("Cannot read word/gone.xml: a broken symbolic link"),
+                }),
+            ]);
+        });
+    }, 60_000);
+
+    it.each(["quick", "checks"] as const)(
+        "partial runs report the symlink loop, never more than the full run (%s, #546, #381)",
+        async (mode) => {
+            await withTempDir(async (dir) => {
+                const input = await writeDirectory(path.join(dir, "loop.docx"), MINIMAL_PARTS, false);
+                await fs.symlink(".", path.join(input, "word", "self"));
+                const full = await validateResolves(input, { profile: "word-valid" });
+                expect(full.valid).toBe(false);
+                const errors = (result: Awaited<ReturnType<typeof validate>>) =>
+                    new Set(result.issues.filter((i) => i.severity === "error").map((i) => `${i.code}@${i.path ?? ""}`));
+                const selection = mode === "quick" ? { quick: true } : { checks: ["xml-syntax"] };
+                const partial = await validateResolves(input, { profile: "word-valid", ...selection });
+                expect(partial.valid).toBe(false);
+                expect(partial.issues).toEqual(
+                    expect.arrayContaining([
+                        expect.objectContaining({
+                            severity: "error",
+                            code: "package-extract-failed",
+                            message: expect.stringContaining("Cannot read word/self: a symbolic link loop"),
+                        }),
+                    ]),
+                );
+                // #381: a partial run never reports an error the full run does not.
+                for (const error of errors(partial)) expect(errors(full)).toContain(error);
+            });
+        },
+        60_000,
+    );
+
     it("does not stage a normal directory, and stages only the backslash control", async () => {
         await withTempDir(async (dir) => {
             const normal = await writeDirectory(path.join(dir, "normal.docx"), MINIMAL_PARTS, false);

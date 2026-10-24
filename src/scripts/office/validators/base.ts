@@ -40,6 +40,7 @@
  */
 
 import { existsSync, lstatSync, promises as fs, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
+import type { Stats } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -1959,9 +1960,14 @@ export function packageEntries(dir: string, extensions?: ReadonlyArray<string>):
 export interface UnreadableEntry {
     /** Absolute path of the stored entry. */
     file: string;
-    /** Why it cannot be read: `"a broken symbolic link"`, `"not a regular file"`. */
+    /** Why it cannot be read: `"a broken symbolic link"`, `"not a regular file"`,
+     * `"a symbolic link loop"`, or `"an unreadable directory (…)"` for a
+     * directory the walk cannot list (#543, #546). */
     reason: string;
 }
+
+/** The device/inode identity of a directory on the walk's current path (#546). */
+const directoryIdentity = (st: Stats): string => `${st.dev}:${st.ino}`;
 
 /**
  * Walk `dir` recursively the way {@link walkFiles} does, without dropping
@@ -1973,7 +1979,13 @@ export interface UnreadableEntry {
  * symbolic link, whose auto-repair write-back must never follow the link
  * (#425). A directory the walk cannot list is reported the same way, naming
  * the directory: every stored file under it would otherwise vanish from the
- * package with it (#543). `files` is exactly what `walkFiles` returns.
+ * package with it (#543). A symlink whose target is a directory already on
+ * the current path — by device and inode — is reported as `"a symbolic link
+ * loop"` at the link's stored name, so the walk stops there instead of
+ * descending until the kernel's symlink budget runs out (#546); an `ELOOP`
+ * from resolving a symlink (a chain that loops without reaching a
+ * directory) is never labelled a broken link. `files` is exactly what
+ * `walkFiles` returns.
  */
 export function walkDirectory(
     dir: string,
@@ -1982,26 +1994,35 @@ export function walkDirectory(
     const files: string[] = [];
     const unreadable: UnreadableEntry[] = [];
     let holdsSymlinks = false;
-    const stack: string[] = [dir];
+    // The input directory's own identity anchors the path: a link back to it
+    // loops too. A directory the walk cannot even stat carries no identity,
+    // so only the deeper directories guard against loops there.
+    let rootAncestors: ReadonlySet<string> = new Set();
+    try {
+        rootAncestors = new Set([directoryIdentity(statSync(dir))]);
+    } catch {
+        // readdirSync below reports the unreadable input directory (#543).
+    }
+    const stack: { dir: string; ancestors: ReadonlySet<string> }[] = [{ dir, ancestors: rootAncestors }];
     while (stack.length > 0) {
         const current = stack.pop();
         if (current === undefined) break;
         let entries: string[];
         try {
-            entries = readdirSync(current);
+            entries = readdirSync(current.dir);
         } catch (err) {
             // A directory the walk cannot list hides every stored file under
             // it — a whole subtree vanishing, not one entry (#543). Name it
             // as unreadable so the run fails instead of judging the parts it
             // can still see.
             unreadable.push({
-                file: current,
+                file: current.dir,
                 reason: `an unreadable directory (${(err as NodeJS.ErrnoException).code ?? "error"})`,
             });
             continue;
         }
         for (const name of entries) {
-            const full = path.join(current, name);
+            const full = path.join(current.dir, name);
             let listed;
             try {
                 listed = lstatSync(full);
@@ -2013,16 +2034,27 @@ export function walkDirectory(
             try {
                 st = statSync(full);
             } catch (err) {
-                unreadable.push({
-                    file: full,
-                    reason: listed.isSymbolicLink()
-                        ? "a broken symbolic link"
-                        : `unreadable (${(err as NodeJS.ErrnoException).code ?? "error"})`,
-                });
+                const code = (err as NodeJS.ErrnoException).code;
+                // ELOOP means resolution looped through symlinks, not that a
+                // link points nowhere (#546).
+                let reason: string;
+                if (!listed.isSymbolicLink()) reason = `unreadable (${code ?? "error"})`;
+                else reason = code === "ELOOP" ? "a symbolic link loop" : "a broken symbolic link";
+                unreadable.push({ file: full, reason });
                 continue;
             }
             if (st.isDirectory()) {
-                stack.push(full);
+                const identity = directoryIdentity(st);
+                // A directory entry resolving to one already on the current
+                // path can only be reached through a symlink loop: report the
+                // link as stored instead of re-listing the tree under it (#546).
+                if (current.ancestors.has(identity)) {
+                    unreadable.push({ file: full, reason: "a symbolic link loop" });
+                    continue;
+                }
+                const ancestors = new Set(current.ancestors);
+                ancestors.add(identity);
+                stack.push({ dir: full, ancestors });
             } else if (st.isFile()) {
                 if (!extensions || extensions.some((e) => full.endsWith(e))) {
                     files.push(full);
