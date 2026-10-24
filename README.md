@@ -557,10 +557,15 @@ Override controls clean (session 20, chunks s20c and s20d, in
 also observed recovery for a theme only a reached glossary relates, typed
 by the `application/xml` Default; its exact-Override control opened clean
 ([#595](https://github.com/jandira-tech/docx-validate/issues/595)). The
-finding names the glossary's theme relationship. Only theme joins the
-glossary's generic-type scope, with the same severities and strict's
-same-path `ct-undeclared-part` suppression; other generic spellings are
-inference from resolution.
+finding names the glossary's theme relationship. Session 24 also observed
+recovery for its styles part typed by the generic Default, while the exact
+Override control opened clean ([#601](https://github.com/jandira-tech/docx-validate/issues/601)).
+The finding names the glossary's styles relationship: error and Word-blocking
+under word-valid, error under strict, warning under lenient. Strict retains
+this finding because no `ct-undeclared-part` error replaces it at that path.
+Only theme and styles join the glossary's generic-type scope; settings,
+fontTable, webSettings, numbering and stories remain unprobed. Other generic
+spellings are inference from resolution.
 Other generic spellings for numbering and theme are inference from the same
 resolution. Strict keeps only `ct-undeclared-part` for the observed
 Default-typed theme, while numbering keeps `word-part-content-type-generic`;

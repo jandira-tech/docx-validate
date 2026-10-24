@@ -95,3 +95,13 @@ export const glossaryStoryParts = (
         `${WML}.${segment}+xml${exact ? "" : "; charset=utf-8"}`,
     );
 };
+
+/** Session 24: reached glossary styles, generic Default or exact Override (#601). */
+export const glossaryStylesParts = (exact = false): Record<string, string> =>
+    viaGlossary(
+        glossary("<w:p><w:r><w:t>Part</w:t></w:r></w:p>"),
+        rel("styles", "styles.xml"),
+        "word/glossary/styles.xml",
+        `<w:styles xmlns:w="${W}"></w:styles>`,
+        exact ? `${WML}.styles+xml` : undefined,
+    );
