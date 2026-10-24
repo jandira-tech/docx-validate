@@ -24,8 +24,12 @@
  * `application/xml` Default; reporting the Override and `text/xml` spellings
  * for them is inference from the same resolution (the message names the
  * declaration that produced the type), so the doc comment says so (#517).
- * Numbering and customXml were not probed, so they stay silent until a
- * probe observes them.
+ * Session 20 adds related numbering and theme parts typed by the
+ * `application/xml` Default: both raised repair warnings, and both exact
+ * Override controls opened clean (Word 16.115.26100424, chunks s20c and
+ * s20d of session 20 in docs/plans/evidence/word-probes-2026-10-24.md,
+ * #571). Other generic spellings for these two parts are inference from
+ * the same resolution; customXml stays outside this check.
  *
  * Session 16 widened the comparison itself: the check judges the media
  * type — everything before the first `;`, ASCII-lowercased — so a
@@ -48,13 +52,15 @@
  * (Part 1 gives each of these parts its own content type), and a warning
  * under lenient. A full strict run does not report a main document resolved
  * through a Default, which `ct-undeclared-part` already rejects; a main
- * document carrying a generic Override is reported once, here.
+ * document carrying a generic Override is reported once, here. A
+ * Default-typed theme is likewise suppressed only when that same path has
+ * a `ct-undeclared-part` error (#571, #535).
  *
  * Scope follows the justification. Word-valid predicts Word, so it judges
  * only the probed parts above. Strict justifies the same defect by the spec
  * — ECMA-376 Part 1 (4th edition), clause 11.3, gives every WordprocessingML
  * part its own content type — so a full strict run also reports a part a
- * main-document relationship of the other Part 1 types names: numbering,
+ * main-document relationship of the other Part 1 types names:
  * header, footer, endnotes, footnotes, comments and glossaryDocument, each
  * citing the content type Part 1 assigns it (#506). `customXml` stays out at
  * every profile — `application/xml` is the content type the spec gives the
@@ -88,6 +94,15 @@ export const EXPECTED_CONTENT_TYPES: ReadonlyMap<string, string> = new Map([
     ["webSettings", "application/vnd.openxmlformats-officedocument.wordprocessingml.webSettings+xml"],
 ]);
 
+/**
+ * Additional generic-type observations (#571), kept separate because the
+ * inexact-type check shares the older maps and has its own observed scope.
+ */
+const ADDITIONAL_OBSERVED_CONTENT_TYPES: ReadonlyMap<string, string> = new Map([
+    ["numbering", "application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"],
+    ["theme", "application/vnd.openxmlformats-officedocument.theme+xml"],
+]);
+
 /** The main document, reached through the package `officeDocument` relationship rather than a main-document one. */
 export const OFFICE_DOCUMENT_SEGMENT = "officeDocument";
 
@@ -105,10 +120,10 @@ export const MAIN_DOCUMENT_CONTENT_TYPES = [
 ] as const;
 
 /**
- * The Part 1 WordprocessingML part types the probes have not observed, with
+ * The additional Part 1 types used by the shared inexact-type check, with
  * the content type ECMA-376 Part 1 (4th edition), clause 11.3 assigns each
  * (#506). A main-document relationship of one of these types is judged under
- * strict only.
+ * strict only; generic numbering is now observed separately (#571).
  */
 export const SPEC_ONLY_CONTENT_TYPES: ReadonlyMap<string, string> = new Map([
     ["numbering", "application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"],
@@ -121,7 +136,11 @@ export const SPEC_ONLY_CONTENT_TYPES: ReadonlyMap<string, string> = new Map([
 ]);
 
 /** The relationship segments this check reaches for under word-valid and lenient: the probed parts plus the main document. */
-const OBSERVED_SEGMENTS: ReadonlySet<string> = new Set([OFFICE_DOCUMENT_SEGMENT, ...EXPECTED_CONTENT_TYPES.keys()]);
+const OBSERVED_SEGMENTS: ReadonlySet<string> = new Set([
+    OFFICE_DOCUMENT_SEGMENT,
+    ...EXPECTED_CONTENT_TYPES.keys(),
+    ...ADDITIONAL_OBSERVED_CONTENT_TYPES.keys(),
+]);
 
 /** The segments a strict run judges: the probed set plus every other Part 1 WordprocessingML part type (#506). */
 const SPEC_SEGMENTS: ReadonlySet<string> = new Set([...OBSERVED_SEGMENTS, ...SPEC_ONLY_CONTENT_TYPES.keys()]);
@@ -134,6 +153,10 @@ const expectedContentTypeText = (segment: string, source: "override" | "default"
         return source === "default"
             ? `it needs its own Override carrying one of the Word main-document content types — ${types}`
             : `its Override should carry one of the Word main-document content types — ${types}`;
+    }
+    const observed = ADDITIONAL_OBSERVED_CONTENT_TYPES.get(segment);
+    if (observed !== undefined) {
+        return source === "default" ? `it needs its own Override "${observed}"` : `its Override should carry "${observed}"`;
     }
     const specOnly = SPEC_ONLY_CONTENT_TYPES.get(segment);
     if (specOnly !== undefined) {
@@ -196,7 +219,12 @@ export const wordPartContentTypeGenericFindings = async (
                 : `is typed "${contentType}" by an Override`;
         const needed = expectedContentTypeText(segment, resolved.source);
         // Word recovery was observed only for the probed parts (#506).
-        const verdict = SPEC_ONLY_CONTENT_TYPES.has(segment) ? "" : " Word 16.115 offers to recover the package.";
+        // New segments have only the Default application/xml observation;
+        // avoid claiming an observation for other inferred generic spellings.
+        const verdict =
+            ADDITIONAL_OBSERVED_CONTENT_TYPES.has(segment) || SPEC_ONLY_CONTENT_TYPES.has(segment)
+                ? ""
+                : " Word 16.115 offers to recover the package.";
         findings.push({
             segment,
             source: resolved.source,
