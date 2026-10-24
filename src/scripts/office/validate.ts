@@ -46,6 +46,7 @@ import {
     isPartialRequest,
     ModeConflictError,
     opcNameIssueSeverity,
+    promoteFullCheckIssue,
     profileWalksSchemas,
     QUICK_CHECK_GROUPS,
     resolveMode,
@@ -609,7 +610,7 @@ function findingsUnderProfile(
             ? { ...issue, severity: wordObservedIssueSeverity(profile, format) }
             : issue.code !== undefined && ADVISORY_CODES.has(issue.code) && opcNameIssueSeverity(profile, format) === "warning"
               ? { ...issue, severity: "warning" }
-              : issue;
+              : promoteFullCheckIssue(issue, profile, format);
     if (profile !== "word-valid" || format !== "docx") return run.issues.map(advisory);
     return run.outcomes
         .flatMap((outcome) =>
