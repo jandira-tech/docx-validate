@@ -45,6 +45,7 @@ import {
     assertModeCoherent,
     isPartialRequest,
     ModeConflictError,
+    opcNameIssueSeverity,
     profileWalksSchemas,
     QUICK_CHECK_GROUPS,
     resolveMode,
@@ -74,6 +75,7 @@ import { XML_SYNTAX_CHECK_ID } from "./checks/xml";
 import { OPC_EQUIVALENT_PART_NAMES } from "./checks/opc-equivalent-part-names";
 import { OPC_PART_NAME_ESCAPED_SLASH } from "./checks/opc-part-name-escaped-slash";
 import { OPC_PART_NAME_ESCAPED_UNRESERVED } from "./checks/opc-part-name-escaped-unreserved";
+import { CT_OVERRIDE_PARTNAME_INVALID } from "./checks/ct-override-partname";
 import { contextFromArchive, contextFromDirectory } from "./package-context";
 import { BaseSchemaValidator, walkFiles } from "./validators/base";
 import { DOCXSchemaValidator } from "./validators/docx";
@@ -86,6 +88,20 @@ import { isWordBlockingIssue } from "./validators/word-blocking";
 import { explainWordError } from "./validators/word-error-explanations";
 
 const SUPPORTED_SUFFIXES = new Set([".docm", ".docx", ".pptx", ".xlsx"]);
+
+/**
+ * The package-name findings whose severity follows the profile and the
+ * format ({@link opcNameIssueSeverity}): equivalent stored names, escaped
+ * unreserved characters and separators, duplicate content-type declarations,
+ * and malformed Override PartNames.
+ */
+const ADVISORY_CODES: ReadonlySet<string> = new Set([
+    OPC_EQUIVALENT_PART_NAMES,
+    OPC_PART_NAME_ESCAPED_UNRESERVED,
+    OPC_PART_NAME_ESCAPED_SLASH,
+    CT_DUPLICATE_DECLARATION,
+    CT_OVERRIDE_PARTNAME_INVALID,
+]);
 
 /**
  * Side-effect boundary for real-Word verification. Defaults to
@@ -552,18 +568,15 @@ function findingsUnderProfile(
     profile: Profile,
     properties: ReadonlySet<string>,
 ): ValidationIssue[] {
-    // Equivalent names, escaped unreserved characters and escaped separators are
-    // Word-blocking for DOCX/DOCM (#351, #408, #436), and so are two entries under
-    // the identical spelling, for which Word offers recovery too (#411).
+    // Equivalent names, escaped unreserved characters, escaped separators and
+    // malformed Override PartNames are Word-blocking for DOCX/DOCM (#351, #408,
+    // #436, #414), and so are two entries under the identical spelling, for
+    // which Word offers recovery too (#411).
     // Lenient keeps the earlier policy and runs no Word rule. No PowerPoint or
     // Excel behaviour has been observed, so those only warn. Duplicate content-
     // type declarations follow the same policy (#431, Word 16.115 session 3).
     const advisory = (issue: ValidationIssue): ValidationIssue =>
-        (issue.code === OPC_EQUIVALENT_PART_NAMES ||
-            issue.code === OPC_PART_NAME_ESCAPED_UNRESERVED ||
-            issue.code === OPC_PART_NAME_ESCAPED_SLASH ||
-            issue.code === CT_DUPLICATE_DECLARATION) &&
-        (profile === "lenient" || (profile === "word-valid" && format !== "docx"))
+        issue.code !== undefined && ADVISORY_CODES.has(issue.code) && opcNameIssueSeverity(profile, format) === "warning"
             ? { ...issue, severity: "warning" }
             : issue;
     if (profile !== "word-valid" || format !== "docx") return run.issues.map(advisory);

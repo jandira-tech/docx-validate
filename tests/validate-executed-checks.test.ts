@@ -58,14 +58,16 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
             for (const id of WORD_RULE_IDS) {
                 expect(lenientChecks).not.toContain(id);
             }
-            // Lenient runs stored-name diagnosis, XML syntax, content-type uniqueness and shared comment checks;
-            // the ZIP-envelope checks remain Word-only.
+            // Lenient runs stored-name diagnosis, XML syntax, content-type uniqueness,
+            // the content-types PartName grammar and the shared comment checks; the
+            // ZIP-envelope checks remain Word-only.
             expect(lenientChecks).toEqual([
                 "opc-equivalent-part-names",
                 "opc-part-name-escaped-unreserved",
                 "opc-part-name-escaped-slash",
                 "xml-syntax",
                 "ct-duplicate-declaration",
+                "ct-override-partname-invalid",
                 "comment-markers",
                 "comment-threading",
             ]);

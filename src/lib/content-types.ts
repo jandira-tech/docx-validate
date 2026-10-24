@@ -300,6 +300,77 @@ export const partExtension = (partPath: string): string => {
     return dot < 0 ? "" : asciiLowercase(base.slice(dot + 1));
 };
 
+/**
+ * Why a part name is not a valid OPC part name (ECMA-376 Part 2 §6.2.2.2,
+ * [M1.1]–[M1.9]), or `undefined` when it names one.
+ *
+ * A part name is a path: it starts with `/`, its segments are neither empty
+ * nor dot segments, it ends with no separator and no segment ends with a
+ * dot, it carries no query, fragment or backslash, and every character in it
+ * is an RFC 3986 `pchar` or a percent-escape. A percent-escaped separator
+ * ([M1.7]) or unreserved character ([M1.8]) is forbidden too.
+ *
+ * These are the part-name rules, not the stored item-name rules: a part name
+ * starts with a slash, where a stored item name must not.
+ */
+export const partNameViolation = (partName: string): string | undefined => {
+    if (!partName.startsWith("/")) {
+        return "must start with '/'";
+    }
+    const segments = partName.slice(1).split("/");
+    if (partName.endsWith("/")) {
+        return "must not end with '/'";
+    }
+    if (segments.some((segment) => segment === "." || segment === "..")) {
+        return "must not have a '.' or '..' segment";
+    }
+    if (segments.some((segment) => segment === "")) {
+        return "must not have an empty segment";
+    }
+    if (segments.some((segment) => segment.endsWith("."))) {
+        return "must not have a segment ending with '.'";
+    }
+    if (/[?#\\]/.test(partName)) {
+        return "must not contain '?', '#' or '\\'";
+    }
+    if (hasEscapedSeparatorCharacter(partName)) {
+        return "must not percent-encode '/' or '\\' (OPC [M1.7])";
+    }
+    if (hasEscapedUnreservedCharacter(partName)) {
+        return "must not percent-encode an unreserved character (OPC [M1.8])";
+    }
+    if (hasNonPcharCharacter(partName)) {
+        return "must contain only RFC 3986 pchar characters";
+    }
+    return undefined;
+};
+
+/**
+ * Whether a name holds a character outside the RFC 3986 `pchar` set. A
+ * percent-escape counts as the escape it is; a `%` that opens no valid
+ * escape is data, and data outside `pchar` is refused.
+ */
+const hasNonPcharCharacter = (name: string): boolean => {
+    let index = 0;
+    while (index < name.length) {
+        const code = name.charCodeAt(index);
+        if (code === 0x25 /* % */) {
+            const high = hexValue(name.charCodeAt(index + 1));
+            const low = hexValue(name.charCodeAt(index + 2));
+            if (high >= 0 && low >= 0) {
+                index += 3;
+                continue;
+            }
+            return true;
+        }
+        if (!isPcharOrSlash(code)) {
+            return true;
+        }
+        index += 1;
+    }
+    return false;
+};
+
 /** Extract the declarations from a parsed [Content_Types].xml document. */
 export const parseContentTypes = (dom: Document): ContentTypeTable => {
     const overrides = new Map<string, string>();

@@ -265,6 +265,8 @@ The complete named check catalogue is below. Each Word check except
 `zip-bytes-after-eocd`, `zip-eocd-comment-overrun`, `opc-equivalent-part-names`,
 `opc-part-name-escaped-unreserved`, and `opc-part-name-escaped-slash`; `xml-syntax` is the shared
 XML prerequisite. All `word-*` checks apply to DOCX/DOCM only.
+`ct-override-partname-invalid` is the one content-types check that applies to
+every package format.
 
 `opc-equivalent-part-names` applies to DOCX/DOCM, PPTX, and XLSX package selections,
 including the `package` quick group. It reads stored ZIP item names before full-run
@@ -306,7 +308,7 @@ before `2F`) stays legal. Word 16.115 offers recovery for an unreferenced
 | `story`                   | `word-shading-color`, `word-page-margin-attributes`, `word-run-misplaced`, `word-run-properties-misplaced`, `word-underline-misplaced`, `word-paragraph-properties-misplaced`, `word-section-properties-misplaced`, `word-footnote-reference-missing`, `word-numbering-picture-bullet`, `word-sdt-id-empty`, `word-text-contains-paragraph`         |
 | `tables`                  | `word-grid-column-attributes`, `word-cell-margin-order`, `word-table-properties-required`, `word-table-properties-misplaced`, `word-row-without-cell`, `word-cell-ends-with-table`                                                                                                                                                                  |
 | `drawings`                | `word-textbox-content-namespace`, `word-drawing-extent-missing`, `word-drawing-extent-misplaced`, `word-picture-nvpicpr-missing`, `word-picture-sppr-missing`, `word-empty-drawing`, `word-anchor-missing-attribute`, `word-position-offset-and-align`, `word-drawing-scalar-whitespace`, `word-drawing-arc-radius`, `word-drawing-extent-negative` |
-| `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`                                                                                                                                                                                                                                                                                             |
+| `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`, `ct-override-partname-invalid`                                                                                                                                                                                                                                                             |
 | `relationships`           | `word-duplicate-theme-relationship`, `word-duplicate-font-table-relationship`, `word-duplicate-web-settings-relationship`, `word-duplicate-settings-relationship`, `word-hyperlink-relationship`, `word-main-document-part`, `opc-relationships-structure`                                                                                          |
 | `tracked-changes`         | `word-textbox-deleted-text`, `word-move-from-deleted-text`                                                                                                                                                                                                                                                                                          |
 | `settings`                | `word-custom-property-filetime-empty`, `word-attached-toolbar-utf8`                                                                                                                                                                                                                                                                                 |
@@ -325,6 +327,26 @@ the unchanged minimal control opened clean ([#431](https://github.com/jandira-te
 Full runs, quick runs and named selections share the rule. An unparseable stream reports XML
 diagnostics without duplicate findings. Strict continues to reject partial selectors;
 full XLSX validation remains unsupported.
+
+`ct-override-partname-invalid` reports every `Override` whose `PartName` is not
+a valid OPC part name (ECMA-376 Part 2 §6.2.2.2): a name that does not start
+with `/`, holds an empty or a `.`/`..` segment, ends with `/` or with a segment
+ending with `.`, carries a `?`, a `#` or a `\`, percent-encodes a separator
+(OPC [M1.7]) or an unreserved character (OPC [M1.8]), or holds a character
+outside the RFC 3986 `pchar` set. Such a PartName names no part —
+System.IO.Packaging's `ValidatePartUri` rejects it — so the declaration is
+malformed whatever its content type, and the resolution is left untouched: the
+PartName is never mapped onto a stored part. One finding is reported per
+offending Override, at the stored content-types stream, quoting the PartName
+and naming the rule it breaks. A content-types stream that does not parse is
+reported by the XML syntax gate instead, and nothing is reported from it here.
+Word 16.115 offers to recover every such package, even when nothing is stored
+under that name and the content type is well formed, while a well-formed
+PartName for a missing part opens clean ([#414](https://github.com/jandira-tech/docx-validate/issues/414),
+probe sessions 3c, 4 and 5 in `docs/plans/evidence/word-probes-2026-10-24.md`).
+The finding is an error, and Word-blocking, under word-valid for DOCX/DOCM;
+strict reports it as an error, and lenient and the unobserved PPTX/XLSX report
+a warning. Full, quick and named runs agree.
 
 The `schema` group contains structural checks, not an XSD walk. The `comments`
 group runs `comment-markers` (range pairing and references to existing comments)

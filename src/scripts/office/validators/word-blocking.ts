@@ -136,6 +136,15 @@ export const isWordBlockingIssue = (issue: ValidationIssue, propertiesParts: Rea
         // evidence in docs/plans/evidence/word-probes-2026-10-24.md).
         case "opc-part-name-escaped-slash":
             return true;
+        // Word 16.115 offers recovery for every malformed Override PartName
+        // probed — a dot segment, a query, a fragment, a backslash — even
+        // when nothing is stored under that name and the content type is
+        // well formed (#414; probe sessions 3c, 4 and 5 in
+        // docs/plans/evidence/word-probes-2026-10-24.md). A well-formed
+        // PartName for a missing part opens clean (#401), so the PartName
+        // alone decides it.
+        case "ct-override-partname-invalid":
+            return true;
         // NB: comment-orphan-start/end and comment-marker-missing are NOT
         // promoted here. Empirically Word TOLERATES an orphan comment-range
         // marker (a commentRangeStart with no End, referencing a missing

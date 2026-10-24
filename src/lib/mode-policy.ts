@@ -100,6 +100,15 @@ export type ResolvedMode = {
 export const defaultProfileForFormat = (format: PackageFormat): Profile => (format === "docx" ? "word-valid" : DEFAULT_PROFILE);
 
 /**
+ * The severity a package-name finding carries under a profile and a format:
+ * an error under strict, and under word-valid for DOCX/DOCM — Word 16.115
+ * offers recovery for every malformed name probed (#351, #408, #414) — and a
+ * warning under lenient, and under word-valid for the unobserved PPTX/XLSX.
+ */
+export const opcNameIssueSeverity = (profile: Profile, format: PackageFormat): "error" | "warning" =>
+    profile === "strict" || (profile === "word-valid" && format === "docx") ? "error" : "warning";
+
+/**
  * True when the request asks for part of the check set rather than all of it.
  * A partial run never constructs a schema validator, so callers use this to
  * skip the XSD-engine startup probe as well.

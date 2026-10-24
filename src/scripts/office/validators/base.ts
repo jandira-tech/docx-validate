@@ -57,9 +57,10 @@ import {
     resolvePartName,
 } from "../../../lib/content-types";
 import { applyMarkupCompatibility, STRICT_UNDERSTOOD_NAMESPACES, UNDERSTOOD_NAMESPACES } from "../../../lib/markup-compatibility";
+import { opcNameIssueSeverity } from "../../../lib/mode-policy";
 import { withTempDir } from "../../../lib/run-cli";
-import { indexByPartName } from "../../../lib/validation-context";
-import type { Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
+import { indexByPartName, type ValidationContext } from "../../../lib/validation-context";
+import type { PackageFormat, Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
 import { DEFAULT_PROFILE, NS, OK_RESULT } from "../../../lib/types";
 import { allowSchemaResourceRoot, createXsdValidator, type XsdValidator } from "../../../lib/xsd-validator";
 import {
@@ -74,6 +75,7 @@ import {
 import { checkXmlSyntax } from "../../../lib/xml-syntax";
 import { resolveSafeZipEntry } from "../../../lib/zip-path";
 import { isXmlPartName, XML_SYNTAX_CHECK_ID } from "../checks/xml";
+import { CT_OVERRIDE_PARTNAME_INVALID, ctOverridePartnameInvalidCheck } from "../checks/ct-override-partname";
 
 /**
  * Schema mapping table — file basename / suffix → relative path inside the
@@ -1305,6 +1307,31 @@ export class BaseSchemaValidator {
         }
 
         return finalize(issues);
+    }
+
+    /**
+     * The `Override` `PartName` grammar (#414): report every `Override` whose
+     * `PartName` is not a valid OPC part name. The named check runs under
+     * every profile, so a full run and a partial run report the same
+     * finding: an error under strict and under word-valid for DOCX/DOCM
+     * (Word 16.115 offers recovery for every malformed PartName probed), and
+     * a warning under lenient and for the unobserved PPTX/XLSX.
+     *
+     * The parts that do not parse are hidden from the check, as the XML
+     * syntax gate hides them from every other DOM-reading rule (#307): a
+     * content-types stream that does not parse is reported by that gate
+     * (#388), never from here.
+     */
+    protected async validateOverridePartNames(
+        context: ValidationContext,
+        format: PackageFormat,
+        malformed: ReadonlySet<string>,
+    ): Promise<ValidationResult> {
+        const view = malformed.size > 0 ? context.withUnparseable(new Map([...malformed].map((part) => [part, "malformed"]))) : context;
+        const issues = await ctOverridePartnameInvalidCheck.run(view);
+        this.recordExecutedCheck(CT_OVERRIDE_PARTNAME_INVALID);
+        const severity = opcNameIssueSeverity(this.profile, format);
+        return finalize([...issues].map((issue): ValidationIssue => (severity === "warning" ? { ...issue, severity: "warning" } : issue)));
     }
 
     // ----- XSD validation -----------------------------------------------------
