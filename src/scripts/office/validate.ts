@@ -89,7 +89,6 @@ import {
     rootIgnorableIssues,
     walkDirectory,
     withoutRestatedIgnorablePrefixes,
-    type UnreadableEntry,
 } from "./validators/base";
 import { DOCXSchemaValidator } from "./validators/docx";
 import { buildRepairPlanIssues, collectDocxSemanticInventory, compareDocxSemanticInventories } from "./validators/docx-diagnostics";
@@ -566,20 +565,11 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     const walked = walkDirectory(dir);
     const opened = openDirectoryContext(dir, walked.unreadable);
     if (opened.openError !== undefined) {
-        // #424: a stored name the package view refuses fails the directory
-        // as it fails the same names packed — before any part is read. The
-        // stored-names diagnosis still sees every stored name.
+        // Refused stored names (#424) and unreadable walk entries (#557)
+        // fail before any part is read. The stored-names diagnosis still
+        // sees every stored name, readable or not.
         const diagnostic = await storedNamesRun(opened.context, format, profile);
         return finish(stagingFailed(diagnostic, new Error(opened.openError)));
-    }
-    if (walked.unreadable.length > 0) {
-        // #426: a stored entry that can never yield part bytes — a broken
-        // symbolic link, a FIFO — is not a part that silently vanishes: the
-        // package view cannot be built, so the run fails as a failed
-        // extraction does, naming the stored file (#412). The stored-names
-        // diagnosis still sees every stored name, readable or not.
-        const diagnostic = await storedNamesRun(opened.context, format, profile);
-        return finish(stagingFailed(diagnostic, new Error(unreadableStoredDetail(dir, walked.unreadable))));
     }
     const diagnostic = await storedNamesRun(opened.context, format, profile);
     const entries = walked.files.map((file) => [path.relative(dir, file).split(path.sep).join("/"), file] as const);
@@ -885,7 +875,7 @@ async function runSelectedChecks(
     // A companion, not a prerequisite: these checks still read every part
     // with their own parser, even when xml-syntax rejects it (#385).
     const select = reportsParseFailures ? [...selected, XML_SYNTAX_CHECK_ID] : selected;
-    const opened = packedBytes !== undefined ? await contextFromArchive(packedBytes) : openedFromDirectory(path.resolve(target));
+    const opened = packedBytes !== undefined ? await contextFromArchive(packedBytes) : openDirectoryContext(path.resolve(target));
     if (opened.openError !== undefined) {
         // An archive that does not open has no parts: only the selected
         // envelope checks can read its bytes, and nothing else ran (#332).
@@ -983,35 +973,6 @@ async function runSelectedChecks(
             schemaCompleted: false,
         },
     };
-}
-
-/**
- * A directory input as a partial run opens it: its package view, plus — when
- * a stored entry can never yield part bytes (#426) — the same refusal a
- * refused packed view reports, so the partial run fails where the full run
- * fails and runs only the checks that need stored names (#381, #413, #420).
- */
-function openedFromDirectory(dir: string): { context: ValidationContext; openError?: string; extractFailed?: boolean } {
-    const unreadable = walkDirectory(dir).unreadable;
-    // A refused stored name fails first, as in the full run (#424).
-    const opened = openDirectoryContext(dir, unreadable);
-    if (opened.openError !== undefined || unreadable.length === 0) return opened;
-    return { context: opened.context, openError: unreadableStoredDetail(dir, unreadable), extractFailed: true };
-}
-
-/**
- * Why a directory input's package view cannot be read: one clause per
- * stored entry that can never yield part bytes, each naming the stored file
- * (#426) — or per directory the walk cannot list, naming the directory
- * (#543), with `.` standing for the input directory itself.
- */
-function unreadableStoredDetail(dir: string, unreadable: readonly UnreadableEntry[]): string {
-    return unreadable
-        .map((entry) => {
-            const name = path.relative(dir, entry.file).split(path.sep).join("/");
-            return `Cannot read ${name === "" ? "." : name}: ${entry.reason}`;
-        })
-        .join("; ");
 }
 
 interface WriteBackDestinationInspection {

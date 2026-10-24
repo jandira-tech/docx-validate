@@ -10,7 +10,7 @@ import path from "node:path";
 
 import type { ValidationIssue } from "../../lib/types";
 import { assertPlaceableNames, ValidationContext, PackageViewError, PackageOpenError } from "../../lib/validation-context";
-import { walkFiles, type UnreadableEntry } from "./validators/base";
+import { walkDirectory, walkFiles, type UnreadableEntry } from "./validators/base";
 
 /**
  * The finding for an input whose package view cannot be read: an item name
@@ -61,18 +61,22 @@ export function contextFromDirectory(dir: string, unreadableStoredEntries: reado
 /**
  * Open a directory with the same refused-view result as an archive (#424):
  * a stored name the package view refuses gives a part-free context that keeps
- * every stored name, with `extractFailed`.
+ * every stored name, with `extractFailed`. The same walk refuses unreadable
+ * entries before any check, for full, partial and direct validators (#557).
+ * Stored-name refusals take precedence over walk refusals (#424).
  */
 export function openDirectoryContext(
     dir: string,
-    unreadableStoredEntries: readonly UnreadableEntry[] = [],
+    unreadableStoredEntries: readonly UnreadableEntry[] = walkDirectory(dir).unreadable,
 ): {
     context: ValidationContext;
     openError?: string;
     extractFailed?: boolean;
 } {
     try {
-        return { context: contextFromDirectory(dir, unreadableStoredEntries) };
+        const context = contextFromDirectory(dir, unreadableStoredEntries);
+        if (unreadableStoredEntries.length === 0) return { context };
+        return { context, openError: unreadableStoredDetail(dir, unreadableStoredEntries), extractFailed: true };
     } catch (err) {
         if (!(err instanceof PackageViewError)) throw err;
         return {
@@ -81,6 +85,21 @@ export function openDirectoryContext(
             extractFailed: true,
         };
     }
+}
+
+/**
+ * Why a directory input's package view cannot be read: one clause per
+ * stored entry that can never yield part bytes, each naming the stored file
+ * (#426) — or per directory the walk cannot list, naming the directory
+ * (#543), with `.` standing for the input directory itself.
+ */
+function unreadableStoredDetail(dir: string, unreadable: readonly UnreadableEntry[]): string {
+    return unreadable
+        .map((entry) => {
+            const name = path.relative(dir, entry.file).split(path.sep).join("/");
+            return `Cannot read ${name === "" ? "." : name}: ${entry.reason}`;
+        })
+        .join("; ");
 }
 
 /**
