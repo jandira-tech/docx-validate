@@ -65,6 +65,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
      * in Python — same order, same short-circuit on `validateXml` failure.
      */
     async validate(): Promise<ValidationResult> {
+        this.resetExecutedChecks();
         const xml = await this.validateXml();
         if (!xml.valid) {
             return xml;

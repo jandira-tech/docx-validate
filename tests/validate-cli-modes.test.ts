@@ -162,9 +162,28 @@ describe("validate CLI: rejected invocations", { timeout: 120_000 }, () => {
             .spyOn(BaseSchemaValidator, "assertXsdValidationAvailable")
             .mockRejectedValue(new Error("XSD engine unavailable (libxml2-wasm): boom"));
         try {
-            const run = await withTempDir(async (dir) => capture([await controlDocx(dir)]));
+            // `--profile strict` walks the schemas, so it needs the engine and
+            // must fail loudly when the engine is broken (#318).
+            const run = await withTempDir(async (dir) => capture([await controlDocx(dir), "--profile", "strict"]));
             expect(run.code).toBe(1);
             expect(run.stderr.trim()).toBe("XSD engine unavailable (libxml2-wasm): boom");
+        } finally {
+            probe.mockRestore();
+        }
+    });
+
+    it("never probes the XSD engine for the default word-valid DOCX run (#318)", async () => {
+        const probe = vi
+            .spyOn(BaseSchemaValidator, "assertXsdValidationAvailable")
+            .mockRejectedValue(new Error("XSD engine unavailable (libxml2-wasm): boom"));
+        try {
+            // The default DOCX profile is word-valid, which compiles no
+            // schema: a broken engine must not fail a run that never uses it.
+            const run = await withTempDir(async (dir) => capture([await controlDocx(dir)]));
+            expect(probe).not.toHaveBeenCalled();
+            expect(run.code).toBe(0);
+            expect(run.stdout).toContain("All validations PASSED!");
+            expect(run.stderr).toBe("");
         } finally {
             probe.mockRestore();
         }

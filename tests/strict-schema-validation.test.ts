@@ -13,8 +13,9 @@
  *
  * Under `profile: "strict"` an ISO OOXML Strict part is schema-validated
  * against the bundled Strict XSDs (namespace + part identity dispatch), not
- * skipped with `xsd-strict-skipped`. Lenient/word-valid keep the documented
- * skip behaviour.
+ * skipped with `xsd-strict-skipped`. Lenient keeps the documented
+ * `xsd-strict-skipped` skip; word-valid compiles no schema at all, so it
+ * emits no XSD issue.
  */
 
 import { existsSync, promises as fs } from "node:fs";
