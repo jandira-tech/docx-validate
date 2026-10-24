@@ -269,8 +269,8 @@ XML prerequisite. All `word-*` checks apply to DOCX/DOCM only.
 `ct-duplicate-declaration`, `ct-override-partname-invalid`,
 `ct-override-partname-word-refused` and `ct-markup-compatibility` apply to
 every package format; `word-content-type-invalid`,
-`word-part-content-type-generic` and `word-part-content-type-inexact`
-apply to DOCX/DOCM only.
+`word-part-content-type-generic`, `word-part-content-type-inexact` and
+`word-part-content-type-mismatch` apply to DOCX/DOCM only.
 
 `zip-bytes-before-archive` applies to DOCX/DOCM, PPTX, and XLSX package
 selections, including the `package` quick group, and reads the archive bytes
@@ -401,7 +401,7 @@ names and input bytes unchanged.
 | `story`                   | `word-shading-color`, `word-page-margin-attributes`, `word-run-misplaced`, `word-run-properties-misplaced`, `word-underline-misplaced`, `word-paragraph-properties-misplaced`, `word-section-properties-misplaced`, `word-footnote-reference-missing`, `word-numbering-picture-bullet`, `word-sdt-id-empty`, `word-text-contains-paragraph`         |
 | `tables`                  | `word-grid-column-attributes`, `word-cell-margin-order`, `word-table-properties-required`, `word-table-properties-misplaced`, `word-row-without-cell`, `word-cell-ends-with-table`                                                                                                                                                                  |
 | `drawings`                | `word-textbox-content-namespace`, `word-drawing-extent-missing`, `word-drawing-extent-misplaced`, `word-picture-nvpicpr-missing`, `word-picture-sppr-missing`, `word-empty-drawing`, `word-anchor-missing-attribute`, `word-position-offset-and-align`, `word-drawing-scalar-whitespace`, `word-drawing-arc-radius`, `word-drawing-extent-negative` |
-| `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`, `ct-override-partname-invalid`, `ct-override-partname-word-refused`, `ct-markup-compatibility`, `word-part-content-type-generic`, `word-part-content-type-inexact`                                                                                                                         |
+| `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`, `ct-override-partname-invalid`, `ct-override-partname-word-refused`, `ct-markup-compatibility`, `word-part-content-type-generic`, `word-part-content-type-inexact`, `word-part-content-type-mismatch`                                                                                      |
 | `relationships`           | `word-duplicate-theme-relationship`, `word-duplicate-font-table-relationship`, `word-duplicate-web-settings-relationship`, `word-duplicate-settings-relationship`, `word-hyperlink-relationship`, `word-main-document-part`, `opc-relationships-structure`                                                                                          |
 | `tracked-changes`         | `word-textbox-deleted-text`, `word-move-from-deleted-text`                                                                                                                                                                                                                                                                                          |
 | `settings`                | `word-custom-property-filetime-empty`, `word-attached-toolbar-utf8`                                                                                                                                                                                                                                                                                 |
@@ -495,7 +495,7 @@ session 14, `docs/plans/evidence/word-probes-2026-10-24.md`). The check reads
 the raw stored stream, while `ct-duplicate-declaration`,
 `ct-override-partname-invalid`, `ct-override-partname-word-refused`,
 `word-content-type-invalid`, `word-part-content-type-generic`,
-`word-part-content-type-inexact` and content-type
+`word-part-content-type-inexact`, `word-part-content-type-mismatch` and content-type
 resolution all judge the stream after Markup Compatibility processing, as OPC
 [M1.19] requires — so an `Override` in an ignored `mc:Choice` no longer draws
 a `ct-override-partname-invalid` finding, and a bad `mc:Fallback` still does.
@@ -586,6 +586,31 @@ under strict, where a Default-typed main is not reported twice when
 `ct-undeclared-part` rejects that same path; lenient
 reports a warning. Full,
 quick and named runs agree.
+
+`word-part-content-type-mismatch` reports a related part whose declared media
+type matches none of the relationship types reaching it, but is another
+part's expected type in the shared Word type map
+([#600](https://github.com/jandira-tech/docx-validate/issues/600)). Media types
+are trimmed, compared ASCII case-insensitively, and stripped of parameters.
+Generic XML, an inexact spelling of the part's own media type, and unknown
+types such as `image/png` stay outside this check, so the generic, inexact
+and mismatch checks are disjoint. A matching relationship exempts the part
+even when that relationship is unused.
+
+Word-valid reports only read header/footer swaps: a referenced footer typed
+`…header+xml`, or a referenced header typed `…footer+xml`, from the main
+document or a reached glossary. Session 24 observed Word 16.115 offer recovery
+for the main document's header and footer swaps and the glossary footer swap,
+including `…header+xml; charset=utf-8`; their exact-type controls and the
+minimal package opened clean. The finding names the relationship, declared
+type and expected type, errors and blocks Word-valid; lenient warns. Unread
+stories, a footer typed `…styles+xml`, and comments/footnotes/endnotes typed
+with each other's types stay silent under Word-valid until probed.
+
+Strict judges every related part in the shared map, read or unread, citing
+ECMA-376 Part 1 (4th edition), clause 11.3's content-type assignments (theme
+is DrawingML and cites clause 14.2.7). Only a read header/footer swap carries
+the Word recovery sentence. Full, quick and named selections agree (#381).
 
 `word-part-content-type-inexact` — renamed from
 `word-part-content-type-parameter` for

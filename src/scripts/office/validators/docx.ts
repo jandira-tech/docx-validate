@@ -81,6 +81,7 @@ import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "../checks/index";
 import { WORD_PART_CONTENT_TYPE_GENERIC, wordPartContentTypeGenericFindings } from "../checks/word-part-content-type-generic";
 import { contextFromDirectory, openDirectoryContext, packageExtractFailedIssue, storedNamesRun } from "../package-context";
 import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
+import { WORD_PART_CONTENT_TYPE_MISMATCH, wordPartContentTypeMismatchFindings } from "../checks/word-part-content-type-mismatch";
 import { WORD_PART_CONTENT_TYPE_INEXACT, wordPartContentTypeInexactFindings } from "../checks/word-part-content-type-inexact";
 
 export { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
@@ -546,7 +547,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * a reached glossary's styles part and referenced header into the
      * inexact check's (#579). Session 23 adds the glossary's generic theme
      * (#595) and referenced footer, footnotes, endnotes and comments with
-     * inexact types (#596). Strict's inexact findings cite clause 11.3
+     * inexact types (#596). Session 24 adds generic glossary styles (#601)
+     * and read header/footer content-type swaps (#600). Strict mismatch
+     * findings cover every mapped related part. Strict's inexact findings cite clause 11.3
      * with no recovery claim for a lazy part `wordReadParts` does not
      * include — session 21 (s21b) observed those open clean (#589). A
      * Default-typed main or theme finding is dropped only when strict
@@ -570,8 +573,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // clause-11.3 wording instead of the Word sentence (#589).
         const found = await wordPartContentTypeGenericFindings(view, this.profile === "strict" ? "spec" : "observed");
         const inexact = await wordPartContentTypeInexactFindings(view, this.profile === "strict" ? "spec" : "observed");
+        const mismatch = await wordPartContentTypeMismatchFindings(view, this.profile === "strict" ? "spec" : "observed");
         this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_GENERIC);
         this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_INEXACT);
+        this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_MISMATCH);
         // The base pass skips non-XML names and docProps/. Suppress a
         // Default-typed main or theme only if its own path has a replacement error;
         // otherwise strict must retain the Word-blocking finding (#535). The
@@ -591,7 +596,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         );
         const severity = opcNameIssueSeverity(this.profile, format);
         return finalize(
-            judged.map((finding): ValidationIssue => (severity === "warning" ? { ...finding.issue, severity: "warning" } : finding.issue)),
+            [...judged, ...mismatch].map((finding): ValidationIssue =>
+                severity === "warning" ? { ...finding.issue, severity: "warning" } : finding.issue,
+            ),
         );
     }
 

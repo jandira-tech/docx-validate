@@ -37,6 +37,7 @@ import {
     glossaryStoryPart,
     glossaryStoryParts,
 } from "./support/glossary-content-type-specimens";
+import { MISMATCH_STORY_CASES, storyContentType, storyContentTypeParts } from "./support/story-content-type-specimens";
 import { buildRawZip } from "./support/raw-zip";
 import { DUPLICATE_MAIN_DOCUMENT_PARTS } from "./support/main-document-specimens";
 
@@ -4379,3 +4380,33 @@ it("validation contract: glossary generic styles (#601, #381)", async () => {
         }
     });
 }, 60_000);
+
+// Session 24: read header/footer swaps, including the reached glossary's parameterized footer.
+describe("validation contract: story content type mismatch (#600, #381)", () => {
+    it.each(MISMATCH_STORY_CASES)(
+        "full, quick and named agree for $via $segment ($declared)",
+        async ({ segment, via, declared }) => {
+            await withTempDir(async (dir) => {
+                const code = "word-part-content-type-mismatch";
+                for (const exact of [false, true]) {
+                    const file = path.join(dir, `story-${exact}.docx`);
+                    writeFileSync(file, await buildDocx(storyContentTypeParts(segment, exact ? storyContentType(segment) : declared, via)));
+                    const full = await validate(file);
+                    expect(full.valid).toBe(exact);
+                    const found = full.issues.filter((issue) => issue.code === code);
+                    expect(found).toHaveLength(exact ? 0 : 1);
+                    const strict = await validate(file, { profile: "strict" });
+                    expect(strict.valid && !full.valid).toBe(false);
+                    expect(strict.issues.filter((issue) => issue.code === code)).toHaveLength(found.length);
+                    for (const selection of [{ quick: true }, { checks: [code] }, { checks: ["content-types"] }]) {
+                        const partial = await validate(file, selection);
+                        expect(partial.valid).toBe(full.valid);
+                        expect(partial.issues.filter((issue) => issue.code === code)).toEqual(found);
+                        expect([...errorCodes(partial.issues)].every((error) => errorCodes(full.issues).has(error))).toBe(true);
+                    }
+                }
+            });
+        },
+        60_000,
+    );
+});

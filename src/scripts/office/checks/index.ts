@@ -60,6 +60,7 @@ import { wordMathParseCheck, wordMathSpreBodyCheck } from "./word-body-math";
 import { commentMarkersCheck, commentThreadingCheck } from "./comments";
 import { xmlSyntaxCheck } from "./xml";
 import { ctMarkupCompatibilityCheck } from "./ct-markup-compatibility";
+import { wordPartContentTypeMismatchCheck } from "./word-part-content-type-mismatch";
 import { wordPartContentTypeInexactCheck } from "./word-part-content-type-inexact";
 
 /**
@@ -136,6 +137,7 @@ export function createDefaultCheckRegistry(): CheckRegistry {
         ctMarkupCompatibilityCheck,
         wordPartContentTypeGenericCheck,
         wordPartContentTypeInexactCheck,
+        wordPartContentTypeMismatchCheck,
         commentMarkersCheck,
         commentThreadingCheck,
         ...WORD_RULE_CHECKS,
