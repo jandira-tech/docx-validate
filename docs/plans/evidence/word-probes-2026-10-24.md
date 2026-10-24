@@ -1,6 +1,6 @@
 # Real-Word probes, 2026-10-24
 
-Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, and what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517).
+Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), and what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540).
 
 - Word: Microsoft Word for Mac 16.115 (build 16.115.26100424), platform `darwin`.
 - Transport, sessions 1 and 2: `verifyInWord` (`src/lib/word-verifier.ts`). It opens each specimen by path, reads Word's window and dialog state, and never saves.
@@ -8,7 +8,7 @@ Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398
 - Transport, sessions 4–13: the same driver in the same mode, run in the foreground, as its documentation requires. Single-specimen runs are attributed by the same parser. The runner and the helper that copies one specimen into its own run are reproduced at the end.
 - Outcomes: `clean-open` means Word opened the document with no dialog. `repair-warning` means Word showed "Word found unreadable content … Do you want to recover the contents of this document?". `open-error` means Word showed "Word experienced an error trying to open the file." In session 3, `inconclusive` means Word loaded no document in two passes and no alert named the file. Word stayed alive throughout, and `~/Library/Logs/DiagnosticReports` holds no Word report from any session. In session 3 the driver itself restarted Word after runs of empty loads, as designed.
 - Specimens: built in code from `MINIMAL_PARTS` (`tests/support/minimal-docx.ts`). The `398-dup-theme-*` specimens are built from `tests/fixtures/broken/package.word-duplicate-theme.docx`, which was only read. The probe script that builds, validates and opens them is reproduced at the end of this file. No fixture or manifest was changed.
-- Validator: the `word-valid` and `strict` columns record `validate()` **at probe time**, before the policy changes the probes motivated. They are not current verdicts. Session 1 (02:18Z–02:26Z) ran against `wfv/46-plan-audit` (199c2d5b); session 2 (03:10Z–03:19Z) ran against `wfv/51-directory-staging` (ad072db8). Session 3's columns are `validate()` at `wfv/57-central-directory-names` (ab7f311d), run on the exact files Word was given. The columns for sessions 4–6 are `validate()` at `wfv/62-ct-duplicate-declaration` (3126dcfc). They were recomputed after the sessions on the exact files Word was given, and every SHA-256 was checked against its record. Session 7's columns are `validate()` at `wfv/65-override-partname` before (9960b273) and after (34d0ace3) the #450 fix, recomputed the same way; the verdicts recorded at build time equal the 9960b273 ones. Sessions 8–13's columns are `validate()` at 49922e9a, the commit the specimens were built against, and at `wfv/66-partname-review-fixes` (e08611b1) after the #453 and #458 fixes, recomputed the same way with every SHA-256 checked; the verdicts recorded at build time equal the 49922e9a ones. Session 14's columns are `validate()` at ed34e3bf. Session 15's columns are `validate()` at `wfv/87-zip64-rekey` (8252ce4f), the commit the specimens were built against, recorded at build time on the exact files Word was given; every SHA-256 was re-checked against its record after the runs.
+- Validator: the `word-valid` and `strict` columns record `validate()` **at probe time**, before the policy changes the probes motivated. They are not current verdicts. Session 1 (02:18Z–02:26Z) ran against `wfv/46-plan-audit` (199c2d5b); session 2 (03:10Z–03:19Z) ran against `wfv/51-directory-staging` (ad072db8). Session 3's columns are `validate()` at `wfv/57-central-directory-names` (ab7f311d), run on the exact files Word was given. The columns for sessions 4–6 are `validate()` at `wfv/62-ct-duplicate-declaration` (3126dcfc). They were recomputed after the sessions on the exact files Word was given, and every SHA-256 was checked against its record. Session 7's columns are `validate()` at `wfv/65-override-partname` before (9960b273) and after (34d0ace3) the #450 fix, recomputed the same way; the verdicts recorded at build time equal the 9960b273 ones. Sessions 8–13's columns are `validate()` at 49922e9a, the commit the specimens were built against, and at `wfv/66-partname-review-fixes` (e08611b1) after the #453 and #458 fixes, recomputed the same way with every SHA-256 checked; the verdicts recorded at build time equal the 49922e9a ones. Session 14's columns are `validate()` at ed34e3bf. Session 15's columns are `validate()` at `wfv/87-zip64-rekey` (8252ce4f), the commit the specimens were built against, recorded at build time on the exact files Word was given; every SHA-256 was re-checked against its record after the runs. Session 16's columns are `validate()` at `wfv/98-iri` (98902c85), recorded the same way.
 
 ## What the observations decide
 
@@ -117,6 +117,13 @@ Session 15 adds, for review AM's suspected findings on layers 78 and 79:
 - **#517 (F9): generic content types.** Word offers recovery for the main part typed by a `text/xml` Default, an `application/xml` Override or a `text/xml` Override, and for styles typed by an `application/xml` Override or a `text/xml` Default. Word-valid passes all five, and strict passes all but the `text/xml` Default on the main part (`ct-undeclared-part`).
 - **F5 and F7 open clean.** A styles relationship typed `http://schemas.microsoft.com/office/2007/relationships/styles` with a malformed `word/styles.xml`, a `styles` relationship in `_rels/.rels` to a malformed `word/styles2.xml`, and a comment range without `w:commentReference` with a malformed `word/comments.xml` all open clean, as word-valid predicts.
 
+Session 16 adds, for review AR's suspected items and its finding F1 on layers 89–92:
+
+- **#539: a header referenced only from the glossary.** A `w:headerReference` only in the `w:sectPr` of a glossary `w:docPartBody`, naming a malformed `word/glossary/header9.xml` through the glossary document's own relationships part, makes Word offer recovery. Its well-formed control opens clean, so the malformed header is the cause. Word-valid at 98902c85 passes both; strict fails the malformed one through `xml-syntax`.
+- **Endnotes referenced only from a footnote open clean.** A `w:endnoteReference` only inside a footnote (the main document references the footnote) with a malformed `word/endnotes.xml` opens clean, as does its well-formed control. Word does not follow every story's references, and word-valid passes both.
+- **#540: a MIME parameter on a content type.** Word offers recovery for the main part's `Override` with the main type plus `; charset=utf-8`, the styles `Override` with the styles type plus `; charset=utf-8`, and the styles `Override` `application/xml; charset=utf-8`. Word-valid and strict at 98902c85 pass all three.
+- **#535 (F1): a main part stored elsewhere, typed by a generic Default.** A main part stored as `word/document.bin` typed by `Default Extension="bin" ContentType="text/xml"`, and one stored as `docProps/document.xml` typed by a `text/xml` `Default` for `xml`, each make Word offer recovery. Word-valid at 98902c85 fails both through `word-part-content-type-generic`, and strict passes both. A `.bin` main typed by a `bin` `Default` with the main type opens clean.
+
 ## Not observed
 
 Session 1. Another session began driving Word by 02:28Z: its first log line is at 02:28:14Z, and its map file was written at 02:27:55Z. Its preflight closes every open document, so rows observed from 02:26Z on were not treated as evidence. Session 2 observed all of them again (below).
@@ -149,12 +156,16 @@ Sessions 4–13 ran in the foreground. Each chunk got one driver run, under `tim
 
 Session 15 ran in the foreground (`s15a` 11:15Z–11:17Z, `s15b` 11:17Z–11:18Z, `s15c` 11:19Z–11:20Z, `s15d` 11:23Z–11:24Z, `s15e` 11:28Z–11:29Z), one driver run per chunk. Nothing was set aside, and every row is attributed by an alert or a manifest entry naming its staged file. No `word_watchdog.sh` was running, and before `s15a`, `s15d` and `s15e` no other `word_pdf`, `word_redline` or `osascript` process was running; the only other process naming Word was a Rust test of the other session that reads documents without driving Word. The preflights of `s15a`, `s15d` and `s15e` launched Word and found no open document. Those of `s15b` and `s15c` found a Word process the driver had not launched, with no open document (`launched_by_us=False`, `open_documents=0`); no other session's Word log grew during 11:15Z–11:30Z.
 
+Session 16 ran in the foreground (`s16a` 12:49Z, `s16b` 12:49Z–12:50Z), one driver run per chunk. Nothing was set aside, and every row is attributed by an alert or a manifest entry naming its staged file. No `word_watchdog.sh` was running. At 12:49:00Z no `word_pdf`, `word_redline` or `osascript` process was running and Word was not running; the only other process naming Word was a Rust test of the other session that reads documents without driving Word, and that session's newest redline log was last written at 04:57Z. Both preflights launched Word and found no open document (`launched_by_us=True`, `open_documents=0`).
+
 Sessions 4–6 observed `main-relationship-missing` (#380), the #414 `PartName`s with `application/xml`, an escape in a folder segment (#408), a part-level relationships part (#433) and an unreferenced malformed `customXml/item9.xml` (#437). Still to be observed:
 
 - `numbering` and `theme` typed by the generic Default (#432). Sessions 8–13 observed settings, fontTable, webSettings, the main part and styles.
 - A part Word reads, such as the main part, whose local-header name differs from its central-directory name (#411, review Y).
 - A percent-escaped `PartName` that names a stored part (#451). Session 8 observed `%E9` for a missing part.
 - Markup Compatibility elements or attributes in `[Content_Types].xml` (#459).
+- The glossary document's own relationships part, malformed, and a footer, footnotes or endnotes part referenced only from the glossary (#539). Session 16 observed a header.
+- A MIME parameter on the content type of a part other than the main part and styles (#540).
 
 ## Observations
 
@@ -1004,6 +1015,50 @@ The two `s15e` controls differ in 16 bytes, the DOS modification time of each en
 {"run": "s15e", "name": "am-f9-styles-default-textxml", "sha256": "27c199d32386ccba6170441b61921a03e346ec0d5d8fee3032554ac096c8a120", "observedAt": "2026-10-24T11:29:10.573Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00003__wfv__am-f9-styles-default-textxml.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00003__wfv__am-f9-styles-default-textxml.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
 {"run": "s15e", "name": "am-f9-main-override-textxml", "sha256": "dcfeae9604af9252b0c3adf5de67b31d1dcb703ac18e6800b123c337f262ff10", "observedAt": "2026-10-24T11:29:06.340Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00002__wfv__am-f9-main-override-textxml.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__am-f9-main-override-textxml.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
 {"run": "s15e", "name": "s15e-control-minimal-end", "sha256": "64394d37f2f367eb60d414d225d2c27705dead8849757f8b5535992a3b2eccb7", "observedAt": "2026-10-24T11:29:16+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 16: 12:49Z–12:50Z, validator columns at 98902c85
+
+Review AR's suspected items on layers 89–92 (references from other stories, #516; MIME parameters on content types, #517) and the shapes of its finding F1 (#535). Every malformed part is well formed up to a missing end tag of its root element, so its namespaces stay declared.
+
+| Run    | Observed  | Specimen                                        | Issue             | Shape                                                                                                     | SHA-256 (first 16) | Word           | word-valid at 98902c85                                           | strict at 98902c85                                                                                                |
+| ------ | --------- | ----------------------------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `s16a` | 12:49:19Z | `s16a-control-minimal`                          | control           | —                                                                                                         | `fe2a0002a6778723` | clean-open     | valid                                                            | valid                                                                                                             |
+| `s16a` | 12:49:19Z | `ar-endnote-ref-in-footnote-malformed`          | #516 AR suspected | `w:endnoteReference` only inside a footnote (main references the footnote); `word/endnotes.xml` malformed | `40c5524a7ee87ebe` | clean-open     | valid                                                            | invalid (`xml-syntax@word/endnotes.xml`, `paraid-missing-element@word/footnotes.xml`)                             |
+| `s16a` | 12:49:19Z | `ar-endnote-ref-in-footnote-wellformed-control` | #516 AR suspected | `w:endnoteReference` only inside a footnote; `word/endnotes.xml` well formed                              | `b65fb7be04526dea` | clean-open     | valid                                                            | invalid (`paraid-missing-element@word/endnotes.xml`, `paraid-missing-element@word/footnotes.xml`)                 |
+| `s16a` | 12:49:17Z | `ar-header-ref-in-glossary-malformed`           | #516 AR suspected | `w:headerReference` only in a glossary `w:docPartBody` `w:sectPr`; `word/glossary/header9.xml` malformed  | `a9d3c660c1ba09c1` | repair-warning | valid                                                            | invalid (`xml-syntax@word/glossary/header9.xml`, `paraid-missing-element@word/glossary/document.xml`)             |
+| `s16a` | 12:49:19Z | `ar-header-ref-in-glossary-wellformed-control`  | #516 AR suspected | `w:headerReference` only in a glossary `w:docPartBody` `w:sectPr`; header well formed                     | `acbbb90b2033c15f` | clean-open     | valid                                                            | invalid (`paraid-missing-element@word/glossary/document.xml`, `paraid-missing-element@word/glossary/header9.xml`) |
+| `s16a` | 12:49:19Z | `s16a-control-minimal-end`                      | control           | —                                                                                                         | `c83e4293642a6f03` | clean-open     | valid                                                            | valid                                                                                                             |
+| `s16b` | 12:50:11Z | `s16b-control-minimal`                          | control           | —                                                                                                         | `e33e187d31bded6b` | clean-open     | valid                                                            | valid                                                                                                             |
+| `s16b` | 12:50:06Z | `ar-styles-override-appxml-charset`             | #517 AR suspected | styles `Override` `application/xml; charset=utf-8`                                                        | `e7112063b13c4c10` | repair-warning | valid                                                            | valid                                                                                                             |
+| `s16b` | 12:50:10Z | `ar-styles-override-proper-charset`             | #517 AR suspected | styles `Override` with the styles type plus `; charset=utf-8`                                             | `c4bfb8e9df16e499` | repair-warning | valid                                                            | valid                                                                                                             |
+| `s16b` | 12:50:01Z | `ar-main-override-proper-charset`               | #517 AR suspected | main part `Override` with the main type plus `; charset=utf-8`                                            | `c04a9070f21390ad` | repair-warning | valid                                                            | valid                                                                                                             |
+| `s16b` | 12:49:53Z | `ar-f1-main-bin-default-textxml`                | #535 AR F1        | main part stored as `word/document.bin`, typed by `Default Extension="bin" ContentType="text/xml"`        | `9c5230c7d9bf48c7` | repair-warning | invalid (`word-part-content-type-generic@word/document.bin`)     | valid                                                                                                             |
+| `s16b` | 12:50:11Z | `ar-f1-main-bin-default-maintype-control`       | #535 AR F1        | main part stored as `word/document.bin`, typed by a `bin` `Default` with the main type                    | `3e7bb45ce09a8fda` | clean-open     | valid                                                            | valid                                                                                                             |
+| `s16b` | 12:49:57Z | `ar-f1-main-docprops-default-textxml`           | #535 AR F1        | main part stored as `docProps/document.xml`, typed by `Default Extension="xml" ContentType="text/xml"`    | `631e174646bfb7cf` | repair-warning | invalid (`word-part-content-type-generic@docProps/document.xml`) | valid                                                                                                             |
+| `s16b` | 12:50:11Z | `s16b-control-minimal-end`                      | control           | —                                                                                                         | `e33e187d31bded6b` | clean-open     | valid                                                            | valid                                                                                                             |
+
+The two `s16a` controls differ in 16 bytes, the DOS modification time of each entry in its local and central headers, as in `s14b`. The two `s16b` controls are byte-identical.
+
+<details><summary>Raw records, session 16</summary>
+
+```jsonl
+{"run": "s16a", "name": "s16a-control-minimal", "sha256": "fe2a0002a67787236745e534894f3dea1fe561b3b92793f5857e2fd7b358dbfc", "observedAt": "2026-10-24T12:49:19+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s16a", "name": "ar-endnote-ref-in-footnote-malformed", "sha256": "40c5524a7ee87ebebe2be937cc47d30313684e815a665e42b4a21cdf53b7f4df", "observedAt": "2026-10-24T12:49:19+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s16a", "name": "ar-endnote-ref-in-footnote-wellformed-control", "sha256": "b65fb7be04526dea4f955e2d920071dfc38c5bf67459cc1cadf7f23734ca1839", "observedAt": "2026-10-24T12:49:19+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s16a", "name": "ar-header-ref-in-glossary-malformed", "sha256": "a9d3c660c1ba09c15509c1bdbc9c4dd7934d3289f097c0c1fd24c372cf2bccd6", "observedAt": "2026-10-24T12:49:17.778Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00002__wfv__ar-header-ref-in-glossary-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__ar-header-ref-in-glossary-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s16a", "name": "ar-header-ref-in-glossary-wellformed-control", "sha256": "acbbb90b2033c15f8c22402e3d9b3d44fff8621132779b39acb327d89468cd78", "observedAt": "2026-10-24T12:49:19+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s16a", "name": "s16a-control-minimal-end", "sha256": "c83e4293642a6f03f36ae3e623d5ebc046d6fd6bc2ca4305e2a893f85584d194", "observedAt": "2026-10-24T12:49:19+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s16b", "name": "s16b-control-minimal", "sha256": "e33e187d31bded6b72245a13e856ee091230f57931d3c31dd1896d296b378a8e", "observedAt": "2026-10-24T12:50:11+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s16b", "name": "ar-styles-override-appxml-charset", "sha256": "e7112063b13c4c109131cae35a90d28aaf9bfb27827763dc6df9db72e3549c7d", "observedAt": "2026-10-24T12:50:06.113Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00004__wfv__ar-styles-override-appxml-charset.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00004__wfv__ar-styles-override-appxml-charset.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s16b", "name": "ar-styles-override-proper-charset", "sha256": "c4bfb8e9df16e499938ff30e8e0b6cdea6f1e56a9c83879041830ee46ca81867", "observedAt": "2026-10-24T12:50:10.295Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00005__wfv__ar-styles-override-proper-charset.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00005__wfv__ar-styles-override-proper-charset.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s16b", "name": "ar-main-override-proper-charset", "sha256": "c04a9070f21390add1373bd11b865fbfc20c0a80b8d306e069f368c425af19d8", "observedAt": "2026-10-24T12:50:01.913Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00003__wfv__ar-main-override-proper-charset.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00003__wfv__ar-main-override-proper-charset.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s16b", "name": "ar-f1-main-bin-default-textxml", "sha256": "9c5230c7d9bf48c7c66a3aeb110e14fd75c0c2120d9c3b25da9c6f50dad37c37", "observedAt": "2026-10-24T12:49:53.212Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00001__wfv__ar-f1-main-bin-default-textxml.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00001__wfv__ar-f1-main-bin-default-textxml.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s16b", "name": "ar-f1-main-bin-default-maintype-control", "sha256": "3e7bb45ce09a8fdae69086b2593af8bcb1df4c030e21669efa7f01ed576c7fc8", "observedAt": "2026-10-24T12:50:11+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s16b", "name": "ar-f1-main-docprops-default-textxml", "sha256": "631e174646bfb7cfbd1208874c84a0f08ea150417bef2ce115587376a9a477d4", "observedAt": "2026-10-24T12:49:57.746Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00002__wfv__ar-f1-main-docprops-default-textxml.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__ar-f1-main-docprops-default-textxml.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s16b", "name": "s16b-control-minimal-end", "sha256": "e33e187d31bded6b72245a13e856ee091230f57931d3c31dd1896d296b378a8e", "observedAt": "2026-10-24T12:50:11+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 ```
 
 </details>
@@ -2973,6 +3028,167 @@ const specimens: [string, string, () => Promise<Uint8Array> | Uint8Array][] = [
             }),
     ],
     ["s15e-control-minimal-end", "control", () => buildDocx(P)],
+];
+const only = new Set((process.env.ONLY ?? "").split(",").filter(Boolean));
+
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    if (only.size > 0 && !only.has(name)) continue;
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        const r = await validate(path.join(dir, file), { profile });
+        return {
+            valid: r.valid,
+            errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+        };
+    };
+    const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid}`,
+    );
+}
+```
+
+Session 16's builder (`s16a`, `s16b`) is another standalone script, run the same way; each chunk was built with `ONLY=<its specimens>`:
+
+```ts
+// Session 16 (2026-10-24): review AR's suspected false negatives of layers 89-92 (#516, #504/#517) and the shapes of its F1 (#535):
+// whether Word reads a header or endnotes part referenced only from another story, how it treats a MIME parameter on a part's
+// content type, and how it opens a main part stored as .bin or under docProps/ typed by a text/xml Default.
+// Run from the stack worktree root as a copy: BUILD_DIR=<chunk>/src [ONLY=a,b] pnpm exec tsx s16builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const MAIN = `${WML}.document.main+xml`;
+const P = MINIMAL_PARTS as Record<string, string>;
+const CT = P["[Content_Types].xml"];
+const DOC = P["word/document.xml"];
+const DOC_RELS = P["word/_rels/document.xml.rels"];
+const PKG_RELS = P["_rels/.rels"];
+/** Well formed up to a missing end of the root element: namespaces stay declared, the part does not parse. */
+const unclosed = (xml: string) => xml.slice(0, xml.lastIndexOf("</"));
+const ct = (extra: string) => CT.replace("</Types>", `${extra}</Types>`);
+const rels = (extra: string) => DOC_RELS.replace("</Relationships>", `${extra}</Relationships>`);
+const relsPart = (body: string) =>
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${body}</Relationships>`;
+
+// --- AR suspected: an endnote referenced only from a footnote ---
+const ENDNOTES =
+    `<w:endnotes xmlns:w="${W}"><w:endnote w:type="separator" w:id="-1"><w:p><w:r><w:separator/></w:r></w:p></w:endnote>` +
+    `<w:endnote w:type="continuationSeparator" w:id="0"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:endnote>` +
+    `<w:endnote w:id="1"><w:p><w:r><w:t>Endnote</w:t></w:r></w:p></w:endnote></w:endnotes>`;
+const FOOTNOTES_WITH_ENDNOTE_REF =
+    `<w:footnotes xmlns:w="${W}"><w:footnote w:type="separator" w:id="-1"><w:p><w:r><w:separator/></w:r></w:p></w:footnote>` +
+    `<w:footnote w:type="continuationSeparator" w:id="0"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:footnote>` +
+    `<w:footnote w:id="1"><w:p><w:r><w:t>Footnote</w:t></w:r><w:r><w:endnoteReference w:id="1"/></w:r></w:p></w:footnote></w:footnotes>`;
+const footnoteDoc = DOC.replace(`<w:r><w:t>Hello</w:t></w:r>`, `<w:r><w:t>Hello</w:t></w:r><w:r><w:footnoteReference w:id="1"/></w:r>`);
+const endnoteViaFootnote = (endnotes: string) =>
+    buildDocx({
+        ...P,
+        "word/document.xml": footnoteDoc,
+        "word/footnotes.xml": FOOTNOTES_WITH_ENDNOTE_REF,
+        "word/endnotes.xml": endnotes,
+        "word/_rels/document.xml.rels": rels(
+            `<Relationship Id="rIdF" Type="${REL}/footnotes" Target="footnotes.xml"/><Relationship Id="rIdE" Type="${REL}/endnotes" Target="endnotes.xml"/>`,
+        ),
+        "[Content_Types].xml": ct(
+            `<Override PartName="/word/footnotes.xml" ContentType="${WML}.footnotes+xml"/><Override PartName="/word/endnotes.xml" ContentType="${WML}.endnotes+xml"/>`,
+        ),
+    });
+
+// --- AR suspected: a header referenced only from the glossary document ---
+const HEADER = `<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header</w:t></w:r></w:p></w:hdr>`;
+const GLOSSARY =
+    `<w:glossaryDocument xmlns:w="${W}" xmlns:r="${REL}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+    `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+    `<w:docPartBody><w:p><w:r><w:t>Part</w:t></w:r></w:p><w:sectPr><w:headerReference w:type="default" r:id="rIdH"/></w:sectPr></w:docPartBody>` +
+    `</w:docPart></w:docParts></w:glossaryDocument>`;
+const headerViaGlossary = (header: string) =>
+    buildDocx({
+        ...P,
+        "word/glossary/document.xml": GLOSSARY,
+        "word/glossary/_rels/document.xml.rels": relsPart(`<Relationship Id="rIdH" Type="${REL}/header" Target="header9.xml"/>`),
+        "word/glossary/header9.xml": header,
+        "word/_rels/document.xml.rels": rels(`<Relationship Id="rIdG" Type="${REL}/glossaryDocument" Target="glossary/document.xml"/>`),
+        "[Content_Types].xml": ct(
+            `<Override PartName="/word/glossary/document.xml" ContentType="${WML}.document.glossary+xml"/><Override PartName="/word/glossary/header9.xml" ContentType="${WML}.header+xml"/>`,
+        ),
+    });
+
+// --- AR suspected: a MIME parameter on a part's content type ---
+const STYLES_OVERRIDE = `<Override PartName="/word/styles.xml" ContentType="${WML}.styles+xml"/>`;
+const MAIN_OVERRIDE = `<Override PartName="/word/document.xml" ContentType="${MAIN}"/>`;
+const withCt = (from: string, to: string) => {
+    if (!CT.includes(from)) throw new Error(`content types lack ${from}`);
+    return buildDocx({ ...P, "[Content_Types].xml": CT.replace(from, to) });
+};
+
+// --- AR F1 (#535): the main part stored elsewhere, typed by a Default ---
+const movedMain = (name: string, defaultExtra: string, xmlDefault: string) => {
+    const parts: Record<string, string> = { ...P };
+    delete parts["word/document.xml"];
+    delete parts["word/_rels/document.xml.rels"];
+    parts[name] = DOC;
+    parts[`${path.posix.dirname(name)}/_rels/${path.posix.basename(name)}.rels`] = DOC_RELS.replace(
+        'Target="styles.xml"',
+        'Target="/word/styles.xml"',
+    );
+    parts["_rels/.rels"] = PKG_RELS.replace("word/document.xml", name);
+    parts["[Content_Types].xml"] = CT.replace(MAIN_OVERRIDE, "")
+        .replace(`<Default Extension="xml" ContentType="application/xml"/>`, `<Default Extension="xml" ContentType="${xmlDefault}"/>`)
+        .replace("</Types>", `${defaultExtra}</Types>`);
+    return buildDocx(parts);
+};
+
+const specimens: [string, string, () => Promise<Uint8Array> | Uint8Array][] = [
+    // s16a — review AR: a header or endnotes part referenced only from another story.
+    ["s16a-control-minimal", "control", () => buildDocx(P)],
+    ["ar-endnote-ref-in-footnote-malformed", "#516 AR-suspected", () => endnoteViaFootnote(unclosed(ENDNOTES))],
+    ["ar-endnote-ref-in-footnote-wellformed-control", "#516 AR-suspected", () => endnoteViaFootnote(ENDNOTES)],
+    ["ar-header-ref-in-glossary-malformed", "#516 AR-suspected", () => headerViaGlossary(unclosed(HEADER))],
+    ["ar-header-ref-in-glossary-wellformed-control", "#516 AR-suspected", () => headerViaGlossary(HEADER)],
+    ["s16a-control-minimal-end", "control", () => buildDocx(P)],
+    // s16b — review AR: MIME parameters on content types, and the F1 (#535) main-part shapes.
+    ["s16b-control-minimal", "control", () => buildDocx(P)],
+    [
+        "ar-styles-override-appxml-charset",
+        "#517 AR-suspected",
+        () => withCt(STYLES_OVERRIDE, `<Override PartName="/word/styles.xml" ContentType="application/xml; charset=utf-8"/>`),
+    ],
+    [
+        "ar-styles-override-proper-charset",
+        "#517 AR-suspected",
+        () => withCt(STYLES_OVERRIDE, `<Override PartName="/word/styles.xml" ContentType="${WML}.styles+xml; charset=utf-8"/>`),
+    ],
+    [
+        "ar-main-override-proper-charset",
+        "#517 AR-suspected",
+        () => withCt(MAIN_OVERRIDE, `<Override PartName="/word/document.xml" ContentType="${MAIN}; charset=utf-8"/>`),
+    ],
+    [
+        "ar-f1-main-bin-default-textxml",
+        "#535 AR-F1",
+        () => movedMain("word/document.bin", `<Default Extension="bin" ContentType="text/xml"/>`, "text/xml"),
+    ],
+    [
+        "ar-f1-main-bin-default-maintype-control",
+        "#535 AR-F1",
+        () => movedMain("word/document.bin", `<Default Extension="bin" ContentType="${MAIN}"/>`, "application/xml"),
+    ],
+    ["ar-f1-main-docprops-default-textxml", "#535 AR-F1", () => movedMain("docProps/document.xml", "", "text/xml")],
+    ["s16b-control-minimal-end", "control", () => buildDocx(P)],
 ];
 const only = new Set((process.env.ONLY ?? "").split(",").filter(Boolean));
 
