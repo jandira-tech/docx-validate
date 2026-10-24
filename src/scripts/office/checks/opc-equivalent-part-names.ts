@@ -13,8 +13,9 @@ export const OPC_EQUIVALENT_PART_NAMES = "opc-equivalent-part-names";
 /**
  * Diagnose aliases before the package view drops them. No XML or content is
  * read. The stream is not an OPC part: percent-encoded brackets must never
- * merge with its literal spelling. Profile policy makes this spec diagnosis
- * advisory outside strict until Word's behaviour has been observed.
+ * merge with its literal spelling. Profile policy keeps the error under strict
+ * and, Word-blocking, under word-valid for DOCX/DOCM (Word offers recovery for
+ * every duplicate probed); lenient only warns (#351).
  */
 export const opcEquivalentPartNamesCheck: CheckDefinition = {
     id: OPC_EQUIVALENT_PART_NAMES,

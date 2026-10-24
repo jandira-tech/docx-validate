@@ -429,8 +429,13 @@ function selectionUnderProfile(
  * keep their severity (#381).
  */
 function findingsUnderProfile(run: CheckRun, registry: CheckRegistry, format: PackageFormat, profile: Profile): ValidationIssue[] {
+    // Equivalent stored names are Word-blocking for DOCX/DOCM (#351). Lenient
+    // keeps the earlier policy and runs no Word rule, and no PowerPoint or
+    // Excel behaviour has been observed, so those only warn.
     const advisory = (issue: ValidationIssue): ValidationIssue =>
-        profile !== "strict" && issue.code === OPC_EQUIVALENT_PART_NAMES ? { ...issue, severity: "warning" } : issue;
+        issue.code === OPC_EQUIVALENT_PART_NAMES && (profile === "lenient" || (profile === "word-valid" && format !== "docx"))
+            ? { ...issue, severity: "warning" }
+            : issue;
     if (profile !== "word-valid" || format !== "docx") return run.issues.map(advisory);
     return run.outcomes
         .flatMap((outcome) =>
@@ -576,10 +581,13 @@ async function zipEnvelopeRun(
 ): Promise<{ issues: ValidationResult["issues"]; executed: readonly string[] }> {
     const format: PackageFormat = suffix === ".pptx" ? "pptx" : suffix === ".xlsx" ? "xlsx" : "docx";
     const context = ValidationContext.fromEntries({}, { source: "archive", archiveBytes });
-    const run = await runChecks(context, createDefaultCheckRegistry(), {
-        format,
-        select: ["zip-bytes-after-eocd", "zip-eocd-comment-overrun"],
-    });
+    const registry = createDefaultCheckRegistry();
+    // Every archive-only package check; the stored-name diagnosis runs separately.
+    const select = registry
+        .list()
+        .filter((definition) => definition.archiveOnly === true)
+        .map((definition) => definition.id);
+    const run = await runChecks(context, registry, { format, select });
     return { issues: [...run.issues], executed: [...run.executed] };
 }
 

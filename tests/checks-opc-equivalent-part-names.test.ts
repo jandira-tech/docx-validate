@@ -34,6 +34,11 @@ const diagnose = async (ctx: ValidationContext) => {
     expect(check, "the equivalent-name check must be registered").toBeDefined();
     return check ? await check.run(ctx) : [];
 };
+// Word 16.115 offers recovery for every duplicate spelling probed, so the
+// diagnosis is Word-blocking for DOCX/DOCM; lenient keeps the earlier policy
+// and runs no Word rule, so it only warns (#351).
+const severityUnder = (profile: Profile, format: "docx" | "pptx" = "docx") =>
+    profile === "strict" || (profile === "word-valid" && format === "docx") ? "error" : "warning";
 const expected = (names: readonly string[], kept: string, severity = "warning") => ({
     code: ID,
     severity,
@@ -71,7 +76,7 @@ describe("equivalent stored names", () => {
         const issues = await diagnose(ctx);
         expect(issues).toEqual([expected(PAIRS[2], "word/document.xml", "error"), expected(PAIRS[1], "word/styles.xml", "error")]);
         expect(ctx.partNames.every((name) => ctx.readCount(name) === 0)).toBe(true);
-        expect(issues.every((issue) => !isWordBlockingIssue(issue))).toBe(true);
+        expect(issues.every((issue) => isWordBlockingIssue(issue))).toBe(true);
     });
 
     it("keeps the first equivalent spelling when no canonical exact spelling is stored", async () => {
@@ -100,7 +105,7 @@ describe("equivalent-name package integration", { timeout: 120_000 }, () => {
             const ctx = await ValidationContext.fromArchive(bytes);
             expect(await diagnose(ctx)).toEqual([expected([a, b], a, "error")]);
             const result = await validate(file, { checks: [ID] });
-            expect(findings(result.issues)).toEqual([expected([a, b], a)]);
+            expect(findings(result.issues)).toEqual([expected([a, b], a, severityUnder("word-valid"))]);
             expect(readFileSync(file)).toEqual(bytes);
             const control = path.join(dir, "control.docx");
             writeFileSync(control, await buildDocx());
@@ -142,37 +147,35 @@ describe("equivalent-name package integration", { timeout: 120_000 }, () => {
             expect(await diagnose(contextFromDirectory(root))).toEqual([expected([a, b], a, "error")]);
             for (const profile of ["word-valid", "lenient", "strict"] as const) {
                 const result = await validate(root, { profile });
-                expect(findings(result.issues)).toEqual([expected([a, b], a, profile === "strict" ? "error" : "warning")]);
+                expect(findings(result.issues)).toEqual([expected([a, b], a, severityUnder(profile))]);
             }
             for (const [name, text] of Object.entries(parts)) expect(readFileSync(path.join(root, name), "utf8")).toBe(text);
         });
     });
 
-    it.each(["word-valid", "lenient", "strict"] as const)(
-        "applies %s severity and preserves the advisory verdict",
-        async (profile: Profile) => {
-            await withTempDir(async (dir) => {
-                const file = path.join(dir, "duplicate.docx");
-                const control = path.join(dir, "control.docx");
-                writeFileSync(file, await buildDocx(duplicateParts(...PAIRS[2])));
-                writeFileSync(control, await buildDocx());
-                const full = await validate(file, { profile });
-                const clean = await validate(control, { profile });
-                expect(findings(full.issues)).toEqual([expected(PAIRS[2], PAIRS[2][0], profile === "strict" ? "error" : "warning")]);
-                expect(clean.valid).toBe(true);
-                expect(full.valid).toBe(profile === "strict" ? false : clean.valid);
-                if (profile !== "strict") {
-                    const partial = await validate(file, { profile, checks: [ID] });
-                    expect(findings(partial.issues)).toEqual(findings(full.issues));
-                    expect(partial.valid).toBe(true); // valid full => valid partial (#381).
-                    expect(errorPairs(partial.issues).every((pair) => errorPairs(full.issues).includes(pair))).toBe(true);
-                }
-                expect(full.metadata?.executedChecks).toContain(ID);
-                const quick = profile === "strict" ? undefined : await validate(file, { profile, quick: true });
-                if (quick) expect(findings(quick.issues)).toEqual(findings(full.issues));
-            });
-        },
-    );
+    it.each(["word-valid", "lenient", "strict"] as const)("applies %s severity and verdict", async (profile: Profile) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "duplicate.docx");
+            const control = path.join(dir, "control.docx");
+            writeFileSync(file, await buildDocx(duplicateParts(...PAIRS[2])));
+            writeFileSync(control, await buildDocx());
+            const full = await validate(file, { profile });
+            const clean = await validate(control, { profile });
+            expect(findings(full.issues)).toEqual([expected(PAIRS[2], PAIRS[2][0], severityUnder(profile))]);
+            expect(clean.valid).toBe(true);
+            expect(full.valid).toBe(profile === "lenient" ? clean.valid : false);
+            if (profile !== "strict") {
+                const partial = await validate(file, { profile, checks: [ID] });
+                expect(findings(partial.issues)).toEqual(findings(full.issues));
+                expect(partial.valid).toBe(full.valid);
+                if (full.valid) expect(partial.valid).toBe(true); // valid full => valid partial (#381).
+                expect(errorPairs(partial.issues).every((pair) => errorPairs(full.issues).includes(pair))).toBe(true);
+            }
+            expect(full.metadata?.executedChecks).toContain(ID);
+            const quick = profile === "strict" ? undefined : await validate(file, { profile, quick: true });
+            if (quick) expect(findings(quick.issues)).toEqual(findings(full.issues));
+        });
+    });
 
     it.each(PAIRS)("reports %s + %s before extraction and regardless of ZIP order", async (a, b) => {
         await withTempDir(async (dir) => {
@@ -185,12 +188,13 @@ describe("equivalent-name package integration", { timeout: 120_000 }, () => {
                 const full = await validate(file, { profile: "strict" });
                 expect(findings(full.issues)).toEqual([expected([a, b], a, "error")]);
                 for (const profile of ["word-valid", "lenient"] as const) {
-                    const advisory = await validate(file, { profile });
+                    const run = await validate(file, { profile });
                     const partial = await validate(file, { profile, checks: [ID] });
-                    expect(findings(advisory.issues)).toEqual([expected([a, b], a)]);
-                    expect(findings(partial.issues)).toEqual(findings(advisory.issues));
-                    if (advisory.valid) expect(partial.valid).toBe(true);
-                    expect(errorPairs(partial.issues).every((pair) => errorPairs(advisory.issues).includes(pair))).toBe(true);
+                    expect(findings(run.issues)).toEqual([expected([a, b], a, severityUnder(profile))]);
+                    if (profile === "word-valid") expect(run.valid).toBe(false);
+                    expect(findings(partial.issues)).toEqual(findings(run.issues));
+                    if (run.valid) expect(partial.valid).toBe(true);
+                    expect(errorPairs(partial.issues).every((pair) => errorPairs(run.issues).includes(pair))).toBe(true);
                 }
                 // On this host, case-only collisions still stop safe extraction (#373).
                 if (a.toLowerCase() === b.toLowerCase()) expect(full.issues.map((issue) => issue.code)).toContain("package-extract-failed");
@@ -207,7 +211,7 @@ describe("equivalent-name package integration", { timeout: 120_000 }, () => {
             writeFileSync(file, await buildDocx(duplicateParts(...PAIRS[0])));
             for (const profile of ["word-valid", "lenient", "strict"] as const) {
                 expect(findings((await validate(file, { profile })).issues)).toEqual([
-                    expected(PAIRS[0], PAIRS[0][0], profile === "strict" ? "error" : "warning"),
+                    expected(PAIRS[0], PAIRS[0][0], severityUnder(profile, extension === "pptx" ? "pptx" : "docx")),
                 ]);
             }
             expect(findings((await validate(file, { profile: "lenient", checks: [ID] })).issues)).toEqual([

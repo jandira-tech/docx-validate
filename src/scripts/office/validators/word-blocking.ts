@@ -108,6 +108,11 @@ export const isWordBlockingIssue = (issue: ValidationIssue): boolean => {
         // with whitespace -> unreadable-content recovery prompt.
         case "documentbuilder-insert-unresolved":
         case "docprops-boolean-invalid":
+        // Word 16.115 offers recovery for every duplicate spelling probed, even
+        // with identical bytes: case variants, an unreserved escape, a
+        // backslash, and two content-types streams (#351; evidence in
+        // docs/plans/evidence/word-probes-2026-10-24.md).
+        case "opc-equivalent-part-names":
             return true;
         // NB: comment-orphan-start/end and comment-marker-missing are NOT
         // promoted here. Empirically Word TOLERATES an orphan comment-range

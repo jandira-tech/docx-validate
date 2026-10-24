@@ -260,9 +260,11 @@ XML prerequisite. All `word-*` checks apply to DOCX/DOCM only.
 `opc-equivalent-part-names` applies to DOCX/DOCM, PPTX, and XLSX package selections,
 including the `package` quick group. It reads stored ZIP item names before full-run
 extraction, or walked file names for directory inputs, and reports one finding per
-equivalent group under OPC [M1.12], listing every stored spelling. Strict reports an
-error; word-valid and lenient report a warning that does not affect the verdict.
-Word's behaviour is unobserved. The existing entry choice is unchanged.
+equivalent group under OPC [M1.12], listing every stored spelling. Strict and
+word-valid (DOCX/DOCM) report a blocking error: Word 16.115 offers to recover every
+duplicate probed, even when both spellings hold identical bytes ([#351](https://github.com/jandira-tech/docx-validate/issues/351)).
+Lenient, and word-valid for PPTX/XLSX, report a warning. The existing entry choice
+is unchanged.
 
 | Group                     | Named checks                                                                                                                                                                                                                                                                                                                                        |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

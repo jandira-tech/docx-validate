@@ -8,7 +8,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Diagnose equivalent stored part names and multiple content-types stream spellings with the selectable `opc-equivalent-part-names` package check. Full runs report it before extraction: strict treats it as an error; word-valid and lenient warn pending Word evidence, without changing their verdicts ([#351](https://github.com/jandira-tech/docx-validate/issues/351)).
+- Diagnose equivalent stored part names and multiple content-types stream spellings with the selectable `opc-equivalent-part-names` package check. Full runs report it before extraction. Strict, and word-valid for DOCX/DOCM, report an error, because Word 16.115 offers recovery for every duplicate spelling probed (case, unreserved escape, backslash, two streams), even with identical bytes. Lenient, and word-valid for PPTX/XLSX, warn ([#351](https://github.com/jandira-tech/docx-validate/issues/351)).
 
 - Named Word rules in `WORD_RULE_CHECKS`, prerequisite scheduling with per-part XML gating, `--quick`, `--checks`, `--list-checks`, `--strict`, `--json`, and shared API execution metadata ([#267](https://github.com/jandira-tech/docx-validate/issues/267), [#271](https://github.com/jandira-tech/docx-validate/issues/271), [#272](https://github.com/jandira-tech/docx-validate/issues/272), [#306](https://github.com/jandira-tech/docx-validate/issues/306), [#307](https://github.com/jandira-tech/docx-validate/issues/307)).
 - Structural Word checks for misplaced content/properties, incomplete drawings/pictures, unknown elements, namespace-less links, and empty custom-property filetimes replace XSD-message heuristics ([#269](https://github.com/jandira-tech/docx-validate/issues/269)).
@@ -73,7 +73,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Known limitations
 
-- Equivalent stored part names and multiple content-types stream spellings are diagnosed under OPC [M1.12], as strict errors and word-valid/lenient warnings. The existing deterministic entry choice is unchanged; case/normalization collisions can still stop full extraction. Word's behaviour remains unobserved, so the diagnosis is not Word-blocking ([#351](https://github.com/jandira-tech/docx-validate/issues/351)).
+- Of equivalent stored part names, the package view still validates one entry, chosen deterministically; the content of the others is not validated. Case/normalization collisions can still stop full extraction on such a filesystem ([#351](https://github.com/jandira-tech/docx-validate/issues/351)).
 - An unpacked directory on POSIX can hold a file whose name contains a literal `\`, such as `word\document.xml` (`unpack` writes such names). The package view reads that file as `word/document.xml`, but the schema walk and the `.rels` sidecar lookup key on the file path, so a full run skips its schema and can report a false `rels-missing-sidecar`. Packed files are not affected ([#374](https://github.com/jandira-tech/docx-validate/issues/374)).
 
 ### Security
