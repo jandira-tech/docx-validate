@@ -43,7 +43,7 @@ import { existsSync, promises as fs, readdirSync, readFileSync, realpathSync, st
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { parseContentTypes, partExtension, resolveContentType, resolvePartName } from "../../../lib/content-types";
+import { findEquivalentPart, parseContentTypes, partExtension, resolveContentType, resolvePartName } from "../../../lib/content-types";
 import { applyMarkupCompatibility, STRICT_UNDERSTOOD_NAMESPACES, UNDERSTOOD_NAMESPACES } from "../../../lib/markup-compatibility";
 import { withTempDir } from "../../../lib/run-cli";
 import { normalizePartName } from "../../../lib/validation-context";
@@ -1479,9 +1479,12 @@ export class BaseSchemaValidator {
             const files = walkFiles(this.unpackedDir);
             const names = files.map((file) => normalizePartName(this.relPath(file).split(path.sep).join("/")));
             // Read the package relationships as the package view does: found by
-            // normalized name, so `_rels\.rels` counts, and decoded by BOM or
-            // declaration, so UTF-16 counts (#362).
-            const relsFile = files[names.indexOf("_rels/.rels")];
+            // normalized name under OPC equivalence, so `_rels\.rels` and
+            // `_RELS/.RELS` count, the last of several files with that name, as
+            // in `ValidationContext.fromEntries` (#362, #364), and decoded by BOM
+            // or declaration, so UTF-16 counts (#362).
+            const relsName = findEquivalentPart(names, "_rels/.rels");
+            const relsFile = relsName === undefined ? undefined : files[names.lastIndexOf(relsName)];
             if (relsFile === undefined) {
                 return parts;
             }

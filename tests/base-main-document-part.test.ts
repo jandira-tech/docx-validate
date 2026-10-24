@@ -15,6 +15,8 @@ import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
+import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
+import { contextFromDirectory } from "../src/scripts/office/package-context";
 import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
 import { MINIMAL_PARTS } from "./support/minimal-docx";
 
@@ -42,7 +44,14 @@ afterEach(() => {
     vi.mocked(nodeFs.readFileSync).mockClear();
 });
 
-describe("isMainDocumentPart (#355, #357, #362)", () => {
+const rootCheckPaths = async (dir: string): Promise<(string | undefined)[]> => {
+    const check = createDefaultCheckRegistry()
+        .list()
+        .find((definition) => definition.id === "word-document-root");
+    return ((await check?.run(contextFromDirectory(dir))) ?? []).map((issue) => issue.path);
+};
+
+describe("isMainDocumentPart (#355, #357, #362, #364)", () => {
     it("walks the tree and reads the package relationships once per validator", async () => {
         await withTempDir(async (dir) => {
             const extra = Object.fromEntries(Array.from({ length: 5 }, (_, i) => [`word/garbage${i}.xml`, "<x/>"]));
@@ -107,7 +116,36 @@ describe("isMainDocumentPart (#355, #357, #362)", () => {
         },
     );
 
-    it("forgets the main parts when a repair deletes the package relationships (#362)", async () => {
+    it("reads package relationships stored under a case-variant name, on any file system (#364)", async () => {
+        await withTempDir(async (dir) => {
+            const { "_rels/.rels": packageRelationships, ...rest } = MINIMAL_PARTS;
+            writeParts(dir, { ...rest, "_RELS/.RELS": packageRelationships });
+            const probe = new BaseSchemaValidator({ unpackedDir: dir, verbose: false, profile: "strict" }) as unknown as MainProbe;
+
+            expect(probe.isMainDocumentPart(path.join(dir, "word", "document.xml"))).toBe(true);
+        });
+    });
+
+    it.skipIf(process.platform === "win32")(
+        "calls main the part the package view judges when two files name the package relationships (#364)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const foreign = '<x:foo xmlns:x="urn:x"/>';
+                const toOther = MINIMAL_PARTS["_rels/.rels"].replace('Target="word/document.xml"', 'Target="word/other.xml"');
+                writeParts(dir, { ...MINIMAL_PARTS, "_rels\\.rels": toOther, "word/document.xml": foreign, "word/other.xml": foreign });
+                const probe = new BaseSchemaValidator({ unpackedDir: dir, verbose: false, profile: "strict" }) as unknown as MainProbe;
+
+                const judged = await rootCheckPaths(dir);
+                expect(judged).toHaveLength(1);
+                for (const part of ["word/document.xml", "word/other.xml"]) {
+                    expect(probe.isMainDocumentPart(path.join(dir, ...part.split("/"))), part).toBe(judged.includes(part));
+                }
+            });
+        },
+    );
+
+    // Pins the memo reset added for #355; review G found it untested.
+    it("forgets the main parts when a repair deletes the package relationships (#355)", async () => {
         await withTempDir(async (dir) => {
             writeParts(dir, MINIMAL_PARTS);
             const validator = new BaseSchemaValidator({ unpackedDir: dir, verbose: false, profile: "strict" });
