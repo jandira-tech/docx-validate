@@ -30,7 +30,7 @@
  * package still cannot be staged, so it stays invalid.
  */
 
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -39,7 +39,7 @@ import { ModeConflictError } from "../src/lib/mode-policy";
 import { withTempDir } from "../src/lib/run-cli";
 import type { ValidationIssue } from "../src/lib/types";
 import { validate } from "../src/scripts/office/validate";
-import { MINIMAL_PARTS } from "./support/minimal-docx";
+import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { buildRawZip } from "./support/raw-zip";
 
 /**
@@ -410,6 +410,51 @@ describe("math parse diagnostics agree across validation paths (#500)", { timeou
                 expect(partial.valid).toBe(true);
                 expect(errorPairs(full.issues)).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
             });
+        });
+    });
+});
+
+/**
+ * A packed file that cannot be read fails as an archive that does not open,
+ * in every mode: one `package-open-failed` error, and nothing else ran
+ * (#422). `fs.stat` still answers for a mode-000 file, so the unguarded read
+ * must fail as the archive's own open failure does — with a result, never a
+ * throw.
+ */
+describe.skipIf(process.platform === "win32")("a packed input that cannot be read (#422)", { timeout: 120_000 }, () => {
+    // chmod has no effect for root.
+    const runsAsRoot = process.getuid?.() === 0;
+
+    it.skipIf(runsAsRoot)("reports package-open-failed in every mode, and no executed check", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "packed-ro.docx");
+            writeFileSync(file, await buildDocx());
+            chmodSync(file, 0o000);
+            const modes: readonly (readonly [string, Parameters<typeof validate>[1]])[] = [
+                ["word-valid", {}],
+                ["lenient", { profile: "lenient" }],
+                ["strict", { profile: "strict" }],
+                ["quick", { quick: true }],
+                ["named xml-syntax", { checks: ["xml-syntax"] }],
+            ];
+            const messages: string[] = [];
+            try {
+                for (const [tag, options] of modes) {
+                    const result = await validate(file, options).catch((error: unknown) => {
+                        throw new Error(
+                            `${tag}: validate() rejected instead of resolving: ${error instanceof Error ? error.message : String(error)}`,
+                        );
+                    });
+                    expect(result.valid, tag).toBe(false);
+                    expect(result.issues, tag).toEqual([expect.objectContaining({ severity: "error", code: "package-open-failed" })]);
+                    expect(result.metadata?.executedChecks, tag).toEqual([]);
+                    messages.push(result.issues[0]!.message);
+                }
+            } finally {
+                chmodSync(file, 0o644);
+            }
+            // Every mode reports the same failure message.
+            for (const message of messages) expect(message).toBe(messages[0]);
         });
     });
 });

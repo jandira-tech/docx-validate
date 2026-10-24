@@ -865,7 +865,9 @@ and strict add the ZIP-envelope checks for a packed file and every Word rule who
 prerequisites passed. A partial run lists the selected checks that ran, so an
 archive-only check is not listed for an unpacked directory. An archive that does
 not open fails with `package-open-failed` in every mode, and only its envelope
-checks are listed (#332). One that opens but whose package view cannot be read —
+checks are listed (#332). A packed file that cannot be read at all — a mode-000
+file `fs.stat` still answers for — fails the same way, with no check listed
+([#422](https://github.com/jandira-tech/docx-validate/issues/422)). One that opens but whose package view cannot be read —
 a stored item name that places no part — judged on the central-directory name,
 never the local header's or the unicode-path field's (#445) — or an unreadable
 entry — fails with
@@ -916,7 +918,10 @@ file — a read-only file, one removed mid-run, or a stored file that is a
 symbolic link or resolves outside the input directory, whose target the
 write-back never touches — the run reports a
 `repair-write-back-failed` error naming the part and keeps writing back the
-remaining repairs; the stored file is left untouched. `repairs` counts repairs
+remaining repairs; the stored file is left untouched. That error is
+profile-independent: a repair the caller asked for and did not get is an
+operational failure, not a property of the document, so no profile downgrades
+it ([#428](https://github.com/jandira-tech/docx-validate/issues/428)). `repairs` counts repairs
 applied to the package view, so a repair whose write-back failed still counts
 ([#412](https://github.com/jandira-tech/docx-validate/issues/412)).
 
