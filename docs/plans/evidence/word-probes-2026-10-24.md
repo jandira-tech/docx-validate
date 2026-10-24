@@ -1,13 +1,14 @@
 # Real-Word probes, 2026-10-24
 
-Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), and the defects session 3 found (#380, #414, #431–#437).
+Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), and what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443.
 
 - Word: Microsoft Word for Mac 16.115 (build 16.115.26100424), platform `darwin`.
 - Transport, sessions 1 and 2: `verifyInWord` (`src/lib/word-verifier.ts`). It opens each specimen by path, reads Word's window and dialog state, and never saves.
 - Transport, session 3: `neurotic_docx_bench/scripts/word_pdf.py` in its default batch mode (`--label wfv --no-check-preset`). It stages each file inside Word's container as `NNNNN__wfv__<file>`, opens it, and exports a PDF when Word reads it. When Word shows an alert, it brings Word forward, answers a repair prompt No and then the OK that follows, and logs the alert's words. A file's outcome comes only from an alert that names its staged file, never from timing (`wordpdf_outcomes.py`, reproduced at the end). The specimens' SHA-256 were checked against the files handed to the driver after each run, and no specimen was rebuilt between build and run.
+- Transport, sessions 4–6: the same driver in the same mode, run in the foreground, as its documentation requires. Single-specimen runs are attributed by the same parser. The runner and the helper that copies one specimen into its own run are reproduced at the end.
 - Outcomes: `clean-open` means Word opened the document with no dialog. `repair-warning` means Word showed "Word found unreadable content … Do you want to recover the contents of this document?". `open-error` means Word showed "Word experienced an error trying to open the file." In session 3, `inconclusive` means Word loaded no document in two passes and no alert named the file. Word stayed alive throughout, and `~/Library/Logs/DiagnosticReports` holds no Word report from any session. In session 3 the driver itself restarted Word after runs of empty loads, as designed.
 - Specimens: built in code from `MINIMAL_PARTS` (`tests/support/minimal-docx.ts`). The `398-dup-theme-*` specimens are built from `tests/fixtures/broken/package.word-duplicate-theme.docx`, which was only read. The probe script that builds, validates and opens them is reproduced at the end of this file. No fixture or manifest was changed.
-- Validator: the `word-valid` and `strict` columns record `validate()` **at probe time**, before the policy changes the probes motivated. They are not current verdicts. Session 1 (02:18Z–02:26Z) ran against `wfv/46-plan-audit` (199c2d5b); session 2 (03:10Z–03:19Z) ran against `wfv/51-directory-staging` (ad072db8). Session 3's columns are `validate()` at `wfv/57-central-directory-names` (ab7f311d), run on the exact files Word was given.
+- Validator: the `word-valid` and `strict` columns record `validate()` **at probe time**, before the policy changes the probes motivated. They are not current verdicts. Session 1 (02:18Z–02:26Z) ran against `wfv/46-plan-audit` (199c2d5b); session 2 (03:10Z–03:19Z) ran against `wfv/51-directory-staging` (ad072db8). Session 3's columns are `validate()` at `wfv/57-central-directory-names` (ab7f311d), run on the exact files Word was given. The columns for sessions 4–6 are `validate()` at `wfv/62-ct-duplicate-declaration` (3126dcfc). They were recomputed after the sessions on the exact files Word was given, and every SHA-256 was checked against its record.
 
 ## What the observations decide
 
@@ -46,6 +47,42 @@ Session 3 adds:
 - **#380: no main part.** An empty ZIP and a package without `word/document.xml` make Word offer recovery. Word-valid passes both. A package whose main relationship is removed is inconclusive.
 - **#437: an unreferenced malformed part under `word/`.** A truncated, unreferenced `word/xtra.xml` opens clean, but word-valid fails it. This is a false positive of the `word/` folder rule; reachability, as for the properties parts, would fit both observations.
 
+Sessions 4–6 add:
+
+- **#380: a removed main relationship.** With the `officeDocument` relationship removed and `word/document.xml` kept, Word offers recovery. All three #380 shapes are therefore Word-blocking. Word-valid at 3126dcfc passes this one.
+- **#414: `Override` PartNames with a well-formed content type.** The `Override` has `ContentType="application/xml"` and names a missing part. The plain `/word/nothere.xml` opens clean. Word offers recovery for each of the other nine:
+    - `..`, `?query`, `#fragment` and a backslash;
+    - no leading slash, an empty segment and a trailing slash;
+    - an escaped `/` (`%2F`) and an escaped unreserved character (`%6F`).
+
+    With `invalid-x` in session 3c, the query form made Word refuse the file; here it makes Word offer recovery. Word-valid and strict pass all nine.
+
+- **#408: an escape in a folder segment.** An unreferenced `f%6Fo/xtra.xml` makes Word offer recovery, and the `foo/xtra.xml` control opens clean. Word-valid already fails it.
+- **#433: a part-level relationships part.** A foreign element appended to `word/_rels/document.xml.rels` makes Word offer recovery, and the unchanged control opens clean.
+- **#437: Word reads what it reaches through relationships it understands.** Three specimens open clean:
+    - an unreferenced, truncated `customXml/item9.xml`;
+    - a truncated `word/xtra.xml` named only by a relationship of an unknown type;
+    - a truncated `word/xtra.xml` with its own `Override` and no relationship.
+
+    Word-valid fails the last two, so they are false positives. Neither an unknown relationship type nor a declared content type makes Word read a part.
+
+- **#409: a core-properties relationship Type with a trailing space.** A truncated core part named by such a relationship opens clean, and so does its well-formed control. Word does not read the part as core properties. Word-valid agrees and passes both (review Z F2).
+- **#411, review Y: Word reads central-directory names.**
+    - A `..` name that is only in the central directory makes Word offer recovery: `evil/../x.xml` with local name `x.xml`.
+    - So does a central `a/../x.xml` whose unicode-path field says `x.xml`.
+    - A `..` name that is only in the local header opens clean: central `word/extra.xml`, local `../evil.xml`.
+    - So does a central `x.xml` whose unicode-path field says `../evil.xml`.
+    - Two central entries both named `word/document.xml`, with distinct local names, make Word offer recovery, as #411's identical names do.
+
+    Word-valid fails the two specimens Word opens clean. Its extraction judges the name JSZip loads, which comes from the local header or the unicode-path field.
+
+- **#443: non-ASCII stored names.** Word offers recovery for any stored name holding a non-ASCII character, raw or percent-escaped, at the package root or under `word/`:
+    - the CP437 byte `0x82`;
+    - UTF-8 `é`, with or without flag bit 11;
+    - `%C3%A9` and `%E9`.
+
+    The ASCII controls `cafe.xml`, `word/cafe.xml` and `caf%20.xml` open clean. Word-valid passes all six recovery specimens.
+
 ## Not observed
 
 Session 1. Another session began driving Word by 02:28Z: its first log line is at 02:28:14Z, and its map file was written at 02:27:55Z. Its preflight closes every open document, so rows observed from 02:26Z on were not treated as evidence. Session 2 observed all of them again (below).
@@ -62,14 +99,22 @@ Session 3 observed every specimen listed for it after session 2, except as noted
 - Sessions 3b and 3c were started from a background shell. macOS therefore asked for AppleScript automation authorization for the driver's helper processes, and a person granted each prompt by hand. Every alert was read and attributed, so no outcome depends on this, but later sessions run in the foreground, as the driver's documentation requires.
 - No other Word driver ran during sessions 3b (05:02Z–05:18Z) or 3c (05:19Z–05:27Z). Every driver takes the same flock, and the other session's next Word batch began at 05:29Z.
 
-To be observed in the next Word session:
+Sessions 4–6 ran in the foreground. Each chunk got one driver run, under `timeout`, with every idle `word_watchdog.sh` paused for that run. Before each single-specimen run, no other `word_pdf` or `word_redline` process was running.
 
-- `main-relationship-missing` (#380), inconclusive in session 3c.
-- The #414 `PartName`s with a well-formed content type, such as `application/xml`, instead of `invalid-x`.
-- An escape in a folder segment, such as `%77ord/document.xml` (#408).
+- `s4b` (06:04Z–06:10Z). Mid-run, Word asked for access to `o11.docx`, a file belonging to the other session that no specimen names. The driver granted 33 such prompts, and `rels-part-level-unknown-sibling` timed out on an AppleEvent. That row was set aside and observed alone in `s4c`. Each other `s4b` row is attributed by an alert or a manifest entry naming its staged file.
+- `s4d` (06:29Z–06:38Z). Four review Y specimens timed out on AppleEvents or loaded no document in two passes. Each was observed alone from 06:51Z to 06:52Z.
+- `s5a` (06:38Z–06:49Z). The run outlived the shell's 600 s foreground limit and was moved to the background, and Word wedged:
+    - when the run began, Microsoft Error Reporting showed a report of an earlier Force Quit;
+    - later Word returned nothing for three documents in a row, and the driver's recovery asked Word to quit and then ran `pkill`;
+    - the run was stopped with SIGINT.
+
+    One alert named `414-xml-trailing-slash-missing` (recovery). Every `s5a` row was still set aside, and all six specimens were observed alone between 06:50Z and 07:03Z. After the stop, the other session's driver took the Word lock, and its watchdog dismissed the same Force Quit report.
+
+Sessions 4–6 observed `main-relationship-missing` (#380), the #414 `PartName`s with `application/xml`, an escape in a folder segment (#408), a part-level relationships part (#433) and an unreferenced malformed `customXml/item9.xml` (#437). Still to be observed:
+
 - Other parts typed by the generic Default: `settings`, `fontTable`, `numbering`, `theme`, `webSettings`, and the main part (#432).
-- Foreign elements in a part-level relationships part, such as `word/_rels/document.xml.rels` (#433).
-- An unreferenced malformed part outside `word/`, such as `customXml/item9.xml` (#437).
+- A non-ASCII name that a relationship targets, rather than an unreferenced one (#443).
+- A part Word reads, such as the main part, whose local-header name differs from its central-directory name (#411, review Y).
 
 ## Observations
 
@@ -349,6 +394,138 @@ Full hashes, the driver's per-file result and every alert that named the file ar
 {"name": "414-invalid-x-fragment-missing", "sha256": "ae39b41b00a82878ad7785ad3b46ba8aac1351d748316ecc5a15092d36a5ac61", "observedAt": "2026-10-24T05:20:39.296Z", "outcome": "repair-warning", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00002__wfv__414-invalid-x-fragment-missing.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00002__wfv__414-invalid-x-fragment-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__414-invalid-x-fragment-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter.", "'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permissions for the document or drive.\\n* Make sure there is sufficient free memory and disk space.\\n* Open the file with the Text Recovery conver"]}
 {"name": "414-invalid-x-backslash-missing", "sha256": "8fc0c3015afe29b28a7acbb5e14da9195b110d9220f330cb22d6143788c81e00", "observedAt": "2026-10-24T05:19:49.448Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__414-invalid-x-backslash-missing.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00000__wfv__414-invalid-x-backslash-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__414-invalid-x-backslash-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter."]}
 {"name": "rels-unknown-sibling-control", "sha256": "43205d2359aaac364bd348acd4205514d8572e334162a08ed113d02fa9eb826b", "observedAt": "2026-10-24T05:26:22.486Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00019__wfv__rels-unknown-sibling-control.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00019__wfv__rels-unknown-sibling-control.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file. / Try these suggestions. / * Check the file permissions for the document or drive. / * Make sure there is sufficient free memory and disk space. / * Open the file with the Text Recovery converter."]}
+```
+
+</details>
+
+### Session 4: 06:02Z–06:11Z, validator columns at 3126dcfc
+
+Runs `s4a` (06:02Z–06:04Z), `s4b` (06:04Z–06:10Z) and `s4c` (06:11Z), in the foreground. `s4c` re-runs `rels-part-level-unknown-sibling` alone after the `s4b` interference described under "Not observed". Every run opens the unchanged `MINIMAL_PARTS` control first.
+
+| Run   | Observed  | Specimen                                | Issue   | SHA-256 (first 16) | Word           | word-valid at 3126dcfc                                               | strict at 3126dcfc                                                                                                                                         |
+| ----- | --------- | --------------------------------------- | ------- | ------------------ | -------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `s4a` | 06:04:22Z | `s4-control-minimal`                    | control | `f67e18fa7a50dae1` | clean-open     | valid                                                                | valid                                                                                                                                                      |
+| `s4a` | 06:04:21Z | `main-relationship-missing`             | #380    | `55d82b16632f6df3` | repair-warning | valid                                                                | invalid (`rels-unreferenced@word/document.xml`, `rels-empty-part@_rels/.rels`, `word-main-document-part@_rels/.rels`)                                      |
+| `s4a` | 06:04:22Z | `414-xml-plain-missing-control`         | #414    | `f4b6ac54fdf7ad68` | clean-open     | valid                                                                | valid                                                                                                                                                      |
+| `s4a` | 06:02:31Z | `414-xml-dotdot-missing`                | #414    | `a786c14afc50dc3f` | repair-warning | valid                                                                | valid                                                                                                                                                      |
+| `s4a` | 06:03:36Z | `414-xml-query-missing`                 | #414    | `95fd95244fbbb384` | repair-warning | valid                                                                | valid                                                                                                                                                      |
+| `s4a` | 06:03:23Z | `414-xml-fragment-missing`              | #414    | `8a41c9430a5077b2` | repair-warning | valid                                                                | valid                                                                                                                                                      |
+| `s4b` | 06:10:40Z | `s4-control-minimal`                    | control | `f67e18fa7a50dae1` | clean-open     | valid                                                                | valid                                                                                                                                                      |
+| `s4b` | 06:05:26Z | `414-xml-backslash-missing`             | #414    | `02daab8408c136f3` | repair-warning | valid                                                                | valid                                                                                                                                                      |
+| `s4b` | 06:06:01Z | `esc-folder-segment-unreferenced`       | #408    | `4fec8690b781619a` | repair-warning | invalid (`opc-part-name-escaped-unreserved@f%6Fo/xtra.xml`)          | invalid (`rels-unreferenced@f%6Fo/xtra.xml`, `opc-part-name-escaped-unreserved@f%6Fo/xtra.xml`)                                                            |
+| `s4b` | 06:10:40Z | `esc-folder-plain-unreferenced-control` | #408    | `dc73c8062ac67960` | clean-open     | valid                                                                | invalid (`rels-unreferenced@foo/xtra.xml`)                                                                                                                 |
+| `s4b` | 06:10:40Z | `customxml-unreferenced-malformed`      | #437    | `b916c943fb72fed2` | clean-open     | valid                                                                | invalid (`xml-syntax@customXml/item9.xml`, `xml-undeclared-prefix@customXml/item9.xml`, `rels-unreferenced@customXml/item9.xml`)                           |
+| `s4b` | 06:10:40Z | `s4-control-minimal-end`                | control | `bbb873d65445e842` | clean-open     | valid                                                                | valid                                                                                                                                                      |
+| `s4c` | 06:11:51Z | `s4-control-minimal`                    | control | `f67e18fa7a50dae1` | clean-open     | valid                                                                | valid                                                                                                                                                      |
+| `s4c` | 06:11:49Z | `rels-part-level-unknown-sibling`       | #433    | `e7dae629d3e792a1` | repair-warning | invalid (`opc-relationships-structure@word/_rels/document.xml.rels`) | invalid (`opc-relationships-structure@word/_rels/document.xml.rels`, `xsd-summary@word/_rels/document.xml.rels`, `xsd-error@word/_rels/document.xml.rels`) |
+
+### Session 4d: 06:29Z–06:52Z, review Y name-source specimens
+
+These specimens come from review Y of #411. Each one stores a name in the ZIP central directory that differs from the name in its local file header (`localName`), or carries an Info-ZIP unicode path extra field (0x7075) naming something else. They are built with the review's raw ZIP builder (reproduced at the end of this file). Four specimens timed out in the `s4d` batch (06:29Z–06:38Z), and each was then observed alone, in its own run, from 06:51Z to 06:52Z.
+
+| Run                                 | Observed  | Specimen                        | Issue           | SHA-256 (first 16) | Word           | word-valid at 3126dcfc                                  | strict at 3126dcfc                                                                                                                                                                                                                                                                                               |
+| ----------------------------------- | --------- | ------------------------------- | --------------- | ------------------ | -------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `s4d`                               | 06:29:29Z | `ry-central-dotdot-local-clean` | #411 (review Y) | `1d93703f65dded1c` | repair-warning | invalid (`package-extract-failed@-`)                    | invalid (`package-extract-failed@-`)                                                                                                                                                                                                                                                                             |
+| `s4d`                               | 06:38:30Z | `ry-upath-injects-dotdot`       | #411 (review Y) | `a42466f496e3fe29` | clean-open     | invalid (`package-extract-failed@-`)                    | invalid (`package-extract-failed@-`)                                                                                                                                                                                                                                                                             |
+| `s4d`                               | 06:38:30Z | `s4-control-minimal`            | control         | `f67e18fa7a50dae1` | clean-open     | valid                                                   | valid                                                                                                                                                                                                                                                                                                            |
+| `s4d-ry-local-dotdot`               | 06:51:48Z | `ry-local-dotdot`               | #411 (review Y) | `6acbd947d1520f66` | clean-open     | invalid (`package-extract-failed@-`)                    | invalid (`package-extract-failed@-`)                                                                                                                                                                                                                                                                             |
+| `s4d-ry-upath-hides-dotdot`         | 06:52:00Z | `ry-upath-hides-dotdot`         | #411 (review Y) | `a9acc5ce9b27584f` | repair-warning | invalid (`package-extract-failed@-`)                    | invalid (`package-extract-failed@-`)                                                                                                                                                                                                                                                                             |
+| `s4d-ry-cp437-name`                 | 06:52:25Z | `ry-cp437-name`                 | #411 (review Y) | `a4a3ca9d143cc102` | repair-warning | valid                                                   | invalid (`rels-unreferenced@caf�.xml`)                                                                                                                                                                                                                                                                           |
+| `s4d-ry-dup-central-distinct-local` | 06:52:37Z | `ry-dup-central-distinct-local` | #411 (review Y) | `4714e2e148094463` | repair-warning | invalid (`opc-equivalent-part-names@word/document.xml`) | invalid (`rels-broken@_rels/.rels`, `rels-unreferenced@AAAA-first.xml`, `rels-unreferenced@BBBB-second.xml`, `ct-undeclared-part@AAAA-first.xml`, `ct-undeclared-part@BBBB-second.xml`, `rels-target-missing@_rels/.rels`, `word-main-document-part@_rels/.rels`, `opc-equivalent-part-names@word/document.xml`) |
+
+### Session 5: 06:50Z–07:03Z, validator columns at 3126dcfc
+
+Every row here comes from a single-specimen run. The `s5a` batch (06:38Z–06:49Z) was set aside; see "Not observed".
+
+| Run                                           | Observed  | Specimen                                          | Issue   | SHA-256 (first 16) | Word           | word-valid at 3126dcfc                                                      | strict at 3126dcfc                                                                                             |
+| --------------------------------------------- | --------- | ------------------------------------------------- | ------- | ------------------ | -------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `s5a1`                                        | 06:50:11Z | `414-xml-emptyseg-missing`                        | #414    | `20218cb25f2b8d60` | repair-warning | valid                                                                       | valid                                                                                                          |
+| `s5a-noslash`                                 | 06:50:28Z | `414-xml-noslash-missing`                         | #414    | `7d463dbaee257bb0` | repair-warning | valid                                                                       | valid                                                                                                          |
+| `s5a-pct2F`                                   | 06:50:37Z | `414-xml-pct2F-missing`                           | #414    | `6644f808ea36030a` | repair-warning | valid                                                                       | valid                                                                                                          |
+| `s5a-pct6F`                                   | 06:50:46Z | `414-xml-pct6F-missing`                           | #414    | `be2329c386b7d7d4` | repair-warning | valid                                                                       | valid                                                                                                          |
+| `s5a-ctl`                                     | 06:50:52Z | `s5-control-minimal`                              | control | `49873da1ea328db9` | clean-open     | valid                                                                       | valid                                                                                                          |
+| `s5a-trail`                                   | 07:02:54Z | `414-xml-trailing-slash-missing`                  | #414    | `c2b3f563e8d487dd` | repair-warning | valid                                                                       | valid                                                                                                          |
+| `s5b-437-unknown-type-rel-malformed`          | 06:51:05Z | `437-unknown-type-rel-malformed`                  | #437    | `73c409fd62d90061` | clean-open     | invalid (`xml-syntax@word/xtra.xml`, `xml-undeclared-prefix@word/xtra.xml`) | invalid (`xml-syntax@word/xtra.xml`, `xml-undeclared-prefix@word/xtra.xml`)                                    |
+| `s5b-437-unknown-type-rel-wellformed-control` | 06:51:12Z | `437-unknown-type-rel-wellformed-control`         | #437    | `ad4f5885055e3487` | clean-open     | valid                                                                       | valid                                                                                                          |
+| `s5b-437-unreferenced-malformed-override`     | 06:51:19Z | `437-unreferenced-malformed-override`             | #437    | `4324f39b802724c7` | clean-open     | invalid (`xml-syntax@word/xtra.xml`, `xml-undeclared-prefix@word/xtra.xml`) | invalid (`xml-syntax@word/xtra.xml`, `xml-undeclared-prefix@word/xtra.xml`, `rels-unreferenced@word/xtra.xml`) |
+| `s5b-409-type-trailing-space-core-truncated`  | 06:51:25Z | `409-type-trailing-space-core-truncated`          | #409    | `ab749355bcb6a6c7` | clean-open     | valid                                                                       | invalid (`xml-syntax@docProps/core.xml`, `xml-undeclared-prefix@docProps/core.xml`)                            |
+| `s5b-tail`                                    | 06:51:41Z | `409-type-trailing-space-core-wellformed-control` | #409    | `c52e6feee3dd0d53` | clean-open     | valid                                                                       | valid                                                                                                          |
+| `s5b-tail`                                    | 06:51:41Z | `s5-control-minimal-end`                          | control | `49873da1ea328db9` | clean-open     | valid                                                                       | valid                                                                                                          |
+
+### Session 6: 06:56Z–06:59Z, validator columns at 3126dcfc
+
+Each specimen is `MINIMAL_PARTS` plus one extra entry holding `<x/>`. The entry is covered by the `xml` Default and named by no relationship; only its stored name varies. Each was observed alone. `s6-cp437-byte-noflag` is byte-identical to review Y's `ry-cp437-name` above, so its outcome was observed twice.
+
+| Run                            | Observed  | Specimen                   | Issue | SHA-256 (first 16) | Word           | word-valid at 3126dcfc | strict at 3126dcfc                                                                                  |
+| ------------------------------ | --------- | -------------------------- | ----- | ------------------ | -------------- | ---------------------- | --------------------------------------------------------------------------------------------------- |
+| `s6a-s6-ascii-control`         | 06:56:43Z | `s6-ascii-control`         | #443  | `552826505c024774` | clean-open     | valid                  | invalid (`rels-unreferenced@cafe.xml`)                                                              |
+| `s6a-s6-cp437-byte-noflag`     | 06:56:58Z | `s6-cp437-byte-noflag`     | #443  | `a4a3ca9d143cc102` | repair-warning | valid                  | invalid (`rels-unreferenced@caf�.xml`)                                                              |
+| `s6a-s6-utf8-bytes-flag`       | 06:57:13Z | `s6-utf8-bytes-flag`       | #443  | `8c537b95b8930a88` | repair-warning | valid                  | invalid (`rels-unreferenced@café.xml`)                                                              |
+| `s6a-s6-utf8-bytes-noflag`     | 06:57:27Z | `s6-utf8-bytes-noflag`     | #443  | `df6ea023437e29f7` | repair-warning | valid                  | invalid (`rels-unreferenced@café.xml`)                                                              |
+| `s6a-s6-pct-encoded-ascii`     | 06:57:41Z | `s6-pct-encoded-ascii`     | #443  | `55bc366c36cdee2a` | repair-warning | valid                  | invalid (`rels-unreferenced@caf%C3%A9.xml`)                                                         |
+| `s6b-s6-ascii-control-in-word` | 06:58:20Z | `s6-ascii-control-in-word` | #443  | `055d1dbf8ae1d2da` | clean-open     | valid                  | invalid (`rels-unreferenced@word/cafe.xml`, `xsd-summary@word/cafe.xml`, `xsd-error@word/cafe.xml`) |
+| `s6b-s6-pct-ascii-space-root`  | 06:58:30Z | `s6-pct-ascii-space-root`  | #443  | `0a7d3a4ea2f15219` | clean-open     | valid                  | invalid (`rels-unreferenced@caf%20.xml`)                                                            |
+| `s6b-s6-pct-latin1-e9`         | 06:58:44Z | `s6-pct-latin1-e9`         | #443  | `222cab2384ca8eb9` | repair-warning | valid                  | invalid (`rels-unreferenced@caf%E9.xml`)                                                            |
+| `s6b-s6-utf8-flag-in-word`     | 06:59:04Z | `s6-utf8-flag-in-word`     | #443  | `c9317c54a63b0094` | repair-warning | valid                  | invalid (`rels-unreferenced@word/café.xml`, `xsd-summary@word/café.xml`, `xsd-error@word/café.xml`) |
+
+The driver's per-file result and every alert that named the file are in the session 4–6 records. The records include the set-aside `s4b`, `s4d` and `s5a` batch rows:
+
+<details><summary>Raw records, sessions 4–6</summary>
+
+```jsonl
+{"run": "s4a", "name": "s4-control-minimal", "sha256": "f67e18fa7a50dae1134be311356ce76be4722a435a514f30d9f65a77bab3ee08", "observedAt": "2026-10-24T06:04:22+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s4a", "name": "main-relationship-missing", "sha256": "55d82b16632f6df34eccbbee438f74ea8f25303d39a4204a778a372b264634e8", "observedAt": "2026-10-24T06:04:21.829Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permissions for the document or drive.\\n* Make sure there is sufficient free memory and disk space.\\n* Open the file with the Text Recovery conver", "\"Word found unreadable content in 00004__wfv__main-relationship-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s4a", "name": "414-xml-plain-missing-control", "sha256": "f4b6ac54fdf7ad6834c52dd5f6c81fa19b1d7cb266ed5a17fd64f8fb7eb4d1f8", "observedAt": "2026-10-24T06:04:22+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s4a", "name": "414-xml-dotdot-missing", "sha256": "a786c14afc50dc3f1b71950a82ac6eccff3eaf8ce3ee03d0c4c4af6bb1081f62", "observedAt": "2026-10-24T06:02:31.633Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__414-xml-dotdot-missing.docx; refusing to guess", "dialogs": ["\"Word found unreadable content in 00000__wfv__414-xml-dotdot-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s4a", "name": "414-xml-query-missing", "sha256": "95fd95244fbbb3843cdaacdbb2ca3eda11fdfdd0afd375e25bab01d18caf89d3", "observedAt": "2026-10-24T06:03:36.373Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["\"Word found unreadable content in 00003__wfv__414-xml-query-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s4a", "name": "414-xml-fragment-missing", "sha256": "8a41c9430a5077b239d8674fcd77d20b1715d7048743ca2719e689f887ef9a97", "observedAt": "2026-10-24T06:03:23.306Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00001__wfv__414-xml-fragment-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00001__wfv__414-xml-fragment-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s4b", "name": "s4-control-minimal", "sha256": "f67e18fa7a50dae1134be311356ce76be4722a435a514f30d9f65a77bab3ee08", "observedAt": "2026-10-24T06:10:40+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s4b", "name": "414-xml-backslash-missing", "sha256": "02daab8408c136f347a4a9bf60b4c0162a5175920a4c4a93db52ffe320033462", "observedAt": "2026-10-24T06:05:26.041Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__414-xml-backslash-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__414-xml-backslash-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s4b", "name": "esc-folder-segment-unreferenced", "sha256": "4fec8690b781619a27d4f0f9b113f9c1bed479d786721227a35ae7b5e6f994ae", "observedAt": "2026-10-24T06:06:01.539Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00003__wfv__esc-folder-segment-unreferenced.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00003__wfv__esc-folder-segment-unreferenced.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s4b", "name": "esc-folder-plain-unreferenced-control", "sha256": "dc73c8062ac67960d339fcadc90bb56a79dce2f8b2c7ba1e832feeb7252a4bdd", "observedAt": "2026-10-24T06:10:40+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s4b", "name": "customxml-unreferenced-malformed", "sha256": "b916c943fb72fed284a07b503825f8255342fffce1e4ab4ef20b15ef54d816bb", "observedAt": "2026-10-24T06:10:40+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s4b", "name": "rels-part-level-unknown-sibling", "sha256": "e7dae629d3e792a11c21af3ac421347432a584509974e83f85e089b0a2431cca", "observedAt": "2026-10-24T06:10:40+00:00", "outcome": "other", "item": "failed", "error": "Microsoft Word got an error: AppleEvent timed out.", "dialogs": []}
+{"run": "s4b", "name": "s4-control-minimal-end", "sha256": "bbb873d65445e842301cbbd5e486d20a1cd4a3c1b9297e6ba26e0ad0943f6669", "observedAt": "2026-10-24T06:10:40+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s4c", "name": "s4-control-minimal", "sha256": "f67e18fa7a50dae1134be311356ce76be4722a435a514f30d9f65a77bab3ee08", "observedAt": "2026-10-24T06:11:51+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s4c", "name": "rels-part-level-unknown-sibling", "sha256": "e7dae629d3e792a11c21af3ac421347432a584509974e83f85e089b0a2431cca", "observedAt": "2026-10-24T06:11:49.529Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__rels-part-level-unknown-sibling.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00000__wfv__rels-part-level-unknown-sibling.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__rels-part-level-unknown-sibling.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s4d", "name": "ry-central-dotdot-local-clean", "sha256": "1d93703f65dded1c913de6c23c590b1987565015b5fef4a8d704214a75e3caf7", "observedAt": "2026-10-24T06:29:29.512Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__ry-central-dotdot-local-clean.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00000__wfv__ry-central-dotdot-local-clean.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__ry-central-dotdot-local-clean.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s4d", "name": "ry-cp437-name", "sha256": "a4a3ca9d143cc102a6b87b441496ff7ff9d13c816945c522d966076132de55dd", "observedAt": "2026-10-24T06:38:30+00:00", "outcome": "other", "item": "failed", "error": "Microsoft Word got an error: AppleEvent timed out.", "dialogs": []}
+{"run": "s4d", "name": "ry-dup-central-distinct-local", "sha256": "4714e2e148094463665d2d084fb2f9afb4b6256fd9db9a77e4fd6514c206332a", "observedAt": "2026-10-24T06:38:30+00:00", "outcome": "other", "item": "failed", "error": "Microsoft Word got an error: AppleEvent timed out.", "dialogs": []}
+{"run": "s4d", "name": "ry-local-dotdot", "sha256": "6acbd947d1520f6697c4c80547e6cf95d1ac91dc77388eef18d2047a9ebb7c21", "observedAt": "2026-10-24T06:38:30+00:00", "outcome": "other", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00003__wfv__ry-local-dotdot.docx; refusing to guess", "dialogs": []}
+{"run": "s4d", "name": "ry-upath-hides-dotdot", "sha256": "a9acc5ce9b27584f5e0ab7320611c7f424b19ab4e4f46cae1232005662ce1cfb", "observedAt": "2026-10-24T06:38:30+00:00", "outcome": "other", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00004__wfv__ry-upath-hides-dotdot.docx; refusing to guess", "dialogs": []}
+{"run": "s4d", "name": "ry-upath-injects-dotdot", "sha256": "a42466f496e3fe29aaf21345c2a5c98bb144370e5de0d5bfe410361420202857", "observedAt": "2026-10-24T06:38:30+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s4d", "name": "s4-control-minimal", "sha256": "f67e18fa7a50dae1134be311356ce76be4722a435a514f30d9f65a77bab3ee08", "observedAt": "2026-10-24T06:38:30+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s4d-ry-local-dotdot", "name": "ry-local-dotdot", "sha256": "6acbd947d1520f6697c4c80547e6cf95d1ac91dc77388eef18d2047a9ebb7c21", "observedAt": "2026-10-24T06:51:48+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s4d-ry-upath-hides-dotdot", "name": "ry-upath-hides-dotdot", "sha256": "a9acc5ce9b27584f5e0ab7320611c7f424b19ab4e4f46cae1232005662ce1cfb", "observedAt": "2026-10-24T06:52:00.575Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__ry-upath-hides-dotdot.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__ry-upath-hides-dotdot.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s4d-ry-cp437-name", "name": "ry-cp437-name", "sha256": "a4a3ca9d143cc102a6b87b441496ff7ff9d13c816945c522d966076132de55dd", "observedAt": "2026-10-24T06:52:25.876Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__ry-cp437-name.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__ry-cp437-name.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s4d-ry-dup-central-distinct-local", "name": "ry-dup-central-distinct-local", "sha256": "4714e2e148094463665d2d084fb2f9afb4b6256fd9db9a77e4fd6514c206332a", "observedAt": "2026-10-24T06:52:37.857Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__ry-dup-central-distinct-local.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__ry-dup-central-distinct-local.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s5a", "name": "s5-control-minimal", "sha256": "49873da1ea328db901ffdfe1da3a4143cddd4a2ffc4bf6df462936dac2aebdb5", "observedAt": "", "outcome": "other", "item": "missing", "error": "", "dialogs": []}
+{"run": "s5a", "name": "414-xml-noslash-missing", "sha256": "7d463dbaee257bb0db2479696a13c19da1db592a460cf9647719a20bcdb5d524", "observedAt": "", "outcome": "other", "item": "missing", "error": "", "dialogs": []}
+{"run": "s5a", "name": "414-xml-emptyseg-missing", "sha256": "20218cb25f2b8d60765093355c2f9c8baa754aeb21fe5be74bc5fe3ffe04dc13", "observedAt": "", "outcome": "other", "item": "missing", "error": "", "dialogs": []}
+{"run": "s5a", "name": "414-xml-trailing-slash-missing", "sha256": "c2b3f563e8d487dd266fc7b2bd718f6360463938eb3c6c5405e2e37341e49dcb", "observedAt": "2026-10-24T06:44:19.836Z", "outcome": "repair-warning", "item": "missing", "error": "", "dialogs": ["'Word found unreadable content in 00004__wfv__414-xml-trailing-slash-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00004__wfv__414-xml-trailing-slash-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s5a", "name": "414-xml-pct2F-missing", "sha256": "6644f808ea36030a4f2b9f6be435144d3b5bf75ab4e6453bc866ffa4d953666a", "observedAt": "", "outcome": "other", "item": "missing", "error": "", "dialogs": []}
+{"run": "s5a", "name": "414-xml-pct6F-missing", "sha256": "be2329c386b7d7d4e7cc5600bb142b07e070fa55fc66719aed4ae659f75ec399", "observedAt": "", "outcome": "other", "item": "missing", "error": "", "dialogs": []}
+{"run": "s5a1", "name": "414-xml-emptyseg-missing", "sha256": "20218cb25f2b8d60765093355c2f9c8baa754aeb21fe5be74bc5fe3ffe04dc13", "observedAt": "2026-10-24T06:50:11.300Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__414-xml-emptyseg-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__414-xml-emptyseg-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s5a-noslash", "name": "414-xml-noslash-missing", "sha256": "7d463dbaee257bb0db2479696a13c19da1db592a460cf9647719a20bcdb5d524", "observedAt": "2026-10-24T06:50:28.284Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__414-xml-noslash-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__414-xml-noslash-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s5a-pct2F", "name": "414-xml-pct2F-missing", "sha256": "6644f808ea36030a4f2b9f6be435144d3b5bf75ab4e6453bc866ffa4d953666a", "observedAt": "2026-10-24T06:50:37.417Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__414-xml-pct2F-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__414-xml-pct2F-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s5a-pct6F", "name": "414-xml-pct6F-missing", "sha256": "be2329c386b7d7d4e7cc5600bb142b07e070fa55fc66719aed4ae659f75ec399", "observedAt": "2026-10-24T06:50:46.600Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__414-xml-pct6F-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__414-xml-pct6F-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s5a-ctl", "name": "s5-control-minimal", "sha256": "49873da1ea328db901ffdfe1da3a4143cddd4a2ffc4bf6df462936dac2aebdb5", "observedAt": "2026-10-24T06:50:52+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s5a-trail", "name": "414-xml-trailing-slash-missing", "sha256": "c2b3f563e8d487dd266fc7b2bd718f6360463938eb3c6c5405e2e37341e49dcb", "observedAt": "2026-10-24T07:02:54.487Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__414-xml-trailing-slash-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__414-xml-trailing-slash-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s5b-437-unknown-type-rel-malformed", "name": "437-unknown-type-rel-malformed", "sha256": "73c409fd62d90061679cf0cba74df632c0a141b50a832e1156218a95a254c24d", "observedAt": "2026-10-24T06:51:05+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s5b-437-unknown-type-rel-wellformed-control", "name": "437-unknown-type-rel-wellformed-control", "sha256": "ad4f5885055e3487d80915b204fb05453172d83b18844085c796341196681fb9", "observedAt": "2026-10-24T06:51:12+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s5b-437-unreferenced-malformed-override", "name": "437-unreferenced-malformed-override", "sha256": "4324f39b802724c7222668b335bd81ea16d467989d845e200b9845fa24f0eaff", "observedAt": "2026-10-24T06:51:19+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s5b-409-type-trailing-space-core-truncated", "name": "409-type-trailing-space-core-truncated", "sha256": "ab749355bcb6a6c7af15526763e90cbfd4794013f1248a39c044e5ad3edef344", "observedAt": "2026-10-24T06:51:25+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s5b-tail", "name": "409-type-trailing-space-core-wellformed-control", "sha256": "c52e6feee3dd0d53282c8add84563576d775860a0abf83db9750b5d8858337cf", "observedAt": "2026-10-24T06:51:41+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s5b-tail", "name": "s5-control-minimal-end", "sha256": "49873da1ea328db901ffdfe1da3a4143cddd4a2ffc4bf6df462936dac2aebdb5", "observedAt": "2026-10-24T06:51:41+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s6a-s6-ascii-control", "name": "s6-ascii-control", "sha256": "552826505c024774fa6a3830f3331e64629ca257bdbe7e400cfc23d6ec9a8de8", "observedAt": "2026-10-24T06:56:43+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s6a-s6-cp437-byte-noflag", "name": "s6-cp437-byte-noflag", "sha256": "a4a3ca9d143cc102a6b87b441496ff7ff9d13c816945c522d966076132de55dd", "observedAt": "2026-10-24T06:56:58.981Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__s6-cp437-byte-noflag.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00000__wfv__s6-cp437-byte-noflag.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__s6-cp437-byte-noflag.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s6a-s6-utf8-bytes-flag", "name": "s6-utf8-bytes-flag", "sha256": "8c537b95b8930a888100f12cd4b7c7c80466696e181cccc7d40cd26bb55645a4", "observedAt": "2026-10-24T06:57:13.156Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__s6-utf8-bytes-flag.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00000__wfv__s6-utf8-bytes-flag.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__s6-utf8-bytes-flag.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s6a-s6-utf8-bytes-noflag", "name": "s6-utf8-bytes-noflag", "sha256": "df6ea023437e29f761634cc21dda654f90831a12c9241dfff3ec1aa878719745", "observedAt": "2026-10-24T06:57:27.234Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__s6-utf8-bytes-noflag.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00000__wfv__s6-utf8-bytes-noflag.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__s6-utf8-bytes-noflag.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s6a-s6-pct-encoded-ascii", "name": "s6-pct-encoded-ascii", "sha256": "55bc366c36cdee2ac5609c6ae6ffc8d847423762dfc4315246037c7ca0f23d04", "observedAt": "2026-10-24T06:57:41.674Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__s6-pct-encoded-ascii.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00000__wfv__s6-pct-encoded-ascii.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__s6-pct-encoded-ascii.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s6b-s6-ascii-control-in-word", "name": "s6-ascii-control-in-word", "sha256": "055d1dbf8ae1d2da3e94fdf0c7f245881b78eed4dfda0f7162e7313465f7353a", "observedAt": "2026-10-24T06:58:20+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s6b-s6-pct-ascii-space-root", "name": "s6-pct-ascii-space-root", "sha256": "0a7d3a4ea2f152197ab748a468fb305cbd0a695a19b7cd8ee4cf0283caf5fd9e", "observedAt": "2026-10-24T06:58:30+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s6b-s6-pct-latin1-e9", "name": "s6-pct-latin1-e9", "sha256": "222cab2384ca8eb9620617debbee94e8480113f88fd7865c34e5f6f2c046002f", "observedAt": "2026-10-24T06:58:44.899Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__s6-pct-latin1-e9.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__s6-pct-latin1-e9.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s6b-s6-utf8-flag-in-word", "name": "s6-utf8-flag-in-word", "sha256": "c9317c54a63b0094fa637a6607e3d14080a4069a1473eb3a209ed97a602e2c1b", "observedAt": "2026-10-24T06:59:04.741Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__s6-utf8-flag-in-word.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__s6-utf8-flag-in-word.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
 ```
 
 </details>
@@ -1149,6 +1326,359 @@ for r in out:
     w = r["word"]
     extra = w["error"][:70] if w["outcome"] == "other" else ""
     print(f"{r['name']:50} {w['outcome']:15} word-valid={r['wordValid']['valid']!s:5} strict={r['strict']['valid']!s:5} {extra}")
+```
+
+</details>
+
+<details><summary>Sessions 4–6 specimen builders and runner</summary>
+
+Sessions 4 and 5 add these lines to the session 3 builder above. They were built with `BUILD_DIR=<run>/src BUILD_FROM=<first specimen>`, as in session 3:
+
+<!-- prettier-ignore -->
+```diff
+@@ -112,6 +112,7 @@
+ const XML_DEFAULT = `<Default Extension="xml" ContentType="application/xml"/>`;
+ const extraItem = (name: string) => rawZip([...Object.entries(P), [name, P["word/styles.xml"]]]);
+ 
++const spaced = (core: string) => ({ ...withCore(CORE_CT), "docProps/core.xml": core, "_rels/.rels": withCore(CORE_CT)["_rels/.rels"].replace("metadata/core-properties\"", "metadata/core-properties \"") });
+ const specimens: [string, string, () => Promise<Buffer>][] = [
+   ["control-minimal", "control", () => buildDocx(P)],
+   // #388
+@@ -263,6 +264,41 @@
+   ["414-invalid-x-backslash-missing", "#414", () => buildDocx({ ...P, "[Content_Types].xml": extraInvalidOverride("/word\\nothere.xml") })],
+   // Session 3b's batch could not attribute this control (Word opened a document under another name); observe it again.
+   ["rels-unknown-sibling-control", "cr383", () => buildDocx({ ...P, "_rels/.rels": P["_rels/.rels"].replace("</Relationships>", `<x:Extra xmlns:x="urn:x"/></Relationships>`) })],
++  // ---- Session 4 (foreground) ----
++  ["s4-control-minimal", "control", () => buildDocx(P)],
++  // #380: session 3c could not attribute this one (no document, no alert naming it).
++  ["main-relationship-missing", "#380", () => buildDocx({ ...P, "_rels/.rels": P["_rels/.rels"].replace(/<Relationship [^>]*\/officeDocument"[^>]*\/>/, "") })],
++  // #414 with a well-formed content type: is the PartName alone enough, without invalid-x?
++  ["414-xml-plain-missing-control", "#414", () => buildDocx({ ...P, "[Content_Types].xml": CT.replace("</Types>", `<Override PartName="/word/nothere.xml" ContentType="application/xml"/></Types>`) })],
++  ["414-xml-dotdot-missing", "#414", () => buildDocx({ ...P, "[Content_Types].xml": CT.replace("</Types>", `<Override PartName="/word/../word/nothere.xml" ContentType="application/xml"/></Types>`) })],
++  ["414-xml-query-missing", "#414", () => buildDocx({ ...P, "[Content_Types].xml": CT.replace("</Types>", `<Override PartName="/word/nothere.xml?x=1" ContentType="application/xml"/></Types>`) })],
++  ["414-xml-fragment-missing", "#414", () => buildDocx({ ...P, "[Content_Types].xml": CT.replace("</Types>", `<Override PartName="/word/nothere.xml#f" ContentType="application/xml"/></Types>`) })],
++  ["414-xml-backslash-missing", "#414", () => buildDocx({ ...P, "[Content_Types].xml": CT.replace("</Types>", `<Override PartName="/word\\nothere.xml" ContentType="application/xml"/></Types>`) })],
++  // #408: an unreserved escape in a folder segment, on an unreferenced item.
++  ["esc-folder-segment-unreferenced", "#408", () => extraItem("f%6Fo/xtra.xml")],
++  ["esc-folder-plain-unreferenced-control", "#408", () => extraItem("foo/xtra.xml")],
++  // #437: is an unreferenced malformed part outside word/ ignored too?
++  ["customxml-unreferenced-malformed", "#437", () => buildDocx({ ...P, "customXml/item9.xml": P["word/styles.xml"].slice(0, 120) })],
++  // #433: a foreign element in a part-level relationships part.
++  ["rels-part-level-unknown-sibling", "#433", () => buildDocx({ ...P, "word/_rels/document.xml.rels": P["word/_rels/document.xml.rels"].replace("</Relationships>", `<x:Extra xmlns:x="urn:x"/></Relationships>`) })],
++  ["s4-control-minimal-end", "control", () => buildDocx(P)],
++  // ---- Session 5 (foreground) ----
++  ["s5-control-minimal", "control", () => buildDocx(P)],
++  // #414: part-name shapes Word has not seen yet, each on an application/xml Override of a missing part.
++  ["414-xml-noslash-missing", "#414", () => buildDocx({ ...P, "[Content_Types].xml": CT.replace("</Types>", `<Override PartName="word/nothere.xml" ContentType="application/xml"/></Types>`) })],
++  ["414-xml-emptyseg-missing", "#414", () => buildDocx({ ...P, "[Content_Types].xml": CT.replace("</Types>", `<Override PartName="/word//nothere.xml" ContentType="application/xml"/></Types>`) })],
++  ["414-xml-trailing-slash-missing", "#414", () => buildDocx({ ...P, "[Content_Types].xml": CT.replace("</Types>", `<Override PartName="/word/nothere.xml/" ContentType="application/xml"/></Types>`) })],
++  ["414-xml-pct2F-missing", "#414", () => buildDocx({ ...P, "[Content_Types].xml": CT.replace("</Types>", `<Override PartName="/word/no%2Fthere.xml" ContentType="application/xml"/></Types>`) })],
++  ["414-xml-pct6F-missing", "#414", () => buildDocx({ ...P, "[Content_Types].xml": CT.replace("</Types>", `<Override PartName="/word/n%6Fthere.xml" ContentType="application/xml"/></Types>`) })],
++  // #437: does Word read a part named only by a relationship of an unknown type?
++  ["437-unknown-type-rel-malformed", "#437", () => buildDocx({ ...P, "word/xtra.xml": P["word/styles.xml"].slice(0, 120), "word/_rels/document.xml.rels": P["word/_rels/document.xml.rels"].replace("</Relationships>", `<Relationship Id="rIdX" Type="urn:x:unknown" Target="xtra.xml"/></Relationships>`) })],
++  ["437-unknown-type-rel-wellformed-control", "#437", () => buildDocx({ ...P, "word/xtra.xml": P["word/styles.xml"], "word/_rels/document.xml.rels": P["word/_rels/document.xml.rels"].replace("</Relationships>", `<Relationship Id="rIdX" Type="urn:x:unknown" Target="xtra.xml"/></Relationships>`) })],
++  // #437: an unreferenced malformed part under word/ that has its own Override.
++  ["437-unreferenced-malformed-override", "#437", () => buildDocx({ ...P, "word/xtra.xml": P["word/styles.xml"].slice(0, 120), "[Content_Types].xml": CT.replace("</Types>", `<Override PartName="/word/xtra.xml" ContentType="application/xml"/></Types>`) })],
++  // Review Z F2: a core-properties relationship Type with a trailing space (xs:anyURI collapses it). Does Word read the part?
++  ["409-type-trailing-space-core-truncated", "#409", () => buildDocx(spaced(CORE_XML.slice(0, 140)))],
++  ["409-type-trailing-space-core-wellformed-control", "#409", () => buildDocx(spaced(CORE_XML))],
++  ["s5-control-minimal-end", "control", () => buildDocx(P)],
+ ];
+ 
+ // Build-only mode (session 3b, 2026-10-24): write the session-3 specimens, the #383 relationship specimens and
+```
+
+Review Y specimens (session 4d) come from `buildSpecZip`, a raw ZIP writer that sets each name in the central directory and the local header independently. Its extra fields and flag bits are explicit:
+
+<!-- prettier-ignore -->
+```ts
+// Raw ZIP builder for adversarial specimens. Store-method only.
+// Supports per-entry distinct local vs central names, extra fields, and
+// arbitrary trailing bytes — the cases the commit under review claims to cover.
+
+const CRC_TABLE = (() => {
+    const table = new Uint32Array(256);
+    for (let n = 0; n < 256; n += 1) {
+        let c = n;
+        for (let k = 0; k < 8; k += 1) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+        table[n] = c >>> 0;
+    }
+    return table;
+})();
+
+export const crc32 = (data: Uint8Array): number => {
+    let c = 0xffffffff;
+    for (const byte of data) c = CRC_TABLE[(c ^ byte) & 0xff]! ^ (c >>> 8);
+    return (c ^ 0xffffffff) >>> 0;
+};
+
+export interface SpecEntry {
+    /** Central-directory name (string is UTF-8 encoded, or nameBytes raw). */
+    name?: string;
+    nameBytes?: Uint8Array;
+    /** Local-header name; defaults to the central name. */
+    localName?: string;
+    localNameBytes?: Uint8Array;
+    /** Central-directory extra field bytes (between name and comment). */
+    centralExtra?: Uint8Array;
+    /** Local-header extra field bytes. */
+    localExtra?: Uint8Array;
+    content?: string | Uint8Array;
+    utf8?: boolean;
+    directory?: boolean;
+}
+
+export interface SpecOptions {
+    zip64?: boolean;
+    /** Bytes appended after the EOCD record. */
+    trailing?: Uint8Array;
+    /** EOCD comment bytes. */
+    comment?: Uint8Array;
+    /** Patch hook before return: (bytes, {cdOffset, cdSize, eocdOffset, count}). */
+    patch?: (bytes: Buffer, layout: { cdOffset: number; cdSize: number; eocdOffset: number; count: number }) => void;
+}
+
+const encoder = new TextEncoder();
+
+export const buildSpecZip = (entries: readonly SpecEntry[], options: SpecOptions = {}): Buffer => {
+    const local: Buffer[] = [];
+    const central: Buffer[] = [];
+    let offset = 0;
+    for (const entry of entries) {
+        const cnb = entry.nameBytes ?? encoder.encode(entry.name ?? "");
+        const lnb = entry.localNameBytes ?? (entry.localName !== undefined ? encoder.encode(entry.localName) : cnb);
+        const data = typeof entry.content === "string" ? encoder.encode(entry.content) : (entry.content ?? new Uint8Array());
+        const crc = crc32(data);
+        const flags = entry.utf8 === true ? 0x0800 : 0;
+        const attributes = entry.directory === true ? 0x10 : 0;
+        const lex = entry.localExtra ?? new Uint8Array();
+        const cex = entry.centralExtra ?? new Uint8Array();
+
+        const lh = Buffer.alloc(30);
+        lh.writeUInt32LE(0x04034b50, 0);
+        lh.writeUInt16LE(20, 4);
+        lh.writeUInt16LE(flags, 6);
+        lh.writeUInt32LE(crc, 14);
+        lh.writeUInt32LE(data.length, 18);
+        lh.writeUInt32LE(data.length, 22);
+        lh.writeUInt16LE(lnb.length, 26);
+        lh.writeUInt16LE(lex.length, 28);
+        local.push(lh, Buffer.from(lnb), Buffer.from(lex), Buffer.from(data));
+
+        const ch = Buffer.alloc(46);
+        ch.writeUInt32LE(0x02014b50, 0);
+        ch.writeUInt16LE(20, 4);
+        ch.writeUInt16LE(20, 6);
+        ch.writeUInt16LE(flags, 8);
+        ch.writeUInt32LE(crc, 16);
+        ch.writeUInt32LE(data.length, 20);
+        ch.writeUInt32LE(data.length, 24);
+        ch.writeUInt16LE(cnb.length, 28);
+        ch.writeUInt16LE(cex.length, 30);
+        ch.writeUInt32LE(attributes, 38);
+        ch.writeUInt32LE(offset, 42);
+        central.push(ch, Buffer.from(cnb), Buffer.from(cex));
+
+        offset += 30 + lnb.length + lex.length + data.length;
+    }
+    const cd = Buffer.concat(central);
+    const comment = options.comment ?? new Uint8Array();
+    const zip64 = options.zip64 === true;
+    const records: Buffer[] = [...local, cd];
+    if (zip64) {
+        const eocd64 = Buffer.alloc(56);
+        eocd64.writeUInt32LE(0x06064b50, 0);
+        eocd64.writeBigUInt64LE(44n, 4);
+        eocd64.writeUInt16LE(20, 12);
+        eocd64.writeUInt16LE(45, 14);
+        eocd64.writeBigUInt64LE(BigInt(entries.length), 24);
+        eocd64.writeBigUInt64LE(BigInt(entries.length), 32);
+        eocd64.writeBigUInt64LE(BigInt(cd.length), 40);
+        eocd64.writeBigUInt64LE(BigInt(offset), 48);
+        const locator = Buffer.alloc(20);
+        locator.writeUInt32LE(0x07064b50, 0);
+        locator.writeBigUInt64LE(BigInt(offset + cd.length), 8);
+        locator.writeUInt32LE(1, 16);
+        records.push(eocd64, locator);
+    }
+    const eocd = Buffer.alloc(22);
+    eocd.writeUInt32LE(0x06054b50, 0);
+    eocd.writeUInt16LE(zip64 ? 0xffff : entries.length, 8);
+    eocd.writeUInt16LE(zip64 ? 0xffff : entries.length, 10);
+    eocd.writeUInt32LE(zip64 ? 0xffffffff : cd.length, 12);
+    eocd.writeUInt32LE(zip64 ? 0xffffffff : offset, 16);
+    eocd.writeUInt16LE(comment.length, 20);
+    records.push(eocd, Buffer.from(comment));
+    if (options.trailing) records.push(Buffer.from(options.trailing));
+    const out = Buffer.concat(records);
+    options.patch?.(out, {
+        cdOffset: offset,
+        cdSize: cd.length,
+        eocdOffset: out.length - (options.trailing?.length ?? 0) - comment.length - 22,
+        count: entries.length,
+    });
+    return out;
+};
+
+/** Minimal DOCX part set, identical to tests/support/minimal-docx.ts. */
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const W14 = "http://schemas.microsoft.com/office/word/2010/wordml";
+const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+
+export const MINIMAL_PARTS: Record<string, string> = {
+    "[Content_Types].xml":
+        `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+        `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+        `<Default Extension="xml" ContentType="application/xml"/>` +
+        `<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>` +
+        `<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>` +
+        `</Types>`,
+    "_rels/.rels":
+        `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>` +
+        `</Relationships>`,
+    "word/_rels/document.xml.rels":
+        `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>` +
+        `</Relationships>`,
+    "word/document.xml":
+        `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<w:document xmlns:w="${W}" xmlns:w14="${W14}" xmlns:mc="${MC}" mc:Ignorable="w14">` +
+        `<w:body><w:p w14:paraId="00000001" w14:textId="00000001"><w:r><w:t>Hello</w:t></w:r></w:p>` +
+        `<w:sectPr><w:pgSz w:w="12240" w:h="15840"/>` +
+        `<w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>` +
+        `</w:sectPr></w:body></w:document>`,
+    "word/styles.xml":
+        `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<w:styles xmlns:w="${W}">` +
+        `<w:docDefaults><w:rPrDefault><w:rPr/></w:rPrDefault><w:pPrDefault><w:pPr/></w:pPrDefault></w:docDefaults>` +
+        `<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style>` +
+        `<w:style w:type="character" w:default="1" w:styleId="DefaultParagraphFont"><w:name w:val="Default Paragraph Font"/></w:style>` +
+        `<w:style w:type="table" w:default="1" w:styleId="TableNormal"><w:name w:val="Normal Table"/></w:style>` +
+        `<w:style w:type="numbering" w:default="1" w:styleId="NoList"><w:name w:val="No List"/></w:style>` +
+        `</w:styles>`,
+};
+
+/** SpecEntry[] for the minimal DOCX, with optional per-name overrides. */
+export const docxEntries = (overrides: (e: SpecEntry) => SpecEntry[] = (e) => [e]): SpecEntry[] =>
+    Object.entries(MINIMAL_PARTS).flatMap(([name, content]) => overrides({ name, content }));
+```
+
+The specimen definitions observed in session 4d (`ry-<name>` is review Y's `<name>`):
+
+<!-- prettier-ignore -->
+```ts
+// --- local name differs from central name (JSZip uses the LOCAL name) ---
+specimens["local-dotdot"] = buildSpecZip([...docxEntries(), { name: "word/extra.xml", localName: "../evil.xml", content: "<x/>" }]);
+specimens["central-dotdot-local-clean"] = buildSpecZip([...docxEntries(), { name: "evil/../x.xml", localName: "x.xml", content: "<x/>" }]);
+// central duplicates with distinct local names: which entry's bytes are read?
+specimens["dup-central-distinct-local"] = buildSpecZip([
+    ...docxEntries((e) =>
+        e.name === "word/document.xml"
+            ? [
+                  { ...e, localName: "AAAA-first.xml" },
+                  { name: "word/document.xml", localName: "BBBB-second.xml", content: "<w:document xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><w:body><w:p/></w:body></w:document>" },
+              ]
+            : [e],
+    ),
+]);
+
+// --- Info-ZIP unicode path extra field (0x7075) ---
+const upath = (nameBytes: Uint8Array, unicode: string): Uint8Array => {
+    const u = new TextEncoder().encode(unicode);
+    const field = Buffer.alloc(4 + 1 + 4 + u.length);
+    field.writeUInt16LE(0x7075, 0);
+    field.writeUInt16LE(1 + 4 + u.length, 2);
+    field.writeUInt8(1, 4);
+    field.writeUInt32LE(crc32(nameBytes), 5);
+    field.set(u, 9);
+    return field;
+};
+{
+    const nb = new TextEncoder().encode("a/../x.xml");
+    specimens["upath-hides-dotdot"] = buildSpecZip([
+        ...docxEntries(),
+        { name: "a/../x.xml", nameBytes: nb, localExtra: upath(nb, "x.xml"), centralExtra: upath(nb, "x.xml"), content: "<x/>" },
+    ]);
+    const nb2 = new TextEncoder().encode("x.xml");
+    specimens["upath-injects-dotdot"] = buildSpecZip([
+        ...docxEntries(),
+        { name: "x.xml", nameBytes: nb2, localExtra: upath(nb2, "../evil.xml"), centralExtra: upath(nb2, "../evil.xml"), content: "<x/>" },
+    ]);
+}
+// CP437 é (0x82) without UTF-8 flag
+specimens["cp437-name"] = buildSpecZip([
+    ...docxEntries(),
+    { name: "x", nameBytes: Uint8Array.from([0x63, 0x61, 0x66, 0x82, 0x2e, 0x78, 0x6d, 0x6c]), content: "<x/>" },
+]);
+
+```
+
+Session 6 builds each specimen from the same `buildSpecZip` and `docxEntries()`, adding one entry `{ nameBytes, utf8, content: "<x/>" }`:
+
+<!-- prettier-ignore -->
+```ts
+const utf8 = (s: string) => new TextEncoder().encode(s);
+const cases: Record<string, { nameBytes: Uint8Array; utf8?: boolean }> = {
+    // session 6a
+    "s6-cp437-byte-noflag": { nameBytes: Uint8Array.from([0x63, 0x61, 0x66, 0x82, 0x2e, 0x78, 0x6d, 0x6c]) },
+    "s6-utf8-bytes-flag": { nameBytes: utf8("café.xml"), utf8: true },
+    "s6-utf8-bytes-noflag": { nameBytes: utf8("café.xml") },
+    "s6-pct-encoded-ascii": { nameBytes: utf8("caf%C3%A9.xml") },
+    "s6-ascii-control": { nameBytes: utf8("cafe.xml") },
+    // session 6b
+    "s6-pct-ascii-space-root": { nameBytes: utf8("caf%20.xml") },
+    "s6-pct-latin1-e9": { nameBytes: utf8("caf%E9.xml") },
+    "s6-utf8-flag-in-word": { nameBytes: utf8("word/café.xml"), utf8: true },
+    "s6-ascii-control-in-word": { nameBytes: utf8("word/cafe.xml") },
+};
+for (const [name, c] of Object.entries(cases)) {
+    const bytes = buildSpecZip([...docxEntries(), { name: "x", nameBytes: c.nameBytes, utf8: c.utf8, content: "<x/>" }]);
+    writeFileSync(path.join(DIR, `${name}.docx`), bytes);
+}
+```
+
+Each run is `zsh run-chunk.sh <run>`, then `python3 wordpdf_outcomes.py <run>` (the session 3 parser above). A single-specimen run is a copy made by `python3 mkchunk.py <run> <batch>:<specimen>`:
+
+<!-- prettier-ignore -->
+```sh
+#!/bin/zsh
+# One foreground real-Word run of a specimen chunk through neurotic_docx_bench's
+# word_pdf.py, in its default batch mode (Word brought forward to answer alerts).
+# Usage: zsh run-chunk.sh <chunk-dir-name>   (holds src/ and specimens.jsonl)
+#
+# A leftover word_watchdog.sh SIGKILLs Word once the log it watches idles 60 s,
+# which would end this run mid-item. Pause every watchdog for this run only and
+# resume them on exit.
+set -u
+run=/Users/arthrod/temp/T/wfv-scratch/word-probes/$1
+[[ -d $run/src ]] || { echo "no $run/src"; exit 2; }
+paused=()
+for p in $(pgrep -f word_watchdog.sh); do kill -STOP $p && paused+=($p); done
+trap 'for p in $paused; do kill -CONT $p; done; echo "resumed watchdogs: ${paused[*]:-none}"' EXIT
+echo "paused watchdogs: ${paused[*]:-none}; start $(date -u +%FT%TZ)"
+cd /Users/arthrod/temp/T/neurotic_docx_bench
+uv run --script scripts/word_pdf.py --src $run/src --out $run/pdf --log $run/word_pdf.log --label wfv --no-check-preset --lock-wait 300
+echo "word_pdf exit=$? end $(date -u +%FT%TZ)"
+```
+
+<!-- prettier-ignore -->
+```python
+"""mkchunk.py <new-chunk> <src-chunk>:<name> [...] — copy specimens (file + specimens.jsonl row) into a new chunk dir."""
+import json, shutil, sys
+from pathlib import Path
+new = Path(sys.argv[1]); (new / "src").mkdir(parents=True, exist_ok=True)
+with open(new / "specimens.jsonl", "w") as out:
+    for arg in sys.argv[2:]:
+        src, name = arg.split(":", 1)
+        rows = [json.loads(l) for l in (Path(src) / "specimens.jsonl").read_text().splitlines() if l.strip()]
+        row = next(r for r in rows if r["name"] == name)
+        shutil.copy2(Path(src) / "src" / row["file"], new / "src" / row["file"])
+        out.write(json.dumps(row) + "\n")
+print(new, len(sys.argv) - 2)
 ```
 
 </details>
