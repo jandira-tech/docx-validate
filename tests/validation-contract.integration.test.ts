@@ -1395,6 +1395,36 @@ describe.skipIf(process.platform === "win32")("directory package staging (#374)"
         },
     );
 
+    // chmod has no effect for root; a read-only source file is the trigger.
+    it.skipIf(runsAsRoot)(
+        "keeps repair-write-back-failed an error under every profile — a repair the caller asked for and did not get is an operational failure, not a document property (#428)",
+        async () => {
+            await withTempDir(async (dir) => {
+                for (const profile of ["strict", "lenient", "word-valid"] as const) {
+                    const parts = {
+                        ...MINIMAL_PARTS,
+                        "word/document.xml": MINIMAL_PARTS["word/document.xml"].replace(">Hello<", "> Hello <"),
+                    };
+                    const input = await writeDirectory(path.join(dir, `input-${profile}.docx`), parts, true);
+                    const readOnly = path.join(input, storedName("word/document.xml"));
+                    await fs.chmod(readOnly, 0o444);
+                    let actual;
+                    try {
+                        actual = await validateResolves(input, { profile, autoRepair: true });
+                    } finally {
+                        await fs.chmod(readOnly, 0o644);
+                    }
+                    expect(actual.valid, profile).toBe(false);
+                    expect(actual.issues, profile).toEqual(
+                        expect.arrayContaining([
+                            expect.objectContaining({ severity: "error", code: "repair-write-back-failed", path: "word/document.xml" }),
+                        ]),
+                    );
+                }
+            });
+        },
+    );
+
     it("treats an already-removed write-back target as done when the repair deleted the part (#412)", async () => {
         await withTempDir(async (dir) => {
             const parts = {
@@ -1535,4 +1565,31 @@ describe.skipIf(process.platform === "win32")("directory package staging (#374)"
             expect(back).not.toContain('xml:space="preserve"');
         });
     });
+
+    it.skipIf(runsAsRoot)(
+        "strict and word-valid agree a packed input that cannot be read fails as package-open-failed (#422)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "packed-ro.docx");
+                await fs.writeFile(file, await buildDocx());
+                await fs.chmod(file, 0o000);
+                let wordValid;
+                let strict;
+                try {
+                    wordValid = await validateResolves(file);
+                    strict = await validateResolves(file, { strict: true });
+                } finally {
+                    await fs.chmod(file, 0o644);
+                }
+                for (const [profile, result] of [
+                    ["word-valid", wordValid],
+                    ["strict", strict],
+                ] as const) {
+                    expect(result!.valid, profile).toBe(false);
+                    expect(result!.issues, profile).toEqual([expect.objectContaining({ severity: "error", code: "package-open-failed" })]);
+                    expect(result!.metadata?.executedChecks, profile).toEqual([]);
+                }
+            });
+        },
+    );
 });

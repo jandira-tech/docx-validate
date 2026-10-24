@@ -244,14 +244,47 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         throw new Error(`Error: ${target} is not a directory or Office file`);
     }
 
-    // Read the exact bytes once, before any validation work, so Word is asked
-    // about the same file the portable mode inspected.
-    const packedBytes = opts.verifyWord === true && targetIsPackedFile ? await fs.readFile(target) : undefined;
+    // Read the packed file's bytes once, before any validation work: a packed
+    // input that cannot be read is an archive that does not open — `fs.stat`
+    // still answers for a mode-000 file, so the read is the first thing that
+    // can fail (#422). A readable one gives Word verification the same bytes
+    // the portable mode inspected.
+    const packedRead: { bytes: Uint8Array } | { error: unknown } | undefined = targetIsPackedFile
+        ? await fs.readFile(target).then(
+              (bytes) => ({ bytes }),
+              (error: unknown) => ({ error }),
+          )
+        : undefined;
+    const packedBytes = packedRead !== undefined && "bytes" in packedRead ? packedRead.bytes : undefined;
     const finish = async (result: ValidateRunResult): Promise<ValidateRunResult> =>
-        opts.verifyWord === true ? withWordVerification(result, packedBytes, opts.wordVerifier) : result;
+        opts.verifyWord === true
+            ? withWordVerification(
+                  result,
+                  packedBytes,
+                  opts.wordVerifier,
+                  packedRead !== undefined && "error" in packedRead
+                      ? `Word verification needs the packed file's bytes; ${target} cannot be read: ${packedRead.error instanceof Error ? packedRead.error.message : String(packedRead.error)}`
+                      : undefined,
+              )
+            : result;
+
+    if (packedRead !== undefined && "error" in packedRead) {
+        // An unreadable input is an archive that cannot be opened: the same
+        // finding in every mode, and no check ran (#422).
+        return finish({
+            valid: false,
+            issues: [
+                packageOpenFailedIssue(target, packedRead.error instanceof Error ? packedRead.error.message : String(packedRead.error)),
+            ],
+            repairs: 0,
+            suffix: dispatchSuffix,
+            xsdWalk: xsdWalkNotStarted(),
+            metadata: { profile, executedChecks: [], omittedChecks: [], schemaCompleted: false },
+        });
+    }
 
     if (selected !== undefined) {
-        return finish(await runSelectedChecks(target, targetIsPackedFile, dispatchSuffix, format, mode, registry, selected));
+        return finish(await runSelectedChecks(target, packedBytes, dispatchSuffix, format, mode, registry, selected));
     }
 
     const runWithUnpacked = async (unpackedDir: string, extra = EMPTY_ENVELOPE_RUN): Promise<ValidateRunResult> => {
@@ -414,7 +447,8 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         });
 
     if (targetIsPackedFile) {
-        const buf = await fs.readFile(target);
+        // Defined: the read above already reported an unreadable input.
+        const buf = packedBytes!;
         const envelope = runsWordPackageChecks(profile) ? await zipEnvelopeRun(buf, dispatchSuffix) : EMPTY_ENVELOPE_RUN;
         let zip: JSZip;
         try {
@@ -519,6 +553,7 @@ async function withWordVerification(
     result: ValidateRunResult,
     packedBytes: Uint8Array | undefined,
     injected: WordVerifier | undefined,
+    unavailableDetails = "Word verification needs a packed Office file; the validated target is an unpacked directory",
 ): Promise<ValidateRunResult> {
     const verify = injected ?? verifyInWord;
     if (packedBytes === undefined) {
@@ -531,7 +566,7 @@ async function withWordVerification(
             // Wall time of this answer, never the epoch (#329).
             observedAt: new Date().toISOString(),
             observationMs: 0,
-            details: "Word verification needs a packed Office file; the validated target is an unpacked directory",
+            details: unavailableDetails,
         });
     }
     try {
@@ -774,7 +809,7 @@ function stagingFallbackSelection(registry: CheckRegistry, format: PackageFormat
  */
 async function runSelectedChecks(
     target: string,
-    packed: boolean,
+    packedBytes: Uint8Array | undefined,
     suffix: string,
     format: PackageFormat,
     mode: ResolvedMode,
@@ -785,7 +820,7 @@ async function runSelectedChecks(
     // A companion, not a prerequisite: these checks still read every part
     // with their own parser, even when xml-syntax rejects it (#385).
     const select = reportsParseFailures ? [...selected, XML_SYNTAX_CHECK_ID] : selected;
-    const opened = packed ? await contextFromArchive(await fs.readFile(target)) : openedFromDirectory(path.resolve(target));
+    const opened = packedBytes !== undefined ? await contextFromArchive(packedBytes) : openedFromDirectory(path.resolve(target));
     if (opened.openError !== undefined) {
         // An archive that does not open has no parts: only the selected
         // envelope checks can read its bytes, and nothing else ran (#332).

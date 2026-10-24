@@ -64,6 +64,19 @@ export class PackageViewError extends Error {
     }
 }
 
+/**
+ * The archive bytes are not a readable ZIP: encrypted OOXML, or a truncated
+ * or corrupted archive. Distinct from {@link PackageViewError} — which names
+ * an archive that opened but whose package view cannot be read — and from an
+ * internal error, which propagates unwrapped (#427).
+ */
+export class PackageOpenError extends Error {
+    public constructor(message: string, options?: ErrorOptions) {
+        super(message, options);
+        this.name = "PackageOpenError";
+    }
+}
+
 export type ValidationContextOptions = {
     readonly source?: PackageSource;
     /** The packed file's bytes; present only when `source` is `"archive"`. */
@@ -222,25 +235,39 @@ export class ValidationContext {
     }
 
     /**
-     * Load a packed OPC archive, one entry per part name. Throws when the
-     * bytes are not a readable ZIP, or with a {@link PackageViewError} when
-     * the opened archive's package view cannot be read: an item name places
-     * no part (#372, #378), or an entry cannot be read (#369) — the same
-     * archives extraction refuses, so callers report the same failure.
+     * Load a packed OPC archive, one entry per part name. Throws a
+     * {@link PackageOpenError} when the bytes are not a readable ZIP, or a
+     * {@link PackageViewError} when the opened archive's package view cannot
+     * be read: an item name places no part (#372, #378), or an entry cannot
+     * be read (#369) — the same archives extraction refuses, so callers
+     * report the same failure. Any other throw is an internal error and
+     * propagates unwrapped rather than wearing a file-defect code (#427).
      */
     public static async fromArchive(bytes: Uint8Array): Promise<ValidationContext> {
-        const zip = await loadCentralNamedArchive(bytes);
+        let zip: JSZip;
+        try {
+            zip = await loadCentralNamedArchive(bytes);
+        } catch (err) {
+            throw new PackageOpenError(err instanceof Error ? err.message : String(err), { cause: err });
+        }
         // The stored names survive a refused package view, so the checks that
         // need only them can run on the thrown error's copy (#420).
         let stored: readonly string[] = [];
+        const files = Object.values(zip.files).filter((entry) => !entry.dir);
+        stored = archiveStoredNames(bytes, files);
         try {
-            const files = Object.values(zip.files).filter((entry) => !entry.dir);
-            stored = archiveStoredNames(bytes, files);
             assertPlaceableNames(stored);
-            const kept = indexByPartName(files.map((entry) => [entry.name, entry] as const));
-            const parts = new Map<string, PartContent>();
-            // Every entry is read, as extraction reads it, so an unreadable one
-            // rejects the archive even when another entry names its part (#369).
+        } catch (err) {
+            throw new PackageViewError(err instanceof Error ? err.message : String(err), { cause: err, storedNames: stored });
+        }
+        const kept = indexByPartName(files.map((entry) => [entry.name, entry] as const));
+        const parts = new Map<string, PartContent>();
+        // Every entry is read, as extraction reads it, so an unreadable one
+        // rejects the archive even when another entry names its part (#369).
+        // Only the two failures a real extraction reports — a refused item
+        // name above and an unreadable entry here — are PackageViewError;
+        // anything else is an internal error and propagates unwrapped (#427).
+        try {
             await Promise.all(
                 files.map(async (entry) => {
                     const content = await entry.async("uint8array");
@@ -250,10 +277,10 @@ export class ValidationContext {
                     }
                 }),
             );
-            return new ValidationContext(parts, { source: "archive", archiveBytes: bytes }, stored);
         } catch (err) {
             throw new PackageViewError(err instanceof Error ? err.message : String(err), { cause: err, storedNames: stored });
         }
+        return new ValidationContext(parts, { source: "archive", archiveBytes: bytes }, stored);
     }
 
     /** Part names in sorted order, without a leading `/`. */

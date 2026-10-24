@@ -8,7 +8,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { ValidationContext, PackageViewError } from "../../lib/validation-context";
+import { ValidationContext, PackageViewError, PackageOpenError } from "../../lib/validation-context";
 import { walkFiles, type UnreadableEntry } from "./validators/base";
 
 /**
@@ -37,7 +37,9 @@ export function contextFromDirectory(dir: string, unreadableStoredEntries: reado
  * that opens but whose package view cannot be read ({@link PackageViewError}
  * — a refused item name or an unreadable entry) is reported with
  * `extractFailed`, since extraction fails it for the same reason (#413); its
- * context carries no parts but keeps the stored entry names (#420).
+ * context carries no parts but keeps the stored entry names (#420). Any other
+ * error is internal — a bug, not a defect in the file — and propagates
+ * unwrapped rather than wearing a file-defect code (#427).
  */
 export async function contextFromArchive(
     bytes: Uint8Array,
@@ -45,6 +47,13 @@ export async function contextFromArchive(
     try {
         return { context: await ValidationContext.fromArchive(bytes) };
     } catch (err) {
+        // Only the two classified failures are the input's: the archive that
+        // did not open and the package view extraction refuses. Anything
+        // else — a TypeError out of our own post-load code — is an internal
+        // error and propagates, never a file-defect finding (#427).
+        if (!(err instanceof PackageOpenError) && !(err instanceof PackageViewError)) {
+            throw err;
+        }
         return {
             // A refused package view still carries the stored entry names, so the
             // checks that need only them can run on it (#420).
@@ -52,7 +61,7 @@ export async function contextFromArchive(
                 source: "archive",
                 archiveBytes: bytes,
             }),
-            openError: err instanceof Error ? err.message : String(err),
+            openError: err.message,
             extractFailed: err instanceof PackageViewError || undefined,
         };
     }
