@@ -709,7 +709,7 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
         case "word-text-contains-paragraph":
             return "move w:p elements out of the w:t text run that contains them";
         case "word-hyperlink-relationship":
-            return "point the w:hyperlink r:id at an external hyperlink relationship, or remove the r:id";
+            return "point the w:hyperlink r:id at a relationship whose Type is the Transitional or ISO Strict hyperlink relationship URI with TargetMode External, or remove the r:id";
         case "word-header-footer-relationship":
             return "point the w:headerReference or w:footerReference r:id at a relationship whose Type is the Transitional or ISO Strict header (respectively footer) relationship URI";
         case "word-duplicate-theme-relationship":

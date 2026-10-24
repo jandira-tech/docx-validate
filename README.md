@@ -902,6 +902,19 @@ the unchanged minimal control (`0160dfc1db4c5ce1`) opened cleanly. A foreign ele
 appended to `word/_rels/document.xml.rels` got recovery too (`e7dae629d3e792a1`,
 session 4), beside a clean control (`f67e18fa7a50dae1`).
 
+`word-hyperlink-relationship` requires every `w:hyperlink` with an `r:id` in
+a story part to name a relationship whose Type is exactly the Transitional or
+the ISO Strict hyperlink relationship URI, with TargetMode `External`. Word
+16.115 accepts exactly those two Types, byte for byte, and offers recovery for
+`http://example.com/hyperlink`, `…/relationships/custom/hyperlink` and
+`…/relationships/HYPERLINK` alike; a hyperlink relationship without
+TargetMode still warns
+([#614](https://github.com/jandira-tech/docx-validate/issues/614); session 28,
+chunk s28a, in
+[docs/plans/evidence/word-probes-2026-10-24.md](docs/plans/evidence/word-probes-2026-10-24.md)).
+The finding is an error, and Word-blocking, under word-valid and strict;
+lenient runs no Word rule.
+
 `word-header-footer-relationship` requires every `w:headerReference` and
 `w:footerReference` in a story root's `w:sectPr` to name a relationship whose
 Type is exactly the Transitional or the ISO Strict header (respectively
