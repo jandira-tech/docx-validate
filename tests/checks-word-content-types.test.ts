@@ -9,6 +9,29 @@ import { document, CT } from "./support/word-rule-test-xml";
 import { wordContentTypeInvalidCheck } from "../src/scripts/office/checks/word-content-types";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { contentTypeSpecimens } from "./support/word-content-types-specimens";
+import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
+
+it("registers duplicate declarations for all formats, reads the raw stored stream and skips absent/unparseable streams (#431)", async () => {
+    const check = createDefaultCheckRegistry().get("ct-duplicate-declaration");
+    expect(check).toMatchObject({
+        id: "ct-duplicate-declaration",
+        groups: ["content-types"],
+        formats: ["docx", "pptx", "xlsx"],
+        requires: ["xml-syntax"],
+    });
+    const stream = "[CONTENT_TYPES].XML";
+    const xml = `<Types xmlns="${CT}"><Default Extension="xml"/><Default Extension="XML"/></Types>`;
+    const ctx = ValidationContext.fromEntries({ [stream]: xml });
+    expect(await check!.run(ctx)).toEqual([expect.objectContaining({ code: "ct-duplicate-declaration", path: stream, severity: "error" })]);
+    expect(ctx.text(stream)).toBe(xml);
+    for (const context of [
+        ValidationContext.fromEntries({}),
+        ValidationContext.fromEntries({ [stream]: "<broken" }),
+        ctx.withUnparseable(new Map([[stream, "malformed"]])),
+    ]) {
+        expect(await check!.run(context)).toEqual([]);
+    }
+});
 
 describe("word-content-type-invalid", () => {
     it("reports the Word-rejected shape with unchanged issue details", async () => {

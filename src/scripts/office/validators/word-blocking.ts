@@ -55,6 +55,10 @@ export const isWordBlockingIssue = (issue: ValidationIssue, propertiesParts: Rea
         // ([trash]/0000.dat). A part that has a content type but no
         // relationship is tolerated, so rels-unreferenced stays a warning.
         case "ct-uncovered-part":
+        // #431: Word 16.115 offers recovery for all five duplicate Default/
+        // Override shapes, including identical, conflicting and case variants;
+        // MINIMAL_PARTS opens clean (session 3, word-probes-2026-10-24.md).
+        case "ct-duplicate-declaration":
         // paragraph-sectpr-breaks.docx: empty vt:filetime causes Word unreadable-content recovery; empty lpwstr in complex2.docx opens clean.
         case "word-custom-property-filetime-empty":
         // header-with-rid-no-sidecar.docx: Word open-error with missing wp:extent; the complete scaffold in validators-docx.test.ts opens clean.
