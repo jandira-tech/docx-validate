@@ -209,8 +209,10 @@ export const equivalentPartLookup = (names: readonly string[]): ((partName: stri
 };
 
 /**
- * The entry in `names` that a package-relative part reference names: `\`
- * reads as `/`, a leading `/` is dropped and dot segments are resolved, then
+ * The entry in `names` that a package-relative part reference names: a query
+ * or fragment is dropped, since only the path names a part (System.IO.Packaging's
+ * `ResolvePartUri` keeps only the path, #361), `\` reads as `/`, a leading `/`
+ * is dropped and dot segments are resolved, then
  * the OPC-equivalent entry is taken ({@link findEquivalentPart}). Falls back
  * to the normalized name when no entry is equivalent, and is `undefined` for
  * a reference that is empty, names the package root or climbs above it
@@ -218,7 +220,8 @@ export const equivalentPartLookup = (names: readonly string[]): ((partName: stri
  * they agree on which entry it is (#349).
  */
 export const resolvePartName = (names: readonly string[], partName: string): string | undefined => {
-    const normalized = path.posix.normalize(partName.replace(/\\/g, "/").replace(/^\/+/, ""));
+    const [reference = ""] = partName.split(/[?#]/, 1);
+    const normalized = path.posix.normalize(reference.replace(/\\/g, "/").replace(/^\/+/, ""));
     if (normalized === "." || normalized === ".." || normalized.startsWith("../")) {
         return undefined;
     }
