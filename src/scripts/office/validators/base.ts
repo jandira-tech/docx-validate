@@ -86,6 +86,7 @@ import { ctDuplicateDeclarationCheck } from "../checks/word-content-types";
 import { loadCentralNamedArchive } from "../../../lib/zip-central-names";
 import { CT_MARKUP_COMPATIBILITY, ctMarkupCompatibilityCheck } from "../checks/ct-markup-compatibility";
 import type JSZip from "jszip";
+import { AsyncLocalStorage } from "node:async_hooks";
 
 /**
  * Schema mapping table — file basename / suffix → relative path inside the
@@ -1386,7 +1387,7 @@ export class BaseSchemaValidator {
     // ----- XSD validation -----------------------------------------------------
 
     async validateAgainstXsd(): Promise<ValidationResult> {
-        if (!this.baselineRunActive) this.forgetOriginal();
+        if (baselineRunStore.getStore() === undefined) this.forgetOriginal();
         const issues: ValidationIssue[] = [];
         let strictSkipped = false;
         this.xsdWalk.started = true;
@@ -1877,29 +1878,40 @@ export class BaseSchemaValidator {
     private readonly strictRootCache = new Map<string, boolean>();
     /** See {@link isMainDocumentPart}; reset when a repair deletes files. */
     private mainDocumentParts: ReadonlySet<string> | undefined;
-    /** See {@link _loadOriginalArchive}. */
-    private originalArchivePromise: Promise<JSZip | null> | undefined;
-    /** True while `validate()` runs; see {@link withinBaselineRun}. */
-    private baselineRunActive = false;
+    /**
+     * Everything this validator read from `--original` outside a
+     * `withinBaselineRun` scope — direct `validateAgainstXsd()` and
+     * `compareParagraphCounts()` calls memoize here so repeated direct calls
+     * share one load, and {@link forgetOriginal} drops it wholesale.
+     */
+    private outsideRunBaseline: BaselineState = {};
+
+    /**
+     * The baseline state in effect: the current run's own store inside a
+     * `validate()` invocation, the shared outside-run slot otherwise.
+     */
+    protected baselineState(): BaselineState {
+        return baselineRunStore.getStore() ?? this.outsideRunBaseline;
+    }
 
     /**
      * Run `validate()`'s checks so they share one `--original` load, starting
      * from the `--original` as it is now: a re-run on this validator never
-     * subtracts the previous run's baseline (#503).
+     * subtracts the previous run's baseline (#503), and an overlapping
+     * `validate()` on this validator never sees — let alone replaces — this
+     * run's baseline, because the archive lives in async-local state scoped
+     * to the invocation rather than on the instance (#520).
      */
     protected async withinBaselineRun<T>(run: () => Promise<T>): Promise<T> {
+        // Clear only the OUTSIDE-run cache so a post-run direct call re-reads
+        // the `--original`; this run's own reads go into its fresh store.
         this.forgetOriginal();
-        this.baselineRunActive = true;
-        try {
-            return await run();
-        } finally {
-            this.baselineRunActive = false;
-        }
+        return baselineRunStore.run({}, run);
     }
 
-    /** Drop what was read from the `--original`, so the next use reads it again (#503). */
+    /** Drop what was read from the `--original` outside a run, so the next use reads it again (#503). */
     protected forgetOriginal(): void {
-        this.originalArchivePromise = undefined;
+        this.outsideRunBaseline = {};
     }
 
     /**
@@ -1915,7 +1927,8 @@ export class BaseSchemaValidator {
      * run.
      */
     protected _loadOriginalArchive(): Promise<JSZip | null> {
-        this.originalArchivePromise ??= (async () => {
+        const state = this.baselineState();
+        state.archivePromise ??= (async () => {
             if (!this.originalFile) return null;
             let zipContent: Buffer;
             try {
@@ -1925,7 +1938,7 @@ export class BaseSchemaValidator {
             }
             return loadCentralNamedArchive(zipContent);
         })();
-        return this.originalArchivePromise;
+        return state.archivePromise;
     }
 }
 
@@ -2098,6 +2111,24 @@ export function rootIgnorableIssues(root: Element, part: string): ValidationIssu
     }
     return issues;
 }
+/**
+ * What one baseline scope reads from `--original`: the loaded archive
+ * memoized for the scope's lifetime (#481), plus the DOCX original-document
+ * root that shares that archive (#503). A scope is either one `validate()`
+ * invocation's async-local store or a validator's shared outside-run slot;
+ * two overlapping runs therefore hold separate archives (#520).
+ */
+export interface BaselineState {
+    /** See {@link BaseSchemaValidator._loadOriginalArchive}. */
+    archivePromise?: Promise<JSZip | null>;
+    /** Parsed `word/document.xml` of `--original`; see DOCXSchemaValidator. */
+    documentRoot?: Element | null;
+    /** True once loading `word/document.xml` was attempted and failed. */
+    documentRootFailed?: boolean;
+}
+
+/** Per-`validate()`-invocation baseline scope; see {@link BaselineState} (#520). */
+const baselineRunStore = new AsyncLocalStorage<BaselineState>();
 
 const IGNORABLE_UNDECLARED_MESSAGE = /^Namespace '(.+)' in Ignorable but not declared$/;
 const UNBOUND_IGNORABLE_MESSAGE = /^Unbound prefix in mc:Ignorable: (.+)$/;
