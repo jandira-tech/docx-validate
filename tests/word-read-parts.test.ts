@@ -589,7 +589,53 @@ const endnoteViaFootnote = (endnotes: string): Parts =>
         "endnotes.xml",
     );
 
-describe("wordReadParts: a reached glossary is a second story root (#539, #549)", () => {
+/** The eagerly parsed types session 19 probed from a reached glossary (#562). */
+const GLOSSARY_EAGER_SEGMENTS = ["styles", "settings", "fontTable", "webSettings", "numbering"] as const;
+type GlossaryEagerSegment = (typeof GLOSSARY_EAGER_SEGMENTS)[number];
+
+/** The file each session-19 specimen stores the part under (s19builder.mts). */
+const GLOSSARY_EAGER_FILE: Readonly<Record<GlossaryEagerSegment, string>> = {
+    styles: "styles.xml",
+    settings: "settings.xml",
+    fontTable: "fontTable.xml",
+    webSettings: "webSettings.xml",
+    numbering: "numbering.xml",
+};
+
+/** The root local name each session-19 eager part carries (`fontTable` is `w:fonts`). */
+const GLOSSARY_EAGER_ROOT: Readonly<Record<GlossaryEagerSegment, string>> = {
+    styles: "styles",
+    settings: "settings",
+    fontTable: "fonts",
+    webSettings: "webSettings",
+    numbering: "numbering",
+};
+
+/**
+ * The session-19 shape (s19builder.mts): `word/glossary/document.xml`, reached
+ * through a main-document `glossaryDocument` relationship, references no story;
+ * its own relationships part relates `word/glossary/<file>` as `rIdE` with an
+ * eager-type relationship and a matching Override.
+ */
+const eagerViaGlossary = (segment: GlossaryEagerSegment, xml: string): Parts => ({
+    ...MINIMAL_PARTS,
+    "word/glossary/document.xml": glossaryWith("", ""),
+    "word/glossary/_rels/document.xml.rels": relsPart(
+        `<Relationship Id="rIdE" Type="${R}/${segment}" Target="${GLOSSARY_EAGER_FILE[segment]}"/>`,
+    ),
+    [`word/glossary/${GLOSSARY_EAGER_FILE[segment]}`]: xml,
+    "word/_rels/document.xml.rels": (MINIMAL_PARTS["word/_rels/document.xml.rels"] as string).replace(
+        "</Relationships>",
+        `<Relationship Id="rIdG" Type="${R}/glossaryDocument" Target="glossary/document.xml"/></Relationships>`,
+    ),
+    "[Content_Types].xml": (MINIMAL_PARTS["[Content_Types].xml"] as string).replace(
+        "</Types>",
+        `<Override PartName="/word/glossary/document.xml" ContentType="${CT.glossary}"/>` +
+            `<Override PartName="/word/glossary/${GLOSSARY_EAGER_FILE[segment]}" ContentType="${CT[segment]}"/></Types>`,
+    ),
+});
+
+describe("wordReadParts: a reached glossary is a second story root (#539, #549, #562)", () => {
     // Session 16: Word 16.115 follows a glossaryDocument relationship to the
     // glossary's own relationships part and reads the header its
     // `w:docPartBody` `w:sectPr` names by r:id (`ar-header-ref-in-glossary-malformed`,
@@ -638,6 +684,42 @@ describe("wordReadParts: a reached glossary is a second story root (#539, #549)"
             );
         }
     });
+
+    it.each(GLOSSARY_EAGER_SEGMENTS)(
+        "reaches a glossary's %s even when the glossary references nothing (#562, session 19)",
+        async (segment) => {
+            // Session 19: a reached glossary parses its styles, settings,
+            // fontTable, webSettings and numbering relationships eagerly —
+            // `glossary-<segment>-malformed` gets a repair warning while the
+            // well-formed control opens clean.
+            const parts = eagerViaGlossary(segment, unclosed(`<w:${GLOSSARY_EAGER_ROOT[segment]} xmlns:w="${W}">`));
+            expect(await wordReadParts(ValidationContext.fromEntries(parts))).toContain(
+                canonicalPartName(`word/glossary/${GLOSSARY_EAGER_FILE[segment]}`),
+            );
+        },
+    );
+
+    it.each(["customXml", "theme", "glossaryDocument"] as const)(
+        "does not reach a glossary's %s (unobserved from a glossary, #562)",
+        async (segment) => {
+            const parts: Parts = {
+                ...MINIMAL_PARTS,
+                "word/glossary/document.xml": glossaryWith("", ""),
+                "word/glossary/_rels/document.xml.rels": relsPart(
+                    `<Relationship Id="rIdX" Type="${R}/${segment}" Target="unobserved.xml"/>`,
+                ),
+                "word/glossary/unobserved.xml": unclosed(`<datastore xmlns="urn:x-${segment}">`),
+                "word/_rels/document.xml.rels": (MINIMAL_PARTS["word/_rels/document.xml.rels"] as string).replace(
+                    "</Relationships>",
+                    `<Relationship Id="rIdG" Type="${R}/glossaryDocument" Target="glossary/document.xml"/></Relationships>`,
+                ),
+            };
+            const reached = await wordReadParts(ValidationContext.fromEntries(parts));
+            expect(reached).toContain(canonicalPartName("word/glossary/document.xml"));
+            expect(reached).toContain(canonicalPartName("word/glossary/_rels/document.xml.rels"));
+            expect(reached).not.toContain(canonicalPartName("word/glossary/unobserved.xml"));
+        },
+    );
 });
 
 /** One observed specimen: the malformed part, and the word-valid verdict Word 16.115 gave it. */
@@ -649,7 +731,7 @@ interface Specimen {
     /** Blocking under word-valid: Word offered recovery or refused the file. */
     readonly blocking: boolean;
     /** The XML diagnostic code the defect reports. */
-    readonly code?: "xml-syntax" | "xml-encoding";
+    readonly code?: "xml-syntax" | "xml-encoding" | "xml-undeclared-prefix";
 }
 
 const SPECIMENS: readonly Specimen[] = [
@@ -987,6 +1069,54 @@ const SPECIMENS: readonly Specimen[] = [
         part: "word/glossary/_rels/document.xml.rels",
         blocking: true,
     },
+    {
+        label: "a malformed styles part a reached glossary relates (#562, repair-warning)",
+        parts: () => eagerViaGlossary("styles", MALFORMED.styles!),
+        part: "word/glossary/styles.xml",
+        blocking: true,
+    },
+    {
+        label: "a malformed settings part a reached glossary relates (#562, repair-warning)",
+        parts: () => eagerViaGlossary("settings", MALFORMED.settings!),
+        part: "word/glossary/settings.xml",
+        blocking: true,
+    },
+    {
+        label: "a malformed fontTable part a reached glossary relates (#562, repair-warning)",
+        parts: () => eagerViaGlossary("fontTable", MALFORMED.fontTable!),
+        part: "word/glossary/fontTable.xml",
+        blocking: true,
+    },
+    {
+        label: "a malformed webSettings part a reached glossary relates (#562, repair-warning)",
+        parts: () => eagerViaGlossary("webSettings", MALFORMED.webSettings!),
+        part: "word/glossary/webSettings.xml",
+        blocking: true,
+    },
+    {
+        label: "a malformed numbering part a reached glossary relates (#562, repair-warning)",
+        parts: () => eagerViaGlossary("numbering", MALFORMED.numbering!),
+        part: "word/glossary/numbering.xml",
+        blocking: true,
+    },
+    {
+        label: "a glossary styles part declaring an unknown encoding (#562, repair-warning)",
+        parts: () =>
+            eagerViaGlossary(
+                "styles",
+                `<?xml version="1.0" encoding="x-no-such-encoding" standalone="yes"?>\n<w:styles xmlns:w="${W}"></w:styles>`,
+            ),
+        part: "word/glossary/styles.xml",
+        blocking: true,
+        code: "xml-encoding",
+    },
+    {
+        label: "a glossary settings part using an undeclared prefix (#562, repair-warning)",
+        parts: () => eagerViaGlossary("settings", `<w:settings xmlns:w="${W}"><xx:bogus/></w:settings>`),
+        part: "word/glossary/settings.xml",
+        blocking: true,
+        code: "xml-undeclared-prefix",
+    },
 ];
 
 const FOOTER_UNUSED = SPECIMENS[2]!;
@@ -998,6 +1128,7 @@ const GLOSSARY_HEADER_USED = specimenByLabel("a malformed header a glossary's se
 const GLOSSARY_COMMENTS_USED = specimenByLabel("a malformed comments part a glossary references (#549, repair-warning)");
 const GLOSSARY_RELS_BROKEN = specimenByLabel("the glossary's relationships part missing its root end tag (#549, repair-warning)");
 const GLOSSARY_HEADER_UNUSED = specimenByLabel("a malformed header a glossary relates but does not reference (#549, clean-open)");
+const GLOSSARY_STYLES_EAGER = specimenByLabel("a malformed styles part a reached glossary relates (#562, repair-warning)");
 
 describe("xml errors are Word-blocking by reachability (#437)", () => {
     it.each(SPECIMENS)("$label", { timeout: 120_000 }, async (specimen) => {
@@ -1033,6 +1164,7 @@ describe("xml errors are Word-blocking by reachability (#437)", () => {
         GLOSSARY_COMMENTS_USED,
         GLOSSARY_RELS_BROKEN,
         GLOSSARY_HEADER_UNUSED,
+        GLOSSARY_STYLES_EAGER,
     ])(
         "agrees between full, quick and named runs, packed and directory, .docx and .docm: $label",
         { timeout: 240_000 },
@@ -1158,6 +1290,26 @@ describe("xml errors are Word-blocking by reachability (#437)", () => {
             await withTempDir(async (dir) => {
                 const file = path.join(dir, "specimen.docx");
                 writeFileSync(file, await buildDocx(storyViaGlossary(segment, WELLFORMED_STORY[segment])));
+                const result = await validate(file, { profile: "word-valid" });
+                expect(result.valid).toBe(true);
+            });
+        },
+    );
+
+    it.each(GLOSSARY_EAGER_SEGMENTS)(
+        "keeps a well-formed %s part a reached glossary relates word-valid (#562 controls)",
+        { timeout: 60_000 },
+        async (segment) => {
+            // Session 19: every `glossary-<segment>-wellformed-control` opens
+            // clean in Word — the malformed part is what makes Word repair.
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "specimen.docx");
+                writeFileSync(
+                    file,
+                    await buildDocx(
+                        eagerViaGlossary(segment, `<w:${GLOSSARY_EAGER_ROOT[segment]} xmlns:w="${W}"></w:${GLOSSARY_EAGER_ROOT[segment]}>`),
+                    ),
+                );
                 const result = await validate(file, { profile: "word-valid" });
                 expect(result.valid).toBe(true);
             });
