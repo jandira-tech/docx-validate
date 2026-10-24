@@ -1,14 +1,14 @@
 # Real-Word probes, 2026-10-24
 
-Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), and what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443.
+Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, and what session 7 settled for #414, #450 and #451.
 
 - Word: Microsoft Word for Mac 16.115 (build 16.115.26100424), platform `darwin`.
 - Transport, sessions 1 and 2: `verifyInWord` (`src/lib/word-verifier.ts`). It opens each specimen by path, reads Word's window and dialog state, and never saves.
 - Transport, session 3: `neurotic_docx_bench/scripts/word_pdf.py` in its default batch mode (`--label wfv --no-check-preset`). It stages each file inside Word's container as `NNNNN__wfv__<file>`, opens it, and exports a PDF when Word reads it. When Word shows an alert, it brings Word forward, answers a repair prompt No and then the OK that follows, and logs the alert's words. A file's outcome comes only from an alert that names its staged file, never from timing (`wordpdf_outcomes.py`, reproduced at the end). The specimens' SHA-256 were checked against the files handed to the driver after each run, and no specimen was rebuilt between build and run.
-- Transport, sessions 4–6: the same driver in the same mode, run in the foreground, as its documentation requires. Single-specimen runs are attributed by the same parser. The runner and the helper that copies one specimen into its own run are reproduced at the end.
+- Transport, sessions 4–7: the same driver in the same mode, run in the foreground, as its documentation requires. Single-specimen runs are attributed by the same parser. The runner and the helper that copies one specimen into its own run are reproduced at the end.
 - Outcomes: `clean-open` means Word opened the document with no dialog. `repair-warning` means Word showed "Word found unreadable content … Do you want to recover the contents of this document?". `open-error` means Word showed "Word experienced an error trying to open the file." In session 3, `inconclusive` means Word loaded no document in two passes and no alert named the file. Word stayed alive throughout, and `~/Library/Logs/DiagnosticReports` holds no Word report from any session. In session 3 the driver itself restarted Word after runs of empty loads, as designed.
 - Specimens: built in code from `MINIMAL_PARTS` (`tests/support/minimal-docx.ts`). The `398-dup-theme-*` specimens are built from `tests/fixtures/broken/package.word-duplicate-theme.docx`, which was only read. The probe script that builds, validates and opens them is reproduced at the end of this file. No fixture or manifest was changed.
-- Validator: the `word-valid` and `strict` columns record `validate()` **at probe time**, before the policy changes the probes motivated. They are not current verdicts. Session 1 (02:18Z–02:26Z) ran against `wfv/46-plan-audit` (199c2d5b); session 2 (03:10Z–03:19Z) ran against `wfv/51-directory-staging` (ad072db8). Session 3's columns are `validate()` at `wfv/57-central-directory-names` (ab7f311d), run on the exact files Word was given. The columns for sessions 4–6 are `validate()` at `wfv/62-ct-duplicate-declaration` (3126dcfc). They were recomputed after the sessions on the exact files Word was given, and every SHA-256 was checked against its record.
+- Validator: the `word-valid` and `strict` columns record `validate()` **at probe time**, before the policy changes the probes motivated. They are not current verdicts. Session 1 (02:18Z–02:26Z) ran against `wfv/46-plan-audit` (199c2d5b); session 2 (03:10Z–03:19Z) ran against `wfv/51-directory-staging` (ad072db8). Session 3's columns are `validate()` at `wfv/57-central-directory-names` (ab7f311d), run on the exact files Word was given. The columns for sessions 4–6 are `validate()` at `wfv/62-ct-duplicate-declaration` (3126dcfc). They were recomputed after the sessions on the exact files Word was given, and every SHA-256 was checked against its record. Session 7's columns are `validate()` at `wfv/65-override-partname` before (9960b273) and after (34d0ace3) the #450 fix, recomputed the same way; the verdicts recorded at build time equal the 9960b273 ones.
 
 ## What the observations decide
 
@@ -83,6 +83,12 @@ Sessions 4–6 add:
 
     The ASCII controls `cafe.xml`, `word/cafe.xml` and `caf%20.xml` open clean. Word-valid passes all six recovery specimens.
 
+Session 7 adds:
+
+- **#414: the remaining `PartName` rules.** Each specimen is an `application/xml` `Override` for a missing part, as in sessions 4 and 5. Word offers recovery for a last segment ending with `.` (`/word/nothere.xml.`), a space, `[` and `]`, and a literal `é`. Word-valid at 9960b273 already fails all four. The `/word/nothere.xml` and `/word/no%20there.xml` controls open clean.
+- **#450: a folder segment ending with `.`.** Word opens `/word./nothere.xml` (twice, once in a run of its own), `/word/sub./nothere.xml` and `/x./nothere.xml` clean. Word-valid at 9960b273 fails all four, a false positive. At 34d0ace3 word-valid warns and passes them, and strict still fails them under [M1.9].
+- **#451: a percent-escaped non-ASCII `PartName`.** `/word/caf%C3%A9.xml` is a valid part name, but Word offers recovery, as it does for the non-ASCII stored names of #443. Word-valid and strict pass it.
+
 ## Not observed
 
 Session 1. Another session began driving Word by 02:28Z: its first log line is at 02:28:14Z, and its map file was written at 02:27:55Z. Its preflight closes every open document, so rows observed from 02:26Z on were not treated as evidence. Session 2 observed all of them again (below).
@@ -99,7 +105,7 @@ Session 3 observed every specimen listed for it after session 2, except as noted
 - Sessions 3b and 3c were started from a background shell. macOS therefore asked for AppleScript automation authorization for the driver's helper processes, and a person granted each prompt by hand. Every alert was read and attributed, so no outcome depends on this, but later sessions run in the foreground, as the driver's documentation requires.
 - No other Word driver ran during sessions 3b (05:02Z–05:18Z) or 3c (05:19Z–05:27Z). Every driver takes the same flock, and the other session's next Word batch began at 05:29Z.
 
-Sessions 4–6 ran in the foreground. Each chunk got one driver run, under `timeout`, with every idle `word_watchdog.sh` paused for that run. Before each single-specimen run, no other `word_pdf` or `word_redline` process was running.
+Sessions 4–7 ran in the foreground. Each chunk got one driver run, under `timeout`, with every idle `word_watchdog.sh` paused for that run. Before each single-specimen run, no other `word_pdf` or `word_redline` process was running.
 
 - `s4b` (06:04Z–06:10Z). Mid-run, Word asked for access to `o11.docx`, a file belonging to the other session that no specimen names. The driver granted 33 such prompts, and `rels-part-level-unknown-sibling` timed out on an AppleEvent. That row was set aside and observed alone in `s4c`. Each other `s4b` row is attributed by an alert or a manifest entry naming its staged file.
 - `s4d` (06:29Z–06:38Z). Four review Y specimens timed out on AppleEvents or loaded no document in two passes. Each was observed alone from 06:51Z to 06:52Z.
@@ -110,11 +116,14 @@ Sessions 4–6 ran in the foreground. Each chunk got one driver run, under `time
 
     One alert named `414-xml-trailing-slash-missing` (recovery). Every `s5a` row was still set aside, and all six specimens were observed alone between 06:50Z and 07:03Z. After the stop, the other session's driver took the Word lock, and its watchdog dismissed the same Force Quit report.
 
+- `s7` (07:27Z–07:28Z), `s7b` and `s7c` (07:29Z). Nothing was set aside. No `word_watchdog.sh` was running. Before `s7` and `s7b` no other `word_pdf` or `word_redline` process was running, and `s7c` started ten seconds after `s7b` ended, under the same lock.
+
 Sessions 4–6 observed `main-relationship-missing` (#380), the #414 `PartName`s with `application/xml`, an escape in a folder segment (#408), a part-level relationships part (#433) and an unreferenced malformed `customXml/item9.xml` (#437). Still to be observed:
 
 - Other parts typed by the generic Default: `settings`, `fontTable`, `numbering`, `theme`, `webSettings`, and the main part (#432).
 - A non-ASCII name that a relationship targets, rather than an unreferenced one (#443).
 - A part Word reads, such as the main part, whose local-header name differs from its central-directory name (#411, review Y).
+- A percent-escaped non-ASCII `PartName` spelled `%E9`, and one that names a stored part (#451).
 
 ## Observations
 
@@ -526,6 +535,46 @@ The driver's per-file result and every alert that named the file are in the sess
 {"run": "s6b-s6-pct-ascii-space-root", "name": "s6-pct-ascii-space-root", "sha256": "0a7d3a4ea2f152197ab748a468fb305cbd0a695a19b7cd8ee4cf0283caf5fd9e", "observedAt": "2026-10-24T06:58:30+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 {"run": "s6b-s6-pct-latin1-e9", "name": "s6-pct-latin1-e9", "sha256": "222cab2384ca8eb9620617debbee94e8480113f88fd7865c34e5f6f2c046002f", "observedAt": "2026-10-24T06:58:44.899Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__s6-pct-latin1-e9.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__s6-pct-latin1-e9.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
 {"run": "s6b-s6-utf8-flag-in-word", "name": "s6-utf8-flag-in-word", "sha256": "c9317c54a63b0094fa637a6607e3d14080a4069a1473eb3a209ed97a602e2c1b", "observedAt": "2026-10-24T06:59:04.741Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__s6-utf8-flag-in-word.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__s6-utf8-flag-in-word.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+```
+
+</details>
+
+### Session 7: 07:27Z–07:29Z, validator columns at 9960b273 and 34d0ace3
+
+Each specimen is `MINIMAL_PARTS` plus one `<Override PartName="…" ContentType="application/xml"/>` for a part that is not stored. `s7` is one batch of ten. `s7b` observes the folder-dot specimen again in a run of its own, rebuilt (so its hash differs), and `s7c` adds two more spellings of it.
+
+| Run   | Observed  | Specimen                           | Issue   | `PartName`               | SHA-256 (first 16) | Word           | word-valid at 9960b273                                       | word-valid at 34d0ace3                                       | strict at 34d0ace3                                                                                                               |
+| ----- | --------- | ---------------------------------- | ------- | ------------------------ | ------------------ | -------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `s7`  | 07:28:24Z | `s7-control-minimal`               | control | —                        | `93f757b1c393dc0d` | clean-open     | valid                                                        | valid                                                        | valid                                                                                                                            |
+| `s7`  | 07:28:24Z | `414-xml-plain-missing-control-s7` | #414    | `/word/nothere.xml`      | `5f264eed942ca251` | clean-open     | valid                                                        | valid                                                        | valid                                                                                                                            |
+| `s7`  | 07:28:21Z | `414-xml-trailing-dot-missing`     | #414    | `/word/nothere.xml.`     | `b89b5b05bda0c7e1` | repair-warning | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`)                                                                     |
+| `s7`  | 07:28:24Z | `414-xml-folder-dot-missing`       | #450    | `/word./nothere.xml`     | `4f2563f8daaa94f9` | clean-open     | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | valid                                                        | invalid (`ct-override-partname-invalid@[Content_Types].xml`)                                                                     |
+| `s7`  | 07:28:17Z | `414-xml-space-missing`            | #414    | `/word/no there.xml`     | `c9680496d636f212` | repair-warning | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`)                                                                     |
+| `s7`  | 07:28:03Z | `414-xml-bracket-missing`          | #414    | `/word/no[there].xml`    | `305a7938f2ef65a0` | repair-warning | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`, `xsd-summary@[Content_Types].xml`, `xsd-error@[Content_Types].xml`) |
+| `s7`  | 07:28:08Z | `414-xml-nonascii-missing`         | #414    | `/word/café.xml`         | `d335fa997869215c` | repair-warning | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`)                                                                     |
+| `s7`  | 07:28:24Z | `414-xml-pct20-missing-control`    | #414    | `/word/no%20there.xml`   | `c5b1d528dbf83a41` | clean-open     | valid                                                        | valid                                                        | valid                                                                                                                            |
+| `s7`  | 07:28:13Z | `414-xml-pctC3A9-missing`          | #451    | `/word/caf%C3%A9.xml`    | `ff326e134cf0bb24` | repair-warning | valid                                                        | valid                                                        | valid                                                                                                                            |
+| `s7`  | 07:28:24Z | `s7-control-minimal-end`           | control | —                        | `93f757b1c393dc0d` | clean-open     | valid                                                        | valid                                                        | valid                                                                                                                            |
+| `s7b` | 07:29:07Z | `414-xml-folder-dot-missing`       | #450    | `/word./nothere.xml`     | `4188a0942b9468a4` | clean-open     | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | valid                                                        | invalid (`ct-override-partname-invalid@[Content_Types].xml`)                                                                     |
+| `s7c` | 07:29:18Z | `414-xml-folder-dot-deep-missing`  | #450    | `/word/sub./nothere.xml` | `406bcf83d752f185` | clean-open     | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | valid                                                        | invalid (`ct-override-partname-invalid@[Content_Types].xml`)                                                                     |
+| `s7c` | 07:29:18Z | `414-xml-folder-dot-root-missing`  | #450    | `/x./nothere.xml`        | `32dea02fb35b9d4e` | clean-open     | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | valid                                                        | invalid (`ct-override-partname-invalid@[Content_Types].xml`)                                                                     |
+
+<details><summary>Raw records, session 7</summary>
+
+```jsonl
+{"run": "s7", "name": "s7-control-minimal", "sha256": "93f757b1c393dc0d3533c48736e6e1fe3ceab635d705c530ac6e1126eea185ae", "observedAt": "2026-10-24T07:28:24+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s7", "name": "414-xml-plain-missing-control-s7", "sha256": "5f264eed942ca251041e96c420880612651ad2a20e9f3ca1bb47d5716ece1606", "observedAt": "2026-10-24T07:28:24+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s7", "name": "414-xml-trailing-dot-missing", "sha256": "b89b5b05bda0c7e12f61c3e1264d59a30b5e5adbaeffce51b8a014b639165f5a", "observedAt": "2026-10-24T07:28:21.784Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00007__wfv__414-xml-trailing-dot-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00007__wfv__414-xml-trailing-dot-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s7", "name": "414-xml-folder-dot-missing", "sha256": "4f2563f8daaa94f9a4edd9d268f286f19c5929d6ebfbe48d838df7ec3f37dd50", "observedAt": "2026-10-24T07:28:24+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s7", "name": "414-xml-space-missing", "sha256": "c9680496d636f212e3d563ddcf45005fde1300fab8079c3f005c6db3b3a4e702", "observedAt": "2026-10-24T07:28:17.543Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00006__wfv__414-xml-space-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00006__wfv__414-xml-space-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s7", "name": "414-xml-bracket-missing", "sha256": "305a7938f2ef65a06ea40f93fd12aae52e327edbf9a71f8cf6065f194cb4ef63", "observedAt": "2026-10-24T07:28:03.699Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__414-xml-bracket-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__414-xml-bracket-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s7", "name": "414-xml-nonascii-missing", "sha256": "d335fa997869215c4b978686e8e0c2e288b579849fe3260a40c7b039fd3730ec", "observedAt": "2026-10-24T07:28:08.635Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00002__wfv__414-xml-nonascii-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__414-xml-nonascii-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s7", "name": "414-xml-pct20-missing-control", "sha256": "c5b1d528dbf83a41f5e7b5b35a6ba1c8b987801710c8555401fe408537d2aecf", "observedAt": "2026-10-24T07:28:24+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s7", "name": "414-xml-pctC3A9-missing", "sha256": "ff326e134cf0bb24eebf1084feced919ba6422f517c5a602fb8f98dbd3033ecb", "observedAt": "2026-10-24T07:28:13.187Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00004__wfv__414-xml-pctC3A9-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00004__wfv__414-xml-pctC3A9-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s7", "name": "s7-control-minimal-end", "sha256": "93f757b1c393dc0d3533c48736e6e1fe3ceab635d705c530ac6e1126eea185ae", "observedAt": "2026-10-24T07:28:24+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s7b", "name": "414-xml-folder-dot-missing", "sha256": "4188a0942b9468a498665c7f4f83db655ce9dd4a612e52c5d3357ed267b9eda3", "observedAt": "2026-10-24T07:29:07+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s7c", "name": "414-xml-folder-dot-deep-missing", "sha256": "406bcf83d752f1857c72552d3279a532e2f92a96dbc3c95c8443b264a8bebe56", "observedAt": "2026-10-24T07:29:18+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s7c", "name": "414-xml-folder-dot-root-missing", "sha256": "32dea02fb35b9d4ef8fc067613ce89020e1e98915f3c94101f698afaebf3361c", "observedAt": "2026-10-24T07:29:18+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 ```
 
 </details>
@@ -1330,7 +1379,7 @@ for r in out:
 
 </details>
 
-<details><summary>Sessions 4–6 specimen builders and runner</summary>
+<details><summary>Sessions 4–7 specimen builders and runner</summary>
 
 Sessions 4 and 5 add these lines to the session 3 builder above. They were built with `BUILD_DIR=<run>/src BUILD_FROM=<first specimen>`, as in session 3:
 
@@ -1679,6 +1728,65 @@ with open(new / "specimens.jsonl", "w") as out:
         shutil.copy2(Path(src) / "src" / row["file"], new / "src" / row["file"])
         out.write(json.dumps(row) + "\n")
 print(new, len(sys.argv) - 2)
+```
+
+Session 7's builder is a standalone script, run as a copy from the stack worktree root with `BUILD_DIR=<run>/src pnpm exec tsx s7builder.tmp.mts` (the `s7c` rows and the `ONLY` filter were added after `s7` ran; `s7b` and `s7c` were built with `ONLY=<specimens>`, and the builders of the `s7` rows are unchanged):
+
+```ts
+// Session 7 (2026-10-24): #414 Override PartName shapes no session has shown Word yet — a segment
+// ending with '.', and characters outside the RFC 3986 pchar set — plus grammar-valid controls.
+// Each is an application/xml Override of a missing part, as in sessions 4 and 5.
+// Run from the stack worktree root as a copy: BUILD_DIR=<chunk>/src pnpm exec tsx s7builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const P = MINIMAL_PARTS as Record<string, string>;
+const CT = P["[Content_Types].xml"];
+const override = (partName: string) =>
+    buildDocx({
+        ...P,
+        "[Content_Types].xml": CT.replace("</Types>", `<Override PartName="${partName}" ContentType="application/xml"/></Types>`),
+    });
+
+const specimens: [string, string, () => Promise<Uint8Array> | Uint8Array][] = [
+    ["s7-control-minimal", "control", () => buildDocx(P)],
+    ["414-xml-plain-missing-control-s7", "#414", () => override("/word/nothere.xml")],
+    ["414-xml-trailing-dot-missing", "#414", () => override("/word/nothere.xml.")],
+    ["414-xml-folder-dot-missing", "#414", () => override("/word./nothere.xml")],
+    ["414-xml-space-missing", "#414", () => override("/word/no there.xml")],
+    ["414-xml-bracket-missing", "#414", () => override("/word/no[there].xml")],
+    ["414-xml-nonascii-missing", "#414", () => override("/word/café.xml")],
+    ["414-xml-pct20-missing-control", "#414", () => override("/word/no%20there.xml")],
+    ["414-xml-pctC3A9-missing", "#414", () => override("/word/caf%C3%A9.xml")],
+    ["s7-control-minimal-end", "control", () => buildDocx(P)],
+    // s7c: the folder-dot shape opened clean in s7; confirm it alone and in a deeper folder.
+    ["414-xml-folder-dot-deep-missing", "#414", () => override("/word/sub./nothere.xml")],
+    ["414-xml-folder-dot-root-missing", "#414", () => override("/x./nothere.xml")],
+];
+const only = new Set((process.env.ONLY ?? "").split(",").filter(Boolean));
+
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    if (only.size > 0 && !only.has(name)) continue;
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        const r = await validate(path.join(dir, file), { profile });
+        return { valid: r.valid, errors: r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`) };
+    };
+    const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid}`,
+    );
+}
 ```
 
 </details>

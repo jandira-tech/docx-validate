@@ -33,6 +33,7 @@ import { mergeResults } from "../../../lib/types";
 import { getElementsByTagNameNSAll, parseXmlBytes } from "../../../lib/xml-helpers";
 import type { BaseSchemaValidatorOptions } from "./base";
 import { BaseSchemaValidator, OFFICE_RELATIONSHIPS_NAMESPACE, walkFiles, withoutRestatedIgnorablePrefixes } from "./base";
+import { contextFromDirectory } from "../package-context";
 
 export const PRESENTATIONML_NAMESPACE = "http://schemas.openxmlformats.org/presentationml/2006/main";
 
@@ -65,6 +66,9 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
             return xml;
         }
 
+        const malformed = new Set(
+            xml.issues.flatMap((issue) => (issue.severity === "error" && issue.path !== undefined ? [issue.path] : [])),
+        );
         const checks = [
             xml,
             await this.validateNamespaces(),
@@ -74,6 +78,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
             await this.validateRelationshipElements(),
             await this.validateSlideLayoutIds(),
             await this.validateContentTypes(),
+            await this.validateOverridePartNames(contextFromDirectory(this.unpackedDir), "pptx", malformed),
             await this.validateAgainstXsd(),
             await this.validateNotesSlideReferences(),
             await this.validateAllRelationshipIds(),

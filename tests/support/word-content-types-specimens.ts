@@ -14,6 +14,12 @@ interface Specimen {
     name: string;
     parts: Readonly<Record<string, string>>;
     rejected: boolean;
+    /**
+     * The specimen declares an `Override` whose `PartName` is not a valid
+     * OPC part name (#414), so the package is invalid on that account too,
+     * whatever the content-type scope.
+     */
+    malformedPartName?: boolean;
 }
 
 const append = (declarations: string): string => TYPES.replace("</Types>", `${declarations}</Types>`);
@@ -47,6 +53,8 @@ export const contentTypeSpecimens: readonly Specimen[] = [
                 ),
             },
             rejected,
+            // `%73` escapes the unreserved `s`, so it is not a valid part name (#414).
+            malformedPartName: partName === "/word/%73tyles.xml",
         }));
     }),
     ...[false, true].map((rejected) => ({
@@ -82,6 +90,8 @@ export const contentTypeSpecimens: readonly Specimen[] = [
             ),
         },
         rejected: false,
+        // The escaped unreserved character is not a valid part name (#414).
+        malformedPartName: true,
     },
     {
         name: "Default still covers one part when another has an Override",
@@ -97,5 +107,7 @@ export const contentTypeSpecimens: readonly Specimen[] = [
         name: "reserved escape does not name a stored part",
         parts: { ...MINIMAL_PARTS, [STREAM]: append(override("/word%2Fstyles.xml", "invalid-type")) },
         rejected: false,
+        // The escaped separator is not a valid part name (#414).
+        malformedPartName: true,
     },
 ];

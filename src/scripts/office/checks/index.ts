@@ -35,6 +35,7 @@ import { wordLinkWithoutNamespaceCheck, wordUnknownElementCheck } from "./word-u
 import { wordMarkupCompatibilityCheck } from "./word-markup-compatibility";
 import { wordDocumentRootCheck, wordMainDocumentPartCheck } from "./word-document-root";
 import { ctDuplicateDeclarationCheck, wordContentTypeInvalidCheck } from "./word-content-types";
+import { ctOverridePartnameInvalidCheck } from "./ct-override-partname";
 import { wordDrawingScalarWhitespaceCheck, wordDrawingArcRadiusCheck, wordDrawingExtentNegativeCheck } from "./word-drawing-values";
 import { wordEmptyDrawingCheck, wordAnchorMissingAttributeCheck, wordPositionOffsetAndAlignCheck } from "./word-drawing-anchors";
 import { wordCellEndsWithTableCheck } from "./word-cell-ending";
@@ -123,6 +124,7 @@ export function createDefaultCheckRegistry(): CheckRegistry {
         opcPartNameEscapedSlashCheck,
         xmlSyntaxCheck,
         ctDuplicateDeclarationCheck,
+        ctOverridePartnameInvalidCheck,
         commentMarkersCheck,
         commentThreadingCheck,
         ...WORD_RULE_CHECKS,
