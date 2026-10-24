@@ -932,29 +932,124 @@ describe("validation contract: a Word-read part typed by a generic XML type (#51
     }
 });
 
-describe("validation contract: a MIME parameter on a Word-read part's content type (#540)", { timeout: 120000 }, () => {
+describe("validation contract: an inexact content type on a Word-read part (#550)", { timeout: 120000 }, () => {
     const STREAM = MINIMAL_PARTS["[Content_Types].xml"]!;
+    const RELS = MINIMAL_PARTS["word/_rels/document.xml.rels"]!;
     const DOCM = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
     const STYLES = "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml";
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    const HEADER = "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml";
+    const CODE = "word-part-content-type-inexact";
 
-    const specimen = (from: string, to: string) => buildDocx({ ...MINIMAL_PARTS, "[Content_Types].xml": STREAM.replace(from, to) });
+    const specimen = (stream: string, extra: Record<string, string> = {}, rels: string = RELS) =>
+        buildDocx({ ...MINIMAL_PARTS, ...extra, "word/_rels/document.xml.rels": rels, "[Content_Types].xml": stream });
+
+    /** A settings, fontTable or webSettings part related from the main document, its Override carrying `contentType` (session 17's `docPart`). */
+    const docPart = (segment: string, file: string, root: string, contentType: string) => ({
+        stream: STREAM.replace("</Types>", `<Override PartName="/word/${file}" ContentType="${contentType}"/></Types>`),
+        extra: { [`word/${file}`]: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:${root} xmlns:w="${W}"/>` },
+        rels: RELS.replace("</Relationships>", `<Relationship Id="rId9" Type="${R}/${segment}" Target="${file}"/></Relationships>`),
+        part: `word/${file}`,
+    });
+
+    const docPartSpecimen = (segment: string, file: string, root: string, contentType: string) => {
+        const typed = docPart(segment, file, root, contentType);
+        return specimen(typed.stream, typed.extra, typed.rels);
+    };
+
+    /** A header the main document references through `w:headerReference`, its Override carrying `contentType` (session 17's `headerInMain`). */
+    const headerInMain = (contentType: string) => ({
+        stream: STREAM.replace("</Types>", `<Override PartName="/word/header9.xml" ContentType="${contentType}"/></Types>`),
+        extra: {
+            "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(`xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`).replace(
+                "<w:sectPr>",
+                `<w:sectPr><w:headerReference w:type="default" r:id="rIdH"/>`,
+            ),
+            "word/header9.xml": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header</w:t></w:r></w:p></w:hdr>`,
+        },
+        rels: RELS.replace("</Relationships>", `<Relationship Id="rIdH" Type="${R}/header" Target="header9.xml"/></Relationships>`),
+        part: "word/header9.xml",
+    });
+
+    const headerSpecimen = (contentType: string) => {
+        const typed = headerInMain(contentType);
+        return specimen(typed.stream, typed.extra, typed.rels);
+    };
 
     it.each([
         {
             label: "the main part's Override carrying the main type plus `; charset=utf-8`",
-            bytes: specimen(`ContentType="${DOCM}"`, `ContentType="${DOCM}; charset=utf-8"`),
-            code: "word-part-content-type-parameter",
+            bytes: specimen(STREAM.replace(`ContentType="${DOCM}"`, `ContentType="${DOCM}; charset=utf-8"`)),
+            code: CODE,
             part: "word/document.xml",
         },
         {
             label: "the styles Override carrying the styles type plus `; charset=utf-8`",
-            bytes: specimen(`ContentType="${STYLES}"`, `ContentType="${STYLES}; charset=utf-8"`),
-            code: "word-part-content-type-parameter",
+            bytes: specimen(STREAM.replace(`ContentType="${STYLES}"`, `ContentType="${STYLES}; charset=utf-8"`)),
+            code: CODE,
+            part: "word/styles.xml",
+        },
+        {
+            label: "the settings Override carrying the settings type plus `; charset=utf-8` (s17b)",
+            bytes: docPartSpecimen(
+                "settings",
+                "settings.xml",
+                "settings",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml; charset=utf-8",
+            ),
+            code: CODE,
+            part: "word/settings.xml",
+        },
+        {
+            label: "the fontTable Override carrying the fontTable type plus `; charset=utf-8` (s17b)",
+            bytes: docPartSpecimen(
+                "fontTable",
+                "fontTable.xml",
+                "fonts",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml; charset=utf-8",
+            ),
+            code: CODE,
+            part: "word/fontTable.xml",
+        },
+        {
+            label: "the webSettings Override carrying the webSettings type plus `; charset=utf-8` (s17b)",
+            bytes: docPartSpecimen(
+                "webSettings",
+                "webSettings.xml",
+                "webSettings",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.webSettings+xml; charset=utf-8",
+            ),
+            code: CODE,
+            part: "word/webSettings.xml",
+        },
+        {
+            label: "a referenced header's Override carrying the header type plus `; charset=utf-8` (s17b)",
+            bytes: headerSpecimen(`${HEADER}; charset=utf-8`),
+            code: CODE,
+            part: "word/header9.xml",
+        },
+        {
+            label: "the main part's Override carrying the main type plus `;charset=utf-8`, no space (s17c)",
+            bytes: specimen(STREAM.replace(`ContentType="${DOCM}"`, `ContentType="${DOCM};charset=utf-8"`)),
+            code: CODE,
+            part: "word/document.xml",
+        },
+        {
+            label: "the main part's Override carrying the main type plus `; foo=bar` (s17c)",
+            bytes: specimen(STREAM.replace(`ContentType="${DOCM}"`, `ContentType="${DOCM}; foo=bar"`)),
+            code: CODE,
+            part: "word/document.xml",
+        },
+        {
+            label: "the styles Override carrying the styles type plus a trailing space (s17c)",
+            bytes: specimen(STREAM.replace(`ContentType="${STYLES}"`, `ContentType="${STYLES} "`)),
+            code: CODE,
             part: "word/styles.xml",
         },
         {
             label: "the styles Override to `application/xml; charset=utf-8`",
-            bytes: specimen(`ContentType="${STYLES}"`, 'ContentType="application/xml; charset=utf-8"'),
+            bytes: specimen(STREAM.replace(`ContentType="${STYLES}"`, 'ContentType="application/xml; charset=utf-8"')),
             code: "word-part-content-type-generic",
             part: "word/styles.xml",
         },
@@ -972,41 +1067,63 @@ describe("validation contract: a MIME parameter on a Word-read part's content ty
         60_000,
     );
 
-    it("the un-parameterized controls stay valid under every profile", async () => {
-        const bytes = await buildDocx(MINIMAL_PARTS);
-        for (const profile of ["word-valid", "lenient", "strict"] as const) {
-            const result = await validateBytes(bytes, profile);
-            expect(result.valid, profile).toBe(true);
-            expect(
-                result.issues.filter(
-                    (issue) => issue.code === "word-part-content-type-generic" || issue.code === "word-part-content-type-parameter",
-                ),
-                profile,
-            ).toEqual([]);
+    it("the exact and upper-case controls stay valid under every profile", async () => {
+        for (const [label, bytes] of [
+            ["the minimal package", await buildDocx(MINIMAL_PARTS)],
+            [
+                "the main part's Override in upper case (s17c)",
+                await specimen(STREAM.replace(`ContentType="${DOCM}"`, `ContentType="${DOCM.toUpperCase()}"`)),
+            ],
+            [
+                "the styles Override in upper case (s17c)",
+                await specimen(STREAM.replace(`ContentType="${STYLES}"`, `ContentType="${STYLES.toUpperCase()}"`)),
+            ],
+        ] as const) {
+            for (const profile of ["word-valid", "lenient", "strict"] as const) {
+                const result = await validateBytes(bytes, profile);
+                expect(result.valid, `${label} ${profile}`).toBe(true);
+                expect(
+                    result.issues.filter(
+                        (issue) => issue.code === "word-part-content-type-generic" || issue.code === "word-part-content-type-inexact",
+                    ),
+                    `${label} ${profile}`,
+                ).toEqual([]);
+            }
         }
     }, 60_000);
 
     it("partial runs agree with the full run (#381)", async () => {
         await withTempDir(async (dir) => {
-            const file = path.join(dir, "parameter.docx");
-            writeFileSync(file, await specimen(`ContentType="${DOCM}"`, `ContentType="${DOCM}; charset=utf-8"`));
-            const code = "word-part-content-type-parameter";
-            const word = await validate(file, { profile: "word-valid" });
-            expect(word.valid).toBe(false);
-            const strict = await validate(file, { profile: "strict" });
-            expect(strict.valid && !word.valid, "strict success must imply word-valid success").toBe(false);
-            for (const selection of [{ quick: true }, { checks: [code] }, { checks: ["content-types"] }]) {
-                const partial = await validate(file, { profile: "word-valid", ...selection });
-                const tag = JSON.stringify(selection);
-                expect(partial.valid, tag).toBe(word.valid);
-                expect(
-                    partial.issues.filter((issue) => issue.code === code),
-                    tag,
-                ).toEqual(word.issues.filter((issue) => issue.code === code));
-                expect(
-                    [...errorCodes(partial.issues)].every((error) => errorCodes(word.issues).has(error)),
-                    tag,
-                ).toBe(true);
+            const code = CODE;
+            const shapes: readonly [string, string, Record<string, string>, string][] = [
+                ["parameter", STREAM.replace(`ContentType="${DOCM}"`, `ContentType="${DOCM}; charset=utf-8"`), {}, RELS],
+                [
+                    "header",
+                    headerInMain(`${HEADER}; charset=utf-8`).stream,
+                    headerInMain(`${HEADER}; charset=utf-8`).extra,
+                    headerInMain(`${HEADER}`).rels,
+                ],
+            ];
+            for (const [name, stream, extra, rels] of shapes) {
+                const file = path.join(dir, `${name}.docx`);
+                writeFileSync(file, await specimen(stream, extra, rels));
+                const word = await validate(file, { profile: "word-valid" });
+                expect(word.valid, name).toBe(false);
+                const strict = await validate(file, { profile: "strict" });
+                expect(strict.valid && !word.valid, `${name}: strict success must imply word-valid success`).toBe(false);
+                for (const selection of [{ quick: true }, { checks: [code] }, { checks: ["content-types"] }]) {
+                    const partial = await validate(file, { profile: "word-valid", ...selection });
+                    const tag = `${name} ${JSON.stringify(selection)}`;
+                    expect(partial.valid, tag).toBe(word.valid);
+                    expect(
+                        partial.issues.filter((issue) => issue.code === code),
+                        tag,
+                    ).toEqual(word.issues.filter((issue) => issue.code === code));
+                    expect(
+                        [...errorCodes(partial.issues)].every((error) => errorCodes(word.issues).has(error)),
+                        tag,
+                    ).toBe(true);
+                }
             }
         });
     }, 60_000);

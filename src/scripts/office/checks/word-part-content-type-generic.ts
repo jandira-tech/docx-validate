@@ -110,7 +110,7 @@ export const MAIN_DOCUMENT_CONTENT_TYPES = [
  * (#506). A main-document relationship of one of these types is judged under
  * strict only.
  */
-const SPEC_ONLY_CONTENT_TYPES: ReadonlyMap<string, string> = new Map([
+export const SPEC_ONLY_CONTENT_TYPES: ReadonlyMap<string, string> = new Map([
     ["numbering", "application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"],
     ["header", "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"],
     ["footer", "application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"],
