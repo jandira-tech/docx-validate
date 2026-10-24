@@ -113,6 +113,10 @@ export const isWordBlockingIssue = (issue: ValidationIssue): boolean => {
         // backslash, and two content-types streams (#351; evidence in
         // docs/plans/evidence/word-probes-2026-10-24.md).
         case "opc-equivalent-part-names":
+        // Word 16.115 offers recovery even for an unreferenced item whose
+        // stored name escapes an unreserved character (#408; evidence in
+        // docs/plans/evidence/word-probes-2026-10-24.md).
+        case "opc-part-name-escaped-unreserved":
             return true;
         // NB: comment-orphan-start/end and comment-marker-missing are NOT
         // promoted here. Empirically Word TOLERATES an orphan comment-range

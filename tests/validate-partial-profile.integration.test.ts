@@ -269,7 +269,7 @@ describe("a partial run applies its profile's policy (#381)", { timeout: 120_000
 
         expect(result.valid).toBe(true);
         expect(result.issues.filter((issue) => issue.code === "word-row-without-cell")).toEqual([]);
-        expect(result.metadata?.executedChecks).toEqual(["opc-equivalent-part-names", "xml-syntax"]);
+        expect(result.metadata?.executedChecks).toEqual(["opc-equivalent-part-names", "opc-part-name-escaped-unreserved", "xml-syntax"]);
         expect(result.metadata?.omittedChecks).toEqual(expect.arrayContaining(["word-row-without-cell", "zip-bytes-after-eocd"]));
         expect(errorCodes((await validate(ROW_WITHOUT_CELL, { profile: "lenient" })).issues)).not.toContain("word-row-without-cell");
     });
@@ -626,6 +626,25 @@ describe("word-valid rejects a main part Word cannot decode (#397)", { timeout: 
                 const result = await validate(file, { profile: "word-valid", ...selection });
 
                 expect(result.valid, JSON.stringify(selection)).toBe(true);
+            }
+        });
+    });
+});
+
+describe("M1.8 selection parity (#408, #381)", { timeout: 120_000 }, () => {
+    it.each(["word-valid", "lenient"] as const)("keeps named, package and quick findings equal to full %s findings", async (profile) => {
+        await withTempDir(async (dir) => {
+            const code = "opc-part-name-escaped-unreserved";
+            const file = path.join(dir, "escaped.docx");
+            writeFileSync(file, await buildDocx({ ...MINIMAL_PARTS, "word/%78tra.xml": "<root/>" }));
+            const full = await validate(file, { profile });
+            const issues = full.issues.filter((issue) => issue.code === code);
+            expect(issues).toHaveLength(1);
+            for (const selection of [{ checks: [code] }, { checks: ["package"] }, { quick: true }]) {
+                const partial = await validate(file, { profile, ...selection });
+                expect(partial.issues.filter((issue) => issue.code === code)).toEqual(issues);
+                if (full.valid) expect(partial.valid).toBe(true);
+                expect(errorPairs(full.issues)).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
             }
         });
     });

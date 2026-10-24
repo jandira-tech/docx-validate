@@ -155,6 +155,7 @@ describe("quick mode runs the common-defect preset and discloses its omissions",
             "zip-eocd-comment-overrun",
             // The package group's stored-name diagnosis runs in quick too (#351).
             "opc-equivalent-part-names",
+            "opc-part-name-escaped-unreserved",
             "xml-syntax",
             "word-grid-column-attributes",
             "word-cell-margin-order",
@@ -387,5 +388,27 @@ describe("--verify-word asks Microsoft Word about the exact bytes", { timeout: 1
 
         expect(seen).toHaveLength(1);
         expect(Buffer.from(seen[0] as Uint8Array).equals(bytes)).toBe(true);
+    });
+});
+
+describe("M1.8 profile policy (#408)", { timeout: 120_000 }, () => {
+    it.each(["word-valid", "lenient", "strict"] as const)("reports an escaped-only main part under %s", async (profile) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "escaped-main.docx");
+            const parts = Object.fromEntries(
+                Object.entries(MINIMAL_PARTS).map(([name, text]) => [name === "word/document.xml" ? "word/%64ocument.xml" : name, text]),
+            );
+            writeFileSync(file, await buildDocx(parts));
+            const result = await validate(file, { profile });
+            expect(result.issues).toContainEqual(
+                expect.objectContaining({
+                    code: "opc-part-name-escaped-unreserved",
+                    path: "word/%64ocument.xml",
+                    severity: profile === "lenient" ? "warning" : "error",
+                }),
+            );
+            expect(result.valid).toBe(profile === "lenient");
+            expect(result.metadata?.executedChecks).toContain("opc-part-name-escaped-unreserved");
+        });
     });
 });

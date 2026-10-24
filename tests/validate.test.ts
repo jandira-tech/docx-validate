@@ -569,6 +569,18 @@ describe("validate startup probe", () => {
 
 // Packed integration regressions, all specimens generated without fixture edits.
 describe("packed OPC-equivalent relationships parts (#398)", () => {
+    // A full run also reports an escaped spelling under OPC [M1.8] (#408).
+    const escapedNameFindings = (name: string) =>
+        /%[0-9a-f]{2}/i.test(name)
+            ? [
+                  {
+                      code: "opc-part-name-escaped-unreserved",
+                      message: `OPC [M1.8] forbids percent-encoded unreserved characters in stored name: ${JSON.stringify(name)}.`,
+                      path: name,
+                      severity: "error",
+                  },
+              ]
+            : [];
     it.each([
         ["theme", false],
         ["theme", true],
@@ -602,13 +614,14 @@ describe("packed OPC-equivalent relationships parts (#398)", () => {
             for (const extension of ["RELS", "%72els", "%52ELS"]) {
                 const variant = await run(extension);
                 expect(variant.valid).toBe(control.valid);
-                expect(variant.issues).toEqual(
-                    control.issues.map((issue) => ({
+                expect(variant.issues).toEqual([
+                    ...control.issues.map((issue) => ({
                         ...issue,
                         ...(issue.path === "word/_rels/document.xml.rels" ? { path: `word/_rels/document.xml.${extension}` } : {}),
                         message: issue.message.replaceAll("document.xml.rels", `document.xml.${extension}`),
                     })),
-                );
+                    ...(selected ? [] : escapedNameFindings(`word/_rels/document.xml.${extension}`)),
+                ]);
             }
         });
     });
@@ -630,12 +643,13 @@ describe("packed OPC-equivalent relationships parts (#398)", () => {
             );
             const variant = await run(extension);
             expect(variant.valid).toBe(control.valid);
-            expect(variant.issues).toEqual(
-                control.issues.map((issue) => ({
+            expect(variant.issues).toEqual([
+                ...control.issues.map((issue) => ({
                     ...issue,
                     ...(issue.path === "word/notes.rels" ? { path: `word/notes.${extension}` } : {}),
                 })),
-            );
+                ...escapedNameFindings(`word/notes.${extension}`),
+            ]);
         });
     });
 

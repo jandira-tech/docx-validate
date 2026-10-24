@@ -114,6 +114,10 @@ const isUnreservedAscii = (code: number): boolean =>
     code === 0x5f ||
     code === 0x7e;
 
+/** OPC [M1.8]: stored name segments must not percent-encode RFC 3986 unreserved characters. */
+export const hasEscapedUnreservedCharacter = (name: string): boolean =>
+    Array.from(name.matchAll(/%([0-9a-f]{2})/gi)).some((match) => isUnreservedAscii(Number.parseInt(match[1]!, 16)));
+
 /**
  * `pchar` (RFC 3986 §3.3: unreserved / pct-encoded / sub-delims / ":" / "@")
  * plus the "/" separator of the hierarchical part name.
