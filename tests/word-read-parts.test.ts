@@ -48,12 +48,18 @@ const CT = {
     footer: "application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml",
     comments: "application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml",
     footnotes: "application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml",
+    header: "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml",
+    endnotes: "application/vnd.openxmlformats-officedocument.wordprocessingml.endnotes+xml",
+    glossary: "application/vnd.openxmlformats-officedocument.wordprocessingml.document.glossary+xml",
     theme: "application/vnd.openxmlformats-officedocument.theme+xml",
     generic: "application/xml",
 } as const;
 
 /** "Malformed" throughout: the root element is left unclosed (session 9a). */
 const unclosed = (rootOpen: string): string => `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n${rootOpen}`;
+
+/** The session 15 spelling: the part is cut before its root end tag, so it does not parse. */
+const withoutRootEndTag = (xml: string): string => xml.slice(0, xml.lastIndexOf("</"));
 
 const MALFORMED: Readonly<Record<string, string>> = {
     document: unclosed(`<w:document xmlns:w="${W}"><w:body><w:p><w:r><w:t>x</w:t>`),
@@ -66,6 +72,8 @@ const MALFORMED: Readonly<Record<string, string>> = {
     header: unclosed(`<w:hdr xmlns:w="${W}"><w:p>`),
     comments: unclosed(`<w:comments xmlns:w="${W}">`),
     footnotes: unclosed(`<w:footnotes xmlns:w="${W}">`),
+    endnotes: unclosed(`<w:endnotes xmlns:w="${W}">`),
+    glossary: unclosed(`<w:glossaryDocument xmlns:w="${W}">`),
     theme: unclosed(`<a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="t">`),
     customXml: unclosed(`<datastore xmlns="urn:x-custom">`),
     xtra: unclosed(`<w:settings xmlns:w="${W}">`),
@@ -110,10 +118,36 @@ const documentUsingComment = (): string =>
 const documentUsingFootnote = (): string =>
     (MINIMAL_PARTS["word/document.xml"] as string).replace("<w:r><w:t>Hello</w:t></w:r>", '<w:r><w:footnoteReference w:id="1"/></w:r>');
 
+/** The main document using a header (`w:headerReference r:id` in `w:sectPr`). */
+const documentUsingHeader = (id: string): string =>
+    withRNamespace(MINIMAL_PARTS["word/document.xml"] as string).replace(
+        "<w:sectPr>",
+        `<w:sectPr><w:headerReference w:type="default" r:id="${id}"/>`,
+    );
+
+/** The main document using an endnote (`w:endnoteReference` in a run). */
+const documentUsingEndnote = (): string =>
+    (MINIMAL_PARTS["word/document.xml"] as string).replace(
+        "<w:r><w:t>Hello</w:t></w:r>",
+        '<w:r><w:t>Hello</w:t></w:r><w:r><w:endnoteReference w:id="1"/></w:r>',
+    );
+
+/** A well-formed header part, the shape of session 15's clean-open control. */
+const WELLFORMED_HEADER = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header</w:t></w:r></w:p></w:hdr>`;
+
+/** A part stored outside word/, named by a main-document relationship with its own Override; `doc` replaces the main document when given. */
+const outsideWordPart = (stored: string, type: string, contentType: string, xml: string, doc?: string): Parts =>
+    withDocRel(
+        withOverride({ ...MINIMAL_PARTS, ...(doc ? { "word/document.xml": doc } : {}), [stored]: xml }, stored, contentType),
+        "rId9",
+        type,
+        path.posix.relative("word", stored),
+    );
+
 describe("wordReadParts (#437)", () => {
     it("reaches the main document wherever it is stored", async () => {
         expect(await wordReadParts(ValidationContext.fromEntries(movedOutOfWord()))).toEqual(
-            new Set(["xdocs/document.xml", "xdocs/styles.xml"]),
+            new Set(["xdocs/document.xml", "xdocs/styles.xml", "xdocs/_rels/document.xml.rels"]),
         );
     });
 
@@ -170,14 +204,13 @@ describe("wordReadParts (#437)", () => {
         expect(await wordReadParts(ValidationContext.fromEntries(parts))).toContain(canonicalPartName("word/footer1.xml"));
     });
 
-    it.each([
-        ["theme", `${R}/theme`, "word/theme1.xml", MALFORMED.theme!],
-        ["header", `${R}/header`, "word/header1.xml", MALFORMED.header!],
-        ["chart", `${R}/chart`, "word/charts/chart1.xml", MALFORMED.styles!],
-    ] as const)("still reaches an unobserved %s relationship target under word/", async (_label, type, part, malformed) => {
-        const parts = withDocRel({ ...MINIMAL_PARTS, [part]: malformed }, "rId9", type, path.posix.relative("word", part));
-        expect(await wordReadParts(ValidationContext.fromEntries(parts))).toContain(canonicalPartName(part));
-    });
+    it.each([["chart", `${R}/chart`, "word/charts/chart1.xml", MALFORMED.styles!]] as const)(
+        "still reaches an unobserved %s relationship target under word/",
+        async (_label, type, part, malformed) => {
+            const parts = withDocRel({ ...MINIMAL_PARTS, [part]: malformed }, "rId9", type, path.posix.relative("word", part));
+            expect(await wordReadParts(ValidationContext.fromEntries(parts))).toContain(canonicalPartName(part));
+        },
+    );
 
     it("reaches a Microsoft-namespace relationship target from any part's relationships", async () => {
         const settings = unclosed(`<w:settings xmlns:w="${W}" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml">`);
@@ -272,6 +305,119 @@ describe("wordReadParts (#437)", () => {
     it("returns nothing when the package relationships part does not parse", async () => {
         const parts: Parts = { ...MINIMAL_PARTS, "_rels/.rels": "<Relationships" };
         expect(await wordReadParts(ValidationContext.fromEntries(parts))).toEqual(new Set());
+    });
+});
+
+describe("wordReadParts: the main document's own relationships part (#514)", () => {
+    it("reaches the main document's relationships part itself", async () => {
+        expect(await wordReadParts(ValidationContext.fromEntries(MINIMAL_PARTS))).toContain(
+            canonicalPartName("word/_rels/document.xml.rels"),
+        );
+    });
+
+    it("reaches it wherever the main document is stored", async () => {
+        expect(await wordReadParts(ValidationContext.fromEntries(movedOutOfWord()))).toContain(
+            canonicalPartName("xdocs/_rels/document.xml.rels"),
+        );
+    });
+
+    it("finds the sidecar by OPC part-name equivalence", async () => {
+        const { "word/_rels/document.xml.rels": _stored, ...rest } = MINIMAL_PARTS;
+        const parts: Parts = { ...rest, "WORD/_RELS/DOCUMENT.XML.RELS": MINIMAL_PARTS["word/_rels/document.xml.rels"]! };
+        expect(await wordReadParts(ValidationContext.fromEntries(parts))).toContain(canonicalPartName("word/_rels/document.xml.rels"));
+    });
+
+    it("keeps the sidecar reached when it does not parse", async () => {
+        const parts: Parts = { ...MINIMAL_PARTS, "word/_rels/document.xml.rels": "" };
+        expect(await wordReadParts(ValidationContext.fromEntries(parts))).toContain(canonicalPartName("word/_rels/document.xml.rels"));
+    });
+
+    it("does not reach another part's relationships part", async () => {
+        const parts: Parts = {
+            ...MINIMAL_PARTS,
+            "word/_rels/styles.xml.rels": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="${RELS_NS}"/>`,
+        };
+        expect(await wordReadParts(ValidationContext.fromEntries(parts))).not.toContain(canonicalPartName("word/_rels/styles.xml.rels"));
+    });
+});
+
+describe("wordReadParts: header, endnotes, theme and glossaryDocument (#516)", () => {
+    it.each([
+        ["header", MALFORMED.header!, documentUsingHeader("rId9"), "word/header1.xml", `${R}/header`],
+        ["endnotes", MALFORMED.endnotes!, documentUsingEndnote(), "word/endnotes.xml", `${R}/endnotes`],
+    ] as const)("reaches a lazily parsed %s part only when the document uses it", async (_segment, malformed, document, part, type) => {
+        const related = withDocRel(
+            { ...MINIMAL_PARTS, "word/document.xml": document, [part]: malformed },
+            "rId9",
+            type,
+            path.posix.basename(part),
+        );
+        expect(await wordReadParts(ValidationContext.fromEntries(related)), "used").toContain(canonicalPartName(part));
+
+        const unused = withDocRel({ ...MINIMAL_PARTS, [part]: malformed }, "rId9", type, path.posix.basename(part));
+        expect(await wordReadParts(ValidationContext.fromEntries(unused)), "related but unused").not.toContain(canonicalPartName(part));
+    });
+
+    it.each([
+        ["theme", MALFORMED.theme!, "word/theme1.xml", `${R}/theme`],
+        ["glossaryDocument", MALFORMED.glossary!, "word/glossary.xml", `${R}/glossaryDocument`],
+    ] as const)("eagerly reaches a %s part the main document relates, used or not", async (_segment, malformed, part, type) => {
+        const parts = withDocRel({ ...MINIMAL_PARTS, [part]: malformed }, "rId9", type, path.posix.relative("word", part));
+        expect(await wordReadParts(ValidationContext.fromEntries(parts))).toContain(canonicalPartName(part));
+    });
+
+    it("reaches the four types wherever they are stored", async () => {
+        const document = withRNamespace(documentUsingEndnote()).replace(
+            "<w:sectPr>",
+            `<w:sectPr><w:headerReference w:type="default" r:id="rId9"/>`,
+        );
+        const added = [
+            `<Relationship Id="rId9" Type="${R}/header" Target="../hdr/header1.xml"/>`,
+            `<Relationship Id="rId10" Type="${R}/endnotes" Target="../en/endnotes.xml"/>`,
+            `<Relationship Id="rId11" Type="${R}/theme" Target="../th/theme1.xml"/>`,
+            `<Relationship Id="rId12" Type="${R}/glossaryDocument" Target="../g/glossary.xml"/>`,
+        ].join("");
+        const parts: Parts = {
+            ...MINIMAL_PARTS,
+            "word/document.xml": document,
+            "word/_rels/document.xml.rels": (MINIMAL_PARTS["word/_rels/document.xml.rels"] as string).replace(
+                "</Relationships>",
+                `${added}</Relationships>`,
+            ),
+            "hdr/header1.xml": MALFORMED.header!,
+            "en/endnotes.xml": MALFORMED.endnotes!,
+            "th/theme1.xml": MALFORMED.theme!,
+            "g/glossary.xml": MALFORMED.glossary!,
+        };
+        const reached = await wordReadParts(ValidationContext.fromEntries(parts));
+        expect([...reached]).toEqual(
+            expect.arrayContaining(["hdr/header1.xml", "en/endnotes.xml", "th/theme1.xml", "g/glossary.xml"].map(canonicalPartName)),
+        );
+    });
+
+    it("keeps a lazily parsed header reached when the main document does not parse", async () => {
+        const parts = withDocRel(
+            { ...MINIMAL_PARTS, "word/document.xml": MALFORMED.document!, "word/header1.xml": MALFORMED.header! },
+            "rId9",
+            `${R}/header`,
+            "header1.xml",
+        );
+        expect(await wordReadParts(ValidationContext.fromEntries(parts))).toContain(canonicalPartName("word/header1.xml"));
+    });
+
+    it("does not reach a header named only from another part's relationships", async () => {
+        // header is an observed type now, so the word/-folder rule no longer
+        // covers it; like footer, it is reached only from the main document.
+        const parts: Parts = {
+            ...MINIMAL_PARTS,
+            "word/_rels/styles.xml.rels":
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+                `<Relationships xmlns="${RELS_NS}">` +
+                `<Relationship Id="rId9" Type="${R}/header" Target="header2.xml"/>` +
+                `</Relationships>`,
+            "word/header2.xml": MALFORMED.header!,
+        };
+        expect(await wordReadParts(ValidationContext.fromEntries(parts))).not.toContain(canonicalPartName("word/header2.xml"));
     });
 });
 
@@ -481,7 +627,7 @@ const SPECIMENS: readonly Specimen[] = [
         code: "xml-encoding",
     },
     {
-        label: "theme malformed (unobserved type, still blocking)",
+        label: "theme malformed (eagerly parsed since #516)",
         parts: () =>
             withDocRel(
                 withOverride({ ...MINIMAL_PARTS, "word/theme1.xml": MALFORMED.theme! }, "word/theme1.xml", CT.theme),
@@ -498,10 +644,76 @@ const SPECIMENS: readonly Specimen[] = [
         part: "xdocs/document.xml",
         blocking: true,
     },
+    {
+        label: "the main document's relationships part missing its root end tag (#514, repair-warning)",
+        parts: () => ({
+            ...MINIMAL_PARTS,
+            "word/_rels/document.xml.rels": withoutRootEndTag(MINIMAL_PARTS["word/_rels/document.xml.rels"] as string),
+        }),
+        part: "word/_rels/document.xml.rels",
+        blocking: true,
+    },
+    {
+        label: "the main document's relationships part zero bytes (#514, repair-warning)",
+        parts: () => ({ ...MINIMAL_PARTS, "word/_rels/document.xml.rels": "" }),
+        part: "word/_rels/document.xml.rels",
+        blocking: true,
+    },
+    {
+        label: "a used header stored outside word/ (#516, open-error)",
+        parts: () => outsideWordPart("hdr/header1.xml", `${R}/header`, CT.header, MALFORMED.header!, documentUsingHeader("rId9")),
+        part: "hdr/header1.xml",
+        blocking: true,
+    },
+    {
+        label: "an endnotes part outside word/ the document uses (#516, repair-warning)",
+        parts: () => outsideWordPart("en/endnotes.xml", `${R}/endnotes`, CT.endnotes, MALFORMED.endnotes!, documentUsingEndnote()),
+        part: "en/endnotes.xml",
+        blocking: true,
+    },
+    {
+        label: "a theme part outside word/ named by a document relationship (#516, repair-warning)",
+        parts: () => outsideWordPart("th/theme1.xml", `${R}/theme`, CT.theme, MALFORMED.theme!),
+        part: "th/theme1.xml",
+        blocking: true,
+    },
+    {
+        label: "a glossaryDocument part outside word/ named by a document relationship (#516, repair-warning)",
+        parts: () => outsideWordPart("g/glossary.xml", `${R}/glossaryDocument`, CT.glossary, MALFORMED.glossary!),
+        part: "g/glossary.xml",
+        blocking: true,
+    },
+    {
+        label: "an unused header under word/, related but not referenced (#516, clean-open)",
+        parts: () =>
+            withDocRel(
+                withOverride({ ...MINIMAL_PARTS, "word/header1.xml": MALFORMED.header! }, "word/header1.xml", CT.header),
+                "rId9",
+                `${R}/header`,
+                "header1.xml",
+            ),
+        part: "word/header1.xml",
+        blocking: false,
+    },
+    {
+        label: "an unused endnotes part under word/, related but not referenced (#516, clean-open)",
+        parts: () =>
+            withDocRel(
+                withOverride({ ...MINIMAL_PARTS, "word/endnotes.xml": MALFORMED.endnotes! }, "word/endnotes.xml", CT.endnotes),
+                "rId9",
+                `${R}/endnotes`,
+                "endnotes.xml",
+            ),
+        part: "word/endnotes.xml",
+        blocking: false,
+    },
 ];
 
 const FOOTER_UNUSED = SPECIMENS[2]!;
 const CUSTOMXML = SPECIMENS[9]!;
+const specimenByLabel = (label: string): Specimen => SPECIMENS.find((specimen) => specimen.label === label)!;
+const USED_HEADER_OUTSIDE = specimenByLabel("a used header stored outside word/ (#516, open-error)");
+const HEADER_UNUSED = specimenByLabel("an unused header under word/, related but not referenced (#516, clean-open)");
 
 describe("xml errors are Word-blocking by reachability (#437)", () => {
     it.each(SPECIMENS)("$label", { timeout: 120_000 }, async (specimen) => {
@@ -528,7 +740,7 @@ describe("xml errors are Word-blocking by reachability (#437)", () => {
         });
     });
 
-    it.each([FOOTER_UNUSED, CUSTOMXML])(
+    it.each([FOOTER_UNUSED, CUSTOMXML, USED_HEADER_OUTSIDE, HEADER_UNUSED])(
         "agrees between full, quick and named runs, packed and directory, .docx and .docm: $label",
         { timeout: 240_000 },
         async (specimen) => {
@@ -574,6 +786,20 @@ describe("xml errors are Word-blocking by reachability (#437)", () => {
             });
         },
     );
+
+    it("keeps a used, well-formed header outside word/ word-valid (#516 control)", { timeout: 60_000 }, async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "specimen.docx");
+            writeFileSync(
+                file,
+                await buildDocx(
+                    outsideWordPart("hdr/header1.xml", `${R}/header`, CT.header, WELLFORMED_HEADER, documentUsingHeader("rId9")),
+                ),
+            );
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(true);
+        });
+    });
 
     it("keeps the packed input bytes unchanged after validation", { timeout: 120_000 }, async () => {
         await withTempDir(async (dir) => {
