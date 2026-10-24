@@ -123,6 +123,11 @@ export const isWordBlockingIssue = (issue: ValidationIssue): boolean => {
         // the identical policy: blocking under word/, in the content-types
         // stream and in the package relationships part (#388).
         case "xml-undeclared-prefix":
+        // A part whose text cannot be decoded is unreadable too: Word 16.115
+        // refuses a word/document.xml declaring an unknown encoding and opens
+        // the windows-1252 control clean (#397). The other paths follow the
+        // xml-syntax policy above.
+        case "xml-encoding":
             return (
                 isWordFolderPart(issue.path) ||
                 isPackageRelationshipsPart(issue.path) ||

@@ -102,6 +102,12 @@ const UNREADABLE_PACKAGE_RELS = [
         ),
     },
 ] as const;
+// A main part declaring an encoding no decoder knows: Word refuses the file,
+// and opens the windows-1252 control clean (#397).
+const declaringEncoding = (encoding: string): Readonly<Record<string, string>> => ({
+    ...MINIMAL_PARTS,
+    "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace('encoding="UTF-8"', `encoding="${encoding}"`),
+});
 // The comments part named with an escaped `x` in its extension (review Q).
 const ESCAPED_COMMENT_PARTS: Readonly<Record<string, string>> = {
     ...Object.fromEntries(Object.entries(COMMENT_PARTS).filter(([name]) => name !== "word/comments.xml")),
@@ -463,6 +469,34 @@ describe("word-valid rejects package relationships Word cannot read (#388)", { t
     it("passes the readable _rels/.rels control in full and partial runs", async () => {
         await withTempDir(async (dir) => {
             const file = await specimen(dir, "control.docx", await buildDocx());
+            for (const selection of [{}, { quick: true }, { checks: ["xml-syntax"] }] as const) {
+                const result = await validate(file, { profile: "word-valid", ...selection });
+
+                expect(result.valid, JSON.stringify(selection)).toBe(true);
+            }
+        });
+    });
+});
+
+describe("word-valid rejects a main part Word cannot decode (#397)", { timeout: 120_000 }, () => {
+    it("rejects an unknown declared encoding in full and partial runs", async () => {
+        await withTempDir(async (dir) => {
+            const file = await specimen(dir, "unknown-encoding.docx", await buildDocx(declaringEncoding("X-UNKNOWN-ENCODING")));
+            for (const selection of [{}, { quick: true }, { checks: ["xml-syntax"] }] as const) {
+                const result = await validate(file, { profile: "word-valid", ...selection });
+                const label = JSON.stringify(selection);
+
+                expect(result.valid, label).toBe(false);
+                expect(result.issues, label).toContainEqual(
+                    expect.objectContaining({ code: "xml-encoding", severity: "error", path: "word/document.xml" }),
+                );
+            }
+        });
+    });
+
+    it("passes the windows-1252 control in full and partial runs", async () => {
+        await withTempDir(async (dir) => {
+            const file = await specimen(dir, "windows-1252.docx", await buildDocx(declaringEncoding("windows-1252")));
             for (const selection of [{}, { quick: true }, { checks: ["xml-syntax"] }] as const) {
                 const result = await validate(file, { profile: "word-valid", ...selection });
 

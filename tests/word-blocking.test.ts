@@ -98,9 +98,11 @@ describe("isWordBlockingIssue", () => {
         ["_rels/x.rels", false],
         ["docProps/app.xml", false],
         [undefined, false],
-    ] as const)("judges xml-syntax and xml-undeclared-prefix in %s as blocking: %s", (path, blocking) => {
+    ] as const)("judges xml-syntax, xml-undeclared-prefix and xml-encoding in %s as blocking: %s", (path, blocking) => {
         expect(isWordBlockingIssue(issue("xml-syntax", { path }))).toBe(blocking);
         expect(isWordBlockingIssue(issue("xml-undeclared-prefix", { path }))).toBe(blocking);
+        // Word 16.115 refuses a word/document.xml declaring an unknown encoding (#397).
+        expect(isWordBlockingIssue(issue("xml-encoding", { path }))).toBe(blocking);
     });
 
     it.each([
