@@ -306,7 +306,9 @@ the content-types stream, or on the package relationships part `_rels/.rels`;
 `word/` is matched as OPC compares part names, so `WORD/document.xml` counts, and
 the stream is matched in any case (`[CONTENT_TYPES].XML`), as System.IO.Packaging
 finds it ([#392](https://github.com/jandira-tech/docx-validate/issues/392)). Word 16.115 offers to recover a package whose `_rels/.rels`
-is zero bytes, truncated, or uses an undeclared prefix ([#388](https://github.com/jandira-tech/docx-validate/issues/388)). External entities are not
+is zero bytes, truncated, or uses an undeclared prefix ([#388](https://github.com/jandira-tech/docx-validate/issues/388)). An undecodable part (`xml-encoding`)
+follows the same policy: Word refuses a `word/document.xml` that declares an
+unknown encoding ([#397](https://github.com/jandira-tech/docx-validate/issues/397)). External entities are not
 loaded or expanded; XSD imports resolve through allowed local schema roots.
 Validation leaves source bytes unchanged unless you request `autoRepair`.
 

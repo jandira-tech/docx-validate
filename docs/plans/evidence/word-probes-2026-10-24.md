@@ -13,7 +13,7 @@ Observations behind the word-valid policy for #388, #392, #396, #397, #351 and #
 - **#388: package relationships.** A zero-byte, truncated or undeclared-prefix `_rels/.rels` makes Word offer recovery, and the readable control opens clean. Word-valid passed all three, so `xml-syntax` and `xml-undeclared-prefix` on `_rels/.rels` are now Word-blocking.
 - **#392: `WORD/` folder.** A package with every Word part under `WORD/` opens clean. With its main part malformed, Word refuses it exactly as it refuses the lower-case control. That matches the current policy, which matches `word/` by OPC part name.
 - **#396: content-types stream spelling.** A stream stored as `[CONTENT_TYPES].XML` opens clean. Malformed, it makes Word offer recovery, as word-valid predicts. That matches the any-case lookup.
-- **#397: unknown declared encoding.** `word/document.xml` declaring `X-UNKNOWN-ENCODING` makes Word refuse the file, and the `windows-1252` control opens clean. Word-valid passed it, so this is a false negative.
+- **#397: unknown declared encoding.** `word/document.xml` declaring `X-UNKNOWN-ENCODING` makes Word refuse the file, and the `windows-1252` control opens clean. Word-valid passed it, so this was a false negative. `xml-encoding` now follows the `xml-syntax` path policy. Its scope beyond the main part, and the invalid-bytes form of the code, are inferred by analogy until the queued probes below run.
 - **#351: equivalent part names.** Every duplicate probed makes Word offer recovery, even when both spellings hold identical bytes: case variants, an unreserved escape (`word/%73tyles.xml`), a backslash (`word\document.xml`), and two content-types streams. Word-valid passed the escape and backslash duplicates.
 - **#398: `.RELS` sidecar.** A `.RELS`-spelled document sidecar opens clean. With two theme relationships, Word offers recovery for both the `.rels` control and the `.RELS` variant, as word-valid now predicts for both.
 - **#401: `word-content-type-invalid`.** An `invalid-*` type on an existing part makes Word refuse the file or offer recovery: styles, the main part and core properties. The same type on an `Override` for a missing part, or on a `Default` that covers no part, opens clean. The check over-reports.
@@ -26,6 +26,7 @@ Another session began driving Word by 02:28Z: its first log line is at 02:28:14Z
 - `351-backslash-only-main`: the main part stored only as `word\document.xml`. It timed out, then Word exited with no crash report.
 - `398-hyperlink-rels-control` and `398-hyperlink-RELS`: an external hyperlink resolved through a `.rels` or a `.RELS` sidecar. The control timed out twice. The variant's open-error coincided with the other session's close-all.
 - `397-encoding-unknown-{styles,content-types,package-rels,core}`: the scope of #397 beyond the main part. Not yet run.
+- `397-invalid-utf8-bytes`: a `word/document.xml` declared UTF-8 holding a lone Latin-1 byte, the other form of `xml-encoding`. Not yet run.
 
 ## Observations
 
@@ -52,11 +53,11 @@ Another session began driving Word by 02:28Z: its first log line is at 02:28:14Z
 | `398-RELS-sidecar-clean`                 | #398    | `ac61b47790dc028b` | clean-open     | valid                                                                                                                       | valid   |
 | `398-dup-theme-control`                  | #398    | `52b18dea69dafe56` | repair-warning | invalid (`word-duplicate-theme-relationship@word/_rels/document.xml.rels`)                                                  | invalid |
 | `398-dup-theme-RELS`                     | #398    | `f1a5a570c9effd78` | repair-warning | invalid (`word-duplicate-theme-relationship@word/_rels/document.xml.RELS`, `word-hyperlink-relationship@word/document.xml`) | invalid |
-| `cti-override-existing-styles`           | cti     | `dde1b233d9672e0f` | repair-warning | invalid (`word-content-type-invalid@[Content_Types].xml`)                                                                   | invalid |
-| `cti-override-existing-main`             | cti     | `bded55854c3edf59` | repair-warning | invalid (`word-content-type-invalid@[Content_Types].xml`)                                                                   | invalid |
-| `cti-override-existing-core`             | cti     | `f4081445c08647f1` | open-error     | invalid (`word-content-type-invalid@[Content_Types].xml`)                                                                   | invalid |
-| `cti-override-existing-core-control`     | cti     | `86df51ceafbcb5ba` | clean-open     | valid                                                                                                                       | valid   |
-| `cti-default-unused-extension`           | cti     | `d19b131b7b46dbba` | clean-open     | invalid (`word-content-type-invalid@[Content_Types].xml`)                                                                   | invalid |
+| `cti-override-existing-styles`           | #401    | `dde1b233d9672e0f` | repair-warning | invalid (`word-content-type-invalid@[Content_Types].xml`)                                                                   | invalid |
+| `cti-override-existing-main`             | #401    | `bded55854c3edf59` | repair-warning | invalid (`word-content-type-invalid@[Content_Types].xml`)                                                                   | invalid |
+| `cti-override-existing-core`             | #401    | `f4081445c08647f1` | open-error     | invalid (`word-content-type-invalid@[Content_Types].xml`)                                                                   | invalid |
+| `cti-override-existing-core-control`     | #401    | `86df51ceafbcb5ba` | clean-open     | valid                                                                                                                       | valid   |
+| `cti-default-unused-extension`           | #401    | `d19b131b7b46dbba` | clean-open     | invalid (`word-content-type-invalid@[Content_Types].xml`)                                                                   | invalid |
 | `351-dup-escape-identical`               | #351    | `f5cd33350d5e730e` | repair-warning | valid                                                                                                                       | invalid |
 | `351-dup-backslash-identical`            | #351    | `348701aaaa331f41` | repair-warning | valid                                                                                                                       | valid   |
 
@@ -287,6 +288,20 @@ const specimens: [string, string, () => Promise<Buffer>][] = [
                     ]),
                 ),
             ),
+    ],
+    // #397: bytes that do not decode in the declared encoding (UTF-8 declared, a lone Latin-1 byte)
+    [
+        "397-invalid-utf8-bytes",
+        "#397",
+        async () =>
+            buildDocx({
+                ...P,
+                "word/document.xml": Buffer.concat([
+                    Buffer.from(P["word/document.xml"].split("Hello")[0]),
+                    Buffer.from([0x48, 0xe9, 0x6c]),
+                    Buffer.from(P["word/document.xml"].split("Hello")[1]),
+                ]),
+            }),
     ],
 ];
 
