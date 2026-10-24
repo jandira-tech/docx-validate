@@ -37,6 +37,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Target access failures such as `EACCES` and `ELOOP` now name the system error instead of claiming the target does not exist. `ENOENT` and `ENOTDIR` keep the missing-target error; the CLI still prints one line and exits 1 ([#574](https://github.com/jandira-tech/docx-validate/issues/574)).
+
 - Direct DOCX and PPTX validators retain `validate()`'s stored-name findings beside `package-extract-failed` for both refused stored names and directory walk refusals, under every profile, and record those checks in `executedChecks` as `validate()` does ([#572](https://github.com/jandira-tech/docx-validate/issues/572)).
 
 - Widen `word-part-content-type-generic` to related numbering and theme parts ([#571](https://github.com/jandira-tech/docx-validate/issues/571), follow-up to [#432](https://github.com/jandira-tech/docx-validate/issues/432)). Session 20 observed Word 16.115.26100424 raise repair warnings for both parts typed only by the `application/xml` Default and open both exact-Override controls clean (session 20, chunks s20c and s20d, in [docs/plans/evidence/word-probes-2026-10-24.md](docs/plans/evidence/word-probes-2026-10-24.md)). Other generic spellings on these parts are inference from the same resolution. Full, quick and named word-valid runs now reject them; lenient warns. Strict keeps numbering's generic finding and only `ct-undeclared-part` for the observed theme, suppressing the generic duplicate only on that same error path, as for the main document (#535). The separate inexact-type check's scope is unchanged.

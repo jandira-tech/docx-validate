@@ -1252,8 +1252,11 @@ async function runValidators(
 async function assertExists(p: string, message: string): Promise<void> {
     try {
         await fs.access(p);
-    } catch {
-        throw new Error(message);
+    } catch (err) {
+        const code = (err as NodeJS.ErrnoException).code;
+        if (code === "ENOENT" || code === "ENOTDIR") throw new Error(message);
+        const detail = err instanceof Error ? err.message : String(err);
+        throw new Error(`Error: Cannot access ${p}: ${detail}`, { cause: err });
     }
 }
 

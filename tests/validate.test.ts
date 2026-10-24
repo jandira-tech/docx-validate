@@ -63,11 +63,49 @@ async function writeMinimalDocxDir(root: string, body: string): Promise<void> {
 }
 
 describe("validate", () => {
-    it("throws when the target path does not exist", async () => {
-        await withTempDir(async (dir) => {
-            await expect(validate(path.join(dir, "missing.docx"))).rejects.toThrow(/does not exist/);
-        });
-    });
+    it.each(["ENOENT", "ENOTDIR"])(
+        "keeps the missing-target error for %s (#574)",
+        async (code) => {
+            await withTempDir(async (dir) => {
+                const holder = path.join(dir, "holder");
+                if (code === "ENOTDIR") await fs.writeFile(holder, "a regular file");
+                const target = path.join(holder, "missing.docx");
+                await expect(validate(target)).rejects.toThrow(`Error: ${target} does not exist`);
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32" || process.getuid?.() === 0)(
+        "names EACCES when a packed target's parent cannot be traversed (#574)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const holder = path.join(dir, "holder");
+                const target = path.join(holder, "packed.docx");
+                await fs.mkdir(holder);
+                await fs.writeFile(target, await buildDocx());
+                await fs.chmod(holder, 0o000);
+                try {
+                    await expect(validate(target)).rejects.toThrow(`Error: Cannot access ${target}: EACCES:`);
+                } finally {
+                    await fs.chmod(holder, 0o755);
+                }
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "names ELOOP when access cannot resolve the target (#574)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const target = path.join(dir, "loop.docx");
+                await fs.symlink("loop.docx", target);
+                await expect(validate(target)).rejects.toThrow(`Error: Cannot access ${target}: ELOOP:`);
+            });
+        },
+        60_000,
+    );
 
     it("throws when the original is not a real file", async () => {
         await withTempDir(async (dir) => {

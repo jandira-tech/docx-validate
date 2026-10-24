@@ -972,7 +972,9 @@ registry ids a complete run executed (#319): lenient lists `opc-equivalent-part-
 `opc-part-name-word-refused` first, then `xml-syntax` and the rest; Word-valid
 and strict add the ZIP-envelope checks for a packed file and every Word rule whose
 prerequisites passed. A partial run lists the selected checks that ran, so an
-archive-only check is not listed for an unpacked directory. An archive that does
+archive-only check is not listed for an unpacked directory. A missing target (`ENOENT` or `ENOTDIR`) throws
+`Error: <target> does not exist`; other access failures throw `Error: Cannot access <target>: <system error>`.
+The CLI prints that error on one line and exits 1 ([#574](https://github.com/jandira-tech/docx-validate/issues/574)). An archive that does
 not open fails with `package-open-failed` in every mode, and only its envelope
 checks are listed (#332). A packed file that cannot be read at all — a mode-000
 file `fs.stat` still answers for — fails the same way, with no check listed

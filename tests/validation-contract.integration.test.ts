@@ -54,6 +54,39 @@ async function validateBytes(bytes: Uint8Array, profile: Profile) {
 }
 
 it.skipIf(process.platform === "win32" || process.getuid?.() === 0)(
+    "validation contract: inaccessible targets throw the same system error across profiles and partial/full runs (#574, #381)",
+    async () => {
+        await withTempDir(async (dir) => {
+            const holder = path.join(dir, "holder");
+            const target = path.join(holder, "packed.docx");
+            mkdirSync(holder);
+            writeFileSync(target, await buildDocx());
+            chmodSync(holder, 0o000);
+            try {
+                let systemError: unknown;
+                try {
+                    await fs.access(target);
+                } catch (err) {
+                    systemError = err;
+                }
+                expect(systemError).toMatchObject({ code: "EACCES" });
+                const expected = `Error: Cannot access ${target}: ${(systemError as Error).message}`;
+                for (const profile of ["word-valid", "strict", "lenient"] as const) {
+                    await expect(validate(target, { profile })).rejects.toThrow(expected);
+                    if (profile === "strict") continue;
+                    for (const selection of [{ quick: true }, { checks: ["xml-syntax"] }, { checks: ["package"] }]) {
+                        await expect(validate(target, { profile, ...selection })).rejects.toThrow(expected);
+                    }
+                }
+            } finally {
+                chmodSync(holder, 0o755);
+            }
+        });
+    },
+    60_000,
+);
+
+it.skipIf(process.platform === "win32" || process.getuid?.() === 0)(
     "validation contract: unreadable input keeps strict and partial/full messages aligned (#547, #381)",
     async () => {
         await withTempDir(async (dir) => {
