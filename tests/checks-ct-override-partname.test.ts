@@ -17,7 +17,7 @@
  * (session 7, #450): word-valid warns on it, and strict still rejects it.
  */
 
-import { writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -231,6 +231,46 @@ describe("ct-override-partname-invalid in the unobserved formats", { timeout: 12
                 expect(findings(result.issues), profile).toEqual([
                     expected("/ppt/../ppt/nothere.xml", "must not have a '.' or '..' segment", profile === "strict" ? "error" : "warning"),
                 ]);
+            }
+        });
+    });
+
+    it("reports for PPTX in a full run while another part is malformed, except under lenient (#456)", async () => {
+        await withTempDir(async (dir) => {
+            const partName = "/ppt/../ppt/nothere.xml";
+            const parts = {
+                ...MINIMAL_PPTX_PARTS,
+                "[Content_Types].xml": MINIMAL_PPTX_PARTS["[Content_Types].xml"]!.replace(
+                    "</Types>",
+                    `<Override PartName="${partName}" ContentType="application/xml"/></Types>`,
+                ),
+                "junk.xml": "<broken",
+            };
+            const packed = path.join(dir, "malformed-neighbour.pptx");
+            writeFileSync(packed, await buildPptx(parts));
+            const unpacked = path.join(dir, "malformed-neighbour-dir.pptx");
+            for (const [name, text] of Object.entries(parts)) {
+                mkdirSync(path.dirname(path.join(unpacked, name)), { recursive: true });
+                writeFileSync(path.join(unpacked, name), text);
+            }
+            for (const file of [packed, unpacked]) {
+                for (const profile of ["word-valid", "strict", "lenient"] as const) {
+                    const result = await validate(file, { profile });
+                    const tag = `${path.basename(file)} ${profile}`;
+                    expect(result.valid, tag).toBe(false);
+                    // Lenient stops at the malformed part, as its partial runs
+                    // do (#391); word-valid and strict judge the stream.
+                    expect(findings(result.issues), tag).toEqual(
+                        profile === "lenient"
+                            ? []
+                            : [expected(partName, "must not have a '.' or '..' segment", profile === "strict" ? "error" : "warning")],
+                    );
+                    if (profile !== "strict")
+                        for (const selection of [{ quick: true }, { checks: ["content-types"] }, { checks: [ID] }]) {
+                            const partial = await validate(file, { profile, ...selection });
+                            expect(findings(partial.issues), `${tag} ${JSON.stringify(selection)}`).toEqual(findings(result.issues));
+                        }
+                }
             }
         });
     });

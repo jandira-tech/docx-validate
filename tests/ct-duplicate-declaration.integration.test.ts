@@ -163,4 +163,33 @@ describe.each(["packed", "directory"] as const)("duplicate declarations: %s (#43
             }
         });
     });
+
+    it("reports PPTX duplicates in a full run while another part is malformed, except under lenient (#456)", async () => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...MINIMAL_PPTX_PARTS,
+                [STREAM]: MINIMAL_PPTX_PARTS[STREAM]!.replace("</Types>", `${XML_DEFAULT}</Types>`),
+                "junk.xml": "<broken",
+            };
+            const target = await writePackage(dir, "malformed-neighbour.pptx", parts, input);
+            for (const profile of ["word-valid", "strict", "lenient"] as const) {
+                const result = await validate(target, { profile });
+                expect(result.valid, profile).toBe(false);
+                // Lenient stops at the malformed part, as its partial runs do
+                // (#391); word-valid and strict partial runs judge the stream.
+                expect(findings(result.issues), profile).toEqual(
+                    profile === "lenient"
+                        ? []
+                        : [expect.objectContaining({ code: ID, path: STREAM, severity: profile === "strict" ? "error" : "warning" })],
+                );
+                if (profile !== "strict")
+                    for (const selection of SELECTIONS) {
+                        const partial = await validate(target, { profile, ...selection });
+                        const tag = `${profile} ${JSON.stringify(selection)}`;
+                        expect(findings(partial.issues), tag).toEqual(findings(result.issues));
+                        expect(errors(result.issues), tag).toEqual(expect.arrayContaining(errors(partial.issues)));
+                    }
+            }
+        });
+    });
 });
