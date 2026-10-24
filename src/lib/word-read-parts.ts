@@ -12,22 +12,30 @@
  * Override, and so does one named only by a relationship of an unknown type.
  * What Word reads is what its relationships reach:
  *
- *  - the main document, wherever it is stored, and the parts a main-document
- *    relationship of an EAGER type names (styles, settings, fontTable,
- *    webSettings, numbering, customXml) — parsed at open, used or not;
+ *  - the main document, wherever it is stored, its own relationships part
+ *    (found by OPC part-name equivalence, as `sidecarOf` finds it — Word
+ *    reads it to reach styles, settings, headers and footers, and offers
+ *    recovery when it is zero bytes or missing its root end tag, #514,
+ *    session 15), and the parts a main-document relationship of an EAGER
+ *    type names (styles, settings, fontTable, webSettings, numbering,
+ *    customXml, theme, glossaryDocument — the last two eager since #516,
+ *    session 15) — parsed at open, used or not;
  *  - the parts a main-document relationship of a LAZY type names, when the
  *    main document uses them (footer through a `w:footerReference r:id`,
- *    comments through any `w:commentReference`, footnotes through any
- *    `w:footnoteReference`) — related-but-unused opens clean;
+ *    header through a `w:headerReference r:id`, comments through any
+ *    `w:commentReference`, footnotes through any `w:footnoteReference`,
+ *    endnotes through any `w:endnoteReference`) — related-but-unused opens
+ *    clean, even under `word/` (#516, session 15);
  *  - a part under `word/` that any relationship of a KNOWN Office type names
- *    with none of the observed types above (header, endnotes, theme,
- *    glossaryDocument, people, chart, image, …). These are unobserved, so
- *    they keep the old `word/`-folder behaviour — blocking — and open no new
- *    false negative.
+ *    with none of the observed types above (people, chart, image, …). These
+ *    are unobserved, so they keep the old `word/`-folder behaviour —
+ *    blocking — and open no new false negative.
  *
  * Compute once per run, as `propertiesParts` (#409) is, and pass the set to
  * `isWordBlockingIssue`, so full and partial runs agree (#381). Evidence:
- * docs/plans/evidence/word-probes-2026-10-24.md, sessions 3c, 4, 5, 8b, 9a.
+ * docs/plans/evidence/word-probes-2026-10-24.md, sessions 3c, 4, 5, 8b, 9a;
+ * session 15 (the main document's own relationships part, #514; header and
+ * endnotes lazy, theme and glossaryDocument eager, #516).
  */
 
 import path from "node:path";
@@ -59,10 +67,19 @@ const OFFICE_DOCUMENT_TYPES: ReadonlySet<string> = new Set([
 ]);
 
 /** Word parses a part of these types at open, whether the document uses it. */
-const EAGER_TYPES: ReadonlySet<string> = new Set(["styles", "settings", "fontTable", "webSettings", "numbering", "customXml"]);
+const EAGER_TYPES: ReadonlySet<string> = new Set([
+    "styles",
+    "settings",
+    "fontTable",
+    "webSettings",
+    "numbering",
+    "customXml",
+    "theme",
+    "glossaryDocument",
+]);
 
 /** Word parses a part of these types only when the document uses it. */
-const LAZY_TYPES: ReadonlySet<string> = new Set(["footer", "comments", "footnotes"]);
+const LAZY_TYPES: ReadonlySet<string> = new Set(["footer", "header", "comments", "footnotes", "endnotes"]);
 
 /** Every relationship type whose reachability a probe has observed. */
 const OBSERVED_TYPES: ReadonlySet<string> = new Set([...EAGER_TYPES, ...LAZY_TYPES]);
@@ -120,11 +137,11 @@ const relationshipsOf = (context: ValidationContext, relsPart: string | undefine
     return parsed?.ok ? getRelationshipChildren(parsed.document) : [];
 };
 
-/** The relationship ids the main document's `w:footerReference` elements name. */
-const footerReferenceIds = (document: Document): ReadonlySet<string> => {
+/** The relationship ids the main document's `w:<localName>` elements name. */
+const referenceIds = (document: Document, localName: string): ReadonlySet<string> => {
     const ids = new Set<string>();
     for (const namespace of WORD_MAIN_NAMESPACES) {
-        for (const elem of getElementsByTagNameNSAll(document, namespace, "footerReference")) {
+        for (const elem of getElementsByTagNameNSAll(document, namespace, localName)) {
             for (const relNamespace of RELATIONSHIP_ID_NAMESPACES) {
                 const id = elem.getAttributeNS(relNamespace, "id");
                 if (id) {
@@ -277,6 +294,14 @@ export const wordReadParts = async (context: ValidationContext): Promise<Readonl
 
     for (const mainPart of reach.mainParts) {
         parts.add(canonicalPartName(mainPart));
+        // #514: Word reads the main document's own relationships part to
+        // reach styles, settings, headers and footers, wherever the main
+        // document is stored, and offers recovery when it does not parse
+        // (session 15). Other parts' relationships parts stay unreached.
+        const sidecar = sidecarOf(names, mainPart);
+        if (sidecar !== undefined) {
+            parts.add(canonicalPartName(sidecar));
+        }
     }
 
     // Main-document relationships: eager types always, lazy types only when
@@ -284,9 +309,29 @@ export const wordReadParts = async (context: ValidationContext): Promise<Readonl
     // consumes, after markup compatibility has selected its branches.
     for (const mainPart of reach.mainParts) {
         const main = context.has(mainPart) ? context.effectiveXml(mainPart) : undefined;
-        const footerIds = main?.ok ? footerReferenceIds(main.document) : undefined;
+        const footerIds = main?.ok ? referenceIds(main.document, "footerReference") : undefined;
+        const headerIds = main?.ok ? referenceIds(main.document, "headerReference") : undefined;
         const usesComments = main?.ok ? hasReference(main.document, "commentReference") : undefined;
         const usesFootnotes = main?.ok ? hasReference(main.document, "footnoteReference") : undefined;
+        const usesEndnotes = main?.ok ? hasReference(main.document, "endnoteReference") : undefined;
+        // Whether a lazily parsed relationship's target is used; `undefined`
+        // when that cannot be decided, which keeps the target reached (#437).
+        const lazyUsed = (segment: string, id: string): boolean | undefined => {
+            switch (segment) {
+                case "footer":
+                    return footerIds?.has(id);
+                case "header":
+                    return headerIds?.has(id);
+                case "comments":
+                    return usesComments;
+                case "footnotes":
+                    return usesFootnotes;
+                case "endnotes":
+                    return usesEndnotes;
+                default:
+                    return undefined;
+            }
+        };
 
         const baseDir = path.posix.dirname(mainPart);
         for (const relationship of relationshipsOf(context, sidecarOf(names, mainPart))) {
@@ -304,16 +349,8 @@ export const wordReadParts = async (context: ValidationContext): Promise<Readonl
             const segment = typeSegment(type);
             if (EAGER_TYPES.has(segment)) {
                 parts.add(canonicalPartName(target));
-            } else if (segment === "footer") {
-                if (footerIds === undefined || footerIds.has(relationship.getAttribute("Id") ?? "")) {
-                    parts.add(canonicalPartName(target));
-                }
-            } else if (segment === "comments") {
-                if (usesComments === undefined || usesComments) {
-                    parts.add(canonicalPartName(target));
-                }
-            } else if (segment === "footnotes") {
-                if (usesFootnotes === undefined || usesFootnotes) {
+            } else if (LAZY_TYPES.has(segment)) {
+                if (lazyUsed(segment, relationship.getAttribute("Id") ?? "") !== false) {
                     parts.add(canonicalPartName(target));
                 }
             }
@@ -322,8 +359,8 @@ export const wordReadParts = async (context: ValidationContext): Promise<Readonl
 
     // Unobserved types keep the old `word/`-folder behaviour: a part under
     // word/ that a known Office relationship names from anywhere stays
-    // blocking. From any part: a header's image, a settings part's people
-    // list, or the main document's own theme are all named this way.
+    // blocking. From any part: a header's image or a settings part's people
+    // list are named this way.
     for (const name of names) {
         if (!isRelationshipsPartName(name)) {
             continue;

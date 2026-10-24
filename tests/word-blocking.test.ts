@@ -109,7 +109,7 @@ describe("isWordBlockingIssue", () => {
         ["word/styles.xml", "eagerly parsed styles part", ["word/styles.xml"], true],
         ["customXml/item1.xml", "eagerly parsed customXml item outside word/", ["customXml/item1.xml"], true],
         ["word/footer1.xml", "lazily parsed footer the document uses", ["word/footer1.xml"], true],
-        ["word/theme1.xml", "unobserved type under word/", ["word/theme1.xml"], true],
+        ["word/theme1.xml", "eagerly parsed theme part", ["word/theme1.xml"], true],
         ["word/footer1.xml", "lazily parsed footer the document does not use", ["word/styles.xml"], false],
         ["word/comments.xml", "lazily parsed comments part the document does not use", [], false],
         ["word/xtra.xml", "part named by no relationship", [], false],
@@ -232,10 +232,10 @@ describe("isWordBlockingIssue", () => {
             ["word/footnotes.xml", reach(["word/footnotes.xml"]), true],
             // Anything under word/ named by a known Office relationship type
             // of an unobserved kind keeps blocking (rule 5).
-            ["word/header1.xml", reach(["word/header1.xml"]), true],
-            ["word/theme/theme1.xml", reach(["word/theme/theme1.xml"]), true],
-            ["word/theme/theme1.xml", noReach, false],
+            ["word/charts/chart1.xml", reach(["word/charts/chart1.xml"]), true],
+            ["word/charts/chart1.xml", noReach, false],
             ["word/header1.xml", noReach, false],
+            ["word/theme1.xml", noReach, false],
         ] as const)("judges %s with the given reachability as blocking: %s", (path, wordRead, blocking) => {
             for (const code of ["xml-syntax", "xml-undeclared-prefix", "xml-encoding"] as const) {
                 expect.soft(isWordBlockingIssue(issue(code, { path }), new Set(), wordRead), code).toBe(blocking);
@@ -249,11 +249,20 @@ describe("isWordBlockingIssue", () => {
             expect(isWordBlockingIssue(issue("xml-syntax", { path: "customXml/item2.xml" }), new Set(), wordRead)).toBe(false);
         });
 
-        it("warns on a relationships sidecar under word/ that no relationship names", () => {
-            // A sidecar is never a relationship target, so none of the five
-            // reachability rules covers it (#437). Its structural defects keep
-            // their own blocking code (`opc-relationships-structure`, #433).
+        it("warns on a relationships sidecar the run's reachability set does not name", () => {
+            // A sidecar is never a relationship target, so the predicate
+            // itself adds no rule for it; the run's `wordReadParts` names the
+            // main document's own sidecar (#514), and no other (#437). A
+            // sidecar's structural defects keep their own blocking code
+            // (`opc-relationships-structure`, #433).
             expect(isWordBlockingIssue(issue("xml-syntax", { path: "word/_rels/document.xml.rels" }), new Set(), noReach)).toBe(false);
+            expect(
+                isWordBlockingIssue(
+                    issue("xml-syntax", { path: "word/_rels/document.xml.rels" }),
+                    new Set(),
+                    reach(["word/_rels/document.xml.rels"]),
+                ),
+            ).toBe(true);
             expect(isWordBlockingIssue(issue("xml-syntax", { path: "customXml/_rels/item1.xml.rels" }), new Set(), noReach)).toBe(false);
         });
     });

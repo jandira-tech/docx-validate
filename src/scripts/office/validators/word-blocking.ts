@@ -198,14 +198,19 @@ export const isWordBlockingIssue = (
             // #437: Word 16.115 reads the parts its relationships reach, not
             // every part under word/ — an unreferenced truncated word/xtra.xml
             // opens clean even with its own Override, a related-but-unused
-            // malformed footer, comments or footnotes part opens clean, while
-            // an eagerly parsed part (styles, settings, fontTable, webSettings,
-            // numbering, customXml) and a used lazy one get repair — wherever
-            // they are stored. Unobserved relationship types under word/
-            // (theme, header, chart, …) keep blocking, as before. The
-            // content-types stream, the package relationships part and the
-            // properties parts (#409) always block; a malformed sidecar under
-            // word/ that no relationship-target rule covers now warns.
+            // malformed footer, header, comments, footnotes or endnotes part
+            // opens clean (#516: an unused header or endnotes part under
+            // word/ too — session 15), while an eagerly parsed part (styles,
+            // settings, fontTable, webSettings, numbering, customXml, theme,
+            // glossaryDocument — #516, session 15) and a used lazy one get
+            // repair — wherever they are stored. Unobserved relationship
+            // types under word/ (chart, image, …) keep blocking, as before.
+            // The content-types stream, the package relationships part and the
+            // properties parts (#409) always block; so does each main
+            // document's own relationships part, which `wordReadParts`
+            // reaches wherever the main document is stored (#514; Word offers
+            // recovery for a zero-byte and a truncated document.xml.rels,
+            // session 15). A malformed sidecar no rule covers now warns.
             return (
                 (issue.path !== undefined && propertiesParts.has(canonicalPartName(issue.path))) ||
                 (issue.path !== undefined && wordReadParts.has(canonicalPartName(issue.path))) ||

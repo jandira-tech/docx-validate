@@ -753,6 +753,119 @@ describe("validation contract: strict judges the other Part 1 part types too (#5
     }
 });
 
+describe("validation contract: the main document's own relationships part is read (#514)", { timeout: 120000 }, () => {
+    const withoutRootEndTag = (xml: string): string => xml.slice(0, xml.lastIndexOf("</"));
+    const SPECIMENS: readonly (readonly [string, string])[] = [
+        ["missing its root end tag", withoutRootEndTag(MINIMAL_PARTS["word/_rels/document.xml.rels"]!)],
+        ["zero bytes", ""],
+    ];
+
+    it.each(SPECIMENS)("word-valid and strict both fail a document.xml.rels that is %s", { timeout: 120000 }, async (_shape, rels) => {
+        for (const profile of ["word-valid", "strict"] as const) {
+            const result = await validateBytes(await buildDocx({ ...MINIMAL_PARTS, "word/_rels/document.xml.rels": rels }), profile);
+            expect(
+                result.issues.find((issue) => issue.code === "xml-syntax" && issue.path === "word/_rels/document.xml.rels")?.severity,
+                profile,
+            ).toBe("error");
+            expect(result.valid, profile).toBe(false);
+        }
+    });
+
+    it("keeps the well-formed control valid under both profiles", { timeout: 120000 }, async () => {
+        for (const profile of ["word-valid", "strict"] as const) {
+            const result = await validateBytes(await buildDocx(), profile);
+            expect(result.valid, profile).toBe(true);
+        }
+    });
+});
+
+describe("validation contract: header, endnotes, theme and glossaryDocument are read (#516)", { timeout: 120000 }, () => {
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+    const unclosed = (rootOpen: string): string => `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n${rootOpen}`;
+    const MALFORMED: Readonly<Record<string, string>> = {
+        header: unclosed(`<w:hdr xmlns:w="${W}"><w:p>`),
+        endnotes: unclosed(`<w:endnotes xmlns:w="${W}">`),
+        theme: unclosed('<a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="t">'),
+        glossary: unclosed(`<w:glossaryDocument xmlns:w="${W}">`),
+    };
+    const documentUsingHeader = (MINIMAL_PARTS["word/document.xml"] as string)
+        .replace('mc:Ignorable="w14">', `mc:Ignorable="w14" xmlns:r="${R}">`)
+        .replace("<w:sectPr>", `<w:sectPr><w:headerReference w:type="default" r:id="rId9"/>`);
+    const documentUsingEndnote = (MINIMAL_PARTS["word/document.xml"] as string).replace(
+        "<w:r><w:t>Hello</w:t></w:r>",
+        '<w:r><w:t>Hello</w:t></w:r><w:r><w:endnoteReference w:id="1"/></w:r>',
+    );
+
+    /** A part stored outside word/, named by a main-document relationship with its own Override. */
+    const outsideWord = async (stored: string, type: string, contentType: string, xml: string, doc?: string): Promise<Uint8Array> => {
+        const rels = MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rId9" Type="${type}" Target="../${stored}"/></Relationships>`,
+        );
+        const stream = MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+            "</Types>",
+            `<Override PartName="/${stored}" ContentType="${contentType}"/></Types>`,
+        );
+        return buildDocx({
+            ...MINIMAL_PARTS,
+            ...(doc ? { "word/document.xml": doc } : {}),
+            [stored]: xml,
+            "word/_rels/document.xml.rels": rels,
+            "[Content_Types].xml": stream,
+        });
+    };
+
+    /** The four reachability widenings of session 15: two lazy (used), two eager. */
+    const CASES: readonly (readonly [string, string, string, string, string, string | undefined])[] = [
+        ["used header", "hdr/header1.xml", `${R}/header`, `${WML}.header+xml`, MALFORMED.header!, documentUsingHeader],
+        ["used endnotes part", "en/endnotes.xml", `${R}/endnotes`, `${WML}.endnotes+xml`, MALFORMED.endnotes!, documentUsingEndnote],
+        ["theme", "th/theme1.xml", `${R}/theme`, "application/vnd.openxmlformats-officedocument.theme+xml", MALFORMED.theme!, undefined],
+        ["glossaryDocument", "g/glossary.xml", `${R}/glossaryDocument`, `${WML}.document.glossary+xml`, MALFORMED.glossary!, undefined],
+    ];
+
+    it.each(CASES)(
+        "word-valid and strict both fail a malformed %s that Word reads",
+        { timeout: 120000 },
+        async (_label, stored, type, contentType, xml, doc) => {
+            const bytes = await outsideWord(stored, type, contentType, xml, doc);
+            for (const profile of ["word-valid", "strict"] as const) {
+                const result = await validateBytes(bytes, profile);
+                expect(result.issues.find((issue) => issue.code === "xml-syntax" && issue.path === stored)?.severity, profile).toBe(
+                    "error",
+                );
+                expect(result.valid, profile).toBe(false);
+            }
+        },
+    );
+
+    it("word-valid passes an unused malformed word/header1.xml and strict still fails it", { timeout: 120000 }, async () => {
+        const rels = MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rId9" Type="${R}/header" Target="header1.xml"/></Relationships>`,
+        );
+        const stream = MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+            "</Types>",
+            `<Override PartName="/word/header1.xml" ContentType="${WML}.header+xml"/></Types>`,
+        );
+        const bytes = await buildDocx({
+            ...MINIMAL_PARTS,
+            "word/header1.xml": MALFORMED.header!,
+            "word/_rels/document.xml.rels": rels,
+            "[Content_Types].xml": stream,
+        });
+        const wordValid = await validateBytes(bytes, "word-valid");
+        expect(wordValid.issues.find((issue) => issue.code === "xml-syntax" && issue.path === "word/header1.xml")?.severity).toBe(
+            "warning",
+        );
+        expect(wordValid.valid).toBe(true);
+        const strict = await validateBytes(bytes, "strict");
+        expect(strict.issues.find((issue) => issue.code === "xml-syntax" && issue.path === "word/header1.xml")?.severity).toBe("error");
+        expect(strict.valid).toBe(false);
+    });
+});
+
 // These are filesystem integration tests: literal backslashes are file-name
 // characters on POSIX, and separators on Windows.
 describe.skipIf(process.platform === "win32")("directory package staging (#374)", { timeout: 120000 }, () => {
