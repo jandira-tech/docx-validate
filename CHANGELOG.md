@@ -39,6 +39,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- The unreadable entries of a directory input are ordered by code unit, not by the host's locale collation ([#575](https://github.com/jandira-tech/docx-validate/issues/575)). The `package-extract-failed` detail lists one clause per entry, and `localeCompare` made the same input yield a different message on a host with a different ICU collation (`word/ä` before `word/z` under `en-US`, the other way round under `sv-SE`). The entries now sort as the file list beside them does, so the message is byte-identical on every host.
+
 - An unreadable directory is no longer judged as a stored part name ([#573](https://github.com/jandira-tech/docx-validate/issues/573)). The walk's refusal entries now say what the entry is, and a directory — the input directory itself, a subdirectory the walk cannot list, or a link that resolves to a directory — contributes no stored file-entry name to the package view. It is named only in the `package-extract-failed` detail, so the stored-name checks no longer report `opc-part-name-escaped-unreserved` or `opc-part-name-word-refused` (a claim about Word's recovery of a spelling) for a name that is in no package Word would see. An unreadable file keeps its #426 stored name, and a readable directory with the same name still lets its files be judged.
 
 - Target access failures such as `EACCES` and `ELOOP` now name the system error instead of claiming the target does not exist. `ENOENT` and `ENOTDIR` keep the missing-target error; the CLI still prints one line and exits 1 ([#574](https://github.com/jandira-tech/docx-validate/issues/574)).

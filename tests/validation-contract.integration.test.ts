@@ -3160,6 +3160,34 @@ describe.skipIf(process.platform === "win32")("directory package staging (#374)"
     );
 
     it.skipIf(runsAsRoot)(
+        "orders the unreadable entries by code unit, so the message is the same on every host (#575)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const input = await writeDirectory(path.join(dir, "input.docx"), MINIMAL_PARTS, false);
+                for (const name of ["ä", "z"]) {
+                    const unreadable = path.join(input, "word", name);
+                    await fs.mkdir(unreadable, { recursive: true });
+                    await fs.writeFile(path.join(unreadable, "x.xml"), "<x/>");
+                    await fs.chmod(unreadable, 0o000);
+                }
+                let result: Awaited<ReturnType<typeof validate>>;
+                try {
+                    result = await validateResolves(input, { profile: "strict" });
+                } finally {
+                    for (const name of ["ä", "z"]) await fs.chmod(path.join(input, "word", name), 0o755);
+                }
+                expect(result.valid).toBe(false);
+                const message = result.issues.find((issue) => issue.code === "package-extract-failed")?.message ?? "";
+                // Code-unit order: "z" (U+007A) precedes "ä" (U+00E4). The
+                // host locale never decides the order of the message.
+                expect(message).toContain("Cannot read word/z: an unreadable directory (EACCES); Cannot read word/ä");
+                expect(message.indexOf("word/z")).toBeLessThan(message.indexOf("word/ä"));
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(runsAsRoot)(
         "reports a failed auto-repair write-back, keeps repairing the remaining files, and leaves the read-only source untouched (#412)",
         async () => {
             await withTempDir(async (dir) => {

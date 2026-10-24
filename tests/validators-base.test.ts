@@ -21,7 +21,7 @@ import JSZip from "jszip";
 import { describe, expect, it, vi } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import { validate } from "../src/scripts/office/validate";
-import { BaseSchemaValidator, withoutRestatedIgnorablePrefixes } from "../src/scripts/office/validators/base";
+import { BaseSchemaValidator, walkDirectory, withoutRestatedIgnorablePrefixes } from "../src/scripts/office/validators/base";
 
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
@@ -1416,4 +1416,33 @@ describe("content-types stream directory lookup (#396)", () => {
             expect(result.issues.filter((issue) => issue.code === "rels-unreferenced")).toEqual([]);
         });
     });
+});
+
+describe("walkDirectory (#426, #543, #546, #573, #575, #576)", () => {
+    // chmod has no effect for root.
+    const runsAsRoot = process.getuid?.() === 0;
+
+    it.skipIf(runsAsRoot)(
+        "orders its unreadable entries by code unit, so the message never depends on the host locale (#575)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = path.join(dir, "input.docx");
+                await fs.mkdir(path.join(root, "word", "ä"), { recursive: true });
+                await fs.mkdir(path.join(root, "word", "z"), { recursive: true });
+                await fs.chmod(path.join(root, "word", "ä"), 0o000);
+                await fs.chmod(path.join(root, "word", "z"), 0o000);
+                try {
+                    const walked = walkDirectory(root);
+                    // Code-unit order: "z" (U+007A) precedes "ä" (U+00E4). The
+                    // host locale never decides it.
+                    expect(walked.unreadable.map((entry) => path.basename(entry.file))).toEqual(["z", "ä"]);
+                    expect(walked.unreadable.every((entry) => entry.reason.includes("an unreadable directory"))).toBe(true);
+                } finally {
+                    await fs.chmod(path.join(root, "word", "ä"), 0o755);
+                    await fs.chmod(path.join(root, "word", "z"), 0o755);
+                }
+            });
+        },
+        60_000,
+    );
 });

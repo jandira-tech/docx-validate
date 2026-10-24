@@ -2079,7 +2079,9 @@ export function walkDirectory(
     }
     return {
         files: files.sort(),
-        unreadable: unreadable.sort((a, b) => a.file.localeCompare(b.file)),
+        // Code-unit order, as the file list beside it: the host's ICU
+        // collation must never decide the order of the message (#575).
+        unreadable: unreadable.sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : 0)),
         holdsSymlinks,
         holdsHardLinks,
     };

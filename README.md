@@ -1063,7 +1063,11 @@ name no package holds
 is already on the path into it, or a link chain that never resolves — is
 reported as `a symbolic link loop` at the link's stored name (`word/self`),
 not as a broken link under a synthetic multi-level path
-([#546](https://github.com/jandira-tech/docx-validate/issues/546)). Full,
+([#546](https://github.com/jandira-tech/docx-validate/issues/546)). When several
+entries are unreadable, the message names them one clause each, in code-unit
+order — the order the file list uses — so the same input yields the same
+message on every host, whatever the host's locale collation is
+([#575](https://github.com/jandira-tech/docx-validate/issues/575)). Full,
 quick and named-check runs
 report the same failure. (Under ordinary
 forward-slash names the direct path reads parts lazily, so the same file yields
