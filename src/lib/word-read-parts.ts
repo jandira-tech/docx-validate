@@ -242,7 +242,12 @@ const packageReach = async (context: ValidationContext): Promise<PackageReach | 
 export type WordTypedTarget = {
     /** The stored part-name spelling, as the package view holds it. */
     readonly part: string;
-    /** The relationship type's last path segment, or `officeDocument` for the main document. */
+    /**
+     * The relationship type's one segment under an Office relationship-type
+     * namespace, as `officeRelationshipTypeSegment` reads it (#519) — a type
+     * with any other shape reaches no typed target — or `officeDocument` for
+     * a story root and `relationships` for its own relationships part (#549).
+     */
     readonly segment: string;
 };
 
