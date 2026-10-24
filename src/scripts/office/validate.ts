@@ -242,7 +242,12 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                         suffix: dispatchSuffix,
                         xsdWalk: xsdWalkNotStarted(),
                         // Only the envelope checks could read these bytes (#332).
-                        metadata: { profile, executedChecks: [...envelope.executed], omittedChecks: [], schemaCompleted: false },
+                        metadata: {
+                            profile,
+                            executedChecks: orderedExecutedChecks(format, envelope.executed),
+                            omittedChecks: [],
+                            schemaCompleted: false,
+                        },
                     };
                 }
                 try {
@@ -262,7 +267,14 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                         repairs: 0,
                         suffix: dispatchSuffix,
                         xsdWalk: xsdWalkNotStarted(),
-                        metadata: { profile, executedChecks: [], omittedChecks: [], schemaCompleted: false },
+                        // The envelope was read from the bytes before extraction failed,
+                        // so its checks ran (CodeRabbit on #335).
+                        metadata: {
+                            profile,
+                            executedChecks: orderedExecutedChecks(format, envelope.executed),
+                            omittedChecks: [],
+                            schemaCompleted: false,
+                        },
                     };
                 }
                 const unpacked = await runWithUnpacked(tempDir, envelope.executed);
