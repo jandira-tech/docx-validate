@@ -76,6 +76,7 @@ import { checkXmlSyntax } from "../../../lib/xml-syntax";
 import { resolveSafeZipEntry } from "../../../lib/zip-path";
 import { isXmlPartName, XML_SYNTAX_CHECK_ID } from "../checks/xml";
 import { CT_OVERRIDE_PARTNAME_INVALID, ctOverridePartnameInvalidCheck } from "../checks/ct-override-partname";
+import { ctDuplicateDeclarationCheck } from "../checks/word-content-types";
 
 /**
  * Schema mapping table — file basename / suffix → relative path inside the
@@ -1334,6 +1335,20 @@ export class BaseSchemaValidator {
         this.recordExecutedCheck(CT_OVERRIDE_PARTNAME_INVALID);
         const severity = opcNameIssueSeverity(this.profile, format);
         return finalize([...issues].map((issue): ValidationIssue => (severity === "warning" ? { ...issue, severity: "warning" } : issue)));
+    }
+
+    /**
+     * The duplicate-declaration rule (#431) over the package context, at the
+     * severity {@link validateContentTypes} gives it, for a full run that
+     * stops before that method: the PPTX run once a part fails to parse
+     * (#456). The parts that do not parse are hidden, as in
+     * {@link validateOverridePartNames}.
+     */
+    protected async validateDuplicateDeclarations(context: ValidationContext, malformed: ReadonlySet<string>): Promise<ValidationResult> {
+        const view = malformed.size > 0 ? context.withUnparseable(new Map([...malformed].map((part) => [part, "malformed"]))) : context;
+        const issues = await ctDuplicateDeclarationCheck.run(view);
+        this.recordExecutedCheck(CT_DUPLICATE_DECLARATION);
+        return finalize([...issues].map((issue): ValidationIssue => ({ ...issue, severity: this.duplicateContentTypeSeverity })));
     }
 
     // ----- XSD validation -----------------------------------------------------

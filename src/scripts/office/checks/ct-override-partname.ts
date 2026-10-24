@@ -18,17 +18,19 @@ export const CT_OVERRIDE_PARTNAME_INVALID = "ct-override-partname-invalid";
 /**
  * Report every `Override` whose `PartName` is not a valid OPC part name
  * (ECMA-376 Part 2 §6.2.2.2). Such a PartName names no part, so the
- * declaration is malformed whatever its content type, and the resolution is
- * left untouched: the PartName is never mapped onto a stored part.
+ * declaration is malformed whatever its content type. Resolution is unchanged:
+ * `parseContentTypes` still keys each PartName by its canonical spelling, so a
+ * malformed one can still resolve a stored part (#457).
  * System.IO.Packaging is no reference here: `GetNormalizedPartUri` (.NET 10)
  * accepts an empty segment, `%2F`, a segment ending with `.`, `[` and `]`.
  *
  * Word 16.115 offers to recover a package that declares one (probe sessions
- * 3c, 4, 5 and 7), even when nothing is stored under that name and the content
+ * 3c, 4, 5, 7 and 12), even when nothing is stored under that name and the content
  * type is well formed, so the finding is Word-blocking for DOCX/DOCM; strict
  * reports it as an error, and lenient and the unobserved PPTX/XLSX warn. A
- * folder segment ending with `.` is the exception: Word opens it clean, so
- * word-valid warns on it (#450).
+ * folder segment ending with `.` that holds another character is the
+ * exception: Word opens it clean, so word-valid warns on it (#450). A dot-only
+ * folder segment is refused, and reported under its own rule (#453).
  *
  * A content-types stream that does not parse is reported by the XML syntax
  * gate (#388); nothing is reported from it here.
@@ -48,6 +50,17 @@ export const ctOverridePartnameInvalidCheck: CheckDefinition = {
         if (!parsed?.ok) return issues;
 
         for (const elem of getElementsByTagNameNSAll(parsed.document, CONTENT_TYPES_NAMESPACE, "Override")) {
+            // Word 16.115 offers recovery for a missing PartName as for an
+            // empty one (session 13); only the wording tells them apart (#458).
+            if (!elem.hasAttribute("PartName")) {
+                issues.push({
+                    severity: "error",
+                    code: CT_OVERRIDE_PARTNAME_INVALID,
+                    path: stream,
+                    message: "Override has no PartName attribute, so it names no part.",
+                });
+                continue;
+            }
             const partName = elem.getAttribute("PartName") ?? "";
             const violation = partNameViolation(partName);
             if (violation === undefined) continue;

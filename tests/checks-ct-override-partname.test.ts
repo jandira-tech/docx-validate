@@ -17,14 +17,16 @@
  * (session 7, #450): word-valid warns on it, and strict still rejects it.
  */
 
-import { writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { parseContentTypes, resolveContentType } from "../src/lib/content-types";
 import { withTempDir } from "../src/lib/run-cli";
 import type { ValidationIssue } from "../src/lib/types";
 import { ValidationContext } from "../src/lib/validation-context";
+import { parseXml } from "../src/lib/xml-helpers";
 import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
 import { validate } from "../src/scripts/office/validate";
 import { isWordBlockingIssue } from "../src/scripts/office/validators/word-blocking";
@@ -66,6 +68,11 @@ const SPECIMENS: readonly Specimen[] = [
     { label: "space", partName: "/word/no there.xml", rule: "must contain only RFC 3986 pchar characters" },
     { label: "bracket", partName: "/word/no[there].xml", rule: "must contain only RFC 3986 pchar characters", anyUriRefused: true },
     { label: "non-ASCII", partName: "/word/café.xml", rule: "must contain only RFC 3986 pchar characters" },
+    // Session 12 (#453): a segment made only of dots makes Word offer
+    // recovery, even as a folder segment, unlike `/word./`.
+    { label: "three-dot folder segment", partName: "/word/.../nothere.xml", rule: "must not have a dot-only segment (OPC [M1.10])" },
+    { label: "four-dot folder segment", partName: "/word/..../nothere.xml", rule: "must not have a dot-only segment (OPC [M1.10])" },
+    { label: "three-dot first segment", partName: "/.../nothere.xml", rule: "must not have a dot-only segment (OPC [M1.10])" },
 ];
 
 /**
@@ -130,6 +137,29 @@ describe("ct-override-partname-invalid", () => {
         ]);
     });
 
+    it("says an Override has no PartName rather than quoting an empty one (#458)", async () => {
+        // Word 16.115 offers recovery for both (session 13); only the wording differs.
+        const missing = ValidationContext.fromEntries({
+            ...MINIMAL_PARTS,
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                `<Override ContentType="application/xml"/></Types>`,
+            ),
+        });
+        const issues = await diagnose(missing);
+        expect(issues).toEqual([
+            {
+                code: ID,
+                severity: "error",
+                path: "[Content_Types].xml",
+                message: "Override has no PartName attribute, so it names no part.",
+            },
+        ]);
+        expect(isWordBlockingIssue(issues[0]!, new Set())).toBe(true);
+        const empty = ValidationContext.fromEntries(withOverride("", "application/xml"));
+        expect(await diagnose(empty)).toEqual([expected("", "must start with '/'", "error")]);
+    });
+
     it("accepts a well-formed PartName for a part that does not exist", async () => {
         const ctx = ValidationContext.fromEntries(withOverride("/word/nothere.xml", "application/xml"));
         expect(await diagnose(ctx)).toEqual([]);
@@ -175,6 +205,25 @@ describe("ct-override-partname-invalid", () => {
         expect(isWordBlockingIssue(trailingDot!, new Set())).toBe(true);
     });
 
+    it("leaves resolution unchanged: a malformed PartName can still resolve a stored part (#457)", async () => {
+        // The finding is reported, but content types are still keyed by the
+        // canonical spelling, which supplies the leading slash.
+        const parts = {
+            ...MINIMAL_PARTS,
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                'PartName="/word/document.xml"',
+                'PartName="word/document.xml"',
+            ),
+        };
+        expect(await diagnose(ValidationContext.fromEntries(parts))).toEqual([
+            expected("word/document.xml", "must start with '/'", "error"),
+        ]);
+        expect(resolveContentType(parseContentTypes(parseXml(parts["[Content_Types].xml"])), "word/document.xml")).toEqual({
+            contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml",
+            source: "override",
+        });
+    });
+
     it("judges a finding by the rule it breaks, not by the PartName it quotes", async () => {
         // The quoted PartName spells the tolerated rule, but the space breaks pchar.
         const partName = `/word/a: it ${FOLDER_DOT_RULE}.xml`;
@@ -203,6 +252,46 @@ describe("ct-override-partname-invalid in the unobserved formats", { timeout: 12
                 expect(findings(result.issues), profile).toEqual([
                     expected("/ppt/../ppt/nothere.xml", "must not have a '.' or '..' segment", profile === "strict" ? "error" : "warning"),
                 ]);
+            }
+        });
+    });
+
+    it("reports for PPTX in a full run while another part is malformed, except under lenient (#456)", async () => {
+        await withTempDir(async (dir) => {
+            const partName = "/ppt/../ppt/nothere.xml";
+            const parts = {
+                ...MINIMAL_PPTX_PARTS,
+                "[Content_Types].xml": MINIMAL_PPTX_PARTS["[Content_Types].xml"]!.replace(
+                    "</Types>",
+                    `<Override PartName="${partName}" ContentType="application/xml"/></Types>`,
+                ),
+                "junk.xml": "<broken",
+            };
+            const packed = path.join(dir, "malformed-neighbour.pptx");
+            writeFileSync(packed, await buildPptx(parts));
+            const unpacked = path.join(dir, "malformed-neighbour-dir.pptx");
+            for (const [name, text] of Object.entries(parts)) {
+                mkdirSync(path.dirname(path.join(unpacked, name)), { recursive: true });
+                writeFileSync(path.join(unpacked, name), text);
+            }
+            for (const file of [packed, unpacked]) {
+                for (const profile of ["word-valid", "strict", "lenient"] as const) {
+                    const result = await validate(file, { profile });
+                    const tag = `${path.basename(file)} ${profile}`;
+                    expect(result.valid, tag).toBe(false);
+                    // Lenient stops at the malformed part, as its partial runs
+                    // do (#391); word-valid and strict judge the stream.
+                    expect(findings(result.issues), tag).toEqual(
+                        profile === "lenient"
+                            ? []
+                            : [expected(partName, "must not have a '.' or '..' segment", profile === "strict" ? "error" : "warning")],
+                    );
+                    if (profile !== "strict")
+                        for (const selection of [{ quick: true }, { checks: ["content-types"] }, { checks: [ID] }]) {
+                            const partial = await validate(file, { profile, ...selection });
+                            expect(findings(partial.issues), `${tag} ${JSON.stringify(selection)}`).toEqual(findings(result.issues));
+                        }
+                }
             }
         });
     });
@@ -307,6 +396,33 @@ describe.each(["docx", "docm"] as const)("ct-override-partname-invalid in a %s p
         });
     });
 
+    it("fails word-valid for an Override without a PartName, in full and partial runs (#458)", async () => {
+        await withTempDir(async (dir) => {
+            const file = await specimen(dir, "no-partname", {
+                ...MINIMAL_PARTS,
+                "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                    "</Types>",
+                    `<Override ContentType="application/xml"/></Types>`,
+                ),
+            });
+            const finding = {
+                code: ID,
+                severity: "error",
+                path: "[Content_Types].xml",
+                message: "Override has no PartName attribute, so it names no part.",
+            };
+            const full = await validate(file, { profile: "word-valid" });
+            expect(findings(full.issues)).toEqual([finding]);
+            expect(full.valid).toBe(false);
+            for (const selection of [{ quick: true }, { checks: ["content-types"] }, { checks: [ID] }]) {
+                const partial = await validate(file, { profile: "word-valid", ...selection });
+                const tag = JSON.stringify(selection);
+                expect(findings(partial.issues), tag).toEqual([finding]);
+                expect(errorPairs(full.issues), tag).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
+            }
+        });
+    });
+
     it("still fails word-valid when a folder segment ending with '.' comes with a Word-blocking rule", async () => {
         await withTempDir(async (dir) => {
             const partName = "/word./nothere.xml?x=1";
@@ -317,7 +433,7 @@ describe.each(["docx", "docm"] as const)("ct-override-partname-invalid in a %s p
         });
     });
 
-    it("does not resolve a malformed PartName onto a stored part", async () => {
+    it("does not resolve a PartName with a dot segment onto a stored part", async () => {
         // "/word/../word/document.xml" resolves to the stored main document
         // part under dot-segment resolution, but a malformed part name names
         // no part: the stored part keeps its own Override (#414).

@@ -310,16 +310,16 @@ export const PART_NAME_FOLDER_SEGMENT_DOT = "must not have a folder segment endi
 
 /**
  * Why a part name is not a valid OPC part name (ECMA-376 Part 2 §6.2.2.2,
- * [M1.1]–[M1.9]), or `undefined` when it names one.
+ * [M1.1]–[M1.10]), or `undefined` when it names one.
  *
  * A part name is a path: it starts with `/`, its segments are neither empty
- * nor dot segments, it ends with no separator and no segment ends with a
- * dot, it carries no query, fragment or backslash, and every character in it
+ * nor made only of dots ([M1.10]), it ends with no separator and no segment
+ * ends with a dot, it carries no query, fragment or backslash, and every character in it
  * is an RFC 3986 `pchar` or a percent-escape. A percent-escaped separator
  * ([M1.7]) or unreserved character ([M1.8]) is forbidden too.
  *
  * A folder segment ending with a dot ({@link PART_NAME_FOLDER_SEGMENT_DOT}) is
- * judged last. Word 16.115 opens such a name clean while it refuses every
+ * judged last, and a segment made only of dots never reaches it (#453). Word 16.115 opens such a name clean while it refuses every
  * other violation (#450), so a name that breaks another rule as well reports
  * that rule.
  *
@@ -336,6 +336,12 @@ export const partNameViolation = (partName: string): string | undefined => {
     }
     if (segments.some((segment) => segment === "." || segment === "..")) {
         return "must not have a '.' or '..' segment";
+    }
+    // `...` is no dot-segment, but it has no non-dot character either. Word
+    // 16.115 offers recovery for it even as a folder segment, where it
+    // tolerates `word./` (#453), so it must not reach the folder-dot rule.
+    if (segments.some((segment) => /^\.+$/.test(segment))) {
+        return "must not have a dot-only segment (OPC [M1.10])";
     }
     if (segments.some((segment) => segment === "")) {
         return "must not have an empty segment";
