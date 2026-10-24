@@ -1413,7 +1413,7 @@ describe("validation contract: an inexact content type on a Word-read part (#550
     }, 60_000);
 
     it.each(["footer", "footnotes", "endnotes", "comments"] as const)(
-        "keeps a related-but-unused %s part's parameterized Override silent under word-valid while strict still fails it (#516, #570)",
+        "keeps a related-but-unused %s part's parameterized Override silent under word-valid while strict still fails it citing clause 11.3 (#516, #570, #589)",
         async (segment) => {
             const contentType = `${S20_PARTS[segment].type}; charset=utf-8`;
             const bytes = await s20Specimen(segment, contentType, false);
@@ -1424,10 +1424,52 @@ describe("validation contract: an inexact content type on a Word-read part (#550
             expect(strict.issues).toContainEqual(
                 expect.objectContaining({ code: CODE, severity: "error", path: `word/${S20_PARTS[segment].file}` }),
             );
+            // s21b opened these specimens clean, so strict's finding cites the
+            // spec and claims no Word recovery for a part Word does not read.
+            const finding = strict.issues.find((issue) => issue.code === CODE && issue.path === `word/${S20_PARTS[segment].file}`);
+            expect(finding?.message, segment).toContain(`clause 11.3 assigns the ${segment} part`);
+            expect(finding?.message, segment).not.toContain("offers to recover the package");
             expect(strict.valid).toBe(false);
         },
         60_000,
     );
+
+    it("keeps a related-but-unused header's parameterized Override silent under word-valid while strict cites clause 11.3 with no recovery claim, and partial runs agree (#589, #381)", async () => {
+        await withTempDir(async (dir) => {
+            const typed = headerInMain(`${HEADER}; charset=utf-8`);
+            // The same shape minus the `w:headerReference`: related but unused,
+            // s21b's `header-unused-override-charset` specimen.
+            const file = path.join(dir, "unused-header.docx");
+            writeFileSync(
+                file,
+                await buildDocx({
+                    ...MINIMAL_PARTS,
+                    "word/header9.xml": typed.extra["word/header9.xml"]!,
+                    "word/_rels/document.xml.rels": typed.rels,
+                    "[Content_Types].xml": typed.stream,
+                }),
+            );
+            const wordValid = await validate(file, { profile: "word-valid" });
+            expect(wordValid.issues.filter((issue) => issue.code === CODE)).toEqual([]);
+            expect(wordValid.valid).toBe(true);
+            const strict = await validate(file, { profile: "strict" });
+            const finding = strict.issues.find((issue) => issue.code === CODE && issue.path === "word/header9.xml");
+            expect(finding?.message).toContain("clause 11.3 assigns the header part");
+            expect(finding?.message).not.toContain("offers to recover the package");
+            expect(strict.valid).toBe(false);
+            expect(strict.valid && !wordValid.valid, "strict success must imply word-valid success").toBe(false);
+            // The unused header is no word-valid finding in partial runs either.
+            for (const selection of [{ quick: true }, { checks: [CODE] }, { checks: ["content-types"] }]) {
+                const partial = await validate(file, { profile: "word-valid", ...selection });
+                const tag = `unused-header ${JSON.stringify(selection)}`;
+                expect(partial.valid, tag).toBe(wordValid.valid);
+                expect(
+                    partial.issues.filter((issue) => issue.code === CODE),
+                    tag,
+                ).toEqual([]);
+            }
+        });
+    }, 60_000);
 
     it("keeps a parameterized glossaryDocument Override silent under word-valid — session 20 opened it clean — while strict still fails it (#570)", async () => {
         const bytes = await s20Specimen("glossaryDocument", `${WMLT}.document.glossary+xml; charset=utf-8`);

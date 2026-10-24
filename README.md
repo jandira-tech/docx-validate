@@ -614,7 +614,16 @@ judges the same probed set — theme included, though it is a DrawingML part,
 not a clause-11.3 one — plus the unprobed Part 1 WordprocessingML
 glossaryDocument type, citing the content type ECMA-376 Part 1
 (4th edition), clause 11.3, assigns
-([#506](https://github.com/jandira-tech/docx-validate/issues/506)). Lenient
+([#506](https://github.com/jandira-tech/docx-validate/issues/506)). A
+strict finding for a lazy part Word does not read — a related-but-unused
+header, footer, comments, footnotes or endnotes part, the main document's
+or a reached glossary's header — cites clause 11.3 the same way and claims
+no Word recovery: session 21 (s21b) observed those specimens open clean
+([#589](https://github.com/jandira-tech/docx-validate/issues/589); session
+21 in `docs/plans/evidence/word-probes-2026-10-24.md`), so the recovery
+sentence stays on the parts Word reads — eager parts and used lazy parts
+alike, whose findings keep the observed wording under strict exactly as
+word-valid reports it. Lenient
 reports a warning. One finding is reported per part, naming the declared
 value — quoted, so padding is visible — and whether a Default or an
 Override produced it; the generic check judges the media type with

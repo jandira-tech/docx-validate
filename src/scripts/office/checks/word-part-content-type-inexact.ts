@@ -55,11 +55,16 @@
  * content type Part 1 assigns them (#506), like the generic check's spec
  * mode; the header joined the probed set in session 17 and numbering,
  * footer, endnotes, footnotes and comments in session 20 (#570), so only
- * glossaryDocument keeps the clause-11.3 wording. Theme is a DrawingML part — its root is the
+ * glossaryDocument keeps the clause-11.3 wording among the eager segments.
+ * Theme is a DrawingML part — its root is the
  * `a:theme` element dml-main.xsd declares — so it is no clause-11.3 part
  * either; session 20 observed Word reject its parameterized type, which
  * puts it in the probed set strict shares, keeping strict a superset of
- * word-valid (#570).
+ * word-valid (#570). A lazy segment strict judges on a part Word does not
+ * read keeps the clause-11.3 wording too: session 21 (s21b) observed a
+ * related-but-unused footer, footnotes, endnotes, comments or header part
+ * typed `…+xml; charset=utf-8` open clean, so the recovery claim stays on
+ * the parts Word reads — eager and used lazy alike (#589).
  *
  * A part whose media type is itself generic XML is the generic check's
  * finding: `word-part-content-type-generic` judges the media type, with
@@ -225,19 +230,25 @@ export const wordPartContentTypeInexactFindings = async (
     const merged = [...targets, ...glossaryTargets.filter((target) => !named.has(canonicalPartName(target.part)))];
     // Headers, footers, comments, footnotes and endnotes are parsed lazily
     // — only when the document uses them (#516); session 20's specimens
-    // reference theirs (#570) — so under the observed scope `wordReadParts`
-    // gates the lazy targets the reachability walk named, the same usage
-    // decision the XML diagnostics make, and the glossary's targets too:
-    // its styles part is eagerly parsed (always read) while its header is
-    // lazy like the main document's (#579). Strict judges every
-    // relationship by the spec, referenced or not.
-    const read =
-        scope === "observed" && merged.some((target) => target.via === "glossary" || LAZY_OBSERVED_SEGMENTS.has(target.segment))
-            ? await wordReadParts(ctx)
-            : undefined;
+    // reference theirs (#570) — so `wordReadParts` gates the lazy targets
+    // the reachability walk named, the same usage decision the XML
+    // diagnostics make, and the glossary's targets too: its styles part is
+    // eagerly parsed (always read) while its header is lazy like the main
+    // document's (#579). The set is computed under the spec scope as well:
+    // strict still judges every relationship, but its verdict follows the
+    // observation, and session 21 (s21b) observed a related-but-unused
+    // lazy part open clean — so under strict an unread lazy target is
+    // reported with the spec text and no Word sentence instead of being
+    // skipped (#589).
+    const read = merged.some((target) => target.via === "glossary" || LAZY_OBSERVED_SEGMENTS.has(target.segment))
+        ? await wordReadParts(ctx)
+        : undefined;
     const findings: WordInexactContentTypeFinding[] = [];
     for (const { part, segment, via } of merged) {
-        if (read !== undefined && (via === "glossary" || LAZY_OBSERVED_SEGMENTS.has(segment)) && !read.has(canonicalPartName(part))) {
+        const lazy = via === "glossary" || LAZY_OBSERVED_SEGMENTS.has(segment);
+        // Under the observed scope an unread lazy part is not Word's finding
+        // at all; `read === undefined` (usage undecidable, #536) keeps it.
+        if (scope === "observed" && lazy && read !== undefined && !read.has(canonicalPartName(part))) {
             continue;
         }
         const resolved = resolveContentType(table, part);
@@ -270,7 +281,12 @@ export const wordPartContentTypeInexactFindings = async (
         // The observed pairs are the main-document probes plus the
         // glossary's probed styles and referenced header (#579); every
         // other glossary segment is spec-only.
-        const observed = via === "glossary" ? GLOSSARY_OBSERVED_SEGMENTS.has(segment) : OBSERVED_SEGMENTS.has(segment);
+        const probed = via === "glossary" ? GLOSSARY_OBSERVED_SEGMENTS.has(segment) : OBSERVED_SEGMENTS.has(segment);
+        // Word recovery was observed only for the parts Word reads. A lazy
+        // target outside `wordReadParts` opened clean (session 21, s21b), so
+        // its finding cites the spec alone; `read === undefined` means the
+        // usage could not be decided, which keeps the target reached (#536).
+        const observed = probed && !(lazy && read !== undefined && !read.has(canonicalPartName(part)));
         const resolvedText =
             resolved.source === "default"
                 ? `resolves only through the Default for extension "${partExtension(part)}" to "${declared}"`
