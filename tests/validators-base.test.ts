@@ -478,6 +478,81 @@ describe("BaseSchemaValidator", () => {
             });
         });
 
+        it("covers media declared by an OPC case-variant Override PartName in every pass", async () => {
+            await withTempDir(async (dir) => {
+                // OPC part-name comparison is ASCII case-insensitive, so
+                // /Word/Media/IMAGE1.JPEG declares word/media/image1.jpeg.
+                await writeFile(
+                    path.join(dir, "[Content_Types].xml"),
+                    `<?xml version="1.0"?>` +
+                        `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+                        `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+                        `<Override PartName="/Word/Media/IMAGE1.JPEG" ContentType="image/jpeg"/>` +
+                        `</Types>`,
+                );
+                await writeFile(path.join(dir, "word", "media", "image1.jpeg"), "\xff\xd8\xff\xe0");
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateContentTypes();
+                expect(result.issues.some((i) => i.code === "ct-undeclared-ext")).toBe(false);
+                expect(result.issues.some((i) => i.code === "ct-uncovered-part")).toBe(false);
+            });
+        });
+
+        it("covers a declarable XML root declared by an OPC case-variant Override PartName", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "[Content_Types].xml"),
+                    `<?xml version="1.0"?>` +
+                        `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+                        `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+                        `<Override PartName="/Word/Document.XML" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>` +
+                        `</Types>`,
+                );
+                await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateContentTypes();
+                expect(result.issues.some((i) => i.code === "ct-undeclared-part")).toBe(false);
+            });
+        });
+
+        it("still reports ct-undeclared-part when only a Default, not an Override, covers a declarable root", async () => {
+            await withTempDir(async (dir) => {
+                // document.xml is reachable through <Default Extension="xml">
+                // but has no Override — the declarable-root check keys on
+                // Override coverage, so this stays a defect.
+                await writeFile(
+                    path.join(dir, "[Content_Types].xml"),
+                    `<?xml version="1.0"?>` +
+                        `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+                        `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+                        `<Default Extension="xml" ContentType="application/xml"/>` +
+                        `</Types>`,
+                );
+                await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateContentTypes();
+                expect(result.issues.some((i) => i.code === "ct-undeclared-part" && i.path === "word/document.xml")).toBe(true);
+            });
+        });
+
+        it("resolves an escaped Override PartName for media (percent-decoding)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "[Content_Types].xml"),
+                    `<?xml version="1.0"?>` +
+                        `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+                        `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+                        `<Override PartName="/word/media/my%20img.jpeg" ContentType="image/jpeg"/>` +
+                        `</Types>`,
+                );
+                await writeFile(path.join(dir, "word", "media", "my img.jpeg"), "\xff\xd8\xff\xe0");
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateContentTypes();
+                expect(result.issues.some((i) => i.code === "ct-undeclared-ext")).toBe(false);
+                expect(result.issues.some((i) => i.code === "ct-uncovered-part")).toBe(false);
+            });
+        });
+
         it("treats _rels/.rels as extension 'rels' (OPC last-dot rule, not POSIX dotfile)", async () => {
             await withTempDir(async (dir) => {
                 // POSIX path.extname('.rels') is '' — a naive implementation

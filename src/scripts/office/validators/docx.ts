@@ -57,10 +57,14 @@ import {
     XML_NAMESPACE,
 } from "./base";
 
-export const WORD_2006_NAMESPACE = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
-export const WORD_STRICT_NAMESPACE = "http://purl.oclc.org/ooxml/wordprocessingml/main";
-/** Python: `WORD_PARAGRAPH_NAMESPACES = (WORD_2006_NAMESPACE, WORD_STRICT_NAMESPACE)` */
-export const WORD_PARAGRAPH_NAMESPACES: readonly [string, string] = [WORD_2006_NAMESPACE, WORD_STRICT_NAMESPACE];
+import { runChecks } from "../../../lib/check-scheduler";
+import type { ValidationContext } from "../../../lib/validation-context";
+import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "../checks/index";
+import { wordRowWithoutCellCheck } from "../checks/tables";
+import { contextFromDirectory } from "../package-context";
+import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
+
+export { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
 /** OpenXmlPowerTools DocumentBuilder Insert — `PtOpenXml.ptOpenXml` in PtOpenXmlUtil.cs */
 const DOCUMENT_BUILDER_INSERT_NAMESPACE = "http://powertools.codeplex.com/documentbuilder/2011/insert";
 const DOCUMENT_BUILDER_INSERT_NAMESPACES: ReadonlySet<string> = new Set([DOCUMENT_BUILDER_INSERT_NAMESPACE]);
@@ -383,6 +387,18 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     private originalDocumentRoot: Element | null = null;
     private originalDocumentRootFailed = false;
 
+    /**
+     * The package as the named checks see it, built once per `validate()` run
+     * so its read and parse caches never outlive the run (auto-repair rewrites
+     * parts between runs).
+     */
+    private runContext: ValidationContext | undefined;
+
+    private context(): ValidationContext {
+        this.runContext ??= contextFromDirectory(this.unpackedDir);
+        return this.runContext;
+    }
+
     // ----- top-level entry point ----------------------------------------------
 
     /**
@@ -391,6 +407,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      */
     async validate(): Promise<ValidationResult> {
         this.xsdWalk = { started: false, parts: [], eligible: 0 };
+        this.runContext = undefined;
         const xmlOk = await this.validateXml();
         if (!xmlOk.valid && this.profile !== "word-valid") return xmlOk;
 
@@ -425,6 +442,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             this.validateRelationshipIdStability(),
             this.validateRedundantRunProperties(),
         ];
+        if (this.profile !== "lenient") checks.push(this.validateRegisteredWordRules());
         if (this.profile === "word-valid") {
             // Non-XSD checks first. A blocking no returns before XSD starts.
             checks.push(this.validateWordOpenCompatibility());
@@ -434,8 +452,25 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             return this.applyWordValidProfile(mergeResults(profiled, xsd));
         }
 
+        // Strict is a superset of word-valid: every Word-proven rejection
+        // rule runs here too, at its native error severity.
+        if (this.profile === "strict") checks.push(this.validateWordOpenCompatibility());
         checks.push(this.validateAgainstXsd());
         return mergeResults(xmlOk, ...(await Promise.all(checks)));
+    }
+
+    /**
+     * Word rules registered in `WORD_RULE_CHECKS`, run through the shared
+     * context. Lenient output stays as it was, so they run under `word-valid`
+     * and `strict` only.
+     */
+    private async validateRegisteredWordRules(): Promise<ValidationResult> {
+        if (WORD_RULE_CHECKS.length === 0) return { valid: true, issues: [] };
+        const run = await runChecks(this.context(), createDefaultCheckRegistry(), {
+            format: "docx",
+            select: WORD_RULE_CHECKS.map((check) => check.id),
+        });
+        return { valid: run.valid, issues: [...run.issues] };
     }
 
     /**
@@ -590,6 +625,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "rels-missing-sidecar":
                 return !/^word\/(?:header|footer)\d*\.xml$/i.test(issue.path ?? "");
             case "xml-syntax":
+            // An undeclared namespace prefix is the same class of defect as a
+            // malformed part — Word reports unreadable content — so it follows
+            // the identical word/ vs non-word/ policy.
+            case "xml-undeclared-prefix":
                 return issue.path?.startsWith("word/") || issue.path === "[Content_Types].xml";
             case "rels-broken":
                 // NB: a broken media/ rel (image Target absent) is NOT word-blocking:
@@ -602,6 +641,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 return issue.message.includes("../customXml/") || /\/_rels\/|\.rels$/i.test(issue.message);
             case "rels-empty-element":
                 return issue.message.includes("missing required attribute");
+            case "mce-malformed":
+            case "mce-must-understand":
+                return true;
             case "xsd-error":
                 // A schema the engine could not load is not a Word-tolerated
                 // quirk. The ignore list already dropped the Dublin Core
@@ -615,14 +657,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
     private async validateWordOpenCompatibility(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const documents = new Map<string, Promise<Document>>();
-        const readXml = (xmlFile: string): Promise<Document> => {
-            let document = documents.get(xmlFile);
-            if (!document) {
-                document = fs.readFile(xmlFile, "utf-8").then((source) => parseXml(source));
-                documents.set(xmlFile, document);
-            }
-            return document;
+        // Every Word check reads through the run's context, so a part is read
+        // and parsed once however many checks inspect it.
+        const ctx = this.context();
+        const readXml = async (xmlFile: string): Promise<Document> => {
+            const parsed = ctx.xml(this.relPath(xmlFile));
+            if (!parsed) throw new Error(`Part not found: ${this.relPath(xmlFile)}`);
+            if (!parsed.ok) throw new Error(parsed.message);
+            return parsed.document;
         };
         await this.validateWordContentTypes(issues, readXml);
         await this.validateDrawingScalarTextWhitespace(issues, readXml);
@@ -974,30 +1016,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * `w:ins`, `w:del`, `w:sdt`, or a nested table still counts, because
      * it is a descendant of that row.
      */
-    private async validateRowsWithoutCells(issues: ValidationIssue[], readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
-        for (const xmlFile of this.userTextXmlFiles()) {
-            let dom: Document;
-            try {
-                dom = await readXml(xmlFile);
-            } catch {
-                continue;
-            }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const rows = getElementsByTagNameNSAll(dom, ns, "tr");
-                for (let i = 0; i < rows.length; i += 1) {
-                    const row = rows[i];
-                    if (!row) continue;
-                    if (getElementsByTagNameNSAll(row, ns, "tc").length > 0) continue;
-                    issues.push({
-                        severity: "error",
-                        message:
-                            "A table row contains no w:tc cell. Microsoft Word cannot open the file. " + "Remove the row or add a cell.",
-                        path: this.relPath(xmlFile),
-                        code: "word-row-without-cell",
-                    });
-                }
-            }
-        }
+    /** Adapter: the rule lives in the named check `word-row-without-cell`. */
+    private async validateRowsWithoutCells(issues: ValidationIssue[], _readXml: (xmlFile: string) => Promise<Document>): Promise<void> {
+        issues.push(...(await wordRowWithoutCellCheck.run(this.context())));
     }
 
     /**

@@ -43,11 +43,14 @@ import { existsSync, promises as fs, readdirSync, readFileSync, realpathSync, st
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { parseContentTypes, partExtension, resolveContentType } from "../../../lib/content-types";
+import { applyMarkupCompatibility, UNDERSTOOD_NAMESPACES } from "../../../lib/markup-compatibility";
 import { withTempDir } from "../../../lib/run-cli";
 import type { Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
-import { DEFAULT_PROFILE, OK_RESULT } from "../../../lib/types";
-import { createXsdValidator, type XsdValidator } from "../../../lib/xsd-validator";
+import { DEFAULT_PROFILE, NS, OK_RESULT } from "../../../lib/types";
+import { allowSchemaResourceRoot, createXsdValidator, type XsdValidator } from "../../../lib/xsd-validator";
 import { getElementsByTagNameNSAll, getElementsByTagNameAll, parseXml, serializeXml } from "../../../lib/xml-helpers";
+import { checkXmlSyntax } from "../../../lib/xml-syntax";
 import { resolveSafeZipEntry } from "../../../lib/zip-path";
 
 /**
@@ -74,6 +77,14 @@ const SCHEMA_MAPPINGS: Record<string, string> = {
     "additionalCharacteristics.xml": "ISO-IEC29500-4_2016/shared-additionalCharacteristics.xsd",
     itemProps: "ISO-IEC29500-4_2016/shared-customXmlDataProperties.xsd",
     sig: "ecma/fourth-edition/opc-digSig.xsd",
+};
+
+// These namespaces are understood only when validating their standalone
+// mapped part schemas. wml.xsd does not import these Microsoft extensions.
+const SCHEMA_NAMESPACE_CAPABILITIES: Readonly<Record<string, string>> = {
+    "wml-2012.xsd": NS.W15,
+    "wml-cex-2018.xsd": NS.W16CEX,
+    "wml-cid-2016.xsd": NS.W16CID,
 };
 
 const IGNORED_VALIDATION_ERRORS: readonly string[] = [
@@ -119,27 +130,7 @@ const MC_NAMESPACE = "http://schemas.openxmlformats.org/markup-compatibility/200
 export const XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace";
 export const PACKAGE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/relationships";
 export const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
-const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types";
-
 const MAIN_CONTENT_FOLDERS = new Set(["word", "ppt", "xl"]);
-
-const OOXML_NAMESPACES = new Set<string>([
-    "http://schemas.openxmlformats.org/officeDocument/2006/math",
-    "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
-    "http://schemas.openxmlformats.org/schemaLibrary/2006/main",
-    "http://schemas.openxmlformats.org/drawingml/2006/main",
-    "http://schemas.openxmlformats.org/drawingml/2006/chart",
-    "http://schemas.openxmlformats.org/drawingml/2006/chartDrawing",
-    "http://schemas.openxmlformats.org/drawingml/2006/diagram",
-    "http://schemas.openxmlformats.org/drawingml/2006/picture",
-    "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing",
-    "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing",
-    "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
-    "http://schemas.openxmlformats.org/presentationml/2006/main",
-    "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
-    "http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes",
-    "http://www.w3.org/XML/1998/namespace",
-]);
 
 /**
  * URI prefix shared by all ISO OOXML Strict conformance class namespaces.
@@ -277,6 +268,8 @@ export interface XsdValidationOutcome {
     /** `null` mirrors Python's `(None, None)` skip — no schema configured. */
     valid: boolean | null;
     errors: Set<string>;
+    /** Compatibility diagnostics keep their own stable codes, independent of XSD messages. */
+    issues?: ValidationIssue[];
 }
 
 export class BaseSchemaValidator {
@@ -332,6 +325,10 @@ export class BaseSchemaValidator {
         if (this.xsdValidatorRef) {
             return this.xsdValidatorRef;
         }
+        // The engine's file access is restricted to allowed schema roots; a
+        // caller-supplied `schemasDir` must be one of them or its import
+        // closure would be refused.
+        allowSchemaResourceRoot(this.schemasDir);
         if (!this.xsdValidatorPromise) {
             this.xsdValidatorPromise = createXsdValidator();
         }
@@ -341,22 +338,15 @@ export class BaseSchemaValidator {
     }
 
     /**
-     * Strict-profile-only check: every XML part must NOT begin with a UTF-8
-     * BOM (U+FEFF, encoded as bytes EF BB BF). The XML spec permits the BOM
-     * and Microsoft Office routinely emits it; the lenient profile silently
-     * strips it before parsing. Strict callers want to know it's there.
-     *
-     * Severity is profile-aware:
-     *   - `strict`  → reported as `error` (fails the document).
-     *   - `lenient` → reported as `warning` (visible to anyone inspecting
-     *     `result.issues` but does NOT flip `valid` to false).
-     *
-     * The check NEVER becomes a silent no-op — even in lenient mode the
-     * gap is surfaced as a warning so callers can audit it later.
+     * Every XML part should NOT begin with a UTF-8 BOM (U+FEFF, bytes EF BB
+     * BF). XML 1.0 §4.3.3 permits the BOM and Microsoft Office emits it
+     * routinely, so this is reported at `warning` severity under EVERY
+     * profile — it never fails a document on its own. The finding stays
+     * visible in `result.issues` so callers who care about canonical bytes can
+     * audit it.
      */
     async validateNoBom(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
         for (const xmlFile of this.xmlFiles) {
             let bytes: Buffer;
             try {
@@ -366,10 +356,10 @@ export class BaseSchemaValidator {
             }
             if (bytes.length >= 3 && bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf) {
                 issues.push({
-                    severity,
+                    severity: "warning",
                     message:
-                        "XML part begins with a UTF-8 BOM (U+FEFF). Permitted by the XML spec but " +
-                        "non-canonical for OOXML; reported as error under strict, warning under lenient.",
+                        "XML part begins with a UTF-8 BOM (U+FEFF). Permitted by the XML spec (and emitted by Microsoft Office), " +
+                        "so it is reported as a warning under every profile and never fails a document on its own.",
                     path: this.relPath(xmlFile),
                     code: "xml-bom-leading",
                 });
@@ -554,21 +544,31 @@ export class BaseSchemaValidator {
 
     // ----- well-formedness & namespaces ---------------------------------------
 
+    /**
+     * Well-formedness of every XML part, checked on the ORIGINAL BYTES.
+     *
+     * libxml2 parses bytes, so the part's own BOM and `encoding` declaration
+     * decide how it decodes (a UTF-16 part read as a UTF-8 string is garbage)
+     * and every diagnostic carries a 1-based line/column. Parsing runs
+     * WITHOUT `XML_PARSE_RECOVER` so content `@xmldom` silently recovers from
+     * (a bare `&`, an unquoted attribute value) is reported instead of
+     * accepted, and WITH `XML_PARSE_NONET | XML_PARSE_NO_XXE` so external
+     * entities are never fetched. See `src/lib/xml-syntax.ts`.
+     *
+     * Codes: `xml-syntax` (not well-formed), `xml-undeclared-prefix`
+     * (undeclared namespace prefix), `xml-encoding` (declared encoding
+     * unsupported / bytes do not decode in it).
+     */
     async validateXml(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
         for (const xmlFile of this.xmlFiles) {
+            let raw: Buffer;
             try {
-                const content = await fs.readFile(xmlFile, "utf-8");
-                parseXml(content);
-            } catch (err) {
-                const message = err instanceof Error ? err.message : String(err);
-                issues.push({
-                    severity: "error",
-                    message,
-                    path: this.relPath(xmlFile),
-                    code: "xml-syntax",
-                });
+                raw = await fs.readFile(xmlFile);
+            } catch {
+                continue;
             }
+            issues.push(...(await checkXmlSyntax(raw, this.relPath(xmlFile))));
         }
         return finalize(issues);
     }
@@ -1023,37 +1023,11 @@ export class BaseSchemaValidator {
             };
         }
 
-        const declaredParts = new Set<string>();
-        const declaredExtensions = new Set<string>();
-
-        const overrides = getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Override");
-        for (let i = 0; i < overrides.length; i += 1) {
-            const o = overrides[i];
-            if (!o) continue;
-            const partName = o.getAttribute("PartName");
-            // OPC PartName is a package-relative URI; the on-disk path is its
-            // decoded form, so decode before storing or an escaped PartName
-            // (%20 et al.) never matches the walked file list. Fall back to
-            // the raw value on malformed escapes — the lookup then simply
-            // misses and the residual pass reports the part.
-            if (partName) {
-                let decoded = partName.replace(/^\/+/, "");
-                try {
-                    decoded = decodeURIComponent(decoded);
-                } catch {
-                    // keep raw
-                }
-                declaredParts.add(decoded);
-            }
-        }
-
-        const defaults = getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Default");
-        for (let i = 0; i < defaults.length; i += 1) {
-            const d = defaults[i];
-            if (!d) continue;
-            const ext = d.getAttribute("Extension");
-            if (ext) declaredExtensions.add(ext.toLowerCase());
-        }
+        // Single OPC resolution table (Override first, then Default —
+        // ECMA-376 Part 2 §10.1.2.4) shared by every coverage pass below:
+        // declarable XML roots (ct-undeclared-part), known media extensions
+        // (ct-undeclared-ext) and the residual invariant (ct-uncovered-part).
+        const table = parseContentTypes(dom);
 
         const declarableRoots = new Set<string>([
             "sld",
@@ -1089,7 +1063,11 @@ export class BaseSchemaValidator {
                 const root = parseXml(await fs.readFile(xmlFile, "utf-8")).documentElement;
                 if (!root) continue;
                 const rootName = localName(root.tagName ?? root.nodeName);
-                if (declarableRoots.has(rootName) && !declaredParts.has(pathStr)) {
+                // A declarable root must be covered by an <Override PartName>
+                // (OPC-equivalent match — case-insensitive, percent-decoded);
+                // coverage through a bare <Default Extension> is not enough
+                // for parts Word opens by name.
+                if (declarableRoots.has(rootName) && resolveContentType(table, pathStr)?.source !== "override") {
                     issues.push({
                         severity: "error",
                         message: `File with <${rootName}> root not declared in [Content_Types].xml`,
@@ -1107,13 +1085,18 @@ export class BaseSchemaValidator {
             const parts = filePath.split(path.sep);
             if (parts.includes("_rels") || parts.includes("docProps")) continue;
 
+            const rel = this.relPath(filePath).replace(/\\/g, "/");
             const extension = ext.replace(/^\./, "");
+            // An exact <Override PartName> covers a media part just as well
+            // as a <Default Extension> — OPC §10.1.2.4 resolves Override
+            // first — so resolve through the table instead of consulting
+            // only the Default extensions (jubarte redlines declare every
+            // media part by Override; issues #208/#237).
             // Object.hasOwn, not `in`: mediaExtensions is a plain object, so
             // `"constructor" in mediaExtensions` is true and a part named
             // x.constructor would sail past the check (and be "suggested"
             // with ContentType="undefined").
-            if (extension && !declaredExtensions.has(extension) && Object.hasOwn(mediaExtensions, extension)) {
-                const rel = this.relPath(filePath);
+            if (Object.hasOwn(mediaExtensions, extension) && resolveContentType(table, rel) === null) {
                 issues.push({
                     severity: "error",
                     message:
@@ -1137,13 +1120,13 @@ export class BaseSchemaValidator {
         for (const filePath of allFiles) {
             if (path.basename(filePath) === "[Content_Types].xml") continue;
             const rel = this.relPath(filePath).replace(/\\/g, "/");
-            if (declaredParts.has(rel)) continue;
-            const base = rel.slice(rel.lastIndexOf("/") + 1);
-            const dot = base.lastIndexOf(".");
+            // One resolver call subsumes the old set lookups: an OPC-
+            // equivalent <Override PartName> (case-insensitive, decoded) or
+            // a <Default Extension> for the part's OPC extension covers it.
+            if (resolveContentType(table, rel) !== null) continue;
             // OPC extension = substring after the last dot of the part name's
             // last segment — unlike POSIX, `_rels/.rels` has extension "rels".
-            const extension = dot >= 0 ? base.slice(dot + 1).toLowerCase() : "";
-            if (extension !== "" && declaredExtensions.has(extension)) continue;
+            const extension = partExtension(rel);
             if (Object.hasOwn(mediaExtensions, extension)) continue;
             issues.push({
                 severity: "error",
@@ -1215,6 +1198,7 @@ export class BaseSchemaValidator {
             if (!countEligible(xmlFile)) continue;
 
             const outcome = await this.validateFileAgainstXsd(xmlFile);
+            issues.push(...(outcome.issues ?? []));
             const rel = this.relPath(xmlFile);
             this.xsdWalk.parts.push(rel);
             if (outcome.valid === null || outcome.valid) continue;
@@ -1273,7 +1257,7 @@ export class BaseSchemaValidator {
             return { valid: null, errors: new Set() };
         }
         if (single.valid) {
-            return { valid: true, errors: new Set() };
+            return single;
         }
 
         const originalErrors = await this._getOriginalFileErrors(xmlFile);
@@ -1285,9 +1269,9 @@ export class BaseSchemaValidator {
         }
 
         if (newErrors.size > 0) {
-            return { valid: false, errors: newErrors };
+            return { ...single, valid: false, errors: newErrors };
         }
-        return { valid: true, errors: new Set() };
+        return { ...single, valid: true, errors: new Set() };
     }
 
     /**
@@ -1326,9 +1310,13 @@ export class BaseSchemaValidator {
         const schemaPath = this._getSchemaPath(xmlFile);
         if (!schemaPath) return { valid: null, errors: new Set() };
 
+        const compatibilityIssues: ValidationIssue[] = [];
         try {
             const xmlContent = readFileSync(xmlFile, "utf-8");
-            const cleanedString = this._preprocessXmlForXsd(xmlContent, xmlFile);
+            const cleanedString = this._preprocessXmlForXsd(xmlContent, xmlFile, compatibilityIssues);
+            if (compatibilityIssues.some((issue) => issue.code === "mce-root-ignored")) {
+                return { valid: true, errors: new Set(), issues: compatibilityIssues };
+            }
 
             const validator = await this._getXsdValidator();
             const issues = await validator.validate(cleanedString, schemaPath);
@@ -1338,29 +1326,25 @@ export class BaseSchemaValidator {
             // IGNORED_VALIDATION_ERRORS in `validateFileAgainstXsd`.
             const errorIssues = issues.filter((i) => i.severity === "error");
             if (errorIssues.length === 0) {
-                return { valid: true, errors: new Set() };
+                return { valid: true, errors: new Set(), ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}) };
             }
             const errors = new Set<string>();
             for (const issue of errorIssues) {
                 errors.add(issue.message.trim());
             }
-            return { valid: false, errors };
+            return { valid: false, errors, ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}) };
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
-            return { valid: false, errors: new Set([message]) };
+            return { valid: false, errors: new Set([message]), ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}) };
         }
     }
 
     /**
      * Pre-process XML before XSD validation: strips `{{template}}` tags from
-     * non-`<*:t>` text nodes, removes the `mc:Ignorable` attribute, and (for
-     * files inside `word/`, `ppt/`, `xl/`) strips elements/attributes belonging
-     * to namespaces not in `OOXML_NAMESPACES`.
-     *
-     * Mirrors `_remove_template_tags_from_text_nodes` + `_preprocess_for_mc_ignorable`
-     * + `_clean_ignorable_namespaces` in Python.
+     * non-`<*:t>` text nodes, then applies markup compatibility to a validation
+     * view of parts inside `word/`, `ppt/`, and `xl/`.
      */
-    protected _preprocessXmlForXsd(xmlContent: string, xmlFile: string): string {
+    protected _preprocessXmlForXsd(xmlContent: string, xmlFile: string, issues: ValidationIssue[] = []): string {
         const dom = parseXml(xmlContent);
 
         // _remove_template_tags_from_text_nodes
@@ -1383,25 +1367,20 @@ export class BaseSchemaValidator {
             }
         }
 
-        // _preprocess_for_mc_ignorable
-        const root = dom.documentElement;
-        if (root) {
-            const attrs = root.attributes;
-            for (let i = attrs.length - 1; i >= 0; i -= 1) {
-                const attr = attrs[i];
-                if (!attr) continue;
-                if (attr.namespaceURI === MC_NAMESPACE && localName(attr.name) === "Ignorable") {
-                    root.removeAttributeNode(attr);
-                }
-            }
-        }
-
-        // _clean_ignorable_namespaces — only for word/ppt/xl files
         const rel = this.relPath(xmlFile);
         const firstSegment = rel.split(/[\\/]/)[0];
-        if (MAIN_CONTENT_FOLDERS.has(firstSegment) && root) {
-            stripNonOoxmlAttributes(root);
-            removeNonOoxmlElements(root);
+        if (MAIN_CONTENT_FOLDERS.has(firstSegment)) {
+            const schemaNamespace = SCHEMA_NAMESPACE_CAPABILITIES[path.basename(this._getSchemaPath(xmlFile) ?? "")];
+            const understood = schemaNamespace ? new Set([...UNDERSTOOD_NAMESPACES, schemaNamespace]) : UNDERSTOOD_NAMESPACES;
+            const compatible = applyMarkupCompatibility(dom, { understood });
+            issues.push(
+                ...compatible.issues.map((issue) => ({
+                    ...issue,
+                    path: rel,
+                    message: issue.code === "mce-extension-not-ignorable" ? `${rel}: ${issue.message}` : issue.message,
+                })),
+            );
+            return serializeXml(compatible.document, "UTF-8");
         }
 
         return serializeXml(dom, "UTF-8");
@@ -1595,47 +1574,6 @@ function findIdAttribute(elem: Element, attrName: string): string | null {
         if (local === attrName) return attr.value;
     }
     return null;
-}
-
-function stripNonOoxmlAttributes(root: Element): void {
-    for (const elem of iterElements(root)) {
-        const attrs = elem.attributes;
-        const toRemove: Attr[] = [];
-        for (let i = 0; i < attrs.length; i += 1) {
-            const attr = attrs[i];
-            if (!attr) continue;
-            const ns = attr.namespaceURI;
-            if (ns && !OOXML_NAMESPACES.has(ns)) {
-                toRemove.push(attr);
-            }
-        }
-        for (const attr of toRemove) {
-            elem.removeAttributeNode(attr);
-        }
-    }
-}
-
-function removeNonOoxmlElements(root: Element): void {
-    // DFS, removing element children whose namespace is outside OOXML_NAMESPACES.
-    const stack: Element[] = [root];
-    while (stack.length > 0) {
-        const node = stack.pop();
-        if (node === undefined) break;
-        const children = node.childNodes;
-        const toRemove: Element[] = [];
-        for (let i = 0; i < children.length; i += 1) {
-            const child = children[i];
-            if (!child || child.nodeType !== 1) continue;
-            const elem = child as Element;
-            const ns = elem.namespaceURI;
-            if (ns && !OOXML_NAMESPACES.has(ns)) {
-                toRemove.push(elem);
-            } else {
-                stack.push(elem);
-            }
-        }
-        for (const e of toRemove) node.removeChild(e);
-    }
 }
 
 function finalize(issues: ValidationIssue[]): ValidationResult {

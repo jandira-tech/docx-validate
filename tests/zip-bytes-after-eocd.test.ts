@@ -66,13 +66,25 @@ describe("word-valid ZIP bytes after the end of central directory", { timeout: 3
         expect(countZipBytesAfterEocd(readFileSync(CONCATENATED_REMOVED))).toBe(0);
     });
 
-    it.each(["lenient", "strict"] as const)("does not report the concatenated copy on %s", async (profile) => {
-        const result = await validate(CONCATENATED, { profile });
+    it("does not report the concatenated copy on lenient", async () => {
+        const result = await validate(CONCATENATED, { profile: "lenient" });
         expect(result.issues.some((issue) => issue.code === "zip-bytes-after-eocd")).toBe(false);
     });
 
-    it.each(["lenient", "strict"] as const)("does not report the cause on %s", async (profile) => {
-        const result = await validate(BROKEN, { profile });
+    // strict includes every Word-valid check (validation contract, Task 1).
+    it("reports the concatenated copy on strict", async () => {
+        const result = await validate(CONCATENATED, { profile: "strict" });
+        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "zip-bytes-after-eocd")).toBe(true);
+    });
+
+    it("does not report the cause on lenient", async () => {
+        const result = await validate(BROKEN, { profile: "lenient" });
         expect(result.issues.some((issue) => issue.code === "zip-bytes-after-eocd")).toBe(false);
+    });
+
+    // strict includes every Word-valid check (validation contract, Task 1).
+    it("reports the cause on strict", async () => {
+        const result = await validate(BROKEN, { profile: "strict" });
+        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "zip-bytes-after-eocd")).toBe(true);
     });
 });

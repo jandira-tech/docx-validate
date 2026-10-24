@@ -522,6 +522,34 @@ describe("word-valid profile — applyWordValidProfile coverage", () => {
             expect(result.valid).toBe(true);
         });
     });
+
+    it("xml-undeclared-prefix in word/ stays fatal under word-valid, outside word/ it is a warning", async () => {
+        // An undeclared namespace prefix is the same class of defect as a
+        // malformed part (Word reports unreadable content), so it follows the
+        // same word/ vs non-word/ policy as xml-syntax.
+        await withTempDir(async (dir) => {
+            const unpacked = path.join(dir, "unpacked");
+            await writeMinimalDocxDir(unpacked, "<w:body><w:p/></w:body>");
+            await fs.writeFile(path.join(unpacked, "word", "comments.xml"), '<w:comments><w:comment w:id="0"/></w:comments>', "utf8");
+            await fs.mkdir(path.join(unpacked, "docProps"), { recursive: true });
+            await fs.writeFile(path.join(unpacked, "docProps", "custom.xml"), "<Properties><cp:Thing/></Properties>", "utf8");
+
+            const result = await validate(unpacked, {
+                profile: "word-valid",
+                original: path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx"),
+                author: "Test",
+            });
+
+            const wordPart = result.issues.find((i) => i.code === "xml-undeclared-prefix" && (i.path?.startsWith("word/") ?? false));
+            expect(wordPart).toBeDefined();
+            expect(wordPart?.severity).toBe("error");
+            const docPropsPart = result.issues.find(
+                (i) => i.code === "xml-undeclared-prefix" && (i.path?.startsWith("docProps/") ?? false),
+            );
+            expect(docPropsPart).toBeDefined();
+            expect(docPropsPart?.severity).toBe("warning");
+        });
+    });
 });
 
 describe("validate startup probe", () => {

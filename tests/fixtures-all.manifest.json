@@ -179,11 +179,11 @@
             "relativePath": "broken/tables.missing-namespace.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["xml-syntax"]
+                "errorCodes": ["xml-undeclared-prefix"]
             },
             "lenient": {
                 "valid": false,
-                "errorCodes": ["xml-syntax"]
+                "errorCodes": ["xml-undeclared-prefix"]
             },
             "word": "open-error"
         },
@@ -227,7 +227,7 @@
             "relativePath": "broken/word-rejects-table-cellspacing.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "style-default-missing", "xsd-error", "xsd-summary"]
+                "errorCodes": ["paraid-missing-element", "style-default-missing", "word-cell-ends-with-table", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -2045,7 +2045,7 @@
             "relativePath": "external/apache-poi/MultipleBodyBug.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "xml-bom-leading", "xsd-error", "xsd-summary"]
+                "errorCodes": ["paraid-missing-element", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -2153,7 +2153,7 @@
             "relativePath": "external/docx-parser-converter/tagged_tests/table_tests_v2.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "rels-empty-part", "xsd-error", "xsd-summary"]
+                "errorCodes": ["paraid-missing-element", "rels-empty-part", "word-cell-ends-with-table", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -2285,7 +2285,7 @@
             "relativePath": "external/docx-parser-converter/test_docx_files/table_advanced_demo.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "style-default-missing", "xsd-error", "xsd-summary"]
+                "errorCodes": ["paraid-missing-element", "style-default-missing", "word-cell-ends-with-table", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -3185,7 +3185,7 @@
             "relativePath": "external/docx-templates/office365.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["xml-bom-leading", "xsd-error", "xsd-summary"]
+                "errorCodes": ["xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -3353,11 +3353,11 @@
             "relativePath": "external/docx-templates/zipGeneration.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-undeclared-ext", "paraid-missing-element", "style-default-missing"]
+                "errorCodes": ["paraid-missing-element", "style-default-missing"]
             },
             "lenient": {
-                "valid": false,
-                "errorCodes": ["ct-undeclared-ext"]
+                "valid": true,
+                "errorCodes": []
             },
             "word": "clean-open"
         },
@@ -3365,11 +3365,11 @@
             "relativePath": "external/docx2html/attachment_is_tiff.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-undeclared-ext", "paraid-missing-element", "style-default-missing"]
+                "errorCodes": ["paraid-missing-element", "style-default-missing"]
             },
             "lenient": {
-                "valid": false,
-                "errorCodes": ["ct-undeclared-ext"]
+                "valid": true,
+                "errorCodes": []
             },
             "word": "unknown"
         },
@@ -3425,11 +3425,11 @@
             "relativePath": "external/docx2html/has_image.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-undeclared-ext", "paraid-missing-element", "style-default-missing"]
+                "errorCodes": ["paraid-missing-element", "style-default-missing"]
             },
             "lenient": {
-                "valid": false,
-                "errorCodes": ["ct-undeclared-ext"]
+                "valid": true,
+                "errorCodes": []
             },
             "word": "unknown"
         },
@@ -3569,11 +3569,11 @@
             "relativePath": "external/docx2html/resized_image.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-undeclared-ext", "paraid-missing-element", "style-default-missing"]
+                "errorCodes": ["paraid-missing-element", "style-default-missing"]
             },
             "lenient": {
-                "valid": false,
-                "errorCodes": ["ct-undeclared-ext"]
+                "valid": true,
+                "errorCodes": []
             },
             "word": "unknown"
         },
@@ -3689,7 +3689,7 @@
             "relativePath": "external/docx4j/NumberingImplicitNumId.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "rels-broken", "xml-bom-leading"]
+                "errorCodes": ["paraid-missing-element", "rels-broken"]
             },
             "lenient": {
                 "valid": false,
@@ -3713,7 +3713,7 @@
             "relativePath": "external/docx4j/hyperlink_dupe.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "xml-bom-leading"]
+                "errorCodes": ["paraid-missing-element"]
             },
             "lenient": {
                 "valid": true,
@@ -3749,7 +3749,7 @@
             "relativePath": "external/open-xml-sdk/5Errors.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["comment-marker-missing", "paraid-missing-element", "xml-bom-leading", "xsd-error", "xsd-summary"]
+                "errorCodes": ["comment-marker-missing", "paraid-missing-element", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -3773,7 +3773,7 @@
             "relativePath": "external/open-xml-sdk/InvalidDocProps.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-undeclared-part", "paraid-missing-element", "rels-broken", "rels-target-missing", "xml-bom-leading"]
+                "errorCodes": ["ct-undeclared-part", "paraid-missing-element", "rels-broken", "rels-target-missing"]
             },
             "lenient": {
                 "valid": false,
@@ -3785,7 +3785,7 @@
             "relativePath": "external/open-xml-sdk/InvalidDocPropsct.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-undeclared-part", "paraid-missing-element", "xml-bom-leading"]
+                "errorCodes": ["ct-undeclared-part", "paraid-missing-element", "word-content-type-invalid"]
             },
             "lenient": {
                 "valid": false,
@@ -3809,7 +3809,7 @@
             "relativePath": "external/open-xml-sdk/UnknownElement.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["xml-bom-leading", "xsd-error", "xsd-summary"]
+                "errorCodes": ["xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -3821,7 +3821,7 @@
             "relativePath": "external/open-xml-sdk/mcdoc.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "xml-bom-leading", "xsd-error", "xsd-summary"]
+                "errorCodes": ["paraid-missing-element", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -3857,7 +3857,7 @@
             "relativePath": "external/superdoc/behavior/math-eqarr-tests.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "xml-bom-leading", "xsd-error", "xsd-summary"]
+                "errorCodes": ["paraid-missing-element", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -3869,7 +3869,7 @@
             "relativePath": "external/superdoc/behavior/math-func-tests.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "xml-bom-leading"]
+                "errorCodes": ["paraid-missing-element"]
             },
             "lenient": {
                 "valid": true,
@@ -3952,8 +3952,8 @@
         {
             "relativePath": "external/superdoc/behavior/math-spre-tests.docx",
             "strict": {
-                "valid": true,
-                "errorCodes": []
+                "valid": false,
+                "errorCodes": ["word-math-spre-body"]
             },
             "lenient": {
                 "valid": true,
@@ -4625,11 +4625,11 @@
             "relativePath": "external/superdoc/super-editor/annotations_import_2.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["xml-syntax"]
+                "errorCodes": ["xml-undeclared-prefix"]
             },
             "lenient": {
                 "valid": false,
-                "errorCodes": ["xml-syntax"]
+                "errorCodes": ["xml-undeclared-prefix"]
             },
             "word": "clean-open"
         },
@@ -5549,7 +5549,7 @@
             "relativePath": "external/superdoc/super-editor/image-out-of-folder.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-undeclared-part", "paraid-missing-element", "xml-bom-leading", "xsd-error", "xsd-summary"]
+                "errorCodes": ["ct-undeclared-part", "paraid-missing-element", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -6004,8 +6004,8 @@
         {
             "relativePath": "external/superdoc/super-editor/pagination-with-hard-break.docx",
             "strict": {
-                "valid": false,
-                "errorCodes": ["xml-bom-leading"]
+                "valid": true,
+                "errorCodes": []
             },
             "lenient": {
                 "valid": true,
@@ -6028,12 +6028,12 @@
         {
             "relativePath": "external/superdoc/super-editor/paragraph_indent_normal_styles.docx",
             "strict": {
-                "valid": false,
-                "errorCodes": ["xsd-error", "xsd-summary"]
+                "valid": true,
+                "errorCodes": []
             },
             "lenient": {
-                "valid": false,
-                "errorCodes": ["xsd-error", "xsd-summary"]
+                "valid": true,
+                "errorCodes": []
             },
             "word": "clean-open"
         },
@@ -6706,7 +6706,13 @@
             "relativePath": "unknown/unknown/text-box.orphan-part.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["docprops-boolean-invalid", "rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "docprops-boolean-invalid",
+                    "rels-unreferenced",
+                    "word-drawing-scalar-whitespace",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -6867,11 +6873,11 @@
             "relativePath": "word-regenerate-invalid/original/broken/tables.missing-namespace.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["xml-syntax"]
+                "errorCodes": ["xml-undeclared-prefix"]
             },
             "lenient": {
                 "valid": false,
-                "errorCodes": ["xml-syntax"]
+                "errorCodes": ["xml-undeclared-prefix"]
             },
             "word": "open-error"
         },
@@ -6891,7 +6897,7 @@
             "relativePath": "word-regenerate-invalid/original/external/open-xml-sdk/5Errors.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["comment-marker-missing", "paraid-missing-element", "xml-bom-leading", "xsd-error", "xsd-summary"]
+                "errorCodes": ["comment-marker-missing", "paraid-missing-element", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -6903,7 +6909,7 @@
             "relativePath": "word-regenerate-invalid/original/external/open-xml-sdk/InvalidDocPropsct.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-undeclared-part", "paraid-missing-element", "xml-bom-leading"]
+                "errorCodes": ["ct-undeclared-part", "paraid-missing-element", "word-content-type-invalid"]
             },
             "lenient": {
                 "valid": false,
@@ -6915,7 +6921,7 @@
             "relativePath": "word-regenerate-invalid/original/external/open-xml-sdk/UnknownElement.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["xml-bom-leading", "xsd-error", "xsd-summary"]
+                "errorCodes": ["xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -6926,8 +6932,8 @@
         {
             "relativePath": "word-regenerate-invalid/original/external/superdoc/behavior/math-spre-tests.docx",
             "strict": {
-                "valid": true,
-                "errorCodes": []
+                "valid": false,
+                "errorCodes": ["word-math-spre-body"]
             },
             "lenient": {
                 "valid": true,
@@ -7069,7 +7075,13 @@
             "relativePath": "word-regenerate-invalid/original/unknown/unknown/text-box.orphan-part.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["docprops-boolean-invalid", "rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "docprops-boolean-invalid",
+                    "rels-unreferenced",
+                    "word-drawing-scalar-whitespace",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -7195,7 +7207,7 @@
             "relativePath": "word-regenerate-invalid/regenerated/external/open-xml-sdk/InvalidDocPropsct.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-undeclared-part", "xml-bom-leading"]
+                "errorCodes": ["ct-undeclared-part", "word-content-type-invalid"]
             },
             "lenient": {
                 "valid": false,
@@ -7218,8 +7230,8 @@
         {
             "relativePath": "word-regenerate-invalid/regenerated/external/superdoc/behavior/math-spre-tests.docx",
             "strict": {
-                "valid": true,
-                "errorCodes": []
+                "valid": false,
+                "errorCodes": ["word-math-spre-body"]
             },
             "lenient": {
                 "valid": true,
