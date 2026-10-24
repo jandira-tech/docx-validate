@@ -53,6 +53,7 @@ import { nextSecureLongHexNumber } from "../../../lib/secure-id";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { withoutConsequentialParseFailures } from "../../../lib/parse-failures";
 import { mergeResults } from "../../../lib/types";
+import { promoteFullCheckIssue } from "../../../lib/mode-policy";
 import { propertiesParts } from "../../../lib/properties-parts";
 import { isWordBlockingIssue } from "./word-blocking";
 import {
@@ -1108,13 +1109,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     async validateCommentThreading(): Promise<ValidationResult> {
         const run = await runChecks(this.context(), createDefaultCheckRegistry(), { format: "docx", select: ["comment-threading"] });
         this.recordExecutedChecks(run.executed);
-        // The registry keeps the legacy soft rule advisory; only a full
-        // strict run promotes it (strict rejects partial selection).
-        return finalize(
-            run.issues.map((issue): ValidationIssue =>
-                this.profile === "strict" && issue.code === "comment-thread-paraid-missing" ? { ...issue, severity: "error" } : issue,
-            ),
-        );
+        return finalize(run.issues.map((issue) => promoteFullCheckIssue(issue, this.profile, "docx")));
     }
 
     // ----- tracking-token leak detection --------------------------------------

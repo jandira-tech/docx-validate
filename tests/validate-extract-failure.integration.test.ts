@@ -87,7 +87,12 @@ const SPECIMENS = [
 ] as const;
 
 const PROFILES = ["word-valid", "lenient", "strict"] as const;
-const PARTIAL_SELECTIONS = [{ quick: true }, { checks: ["content-types"] }, { checks: ["ct-override-partname-invalid"] }] as const;
+const PARTIAL_SELECTIONS = [
+    { quick: true },
+    { checks: ["package"] },
+    { checks: ["content-types"] },
+    { checks: ["ct-override-partname-invalid"] },
+] as const;
 
 /** The error findings of a run, as `code@path`. */
 const errorPairs = (issues: readonly ValidationIssue[]): string[] =>
@@ -230,6 +235,90 @@ describe("the paths that are already consistent stay unchanged (#454)", { timeou
                     tag,
                 ).toEqual(["package-extract-failed"]);
                 expect(errorPairs(full.issues), tag).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
+            }
+            expect(readFileSync(file)).toEqual(bytes);
+        });
+    });
+});
+
+describe("portable extraction failures (#475, #476)", { timeout: 120_000 }, () => {
+    it.each(PROFILES)("preserves comment-threading severity under %s", async (profile) => {
+        const parts = {
+            ...MINIMAL_PARTS,
+            "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+                "<w:r><w:t>Hello</w:t></w:r>",
+                '<w:commentRangeStart w:id="0"/><w:r><w:t>Hello</w:t></w:r><w:commentRangeEnd w:id="0"/><w:r><w:commentReference w:id="0"/></w:r>',
+            ),
+            "word/comments.xml":
+                '<w:comments xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ' +
+                'xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" ' +
+                'xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="w14">' +
+                '<w:comment w:id="0" w:author="A"><w:p w14:paraId="11111111" w14:textId="11111111">' +
+                "<w:r><w:t>Comment</w:t></w:r></w:p></w:comment></w:comments>",
+            "word/commentsExtended.xml": '<w15:commentsEx xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml"/>',
+        };
+        await withTempDir(async (dir) => {
+            for (const unstageable of [false, true]) {
+                const file = path.join(dir, `${unstageable ? "unstageable" : "stageable"}.docx`);
+                const bytes = buildRawZip([
+                    ...Object.entries(parts).map(([name, content]) => ({ name, content })),
+                    ...(unstageable ? [{ name: "word", content: "file blocks word directory" }] : []),
+                ]);
+                writeFileSync(file, bytes);
+                const result = await validate(file, { profile });
+                const tag = `${profile} ${unstageable ? "unstageable" : "stageable"}`;
+                expect(
+                    result.issues.some((issue) => issue.code === "package-extract-failed"),
+                    tag,
+                ).toBe(unstageable);
+                expect(result.metadata?.executedChecks, tag).toContain("comment-threading");
+                expect(
+                    result.issues.filter((issue) => issue.code === "comment-thread-paraid-missing"),
+                    tag,
+                ).toEqual([
+                    expect.objectContaining({
+                        code: "comment-thread-paraid-missing",
+                        severity: profile === "strict" ? "error" : "warning",
+                        path: "word/commentsExtended.xml",
+                    }),
+                ]);
+                expect(readFileSync(file)).toEqual(bytes);
+            }
+        });
+    });
+
+    it.each(PROFILES)("merges archive findings beside a file/folder collision under %s", async (profile) => {
+        const bytes = buildRawZip([
+            ...Object.entries(MINIMAL_PARTS).map(([name, content]) => ({
+                name,
+                content: name === "[Content_Types].xml" ? BAD_OVERRIDE_TYPES : content,
+            })),
+            { name: "word", content: "file blocks word directory" },
+        ]);
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "portable.docx");
+            writeFileSync(file, bytes);
+            const full = await validate(file, { profile });
+            expect(full.valid).toBe(false);
+            expect(full.issues).toContainEqual(expect.objectContaining({ code: "package-extract-failed", severity: "error" }));
+            expect(full.issues).toContainEqual(
+                expect.objectContaining({
+                    code: "ct-override-partname-invalid",
+                    path: "[Content_Types].xml",
+                    severity: severityUnder(profile),
+                }),
+            );
+            expect(full.metadata?.executedChecks).toContain("ct-override-partname-invalid");
+            expect(duplicates(full.issues)).toEqual([]);
+            for (const selection of PARTIAL_SELECTIONS) {
+                const tag = `${profile} ${JSON.stringify(selection)}`;
+                if (profile === "strict") {
+                    await expect(validate(file, { profile, ...selection }), tag).rejects.toBeInstanceOf(ModeConflictError);
+                } else {
+                    const partial = await validate(file, { profile, ...selection });
+                    if (full.valid) expect(partial.valid, tag).toBe(true);
+                    expect(errorPairs(full.issues), tag).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
+                }
             }
             expect(readFileSync(file)).toEqual(bytes);
         });
