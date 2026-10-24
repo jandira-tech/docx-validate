@@ -1210,17 +1210,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         }
     }
 
-    private hasMoveFromAncestor(node: Node): boolean {
-        let parent = node.parentNode;
-        while (parent && parent.nodeType === 1) {
-            const elem = parent as Element;
-            const local = elem.localName || elem.tagName.split(":").pop() || "";
-            if (local === "moveFrom" && WORD_PARAGRAPH_NAMESPACES.includes(elem.namespaceURI ?? "")) return true;
-            parent = parent.parentNode;
-        }
-        return false;
-    }
-
     /**
      * `mc:Choice` `@Requires` names a prefix that is not declared on that
      * element or an ancestor. One such prefix makes Word offer to recover
@@ -1388,17 +1377,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 if (attr && attr.name === attrName) return true;
             }
             current = current.parentNode;
-        }
-        return false;
-    }
-
-    private hasTextBoxContentAncestor(node: Node): boolean {
-        let parent = node.parentNode;
-        while (parent && parent.nodeType === 1) {
-            const elem = parent as Element;
-            const local = elem.localName || elem.tagName.split(":").pop() || "";
-            if (local === "txbxContent" && WORD_PARAGRAPH_NAMESPACES.includes(elem.namespaceURI ?? "")) return true;
-            parent = parent.parentNode;
         }
         return false;
     }
