@@ -324,7 +324,7 @@ describe("validation contract: a full run judges what the package view holds (#3
             await withSpecimen({ ...MINIMAL_PARTS, [name]: "<b/>" }, async (file) => {
                 const quick = await validate(file, { checks: ["xml-syntax"] });
                 const full = await validate(file, { profile: "lenient" });
-                expect(errorCodes(quick.issues)).toContain("package-open-failed");
+                expect(errorCodes(quick.issues)).toContain("package-extract-failed");
                 expect(errorCodes(full.issues)).toContain("package-extract-failed");
                 expect([quick.valid, full.valid]).toEqual([false, false]);
             });
@@ -487,7 +487,7 @@ describe("validation contract: a full run keeps every part's own name (#376, #37
         await withSpecimen(parts, async (file) => {
             const quick = await validate(file, { checks: ["xml-syntax"] });
             const full = await validate(file, { profile: "lenient" });
-            expect(errorCodes(quick.issues)).toContain("package-open-failed");
+            expect(errorCodes(quick.issues)).toContain("package-extract-failed");
             expect(errorCodes(full.issues)).toContain("package-extract-failed");
         });
     });

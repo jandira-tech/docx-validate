@@ -243,14 +243,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                 const detail = err instanceof Error ? err.message : String(err);
                 return {
                     valid: false,
-                    issues: [
-                        ...envelope.issues,
-                        {
-                            severity: "error" as const,
-                            message: `Cannot extract ${target}: ${detail}`,
-                            code: "package-extract-failed",
-                        },
-                    ],
+                    issues: [...envelope.issues, packageExtractFailedIssue(target, detail)],
                     repairs: 0,
                     suffix: dispatchSuffix,
                     xsdWalk: xsdWalkNotStarted(),
@@ -512,6 +505,8 @@ async function runSelectedChecks(
     if (opened.openError !== undefined) {
         // An archive that does not open has no parts: only the selected
         // envelope checks can read its bytes, and nothing else ran (#332).
+        // One that opens but whose package view cannot be read fails as the
+        // full run's extraction does, not as an open failure (#413).
         const archiveOnly = new Set(
             registry
                 .list(format)
@@ -525,7 +520,12 @@ async function runSelectedChecks(
         const executed = envelope?.executed ?? [];
         return {
             valid: false,
-            issues: [...(envelope?.issues ?? []), packageOpenFailedIssue(target, opened.openError)],
+            issues: [
+                ...(envelope?.issues ?? []),
+                opened.extractFailed === true
+                    ? packageExtractFailedIssue(target, opened.openError)
+                    : packageOpenFailedIssue(target, opened.openError),
+            ],
             repairs: 0,
             suffix,
             xsdWalk: xsdWalkNotStarted(),
@@ -581,6 +581,20 @@ async function runSelectedChecks(
             omittedChecks: [...run.omitted],
             schemaCompleted: false,
         },
+    };
+}
+
+/**
+ * The finding for a packed file whose package view cannot be read: an item
+ * name places no part, an entry cannot be read, or the host filesystem cannot
+ * hold two parts' names. The package view fails before the format validator
+ * runs, so partial runs report the same failure (#413).
+ */
+function packageExtractFailedIssue(target: string, detail: string): ValidationIssue {
+    return {
+        severity: "error",
+        message: `Cannot extract ${target}: ${detail}`,
+        code: "package-extract-failed",
     };
 }
 
