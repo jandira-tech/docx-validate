@@ -281,10 +281,13 @@ and the package view reads the last stored entry (#411).
 pre-extraction timing, directory support, and severity policy. It reports one
 finding per stored name containing a percent-encoded unreserved character
 (`A–Z`, `a–z`, `0–9`, `-`, `.`, `_`, `~`), as OPC [M1.8] forbids, in code-unit
-order with the stored name as `path`. Word 16.115 offers recovery even for an
-unreferenced extra item (`word/%78tra.xml`). Other escapes such as `%20`,
-`%2F`, `%25`, and `%5B`, malformed escapes, and plain names do not trigger this
-check. An escaped spelling beside its decoded twin reports both M1.8 and M1.12;
+order with the stored name as `path`. Word 16.115 offers recovery for every
+escape probed: letters in either case, a digit, `-` in either hex case, `.`, `_`
+and `~`. It does so even on an unreferenced extra item (`word/%78tra.xml`), and
+opens the `%20` control clean. Other escapes such as `%20`, `%2F`, `%25`, and
+`%5B`, malformed escapes, and plain names do not trigger this check. Word also
+refuses an escaped `/` or `\` (`%2F`, `%5C`, OPC [M1.7]), which nothing reports
+yet ([#436](https://github.com/jandira-tech/docx-validate/issues/436)). An escaped spelling beside its decoded twin reports both M1.8 and M1.12;
 validation does not rewrite either name ([#408](https://github.com/jandira-tech/docx-validate/issues/408)).
 
 | Group                     | Named checks                                                                                                                                                                                                                                                                                                                                        |
@@ -341,7 +344,9 @@ the stream is matched in any case (`[CONTENT_TYPES].XML`), as System.IO.Packagin
 finds it ([#392](https://github.com/jandira-tech/docx-validate/issues/392)). Word 16.115 offers to recover a package whose `_rels/.rels`
 is zero bytes, truncated, or uses an undeclared prefix ([#388](https://github.com/jandira-tech/docx-validate/issues/388)). An undecodable part (`xml-encoding`)
 follows the same policy: Word refuses a `word/document.xml` that declares an
-unknown encoding ([#397](https://github.com/jandira-tech/docx-validate/issues/397)). External entities are not
+unknown encoding ([#397](https://github.com/jandira-tech/docx-validate/issues/397)), and one that declares a real encoding
+libxml2 cannot decode (`macintosh`, `x-mac-cyrillic`, `IBM866`, `UTF-7`), so the
+blocking covers those labels too ([#410](https://github.com/jandira-tech/docx-validate/issues/410)). External entities are not
 loaded or expanded; XSD imports resolve through allowed local schema roots.
 Validation leaves source bytes unchanged unless you request `autoRepair`.
 
