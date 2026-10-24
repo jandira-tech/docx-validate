@@ -143,6 +143,16 @@ describe("a partial run applies its profile's policy (#381)", { timeout: 120_000
         },
     );
 
+    it("refuses a selection lenient never runs before touching the filesystem", async () => {
+        // A contradictory selection is a configuration error, not a verdict
+        // about a document: it wins over a missing file, as the other mode
+        // conflicts do.
+        await withTempDir(async (dir) => {
+            const missing = path.join(dir, "missing.docx");
+            await expect(validate(missing, { profile: "lenient", checks: ["tables"] })).rejects.toBeInstanceOf(ModeConflictError);
+        });
+    });
+
     it.each(["word-valid", "lenient"] as const)("runs the shared comment checks under %s", async (profile) => {
         const result = await validate(ROW_WITHOUT_CELL, { profile, checks: ["comments"] });
 

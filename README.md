@@ -320,11 +320,13 @@ file; an ignored root makes Word silently drop all content. Both are blocking
 errors in Word-valid and strict, and the check is included in the quick preset.
 
 `word-main-document-part` reports a package that names no main part: `_rels/.rels`
-is missing, or none of its internal `officeDocument` relationships targets a part
-in the package (an empty ZIP, a package of only `[Content_Types].xml` or only core
-properties). ECMA-376 requires the main document part. Strict fails on it; full
-and quick Word-valid report a warning until a real-Word observation shows Word
-refusing such a package; lenient runs no Word rule (#380).
+is missing, or it parses and none of its internal `officeDocument` relationships
+targets a part in the package (an empty ZIP, a package of only `[Content_Types].xml`
+or only core properties). ECMA-376 requires the main document part. Strict fails on
+it; full and quick Word-valid report a warning until a real-Word observation shows
+Word refusing such a package; lenient runs no Word rule (#380). An `_rels/.rels`
+that does not parse is left to `xml-syntax`, which Word-valid reports as a warning
+outside `word/` until Word evidence decides otherwise (#388).
 
 `word-markup-compatibility` reports processor errors for XML parts under `word/`.
 Root validation, the processor, and the schema walk use these stable codes:
