@@ -66,11 +66,20 @@
  * every profile — `application/xml` is the content type the spec gives the
  * custom XML data storage part itself — and types outside this list stay
  * unjudged.
+ *
+ * A part reached by two relationship types is judged against every type
+ * that reaches it (#593): the walk yields one entry per (part, segment)
+ * pair, so a Default-typed theme also named by an unreferenced footer
+ * relationship keeps its theme segment — the reporting segment is the one
+ * `REPORTING_SEGMENT_ORDER` ranks first, and the order of the
+ * relationships in the relationships part decides neither the verdict nor
+ * the message.
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
 import {
     asciiLowercase,
+    canonicalPartName,
     findContentTypesStream,
     parseContentTypes,
     partExtension,
@@ -79,6 +88,7 @@ import {
 } from "../../../lib/content-types";
 import type { ValidationIssue } from "../../../lib/types";
 import type { ValidationContext } from "../../../lib/validation-context";
+import type { WordTypedTarget } from "../../../lib/word-read-parts";
 import { wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
 
 export const WORD_PART_CONTENT_TYPE_GENERIC = "word-part-content-type-generic";
@@ -145,6 +155,17 @@ const OBSERVED_SEGMENTS: ReadonlySet<string> = new Set([
 /** The segments a strict run judges: the probed set plus every other Part 1 WordprocessingML part type (#506). */
 const SPEC_SEGMENTS: ReadonlySet<string> = new Set([...OBSERVED_SEGMENTS, ...SPEC_ONLY_CONTENT_TYPES.keys()]);
 
+/**
+ * Which of a part's reaching segments reports the finding when more than one
+ * would (#593): the observed segments first — the probed ones before the
+ * additional ones — then the Part 1 spec-only types, so the message names a
+ * relationship Word was observed reading whenever one exists, and the
+ * relationships part's own order decides neither the verdict nor the
+ * message. Segments outside the scope requested cannot appear; an
+ * unlisted segment ranks last.
+ */
+const REPORTING_SEGMENT_ORDER: readonly string[] = [...SPEC_SEGMENTS];
+
 /** What the part needs, named for the finding's message. */
 const expectedContentTypeText = (segment: string, source: "override" | "default"): string => {
     if (segment === OFFICE_DOCUMENT_SEGMENT) {
@@ -171,8 +192,10 @@ const expectedContentTypeText = (segment: string, source: "override" | "default"
 /** A finding, with the resolution detail the full strict run's de-duplication needs (#517). */
 export type WordGenericContentTypeFinding = {
     readonly issue: ValidationIssue;
-    /** Which relationship segment reached the part. */
+    /** Which relationship segment reached the part — the one the message names. */
     readonly segment: string;
+    /** Every in-scope relationship segment that reaches the part (#593). */
+    readonly segments: readonly string[];
     /** Which declaration produced the generic type. */
     readonly source: "override" | "default";
 };
@@ -205,11 +228,28 @@ export const wordPartContentTypeGenericFindings = async (
 
     const findings: WordGenericContentTypeFinding[] = [];
     const targets = await wordTypedRelationshipTargets(ctx, scope === "spec" ? SPEC_SEGMENTS : OBSERVED_SEGMENTS);
-    for (const { part, segment } of targets) {
+    // One finding per part. A part reached through two relationship types
+    // keeps every segment (#593); the message names the segment
+    // `REPORTING_SEGMENT_ORDER` ranks first, deterministically, so the
+    // relationships part's own order decides nothing.
+    const byPart = new Map<string, WordTypedTarget[]>();
+    for (const target of targets) {
+        const canonical = canonicalPartName(target.part);
+        const candidates = byPart.get(canonical) ?? [];
+        candidates.push(target);
+        byPart.set(canonical, candidates);
+    }
+    const rank = (segment: string): number => {
+        const index = REPORTING_SEGMENT_ORDER.indexOf(segment);
+        return index === -1 ? REPORTING_SEGMENT_ORDER.length : index;
+    };
+    for (const candidates of byPart.values()) {
+        const { part } = candidates[0]!;
         const resolved = resolveContentType(table, part);
         if (resolved === null || !GENERIC_CONTENT_TYPES.has(contentTypeMediaType(resolved.contentType))) {
             continue;
         }
+        const { segment } = candidates.reduce((best, candidate) => (rank(candidate.segment) < rank(best.segment) ? candidate : best));
         const by =
             segment === OFFICE_DOCUMENT_SEGMENT ? "the package officeDocument relationship" : `the main document's ${segment} relationship`;
         const contentType = asciiLowercase(resolved.contentType);
@@ -227,6 +267,7 @@ export const wordPartContentTypeGenericFindings = async (
                 : " Word 16.115 offers to recover the package.";
         findings.push({
             segment,
+            segments: candidates.map((candidate) => candidate.segment),
             source: resolved.source,
             issue: {
                 severity: "error",

@@ -33,7 +33,10 @@ import { withTempDir } from "../src/lib/run-cli";
 import type { ValidationIssue } from "../src/lib/types";
 import { ValidationContext } from "../src/lib/validation-context";
 import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
-import { WORD_PART_CONTENT_TYPE_GENERIC } from "../src/scripts/office/checks/word-part-content-type-generic";
+import {
+    WORD_PART_CONTENT_TYPE_GENERIC,
+    wordPartContentTypeGenericFindings,
+} from "../src/scripts/office/checks/word-part-content-type-generic";
 import { wordPartContentTypeInexactFindings } from "../src/scripts/office/checks/word-part-content-type-inexact";
 import { validate } from "../src/scripts/office/validate";
 import { isWordBlockingIssue } from "../src/scripts/office/validators/word-blocking";
@@ -1347,6 +1350,151 @@ describe("word-part-content-type-inexact (#550)", { timeout: 120_000 }, () => {
                 expect(result.valid).toBe(true);
             });
         }, 60_000);
+
+        /**
+         * A part reached by two relationship types is judged against every
+         * type that reaches it, not the first one in the relationships part
+         * (#593): the s20b specimen — the numbering part's Override carrying
+         * `numbering+xml; charset=utf-8`, which session 20 observed Word
+         * 16.115 recover — plus a second, unreferenced footer relationship
+         * naming the same part. Either order reports once, naming the
+         * numbering relationship; the order of the relationships in the
+         * relationships part decides nothing.
+         */
+        describe("a part reached by two relationship types (#593)", () => {
+            /** The s20b specimen plus a `second` relationship also naming `word/numbering.xml`, in the given order. */
+            const dualRelated = (first: S20Segment | "footer", second: S20Segment | "footer", useFooter = false): Parts => {
+                const contentType = `${CT.numbering}; charset=utf-8`;
+                return {
+                    ...MINIMAL_PARTS,
+                    "word/document.xml": useFooter
+                        ? docUsing("", `<w:footerReference w:type="default" r:id="rIdA"/>`)
+                        : MINIMAL_PARTS["word/document.xml"]!,
+                    "word/numbering.xml": NUMBERING_XML,
+                    "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                        "</Relationships>",
+                        `<Relationship Id="rIdA" Type="${R}/${first}" Target="numbering.xml"/>` +
+                            `<Relationship Id="rIdB" Type="${R}/${second}" Target="numbering.xml"/></Relationships>`,
+                    ),
+                    "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                        "</Types>",
+                        `<Override PartName="/word/numbering.xml" ContentType="${contentType}"/></Types>`,
+                    ),
+                };
+            };
+
+            it.each([
+                ["footer", "numbering"],
+                ["numbering", "footer"],
+            ] as const)(
+                "reports once under the numbering relationship whether %s or %s comes first (s20b)",
+                async (first, second) => {
+                    const contentType = `${CT.numbering}; charset=utf-8`;
+                    const wanted = [expectedInexactFinding("word/numbering.xml", "numbering", "error", contentType)];
+                    expect(await diagnoseInexact(ValidationContext.fromEntries(dualRelated(first, second)))).toEqual(wanted);
+                    const spec = await wordPartContentTypeInexactFindings(
+                        ValidationContext.fromEntries(dualRelated(first, second)),
+                        "spec",
+                    );
+                    expect(spec.map((finding) => finding.issue)).toEqual(wanted);
+                    await withTempDir(async (dir) => {
+                        const file = path.join(dir, `dual-${first}.docx`);
+                        writeFileSync(file, await buildDocx(dualRelated(first, second)));
+                        const wordValid = await validate(file, { profile: "word-valid" });
+                        expect(inexactFindings(wordValid.issues)).toEqual(wanted);
+                        expect(wordValid.valid).toBe(false);
+                        const strict = await validate(file, { profile: "strict" });
+                        expect(inexactFindings(strict.issues)).toEqual(wanted);
+                        expect(strict.valid).toBe(false);
+                        const lenient = await validate(file, { profile: "lenient" });
+                        expect(inexactFindings(lenient.issues)).toEqual([
+                            expectedInexactFinding("word/numbering.xml", "numbering", "warning", contentType),
+                        ]);
+                    });
+                },
+                60_000,
+            );
+
+            it("gives identical results for both relationship orders under every profile", async () => {
+                await withTempDir(async (dir) => {
+                    const footerFirst = path.join(dir, "footer-first.docx");
+                    const numberingFirst = path.join(dir, "numbering-first.docx");
+                    writeFileSync(footerFirst, await buildDocx(dualRelated("footer", "numbering")));
+                    writeFileSync(numberingFirst, await buildDocx(dualRelated("numbering", "footer")));
+                    for (const profile of ["word-valid", "strict", "lenient"] as const) {
+                        const a = await validate(footerFirst, { profile });
+                        const b = await validate(numberingFirst, { profile });
+                        expect(b.issues, profile).toEqual(a.issues);
+                        expect(b.valid, profile).toBe(a.valid);
+                    }
+                });
+            }, 60_000);
+
+            it.each([
+                ["footer", "numbering"],
+                ["numbering", "footer"],
+            ] as const)(
+                "lets the used lazy segment report when its own type is declared, %s first",
+                async (first, second) => {
+                    // The footer relationship is referenced, so its typed
+                    // read is real; the declared type is the footer's, so
+                    // the numbering segment contributes no finding.
+                    const parts: Parts = {
+                        ...dualRelated(first, second, first === "footer"),
+                        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                            "</Types>",
+                            `<Override PartName="/word/numbering.xml" ContentType="${CT.footer}; charset=utf-8"/></Types>`,
+                        ),
+                    };
+                    if (second === "footer") {
+                        parts["word/document.xml"] = docUsing("", `<w:footerReference w:type="default" r:id="rIdB"/>`);
+                    }
+                    const contentType = `${CT.footer}; charset=utf-8`;
+                    const wanted = [expectedInexactFinding("word/numbering.xml", "footer", "error", contentType)];
+                    expect(await diagnoseInexact(ValidationContext.fromEntries(parts))).toEqual(wanted);
+                    const spec = await wordPartContentTypeInexactFindings(ValidationContext.fromEntries(parts), "spec");
+                    expect(spec.map((finding) => finding.issue)).toEqual(wanted);
+                },
+                60_000,
+            );
+
+            it.each([
+                ["footer", "numbering"],
+                ["numbering", "footer"],
+            ] as const)(
+                "lets an unreferenced lazy segment add no word-valid finding when its own type is declared, %s first",
+                async (first, second) => {
+                    // The declared type is the footer's; the footer
+                    // relationship is unreferenced, so the part is not
+                    // read through that segment — word-valid stays silent
+                    // while strict reports the footer by the spec (#589).
+                    const parts: Parts = {
+                        ...dualRelated(first, second),
+                        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                            "</Types>",
+                            `<Override PartName="/word/numbering.xml" ContentType="${CT.footer}; charset=utf-8"/></Types>`,
+                        ),
+                    };
+                    const contentType = `${CT.footer}; charset=utf-8`;
+                    expect(await diagnoseInexact(ValidationContext.fromEntries(parts))).toEqual([]);
+                    const spec = await wordPartContentTypeInexactFindings(ValidationContext.fromEntries(parts), "spec");
+                    expect(spec.map((finding) => finding.issue)).toEqual([
+                        expectedInexactFinding("word/numbering.xml", "footer", "error", contentType, { specOnly: true }),
+                    ]);
+                    await withTempDir(async (dir) => {
+                        const file = path.join(dir, `unused-${first}.docx`);
+                        writeFileSync(file, await buildDocx(parts));
+                        const wordValid = await validate(file, { profile: "word-valid" });
+                        expect(inexactFindings(wordValid.issues)).toEqual([]);
+                        const strict = await validate(file, { profile: "strict" });
+                        expect(inexactFindings(strict.issues)).toEqual([
+                            expectedInexactFinding("word/numbering.xml", "footer", "error", contentType, { specOnly: true }),
+                        ]);
+                    });
+                },
+                60_000,
+            );
+        });
     });
 
     /**
@@ -1555,6 +1703,128 @@ describe("word-part-content-type-inexact (#550)", { timeout: 120_000 }, () => {
                 expectedInexactFinding("word/styles.xml", "styles", "error", contentType),
             ]);
         });
+
+        /**
+         * One header, two story roots (#593): the s22a specimen, plus the
+         * main document's own header relationship to the same part. The
+         * root that references the header reads it, so its relationship
+         * names the finding; the other root's unused relationship neither
+         * hides it nor takes the Word sentence away.
+         */
+        const sharedHeader = (referencedBy: "glossary" | "main"): Parts => {
+            const parts = glossaryHeader(`${CT.header}; charset=utf-8`, referencedBy === "glossary");
+            const main = MINIMAL_PARTS["word/document.xml"]!;
+            return {
+                ...parts,
+                "word/document.xml":
+                    referencedBy === "main"
+                        ? main
+                              .replace(`<w:document xmlns:w="${W}"`, `<w:document xmlns:w="${W}" xmlns:r="${R}"`)
+                              .replace("<w:sectPr>", `<w:sectPr><w:headerReference w:type="default" r:id="rIdM"/>`)
+                        : main,
+                "word/_rels/document.xml.rels": (parts["word/_rels/document.xml.rels"] as string).replace(
+                    "</Relationships>",
+                    `<Relationship Id="rIdM" Type="${R}/header" Target="glossary/header9.xml"/></Relationships>`,
+                ),
+            };
+        };
+
+        it("reports a header only the glossary references, naming the glossary's relationship, when the main document relates it unused (#593, s22a)", async () => {
+            const contentType = `${CT.header}; charset=utf-8`;
+            const wanted = expectedInexactFinding("word/glossary/header9.xml", "header", "error", contentType, { via: "glossary" });
+            expect(await diagnoseInexact(ValidationContext.fromEntries(sharedHeader("glossary")))).toEqual([wanted]);
+            const strict = await wordPartContentTypeInexactFindings(ValidationContext.fromEntries(sharedHeader("glossary")), "spec");
+            expect(strict.map((finding) => finding.issue)).toEqual([wanted]);
+            expect(strict[0]?.issue.message).toContain("offers to recover the package");
+        });
+
+        it("reports a header only the main document references, naming its relationship, when the glossary relates it unused (#593)", async () => {
+            const contentType = `${CT.header}; charset=utf-8`;
+            const wanted = expectedInexactFinding("word/glossary/header9.xml", "header", "error", contentType);
+            expect(await diagnoseInexact(ValidationContext.fromEntries(sharedHeader("main")))).toEqual([wanted]);
+            const strict = await wordPartContentTypeInexactFindings(ValidationContext.fromEntries(sharedHeader("main")), "spec");
+            expect(strict.map((finding) => finding.issue)).toEqual([wanted]);
+        });
+
+        it("word-valid fails the shared-header specimen whichever root references the header (#593)", async () => {
+            await withTempDir(async (dir) => {
+                for (const referencedBy of ["glossary", "main"] as const) {
+                    const file = path.join(dir, `shared-header-${referencedBy}.docx`);
+                    writeFileSync(file, await buildDocx(sharedHeader(referencedBy)));
+                    const wordValid = await validate(file, { profile: "word-valid" });
+                    expect(inexactFindings(wordValid.issues), referencedBy).toHaveLength(1);
+                    expect(wordValid.valid, referencedBy).toBe(false);
+                }
+            });
+        }, 60_000);
+
+        /**
+         * The same defect inside a reached glossary (#593): the s21b
+         * specimen — `word/glossary/styles2.xml` typed
+         * `styles+xml; charset=utf-8`, which session 21 observed Word
+         * recover — plus a second, unreferenced header relationship naming
+         * the same part. Either order reports once, naming the glossary's
+         * styles relationship.
+         */
+        const dualGlossary = (first: string, second: string, contentType: string): Parts => ({
+            ...glossarySpecimen(first, "styles2.xml", "word/glossary/styles2.xml", `<w:styles xmlns:w="${W}"></w:styles>`, contentType),
+            "word/glossary/_rels/document.xml.rels": RELS_PART(
+                `<Relationship Id="rIdA" Type="${R}/${first}" Target="styles2.xml"/>` +
+                    `<Relationship Id="rIdB" Type="${R}/${second}" Target="styles2.xml"/>`,
+            ),
+        });
+
+        it.each([
+            ["header", "styles"],
+            ["styles", "header"],
+        ] as const)(
+            "reports once under the glossary's styles relationship whether %s or %s comes first (s21b)",
+            async (first, second) => {
+                const contentType = `${CT.styles}; charset=utf-8`;
+                const parts = dualGlossary(first, second, contentType);
+                const wanted = [expectedInexactFinding("word/glossary/styles2.xml", "styles", "error", contentType, { via: "glossary" })];
+                expect(await diagnoseInexact(ValidationContext.fromEntries(parts))).toEqual(wanted);
+                const spec = await wordPartContentTypeInexactFindings(ValidationContext.fromEntries(parts), "spec");
+                expect(spec.map((finding) => finding.issue)).toEqual(wanted);
+                await withTempDir(async (dir) => {
+                    const file = path.join(dir, `glossary-dual-${first}.docx`);
+                    writeFileSync(file, await buildDocx(parts));
+                    const wordValid = await validate(file, { profile: "word-valid" });
+                    expect(inexactFindings(wordValid.issues)).toEqual(wanted);
+                    expect(wordValid.valid).toBe(false);
+                    const strict = await validate(file, { profile: "strict" });
+                    expect(inexactFindings(strict.issues)).toEqual(wanted);
+                    const lenient = await validate(file, { profile: "lenient" });
+                    expect(inexactFindings(lenient.issues)).toEqual([
+                        expectedInexactFinding("word/glossary/styles2.xml", "styles", "warning", contentType, { via: "glossary" }),
+                    ]);
+                });
+            },
+            60_000,
+        );
+
+        it.each([
+            ["header", "styles"],
+            ["styles", "header"],
+        ] as const)(
+            "lets the glossary's unreferenced header add no word-valid finding when its own type is declared, %s first",
+            async (first, second) => {
+                // The declared type is the header's; the glossary does not
+                // reference the header relationship, so the part is not
+                // read through it — word-valid stays silent while strict
+                // reports it by the spec, citing clause 11.3 (#589).
+                const contentType = `${CT.header}; charset=utf-8`;
+                const parts = dualGlossary(first, second, contentType);
+                expect(await diagnoseInexact(ValidationContext.fromEntries(parts))).toEqual([]);
+                const spec = await wordPartContentTypeInexactFindings(ValidationContext.fromEntries(parts), "spec");
+                expect(spec.map((finding) => finding.issue)).toEqual([
+                    expectedInexactFinding("word/glossary/styles2.xml", "header", "error", contentType, {
+                        via: "glossary",
+                        specOnly: true,
+                    }),
+                ]);
+            },
+        );
     });
 
     it("drops a Default-typed main under strict only when ct-undeclared-part errors at the same path (#535)", async () => {
@@ -1618,4 +1888,74 @@ describe("numbering and theme generic Default (#571)", () => {
         };
         expect(await diagnose(ValidationContext.fromEntries(parts))).toEqual([]);
     });
+});
+
+/**
+ * The #571 theme specimen reached by an unused footer relationship too
+ * (#593): `word/theme/theme1.xml` is Default-typed (`application/xml`),
+ * `a:theme` is a declarable root, and the #535 suppression drops the
+ * Default-typed duplicate that `ct-undeclared-part` already rejects — so it
+ * must look at every relationship type that reaches the part, not the one
+ * the relationships part happens to list first. A `footer` first entry used
+ * to make strict report `ct-undeclared-part` and
+ * `word-part-content-type-generic` at the same path — the duplicate #571
+ * removed — because the finding's segment never read "theme".
+ */
+describe("a theme part reached by an unreferenced footer relationship too (#593, #535)", () => {
+    const theme = GENERIC_NUMBERING_THEME_SPECIMENS.find((specimen) => specimen.segment === "theme")!;
+
+    /** The s20c theme specimen — Default-typed — plus a footer relationship naming the same part, in the given order. */
+    const themeViaFooter = (first: "footer" | "theme", second: "footer" | "theme"): Parts => ({
+        ...genericNumberingThemeParts(theme),
+        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rIdA" Type="${R}/${first}" Target="theme/theme1.xml"/>` +
+                `<Relationship Id="rIdB" Type="${R}/${second}" Target="theme/theme1.xml"/></Relationships>`,
+        ),
+    });
+
+    it.each([
+        ["footer", "theme"],
+        ["theme", "footer"],
+    ] as const)(
+        "strict names the theme relationship and suppresses the Default-typed duplicate, %s first",
+        async (first, second) => {
+            const parts = themeViaFooter(first, second);
+            const spec = await wordPartContentTypeGenericFindings(ValidationContext.fromEntries(parts), "spec");
+            expect(spec.map((finding) => ({ code: finding.issue.code, path: finding.issue.path, segment: finding.segment }))).toEqual([
+                { code: ID, path: theme.part, segment: "theme" },
+            ]);
+            expect(spec[0]?.issue.message).toContain("the main document's theme relationship");
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, `theme-${first}.docx`);
+                writeFileSync(file, await buildDocx(parts));
+                const strict = await validate(file, { profile: "strict" });
+                expect(strict.issues.some((issue) => issue.code === "ct-undeclared-part" && issue.path === theme.part)).toBe(true);
+                expect(strict.issues.filter((issue) => issue.code === ID)).toEqual([]);
+                expect(strict.valid).toBe(false);
+                const wordValid = await validate(file, { profile: "word-valid" });
+                expect(findings(wordValid.issues)).toEqual([expect.objectContaining({ code: ID, path: theme.part, severity: "error" })]);
+                const [wordFinding] = wordValid.issues.filter((issue) => issue.code === ID);
+                expect(wordFinding?.message).toContain("the main document's theme relationship");
+                const lenient = await validate(file, { profile: "lenient" });
+                expect(findings(lenient.issues)).toEqual([expect.objectContaining({ code: ID, path: theme.part, severity: "warning" })]);
+            });
+        },
+        60_000,
+    );
+
+    it("gives identical results for both relationship orders under every profile", async () => {
+        await withTempDir(async (dir) => {
+            const footerFirst = path.join(dir, "theme-footer-first.docx");
+            const themeFirst = path.join(dir, "theme-first.docx");
+            writeFileSync(footerFirst, await buildDocx(themeViaFooter("footer", "theme")));
+            writeFileSync(themeFirst, await buildDocx(themeViaFooter("theme", "footer")));
+            for (const profile of ["word-valid", "strict", "lenient"] as const) {
+                const a = await validate(footerFirst, { profile });
+                const b = await validate(themeFirst, { profile });
+                expect(b.issues, profile).toEqual(a.issues);
+                expect(b.valid, profile).toBe(a.valid);
+            }
+        });
+    }, 60_000);
 });
