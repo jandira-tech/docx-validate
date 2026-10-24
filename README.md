@@ -871,7 +871,7 @@ file `fs.stat` still answers for — fails the same way, with no check listed
 a stored item name that places no part — judged on the central-directory name,
 never the local header's or the unicode-path field's (#445) — or an unreadable
 entry — fails with
-`package-extract-failed`, as the full run's extraction reports it (#413). Its stored
+`package-extract-failed`, as the full run's extraction reports it (#413). Directory inputs apply the same stored-name refusal before either full or partial validation: literal backslash names with empty or dot-only segments are refused with the same code and message (#424). Its stored
 entry names and archive bytes are still read. Selected `opc-equivalent-part-names`,
 `opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, and
 `opc-part-name-word-refused` checks and
@@ -925,17 +925,26 @@ it ([#428](https://github.com/jandira-tech/docx-validate/issues/428)). `repairs`
 applied to the package view, so a repair whose write-back failed still counts
 ([#412](https://github.com/jandira-tech/docx-validate/issues/412)).
 
-A packed file whose extraction fails — two stored names that collide on the host
-filesystem, such as `[Content_Types].xml` beside `[CONTENT_TYPES].XML` — still
-reports what the archive holds. The full run then runs the checks a partial run
-of that package runs on the in-memory archive context, under the profile, and
-merges their findings into the `package-extract-failed` failure; the checks it
-had already run — the ZIP-envelope checks and the stored-name checks — are not
-run twice, and the merged checks are listed in `executedChecks`. The verdict
-does not change: the package cannot be staged, so it stays invalid. A quick,
-group or named run of the same package therefore no longer reports an error the
-full run drops
-([#454](https://github.com/jandira-tech/docx-validate/issues/454)).
+Distinct normalized part names that collide under ASCII case folding and NFC
+normalization now refuse the package view **on every host**, before extraction
+(#441). The same guard includes folder prefixes (`word/a.xml` beside
+`WORD/b.xml`), so a staging filesystem cannot silently rename their parts.
+Full, quick and named runs report `package-extract-failed` with the same detail,
+run only applicable stored-name and envelope checks, and omit part checks. This
+is a portable staging policy, independent of whether the host filesystem is
+case-sensitive. It does not turn every OPC-equivalent spelling into a staging
+refusal: identical stored names and slash/backslash aliases that normalize to
+one part retain their existing entry selection; escaped spellings retain their
+existing OPC diagnosis.
+
+A later extraction failure on an otherwise readable view still merges the
+archive-backed findings under the selected profile (#454). For example, the
+host may refuse an overlong filename. Already-run stored-name and envelope
+checks are not repeated; merged checks appear in `executedChecks`. This keeps
+partial errors a subset of full errors (#381). Regression coverage pins case,
+NFC/NFD and NUL-bearing names for quick, XML-only and package-only selections
+under Word-valid and lenient (#423). A partial run can still pass when full
+extraction fails on a NUL-bearing name: omitted work can miss a defect.
 
 `ValidateRunResult` extends this with `suffix` (e.g. `".docx"`), `repairs`
 (number of issues auto-repaired when `autoRepair: true`), and

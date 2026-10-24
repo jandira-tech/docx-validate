@@ -6,7 +6,7 @@
 import JSZip from "jszip";
 import { describe, expect, it } from "vitest";
 
-import { ValidationContext } from "../src/lib/validation-context";
+import { assertPlaceableNames, ValidationContext } from "../src/lib/validation-context";
 import { poisonEntry } from "./support/poison-entry";
 import { buildRawZip } from "./support/raw-zip";
 
@@ -414,5 +414,24 @@ describe("ValidationContext: a stream's own vocabulary is understood (#493)", ()
                       .map((n) => (n as Element).nodeName)
                 : [],
         ).toEqual(["w:p"]);
+    });
+});
+
+describe("portable placement decisions before extraction (#441)", () => {
+    it.each([
+        ["word/document.xml", "WORD/DOCUMENT.XML"],
+        ["docProps/core.xml", "DOCPROPS/CORE.XML"],
+        ["word/caf\u00e9.xml", "word/cafe\u0301.xml"],
+        ["word/a.xml", "WORD/b.xml"],
+        ["caf\u00e9/a.xml", "cafe\u0301/b.xml"],
+    ])("refuses distinct case/NFC spellings %j and %j in either order", (first, second) => {
+        expect(() => assertPlaceableNames([first, second])).toThrow(/collid/);
+        expect(() => assertPlaceableNames([second, first])).toThrow(/collid/);
+    });
+
+    it("keeps aliases that stage as one part, exact duplicates, and distinct names", () => {
+        expect(() =>
+            assertPlaceableNames(["word/document.xml", "word\\document.xml", "word/document.xml", "word/styles.xml"]),
+        ).not.toThrow();
     });
 });

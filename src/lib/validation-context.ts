@@ -45,10 +45,10 @@ export type PartContent = string | Uint8Array | (() => Uint8Array);
 export type XmlPart = { readonly ok: true; readonly document: Document } | { readonly ok: false; readonly message: string };
 
 /**
- * The archive opened, but its package view could not be read: an item name
- * places no part, or an entry's bytes could not be read. Extraction refuses
- * the same archive for the same reason, so callers that report it should use
- * the extraction failure, not the open failure (#413).
+ * The package's view could not be read: a stored name cannot be placed, or
+ * an archive entry's bytes could not be read. Staging refuses the same input
+ * for the same reason, so callers report an extraction failure rather than
+ * an open failure (#413, #424).
  */
 export class PackageViewError extends Error {
     /**
@@ -115,16 +115,36 @@ export const entryNameRefusal = (name: string): string | undefined => {
 };
 
 /**
- * Throw for the first stored name that places no part. Given the
- * central-directory names this also refuses a name the loaded view dropped or
- * rewrote (#411): two entries under the identical name, or `a/b/../x.xml`
- * stored before the `a/x.xml` it resolves to.
+ * Throw for the first stored name that places no part. Central-directory
+ * names include entries the loaded view dropped or rewrote (#411), such as
+ * `a/b/../x.xml` stored before the `a/x.xml` it resolves to. Distinct normalized part or
+ * folder spellings that collide under ASCII case and NFC folding are refused
+ * on every host, before extraction, rather than depending on its filesystem
+ * (#441). Exact normalized aliases and identical stored names keep the
+ * existing entry-selection policy.
  */
 export const assertPlaceableNames = (names: Iterable<string>): void => {
+    const placed = new Map<string, string>();
     for (const name of names) {
         const refusal = entryNameRefusal(name);
         if (refusal !== undefined) {
             throw new Error(refusal);
+        }
+        // Decide from names before touching disk, on every host (#441).
+        // Include folders: differently spelled folders can merge even when
+        // their leaf names differ (#376). Exact normalized aliases still
+        // stage as one part, so the existing duplicate choice handles them.
+        const segments = normalizePartName(name).split("/");
+        for (let length = 1; length <= segments.length; length += 1) {
+            const prefix = segments.slice(0, length).join("/");
+            const key = prefix.normalize("NFC").replace(/[A-Z]/g, (letter) => letter.toLowerCase());
+            const previous = placed.get(key);
+            if (previous !== undefined && previous !== prefix) {
+                throw new Error(
+                    `Package paths ${JSON.stringify(previous)} and ${JSON.stringify(prefix)} collide under portable ASCII-case/NFC folding`,
+                );
+            }
+            placed.set(key, prefix);
         }
     }
 };

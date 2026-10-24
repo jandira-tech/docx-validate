@@ -12,7 +12,7 @@ import { withTempDir } from "../src/lib/run-cli";
 import type { Profile, ValidationIssue } from "../src/lib/types";
 import { ValidationContext } from "../src/lib/validation-context";
 import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
-import { contextFromDirectory } from "../src/scripts/office/package-context";
+import { contextFromArchive, contextFromDirectory } from "../src/scripts/office/package-context";
 import { validate } from "../src/scripts/office/validate";
 import { isWordBlockingIssue } from "../src/scripts/office/validators/word-blocking";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
@@ -103,8 +103,14 @@ describe("equivalent-name package integration", { timeout: 120_000 }, () => {
             const file = path.join(dir, "duplicate.docx");
             const bytes = await buildDocx(duplicateParts(a, b));
             writeFileSync(file, bytes);
-            const ctx = await ValidationContext.fromArchive(bytes);
+            const { context: ctx, extractFailed } = await contextFromArchive(bytes);
             expect(await diagnose(ctx)).toEqual([expected([a, b], a, "error")]);
+            if (a.toLowerCase() === b.toLowerCase()) {
+                expect(extractFailed).toBe(true);
+                expect(ctx.partNames).toEqual([]);
+            } else {
+                expect(extractFailed).toBeUndefined();
+            }
             const result = await validate(file, { checks: [ID] });
             expect(findings(result.issues)).toEqual([expected([a, b], a, severityUnder("word-valid"))]);
             expect(readFileSync(file)).toEqual(bytes);
@@ -197,7 +203,7 @@ describe("equivalent-name package integration", { timeout: 120_000 }, () => {
                     if (run.valid) expect(partial.valid).toBe(true);
                     expect(errorPairs(partial.issues).every((pair) => errorPairs(run.issues).includes(pair))).toBe(true);
                 }
-                // On this host, case-only collisions still stop safe extraction (#373).
+                // Case-only collisions refuse the view before extraction on every host (#441).
                 if (a.toLowerCase() === b.toLowerCase()) expect(full.issues.map((issue) => issue.code)).toContain("package-extract-failed");
                 expect(readFileSync(file)).toEqual(bytes);
                 results.push(findings(full.issues));
