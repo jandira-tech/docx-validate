@@ -544,9 +544,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * observed set (#571), and numbering, theme, footer, endnotes, footnotes
      * and comments into the inexact check's (#570); sessions 21 and 22 moved
      * a reached glossary's styles part and referenced header into the
-     * inexact check's (#579). A Default-typed main or
-     * theme finding is dropped only when strict actually reports
-     * ct-undeclared-part for that same part (#535, #571).
+     * inexact check's (#579). Strict's inexact findings cite clause 11.3
+     * with no recovery claim for a lazy part `wordReadParts` does not
+     * include — session 21 (s21b) observed those open clean (#589). A
+     * Default-typed main or theme finding is dropped only when strict
+     * actually reports ct-undeclared-part for that same part (#535, #571).
      */
     private async validateWordPartContentTypes(
         context: ValidationContext,
@@ -559,7 +561,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // observed sets: for the generic check header, footer, endnotes,
         // footnotes, comments and glossaryDocument (#506, #571), for the
         // inexact check glossaryDocument only (#570). Word-valid and lenient
-        // keep the observed sets.
+        // keep the observed sets; under strict an unread lazy part keeps the
+        // clause-11.3 wording instead of the Word sentence (#589).
         const found = await wordPartContentTypeGenericFindings(view, this.profile === "strict" ? "spec" : "observed");
         const inexact = await wordPartContentTypeInexactFindings(view, this.profile === "strict" ? "spec" : "observed");
         this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_GENERIC);

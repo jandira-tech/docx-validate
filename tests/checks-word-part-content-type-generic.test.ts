@@ -716,7 +716,9 @@ describe("word-part-content-type-inexact (#550)", { timeout: 120_000 }, () => {
      * The segments Word was observed refusing an inexact type on: session 17's
      * set plus session 20's — numbering and theme eagerly, footer, footnotes,
      * endnotes and comments when the document uses them (#570). A segment with
-     * no observation (glossaryDocument) cites Part 1 instead.
+     * no observation (glossaryDocument) cites Part 1 instead — and so does a
+     * probed lazy segment on a part `wordReadParts` does not include, which
+     * session 21 (s21b) observed opening clean (#589).
      */
     const RECOVERY_SEGMENTS: ReadonlySet<string> = new Set([
         "officeDocument",
@@ -754,7 +756,12 @@ describe("word-part-content-type-inexact (#550)", { timeout: 120_000 }, () => {
                 : `is typed "${contentType}" by an Override`;
         const type = CT[segment as keyof typeof CT];
         // The theme is a DrawingML part, not a WordprocessingML one, so a
-        // spec-only theme finding cites no clause 11.3 (#579).
+        // spec-only theme finding cites no clause 11.3 (#579). `specOnly`
+        // marks every finding with no Word observation: an unprobed segment,
+        // or a probed lazy segment on a part Word does not read — session 21
+        // (s21b) observed a related-but-unused footer, footnotes, endnotes,
+        // comments or header part typed `type; charset=utf-8` open clean
+        // (#589) — which strict reports by the spec alone.
         const clause =
             segment === "theme"
                 ? ", the theme part's own content type"
@@ -1065,20 +1072,35 @@ describe("word-part-content-type-inexact (#550)", { timeout: 120_000 }, () => {
         expect(findings(await diagnose(ValidationContext.fromEntries(parameterized)))).toEqual([]);
     });
 
-    it("keeps a related-but-unused header silent under word-valid and reports it under strict (#516, #550)", async () => {
+    it("keeps a related-but-unused header silent under word-valid and reports it under strict citing clause 11.3 (#516, #550, #589)", async () => {
         await withTempDir(async (dir) => {
             const file = path.join(dir, "unused-header.docx");
             writeFileSync(file, await buildDocx(headerSpecimen(`${CT.header}; charset=utf-8`, false)));
             const wordValid = await validate(file, { profile: "word-valid" });
             expect(inexactFindings(wordValid.issues)).toEqual([]);
             expect(wordValid.valid).toBe(true);
+            // s21b opened this specimen clean, so strict's finding cites the
+            // spec and claims no Word recovery for a part Word does not read.
             const strict = await validate(file, { profile: "strict" });
             expect(inexactFindings(strict.issues)).toEqual([
-                expectedInexactFinding("word/header9.xml", "header", "error", `${CT.header}; charset=utf-8`),
+                expectedInexactFinding("word/header9.xml", "header", "error", `${CT.header}; charset=utf-8`, { specOnly: true }),
             ]);
             expect(strict.valid).toBe(false);
         });
     }, 60_000);
+
+    it("reports an unused header under the spec scope with the clause-11.3 text and no recovery claim, while a referenced header keeps it (s21b, #589)", async () => {
+        const contentType = `${CT.header}; charset=utf-8`;
+        const unused = await wordPartContentTypeInexactFindings(ValidationContext.fromEntries(headerSpecimen(contentType, false)), "spec");
+        expect(unused.map((finding) => finding.issue)).toEqual([
+            expectedInexactFinding("word/header9.xml", "header", "error", contentType, { specOnly: true }),
+        ]);
+        expect(unused[0]?.issue.message).not.toContain("offers to recover the package");
+        // A header the document references is read, so its finding keeps the
+        // observed verdict under the spec scope too.
+        const used = await wordPartContentTypeInexactFindings(ValidationContext.fromEntries(headerSpecimen(contentType, true)), "spec");
+        expect(used[0]?.issue.message).toContain("Word 16.115 offers to recover the package.");
+    });
 
     /**
      * Session 20 (2026-10-24, Word 16.115; sessions 20 and 21 in
@@ -1205,15 +1227,37 @@ describe("word-part-content-type-inexact (#550)", { timeout: 120_000 }, () => {
         );
 
         it.each(["footer", "footnotes", "endnotes", "comments"] as const)(
-            "keeps a related-but-unused %s part silent under the observed scope while the spec scope judges it (s21b opened it clean; #516)",
+            "keeps a related-but-unused %s part silent under the observed scope while the spec scope judges it by the spec text (s21b opened it clean; #516, #589)",
             async (segment) => {
                 const contentType = `${CT[segment]}; charset=utf-8`;
                 const parts = await s20Specimen(segment, contentType, false);
                 expect(await diagnoseInexact(ValidationContext.fromEntries(parts))).toEqual([]);
                 const strict = await wordPartContentTypeInexactFindings(ValidationContext.fromEntries(parts), "spec");
                 expect(strict.map((finding) => finding.issue)).toEqual([
-                    expectedInexactFinding(`word/${S20_PARTS[segment].file}`, segment, "error", contentType),
+                    expectedInexactFinding(`word/${S20_PARTS[segment].file}`, segment, "error", contentType, { specOnly: true }),
                 ]);
+            },
+        );
+
+        it.each(["footer", "footnotes", "endnotes", "comments"] as const)(
+            "reports an unused %s part under the spec scope with the clause-11.3 text and no recovery claim, while a used one keeps it (s21b, #589)",
+            async (segment) => {
+                const contentType = `${CT[segment]}; charset=utf-8`;
+                const unused = await wordPartContentTypeInexactFindings(
+                    ValidationContext.fromEntries(await s20Specimen(segment, contentType, false)),
+                    "spec",
+                );
+                expect(unused.map((finding) => finding.issue)).toEqual([
+                    expectedInexactFinding(`word/${S20_PARTS[segment].file}`, segment, "error", contentType, { specOnly: true }),
+                ]);
+                expect(unused[0]?.issue.message).not.toContain("offers to recover the package");
+                // A part the document uses is read, so its finding keeps the
+                // observed verdict under the spec scope too.
+                const used = await wordPartContentTypeInexactFindings(
+                    ValidationContext.fromEntries(await s20Specimen(segment, contentType)),
+                    "spec",
+                );
+                expect(used[0]?.issue.message).toContain("Word 16.115 offers to recover the package.");
             },
         );
 
@@ -1255,7 +1299,7 @@ describe("word-part-content-type-inexact (#550)", { timeout: 120_000 }, () => {
             60_000,
         );
 
-        it("keeps a related-but-unused lazy part silent under word-valid and reports it under strict (#516, #570)", async () => {
+        it("keeps a related-but-unused lazy part silent under word-valid and reports it under strict by the spec text (#516, #570, #589)", async () => {
             await withTempDir(async (dir) => {
                 for (const segment of ["footer", "footnotes", "endnotes", "comments"] as const) {
                     const contentType = `${CT[segment]}; charset=utf-8`;
@@ -1266,7 +1310,9 @@ describe("word-part-content-type-inexact (#550)", { timeout: 120_000 }, () => {
                     expect(wordValid.valid, segment).toBe(true);
                     const strict = await validate(file, { profile: "strict" });
                     expect(strict.issues, segment).toContainEqual(
-                        expectedInexactFinding(`word/${S20_PARTS[segment].file}`, segment, "error", contentType),
+                        expectedInexactFinding(`word/${S20_PARTS[segment].file}`, segment, "error", contentType, {
+                            specOnly: true,
+                        }),
                     );
                     expect(strict.valid, segment).toBe(false);
                 }
@@ -1399,7 +1445,7 @@ describe("word-part-content-type-inexact (#550)", { timeout: 120_000 }, () => {
             ]);
         });
 
-        it("keeps a header the reached glossary relates but does not reference silent under word-valid, while strict judges it by the spec", async () => {
+        it("keeps a header the reached glossary relates but does not reference silent under word-valid, while strict judges it by the spec text with no recovery claim (s21b, #589)", async () => {
             const contentType = `${CT.header}; charset=utf-8`;
             expect(await diagnoseInexact(ValidationContext.fromEntries(glossaryHeader(contentType, false)))).toEqual([]);
             const strict = await wordPartContentTypeInexactFindings(
@@ -1407,8 +1453,12 @@ describe("word-part-content-type-inexact (#550)", { timeout: 120_000 }, () => {
                 "spec",
             );
             expect(strict.map((finding) => finding.issue)).toEqual([
-                expectedInexactFinding("word/glossary/header9.xml", "header", "error", contentType, { via: "glossary" }),
+                expectedInexactFinding("word/glossary/header9.xml", "header", "error", contentType, {
+                    via: "glossary",
+                    specOnly: true,
+                }),
             ]);
+            expect(strict[0]?.issue.message).not.toContain("offers to recover the package");
         });
 
         it.each(["settings", "fontTable", "webSettings", "numbering", "theme"] as const)(
