@@ -338,7 +338,9 @@ the declaration is malformed whatever its content type, and the resolution is
 left untouched: the PartName is never mapped onto a stored part. One finding is
 reported per offending Override, at the stored content-types stream, quoting
 the PartName and naming the rule it breaks; a folder segment ending with `.` is
-named only when no other rule is broken. A content-types stream that does not
+named only when no other rule is broken. An `Override` without a `PartName` is
+reported as having none, and Word offers to recover it too
+([#458](https://github.com/jandira-tech/docx-validate/issues/458), session 13). A content-types stream that does not
 parse is reported by the XML syntax gate instead, and nothing is reported from
 it here. Word 16.115 offers to recover a package for every shape probed, even
 when nothing is stored under that name and the content type is well formed,

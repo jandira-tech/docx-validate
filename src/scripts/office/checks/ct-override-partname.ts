@@ -49,6 +49,17 @@ export const ctOverridePartnameInvalidCheck: CheckDefinition = {
         if (!parsed?.ok) return issues;
 
         for (const elem of getElementsByTagNameNSAll(parsed.document, CONTENT_TYPES_NAMESPACE, "Override")) {
+            // Word 16.115 offers recovery for a missing PartName as for an
+            // empty one (session 13); only the wording tells them apart (#458).
+            if (!elem.hasAttribute("PartName")) {
+                issues.push({
+                    severity: "error",
+                    code: CT_OVERRIDE_PARTNAME_INVALID,
+                    path: stream,
+                    message: "Override has no PartName attribute, so it names no part.",
+                });
+                continue;
+            }
             const partName = elem.getAttribute("PartName") ?? "";
             const violation = partNameViolation(partName);
             if (violation === undefined) continue;

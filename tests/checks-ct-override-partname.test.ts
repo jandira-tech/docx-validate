@@ -135,6 +135,29 @@ describe("ct-override-partname-invalid", () => {
         ]);
     });
 
+    it("says an Override has no PartName rather than quoting an empty one (#458)", async () => {
+        // Word 16.115 offers recovery for both (session 13); only the wording differs.
+        const missing = ValidationContext.fromEntries({
+            ...MINIMAL_PARTS,
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                `<Override ContentType="application/xml"/></Types>`,
+            ),
+        });
+        const issues = await diagnose(missing);
+        expect(issues).toEqual([
+            {
+                code: ID,
+                severity: "error",
+                path: "[Content_Types].xml",
+                message: "Override has no PartName attribute, so it names no part.",
+            },
+        ]);
+        expect(isWordBlockingIssue(issues[0]!, new Set())).toBe(true);
+        const empty = ValidationContext.fromEntries(withOverride("", "application/xml"));
+        expect(await diagnose(empty)).toEqual([expected("", "must start with '/'", "error")]);
+    });
+
     it("accepts a well-formed PartName for a part that does not exist", async () => {
         const ctx = ValidationContext.fromEntries(withOverride("/word/nothere.xml", "application/xml"));
         expect(await diagnose(ctx)).toEqual([]);
@@ -307,6 +330,33 @@ describe.each(["docx", "docm"] as const)("ct-override-partname-invalid in a %s p
                 const tag = JSON.stringify(selection);
                 expect(findings(partial.issues), tag).toEqual([expected(partName, FOLDER_DOT_RULE, "warning")]);
                 expect(partial.valid, tag).toBe(true);
+                expect(errorPairs(full.issues), tag).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
+            }
+        });
+    });
+
+    it("fails word-valid for an Override without a PartName, in full and partial runs (#458)", async () => {
+        await withTempDir(async (dir) => {
+            const file = await specimen(dir, "no-partname", {
+                ...MINIMAL_PARTS,
+                "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                    "</Types>",
+                    `<Override ContentType="application/xml"/></Types>`,
+                ),
+            });
+            const finding = {
+                code: ID,
+                severity: "error",
+                path: "[Content_Types].xml",
+                message: "Override has no PartName attribute, so it names no part.",
+            };
+            const full = await validate(file, { profile: "word-valid" });
+            expect(findings(full.issues)).toEqual([finding]);
+            expect(full.valid).toBe(false);
+            for (const selection of [{ quick: true }, { checks: ["content-types"] }, { checks: [ID] }]) {
+                const partial = await validate(file, { profile: "word-valid", ...selection });
+                const tag = JSON.stringify(selection);
+                expect(findings(partial.issues), tag).toEqual([finding]);
                 expect(errorPairs(full.issues), tag).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
             }
         });
