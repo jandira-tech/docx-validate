@@ -78,7 +78,7 @@ export type ValidationMetadata = {
     profile?: Profile;
     /** Check ids this run covered, in registry order. */
     executedChecks?: readonly string[];
-    /** Applicable check ids this run left out. Empty for a complete run. */
+    /** Applicable check ids the selection left out. Empty for a complete run. */
     omittedChecks?: readonly string[];
     /**
      * True only when every schema-eligible part was validated and no schema

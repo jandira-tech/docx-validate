@@ -34,6 +34,23 @@ describe("word-attached-toolbar-utf8", () => {
         });
         expect(await wordAttachedToolbarUtf8Check.run(ctx)).toEqual([]);
     });
+    it("reports every referenced part that carries the sequence, once each (Jules on #323)", async () => {
+        const ctx = ValidationContext.fromEntries({
+            "word/fontTable.xml": document(`<wne:toolbarData r:id="rId1"/><wne:toolbarData r:id="rId2"/><wne:toolbarData r:id="rId3"/>`),
+            "word/_rels/fontTable.xml.rels": rels(
+                relation("rId1", "attachedToolbars", "", "attachedToolbars.bin") +
+                    relation("rId2", "attachedToolbars", "", "attachedToolbars2.bin") +
+                    relation("rId3", "attachedToolbars", "", "attachedToolbars.bin"),
+            ),
+            // A second part naming the first toolbar again adds no finding.
+            "word/settings.xml": document(`<wne:toolbarData r:id="rId1"/>`),
+            "word/_rels/settings.xml.rels": rels(relation("rId1", "attachedToolbars", "", "attachedToolbars.bin")),
+            "word/attachedToolbars.bin": new Uint8Array([0xef, 0xbf, 0xbd]),
+            "word/attachedToolbars2.bin": new Uint8Array([0x00, 0xef, 0xbf, 0xbd]),
+        });
+        const issues = await wordAttachedToolbarUtf8Check.run(ctx);
+        expect(issues.map((issue) => issue.path).sort()).toEqual(["word/attachedToolbars.bin", "word/attachedToolbars2.bin"]);
+    });
     it("skips absent, irrelevant and unparseable parts", async () => {
         expect(await wordAttachedToolbarUtf8Check.run(ValidationContext.fromEntries({}))).toEqual([]);
         expect(
