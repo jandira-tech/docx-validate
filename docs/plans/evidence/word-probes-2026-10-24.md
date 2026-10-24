@@ -1,6 +1,6 @@
 # Real-Word probes, 2026-10-24
 
-Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), what session 26 settled for the items adversarial review AY suspected (#606, #607, #610), and what session 27 settled for the relationship types and placements adversarial review AZ left open (#613).
+Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), what session 26 settled for the items adversarial review AY suspected (#606, #607, #610), what session 27 settled for the relationship types and placements adversarial review AZ left open (#613), and what session 28 settled for a hyperlink's relationship type (#614).
 
 - Word: Microsoft Word for Mac 16.115 (build 16.115.26100424), platform `darwin`.
 - Transport, sessions 1 and 2: `verifyInWord` (`src/lib/word-verifier.ts`). It opens each specimen by path, reads Word's window and dialog state, and never saves.
@@ -185,6 +185,10 @@ Session 27 adds, for the items adversarial review AZ (#611) left for a probe:
 - **A duplicate relationship Id is refused when its two entries have different types.** With one relationship of the reference's type and one of the other type under the same Id, Word refuses the file whichever is listed last. Two entries of the same type were not probed.
 - **The relationship type also decides in a paragraph-level `w:pPr/w:sectPr` and inside a `w:sectPrChange`.** A `w:headerReference` naming a footer relationship is refused in either place. The same reference naming a header relationship opens clean inside a `w:sectPrChange`, although `CT_SectPrBase` has no header reference, so strict still rejects it on schema.
 
+Session 28 adds:
+
+- **#614: Word accepts exactly two relationship Types for a `w:hyperlink`, too.** With TargetMode `External`, the Transitional `http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink` and the ISO Strict `http://purl.oclc.org/ooxml/officeDocument/relationships/hyperlink` open clean. `http://example.com/hyperlink`, `…/relationships/custom/hyperlink` and `…/relationships/HYPERLINK` are refused. Word-valid and strict at 9eb10acb passed the first two refused Types, because `word-hyperlink-relationship` tested only the end of the Type.
+
 ## Not observed
 
 Session 1. Another session began driving Word by 02:28Z: its first log line is at 02:28:14Z, and its map file was written at 02:27:55Z. Its preflight closes every open document, so rows observed from 02:26Z on were not treated as evidence. Session 2 observed all of them again (below).
@@ -236,6 +240,8 @@ Session 25 ran in the foreground (`s25a` 18:37Z), one driver run. Nothing was se
 Session 26 ran in the foreground (`s26a` 19:15Z, `s26b` 20:54Z, `s26c` 21:01Z), one driver run per chunk. Nothing was set aside, and every row is attributed by a manifest entry naming its staged file; the watchdog saw no alert. Before each chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`. All three preflights found a Word process the driver had not launched, with no open document (`word_pid=81589`, `launched_by_us=False`, `open_documents=0`). All three chunks were built at af20d641 with the session 26 builder below.
 
 Session 27 ran in the foreground (`s27a` 22:11Z, `s27b` 22:12Z, `s27c` 22:13Z), one driver run per chunk. Nothing was set aside, and every row is attributed by a manifest entry naming its staged file. Before each chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`. All three preflights found a Word process the driver had not launched, with no open document (`word_pid=81589`, `launched_by_us=False`, `open_documents=0`). All three chunks were built at 9eb10acb with the session 27 builder below; `s27b` was rebuilt once, before it ran, to add the Strict-URI specimen.
+
+Session 28 ran in the foreground (`s28a` 22:25Z), one driver run. Nothing was set aside, and every row is attributed by a manifest entry naming its staged file. Before the chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`. The preflight found a Word process the driver had not launched, with no open document (`word_pid=81589`, `launched_by_us=False`, `open_documents=0`). The chunk was built at 9eb10acb with the session 28 builder below.
 
 Sessions 4–6 observed `main-relationship-missing` (#380), the #414 `PartName`s with `application/xml`, an escape in a folder segment (#408), a part-level relationships part (#433) and an unreferenced malformed `customXml/item9.xml` (#437). Still to be observed:
 
@@ -1696,6 +1702,34 @@ The relationship Types, duplicate Ids and placements adversarial review AZ of #6
 {"run": "s27c", "name": "footerref-footer-rel-type-strict-uri", "sha256": "f7f1b2166e9c0ed098e45464ba4e8c7b7c916754cf3f72bcd07499875ed28ca9", "observedAt": "2026-10-24T22:14:14+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 {"run": "s27c", "name": "footerref-footer-rel-ftr-typed-footer", "sha256": "1117edc61cf701f4d9f10d9ab003946433e3665179e7f2d1eff8cdef44c40816", "observedAt": "2026-10-24T22:14:14+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 {"run": "s27c", "name": "s27c-control-minimal-end", "sha256": "df85a4aa94a79dbc90c0055b29fcd0b09784214f4797722221e92c9c5d85978d", "observedAt": "2026-10-24T22:14:14+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 28: 22:25Z–22:28Z, validator columns at 9eb10acb
+
+Whether Word reads a hyperlink's relationship Type exactly, as session 27 found it does for header and footer references (#614).
+
+| Run    | Observed  | Specimen                              | Issue        | Shape                                                                                                                                  | SHA-256 (first 16) | Word           | word-valid at 9eb10acb                 | strict at 9eb10acb                     |
+| ------ | --------- | ------------------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------------------------------- | -------------------------------------- |
+| `s28a` | 22:27:27Z | `s28a-control-minimal`                | control      | `MINIMAL_PARTS`                                                                                                                        | `79625c5d0847832d` | clean-open     | valid                                  | valid                                  |
+| `s28a` | 22:27:27Z | `hyperlink-rel-type-transitional`     | #614 control | `MINIMAL_PARTS` plus a body `w:hyperlink r:id="rIdH"` → External relationship to `https://example.org/`, Type unchanged (Transitional) | `660a32ca683f9b8f` | clean-open     | valid                                  | valid                                  |
+| `s28a` | 22:27:27Z | `hyperlink-rel-type-strict-uri`       | #614 control | the same, Type `http://purl.oclc.org/ooxml/officeDocument/relationships/hyperlink`                                                     | `c6b42a909bcfda00` | clean-open     | valid                                  | valid                                  |
+| `s28a` | 22:26:38Z | `hyperlink-rel-type-example-com`      | #614         | the same, Type `http://example.com/hyperlink`                                                                                          | `72403616105b52b2` | repair-warning | valid                                  | valid                                  |
+| `s28a` | 22:25:40Z | `hyperlink-rel-type-custom-hyperlink` | #614         | the same, Type `…/relationships/custom/hyperlink`                                                                                      | `96829b01ea8a331e` | repair-warning | valid                                  | valid                                  |
+| `s28a` | 22:26:49Z | `hyperlink-rel-type-upper`            | #614         | the same, Type `…/relationships/HYPERLINK`                                                                                             | `b555e1aca1415647` | repair-warning | invalid: `word-hyperlink-relationship` | invalid: `word-hyperlink-relationship` |
+| `s28a` | 22:27:27Z | `s28a-control-minimal-end`            | control      | `MINIMAL_PARTS`                                                                                                                        | `79625c5d0847832d` | clean-open     | valid                                  | valid                                  |
+
+<details><summary>Raw records, session 28</summary>
+
+```jsonl
+{"run": "s28a", "name": "s28a-control-minimal", "sha256": "79625c5d0847832dc083e20bedcfaac2b054c8e0ac28145797a2735e66af2ee5", "observedAt": "2026-10-24T22:27:27+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s28a", "name": "hyperlink-rel-type-transitional", "sha256": "660a32ca683f9b8f976bd26015581a1783b8a75d3ad1629557b7767876ca631d", "observedAt": "2026-10-24T22:27:27+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s28a", "name": "hyperlink-rel-type-strict-uri", "sha256": "c6b42a909bcfda0014871b38fc8e3b0d22027efe5e2e05b982073458e40749d6", "observedAt": "2026-10-24T22:27:27+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s28a", "name": "hyperlink-rel-type-example-com", "sha256": "72403616105b52b2d454770c5cb867ce0cf06df2eeb573ebd9572d80bf422c93", "observedAt": "2026-10-24T22:26:38.165Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__hyperlink-rel-type-example-com.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00001__wfv__hyperlink-rel-type-example-com.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00001__wfv__hyperlink-rel-type-example-com.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s28a", "name": "hyperlink-rel-type-custom-hyperlink", "sha256": "96829b01ea8a331e75dfb30e446105b57c35d4e2c5261760b8e4494836ff2691", "observedAt": "2026-10-24T22:25:40.247Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__hyperlink-rel-type-custom-hyperlink.docx; refusing to guess", "dialogs": ["\"Word found unreadable content in 00000__wfv__hyperlink-rel-type-custom-hyperlink.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s28a", "name": "hyperlink-rel-type-upper", "sha256": "b555e1aca141564743e018977c057a55c7102a0aa7a24fa186845661776bb80f", "observedAt": "2026-10-24T22:26:49.547Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["\"Word found unreadable content in 00004__wfv__hyperlink-rel-type-upper.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s28a", "name": "s28a-control-minimal-end", "sha256": "79625c5d0847832dc083e20bedcfaac2b054c8e0ac28145797a2735e66af2ee5", "observedAt": "2026-10-24T22:27:27+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 ```
 
 </details>
@@ -5820,6 +5854,88 @@ for (const [name, issue, make] of specimens) {
     appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
     console.log(
         `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid}`,
+    );
+}
+```
+
+Session 28's builder (`s28a`) is another standalone script, run the same way:
+
+```ts
+// Session 28 (2026-10-24): does Word read a w:hyperlink's relationship Type exactly, as session 27 found for header and
+// footer references (#613)? `word-hyperlink-relationship` (src/scripts/office/checks/word-hyperlink.ts) accepts any
+// Type that ends in /hyperlink with TargetMode External.
+// s28a: `MINIMAL_PARTS` with a body w:hyperlink r:id="rIdH" naming an External relationship to https://example.org/
+//       whose Type is the Transitional hyperlink URI (control), the ISO Strict hyperlink URI,
+//       `http://example.com/hyperlink`, `…/relationships/custom/hyperlink`, or `…/relationships/HYPERLINK`.
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s28a pnpm exec tsx s28builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+type Parts = Record<string, string>;
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (!text.includes(from)) throw new Error(`missing ${from}`);
+    return text.replace(from, to);
+};
+const RELS = "word/_rels/document.xml.rels";
+const DOC = "word/document.xml";
+const hyperlink = (type: string): Parts => {
+    const parts: Parts = { ...(MINIMAL_PARTS as Parts) };
+    parts[DOC] = replaceOnce(
+        replaceOnce(parts[DOC]!, "<w:document ", `<w:document xmlns:r="${R}" `),
+        "<w:r><w:t>Hello</w:t></w:r>",
+        `<w:r><w:t>Hello</w:t></w:r><w:hyperlink r:id="rIdH"><w:r><w:t>link</w:t></w:r></w:hyperlink>`,
+    );
+    parts[RELS] = replaceOnce(
+        parts[RELS]!,
+        "</Relationships>",
+        `<Relationship Id="rIdH" Type="${type}" Target="https://example.org/" TargetMode="External"/></Relationships>`,
+    );
+    return parts;
+};
+const control = () => buildDocx(MINIMAL_PARTS);
+
+const chunks: Record<string, [string, string, () => Promise<Uint8Array> | Uint8Array][]> = {
+    s28a: [
+        ["s28a-control-minimal", "control", control],
+        ["hyperlink-rel-type-transitional", "control", () => buildDocx(hyperlink(`${R}/hyperlink`))],
+        [
+            "hyperlink-rel-type-strict-uri",
+            "#613 class",
+            () => buildDocx(hyperlink("http://purl.oclc.org/ooxml/officeDocument/relationships/hyperlink")),
+        ],
+        ["hyperlink-rel-type-example-com", "#613 class", () => buildDocx(hyperlink("http://example.com/hyperlink"))],
+        ["hyperlink-rel-type-custom-hyperlink", "#613 class", () => buildDocx(hyperlink(`${R}/custom/hyperlink`))],
+        ["hyperlink-rel-type-upper", "#613 class", () => buildDocx(hyperlink(`${R}/HYPERLINK`))],
+        ["s28a-control-minimal-end", "control", control],
+    ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        const r = await validate(path.join(dir, file), { profile });
+        return {
+            valid: r.valid,
+            errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+        };
+    };
+    const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
     );
 }
 ```
