@@ -6,6 +6,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Named Word rules in `WORD_RULE_CHECKS`, prerequisite scheduling with per-part XML gating, `--quick`, `--checks`, `--list-checks`, `--strict`, `--json`, and shared API execution metadata ([#267](https://github.com/jandira-tech/docx-validate/issues/267), [#271](https://github.com/jandira-tech/docx-validate/issues/271), [#272](https://github.com/jandira-tech/docx-validate/issues/272), [#306](https://github.com/jandira-tech/docx-validate/issues/306), [#307](https://github.com/jandira-tech/docx-validate/issues/307)).
+- Structural Word checks for misplaced content/properties, incomplete drawings/pictures, unknown elements, namespace-less links, and empty custom-property filetimes replace XSD-message heuristics ([#269](https://github.com/jandira-tech/docx-validate/issues/269)).
+- Advisory checks for math revisions, shading colors, grid-column attributes, cell-margin order, required table/page properties, and textbox namespaces ([#235](https://github.com/jandira-tech/docx-validate/issues/235), [#213](https://github.com/jandira-tech/docx-validate/issues/213), [#210](https://github.com/jandira-tech/docx-validate/issues/210), [#209](https://github.com/jandira-tech/docx-validate/issues/209), [#211](https://github.com/jandira-tech/docx-validate/issues/211), [#212](https://github.com/jandira-tech/docx-validate/issues/212), [#214](https://github.com/jandira-tech/docx-validate/issues/214), [#244](https://github.com/jandira-tech/docx-validate/issues/244)).
+- Optional `--verify-word` / `verifyWord` verification with macOS Microsoft Word, exact-byte temporary copies, classified outcomes, hash/version/platform/timing metadata, and document-scoped cleanup ([#273](https://github.com/jandira-tech/docx-validate/issues/273)).
+- Packaged `docx-validate` bin at `dist/cli.mjs`, a silent library entry, and an installed-package smoke covering imports, validation, schema assets, and CLI help ([#314](https://github.com/jandira-tech/docx-validate/issues/314), [#274](https://github.com/jandira-tech/docx-validate/issues/274)).
+- Hash-bound manifest Word observations with preserved history and independent `fixtures-all-word-valid` regression expectations; unknown, timeout, and stale evidence is excluded from accuracy counts ([#274](https://github.com/jandira-tech/docx-validate/issues/274), [#313](https://github.com/jandira-tech/docx-validate/issues/313)).
+- Per-module coverage gates through `test:coverage-gate` and CI, plus a `Coverage: N% lines, M% branches` summary on every coverage-enabled Vitest run, including failures ([#266](https://github.com/jandira-tech/docx-validate/issues/266), [#271](https://github.com/jandira-tech/docx-validate/issues/271), [#274](https://github.com/jandira-tech/docx-validate/issues/274)).
+
+### Changed
+
+- **Breaking:** DOCX/DOCM default to `word-valid`; pass `--profile lenient` or `{ profile: "lenient" }` for the previous policy. PPTX retains its lenient default. DOCX/DOCM Word-valid runs structural checks without document XSD validation, with `schemaCompleted: false` and an `xsdWalk` that has not started; strict includes the Word rules and applicable schemas ([#266](https://github.com/jandira-tech/docx-validate/issues/266), [#269](https://github.com/jandira-tech/docx-validate/issues/269), [#271](https://github.com/jandira-tech/docx-validate/issues/271)).
+
+### Fixed
+
+- Parse XML from original bytes without recovery, preserve available line/column diagnostics, support UTF-8/UTF-16, and diagnose undeclared prefixes and encoding failures with stable codes. BOMs alone never fail validation ([#268](https://github.com/jandira-tech/docx-validate/issues/268), [#290](https://github.com/jandira-tech/docx-validate/issues/290)).
+- Resolve content types with exact Override precedence and canonical OPC part-name comparison, including reserved-escape distinctions ([#208](https://github.com/jandira-tech/docx-validate/issues/208), [#297](https://github.com/jandira-tech/docx-validate/issues/297)).
+- Select markup-compatibility branches on validation-only clones, preserve schema-permitted extension payloads, and judge Word rules on the content Word consumes. Diagnose invalid tokens, unbound prefixes, and loss of required main roots without duplicate root Ignorable findings ([#239](https://github.com/jandira-tech/docx-validate/issues/239), [#250](https://github.com/jandira-tech/docx-validate/issues/250), [#287](https://github.com/jandira-tech/docx-validate/issues/287), [#291](https://github.com/jandira-tech/docx-validate/issues/291), [#296](https://github.com/jandira-tech/docx-validate/issues/296), [#309](https://github.com/jandira-tech/docx-validate/issues/309)).
+- Validate ISO Strict OOXML under strict with bundled schemas and local Dublin Core imports. Preserve repeated schema-error locations, bypass strict message suppression and original-baseline subtraction, and keep infrastructure failures out of baseline subtraction ([#270](https://github.com/jandira-tech/docx-validate/issues/270), [#289](https://github.com/jandira-tech/docx-validate/issues/289)).
+- Return `unavailable` when a Word dialog is already showing before verification, without opening or closing anything; dismiss dialogs raised by this run during macOS cleanup so later probes remain attributable ([#315](https://github.com/jandira-tech/docx-validate/issues/315)).
+
 ### Security
 
 - Replace the quadratic XML pretty-printer suffix regex with a linear scan, preserving formatting while preventing repeated tag starts in comments from causing excessive work (CodeQL alert #2).
@@ -38,7 +60,9 @@ Changes since the latest GitHub release, `v0.52.0` (2026-10-06), through 2026-10
 
 ### Known limitations
 
-- Word compatibility for some uncovered package parts and unselected markup-compatibility branches still needs targeted Word A/B evidence; see [the inspection notes](docs/really-broken/README.md). Recorded Word observations were preserved; this release review did not perform new Word opens.
+- Word compatibility for some uncovered package parts and unselected markup-compatibility branches still needs targeted Word A/B evidence; see [the inspection notes](docs/really-broken/README.md). Recorded Word observations were preserved; new observations were added only for the 12 fixtures bound in [#313](https://github.com/jandira-tech/docx-validate/issues/313).
+- Word-valid does not yet check the main document part's root. A foreign root (Word: open error) and a root that markup compatibility ignores (Word opens it with all content dropped) both pass Word-valid; lenient and strict catch them ([#317](https://github.com/jandira-tech/docx-validate/issues/317)).
+- `verifyInWord` reports `crash` whenever the Word process disappears after the open, so an external kill or quit is indistinguishable from a crash ([#305](https://github.com/jandira-tech/docx-validate/issues/305)).
 
 ## [0.52.0] — 2026-10-06
 
