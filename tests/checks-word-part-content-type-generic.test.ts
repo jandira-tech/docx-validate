@@ -26,6 +26,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
+import JSZip from "jszip";
 import { describe, expect, it } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
@@ -33,6 +34,7 @@ import type { ValidationIssue } from "../src/lib/types";
 import { ValidationContext } from "../src/lib/validation-context";
 import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
 import { WORD_PART_CONTENT_TYPE_GENERIC } from "../src/scripts/office/checks/word-part-content-type-generic";
+import { wordPartContentTypeInexactFindings } from "../src/scripts/office/checks/word-part-content-type-inexact";
 import { validate } from "../src/scripts/office/validate";
 import { isWordBlockingIssue } from "../src/scripts/office/validators/word-blocking";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
@@ -57,6 +59,12 @@ const CT = {
     webSettings: "application/vnd.openxmlformats-officedocument.wordprocessingml.webSettings+xml",
     header: "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml",
     numbering: "application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml",
+    footer: "application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml",
+    footnotes: "application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml",
+    endnotes: "application/vnd.openxmlformats-officedocument.wordprocessingml.endnotes+xml",
+    comments: "application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml",
+    glossaryDocument: "application/vnd.openxmlformats-officedocument.wordprocessingml.document.glossary+xml",
+    theme: "application/vnd.openxmlformats-officedocument.theme+xml",
 } as const;
 
 /** The five parts session 8a observed Word reject when typed by the generic Default. */
@@ -704,8 +712,26 @@ describe("word-part-content-type-inexact (#550)", { timeout: 120_000 }, () => {
         .join(", ")
         .replace(/, ([^,]*)$/, " or $1");
 
-    /** The segments Word was observed refusing an inexact type on (session 17); strict-only segments cite Part 1 instead. */
-    const RECOVERY_SEGMENTS: ReadonlySet<string> = new Set(["officeDocument", "styles", "settings", "fontTable", "webSettings", "header"]);
+    /**
+     * The segments Word was observed refusing an inexact type on: session 17's
+     * set plus session 20's — numbering and theme eagerly, footer, footnotes,
+     * endnotes and comments when the document uses them (#570). A segment with
+     * no observation (glossaryDocument) cites Part 1 instead.
+     */
+    const RECOVERY_SEGMENTS: ReadonlySet<string> = new Set([
+        "officeDocument",
+        "styles",
+        "settings",
+        "fontTable",
+        "webSettings",
+        "header",
+        "numbering",
+        "theme",
+        "footer",
+        "footnotes",
+        "endnotes",
+        "comments",
+    ]);
 
     const expectedInexactFinding = (
         part: string,
@@ -1044,33 +1070,228 @@ describe("word-part-content-type-inexact (#550)", { timeout: 120_000 }, () => {
         });
     }, 60_000);
 
-    it("reports the unprobed Part 1 types under strict, citing clause 11.3, and stays silent under word-valid (#506)", async () => {
-        await withTempDir(async (dir) => {
-            const file = path.join(dir, "numbering.docx");
-            writeFileSync(
-                file,
-                await buildDocx({
-                    ...MINIMAL_PARTS,
-                    "word/numbering.xml": `<w:numbering xmlns:w="${W}"/>`,
-                    "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
-                        "</Relationships>",
-                        `<Relationship Id="rId9" Type="${R}/numbering" Target="numbering.xml"/></Relationships>`,
-                    ),
-                    "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
-                        "</Types>",
-                        `<Override PartName="/word/numbering.xml" ContentType="${CT.numbering}; charset=utf-8"/></Types>`,
-                    ),
-                }),
-            );
-            const strict = await validate(file, { profile: "strict" });
-            expect(inexactFindings(strict.issues)).toEqual([
-                expectedInexactFinding("word/numbering.xml", "numbering", "error", `${CT.numbering}; charset=utf-8`),
-            ]);
-            expect(strict.valid).toBe(false);
-            const wordValid = await validate(file, { profile: "word-valid" });
-            expect(inexactFindings(wordValid.issues)).toEqual([]);
-        });
-    }, 60_000);
+    /**
+     * Session 20 (2026-10-24, Word 16.115; sessions 20 and 21 in
+     * docs/plans/evidence/word-probes-2026-10-24.md) probed the part types
+     * #550 left unprobed for an inexact type. An Override carrying the part's
+     * own type plus `; charset=utf-8` gets the repair warning on a related
+     * numbering or theme part (related is enough — both are eagerly parsed)
+     * and on a footer, footnotes, endnotes or comments part the document
+     * references; the same spelling on a glossaryDocument opens clean, so it
+     * stays silent under word-valid, and every exact-type control opens
+     * clean (#570). Session 21 observed a trailing space refused on the same
+     * six parts, and the four lazy ones opening clean when related but
+     * unused.
+     */
+    describe("session 20's probed parts (#570)", () => {
+        /** The well-formed theme part session 20's specimens carry — `word/theme/theme1.xml` of `package.word-anchor-open-repaired.docx`, copied not modified. */
+        let themeXml: string | undefined;
+        const theme = async (): Promise<string> => {
+            if (themeXml === undefined) {
+                const zip = await JSZip.loadAsync(readFileSync("tests/fixtures/working/package.word-anchor-open-repaired.docx"));
+                themeXml = await zip.file("word/theme/theme1.xml")!.async("string");
+            }
+            return themeXml;
+        };
+
+        const notesXml = (kind: "footnote" | "endnote"): string =>
+            `<w:${kind}s xmlns:w="${W}"><w:${kind} w:type="separator" w:id="-1"><w:p><w:r><w:separator/></w:r></w:p></w:${kind}>` +
+            `<w:${kind} w:type="continuationSeparator" w:id="0"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:${kind}>` +
+            `<w:${kind} w:id="1"><w:p><w:r><w:t>Note</w:t></w:r></w:p></w:${kind}></w:${kind}s>`;
+        const NUMBERING_XML =
+            `<w:numbering xmlns:w="${W}"><w:abstractNum w:abstractNumId="0"><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="decimal"/>` +
+            `<w:lvlText w:val="%1."/></w:lvl></w:abstractNum><w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num></w:numbering>`;
+        const FOOTER_XML = `<w:ftr xmlns:w="${W}"><w:p><w:r><w:t>Footer</w:t></w:r></w:p></w:ftr>`;
+        const COMMENTS_XML = `<w:comments xmlns:w="${W}"><w:comment w:id="0" w:author="A" w:initials="A"><w:p><w:r><w:t>Comment</w:t></w:r></w:p></w:comment></w:comments>`;
+        const GLOSSARY_XML =
+            `<w:glossaryDocument xmlns:w="${W}" xmlns:r="${R}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+            `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+            `<w:docPartBody><w:p><w:r><w:t>Part</w:t></w:r></w:p></w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`;
+
+        /** The main document with `xmlns:r` declared, `run` appended after the Hello run and `sect` prepended into `w:sectPr` — the s20 builder's `docWith`. */
+        const docUsing = (run: string, sect: string): string =>
+            MINIMAL_PARTS["word/document.xml"]!.replace(`<w:document xmlns:w="${W}"`, `<w:document xmlns:w="${W}" xmlns:r="${R}"`)
+                .replace("<w:t>Hello</w:t></w:r>", `<w:t>Hello</w:t></w:r>${run}`)
+                .replace("<w:sectPr>", `<w:sectPr>${sect}`);
+
+        /** The part shapes session 20's builder produced, keyed by the relationship type's segment. */
+        const S20_PARTS = {
+            numbering: { file: "numbering.xml", xml: (): string => NUMBERING_XML },
+            theme: { file: "theme/theme1.xml", xml: theme },
+            glossaryDocument: { file: "glossary/document.xml", xml: (): string => GLOSSARY_XML },
+            footer: { file: "footer9.xml", xml: (): string => FOOTER_XML, sect: `<w:footerReference w:type="default" r:id="rIdX"/>` },
+            footnotes: {
+                file: "footnotes.xml",
+                xml: (): string => notesXml("footnote"),
+                run: `<w:r><w:footnoteReference w:id="1"/></w:r>`,
+            },
+            endnotes: { file: "endnotes.xml", xml: (): string => notesXml("endnote"), run: `<w:r><w:endnoteReference w:id="1"/></w:r>` },
+            comments: { file: "comments.xml", xml: (): string => COMMENTS_XML, run: `<w:r><w:commentReference w:id="0"/></w:r>` },
+        } as const;
+        type S20Segment = keyof typeof S20_PARTS;
+
+        /**
+         * The minimal package plus the part session 20's `mainPart` built: the
+         * main document relates `word/<file>` through a `<segment>`
+         * relationship, references it unless `used` is false, and an Override
+         * types it `contentType`.
+         */
+        const s20Specimen = async (segment: S20Segment, contentType: string, used = true): Promise<Parts> => {
+            const spec = S20_PARTS[segment];
+            const run = "run" in spec ? spec.run : "";
+            const sect = "sect" in spec ? spec.sect : "";
+            return {
+                ...MINIMAL_PARTS,
+                "word/document.xml": used && (run !== "" || sect !== "") ? docUsing(run, sect) : MINIMAL_PARTS["word/document.xml"]!,
+                [`word/${spec.file}`]: await spec.xml(),
+                "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                    "</Relationships>",
+                    `<Relationship Id="rIdX" Type="${R}/${segment}" Target="${spec.file}"/></Relationships>`,
+                ),
+                "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                    "</Types>",
+                    `<Override PartName="/word/${spec.file}" ContentType="${contentType}"/></Types>`,
+                ),
+            };
+        };
+
+        it.each(["numbering", "theme"] as const)(
+            "reports a related %s part's Override carrying its own type plus `; charset=utf-8` (s20b)",
+            async (segment) => {
+                const contentType = `${CT[segment]}; charset=utf-8`;
+                const parts = await s20Specimen(segment, contentType);
+                expect(await diagnoseInexact(ValidationContext.fromEntries(parts))).toEqual([
+                    expectedInexactFinding(`word/${S20_PARTS[segment].file}`, segment, "error", contentType),
+                ]);
+                // Related is enough — both types are eagerly parsed — so strict
+                // reports the same finding, theme included (#570).
+                const strict = await wordPartContentTypeInexactFindings(ValidationContext.fromEntries(parts), "spec");
+                expect(strict.map((finding) => finding.issue)).toEqual([
+                    expectedInexactFinding(`word/${S20_PARTS[segment].file}`, segment, "error", contentType),
+                ]);
+            },
+        );
+
+        it.each(["footer", "footnotes", "endnotes", "comments"] as const)(
+            "reports a used %s part's Override carrying its own type plus `; charset=utf-8` (s20b/s20c)",
+            async (segment) => {
+                const contentType = `${CT[segment]}; charset=utf-8`;
+                const parts = await s20Specimen(segment, contentType);
+                expect(await diagnoseInexact(ValidationContext.fromEntries(parts))).toEqual([
+                    expectedInexactFinding(`word/${S20_PARTS[segment].file}`, segment, "error", contentType),
+                ]);
+            },
+        );
+
+        it.each(["numbering", "theme", "footer", "footnotes", "endnotes", "comments"] as const)(
+            "reports the %s part's Override carrying its own type plus a trailing space (s21a)",
+            async (segment) => {
+                const contentType = `${CT[segment]} `;
+                const parts = await s20Specimen(segment, contentType);
+                expect(await diagnoseInexact(ValidationContext.fromEntries(parts))).toEqual([
+                    expectedInexactFinding(`word/${S20_PARTS[segment].file}`, segment, "error", contentType),
+                ]);
+            },
+        );
+
+        it.each(["footer", "footnotes", "endnotes", "comments"] as const)(
+            "keeps a related-but-unused %s part silent under the observed scope while the spec scope judges it (s21b opened it clean; #516)",
+            async (segment) => {
+                const contentType = `${CT[segment]}; charset=utf-8`;
+                const parts = await s20Specimen(segment, contentType, false);
+                expect(await diagnoseInexact(ValidationContext.fromEntries(parts))).toEqual([]);
+                const strict = await wordPartContentTypeInexactFindings(ValidationContext.fromEntries(parts), "spec");
+                expect(strict.map((finding) => finding.issue)).toEqual([
+                    expectedInexactFinding(`word/${S20_PARTS[segment].file}`, segment, "error", contentType),
+                ]);
+            },
+        );
+
+        it.each(["numbering", "theme", "footer", "footnotes", "endnotes", "comments"] as const)(
+            "word-valid and strict both fail the session-20 %s specimen",
+            async (segment) => {
+                await withTempDir(async (dir) => {
+                    const contentType = `${CT[segment]}; charset=utf-8`;
+                    const file = path.join(dir, `s20-${segment}.docx`);
+                    writeFileSync(file, await buildDocx(await s20Specimen(segment, contentType)));
+                    const wanted = expectedInexactFinding(`word/${S20_PARTS[segment].file}`, segment, "error", contentType);
+                    const wordValid = await validate(file, { profile: "word-valid" });
+                    expect(wordValid.issues).toContainEqual(wanted);
+                    expect(wordValid.valid).toBe(false);
+                    const strict = await validate(file, { profile: "strict" });
+                    expect(strict.issues).toContainEqual(wanted);
+                    expect(strict.valid).toBe(false);
+                });
+            },
+            60_000,
+        );
+
+        it.each(["numbering", "theme", "footer", "footnotes", "endnotes", "comments"] as const)(
+            "stays silent for the %s part's exact-type control (s20d)",
+            async (segment) => {
+                await withTempDir(async (dir) => {
+                    const file = path.join(dir, `exact-${segment}.docx`);
+                    writeFileSync(file, await buildDocx(await s20Specimen(segment, CT[segment])));
+                    const wordValid = await validate(file, { profile: "word-valid" });
+                    expect(inexactFindings(wordValid.issues)).toEqual([]);
+                    expect(wordValid.valid).toBe(true);
+                    // Strict keeps judging the part's other defects (the s20d
+                    // controls failed on paraid-missing-element alone) — the
+                    // inexact check itself stays silent.
+                    const strict = await validate(file, { profile: "strict" });
+                    expect(inexactFindings(strict.issues)).toEqual([]);
+                });
+            },
+            60_000,
+        );
+
+        it("keeps a related-but-unused lazy part silent under word-valid and reports it under strict (#516, #570)", async () => {
+            await withTempDir(async (dir) => {
+                for (const segment of ["footer", "footnotes", "endnotes", "comments"] as const) {
+                    const contentType = `${CT[segment]}; charset=utf-8`;
+                    const file = path.join(dir, `unused-${segment}.docx`);
+                    writeFileSync(file, await buildDocx(await s20Specimen(segment, contentType, false)));
+                    const wordValid = await validate(file, { profile: "word-valid" });
+                    expect(inexactFindings(wordValid.issues), segment).toEqual([]);
+                    expect(wordValid.valid, segment).toBe(true);
+                    const strict = await validate(file, { profile: "strict" });
+                    expect(strict.issues, segment).toContainEqual(
+                        expectedInexactFinding(`word/${S20_PARTS[segment].file}`, segment, "error", contentType),
+                    );
+                    expect(strict.valid, segment).toBe(false);
+                }
+            });
+        }, 60_000);
+
+        it("reports a parameterized glossaryDocument Override under strict, citing clause 11.3, and stays silent under word-valid — session 20 opened it clean (#506, #570)", async () => {
+            await withTempDir(async (dir) => {
+                const contentType = `${CT.glossaryDocument}; charset=utf-8`;
+                const file = path.join(dir, "glossary.docx");
+                writeFileSync(file, await buildDocx(await s20Specimen("glossaryDocument", contentType)));
+                const strict = await validate(file, { profile: "strict" });
+                expect(inexactFindings(strict.issues)).toEqual([
+                    expectedInexactFinding("word/glossary/document.xml", "glossaryDocument", "error", contentType),
+                ]);
+                expect(strict.valid).toBe(false);
+                const wordValid = await validate(file, { profile: "word-valid" });
+                expect(inexactFindings(wordValid.issues)).toEqual([]);
+                expect(wordValid.valid).toBe(true);
+            });
+        }, 60_000);
+
+        it("warns under lenient for session-20's segments too", async () => {
+            await withTempDir(async (dir) => {
+                const contentType = `${CT.numbering}; charset=utf-8`;
+                const file = path.join(dir, "lenient-numbering.docx");
+                writeFileSync(file, await buildDocx(await s20Specimen("numbering", contentType)));
+                const result = await validate(file, { profile: "lenient" });
+                expect(inexactFindings(result.issues)).toEqual([
+                    expectedInexactFinding("word/numbering.xml", "numbering", "warning", contentType),
+                ]);
+                expect(result.valid).toBe(true);
+            });
+        }, 60_000);
+    });
 
     it("drops a Default-typed main under strict only when ct-undeclared-part errors at the same path (#535)", async () => {
         await withTempDir(async (dir) => {
