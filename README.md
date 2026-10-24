@@ -176,8 +176,12 @@ console.log(result.metadata?.schemaCompleted); // false
 
 For DOCX/DOCM, the path API and document validator do not compile or walk XSD
 schemas under `word-valid`, so `schemaCompleted` is always `false`. Full `lenient` and `strict` runs walk eligible parts; a malformed part
-can stop a lenient run before XSD. The trace describes the schema walk, not a
-Microsoft Word invocation. Under `strict`, ISO Strict OOXML parts use the bundled
+can stop a lenient run before XSD. The XML part list uses OPC-equivalent
+extensions: ASCII case is ignored and unreserved escapes are decoded, so `.XML`,
+`.RELS` and `.%72els` parts are seen by the passes that iterate that list and by
+the XSD walk. DOCX relationships validation passes use the same OPC-equivalent
+`.rels` predicate; empty-part auto-repair retains its exact lowercase `.rels`
+scope. The trace describes the schema walk, not a Microsoft Word invocation. Under `strict`, ISO Strict OOXML parts use the bundled
 `schemas/iso-strict/` schemas. Lenient skips those parts with the info-level
 `xsd-strict-skipped`; Word-valid emits no XSD skip issue because it runs no XSD.
 

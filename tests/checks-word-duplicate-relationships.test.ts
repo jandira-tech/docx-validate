@@ -3,8 +3,12 @@
  * Licensed under the Apache License, Version 2.0.
  */
 
+import { promises as fs } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { withTempDir } from "../src/lib/run-cli";
 import { ValidationContext } from "../src/lib/validation-context";
+import { buildDocx } from "./support/minimal-docx";
 import { document, rels, relation } from "./support/word-rule-test-xml";
 import {
     wordDuplicateThemeRelationshipCheck,
@@ -135,5 +139,37 @@ describe("word-duplicate-settings-relationship", () => {
                 ValidationContext.fromEntries({ "word/_rels/document.xml.rels": "<broken", "customXml/item.xml": document("") }),
             ),
         ).toEqual([]);
+    });
+});
+
+describe("OPC-equivalent duplicate relationship checks (#398)", () => {
+    it.each([
+        ["theme", wordDuplicateThemeRelationshipCheck],
+        ["fontTable", wordDuplicateFontTableRelationshipCheck],
+        ["webSettings", wordDuplicateWebSettingsRelationshipCheck],
+        ["settings", wordDuplicateSettingsRelationshipCheck],
+    ] as const)("checks %s relationships under every equivalent spelling", async (type, check) => {
+        await withTempDir(async (dir) => {
+            const run = async (extension: string) => {
+                const file = path.join(dir, `${extension}.docx`);
+                await fs.writeFile(
+                    file,
+                    await buildDocx({ [`word/_rels/document.xml.${extension}`]: rels(relation("rId1", type) + relation("rId2", type)) }),
+                );
+                return check.run(await ValidationContext.fromArchive(await fs.readFile(file)));
+            };
+            const control = await run("rels");
+            expect(control).toHaveLength(1);
+            expect(control[0].code).toBe(check.id);
+            for (const extension of ["RELS", "Rels", "%72els", "%52ELS"]) {
+                expect(await run(extension)).toEqual(
+                    control.map((issue) => ({
+                        ...issue,
+                        path: `word/_rels/document.xml.${extension}`,
+                        message: issue.message.replace("document.xml.rels", `document.xml.${extension}`),
+                    })),
+                );
+            }
+        });
     });
 });

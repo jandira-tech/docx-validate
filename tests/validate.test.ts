@@ -23,6 +23,8 @@ import { describe, expect, it } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
 import { runValidateFromArgv, validate } from "../src/scripts/office/validate";
+import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+import { rels, relation } from "./support/word-rule-test-xml";
 import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -560,5 +562,106 @@ describe("validate startup probe", () => {
         // libxml2-wasm engine fails loudly instead of degrading into
         // per-file XSD errors.
         await expect(BaseSchemaValidator.assertXsdValidationAvailable()).resolves.toBeUndefined();
+    });
+});
+
+// Packed integration regressions, all specimens generated without fixture edits.
+describe("packed OPC-equivalent relationships parts (#398)", () => {
+    it.each([
+        ["theme", false],
+        ["theme", true],
+        ["fontTable", false],
+        ["fontTable", true],
+    ] as const)("rejects duplicate %s relationships with selected=%s in Word-valid", async (type, selected) => {
+        await withTempDir(async (dir) => {
+            const check = type === "theme" ? "word-duplicate-theme-relationship" : "word-duplicate-font-table-relationship";
+            const checks = selected ? [check] : undefined;
+            const run = async (extension: string) => {
+                const parts = { ...MINIMAL_PARTS };
+                delete parts["word/_rels/document.xml.rels"];
+                const part = `word/_rels/document.xml.${extension}`;
+                parts[part] = rels(
+                    relation("styles", "styles", "", "styles.xml") +
+                        relation("themeA", type, "", "styles.xml") +
+                        relation("themeB", type, "", "styles.xml"),
+                );
+                const file = path.join(dir, `${extension}.docx`);
+                const bytes = await buildDocx(parts);
+                await fs.writeFile(file, bytes);
+                const result = await validate(file, { profile: "word-valid", checks });
+                expect(await fs.readFile(file)).toEqual(bytes);
+                return result;
+            };
+            const control = await run("rels");
+            expect(control.valid).toBe(false);
+            expect(control.issues).toContainEqual(
+                expect.objectContaining({ code: check, severity: "error", path: "word/_rels/document.xml.rels" }),
+            );
+            for (const extension of ["RELS", "%72els", "%52ELS"]) {
+                const variant = await run(extension);
+                expect(variant.valid).toBe(control.valid);
+                expect(variant.issues).toEqual(
+                    control.issues.map((issue) => ({
+                        ...issue,
+                        ...(issue.path === "word/_rels/document.xml.rels" ? { path: `word/_rels/document.xml.${extension}` } : {}),
+                        message: issue.message.replaceAll("document.xml.rels", `document.xml.${extension}`),
+                    })),
+                );
+            }
+        });
+    });
+
+    it.each(["RELS", "%72els", "%52ELS"])("rejects an empty notes.%s in a full strict packed run", async (extension) => {
+        await withTempDir(async (dir) => {
+            const run = async (ext: string) => {
+                const file = path.join(dir, `${ext}.docx`);
+                const bytes = await buildDocx({ ...MINIMAL_PARTS, [`word/notes.${ext}`]: rels("") });
+                await fs.writeFile(file, bytes);
+                const result = await validate(file, { profile: "strict" });
+                expect(await fs.readFile(file)).toEqual(bytes);
+                return result;
+            };
+            const control = await run("rels");
+            expect(control.valid).toBe(false);
+            expect(control.issues).toContainEqual(
+                expect.objectContaining({ code: "rels-empty-part", severity: "error", path: "word/notes.rels" }),
+            );
+            const variant = await run(extension);
+            expect(variant.valid).toBe(control.valid);
+            expect(variant.issues).toEqual(
+                control.issues.map((issue) => ({
+                    ...issue,
+                    ...(issue.path === "word/notes.rels" ? { path: `word/notes.${extension}` } : {}),
+                })),
+            );
+        });
+    });
+
+    it("does not introduce findings when the content-types stream is stored as [CONTENT_TYPES].XML", async () => {
+        await withTempDir(async (dir) => {
+            for (const profile of ["word-valid", "lenient", "strict"] as const) {
+                const run = async (name: string) => {
+                    const parts = { ...MINIMAL_PARTS };
+                    delete parts["[Content_Types].xml"];
+                    parts[name] = MINIMAL_PARTS["[Content_Types].xml"];
+                    const file = path.join(dir, `${profile}-${name}.docx`);
+                    await fs.writeFile(file, await buildDocx(parts));
+                    return validate(file, { profile });
+                };
+                const control = await run("[Content_Types].xml");
+                const variant = await run("[CONTENT_TYPES].XML");
+                // Before #398 the exact stream skip already emits rels-unreferenced
+                // for this spelling (#396). Preserve it, and prove the expanded
+                // XML list introduces no other finding. On case-sensitive hosts
+                // the unchanged legacy lookup also emits ct-missing (#396).
+                const existing = variant.issues.filter(
+                    (issue) => issue.code === "rels-unreferenced" && issue.path === "[CONTENT_TYPES].XML",
+                );
+                expect(existing).toHaveLength(1);
+                const rest = variant.issues.filter((issue) => !existing.includes(issue) && issue.code !== "ct-missing");
+                expect(rest).toEqual(control.issues);
+                expect(!rest.some(({ severity }) => severity === "error")).toBe(control.valid);
+            }
+        });
     });
 });

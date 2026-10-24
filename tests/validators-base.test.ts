@@ -20,11 +20,16 @@ import path from "node:path";
 import JSZip from "jszip";
 import { describe, expect, it, vi } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
+import { validate } from "../src/scripts/office/validate";
 import { BaseSchemaValidator, withoutRestatedIgnorablePrefixes } from "../src/scripts/office/validators/base";
 
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
 class HarnessValidator extends BaseSchemaValidator {
+    schemaMappingKey(part: string): string | null {
+        return this._schemaMappingKey(path.join(this.unpackedDir, part));
+    }
+
     originalErrors(xmlFile: string): Promise<Set<string>> {
         return this._getOriginalFileErrors(xmlFile);
     }
@@ -135,6 +140,131 @@ describe("BaseSchemaValidator", () => {
     });
 
     describe("validateFileReferences", () => {
+        describe("OPC part-name equivalence (#346, #393)", { timeout: 120_000 }, () => {
+            const cases = [
+                {
+                    name: "WORD folder with lowercase relationship targets",
+                    parts: Object.fromEntries(Object.entries(MINIMAL_PARTS).map(([name, xml]) => [name.replace(/^word\//, "WORD/"), xml])),
+                    expected: [],
+                },
+                {
+                    name: "percent-encoded unreserved character in the main target",
+                    parts: {
+                        ...MINIMAL_PARTS,
+                        "_rels/.rels": MINIMAL_PARTS["_rels/.rels"]!.replace("word/document.xml", "word/%64ocument.xml"),
+                    },
+                    expected: [],
+                },
+                {
+                    name: "case and percent variants in a relative target",
+                    parts: {
+                        ...MINIMAL_PARTS,
+                        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                            "styles.xml",
+                            "%73TYLES.xml",
+                        ),
+                    },
+                    expected: [],
+                },
+                {
+                    name: "equivalent package-absolute target",
+                    parts: {
+                        ...MINIMAL_PARTS,
+                        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                            "styles.xml",
+                            "/WORD/%73tyles.xml",
+                        ),
+                    },
+                    expected: [],
+                },
+                {
+                    name: "target naming no part",
+                    parts: {
+                        ...MINIMAL_PARTS,
+                        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace("styles.xml", "missing.xml"),
+                    },
+                    expected: [
+                        { code: "rels-broken", path: "word/_rels/document.xml.rels", message: "Broken reference to missing.xml" },
+                        { code: "rels-unreferenced", path: "word/styles.xml", message: "Unreferenced file: word/styles.xml" },
+                        {
+                            code: "rels-target-missing",
+                            path: "word/_rels/document.xml.rels",
+                            message: "Relationship target 'missing.xml' resolves to 'word/missing.xml' which does not exist",
+                        },
+                    ],
+                },
+                {
+                    // An escaped reserved character names another part (#297, #344).
+                    name: "reserved escape in the main target",
+                    parts: {
+                        ...MINIMAL_PARTS,
+                        "_rels/.rels": MINIMAL_PARTS["_rels/.rels"]!.replace("word/document.xml", "word%2Fdocument.xml"),
+                    },
+                    expected: [
+                        { code: "rels-broken", path: "_rels/.rels", message: "Broken reference to word%2Fdocument.xml" },
+                        { code: "rels-unreferenced", path: "word/document.xml", message: "Unreferenced file: word/document.xml" },
+                        {
+                            code: "rels-target-missing",
+                            path: "_rels/.rels",
+                            message: "Relationship target 'word%2Fdocument.xml' resolves to 'word%2Fdocument.xml' which does not exist",
+                        },
+                    ],
+                },
+                {
+                    // _RELS/.RELS names the package relationships part (#364).
+                    name: "package relationships stored as _RELS/.RELS",
+                    parts: Object.fromEntries(
+                        Object.entries(MINIMAL_PARTS).map(([name, xml]) => [name === "_rels/.rels" ? "_RELS/.RELS" : name, xml]),
+                    ),
+                    expected: [],
+                },
+                {
+                    name: "part named by no relationship",
+                    parts: { ...MINIMAL_PARTS, "word/orphan.xml": "<extra/>" },
+                    expected: [{ code: "rels-unreferenced", path: "word/orphan.xml", message: "Unreferenced file: word/orphan.xml" }],
+                },
+            ];
+
+            // These are filesystem integration tests: exercise the public API
+            // against generated packages rather than host-dependent path mocks.
+            for (const profile of ["lenient", "strict"] as const) {
+                for (const input of ["directory", "packed"] as const) {
+                    for (const { name, parts, expected } of cases) {
+                        it(`${profile}, ${input}: ${name}`, async () => {
+                            await withTempDir(async (dir) => {
+                                const source = path.join(dir, "specimen.docx");
+                                const bytes = input === "packed" ? await buildDocx(parts) : undefined;
+                                if (bytes) {
+                                    await fs.writeFile(source, bytes);
+                                } else {
+                                    for (const [entry, xml] of Object.entries(parts)) {
+                                        await writeFile(path.join(source, entry), xml);
+                                    }
+                                }
+
+                                const result = await validate(source, { profile });
+                                const references = result.issues
+                                    .filter((issue) =>
+                                        ["rels-broken", "rels-unreferenced", "rels-target-missing"].includes(issue.code ?? ""),
+                                    )
+                                    .map(({ code, path, message }) => ({ code, path, message }));
+                                expect(references).toEqual(expected);
+                                expect(result.valid).toBe(expected.length === 0);
+
+                                if (bytes) {
+                                    expect(await fs.readFile(source)).toEqual(bytes);
+                                } else {
+                                    for (const [entry, xml] of Object.entries(parts)) {
+                                        expect(await fs.readFile(path.join(source, entry), "utf-8")).toBe(xml);
+                                    }
+                                }
+                            });
+                        });
+                    }
+                }
+            }
+        });
+
         it("detects broken Target references in .rels", async () => {
             await withTempDir(async (dir) => {
                 await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
@@ -1036,5 +1166,172 @@ describe("withoutRestatedIgnorablePrefixes (#309)", () => {
     it("returns the result unchanged when the namespace check found nothing", () => {
         const result = { valid: false, issues: [unbound("Ignorable", "w15")] };
         expect(withoutRestatedIgnorablePrefixes(result)).toBe(result);
+    });
+});
+
+// Filesystem-backed integration regressions: packages are built here, never fixtures.
+describe("OPC-equivalent relationships parts (#398)", () => {
+    const variants = ["RELS", "Rels", "%72els", "%52ELS"];
+    const relationships = (body: string): string =>
+        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${body}</Relationships>`;
+
+    it.each(variants)("reports empty notes.%s like notes.rels, without repairing it", async (extension) => {
+        await withTempDir(async (dir) => {
+            const run = async (ext: string) => {
+                const root = path.join(dir, ext === "rels" ? "control" : "variant");
+                const part = `word/notes.${ext}`;
+                const xml = relationships("");
+                await writeFile(path.join(root, part), xml);
+                const validator = new HarnessValidator({ unpackedDir: root, profile: "strict" });
+                const result = await validator.validateNoEmptyRelsParts();
+                expect(await fs.readFile(path.join(root, part), "utf8")).toBe(xml);
+                return result;
+            };
+            const control = await run("rels");
+            expect(control).toMatchObject({
+                valid: false,
+                issues: [{ code: "rels-empty-part", severity: "error", path: "word/notes.rels" }],
+            });
+            const variant = await run(extension);
+            expect(variant).toEqual({ ...control, issues: control.issues.map((issue) => ({ ...issue, path: `word/notes.${extension}` })) });
+        });
+    });
+
+    it.each(variants)("checks Relationship element content in .%s", async (extension) => {
+        await withTempDir(async (dir) => {
+            const run = async (ext: string) => {
+                const root = path.join(dir, ext === "rels" ? "control" : "variant");
+                await writeFile(
+                    path.join(root, `word/_rels/document.xml.${ext}`),
+                    relationships(`<Relationship Id="rId1" Type="styles" Target="styles.xml"><child/></Relationship>`),
+                );
+                return new HarnessValidator({ unpackedDir: root, profile: "lenient" }).validateRelationshipElements();
+            };
+            const control = await run("rels");
+            expect(control).toMatchObject({ valid: false, issues: [{ code: "rels-empty-element" }] });
+            expect(await run(extension)).toEqual({
+                ...control,
+                issues: control.issues.map((issue) => ({ ...issue, path: `word/_rels/document.xml.${extension}` })),
+            });
+        });
+    });
+
+    it.each(variants)("schema-validates a bogus attribute in .%s", async (extension) => {
+        await withTempDir(async (dir) => {
+            const run = async (ext: string) => {
+                const root = path.join(dir, ext === "rels" ? "control" : "variant");
+                const part = `word/_rels/document.xml.${ext}`;
+                await writeFile(
+                    path.join(root, part),
+                    relationships(`<Relationship Id="rId1" Type="styles" Target="styles.xml" bogus="1"/>`),
+                );
+                const validator = new HarnessValidator({ unpackedDir: root, profile: "strict" });
+                const result = await validator.validateAgainstXsd();
+                return { result, validator, part };
+            };
+            const control = await run("rels");
+            expect(control.result.valid).toBe(false);
+            expect(control.result.issues).toContainEqual(expect.objectContaining({ code: "xsd-error", path: control.part }));
+            const variant = await run(extension);
+            expect(variant.result.valid).toBe(control.result.valid);
+            expect(variant.result.issues.map(({ code }) => code)).toEqual(control.result.issues.map(({ code }) => code));
+            expect(variant.result.issues.every(({ path: part }) => part === variant.part)).toBe(true);
+            expect(variant.validator.xsdWalk.parts).toEqual([variant.part]);
+        });
+    });
+
+    it.each(variants)("maps .%s to the relationships schema key", async (extension) => {
+        await withTempDir(async (dir) => {
+            const validator = new HarnessValidator({ unpackedDir: dir });
+            expect(validator.schemaMappingKey("word/_rels/document.xml.rels")).toBe(".rels");
+            expect(validator.schemaMappingKey(`word/_rels/document.xml.${extension}`)).toBe(".rels");
+            // Other mapping rules retain their existing spelling semantics.
+            expect(validator.schemaMappingKey("word/commentsIds.xml")).toBe("commentsIds.xml");
+            expect(validator.schemaMappingKey("customXml/itemProps1.%78ml")).toBeNull();
+        });
+    });
+
+    it.each(["RELS", "%72els", "%52ELS"])("reads a clean .%s sidecar without unreferenced findings", async (extension) => {
+        await withTempDir(async (dir) => {
+            const run = async (ext: string) => {
+                const root = path.join(dir, ext === "rels" ? "control" : "variant");
+                for (const [part, xml] of Object.entries(MINIMAL_PARTS)) {
+                    await writeFile(
+                        path.join(root, part === "word/_rels/document.xml.rels" ? `word/_rels/document.xml.${ext}` : part),
+                        xml,
+                    );
+                }
+                return new HarnessValidator({ unpackedDir: root }).validateFileReferences();
+            };
+            const control = await run("rels");
+            expect(control).toEqual({ valid: true, issues: [] });
+            expect(await run(extension)).toEqual(control);
+        });
+    });
+
+    it("includes .XML parts in the XSD walk and passes iterating xmlFiles", async () => {
+        await withTempDir(async (dir) => {
+            const run = async (extension: string) => {
+                const root = path.join(dir, extension === "xml" ? "control" : "variant");
+                const part = `word/comments.${extension}`;
+                await writeFile(
+                    path.join(root, part),
+                    `<w:comments ${W_NS} bogus="1"><w:comment w:id="0"/><w:comment w:id="0"/></w:comments>`,
+                );
+                await writeFile(path.join(root, "ignore.txt"), "not XML");
+                const validator = new HarnessValidator({ unpackedDir: root, profile: "strict" });
+                return { part, validator, schema: await validator.validateAgainstXsd(), ids: await validator.validateUniqueIds() };
+            };
+            const control = await run("xml");
+            expect(control.schema.valid).toBe(false);
+            expect(control.ids.issues).toContainEqual(expect.objectContaining({ code: "id-duplicate-file" }));
+            const variant = await run("XML");
+            expect(variant.schema.valid).toBe(control.schema.valid);
+            expect(variant.schema.issues.map(({ code }) => code)).toEqual(control.schema.issues.map(({ code }) => code));
+            expect(variant.schema.issues.every(({ path: part }) => part === variant.part)).toBe(true);
+            expect(variant.ids).toEqual({ ...control.ids, issues: control.ids.issues.map((issue) => ({ ...issue, path: variant.part })) });
+            expect(variant.validator.xsdWalk.parts).toEqual([variant.part]);
+            expect(variant.validator.xmlFiles).toEqual([path.join(dir, "variant", variant.part)]);
+        });
+    });
+
+    it.each(["RELS", "%72els"])("does not treat a .%s part as an XML source needing a sidecar", async (extension) => {
+        await withTempDir(async (dir) => {
+            const run = async (ext: string) => {
+                const root = path.join(dir, ext === "rels" ? "control" : "variant");
+                await writeFile(
+                    path.join(root, `word/notes.${ext}`),
+                    `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="unused"/>`,
+                );
+                const validator = new HarnessValidator({ unpackedDir: root });
+                // Exercise the source/sidecar discriminator independently of discovery.
+                if (validator.xmlFiles.length === 0) validator.xmlFiles.push(path.join(root, `word/notes.${ext}`));
+                return validator.validateAllRelationshipIds();
+            };
+            const control = await run("rels");
+            expect(control).toEqual({ valid: true, issues: [] });
+            expect(await run(extension)).toEqual(control);
+        });
+    });
+});
+
+describe("OPC-equivalent content-type relationship skip (#398)", () => {
+    it.each(["RELS", "%72els"])("skips .%s as .rels in the declarable-root pass", async (extension) => {
+        await withTempDir(async (dir) => {
+            const run = async (ext: string) => {
+                const root = path.join(dir, ext === "rels" ? "control" : "variant");
+                const part = `word/notes.${ext}`;
+                await writeFile(path.join(root, "[Content_Types].xml"), MINIMAL_PARTS["[Content_Types].xml"]);
+                await writeFile(path.join(root, part), `<w:document ${W_NS}><w:body/></w:document>`);
+                const validator = new HarnessValidator({ unpackedDir: root });
+                // Keep discovery independent: this pass must skip relationships
+                // parts even if their root resembles a declarable XML part.
+                if (!validator.xmlFiles.includes(path.join(root, part))) validator.xmlFiles.push(path.join(root, part));
+                return validator.validateContentTypes();
+            };
+            const control = await run("rels");
+            expect(control).toEqual({ valid: true, issues: [] });
+            expect(await run(extension)).toEqual(control);
+        });
     });
 });

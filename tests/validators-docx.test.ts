@@ -2687,3 +2687,28 @@ describe("withoutRepeatedCompatibilityFindings (#310 review)", () => {
         expect(withoutRepeatedCompatibilityFindings(schema, rules).issues).toEqual(schema.issues);
     });
 });
+
+describe("OPC-equivalent relationship ID stability (#398)", () => {
+    it.each(["RELS", "Rels", "%72els", "%52ELS"])("reports sequential IDs in .%s as in .rels", async (extension) => {
+        await withTempDir(async (dir) => {
+            const run = async (ext: string) => {
+                const root = path.join(dir, ext === "rels" ? "control" : "variant");
+                await writeFile(
+                    path.join(root, `word/_rels/document.xml.${ext}`),
+                    `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1"/><Relationship Id="rId2"/></Relationships>`,
+                );
+                return new DOCXSchemaValidator({ unpackedDir: root }).validateRelationshipIdStability();
+            };
+            const control = await run("rels");
+            expect(control).toMatchObject({ valid: true, issues: [{ code: "rel-ids-sequential", severity: "info" }] });
+            expect(await run(extension)).toEqual({
+                ...control,
+                issues: control.issues.map((issue) => ({
+                    ...issue,
+                    path: `word/_rels/document.xml.${extension}`,
+                    message: issue.message.replace("document.xml.rels", `document.xml.${extension}`),
+                })),
+            });
+        });
+    });
+});
