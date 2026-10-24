@@ -1,65 +1,107 @@
 # Real-Word probes, 2026-10-24
 
-Observations behind the word-valid policy for #388, #392, #396, #397, #351 and #398, and the scope of `word-content-type-invalid` (#401).
+Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408 and #409, and the scope of `word-content-type-invalid` (#401).
 
 - Word: Microsoft Word for Mac 16.115 (build 16.115.26100424), platform `darwin`.
 - Transport: `verifyInWord` (`src/lib/word-verifier.ts`). It opens each specimen by path, reads Word's window and dialog state, and never saves.
 - Outcomes: `clean-open` means Word opened the document with no dialog. `repair-warning` means Word showed "Word found unreadable content … Do you want to recover the contents of this document?". `open-error` means Word showed "Word experienced an error trying to open the file." Word stayed alive throughout, and `~/Library/Logs/DiagnosticReports` holds no Word report from the run.
 - Specimens: built in code from `MINIMAL_PARTS` (`tests/support/minimal-docx.ts`). The `398-dup-theme-*` specimens are built from `tests/fixtures/broken/package.word-duplicate-theme.docx`, which was only read. The probe script that builds, validates and opens them is reproduced at the end of this file. No fixture or manifest was changed.
-- Validator: verdicts are from `validate()` at the commit the probes ran against (`wfv/46-plan-audit`, 199c2d5b), before the policy changes they motivated.
+- Validator: the `word-valid` and `strict` columns record `validate()` **at probe time**, before the policy changes the probes motivated. They are not current verdicts. Session 1 (02:18Z–02:26Z) ran against `wfv/46-plan-audit` (199c2d5b); session 2 (03:10Z–03:19Z) ran against `wfv/51-directory-staging` (ad072db8).
 
 ## What the observations decide
 
 - **#388: package relationships.** A zero-byte, truncated or undeclared-prefix `_rels/.rels` makes Word offer recovery, and the readable control opens clean. Word-valid passed all three, so `xml-syntax` and `xml-undeclared-prefix` on `_rels/.rels` are now Word-blocking.
 - **#392: `WORD/` folder.** A package with every Word part under `WORD/` opens clean. With its main part malformed, Word refuses it exactly as it refuses the lower-case control. That matches the current policy, which matches `word/` by OPC part name.
 - **#396: content-types stream spelling.** A stream stored as `[CONTENT_TYPES].XML` opens clean. Malformed, it makes Word offer recovery, as word-valid predicts. That matches the any-case lookup.
-- **#397: unknown declared encoding.** `word/document.xml` declaring `X-UNKNOWN-ENCODING` makes Word refuse the file, and the `windows-1252` control opens clean. Word-valid passed it, so this was a false negative. `xml-encoding` now follows the `xml-syntax` path policy. Its scope beyond the main part, and the invalid-bytes form of the code, are inferred by analogy until the queued probes below run.
-- **#351: equivalent part names.** Every duplicate probed makes Word offer recovery, even when both spellings hold identical bytes: case variants, an unreserved escape (`word/%73tyles.xml`), a backslash (`word\document.xml`), and two content-types streams. Word-valid passed the escape and backslash duplicates.
-- **#398: `.RELS` sidecar.** A `.RELS`-spelled document sidecar opens clean. With two theme relationships, Word offers recovery for both the `.rels` control and the `.RELS` variant, as word-valid now predicts for both.
+- **#397: unknown declared encoding.** `word/document.xml` declaring `X-UNKNOWN-ENCODING` makes Word refuse the file, and the `windows-1252` control opens clean. Word-valid passed it, so this was a false negative; `xml-encoding` now follows the `xml-syntax` path policy. Session 2 confirms the inferred scope:
+    - the same declaration in `word/styles.xml`, in the content-types stream and in `_rels/.rels` makes Word offer recovery;
+    - a `word/document.xml` declared UTF-8 holding a lone Latin-1 byte makes Word refuse it;
+    - word-valid fails all four;
+    - in `docProps/core.xml` the declaration also makes Word offer recovery, but word-valid passes it (#409).
+- **#351: equivalent part names.** Every duplicate probed makes Word offer recovery, even when both spellings hold identical bytes: case variants, an unreserved escape (`word/%73tyles.xml`), a backslash (`word\document.xml`), and two content-types streams. Word-valid passed the escape and backslash duplicates. A single backslash name is read as `/`: the main part stored only as `word\document.xml` opens clean (#374).
+- **#408: escaped item names (OPC [M1.8]).** Any stored name with a percent-escaped unreserved character makes Word offer recovery:
+    - the styles part stored only as `word/%73tyles.xml`;
+    - the main part stored only as `word/%64ocument.xml`;
+    - the sidecar stored as `document.xml.%72els`;
+    - an unreferenced extra `word/%78tra.xml`, which settles the cause, since nothing points at it;
+    - the styles control (its part missing, its relationship kept) opens clean, so a missing target is not the cause;
+    - word-valid passed the first two and the extra item.
+- **#398 and #402: `.RELS` sidecar.** A `.RELS`-spelled document sidecar opens clean. With two theme relationships, Word offers recovery for both the `.rels` control and the `.RELS` variant, as word-valid now predicts for both. An external hyperlink resolved through a `.RELS` sidecar opens clean, as the `.rels` control does, but word-valid fails it. That is the #402 false positive: the sidecar lookups must fold case. Through a `.%72els` sidecar, Word offers recovery; that is #408.
+- **#409: core properties.** A truncated `docProps/core.xml`, or one declaring an unknown encoding, makes Word offer recovery. Word-valid passes both, because docProps findings are downgraded. The `docProps/app.xml` control opens clean. The two `app.xml` defects are not yet observed (below).
 - **#401: `word-content-type-invalid`.** An `invalid-*` type on an existing part makes Word refuse the file or offer recovery: styles, the main part and core properties. The same type on an `Override` for a missing part, or on a `Default` that covers no part, opens clean. The check over-reported; it now reports only declarations that apply to a stored part.
 
 ## Not observed
 
-Another session began driving Word by 02:28Z: its first log line is at 02:28:14Z, and its map file was written at 02:27:55Z. Its preflight closes every open document. To be safe, rows observed from 02:26Z on are not treated as evidence and are kept out of the table below. These specimens remain to be observed when Word is free:
+Session 1. Another session began driving Word by 02:28Z: its first log line is at 02:28:14Z, and its map file was written at 02:27:55Z. Its preflight closes every open document, so rows observed from 02:26Z on were not treated as evidence. Session 2 observed all of them again (below).
 
-- `351-escape-only-styles`: the styles part stored only as `word/%73tyles.xml`. It timed out twice.
-- `351-backslash-only-main`: the main part stored only as `word\document.xml`. It timed out, then Word exited with no crash report.
-- `398-hyperlink-rels-control` and `398-hyperlink-RELS`: an external hyperlink resolved through a `.rels` or a `.RELS` sidecar. The control timed out twice. The variant's open-error coincided with the other session's close-all.
-- `397-encoding-unknown-{styles,content-types,package-rels,core}`: the scope of #397 beyond the main part. Not yet run.
-- `397-invalid-utf8-bytes`: a `word/document.xml` declared UTF-8 holding a lone Latin-1 byte, the other form of `xml-encoding`. Not yet run.
+Session 2. Every record now carries a guard. Before and after each open, the probe lists the processes driving Word that it did not start itself: an `osascript` executable, or the other session's `word_pdf`/`word_redline` scripts. It also notes whether that session's log grew. A record with any such process goes to an inconclusive file instead of the table.
+
+- The first run, at 03:08Z, matched on command-line text, not on executables: its own shell and two review agents whose prompts forbid osascript. All ten of its records were set aside, and the guard was fixed. The 03:10Z run repeated the same ten specimens with a clean guard and identical outcomes.
+- At 03:19:33Z the other session started a Word batch mid-run, and the last two records were set aside.
+
+To be observed when Word is free:
+
+- `docprops-app-truncated` and `docprops-app-encoding-unknown` (#409), recorded during the other session's batch.
+- `docProps/core.xml` with an undeclared prefix, and a truncated `docProps/custom.xml` (#409).
+- Real encodings libxml2 cannot decode, such as `macintosh`, `UTF-7`, `IBM866` and `x-mac-cyrillic`, in `word/document.xml` (#410).
+- Two entries with an identical name (#411).
+- `Override` PartNames that are not part names: `..`, `?query`, `#fragment`, a backslash (#414).
+- Duplicate `Default` or `Override` declarations in the content-types stream (review V on #406, F2).
 
 ## Observations
 
-| Specimen                                 | Issue   | SHA-256 (first 16) | Word           | word-valid                                                                                                                  | strict  |
-| ---------------------------------------- | ------- | ------------------ | -------------- | --------------------------------------------------------------------------------------------------------------------------- | ------- |
-| `control-minimal`                        | control | `e3fd9a9607c643b1` | clean-open     | valid                                                                                                                       | valid   |
-| `388-rels-zero-byte`                     | #388    | `518a110444455811` | repair-warning | valid                                                                                                                       | invalid |
-| `388-rels-truncated`                     | #388    | `a85ad66282671910` | repair-warning | valid                                                                                                                       | invalid |
-| `388-rels-undeclared-prefix`             | #388    | `19383610c2a9f89a` | repair-warning | valid                                                                                                                       | invalid |
-| `392-WORD-folder-clean`                  | #392    | `36d4625db191d3e9` | clean-open     | valid                                                                                                                       | valid   |
-| `392-WORD-folder-malformed-main`         | #392    | `b5c3d2178d4696be` | open-error     | invalid (`xml-undeclared-prefix@WORD/document.xml`, `xml-syntax@WORD/document.xml`)                                         | invalid |
-| `392-word-folder-malformed-main-control` | #392    | `95d4f0bfb82a2c4a` | open-error     | invalid (`xml-undeclared-prefix@word/document.xml`, `xml-syntax@word/document.xml`)                                         | invalid |
-| `396-CT-upper-clean`                     | #396    | `744bbb14ad7f0f3e` | clean-open     | valid                                                                                                                       | valid   |
-| `396-CT-upper-invalid-type`              | #396    | `ec74a991d4b8b9dc` | clean-open     | invalid (`word-content-type-invalid@[CONTENT_TYPES].XML`)                                                                   | invalid |
-| `396-CT-exact-invalid-type-control`      | #396    | `9857e3aaebaa53d7` | clean-open     | invalid (`word-content-type-invalid@[Content_Types].xml`)                                                                   | invalid |
-| `396-CT-upper-malformed`                 | #396    | `949e38e644ebd7db` | repair-warning | invalid (`xml-syntax@[CONTENT_TYPES].XML`)                                                                                  | invalid |
-| `397-encoding-unknown`                   | #397    | `a45331da8b2129ea` | open-error     | valid                                                                                                                       | invalid |
-| `397-encoding-windows-1252-control`      | #397    | `0e8165d11d1898b5` | clean-open     | valid                                                                                                                       | valid   |
-| `351-dup-case-identical`                 | #351    | `48a8b62b9c83535d` | repair-warning | invalid (`package-extract-failed@-`)                                                                                        | invalid |
-| `351-dup-case-lower-good-upper-bad`      | #351    | `2d58ed5a3241a634` | repair-warning | invalid (`package-extract-failed@-`)                                                                                        | invalid |
-| `351-dup-case-upper-bad-first`           | #351    | `8ef60be49ff4ac55` | repair-warning | invalid (`package-extract-failed@-`)                                                                                        | invalid |
-| `351-dup-stream-good-then-bad`           | #351    | `970eca474f9eba1c` | repair-warning | invalid (`package-extract-failed@-`)                                                                                        | invalid |
-| `351-dup-stream-bad-then-good`           | #351    | `b503d9e06055091e` | repair-warning | invalid (`package-extract-failed@-`)                                                                                        | invalid |
-| `398-RELS-sidecar-clean`                 | #398    | `ac61b47790dc028b` | clean-open     | valid                                                                                                                       | valid   |
-| `398-dup-theme-control`                  | #398    | `52b18dea69dafe56` | repair-warning | invalid (`word-duplicate-theme-relationship@word/_rels/document.xml.rels`)                                                  | invalid |
-| `398-dup-theme-RELS`                     | #398    | `f1a5a570c9effd78` | repair-warning | invalid (`word-duplicate-theme-relationship@word/_rels/document.xml.RELS`, `word-hyperlink-relationship@word/document.xml`) | invalid |
-| `cti-override-existing-styles`           | #401    | `dde1b233d9672e0f` | repair-warning | invalid (`word-content-type-invalid@[Content_Types].xml`)                                                                   | invalid |
-| `cti-override-existing-main`             | #401    | `bded55854c3edf59` | repair-warning | invalid (`word-content-type-invalid@[Content_Types].xml`)                                                                   | invalid |
-| `cti-override-existing-core`             | #401    | `f4081445c08647f1` | open-error     | invalid (`word-content-type-invalid@[Content_Types].xml`)                                                                   | invalid |
-| `cti-override-existing-core-control`     | #401    | `86df51ceafbcb5ba` | clean-open     | valid                                                                                                                       | valid   |
-| `cti-default-unused-extension`           | #401    | `d19b131b7b46dbba` | clean-open     | invalid (`word-content-type-invalid@[Content_Types].xml`)                                                                   | invalid |
-| `351-dup-escape-identical`               | #351    | `f5cd33350d5e730e` | repair-warning | valid                                                                                                                       | invalid |
-| `351-dup-backslash-identical`            | #351    | `348701aaaa331f41` | repair-warning | valid                                                                                                                       | valid   |
+### Session 1: 02:18Z–02:26Z, validator at 199c2d5b
+
+| Specimen                                 | Issue   | SHA-256 (first 16) | Word           | word-valid at probe time                                                                                                    | strict at probe time |
+| ---------------------------------------- | ------- | ------------------ | -------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| `control-minimal`                        | control | `e3fd9a9607c643b1` | clean-open     | valid                                                                                                                       | valid                |
+| `388-rels-zero-byte`                     | #388    | `518a110444455811` | repair-warning | valid                                                                                                                       | invalid              |
+| `388-rels-truncated`                     | #388    | `a85ad66282671910` | repair-warning | valid                                                                                                                       | invalid              |
+| `388-rels-undeclared-prefix`             | #388    | `19383610c2a9f89a` | repair-warning | valid                                                                                                                       | invalid              |
+| `392-WORD-folder-clean`                  | #392    | `36d4625db191d3e9` | clean-open     | valid                                                                                                                       | valid                |
+| `392-WORD-folder-malformed-main`         | #392    | `b5c3d2178d4696be` | open-error     | invalid (`xml-undeclared-prefix@WORD/document.xml`, `xml-syntax@WORD/document.xml`)                                         | invalid              |
+| `392-word-folder-malformed-main-control` | #392    | `95d4f0bfb82a2c4a` | open-error     | invalid (`xml-undeclared-prefix@word/document.xml`, `xml-syntax@word/document.xml`)                                         | invalid              |
+| `396-CT-upper-clean`                     | #396    | `744bbb14ad7f0f3e` | clean-open     | valid                                                                                                                       | valid                |
+| `396-CT-upper-invalid-type`              | #396    | `ec74a991d4b8b9dc` | clean-open     | invalid (`word-content-type-invalid@[CONTENT_TYPES].XML`)                                                                   | invalid              |
+| `396-CT-exact-invalid-type-control`      | #396    | `9857e3aaebaa53d7` | clean-open     | invalid (`word-content-type-invalid@[Content_Types].xml`)                                                                   | invalid              |
+| `396-CT-upper-malformed`                 | #396    | `949e38e644ebd7db` | repair-warning | invalid (`xml-syntax@[CONTENT_TYPES].XML`)                                                                                  | invalid              |
+| `397-encoding-unknown`                   | #397    | `a45331da8b2129ea` | open-error     | valid                                                                                                                       | invalid              |
+| `397-encoding-windows-1252-control`      | #397    | `0e8165d11d1898b5` | clean-open     | valid                                                                                                                       | valid                |
+| `351-dup-case-identical`                 | #351    | `48a8b62b9c83535d` | repair-warning | invalid (`package-extract-failed@-`)                                                                                        | invalid              |
+| `351-dup-case-lower-good-upper-bad`      | #351    | `2d58ed5a3241a634` | repair-warning | invalid (`package-extract-failed@-`)                                                                                        | invalid              |
+| `351-dup-case-upper-bad-first`           | #351    | `8ef60be49ff4ac55` | repair-warning | invalid (`package-extract-failed@-`)                                                                                        | invalid              |
+| `351-dup-stream-good-then-bad`           | #351    | `970eca474f9eba1c` | repair-warning | invalid (`package-extract-failed@-`)                                                                                        | invalid              |
+| `351-dup-stream-bad-then-good`           | #351    | `b503d9e06055091e` | repair-warning | invalid (`package-extract-failed@-`)                                                                                        | invalid              |
+| `398-RELS-sidecar-clean`                 | #398    | `ac61b47790dc028b` | clean-open     | valid                                                                                                                       | valid                |
+| `398-dup-theme-control`                  | #398    | `52b18dea69dafe56` | repair-warning | invalid (`word-duplicate-theme-relationship@word/_rels/document.xml.rels`)                                                  | invalid              |
+| `398-dup-theme-RELS`                     | #398    | `f1a5a570c9effd78` | repair-warning | invalid (`word-duplicate-theme-relationship@word/_rels/document.xml.RELS`, `word-hyperlink-relationship@word/document.xml`) | invalid              |
+| `cti-override-existing-styles`           | #401    | `dde1b233d9672e0f` | repair-warning | invalid (`word-content-type-invalid@[Content_Types].xml`)                                                                   | invalid              |
+| `cti-override-existing-main`             | #401    | `bded55854c3edf59` | repair-warning | invalid (`word-content-type-invalid@[Content_Types].xml`)                                                                   | invalid              |
+| `cti-override-existing-core`             | #401    | `f4081445c08647f1` | open-error     | invalid (`word-content-type-invalid@[Content_Types].xml`)                                                                   | invalid              |
+| `cti-override-existing-core-control`     | #401    | `86df51ceafbcb5ba` | clean-open     | valid                                                                                                                       | valid                |
+| `cti-default-unused-extension`           | #401    | `d19b131b7b46dbba` | clean-open     | invalid (`word-content-type-invalid@[Content_Types].xml`)                                                                   | invalid              |
+| `351-dup-escape-identical`               | #351    | `f5cd33350d5e730e` | repair-warning | valid                                                                                                                       | invalid              |
+| `351-dup-backslash-identical`            | #351    | `348701aaaa331f41` | repair-warning | valid                                                                                                                       | valid                |
+
+### Session 2: 03:10Z–03:19Z, validator at ad072db8
+
+| Specimen                             | Issue | SHA-256 (first 16) | Word           | word-valid at probe time                                                                            | strict at probe time |
+| ------------------------------------ | ----- | ------------------ | -------------- | --------------------------------------------------------------------------------------------------- | -------------------- |
+| `351-escape-only-styles`             | #351  | `ca196e7ef4a292f2` | repair-warning | valid                                                                                               | valid                |
+| `351-backslash-only-main`            | #351  | `869f616f1ba1640e` | clean-open     | valid                                                                                               | valid                |
+| `398-hyperlink-rels-control`         | #398  | `21f622f77bf187c2` | clean-open     | valid                                                                                               | valid                |
+| `398-hyperlink-%72els`               | #402  | `48a74a89fdd0177e` | repair-warning | invalid (`rels-missing-sidecar@word/document.xml`, `word-hyperlink-relationship@word/document.xml`) | invalid              |
+| `398-hyperlink-RELS`                 | #398  | `440b780d13f48f40` | clean-open     | invalid (`word-hyperlink-relationship@word/document.xml`)                                           | invalid              |
+| `397-encoding-unknown-styles`        | #397  | `d2c61a613863872e` | repair-warning | invalid (`xml-encoding@word/styles.xml`)                                                            | invalid              |
+| `397-encoding-unknown-content-types` | #397  | `a2be2959ad591d9a` | repair-warning | invalid (`xml-encoding@[Content_Types].xml`)                                                        | invalid              |
+| `397-encoding-unknown-package-rels`  | #397  | `c8a06454f5c52111` | repair-warning | invalid (`xml-encoding@_rels/.rels`)                                                                | invalid              |
+| `397-encoding-unknown-core`          | #397  | `bde4363f2fed0946` | repair-warning | valid                                                                                               | invalid              |
+| `397-invalid-utf8-bytes`             | #397  | `87b043160608a0aa` | open-error     | invalid (`xml-encoding@word/document.xml`)                                                          | invalid              |
+| `esc-unreferenced-extra-item`        | #408  | `02392f4064145df1` | repair-warning | valid                                                                                               | invalid              |
+| `esc-styles-missing-control`         | #408  | `79dddb1d4ffcd1ca` | clean-open     | valid                                                                                               | invalid              |
+| `esc-only-main`                      | #408  | `845abca15ef137fe` | repair-warning | valid                                                                                               | valid                |
+| `docprops-core-truncated`            | #409  | `0f729853110d309f` | repair-warning | valid                                                                                               | invalid              |
+| `docprops-app-control`               | #409  | `727b58abd042452e` | clean-open     | valid                                                                                               | valid                |
 
 Full hashes, dialog text and observation times are in the JSONL record of each probe, reproduced below.
 
@@ -94,6 +136,21 @@ Full hashes, dialog text and observation times are in the JSONL record of each p
 {"name": "cti-default-unused-extension", "sha256": "d19b131b7b46dbba48f21f4997752bfcbc97722bfde8b714b4f8f2e9d7cf4374", "observedAt": "2026-10-24T02:25:46.833Z", "outcome": "clean-open", "details": "processAlive=true; documents=1; names=docx-verify-d19b131b7b46-75ea9926.docx; buttons=missing value,missing value,missing value"}
 {"name": "351-dup-escape-identical", "sha256": "f5cd33350d5e730e8d7729493407a69834a98a8cc5ea78d258700a462ec1234c", "observedAt": "2026-10-24T02:25:53.635Z", "outcome": "repair-warning", "details": "processAlive=true; documents=0; dialog=Microsoft Word Word found unreadable content in docx-verify-f5cd33350d5e-1ee1b408.docx. Do you want to recover the contents of this document? If you trust the s; buttons=Yes,No"}
 {"name": "351-dup-backslash-identical", "sha256": "348701aaaa331f414752bb12024e1227f17c0ae9695c15b0785f91b935d1881b", "observedAt": "2026-10-24T02:25:58.711Z", "outcome": "repair-warning", "details": "processAlive=true; documents=0; dialog=Microsoft Word Word found unreadable content in docx-verify-348701aaaa33-46da418.docx. Do you want to recover the contents of this document? If you trust the so; buttons=Yes,No"}
+{"name": "351-escape-only-styles", "sha256": "ca196e7ef4a292f215eec905800c44a95308695b4c846da3c8de202bc42961d3", "observedAt": "2026-10-24T03:10:04.556Z", "outcome": "repair-warning", "details": "processAlive=true; documents=0; dialog=Microsoft Word Word found unreadable content in docx-verify-ca196e7ef4a2-340c7c4b.docx. Do you want to recover the contents of this document? If you trust the s; buttons=Yes,No"}
+{"name": "351-backslash-only-main", "sha256": "869f616f1ba1640e7d87b83017fcfec7e25afc8fc8f584031e1c38bc6c3f6d38", "observedAt": "2026-10-24T03:10:12.763Z", "outcome": "clean-open", "details": "processAlive=true; documents=1; names=docx-verify-869f616f1ba1-74030a55.docx; buttons=missing value,missing value,missing value"}
+{"name": "398-hyperlink-rels-control", "sha256": "21f622f77bf187c2ed548011da2c47aa1112bdd346fd4c65952818a1543b078e", "observedAt": "2026-10-24T03:10:20.131Z", "outcome": "clean-open", "details": "processAlive=true; documents=1; names=docx-verify-21f622f77bf1-60b154d8.docx; buttons=missing value,missing value,missing value"}
+{"name": "398-hyperlink-%72els", "sha256": "48a74a89fdd0177e2a178168e47928058da5f14e6c36c431e417ff6be40ecb02", "observedAt": "2026-10-24T03:10:27.011Z", "outcome": "repair-warning", "details": "processAlive=true; documents=0; dialog=Microsoft Word Word found unreadable content in docx-verify-48a74a89fdd0-29d9260f.docx. Do you want to recover the contents of this document? If you trust the s; buttons=Yes,No"}
+{"name": "398-hyperlink-RELS", "sha256": "440b780d13f48f405af64eb498d30fba0cb997425bc837923216316657114499", "observedAt": "2026-10-24T03:10:30.750Z", "outcome": "clean-open", "details": "processAlive=true; documents=1; names=docx-verify-440b780d13f4-76dd9f42.docx; buttons=missing value,missing value,missing value"}
+{"name": "397-encoding-unknown-styles", "sha256": "d2c61a613863872e925e6ad9bff68fa6504b40dacf914d14d022da8cc899dd91", "observedAt": "2026-10-24T03:10:38.075Z", "outcome": "repair-warning", "details": "processAlive=true; documents=0; dialog=Microsoft Word Word found unreadable content in docx-verify-d2c61a613863-25dfa1c5.docx. Do you want to recover the contents of this document? If you trust the s; buttons=Yes,No"}
+{"name": "397-encoding-unknown-content-types", "sha256": "a2be2959ad591d9a05198194d558d46633ab45fc3cec5255e96aa0e3a62e21d6", "observedAt": "2026-10-24T03:10:41.809Z", "outcome": "repair-warning", "details": "processAlive=true; documents=0; dialog=Microsoft Word Word found unreadable content in docx-verify-a2be2959ad59-5c626fc1.docx. Do you want to recover the contents of this document? If you trust the s; buttons=Yes,No"}
+{"name": "397-encoding-unknown-package-rels", "sha256": "c8a06454f5c52111b62db510785a73580b46cde2901bfa35cfaade2c3d563239", "observedAt": "2026-10-24T03:10:45.804Z", "outcome": "repair-warning", "details": "processAlive=true; documents=0; dialog=Microsoft Word Word found unreadable content in docx-verify-c8a06454f5c5-7c6602f9.docx. Do you want to recover the contents of this document? If you trust the s; buttons=Yes,No"}
+{"name": "397-encoding-unknown-core", "sha256": "bde4363f2fed0946d3c27b124d6b8c4d73332c190f269345a0ebecac541168a6", "observedAt": "2026-10-24T03:10:49.836Z", "outcome": "repair-warning", "details": "processAlive=true; documents=0; dialog=Microsoft Word Word found unreadable content in docx-verify-bde4363f2fed-2869ea96.docx. Do you want to recover the contents of this document? If you trust the s; buttons=Yes,No"}
+{"name": "397-invalid-utf8-bytes", "sha256": "87b043160608a0aaab2944629c3bb96f204ab7b1e7f923f82066851eb02f037a", "observedAt": "2026-10-24T03:10:53.694Z", "outcome": "open-error", "details": "processAlive=true; documents=0; dialog=Microsoft Word Word experienced an error trying to open the file.; buttons=OK"}
+{"name": "esc-unreferenced-extra-item", "sha256": "02392f4064145df1ab5015e564bed05841e805071ce9a306cca94f71cc975c56", "observedAt": "2026-10-24T03:11:55.380Z", "outcome": "repair-warning", "details": "processAlive=true; documents=0; dialog=Microsoft Word Word found unreadable content in docx-verify-02392f406414-5510bdc.docx. Do you want to recover the contents of this document? If you trust the so; buttons=Yes,No"}
+{"name": "esc-styles-missing-control", "sha256": "79dddb1d4ffcd1caf0f6238942fcc5af4f6a5f9d97e5499fd3b064f78e66a818", "observedAt": "2026-10-24T03:12:04.007Z", "outcome": "clean-open", "details": "processAlive=true; documents=1; names=docx-verify-79dddb1d4ffc-4ce497ad.docx; buttons=missing value,missing value,missing value"}
+{"name": "esc-only-main", "sha256": "845abca15ef137feff7301f1809b31a5a63f03c50854d6404d5e0a90236d856f", "observedAt": "2026-10-24T03:12:13.526Z", "outcome": "repair-warning", "details": "processAlive=true; documents=0; dialog=Microsoft Word Word found unreadable content in docx-verify-845abca15ef1-6a85ef09.docx. Do you want to recover the contents of this document? If you trust the s; buttons=Yes,No"}
+{"name": "docprops-core-truncated", "sha256": "0f729853110d309f0857d4a4784ff7d98f9d23f1b581bf1526c56b536119e94b", "observedAt": "2026-10-24T03:19:10.366Z", "outcome": "repair-warning", "details": "processAlive=true; documents=0; dialog=Microsoft Word Word found unreadable content in docx-verify-0f729853110d-654190a6.docx. Do you want to recover the contents of this document? If you trust the s; buttons=Yes,No"}
+{"name": "docprops-app-control", "sha256": "727b58abd042452e1587525f3932f401bfc4b5f9160d526779718b1d31a0b436", "observedAt": "2026-10-24T03:19:22.290Z", "outcome": "clean-open", "details": "processAlive=true; documents=1; names=docx-verify-727b58abd042-4fd3d74d.docx; buttons=missing value,missing value,missing value"}
 ```
 
 </details>
@@ -105,7 +162,8 @@ Run from the repository root as a copy: `node --import tsx ./word-probe.tmp.mts 
 ```ts
 // Real-Word probes for #388, #392, #396, #397, #351, #398. Run from the stack worktree root as a copy.
 import { createHash } from "node:crypto";
-import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+import { execSync } from "node:child_process";
+import { appendFileSync, existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import JSZip from "jszip";
 import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
@@ -114,6 +172,41 @@ import { verifyInWord } from "./src/lib/word-verifier";
 
 const OUT = "/Users/arthrod/temp/T/wfv-scratch/word-probes";
 const RESULTS = path.join(OUT, "results.jsonl");
+// Interference guard: another session drives Word through word_pdf.py and logs to REDLINE_LOG.
+const REDLINE_LOG = "/Users/arthrod/temp/T/fix013w/oracle/redline.log";
+const INCONCLUSIVE = path.join(OUT, "results.inconclusive.jsonl");
+const logSize = () => {
+    try {
+        return statSync(REDLINE_LOG).size;
+    } catch {
+        return -1;
+    }
+};
+const foreignWordDrivers = () => {
+    // Match the executable (ucomm), not command-line text: agents' prompts and shells mention osascript.
+    const rows = execSync("ps -Ao pid=,ppid=,ucomm=")
+        .toString()
+        .split("\n")
+        .map((l) => l.trim().match(/^(\d+)\s+(\d+)\s+(.*)$/))
+        .filter((m): m is RegExpMatchArray => m !== null)
+        .map((m) => ({ pid: Number(m[1]), ppid: Number(m[2]), exe: m[3] }));
+    const cmds = new Map(
+        execSync("ps -Ao pid=,command=")
+            .toString()
+            .split("\n")
+            .map((l) => l.trim().match(/^(\d+)\s+(.*)$/))
+            .filter((m): m is RegExpMatchArray => m !== null)
+            .map((m) => [Number(m[1]), m[2]]),
+    );
+    const parent = new Map(rows.map((r) => [r.pid, r.ppid]));
+    const mine = (pid: number) => {
+        for (let p = pid, i = 0; p > 1 && i < 64; p = parent.get(p) ?? 1, i++) if (p === process.pid) return true;
+        return false;
+    };
+    const driver = (r: { pid: number; exe: string }) =>
+        r.exe === "osascript" || (/^python/i.test(r.exe) && /word_pdf|word_redline/.test(cmds.get(r.pid) ?? ""));
+    return rows.filter((r) => driver(r) && !mine(r.pid)).map((r) => `${r.pid} ${r.exe} ${(cmds.get(r.pid) ?? "").slice(0, 80)}`);
+};
 const done = new Set(
     existsSync(RESULTS)
         ? readFileSync(RESULTS, "utf8")
@@ -157,6 +250,17 @@ const STYLES_CT = "application/vnd.openxmlformats-officedocument.wordprocessingm
 const MAIN_CT = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
 const CORE_CT = "application/vnd.openxmlformats-package.core-properties+xml";
 const CORE_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>t</dc:title></cp:coreProperties>`;
+const APP_CT = "application/vnd.openxmlformats-officedocument.extended-properties+xml";
+const APP_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Application>Microsoft Office Word</Application></Properties>`;
+const withApp = (appXml: string) => ({
+    ...P,
+    "docProps/app.xml": appXml,
+    "_rels/.rels": P["_rels/.rels"].replace(
+        "</Relationships>",
+        `<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/></Relationships>`,
+    ),
+    "[Content_Types].xml": CT.replace("</Types>", `<Override PartName="/docProps/app.xml" ContentType="${APP_CT}"/></Types>`),
+});
 const withCore = (coreType: string) => ({
     ...P,
     "docProps/core.xml": CORE_XML,
@@ -252,6 +356,15 @@ const specimens: [string, string, () => Promise<Buffer>][] = [
     // #398 follow-up: hyperlink resolution through a .RELS sidecar
     ["398-hyperlink-rels-control", "#398", () => buildDocx({ ...P, "word/document.xml": docH, "word/_rels/document.xml.rels": relsH })],
     [
+        "398-hyperlink-%72els",
+        "#402",
+        () =>
+            buildDocx({
+                ...without({ ...P, "word/document.xml": docH }, "word/_rels/document.xml.rels"),
+                "word/_rels/document.xml.%72els": relsH,
+            }),
+    ],
+    [
         "398-hyperlink-RELS",
         "#398",
         () =>
@@ -260,6 +373,19 @@ const specimens: [string, string, () => Promise<Buffer>][] = [
                 "word/_rels/document.xml.RELS": relsH,
             }),
     ],
+    // docProps scope for xml-syntax / xml-encoding (#397 follow-up)
+    ["docprops-core-truncated", "docprops", () => buildDocx({ ...withCore(CORE_CT), "docProps/core.xml": CORE_XML.slice(0, 140) })],
+    ["docprops-app-control", "docprops", () => buildDocx(withApp(APP_XML))],
+    ["docprops-app-truncated", "docprops", () => buildDocx(withApp(APP_XML.slice(0, 140)))],
+    [
+        "docprops-app-encoding-unknown",
+        "docprops",
+        () => buildDocx(withApp(APP_XML.replace('encoding="UTF-8"', 'encoding="X-UNKNOWN-ENCODING"'))),
+    ],
+    // Escaped ZIP item names: does Word decode %XX of an unreserved character, or refuse the name itself?
+    ["esc-unreferenced-extra-item", "esc", () => rawZip([...Object.entries(P), ["word/%78tra.xml", P["word/styles.xml"]]])],
+    ["esc-styles-missing-control", "esc", () => rawZip(Object.entries(without(P, "word/styles.xml")))],
+    ["esc-only-main", "esc", () => rawZip(Object.entries(renamed("word/document.xml", "word/%64ocument.xml")))],
     // #397 scope: an unknown declared encoding outside the main part
     [
         "397-encoding-unknown-styles",
@@ -322,7 +448,10 @@ for (const [name, issue, make] of specimens) {
     };
     const wv = await verdict("word-valid");
     const st = await verdict("strict");
+    const before = { log: logSize(), drivers: foreignWordDrivers() };
     const word = await verifyInWord(new Uint8Array(bytes));
+    const after = { log: logSize(), drivers: foreignWordDrivers() };
+    const interference = before.log !== after.log || before.drivers.length > 0 || after.drivers.length > 0 ? { before, after } : undefined;
     const rec = {
         name,
         issue,
@@ -339,8 +468,10 @@ for (const [name, issue, make] of specimens) {
             fileSha256: word.fileSha256,
         },
     };
-    appendFileSync(RESULTS, JSON.stringify(rec) + "\n");
-    console.log(`${name}: word=${word.outcome} | word-valid=${wv.valid} ${wv.errors.join(",")} | strict=${st.valid}`);
+    appendFileSync(interference ? INCONCLUSIVE : RESULTS, JSON.stringify(interference ? { ...rec, interference } : rec) + "\n");
+    console.log(
+        `${interference ? "INCONCLUSIVE " : ""}${name}: word=${word.outcome} | word-valid=${wv.valid} ${wv.errors.join(",")} | strict=${st.valid}`,
+    );
 }
 ```
 
