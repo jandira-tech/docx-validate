@@ -51,7 +51,7 @@ const rootCheckPaths = async (dir: string): Promise<(string | undefined)[]> => {
     return ((await check?.run(contextFromDirectory(dir))) ?? []).map((issue) => issue.path);
 };
 
-describe("isMainDocumentPart (#355, #357, #362, #364)", () => {
+describe("isMainDocumentPart (#355, #357, #362, #364, #366)", () => {
     it("walks the tree and reads the package relationships once per validator", async () => {
         await withTempDir(async (dir) => {
             const extra = Object.fromEntries(Array.from({ length: 5 }, (_, i) => [`word/garbage${i}.xml`, "<x/>"]));
@@ -140,6 +140,35 @@ describe("isMainDocumentPart (#355, #357, #362, #364)", () => {
                 for (const part of ["word/document.xml", "word/other.xml"]) {
                     expect(probe.isMainDocumentPart(path.join(dir, ...part.split("/"))), part).toBe(judged.includes(part));
                 }
+            });
+        },
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "reads the package relationships stored under the part name when _rels\\.rels also exists (#366)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const toOther = MINIMAL_PARTS["_rels/.rels"].replace('Target="word/document.xml"', 'Target="word/other.xml"');
+                writeParts(dir, { ...MINIMAL_PARTS, "_rels\\.rels": toOther, "word/other.xml": "<x/>" });
+                const probe = new BaseSchemaValidator({ unpackedDir: dir, verbose: false, profile: "strict" }) as unknown as MainProbe;
+
+                expect(probe.isMainDocumentPart(path.join(dir, "word", "document.xml"))).toBe(true);
+                expect(probe.isMainDocumentPart(path.join(dir, "word", "other.xml"))).toBe(false);
+            });
+        },
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "calls main only the entry the package view keeps when two files name the main part (#366)",
+        async () => {
+            await withTempDir(async (dir) => {
+                writeParts(dir, { ...MINIMAL_PARTS, "word\\document.xml": "<x/>" });
+                const probe = new BaseSchemaValidator({ unpackedDir: dir, verbose: false, profile: "strict" }) as unknown as MainProbe;
+
+                expect(nodeFs.readdirSync(dir)).toContain("word\\document.xml");
+                expect(await rootCheckPaths(dir)).toEqual([]);
+                expect(probe.isMainDocumentPart(path.join(dir, "word", "document.xml"))).toBe(true);
+                expect(probe.isMainDocumentPart(path.join(dir, "word\\document.xml"))).toBe(false);
             });
         },
     );

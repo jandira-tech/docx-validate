@@ -50,6 +50,31 @@ describe("main document root behind an OPC-equivalent target (#344)", () => {
     }
 });
 
+// A literal backslash name extracts to a file of its own only off Windows.
+describe.skipIf(process.platform === "win32")("a quick run and a full run judge the same main part (#366)", () => {
+    const rest = Object.fromEntries(Object.entries(MINIMAL_PARTS).filter(([name]) => name !== "_rels/.rels"));
+    const toDocument = MINIMAL_PARTS["_rels/.rels"]!;
+    const toOther = withMainTarget("word/other.xml");
+
+    it.each([
+        ["_rels\\.rels first", { "_rels\\.rels": toOther, "_rels/.rels": toDocument }],
+        ["_rels/.rels first", { "_rels/.rels": toDocument, "_rels\\.rels": toOther }],
+    ])("with %s in the archive", async (_order, relationships) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "specimen.docx");
+            await writeFile(file, await buildDocx({ ...rest, ...relationships, "word/document.xml": IGNORED, "word/other.xml": IGNORED }));
+            const quick = await validate(file, { checks: ["word-document-root"] });
+            const full = await validate(file, { profile: "strict" });
+            const paths = (issues: readonly { code?: string; path?: string }[], code: string): (string | undefined)[] =>
+                issues.filter((issue) => issue.code === code).map((issue) => issue.path);
+
+            expect(paths(quick.issues, "word-document-root")).toEqual(["word/document.xml"]);
+            expect(paths(full.issues, "word-document-root")).toEqual(["word/document.xml"]);
+            expect(paths(full.issues, "mce-main-root-ignored")).toEqual(["word/document.xml"]);
+        });
+    });
+});
+
 describe("main document root validation (#317)", () => {
     for (const profile of [undefined, "word-valid", "strict"] as const) {
         it.each([
