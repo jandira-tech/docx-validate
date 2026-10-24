@@ -88,6 +88,7 @@ import { buildRepairPlanIssues, collectDocxSemanticInventory, compareDocxSemanti
 import { PPTXSchemaValidator } from "./validators/pptx";
 import { validateRedlining } from "./validators/redlining";
 import { propertiesParts } from "../../lib/properties-parts";
+import { wordReadParts } from "../../lib/word-read-parts";
 import { CT_DUPLICATE_DECLARATION } from "../../lib/content-types";
 import { isWordBlockingIssue } from "./validators/word-blocking";
 import { explainWordError } from "./validators/word-error-explanations";
@@ -597,6 +598,7 @@ function findingsUnderProfile(
     format: PackageFormat,
     profile: Profile,
     properties: ReadonlySet<string>,
+    wordRead: ReadonlySet<string> = new Set(),
 ): ValidationIssue[] {
     // Equivalent names, escaped unreserved characters, escaped separators and
     // malformed Override PartNames are Word-blocking for DOCX/DOCM (#351, #408,
@@ -617,7 +619,9 @@ function findingsUnderProfile(
             registry.get(outcome.id)?.archiveOnly === true
                 ? outcome.issues
                 : outcome.issues.map((issue): ValidationIssue =>
-                      issue.severity === "error" && !isWordBlockingIssue(issue, properties) ? { ...issue, severity: "warning" } : issue,
+                      issue.severity === "error" && !isWordBlockingIssue(issue, properties, wordRead)
+                          ? { ...issue, severity: "warning" }
+                          : issue,
                   ),
         )
         .map(advisory);
@@ -668,12 +672,19 @@ async function archiveFindings(
                 ? { ...outcome, issues: withoutConsequentialParseFailures(outcome.issues, malformed) }
                 : outcome,
         );
+        // The full run's reachability sets, so an XML error keeps the
+        // severity the full run gives it (#437, #488).
+        const [properties, read] =
+            profile === "word-valid" && format === "docx"
+                ? [await propertiesParts(opened.context), await wordReadParts(opened.context)]
+                : [new Set<string>(), new Set<string>()];
         const issues = findingsUnderProfile(
             { ...run, outcomes, issues: outcomes.flatMap((outcome) => outcome.issues) },
             registry,
             format,
             profile,
-            profile === "word-valid" && format === "docx" ? await propertiesParts(opened.context) : new Set(),
+            properties,
+            read,
         );
         return { issues, executed: [...run.executed] };
     } catch {
@@ -786,12 +797,19 @@ async function runSelectedChecks(
             ? { ...outcome, issues: withoutConsequentialParseFailures(outcome.issues, malformed) }
             : outcome,
     );
+    // #437: the word-valid reachability sets are computed once per partial
+    // run, as the full DOCX run computes them, so both agree.
+    const [properties, read] =
+        mode.profile === "word-valid" && format === "docx"
+            ? [await propertiesParts(opened.context), await wordReadParts(opened.context)]
+            : [new Set<string>(), new Set<string>()];
     const issues = findingsUnderProfile(
         { ...run, outcomes, issues: outcomes.flatMap((outcome) => outcome.issues) },
         registry,
         format,
         mode.profile,
-        mode.profile === "word-valid" && format === "docx" ? await propertiesParts(opened.context) : new Set(),
+        properties,
+        read,
     );
     return {
         valid: issues.every((issue) => issue.severity !== "error"),

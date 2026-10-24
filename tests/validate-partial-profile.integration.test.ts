@@ -55,6 +55,16 @@ const DOCUMENT_WITH_MARKERS = MINIMAL_PARTS["word/document.xml"]!.replace(
 const COMMENT_PARTS = {
     ...MINIMAL_PARTS,
     "[Content_Types].xml": COMMENT_CONTENT_TYPES,
+    // The relationships a package whose document carries comment markers
+    // really has: Word reads the comments part through the commentReference
+    // (#437), and the commentsExtended part through its Microsoft extension
+    // type, so both stay Word-blocking when malformed.
+    "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+        "</Relationships>",
+        '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments" Target="comments.xml"/>' +
+            '<Relationship Id="rId3" Type="http://schemas.microsoft.com/office/2011/relationships/commentsExtended" Target="commentsExtended.xml"/>' +
+            "</Relationships>",
+    ),
     "word/document.xml": DOCUMENT_WITH_MARKERS,
     "word/comments.xml": GOOD_COMMENTS,
 };
@@ -745,16 +755,19 @@ describe("a part named in another case gets the verdict its lower-case name gets
     });
 
     it.skipIf(process.platform === "win32")(
-        "word-valid fails a directory's malformed word\\foo.xml in full and quick runs alike (review Q)",
+        "word-valid warns on a directory's malformed word\\foo.xml in full and quick runs alike (review Q, #437)",
         async () => {
             await withTempDir(async (dir) => {
                 const root = unpacked(dir, "backslash.docx", { ...MINIMAL_PARTS, "word\\foo.xml": "<w:foo" });
                 for (const selection of [{}, { quick: true }] as const) {
                     const result = await validate(root, { profile: "word-valid", ...selection });
 
-                    expect(result.valid, JSON.stringify(selection)).toBe(false);
+                    // No relationship names word/foo.xml, so Word 16.115 does
+                    // not read it (#437); the run still judges the part, as the
+                    // lower-case spelling, in full and quick runs alike.
+                    expect(result.valid, JSON.stringify(selection)).toBe(true);
                     expect(result.issues).toContainEqual(
-                        expect.objectContaining({ code: "xml-syntax", severity: "error", path: "word/foo.xml" }),
+                        expect.objectContaining({ code: "xml-syntax", severity: "warning", path: "word/foo.xml" }),
                     );
                 }
             });
