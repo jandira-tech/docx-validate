@@ -31,6 +31,8 @@ import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import { parseXml, parseXmlBytes } from "../src/lib/xml-helpers";
 import { checkXmlSyntax } from "../src/lib/xml-syntax";
+import { xmlSyntaxCheck } from "../src/scripts/office/checks/xml";
+import { contextFromDirectory } from "../src/scripts/office/package-context";
 import { validate } from "../src/scripts/office/validate";
 import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
 
@@ -228,6 +230,22 @@ describe("BaseSchemaValidator.validateXml — original bytes", () => {
             expect(result.issues.map((i) => i.code)).toEqual(["xml-syntax"]);
         });
     });
+
+    it.each(["word/COMMENTS.XML", "_RELS/.RELS", "word/Notes.Xml"])(
+        "parses %s, whose extension is not lower case, as the xml-syntax check does (#390)",
+        async (part) => {
+            await withTempDir(async (dir) => {
+                await writePart(dir, "word/document.xml", `<w:document ${W_NS}/>`);
+                await writePart(dir, part, '<?xml version="1.0"?><w:comments xmlns:w="urn:w">');
+                const result = await new BaseSchemaValidator({ unpackedDir: dir }).validateXml();
+                const registered = await xmlSyntaxCheck.run(contextFromDirectory(dir));
+
+                expect(result.valid).toBe(false);
+                expect(result.issues).toContainEqual(expect.objectContaining({ code: "xml-syntax", path: part }));
+                expect(result.issues).toEqual(registered);
+            });
+        },
+    );
 });
 
 describe("BOM-prefixed XML is never a failure on its own", () => {

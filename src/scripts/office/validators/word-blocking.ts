@@ -10,7 +10,16 @@
  * one predicate, so they cannot drift (#381).
  */
 
+import { canonicalPartName } from "../../../lib/content-types";
 import type { ValidationIssue } from "../../../lib/types";
+
+/**
+ * Whether a part lies under `word/`, comparing part names as OPC does: ASCII
+ * case-insensitively, with escapes of unreserved characters decoded, so
+ * `WORD/document.xml` names the part `word/document.xml` does (#392).
+ */
+const isWordFolderPart = (partName: string | undefined): boolean =>
+    partName !== undefined && canonicalPartName(partName).startsWith("word/");
 
 export const isWordBlockingIssue = (issue: ValidationIssue): boolean => {
     switch (issue.code) {
@@ -104,7 +113,7 @@ export const isWordBlockingIssue = (issue: ValidationIssue): boolean => {
         // malformed part — Word reports unreadable content — so it follows
         // the identical word/ vs non-word/ policy.
         case "xml-undeclared-prefix":
-            return issue.path?.startsWith("word/") || issue.path === "[Content_Types].xml";
+            return isWordFolderPart(issue.path) || issue.path === "[Content_Types].xml";
         case "rels-broken":
             // NB: a broken media/ rel (image Target absent) is NOT word-blocking:
             // real Word shows a missing-image placeholder and opens cleanly

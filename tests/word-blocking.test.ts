@@ -77,6 +77,13 @@ describe("isWordBlockingIssue", () => {
 
     it.each([
         ["word/document.xml", true],
+        // OPC part names compare ASCII case-insensitively, with escapes of
+        // unreserved characters decoded: these all name a part under word/ (#392).
+        ["WORD/document.xml", true],
+        ["Word/Comments.XML", true],
+        ["%77ord/document.xml", true],
+        ["wordy/document.xml", false],
+        ["DOCPROPS/APP.XML", false],
         ["[Content_Types].xml", true],
         ["docProps/app.xml", false],
         [undefined, false],

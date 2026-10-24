@@ -55,6 +55,12 @@ export type RunChecksOptions = {
     readonly format: PackageFormat;
     /** Check ids or group names. Omit to run every applicable check. */
     readonly select?: readonly string[];
+    /**
+     * A check whose failure ends the run: nothing registered after it runs,
+     * as a lenient run stops at its first malformed part (#391). A selected
+     * check the halt kept from running is neither executed nor omitted.
+     */
+    readonly haltAfterFailing?: string;
 };
 
 export const runChecks = async (ctx: ValidationContext, registry: CheckRegistry, opts: RunChecksOptions): Promise<CheckRun> => {
@@ -70,6 +76,9 @@ export const runChecks = async (ctx: ValidationContext, registry: CheckRegistry,
         status.set(def.id, outcome.status);
         byId.set(def.id, outcome);
         outcomes.push(outcome);
+        if (def.id === opts.haltAfterFailing && outcome.status === "failed") {
+            break;
+        }
     }
 
     const issues = outcomes.flatMap((outcome) => outcome.issues);

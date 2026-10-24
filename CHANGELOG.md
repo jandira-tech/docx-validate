@@ -22,6 +22,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- The full run's XML pass now checks every part whose extension is `.xml` or `.rels` in any case, as the `xml-syntax` check of quick and named runs already did. A malformed `word/COMMENTS.XML` used to pass a full Word-valid run (the comment checks only warn about it) and fail `--quick`; both now fail it ([#390](https://github.com/jandira-tech/docx-validate/issues/390)).
+
+- A lenient named run that selects the comment checks stops where `xml-syntax` rejects a part, as the full lenient run stops at its first malformed part. It no longer reports defects of the parts that parsed, which the full lenient run never reaches; `executedChecks` lists only `xml-syntax` ([#391](https://github.com/jandira-tech/docx-validate/issues/391)).
+
+- Word-valid treats a malformed part under `WORD/` (any case, or with percent-escaped unreserved characters) as under `word/`: OPC part names compare that way. A package whose main document part `WORD/document.xml` does not parse no longer passes ([#392](https://github.com/jandira-tech/docx-validate/issues/392)).
+
 - Named comment checks also run XML syntax diagnostics and suppress restated parse findings, preserving the full run's profile verdict for malformed parts ([#385](https://github.com/jandira-tech/docx-validate/issues/385)).
 
 - Named `comments` selection now runs comment marker and threading integrity checks while full DOCX validation preserves its findings under every profile. The comment checks now also judge a comment part stored under an OPC-equivalent name (`word/comments.XML`, percent-encoded characters), as every other check does; the legacy rules ignored such parts, so a package that passed can now report comment findings ([#384](https://github.com/jandira-tech/docx-validate/issues/384)).

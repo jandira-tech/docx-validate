@@ -16,6 +16,14 @@ import type { ValidationIssue } from "../../../lib/types";
 const XML_PART = /\.(?:xml|rels)$/i;
 
 /**
+ * Whether a part is one the XML syntax gate parses: its extension is `.xml`
+ * or `.rels` in any case, as OPC compares part names ASCII
+ * case-insensitively. The full run's own XML pass uses this predicate too,
+ * so both judge the same parts (#390).
+ */
+export const isXmlPartName = (partName: string): boolean => XML_PART.test(partName);
+
+/**
  * The id of the XML well-formedness check. The validators' own XML pass
  * does the same work on the same bytes, so they report it under this id
  * when they disclose the checks a run executed (#319).
@@ -33,7 +41,7 @@ export const xmlSyntaxCheck: CheckDefinition = {
     run: async (ctx): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
         for (const part of ctx.partNames) {
-            const bytes = XML_PART.test(part) ? ctx.bytes(part) : undefined;
+            const bytes = isXmlPartName(part) ? ctx.bytes(part) : undefined;
             if (bytes !== undefined) {
                 issues.push(...(await checkXmlSyntax(bytes, part)));
             }

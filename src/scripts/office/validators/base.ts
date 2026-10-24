@@ -60,7 +60,7 @@ import {
 } from "../../../lib/xml-helpers";
 import { checkXmlSyntax } from "../../../lib/xml-syntax";
 import { resolveSafeZipEntry } from "../../../lib/zip-path";
-import { XML_SYNTAX_CHECK_ID } from "../checks/xml";
+import { isXmlPartName, XML_SYNTAX_CHECK_ID } from "../checks/xml";
 
 /**
  * Schema mapping table — file basename / suffix → relative path inside the
@@ -664,7 +664,10 @@ export class BaseSchemaValidator {
      */
     async validateXml(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        for (const xmlFile of this.xmlFiles) {
+        // The parts the `xml-syntax` check parses, whatever the case of their
+        // extension: `word/COMMENTS.XML` is no less an XML part (#390).
+        for (const [part, xmlFile] of packageEntries(this.unpackedDir)) {
+            if (!isXmlPartName(part)) continue;
             let raw: Buffer;
             try {
                 raw = await fs.readFile(xmlFile);

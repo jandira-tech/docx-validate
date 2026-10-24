@@ -256,6 +256,32 @@ describe("runChecks", () => {
         expect(run.issues).toHaveLength(1);
     });
 
+    it("stops after the check named to halt the run fails, as lenient stops at a malformed part (#391)", async () => {
+        const registry = new CheckRegistry([check("gate", { run: () => [error("bad", "a.xml")] }), check("next"), check("other")]);
+        const run = await runChecks(ValidationContext.fromEntries({}), registry, {
+            format: "docx",
+            select: ["gate", "next"],
+            haltAfterFailing: "gate",
+        });
+        expect(run.outcomes.map((o) => [o.id, o.status])).toEqual([["gate", "failed"]]);
+        expect(run.issues).toEqual([error("bad", "a.xml")]);
+        expect(run.executed).toEqual(["gate"]);
+        // A selected check the halt kept from running is not an omission.
+        expect(run.omitted).toEqual(["other"]);
+    });
+
+    it("runs on when the check named to halt the run passes or only warns", async () => {
+        const registry = new CheckRegistry([
+            check("gate", { run: () => [{ severity: "warning", code: "w", message: "w" }] }),
+            check("next", { run: () => [error("found")] }),
+        ]);
+        const run = await runChecks(ValidationContext.fromEntries({}), registry, { format: "docx", haltAfterFailing: "gate" });
+        expect(run.outcomes.map((o) => [o.id, o.status])).toEqual([
+            ["gate", "passed"],
+            ["next", "failed"],
+        ]);
+    });
+
     it("rejects selecting a check that does not apply to the package format", async () => {
         const registry = new CheckRegistry([check("pptx-only", { formats: ["pptx"] })]);
         await expect(runChecks(ValidationContext.fromEntries({}), registry, { format: "docx", select: ["pptx-only"] })).rejects.toThrow(
