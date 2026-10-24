@@ -42,6 +42,7 @@ export const COVERAGE_GATES: readonly CoverageGate[] = [
     { pattern: "src/scripts/office/validators/word-blocking.ts", ...POLICY },
     // Modules the plan adds.
     { pattern: "src/lib/content-types.ts", ...NEW_MODULE },
+    { pattern: "src/lib/properties-parts.ts", ...NEW_MODULE },
     { pattern: "src/lib/markup-compatibility.ts", ...NEW_MODULE },
     { pattern: "src/lib/validation-context.ts", ...NEW_MODULE },
     { pattern: "src/lib/word-provenance.ts", ...NEW_MODULE },

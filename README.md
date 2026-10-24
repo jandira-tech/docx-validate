@@ -346,8 +346,28 @@ is zero bytes, truncated, or uses an undeclared prefix ([#388](https://github.co
 follows the same policy: Word refuses a `word/document.xml` that declares an
 unknown encoding ([#397](https://github.com/jandira-tech/docx-validate/issues/397)), and one that declares a real encoding
 libxml2 cannot decode (`macintosh`, `x-mac-cyrillic`, `IBM866`, `UTF-7`), so the
-blocking covers those labels too ([#410](https://github.com/jandira-tech/docx-validate/issues/410)). External entities are not
-loaded or expanded; XSD imports resolve through allowed local schema roots.
+blocking covers those labels too ([#410](https://github.com/jandira-tech/docx-validate/issues/410)).
+Word-valid also blocks `xml-syntax`, `xml-encoding`, and `xml-undeclared-prefix`
+on a properties part named by a core, extended, or custom properties relationship
+in the package relationships part. Word reads properties through those relationships:
+Word 16.115 offers recovery for all three defects in the referenced `docProps/core.xml`,
+`docProps/app.xml`, and `docProps/custom.xml` specimens
+([#409](https://github.com/jandira-tech/docx-validate/issues/409)). The relationship types
+include the legacy core spelling and Strict extended/custom spellings. Targets resolve
+from the package root (a leading `/` is allowed; external targets are ignored), and
+part names compare by OPC equivalence, including the stored `_rels/.rels` spelling.
+Missing or unreadable package relationships yield no properties targets; an unreadable
+`_rels/.rels` already blocks Word-valid itself.
+
+Without a properties relationship, these findings stay warnings on `docProps/*.xml`.
+Word opens unreferenced malformed `docProps/core.xml`, `docProps/app.xml` and
+`docProps/custom.xml` clean. The SuperDoc `annotations_import_2.docx`, whose
+unreferenced `docProps/custom.xml` has an undeclared prefix, opens clean too and stays
+Word-valid. A truncated core part stored as `props/meta.xml` and named by the
+core-properties relationship makes Word offer recovery, and its well-formed control
+opens clean, so the rule follows the relationship, not the name. Full, quick and named
+runs share this policy; strict verdicts are unchanged.
+External entities are not loaded or expanded; XSD imports resolve through allowed local schema roots.
 Validation leaves source bytes unchanged unless you request `autoRepair`.
 
 Content-type checks, XSD dispatch, and semantic diagnostics find the ZIP stream

@@ -5,6 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 
+import { canonicalPartName } from "../src/lib/content-types";
 import type { ValidationIssue } from "../src/lib/types";
 import { isWordBlockingIssue } from "../src/scripts/office/validators/word-blocking";
 
@@ -99,12 +100,36 @@ describe("isWordBlockingIssue", () => {
         ["_rels/.%72els", true],
         ["_rels/x.rels", false],
         ["docProps/app.xml", false],
+        ["docProps/custom.xml", false],
+        ["metadata/core.xml", false],
         [undefined, false],
     ] as const)("judges xml-syntax, xml-undeclared-prefix and xml-encoding in %s as blocking: %s", (path, blocking) => {
         expect(isWordBlockingIssue(issue("xml-syntax", { path }))).toBe(blocking);
         expect(isWordBlockingIssue(issue("xml-undeclared-prefix", { path }))).toBe(blocking);
         // Word 16.115 refuses a word/document.xml declaring an unknown encoding (#397).
         expect(isWordBlockingIssue(issue("xml-encoding", { path }))).toBe(blocking);
+    });
+
+    describe.each(["xml-syntax", "xml-encoding", "xml-undeclared-prefix"])("%s on properties parts (#409)", (code) => {
+        it.each([
+            "docProps/core.xml",
+            "DOCPROPS/CORE.XML",
+            "docProps/%63ore.xml",
+            "docProps/app.xml",
+            "DOCPROPS/APP.XML",
+            "docProps/%61pp.xml",
+            "docProps/custom.xml",
+            "DOCPROPS/CUSTOM.XML",
+            "docProps/%63ustom.xml",
+            "props/meta.xml",
+            "PROPS/%6Deta.xml",
+        ])("blocks %s only when named by a properties relationship", (path) => {
+            const properties = new Set(
+                ["docProps/core.xml", "docProps/app.xml", "docProps/custom.xml", "props/meta.xml"].map(canonicalPartName),
+            );
+            expect.soft(isWordBlockingIssue(issue(code, { path }), properties), "referenced").toBe(true);
+            expect.soft(isWordBlockingIssue(issue(code, { path }), new Set()), "unreferenced").toBe(false);
+        });
     });
 
     it.each([
