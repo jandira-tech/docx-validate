@@ -359,8 +359,9 @@ export const wordTypedRelationshipTargets = async (
  * not read (session 20),
  * so the walk does not recurse, and `officeDocument` never matches: a
  * glossary's relationship of that segment would misattribute the package
- * root. The caller drops any part a main-document target already names by
- * the same segment.
+ * root. A part the main document also names by the same segment keeps
+ * both entries, so a caller can judge it through whichever root reads it
+ * (#593).
  */
 export const glossaryTypedRelationshipTargets = async (
     context: ValidationContext,
@@ -506,13 +507,6 @@ const storyRootReadParts = async (
 };
 
 /**
- * Canonical names of the parts Word reads at open through relationships.
- * Mirrors `propertiesParts`: a package relationships part that does not parse
- * yields nothing (its own diagnostics already block the run, #388), and a
- * main document that does not parse keeps its lazily parsed parts reached —
- * whether it uses them cannot be decided, and no new false negative may open.
- */
-/**
  * The story roots — every main document, then every reached glossary — and
  * the typed parts each reads, computed once. A glossary's entries carry
  * `via: "glossary"` so a (part, segment) pair the main document and a
@@ -569,6 +563,13 @@ const wordStoryReadTargets = async (
 export const wordReadTypedTargets = async (context: ValidationContext): Promise<readonly WordTypedTarget[]> =>
     (await wordStoryReadTargets(context))?.targets ?? [];
 
+/**
+ * Canonical names of the parts Word reads at open through relationships.
+ * Mirrors `propertiesParts`: a package relationships part that does not parse
+ * yields nothing (its own diagnostics already block the run, #388), and a
+ * main document that does not parse keeps its lazily parsed parts reached —
+ * whether it uses them cannot be decided, and no new false negative may open.
+ */
 export const wordReadParts = async (context: ValidationContext): Promise<ReadonlySet<string>> => {
     const parts = new Set<string>();
     const story = await wordStoryReadTargets(context);

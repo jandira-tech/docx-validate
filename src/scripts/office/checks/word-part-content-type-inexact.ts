@@ -46,7 +46,8 @@
  * which keeps strict a superset (#579). The finding names the
  * relationship that reached the part — the glossary's — and a part the
  * main document and the glossary both relate by the same type is reported
- * once, under the main document's entry. A part reached by two
+ * once, naming the main document's relationship unless only the glossary
+ * reads the part through it. A part reached by two
  * relationship types is judged against each (#593): the segment whose
  * expected content type's media type matches the declared value reports
  * the finding — the types are pairwise distinct, so at most one can match.
@@ -234,11 +235,12 @@ export const wordPartContentTypeInexactFindings = async (
         ctx,
         scope === "spec" ? GLOSSARY_SPEC_SEGMENTS : GLOSSARY_OBSERVED_SEGMENTS,
     );
-    // A part the main document and a reached glossary both name by the same
-    // type keeps the main document's entry (#579); different types reaching
-    // one part each stay, so every type judges the part (#593).
-    const named = new Set(targets.map((target) => `${canonicalPartName(target.part)}\n${target.segment}`));
-    const merged = [...targets, ...glossaryTargets.filter((target) => !named.has(`${canonicalPartName(target.part)}\n${target.segment}`))];
+    // Every entry stays, the main document's first: each type judges the
+    // part (#593), and a part the main document and a reached glossary both
+    // name by the same type is judged through whichever root reads it — a
+    // root's unused relationship must not hide the other root's read one.
+    // The part is still reported once (#579).
+    const merged = [...targets, ...glossaryTargets];
     // Headers, footers, comments, footnotes and endnotes are parsed lazily
     // — only when the document uses them (#516); session 20's specimens
     // reference theirs (#570) — so the typed reads `wordReadTypedTargets`
@@ -261,9 +263,10 @@ export const wordPartContentTypeInexactFindings = async (
               ),
           )
         : undefined;
-    // One finding per part. The segments the named types reach a part
-    // through are distinct, so the declared media type can match at most
-    // one's expected type; that segment reports the finding.
+    // One finding per part. The types are pairwise distinct, so the
+    // declared media type matches at most one segment's expected type; that
+    // segment's entries — the main document's and a glossary's, when both
+    // roots relate the part by it — are the candidates to report it.
     const byPart = new Map<string, typeof merged>();
     for (const target of merged) {
         const canonical = canonicalPartName(target.part);
@@ -301,20 +304,28 @@ export const wordPartContentTypeInexactFindings = async (
         if (matching.some(({ segment }) => expectedTypesFor(segment).some((type) => asciiLowercase(declared) === asciiLowercase(type)))) {
             continue;
         }
-        // Under the observed scope a candidate the story root does not read
-        // through that segment is not Word's finding at all — and cannot
-        // hide a read segment of the same part (#593); `readKeys ===
-        // undefined` (usage undecidable, #536) keeps it.
-        const live = matching.filter(
-            ({ segment, via }) =>
-                !(
-                    scope === "observed" &&
-                    (via === "glossary" || LAZY_OBSERVED_SEGMENTS.has(segment)) &&
-                    readKeys !== undefined &&
-                    !readKeys.has(`${via ?? "main"}\n${canonical}\n${segment}`)
-                ),
-        );
-        const chosen = live[0];
+        // A lazily parsed candidate its story root does not read through
+        // that segment is not Word's finding, and cannot hide a read one
+        // (#593); `readKeys === undefined` (usage undecidable, #536) counts
+        // as read.
+        const isRead = ({ segment, via }: (typeof matching)[number]): boolean =>
+            !(
+                (via === "glossary" || LAZY_OBSERVED_SEGMENTS.has(segment)) &&
+                readKeys !== undefined &&
+                !readKeys.has(`${via ?? "main"}\n${canonical}\n${segment}`)
+            );
+        // The observed pairs are the main-document probes plus the
+        // glossary's probed styles and referenced header (#579); every
+        // other glossary segment is spec-only.
+        const isProbed = ({ segment, via }: (typeof matching)[number]): boolean =>
+            via === "glossary" ? GLOSSARY_OBSERVED_SEGMENTS.has(segment) : OBSERVED_SEGMENTS.has(segment);
+        // The finding names a read, probed candidate when there is one, then
+        // a read one. Under the observed scope an unread part is not Word's
+        // finding at all; strict still reports it, by the spec (#589).
+        const chosen =
+            matching.find((entry) => isRead(entry) && isProbed(entry)) ??
+            matching.find(isRead) ??
+            (scope === "spec" ? matching[0] : undefined);
         if (chosen === undefined) {
             continue;
         }
@@ -327,17 +338,10 @@ export const wordPartContentTypeInexactFindings = async (
                 : segment === OFFICE_DOCUMENT_SEGMENT
                   ? "the package officeDocument relationship"
                   : `the main document's ${segment} relationship`;
-        // The observed pairs are the main-document probes plus the
-        // glossary's probed styles and referenced header (#579); every
-        // other glossary segment is spec-only.
-        const probed = via === "glossary" ? GLOSSARY_OBSERVED_SEGMENTS.has(segment) : OBSERVED_SEGMENTS.has(segment);
-        // Word recovery was observed only for the parts Word reads. A lazy
-        // segment the story root does not read through opened clean
-        // (session 21, s21b), so its finding cites the spec alone;
-        // `readKeys === undefined` means the usage could not be decided,
-        // which keeps the candidate reached (#536).
-        const lazy = via === "glossary" || LAZY_OBSERVED_SEGMENTS.has(segment);
-        const observed = probed && !(lazy && readKeys !== undefined && !readKeys.has(`${via ?? "main"}\n${canonical}\n${segment}`));
+        // Word recovery was observed only for the probed parts Word reads. A
+        // lazy segment its story root does not read through opened clean
+        // (session 21, s21b), so its finding cites the spec alone.
+        const observed = isProbed(chosen) && isRead(chosen);
         const resolvedText =
             resolved.source === "default"
                 ? `resolves only through the Default for extension "${partExtension(part)}" to "${declared}"`
@@ -346,7 +350,7 @@ export const wordPartContentTypeInexactFindings = async (
         const verdict = observed ? " Word 16.115 offers to recover the package." : "";
         findings.push({
             segment,
-            segments: entries.map((entry) => entry.segment),
+            segments: [...new Set(entries.map((entry) => entry.segment))],
             source: resolved.source,
             issue: {
                 severity: "error",

@@ -615,8 +615,9 @@ probed for an inexact type and stay silent under word-valid; strict judges
 every Part 1 WordprocessingML relationship — and theme — on the glossary
 too, citing clause 11.3 for the unprobed WordprocessingML segments; the
 theme, a DrawingML part, cites no clause. A part the main document
-and the glossary both relate by the same type is reported once, under the
-main document's entry. A part several relationship types reach is judged
+and the glossary both relate by the same type is reported once, naming the
+main document's relationship unless only the glossary reads the part through
+it. A part several relationship types reach is judged
 against each: the finding names the type whose expected content type's
 media type matches the declared value — the types are pairwise distinct,
 so at most one can — and an unreferenced lazy relationship neither reports

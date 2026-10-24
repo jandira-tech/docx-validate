@@ -1705,6 +1705,60 @@ describe("word-part-content-type-inexact (#550)", { timeout: 120_000 }, () => {
         });
 
         /**
+         * One header, two story roots (#593): the s22a specimen, plus the
+         * main document's own header relationship to the same part. The
+         * root that references the header reads it, so its relationship
+         * names the finding; the other root's unused relationship neither
+         * hides it nor takes the Word sentence away.
+         */
+        const sharedHeader = (referencedBy: "glossary" | "main"): Parts => {
+            const parts = glossaryHeader(`${CT.header}; charset=utf-8`, referencedBy === "glossary");
+            const main = MINIMAL_PARTS["word/document.xml"]!;
+            return {
+                ...parts,
+                "word/document.xml":
+                    referencedBy === "main"
+                        ? main
+                              .replace(`<w:document xmlns:w="${W}"`, `<w:document xmlns:w="${W}" xmlns:r="${R}"`)
+                              .replace("<w:sectPr>", `<w:sectPr><w:headerReference w:type="default" r:id="rIdM"/>`)
+                        : main,
+                "word/_rels/document.xml.rels": (parts["word/_rels/document.xml.rels"] as string).replace(
+                    "</Relationships>",
+                    `<Relationship Id="rIdM" Type="${R}/header" Target="glossary/header9.xml"/></Relationships>`,
+                ),
+            };
+        };
+
+        it("reports a header only the glossary references, naming the glossary's relationship, when the main document relates it unused (#593, s22a)", async () => {
+            const contentType = `${CT.header}; charset=utf-8`;
+            const wanted = expectedInexactFinding("word/glossary/header9.xml", "header", "error", contentType, { via: "glossary" });
+            expect(await diagnoseInexact(ValidationContext.fromEntries(sharedHeader("glossary")))).toEqual([wanted]);
+            const strict = await wordPartContentTypeInexactFindings(ValidationContext.fromEntries(sharedHeader("glossary")), "spec");
+            expect(strict.map((finding) => finding.issue)).toEqual([wanted]);
+            expect(strict[0]?.issue.message).toContain("offers to recover the package");
+        });
+
+        it("reports a header only the main document references, naming its relationship, when the glossary relates it unused (#593)", async () => {
+            const contentType = `${CT.header}; charset=utf-8`;
+            const wanted = expectedInexactFinding("word/glossary/header9.xml", "header", "error", contentType);
+            expect(await diagnoseInexact(ValidationContext.fromEntries(sharedHeader("main")))).toEqual([wanted]);
+            const strict = await wordPartContentTypeInexactFindings(ValidationContext.fromEntries(sharedHeader("main")), "spec");
+            expect(strict.map((finding) => finding.issue)).toEqual([wanted]);
+        });
+
+        it("word-valid fails the shared-header specimen whichever root references the header (#593)", async () => {
+            await withTempDir(async (dir) => {
+                for (const referencedBy of ["glossary", "main"] as const) {
+                    const file = path.join(dir, `shared-header-${referencedBy}.docx`);
+                    writeFileSync(file, await buildDocx(sharedHeader(referencedBy)));
+                    const wordValid = await validate(file, { profile: "word-valid" });
+                    expect(inexactFindings(wordValid.issues), referencedBy).toHaveLength(1);
+                    expect(wordValid.valid, referencedBy).toBe(false);
+                }
+            });
+        }, 60_000);
+
+        /**
          * The same defect inside a reached glossary (#593): the s21b
          * specimen — `word/glossary/styles2.xml` typed
          * `styles+xml; charset=utf-8`, which session 21 observed Word
