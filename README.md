@@ -281,10 +281,14 @@ offsets a self-extractor writes, and the ZIP64 spelling (a saturated offset
 whose 0x0001 extra field carries the value) all measure the same prefix — as
 one blocking error under strict and Word-valid. The measure is undefined
 exactly where JSZip's reader throws — the local header's extent, its name and
-extra fields, the central-declared compressed stream, and a known compression
+extra fields, the central-declared compressed stream (bounded on both sides:
+stream past the buffer, or a compressed size that reads negative — the 32-bit
+field 0x80000000 or a ZIP64 0x0001 value below zero — sending the final read's
+index below zero), and a known compression
 method (store or deflate) are modelled too — so a package whose local part
 JSZip cannot read reports no prefix
-([#524](https://github.com/jandira-tech/docx-validate/issues/524)). Word 16.115 offers to recover
+([#524](https://github.com/jandira-tech/docx-validate/issues/524),
+[#555](https://github.com/jandira-tech/docx-validate/issues/555)). Word 16.115 offers to recover
 every prefixed package probed
 ([#464](https://github.com/jandira-tech/docx-validate/issues/464);
 probe session 14 in

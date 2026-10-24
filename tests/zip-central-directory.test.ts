@@ -493,6 +493,60 @@ describe("the local part JSZip reads past the signature (#524)", () => {
     });
 });
 
+// JSZip's `DataReader.checkIndex` throws on both sides: `zero + index` past
+// the buffer and an index below zero. A central compressed size that reads
+// negative — the 32-bit field 0x80000000, or a ZIP64 0x0001 extra resolving
+// below zero; neither is the -1 the sentinel check catches — sends
+// `readLocalPart`'s final `readData(compressedSize)` below zero, so `load`
+// rejects: no prefix and no names view may be claimed for it (#555). A small
+// negative size whose end stays at or above zero still reads, as in JSZip.
+describe("a compressed size that reads negative (#555)", () => {
+    const single = () => buildRawZip([{ name: "a.xml", content: "<a/>" }]);
+    const cdOf = (bytes: Buffer): number => bytes.readUInt32LE(bytes.length - 22 + 16);
+    const withBaseCompressed = (value: number): Buffer => {
+        const bytes = single();
+        bytes.writeUInt32LE(value, cdOf(bytes) + 20);
+        return bytes;
+    };
+    // Saturate the record's size fields and resolve them from a 0x0001 extra
+    // field, in JSZip's order: [uncompressed = the real size][compressed = value].
+    const withZip64Compressed = (value: bigint): Buffer => {
+        const bytes = single();
+        const cd = cdOf(bytes);
+        const field = Buffer.alloc(20);
+        field.writeUInt16LE(0x0001, 0);
+        field.writeUInt16LE(16, 2);
+        field.writeBigUInt64LE(BigInt(bytes.readUInt32LE(cd + 24)), 4);
+        field.writeBigUInt64LE(BigInt.asUintN(64, value), 12);
+        const insert = cd + 46 + bytes.readUInt16LE(cd + 28);
+        const grown = Buffer.concat([bytes.subarray(0, insert), field, bytes.subarray(insert)]);
+        grown.writeUInt32LE(0xffffffff, cd + 20);
+        grown.writeUInt32LE(0xffffffff, cd + 24);
+        grown.writeUInt16LE(grown.readUInt16LE(cd + 30) + field.length, cd + 30);
+        const eocd = grown.length - 22;
+        grown.writeUInt32LE(grown.readUInt32LE(eocd + 12) + field.length, eocd + 12);
+        return grown;
+    };
+    const prefixed = (bytes: Buffer): Buffer => Buffer.concat([Buffer.alloc(64, 0x41), bytes]);
+
+    it.each([
+        ["the 32-bit field 0x80000000", () => withBaseCompressed(0x80000000)],
+        ["a ZIP64 extra resolving the size below zero", () => withZip64Compressed(-0x80000000n)],
+    ])("returns undefined where JSZip throws: %s", async (_label, make) => {
+        const bytes = prefixed(make());
+        await expect(JSZip.loadAsync(bytes)).rejects.toThrow();
+        expect(zipBytesBeforeArchive(bytes)).toBeUndefined();
+        expect(zipCentralDirectoryEntries(bytes)).toBeUndefined();
+    });
+
+    it("still measures a resolved compressed size whose end stays above zero (-8)", async () => {
+        const bytes = prefixed(withZip64Compressed(-8n));
+        expect(Object.keys((await JSZip.loadAsync(bytes)).files)).toEqual(["a.xml"]);
+        expect(zipBytesBeforeArchive(bytes)).toBe(64);
+        expect(names(bytes)).toEqual(["a.xml"]);
+    });
+});
+
 // 46-byte fixed header: JSZip's `readCentralPart` reads every field through a
 // bounds-checked read, so it throws; the walk must refuse the same bytes
 // instead of reading `undefined` fields into a phantom record (#498).
