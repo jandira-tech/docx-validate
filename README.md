@@ -347,8 +347,12 @@ other platforms or missing Word also return `unavailable`.
 
 Before opening, the verifier observes Word once. If a dialog is already showing,
 it returns `unavailable` without opening or closing anything: that dialog cannot
-be attributed to this file. macOS cleanup dismisses dialogs raised by its own
-open, preferring Cancel, No, then OK, and does not relaunch Word after a crash.
+be attributed to this file. Verification needs exclusive use of Word: runs must
+not overlap and Word must not be in use, because a dialog that appears after the
+pre-open observation is attributed to this file (#331). macOS cleanup dismisses
+the Word dialog showing at close, preferring Cancel, No, then OK; under exclusive
+use that is the dialog this run's open raised. It does not relaunch Word after a
+crash.
 The source implementation (`src/lib/word-verifier.ts`) supports injected transport
 and clock dependencies; public validation options accept a `wordVerifier` callback
 for deterministic tests or a custom verifier.
