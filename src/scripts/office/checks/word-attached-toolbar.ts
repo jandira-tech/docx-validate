@@ -42,8 +42,10 @@ export const wordAttachedToolbarUtf8Check: CheckDefinition = {
     run: (ctx: ValidationContext): ValidationIssue[] => {
         const issues: ValidationIssue[] = [];
         // One finding per referenced part, however many toolbarData elements
-        // (in however many parts) name it (Jules on #323).
-        const reported = new Set<string>();
+        // (in however many parts) name it (Jules on #323). A part is marked
+        // seen before its bytes are read, so a clean part named again is not
+        // scanned again (Jules on #345).
+        const seen = new Set<string>();
 
         const wordmlNs = "http://schemas.microsoft.com/office/word/2006/wordml";
         const relationshipNamespaces = [OFFICE_RELATIONSHIPS_NAMESPACE, "http://purl.oclc.org/ooxml/officeDocument/relationships"];
@@ -99,9 +101,10 @@ export const wordAttachedToolbarUtf8Check: CheckDefinition = {
                     continue;
                 }
                 const resolved = resolveToolbarTarget(relsFile, target);
-                if (!resolved || reported.has(resolved)) {
+                if (!resolved || seen.has(resolved)) {
                     continue;
                 }
+                seen.add(resolved);
                 const bytes = ctx.bytes(resolved);
                 if (!bytes) {
                     continue;
@@ -118,7 +121,6 @@ export const wordAttachedToolbarUtf8Check: CheckDefinition = {
                     path: resolved,
                     code: "word-attached-toolbar-utf8",
                 });
-                reported.add(resolved);
             }
         }
 
