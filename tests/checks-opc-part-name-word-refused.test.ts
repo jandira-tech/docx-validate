@@ -209,3 +209,49 @@ describe("Word-refused raw ZIP names integration", { timeout: 120_000 }, () => {
         });
     });
 });
+
+describe("Word-refused stored names: message and entry scope (#473, #474)", { timeout: 120_000 }, () => {
+    it("scopes the recovery claim to a DOCX package for a PPTX finding", async () => {
+        await withTempDir(async (dir) => {
+            const target = path.join(dir, "scope.pptx");
+            writeFileSync(target, await buildDocx({ ...MINIMAL_PPTX_PARTS, "ppt/a%21b.xml": "<x/>" }));
+            const found = findings((await validate(target, { profile: "strict" })).issues);
+            expect(found).toHaveLength(1);
+            expect(found[0]!.message).toContain("Word 16.115 offers recovery for this spelling in a DOCX package");
+            expect(found[0]!.message).not.toMatch(/offers recovery\.$/);
+        });
+    });
+
+    it("keeps naming the Word 16.115 recovery observation for a DOCX finding", async () => {
+        await withTempDir(async (dir) => {
+            const target = path.join(dir, "scope.docx");
+            writeFileSync(target, await buildDocx({ ...MINIMAL_PARTS, "word/a%21b.xml": "<x/>" }));
+            const found = findings((await validate(target, { profile: "strict" })).issues);
+            expect(found).toHaveLength(1);
+            expect(found[0]!.message).toMatch(/Word 16\.115 offers recovery/);
+        });
+    });
+
+    it.each([
+        { label: "trailing slash and MS-DOS directory attribute", name: "word/caf%C3%A9/", directory: true },
+        { label: "trailing slash only", name: "word/caf%C3%A9/", directory: false },
+        { label: "MS-DOS directory attribute only", name: "word/caf%C3%A9", directory: true },
+    ])("does not judge the folder entry ($label); the file entry is the control (#474)", async (variant) => {
+        await withTempDir(async (dir) => {
+            const target = path.join(dir, "folder-entry.docx");
+            writeFileSync(
+                target,
+                buildRawZip([
+                    ...Object.entries(MINIMAL_PARTS).map(([name, content]) => ({ name, content })),
+                    { name: variant.name, content: "", directory: variant.directory },
+                    { name: "word/xtra/a%21b.xml", content: "<x/>" },
+                ]),
+            );
+            for (const profile of ["word-valid", "strict", "lenient"] as const) {
+                const found = findings((await validate(target, { profile })).issues);
+                expect(found, `${variant.label} ${profile}`).toHaveLength(1);
+                expect(found[0]!.path, `${variant.label} ${profile}`).toBe("word/xtra/a%21b.xml");
+            }
+        });
+    });
+});

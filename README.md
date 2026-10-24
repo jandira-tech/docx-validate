@@ -327,11 +327,14 @@ before `2F`) stays legal. Word 16.115 offers recovery for an unreferenced
 `word%2Fxtra.xml`, refuses `word%5Cxtra.xml`, and opens the well-formed
 `word/xtra.xml` control clean ([#436](https://github.com/jandira-tech/docx-validate/issues/436)).
 
-`opc-part-name-word-refused` reports one finding per stored name containing a
-percent-escaped RFC 2396 mark (`!`, `'`, `(`, `)`, `*`), a percent-escaped octet
-at or above `0x80`, or a literal non-ASCII character. It reads stored ZIP names
-before extraction, including unreferenced entries and refused package views,
-and walked file names for directories. Hex is case-insensitive and whole
+`opc-part-name-word-refused` reports one finding per stored file-entry name
+containing a percent-escaped RFC 2396 mark (`!`, `'`, `(`, `)`, `*`), a
+percent-escaped octet at or above `0x80`, or a literal non-ASCII character.
+It reads stored ZIP file-entry names before extraction, including
+unreferenced entries and refused package views, and walked file names for
+directories. Folder entries — a trailing `/`, the MS-DOS directory attribute,
+or both — are not judged, and Word was not probed for a folder entry whose
+only defect is its name. Hex is case-insensitive and whole
 triplets are consumed: `%2521` stays clean, as do `%20`, `%26`, `%3A`, `%5B`,
 `%7F`, and a literal `!`. Unreserved escapes keep their existing M1.8 finding.
 
@@ -347,8 +350,8 @@ every Word-blocking defect), warnings under lenient, and warnings for PPTX/XLSX
 under every profile: these spellings are spec-valid and PowerPoint/Excel refusal
 has not been observed. Full, quick and named selections share this policy;
 strict still rejects partial selection, and XLSX supports partial runs only.
-Word 16.115 offers recovery for these spellings, as recorded with SHA-256 hashes
-in [probe sessions 6–12](docs/plans/evidence/word-probes-2026-10-24.md)
+Word 16.115 offers recovery for these spellings in DOCX packages, as recorded
+with SHA-256 hashes in [probe sessions 6–12](docs/plans/evidence/word-probes-2026-10-24.md)
 ([#451](https://github.com/jandira-tech/docx-validate/issues/451),
 [#408](https://github.com/jandira-tech/docx-validate/issues/408),
 [#443](https://github.com/jandira-tech/docx-validate/issues/443)). Validation leaves
