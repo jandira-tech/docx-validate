@@ -22,7 +22,7 @@
 import { chmodSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { ModeConflictError } from "../src/lib/mode-policy";
 import { withTempDir } from "../src/lib/run-cli";
@@ -423,39 +423,65 @@ describe.skipIf(process.platform === "win32")("a packed input that cannot be rea
     // chmod has no effect for root.
     const runsAsRoot = process.getuid?.() === 0;
 
-    it.skipIf(runsAsRoot)("reports package-open-failed in every mode, and no executed check", async () => {
-        await withTempDir(async (dir) => {
-            const file = path.join(dir, "packed-ro.docx");
-            writeFileSync(file, await buildDocx());
-            chmodSync(file, 0o000);
-            const modes: readonly (readonly [string, Parameters<typeof validate>[1]])[] = [
-                ["word-valid", {}],
-                ["lenient", { profile: "lenient" }],
-                ["strict", { profile: "strict" }],
-                ["quick", { quick: true }],
-                ["named xml-syntax", { checks: ["xml-syntax"] }],
-            ];
-            const messages: string[] = [];
-            try {
-                for (const [tag, options] of modes) {
-                    const result = await validate(file, options).catch((error: unknown) => {
-                        throw new Error(
-                            `${tag}: validate() rejected instead of resolving: ${error instanceof Error ? error.message : String(error)}`,
-                        );
-                    });
-                    expect(result.valid, tag).toBe(false);
-                    expect(result.issues, tag).toEqual([expect.objectContaining({ severity: "error", code: "package-open-failed" })]);
-                    expect(result.metadata?.executedChecks, tag).toEqual([]);
-                    messages.push(result.issues[0]!.message);
+    it.skipIf(runsAsRoot)(
+        "describes a read failure in every mode without blaming the archive (#547)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "packed-ro.docx");
+                writeFileSync(file, await buildDocx());
+                chmodSync(file, 0o000);
+                const modes: readonly (readonly [string, Parameters<typeof validate>[1]])[] = [
+                    ["word-valid", {}],
+                    ["lenient", { profile: "lenient" }],
+                    ["strict", { profile: "strict" }],
+                    ["quick", { quick: true }],
+                    ["named xml-syntax", { checks: ["xml-syntax"] }],
+                ];
+                const messages: string[] = [];
+                const wordVerifier = vi.fn();
+                try {
+                    for (const [tag, options] of modes) {
+                        const result = await validate(file, { ...options, verifyWord: true, wordVerifier }).catch((error: unknown) => {
+                            throw new Error(
+                                `${tag}: validate() rejected instead of resolving: ${error instanceof Error ? error.message : String(error)}`,
+                            );
+                        });
+                        expect(result.valid, tag).toBe(false);
+                        expect(result.issues, tag).toEqual([expect.objectContaining({ severity: "error", code: "package-open-failed" })]);
+                        expect(result.metadata?.executedChecks, tag).toEqual([]);
+                        expect(result.issues[0]!.message, tag).toMatch(/^Cannot read .*packed-ro\.docx: EACCES:/);
+                        expect(result.issues[0]!.message, tag).not.toMatch(/encrypted|corrupted|truncated/);
+                        expect(result.metadata?.wordVerification?.outcome, tag).toBe("unavailable");
+                        messages.push(result.issues[0]!.message);
+                    }
+                } finally {
+                    chmodSync(file, 0o644);
                 }
-            } finally {
-                chmodSync(file, 0o644);
-            }
-            // Every mode reports the same failure message.
-            for (const message of messages) expect(message).toBe(messages[0]);
-        });
-    });
+                // Every mode reports the same failure message.
+                for (const message of messages) expect(message).toBe(messages[0]);
+                expect(wordVerifier).not.toHaveBeenCalled();
+            });
+        },
+        60_000,
+    );
 });
+
+it("keeps the archive explanation for JSZip refusals in full and partial runs (#547)", async () => {
+    await withTempDir(async (dir) => {
+        const file = path.join(dir, "corrupt.docx");
+        writeFileSync(file, "not a ZIP");
+        for (const options of [{}, { quick: true }, { checks: ["xml-syntax"] }]) {
+            const result = await validate(file, options);
+            expect(result.issues).toEqual([
+                expect.objectContaining({
+                    code: "package-open-failed",
+                    severity: "error",
+                    message: expect.stringContaining("not a valid .docx/zip — encrypted, corrupted, or truncated"),
+                }),
+            ]);
+        }
+    });
+}, 60_000);
 
 describe("root Ignorable diagnostic identity survives staging failures (#499)", { timeout: 120_000 }, () => {
     const document = MINIMAL_PARTS["word/document.xml"]!;

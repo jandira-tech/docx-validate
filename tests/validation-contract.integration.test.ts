@@ -14,7 +14,7 @@
  */
 
 import { execFile } from "node:child_process";
-import { existsSync, mkdirSync, promises as fs, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, promises as fs, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -49,6 +49,35 @@ async function validateBytes(bytes: Uint8Array, profile: Profile) {
         return validate(file, { profile });
     });
 }
+
+it.skipIf(process.platform === "win32" || process.getuid?.() === 0)(
+    "validation contract: unreadable input keeps strict and partial/full messages aligned (#547, #381)",
+    async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "unreadable.docx");
+            writeFileSync(file, await buildDocx());
+            chmodSync(file, 0o000);
+            try {
+                const word = await validate(file, { profile: "word-valid" });
+                expect(word.issues).toEqual([
+                    expect.objectContaining({
+                        code: "package-open-failed",
+                        severity: "error",
+                        message: expect.stringMatching(/^Cannot read /),
+                    }),
+                ]);
+                for (const options of [{ strict: true }, { quick: true }, { checks: ["xml-syntax"] }]) {
+                    const result = await validate(file, options);
+                    expect(result.valid).toBe(false);
+                    expect(result.issues).toEqual(word.issues);
+                }
+            } finally {
+                chmodSync(file, 0o644);
+            }
+        });
+    },
+    60_000,
+);
 
 describe("validation contract: multiple main relationships (#515, #381)", () => {
     it.each(DUPLICATE_MAIN_DOCUMENT_PARTS)(

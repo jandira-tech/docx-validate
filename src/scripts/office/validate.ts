@@ -277,7 +277,11 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         return finish({
             valid: false,
             issues: [
-                packageOpenFailedIssue(target, packedRead.error instanceof Error ? packedRead.error.message : String(packedRead.error)),
+                packageOpenFailedIssue(
+                    target,
+                    packedRead.error instanceof Error ? packedRead.error.message : String(packedRead.error),
+                    "read",
+                ),
             ],
             repairs: 0,
             suffix: dispatchSuffix,
@@ -998,12 +1002,17 @@ function packageExtractFailedIssue(target: string, detail: string): ValidationIs
 /**
  * The finding for a packed file that is not a readable OPC (zip) package:
  * encrypted OOXML, or a truncated or corrupted archive. Word refuses to open
- * all of these, so it is blocking under every profile.
+ * all of these, so it is blocking under every profile. A file the host cannot
+ * read at all (#422) names the system error instead, since nothing about the
+ * archive is known (#547).
  */
-function packageOpenFailedIssue(target: string, detail: string): ValidationIssue {
+function packageOpenFailedIssue(target: string, detail: string, failure: "read" | "archive" = "archive"): ValidationIssue {
     return {
         severity: "error",
-        message: `Cannot open ${target} as an OPC package (not a valid .docx/zip — encrypted, corrupted, or truncated): ${detail}`,
+        message:
+            failure === "read"
+                ? `Cannot read ${target}: ${detail}`
+                : `Cannot open ${target} as an OPC package (not a valid .docx/zip — encrypted, corrupted, or truncated): ${detail}`,
         code: "package-open-failed",
     };
 }
