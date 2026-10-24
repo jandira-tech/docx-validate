@@ -227,6 +227,31 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         };
     };
 
+    // The package view could not be staged (a ZIP that failed extraction, or
+    // a directory file that could not be read into it): a structured issue,
+    // never a throw — `validate()` must NEVER throw here.
+    const stagingFailed = (
+        envelope: { issues: ValidationResult["issues"]; executed: readonly string[] },
+        err: unknown,
+    ): ValidateRunResult => {
+        const detail = err instanceof Error ? err.message : String(err);
+        return {
+            valid: false,
+            issues: [...envelope.issues, packageExtractFailedIssue(target, detail)],
+            repairs: 0,
+            suffix: dispatchSuffix,
+            xsdWalk: xsdWalkNotStarted(),
+            // The envelope was read from the bytes before extraction failed,
+            // so its checks ran (CodeRabbit on #335).
+            metadata: {
+                profile,
+                executedChecks: orderedExecutedChecks(format, envelope.executed),
+                omittedChecks: [],
+                schemaCompleted: false,
+            },
+        };
+    };
+
     // A packed input, or a directory holding a stored name that differs from
     // its part name (`word\document.xml`), is judged through the package view
     // staged under part names, so the path-keyed validators see one entry per
@@ -241,26 +266,33 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
             try {
                 await extractPackageParts(zip, tempDir);
             } catch (err) {
-                const detail = err instanceof Error ? err.message : String(err);
-                return {
-                    valid: false,
-                    issues: [...envelope.issues, packageExtractFailedIssue(target, detail)],
-                    repairs: 0,
-                    suffix: dispatchSuffix,
-                    xsdWalk: xsdWalkNotStarted(),
-                    // The envelope was read from the bytes before extraction failed,
-                    // so its checks ran (CodeRabbit on #335).
-                    metadata: {
-                        profile,
-                        executedChecks: orderedExecutedChecks(format, envelope.executed),
-                        omittedChecks: [],
-                        schemaCompleted: false,
-                    },
-                };
+                return stagingFailed(envelope, err);
             }
-            const before = new Map<string, Buffer>();
+            // Write-back findings; a staged-directory repair the source cannot
+            // absorb is an error — the caller asked for a repair it did not
+            // get — while the rest of the write-back keeps its best-effort
+            // discipline (the validators swallow their own write failures).
+            const writeBackIssues: ValidationIssue[] = [];
+            const writeBackFailed = (part: string, file: string, err: unknown): void => {
+                writeBackIssues.push({
+                    severity: "error",
+                    message: `Cannot write the auto-repaired ${JSON.stringify(part)} back to ${file}: ${err instanceof Error ? err.message : String(err)}`,
+                    path: part,
+                    code: "repair-write-back-failed",
+                });
+            };
+            const before = new Map<string, Buffer | null>();
             if (autoRepair && sources) {
-                for (const part of sources.keys()) before.set(part, await fs.readFile(path.join(tempDir, part)));
+                for (const [part, file] of sources) {
+                    try {
+                        before.set(part, await fs.readFile(path.join(tempDir, part)));
+                    } catch (err) {
+                        // Without the pre-repair bytes a byte comparison cannot
+                        // prove what changed, so this part's write-back is skipped.
+                        before.set(part, null);
+                        writeBackFailed(part, file, err);
+                    }
+                }
             }
             const unpacked = await runWithUnpacked(tempDir, envelope);
             // A staged directory still repairs its source, under stored names.
@@ -272,14 +304,34 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                     try {
                         repaired = await fs.readFile(path.join(tempDir, part));
                     } catch (err) {
-                        if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
-                        await fs.rm(file);
+                        if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+                            // The repair removed the part: its source goes too.
+                            // A source already removed mid-run is the desired
+                            // end state, so only a different rm failure reports.
+                            try {
+                                await fs.rm(file);
+                            } catch (rmErr) {
+                                if ((rmErr as NodeJS.ErrnoException).code !== "ENOENT") writeBackFailed(part, file, rmErr);
+                            }
+                        } else {
+                            writeBackFailed(part, file, err);
+                        }
                         continue;
                     }
-                    if (!repaired.equals(before.get(part)!)) await fs.writeFile(file, repaired);
+                    const previous = before.get(part);
+                    if (previous == null) continue;
+                    try {
+                        if (!repaired.equals(previous)) await fs.writeFile(file, repaired);
+                    } catch (err) {
+                        writeBackFailed(part, file, err);
+                    }
                 }
             }
-            return unpacked;
+            return {
+                ...unpacked,
+                valid: unpacked.valid && writeBackIssues.every((issue) => issue.severity !== "error"),
+                issues: [...unpacked.issues, ...writeBackIssues],
+            };
         });
 
     if (targetIsPackedFile) {
@@ -333,7 +385,18 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     if (entries.some(([name]) => name !== normalizePartName(name))) {
         // JSZip is only an in-memory entry collection here: no ZIP is written.
         const zip = new JSZip();
-        for (const [name, file] of entries) zip.file(name, await fs.readFile(file), { createFolders: false });
+        for (const [name, file] of entries) {
+            let bytes: Buffer;
+            try {
+                bytes = await fs.readFile(file);
+            } catch (err) {
+                const detail = err instanceof Error ? err.message : String(err);
+                // The staged package view cannot be built, so it fails like a
+                // failed extraction — the error names the stored file (#412).
+                return finish(stagingFailed(diagnostic, new Error(`Cannot read ${name}: ${detail}`, { cause: err })));
+            }
+            zip.file(name, bytes, { createFolders: false });
+        }
         return finish(await runStaged(zip, diagnostic, indexByPartName(entries)));
     }
     return finish(await runWithUnpacked(dir, diagnostic));
@@ -588,10 +651,11 @@ async function runSelectedChecks(
 }
 
 /**
- * The finding for a packed file whose package view cannot be read: an item
- * name places no part, an entry cannot be read, or the host filesystem cannot
- * hold two parts' names. The package view fails before the format validator
- * runs, so partial runs report the same failure (#413).
+ * The finding for an input whose package view cannot be read: an item name
+ * places no part, an entry cannot be read, the host filesystem cannot hold
+ * two parts' names, or a staged directory's stored file cannot be read
+ * (#412). The package view fails before the format validator runs, so
+ * partial runs of a packed file report the same failure (#413).
  */
 function packageExtractFailedIssue(target: string, detail: string): ValidationIssue {
     return {
