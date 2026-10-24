@@ -61,6 +61,10 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
      * except that word-valid and strict still judge the content-types stream.
      */
     async validate(): Promise<ValidationResult> {
+        return this.withinBaselineRun(() => this.runEveryCheck());
+    }
+
+    private async runEveryCheck(): Promise<ValidationResult> {
         this.resetExecutedChecks();
         const xml = await this.validateXml();
         const malformed = new Set(
