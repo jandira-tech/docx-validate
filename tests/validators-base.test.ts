@@ -21,7 +21,12 @@ import JSZip from "jszip";
 import { describe, expect, it, vi } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import { validate } from "../src/scripts/office/validate";
-import { BaseSchemaValidator, walkDirectory, withoutRestatedIgnorablePrefixes } from "../src/scripts/office/validators/base";
+import {
+    BaseSchemaValidator,
+    containRelationshipTarget,
+    walkDirectory,
+    withoutRestatedIgnorablePrefixes,
+} from "../src/scripts/office/validators/base";
 
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
@@ -1572,7 +1577,7 @@ const rootWithAbsoluteLink = async (dir: string): Promise<string> => {
 // Node's JS realpathSync resolves links but keeps the case a path is written
 // in, so on a case-insensitive volume a root spelled in another case than a
 // link's absolute target read the link as leaving the root.
-describe("canonical paths ignore how the input root is spelled (#576)", () => {
+describe("canonical paths ignore how the input root is spelled (#576, #587)", () => {
     it.skipIf(process.platform === "win32")(
         "follows an in-root link when the root is spelled in another case (#576)",
         async ({ skip }) => {
@@ -1582,6 +1587,26 @@ describe("canonical paths ignore how the input root is spelled (#576)", () => {
                 const walked = walkDirectory(respelled);
                 expect(walked.unreadable).toEqual([]);
                 expect(walked.files).toEqual([path.join(respelled, "word", "m", "a.png"), path.join(respelled, "word", "media", "a.png")]);
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "keeps an in-root target contained when the root is spelled in another case, and an outside one escaped (#587)",
+        async ({ skip }) => {
+            await withTempDir(async (dir) => {
+                const root = await rootWithAbsoluteLink(dir);
+                await fs.mkdir(path.join(dir, "outside"));
+                await fs.writeFile(path.join(dir, "outside", "b.png"), "x");
+                await fs.symlink(path.join(dir, "outside"), path.join(root, "word", "out"));
+                const respelled = await respelledRoot(root);
+                if (respelled === undefined) return skip();
+                const inside = path.join(respelled, "word", "m", "a.png");
+                expect(containRelationshipTarget(respelled, inside)).toBe(inside);
+                expect(containRelationshipTarget(root, path.join(root, "word", "m", "a.png"))).toBe(path.join(root, "word", "m", "a.png"));
+                expect(containRelationshipTarget(respelled, path.join(respelled, "word", "out", "b.png"))).toBeNull();
+                expect(containRelationshipTarget(root, path.join(root, "word", "out", "b.png"))).toBeNull();
             });
         },
         60_000,

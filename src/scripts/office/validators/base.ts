@@ -283,8 +283,12 @@ export function defaultSchemasDir(): string {
  * 2. Symlinks: a purely lexical check is defeated by a symlink inside the
  *    unpacked tree pointing outward (`link/secret` where `link` → `/etc`).
  *    The deepest EXISTING ancestor of the target is resolved with
- *    `realpathSync` and re-checked; non-existent trailing components cannot
- *    change the verdict (callers report missing targets as broken anyway).
+ *    `realpathSync.native` and re-checked; non-existent trailing components
+ *    cannot change the verdict (callers report missing targets as broken
+ *    anyway). The root and the probe both take `realpath(3)`'s on-disk case:
+ *    Node's JS `realpathSync` keeps the case a path is written in, so on a
+ *    case-insensitive volume a root spelled in another case than an in-root
+ *    link's absolute target would read as an escape (#587).
  *
  * Returns the original resolved path when contained, `null` on escape.
  * Not race-resistant across the check and a later open — acceptable for a
@@ -299,7 +303,7 @@ export function containRelationshipTarget(unpackedDir: string, resolvedPath: str
 
     let realRoot = root;
     try {
-        realRoot = realpathSync(root);
+        realRoot = realpathSync.native(root);
     } catch {
         // Root itself unreachable — the lexical verdict stands.
         return target;
@@ -308,7 +312,7 @@ export function containRelationshipTarget(unpackedDir: string, resolvedPath: str
     for (;;) {
         let real: string | null = null;
         try {
-            real = realpathSync(probe);
+            real = realpathSync.native(probe);
         } catch {
             real = null;
         }
