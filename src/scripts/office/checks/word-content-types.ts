@@ -11,6 +11,8 @@ import type { CheckDefinition } from "../../../lib/check-registry";
 import {
     asciiLowercase,
     canonicalPartName,
+    CT_DUPLICATE_DECLARATION,
+    duplicateContentTypeDeclarations,
     findContentTypesStream,
     isContentTypesStreamName,
     partExtension,
@@ -20,6 +22,21 @@ import type { ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
 
 const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types";
+
+/** Package declarations are checked under every profile and format, including lenient. */
+export const ctDuplicateDeclarationCheck: CheckDefinition = {
+    id: CT_DUPLICATE_DECLARATION,
+    description: "Content-type Default extensions and Override part names are unique under OPC equivalence.",
+    groups: ["content-types"],
+    formats: ["docx", "pptx", "xlsx"],
+    requires: ["xml-syntax"],
+    run: (ctx) => {
+        const stream = findContentTypesStream(ctx.partNames);
+        if (stream === undefined) return [];
+        const parsed = ctx.xml(stream);
+        return parsed?.ok ? duplicateContentTypeDeclarations(parsed.document, stream) : [];
+    },
+};
 
 export const wordContentTypeInvalidCheck: CheckDefinition = {
     id: "word-content-type-invalid",

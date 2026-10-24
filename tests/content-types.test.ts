@@ -28,6 +28,7 @@ import {
     resolveContentType,
 } from "../src/lib/content-types";
 import { parseXml } from "../src/lib/xml-helpers";
+import * as contentTypes from "../src/lib/content-types";
 
 const typesXml = (inner: string): Document => parseXml(`<?xml version="1.0"?><Types xmlns="${CONTENT_TYPES_NAMESPACE}">${inner}</Types>`);
 
@@ -36,6 +37,57 @@ const overrideEntry = (partName: string, contentType = "image/png"): string =>
 
 const defaultEntry = (extension: string, contentType = "image/png"): string =>
     `<Default Extension="${extension}" ContentType="${contentType}"/>`;
+
+describe("duplicate content-type declarations (#431)", () => {
+    it("reports each repetition against the first spelling using ASCII/OPC keys, without changing resolution or XML", () => {
+        // Namespace access lets RED fail on this assertion rather than an absent-export import error.
+        expect(contentTypes).toHaveProperty("duplicateContentTypeDeclarations", expect.any(Function));
+        const dom = typesXml(
+            defaultEntry("xml", "application/xml") +
+                defaultEntry("XML") +
+                defaultEntry("xml") +
+                overrideEntry("/word/styles.xml", "application/xml") +
+                overrideEntry("/WORD/%73tyles.xml") +
+                // Reserved escapes remain distinct; non-ASCII extensions do not Unicode-fold.
+                overrideEntry("/word/a%40.xml") +
+                overrideEntry("/word/a@.xml") +
+                overrideEntry("/word/my%20pic.xml") +
+                overrideEntry("/word/my pic.xml") +
+                defaultEntry("É") +
+                defaultEntry("é") +
+                '<Default/><Default Extension=""/><Override/><Override PartName=""/>' +
+                '<Default xmlns="urn:foreign" Extension="xml"/>' +
+                '<Override xmlns="urn:foreign" PartName="/word/styles.xml"/>',
+        );
+        const before = dom.toString();
+        const issues = contentTypes.duplicateContentTypeDeclarations(dom, "[CONTENT_TYPES].XML");
+        expect(issues).toHaveLength(4);
+        expect(issues).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ message: expect.stringContaining('"XML" repeats "xml"') }),
+                expect.objectContaining({ message: expect.stringContaining('"xml" repeats "xml"') }),
+                expect.objectContaining({ message: expect.stringContaining('"/WORD/%73tyles.xml" repeats "/word/styles.xml"') }),
+                expect.objectContaining({ message: expect.stringContaining('"/word/my pic.xml" repeats "/word/my%20pic.xml"') }),
+            ]),
+        );
+        expect(
+            issues.every(
+                (issue) => issue.code === "ct-duplicate-declaration" && issue.path === "[CONTENT_TYPES].XML" && issue.severity === "error",
+            ),
+        ).toBe(true);
+        expect(resolveContentType(parseContentTypes(dom), "word/styles.xml")).toEqual({
+            source: "override",
+            contentType: "application/xml",
+        });
+        expect(dom.toString()).toBe(before);
+        expect(
+            contentTypes.duplicateContentTypeDeclarations(
+                typesXml(defaultEntry("xml") + overrideEntry("/word/styles.xml")),
+                "[Content_Types].xml",
+            ),
+        ).toEqual([]);
+    });
+});
 
 describe("normalizePartName", () => {
     it("strips the leading package slash", () => {

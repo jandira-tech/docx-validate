@@ -369,6 +369,9 @@ const collectDeletedRunText = (root: Document | Element, localName: string): Ele
 };
 
 export class DOCXSchemaValidator extends BaseSchemaValidator {
+    protected override get duplicateContentTypeSeverity(): "error" | "warning" {
+        return this.profile === "word-valid" ? "error" : super.duplicateContentTypeSeverity;
+    }
     /**
      * Element (lower-cased local name) → required `r:id` relationship-type suffix.
      * Enables the `rels-id-mismatch` check in `validateAllRelationshipIds`: an

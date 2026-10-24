@@ -298,7 +298,7 @@ validation does not rewrite either name ([#408](https://github.com/jandira-tech/
 | `story`                   | `word-shading-color`, `word-page-margin-attributes`, `word-run-misplaced`, `word-run-properties-misplaced`, `word-underline-misplaced`, `word-paragraph-properties-misplaced`, `word-section-properties-misplaced`, `word-footnote-reference-missing`, `word-numbering-picture-bullet`, `word-sdt-id-empty`, `word-text-contains-paragraph`         |
 | `tables`                  | `word-grid-column-attributes`, `word-cell-margin-order`, `word-table-properties-required`, `word-table-properties-misplaced`, `word-row-without-cell`, `word-cell-ends-with-table`                                                                                                                                                                  |
 | `drawings`                | `word-textbox-content-namespace`, `word-drawing-extent-missing`, `word-drawing-extent-misplaced`, `word-picture-nvpicpr-missing`, `word-picture-sppr-missing`, `word-empty-drawing`, `word-anchor-missing-attribute`, `word-position-offset-and-align`, `word-drawing-scalar-whitespace`, `word-drawing-arc-radius`, `word-drawing-extent-negative` |
-| `content-types`           | `word-content-type-invalid`                                                                                                                                                                                                                                                                                                                         |
+| `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`                                                                                                                                                                                                                                                                                             |
 | `relationships`           | `word-duplicate-theme-relationship`, `word-duplicate-font-table-relationship`, `word-duplicate-web-settings-relationship`, `word-duplicate-settings-relationship`, `word-hyperlink-relationship`, `word-main-document-part`, `opc-relationships-structure`                                                                                          |
 | `tracked-changes`         | `word-textbox-deleted-text`, `word-move-from-deleted-text`                                                                                                                                                                                                                                                                                          |
 | `settings`                | `word-custom-property-filetime-empty`, `word-attached-toolbar-utf8`                                                                                                                                                                                                                                                                                 |
@@ -307,6 +307,16 @@ validation does not rewrite either name ([#408](https://github.com/jandira-tech/
 | `schema`                  | `word-unknown-element`, `word-link-without-namespace`                                                                                                                                                                                                                                                                                               |
 
 `word-content-type-invalid` reports `invalid-*` content types only when they apply to a stored part: an Override must name an existing part under OPC equivalence, and a Default must cover a stored part without its own Override. Word 16.115 opens an Override for a missing part and an unused Default cleanly; an invalid type on an existing part is refused or recovered.
+
+`ct-duplicate-declaration` reports each repeated `Default@Extension` (ASCII case-insensitive)
+or `Override@PartName` (OPC part-name equivalence), even when the declarations have identical
+content types. Each finding names both spellings at the stored content-types stream path.
+It is an error under strict and under Word-valid for DOCX/DOCM, and a warning under lenient
+and Word-valid PPTX/XLSX. Word 16.115 offered recovery for all five observed duplicate shapes;
+the unchanged minimal control opened clean ([#431](https://github.com/jandira-tech/docx-validate/issues/431)).
+Full runs, quick runs and named selections share the rule. An unparseable stream reports XML
+diagnostics without duplicate findings. Strict continues to reject partial selectors;
+full XLSX validation remains unsupported.
 
 The `schema` group contains structural checks, not an XSD walk. The `comments`
 group runs `comment-markers` (range pairing and references to existing comments)

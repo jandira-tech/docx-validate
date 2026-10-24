@@ -32,8 +32,10 @@
 import path from "node:path";
 
 import { getElementsByTagNameNSAll } from "./xml-helpers";
+import type { ValidationIssue } from "./types";
 
 export const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types";
+export const CT_DUPLICATE_DECLARATION = "ct-duplicate-declaration";
 
 /**
  * The content-types stream is a ZIP item, not an OPC part. Match its ASCII
@@ -321,6 +323,40 @@ export const parseContentTypes = (dom: Document): ContentTypeTable => {
     }
 
     return { overrides, defaults };
+};
+
+/**
+ * Diagnose each repeated declaration against its first spelling (#431).
+ * This reads raw declarations without changing the first-entry resolution
+ * table. Callers must supply a successfully parsed content-types stream.
+ */
+export const duplicateContentTypeDeclarations = (dom: Document, stream: string): ValidationIssue[] => {
+    const issues: ValidationIssue[] = [];
+    for (const [element, attribute, canonicalize] of [
+        ["Default", "Extension", asciiLowercase],
+        ["Override", "PartName", canonicalPartName],
+    ] as const) {
+        const first = new Map<string, string>();
+        for (const declaration of getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, element)) {
+            const spelling = declaration.getAttribute(attribute);
+            if (!spelling) {
+                continue;
+            }
+            const key = canonicalize(spelling);
+            const previous = first.get(key);
+            if (previous === undefined) {
+                first.set(key, spelling);
+            } else {
+                issues.push({
+                    code: CT_DUPLICATE_DECLARATION,
+                    severity: "error",
+                    path: stream,
+                    message: `Duplicate ${element} ${attribute} declaration: ${JSON.stringify(spelling)} repeats ${JSON.stringify(previous)} (key ${JSON.stringify(key)}).`,
+                });
+            }
+        }
+    }
+    return issues;
 };
 
 /**
