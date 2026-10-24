@@ -60,6 +60,13 @@ describe("validation contract: strict includes every Word-valid package check", 
             expect(result.valid).toBe(false);
         });
 
+        it(`${profile}: a schema-clean package behind a 4096-byte prefix is rejected as zip-bytes-before-archive`, async () => {
+            const control = await buildDocx();
+            const result = await validateBytes(Buffer.concat([Buffer.alloc(4096, 0x20), control]), profile);
+            expect([...errorCodes(result.issues)]).toEqual(["zip-bytes-before-archive"]);
+            expect(result.valid).toBe(false);
+        });
+
         it(`${profile}: an EOCD comment length past the end of the file is rejected as zip-eocd-comment-overrun`, async () => {
             const control = await buildDocx();
             const overrun = Buffer.from(control);

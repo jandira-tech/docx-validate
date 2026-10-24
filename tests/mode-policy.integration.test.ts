@@ -152,6 +152,7 @@ describe("quick mode runs the common-defect preset and discloses its omissions",
         expect(result.metadata?.schemaCompleted).toBe(false);
         expect(result.metadata?.executedChecks).toEqual([
             "zip-bytes-after-eocd",
+            "zip-bytes-before-archive",
             "zip-eocd-comment-overrun",
             // The package group's stored-name diagnosis runs in quick too (#351).
             "opc-equivalent-part-names",
@@ -227,7 +228,7 @@ describe("quick mode runs the common-defect preset and discloses its omissions",
             writeFileSync(file, "this is not a zip archive at all");
             // Only the ZIP-envelope checks can read an archive that does not open;
             // every other check has no part to read, so it did not execute.
-            const envelope = ["zip-bytes-after-eocd", "zip-eocd-comment-overrun"];
+            const envelope = ["zip-bytes-after-eocd", "zip-bytes-before-archive", "zip-eocd-comment-overrun"];
             const rows: [ValidateOptions, readonly string[]][] = [
                 [{ quick: true }, envelope],
                 [{ checks: ["xml-syntax"] }, []],

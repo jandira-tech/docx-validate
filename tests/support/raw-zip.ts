@@ -139,3 +139,23 @@ export const buildRawZip = (entries: readonly RawZipEntry[], options: { readonly
     records.push(eocd);
     return Buffer.concat(records);
 };
+
+/**
+ * Raise every stored offset by `prefix` bytes, as a self-extractor writes a
+ * ZIP behind its stub: the EOCD's central-directory offset and each central
+ * record's local-header offset become absolute (#464). Not for ZIP64
+ * archives — their EOCD record counts are saturated.
+ */
+export const absoluteOffsetsAfter = (zip: Uint8Array, prefix: number): Buffer => {
+    const buf = Buffer.from(zip);
+    const eocd = buf.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
+    const count = buf.readUInt16LE(eocd + 10);
+    let offset = buf.readUInt32LE(eocd + 16);
+    buf.writeUInt32LE(offset + prefix, eocd + 16);
+    for (let i = 0; i < count; i += 1) {
+        if (buf.readUInt32LE(offset) !== 0x02014b50) throw new Error("bad central header");
+        buf.writeUInt32LE(buf.readUInt32LE(offset + 42) + prefix, offset + 42);
+        offset += 46 + buf.readUInt16LE(offset + 28) + buf.readUInt16LE(offset + 30) + buf.readUInt16LE(offset + 32);
+    }
+    return buf;
+};

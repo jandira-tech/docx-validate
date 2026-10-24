@@ -13,7 +13,7 @@ import { wordCellMarginOrderCheck } from "./cell-margin-order";
 import { wordGridColumnAttributesCheck } from "./grid-column-attributes";
 import { mathRunDeletionCheck } from "./math-run-deletion";
 import { mathRunInsertionCheck } from "./math-run-insertion";
-import { zipBytesAfterEocdCheck, zipEocdCommentOverrunCheck } from "./package";
+import { zipBytesAfterEocdCheck, zipBytesBeforeArchiveCheck, zipEocdCommentOverrunCheck } from "./package";
 import { opcEquivalentPartNamesCheck } from "./opc-equivalent-part-names";
 import { opcRelationshipsStructureCheck } from "./opc-relationships-structure";
 import { opcPartNameWordRefusedCheck } from "./opc-part-name-word-refused";
@@ -121,6 +121,7 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
 export function createDefaultCheckRegistry(): CheckRegistry {
     return new CheckRegistry([
         zipBytesAfterEocdCheck,
+        zipBytesBeforeArchiveCheck,
         zipEocdCommentOverrunCheck,
         opcEquivalentPartNamesCheck,
         opcPartNameEscapedUnreservedCheck,

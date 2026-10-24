@@ -262,13 +262,30 @@ marks archive-only checks `unavailable`; use packed input to check ZIP integrity
 
 The complete named check catalogue is below. Each Word check except
 `word-markup-compatibility` uses its id as its finding code. Package checks are
-`zip-bytes-after-eocd`, `zip-eocd-comment-overrun`, `opc-equivalent-part-names`,
-`opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, and
-`opc-part-name-word-refused`; `xml-syntax` is the shared
+`zip-bytes-after-eocd`, `zip-bytes-before-archive`, `zip-eocd-comment-overrun`,
+`opc-equivalent-part-names`, `opc-part-name-escaped-unreserved`,
+`opc-part-name-escaped-slash`, and `opc-part-name-word-refused`; `xml-syntax` is the shared
 XML prerequisite. All `word-*` checks apply to DOCX/DOCM only.
 `ct-duplicate-declaration`, `ct-override-partname-invalid`,
 `ct-override-partname-word-refused` and `ct-markup-compatibility` apply to
 every package format; `word-content-type-invalid` applies to DOCX/DOCM only.
+
+`zip-bytes-before-archive` applies to DOCX/DOCM, PPTX, and XLSX package
+selections, including the `package` quick group, and reads the archive bytes
+before extraction. It reports the bytes in front of the archive JSZip loads —
+the rebase offset plus the lowest stored local-header offset, so a prepended
+ZIP, junk with relative offsets, and junk with the absolute offsets a
+self-extractor writes all measure the same prefix — as one blocking error
+under strict and Word-valid. Word 16.115 offers to recover every prefixed
+package probed ([#464](https://github.com/jandira-tech/docx-validate/issues/464);
+probe session 14 in
+[docs/plans/evidence/word-probes-2026-10-24.md](docs/plans/evidence/word-probes-2026-10-24.md)).
+Lenient runs no ZIP-envelope check. A concatenated `[zip][docx]` is reported
+once, by this check: the earlier archive lies wholly in front of the archive
+JSZip loads, so `zip-bytes-after-eocd` no longer counts the live archive as
+undeclared trailing bytes. Trailing data behind a prefixed archive is still
+`zip-bytes-after-eocd`'s finding, measured from the loaded archive's own
+record.
 
 `opc-equivalent-part-names` applies to DOCX/DOCM, PPTX, and XLSX package selections,
 including the `package` quick group. It reads stored ZIP item names before full-run
@@ -339,7 +356,7 @@ names and input bytes unchanged.
 
 | Group                     | Named checks                                                                                                                                                                                                                                                                                                                                        |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `package`                 | `zip-bytes-after-eocd`, `zip-eocd-comment-overrun`, `opc-equivalent-part-names`, `opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, `opc-part-name-word-refused`                                                                                                                                                                    |
+| `package`                 | `zip-bytes-after-eocd`, `zip-bytes-before-archive`, `zip-eocd-comment-overrun`, `opc-equivalent-part-names`, `opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, `opc-part-name-word-refused`                                                                                                                                        |
 | `math`, `tracked-changes` | `word-math-run-insertion`, `word-math-run-deletion`                                                                                                                                                                                                                                                                                                 |
 | `math`                    | `word-math-parse`, `word-math-spre-body`                                                                                                                                                                                                                                                                                                            |
 | `story`                   | `word-shading-color`, `word-page-margin-attributes`, `word-run-misplaced`, `word-run-properties-misplaced`, `word-underline-misplaced`, `word-paragraph-properties-misplaced`, `word-section-properties-misplaced`, `word-footnote-reference-missing`, `word-numbering-picture-bullet`, `word-sdt-id-empty`, `word-text-contains-paragraph`         |

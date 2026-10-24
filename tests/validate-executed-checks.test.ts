@@ -135,8 +135,9 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
                     ).toEqual(["package-extract-failed"]);
                     // The ZIP envelope is read from the bytes before extraction, so its checks ran.
                     const executed = result.metadata?.executedChecks ?? [];
-                    expect(executed.slice(0, 6), profile).toEqual([
+                    expect(executed.slice(0, 7), profile).toEqual([
                         "zip-bytes-after-eocd",
+                        "zip-bytes-before-archive",
                         "zip-eocd-comment-overrun",
                         "opc-equivalent-part-names",
                         "opc-part-name-escaped-unreserved",

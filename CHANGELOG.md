@@ -8,6 +8,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Registered the `zip-bytes-before-archive` package check for bytes in front of the archive JSZip loads — a prepended ZIP, junk, or a self-extractor stub, with relative or absolute offsets. Word 16.115 offers to recover every prefixed package probed, so it is a blocking error under strict and Word-valid DOCX/DOCM; lenient runs no envelope check ([#464](https://github.com/jandira-tech/docx-validate/issues/464); probe session 14 in [docs/plans/evidence/word-probes-2026-10-24.md](docs/plans/evidence/word-probes-2026-10-24.md)). A concatenated `[zip][docx]` is now reported once, by the new check; `zip-bytes-after-eocd` keeps genuine trailing data, measured from the loaded archive's own record.
+
 - Registered `opc-part-name-escaped-unreserved` package check for OPC [M1.8], including packed and directory inputs, full and partial runs, and diagnostics before extraction. Escaped unreserved characters in stored names are errors under strict and Word-valid DOCX/DOCM, and warnings under lenient and Word-valid PPTX/XLSX ([#408](https://github.com/jandira-tech/docx-validate/issues/408)).
 
 - Diagnose equivalent stored part names and multiple content-types stream spellings with the selectable `opc-equivalent-part-names` package check. Full runs report it before extraction. Strict, and word-valid for DOCX/DOCM, report an error, because Word 16.115 offers recovery for every duplicate spelling probed (case, unreserved escape, backslash, two streams), even with identical bytes. Lenient, and word-valid for PPTX/XLSX, warn ([#351](https://github.com/jandira-tech/docx-validate/issues/351)).

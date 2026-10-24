@@ -97,6 +97,8 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
         "An element or attribute is not allowed in this context per the schema, and Word rejects it (not all schema violations block Word — this one does). Correct the offending element/attribute shown in the message.",
     "zip-bytes-after-eocd":
         "Bytes follow the ZIP end-of-central-directory record beyond the comment length that record declares. Word offers to recover the document. Delete those bytes. A ZIP comment whose length is declared in the record is not this defect. A second copy of the archive appended after the record is this defect even when that copy ends with its own end-of-central-directory record.",
+    "zip-bytes-before-archive":
+        "Bytes sit in front of the ZIP archive's first entry: junk, a self-extractor stub, or a whole prepended archive, whether the archive's offsets are relative or absolute. Word offers to recover the document. Strip them so the archive begins at the file's first byte. A ZIP comment declared inside the record is not this defect.",
     "zip-eocd-comment-overrun":
         "The ZIP end-of-central-directory comment length claims more bytes than remain in the file. Word offers to recover the document. Set that length to the number of bytes actually present after the record.",
 });
