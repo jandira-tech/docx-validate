@@ -13,6 +13,7 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
+import { findEquivalentPart } from "../../../lib/content-types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import type { ValidationIssue } from "../../../lib/types";
 import path from "node:path";
@@ -23,7 +24,8 @@ const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/office
 const PACKAGE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/relationships";
 
 const resolveToolbarTarget = (relsFile: string, target: string): string | null => {
-    const [name] = target.split("#", 1);
+    // `\` reads as `/`, as it does everywhere in the package view (#350).
+    const [name] = target.replace(/\\/g, "/").split("#", 1);
     if (!name) {
         return null;
     }
@@ -101,11 +103,15 @@ export const wordAttachedToolbarUtf8Check: CheckDefinition = {
                     continue;
                 }
                 const resolved = resolveToolbarTarget(relsFile, target);
-                if (!resolved || seen.has(resolved)) {
+                // The entry the target names is both the key and the reported
+                // path, so two spellings of one part yield one finding under
+                // its real name (#350).
+                const part = resolved && (findEquivalentPart(ctx.partNames, resolved) ?? resolved);
+                if (!part || seen.has(part)) {
                     continue;
                 }
-                seen.add(resolved);
-                const bytes = ctx.bytes(resolved);
+                seen.add(part);
+                const bytes = ctx.bytes(part);
                 if (!bytes) {
                     continue;
                 }
@@ -115,10 +121,10 @@ export const wordAttachedToolbarUtf8Check: CheckDefinition = {
                 issues.push({
                     severity: "error",
                     message:
-                        `${resolved} is referenced by wne:toolbarData and contains the UTF-8 replacement sequence EF BF BD. ` +
+                        `${part} is referenced by wne:toolbarData and contains the UTF-8 replacement sequence EF BF BD. ` +
                         "Microsoft Word offers to recover the file. One sequence is enough. " +
                         "Replace each sequence with the original byte.",
-                    path: resolved,
+                    path: part,
                     code: "word-attached-toolbar-utf8",
                 });
             }

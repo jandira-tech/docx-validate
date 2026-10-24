@@ -29,6 +29,8 @@
  * hand in the parsed [Content_Types].xml DOM.
  */
 
+import path from "node:path";
+
 import { getElementsByTagNameNSAll } from "./xml-helpers";
 
 export const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types";
@@ -169,15 +171,36 @@ export const canonicalPartName = (partName: string): string => {
 
 /**
  * The entry in `names` that `partName` names under OPC part-name
- * equivalence ({@link canonicalPartName}), preferring an exact match;
- * `undefined` when no entry is equivalent (#344).
+ * equivalence ({@link canonicalPartName}), preferring an exact match and
+ * otherwise the first equivalent entry in code-unit order, so the choice
+ * does not depend on how `names` is ordered; `undefined` when no entry is
+ * equivalent (#344, #349).
  */
 export const findEquivalentPart = (names: readonly string[], partName: string): string | undefined => {
     if (names.includes(partName)) {
         return partName;
     }
     const key = canonicalPartName(partName);
-    return names.find((name) => canonicalPartName(name) === key);
+    let found: string | undefined;
+    for (const name of names) {
+        if (canonicalPartName(name) === key && (found === undefined || name < found)) {
+            found = name;
+        }
+    }
+    return found;
+};
+
+/**
+ * The entry in `names` that a package-relative part reference names: `\`
+ * reads as `/`, a leading `/` is dropped and dot segments are resolved, then
+ * the OPC-equivalent entry is taken ({@link findEquivalentPart}). Falls back
+ * to the normalized name when no entry is equivalent. Every resolver of the
+ * main document part goes through here, so they agree on which entry it
+ * is (#349).
+ */
+export const resolvePartName = (names: readonly string[], partName: string): string => {
+    const normalized = path.posix.normalize(partName.replace(/\\/g, "/").replace(/^\/+/, ""));
+    return findEquivalentPart(names, normalized) ?? normalized;
 };
 
 /**
