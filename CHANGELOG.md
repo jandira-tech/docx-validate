@@ -8,6 +8,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Registered `opc-part-name-escaped-unreserved` package check for OPC [M1.8], including packed and directory inputs, full and partial runs, and diagnostics before extraction. Escaped unreserved characters in stored names are errors under strict and Word-valid DOCX/DOCM, and warnings under lenient and Word-valid PPTX/XLSX ([#408](https://github.com/jandira-tech/docx-validate/issues/408)).
+
 - Diagnose equivalent stored part names and multiple content-types stream spellings with the selectable `opc-equivalent-part-names` package check. Full runs report it before extraction. Strict, and word-valid for DOCX/DOCM, report an error, because Word 16.115 offers recovery for every duplicate spelling probed (case, unreserved escape, backslash, two streams), even with identical bytes. Lenient, and word-valid for PPTX/XLSX, warn ([#351](https://github.com/jandira-tech/docx-validate/issues/351)).
 
 - Named Word rules in `WORD_RULE_CHECKS`, prerequisite scheduling with per-part XML gating, `--quick`, `--checks`, `--list-checks`, `--strict`, `--json`, and shared API execution metadata ([#267](https://github.com/jandira-tech/docx-validate/issues/267), [#271](https://github.com/jandira-tech/docx-validate/issues/271), [#272](https://github.com/jandira-tech/docx-validate/issues/272), [#306](https://github.com/jandira-tech/docx-validate/issues/306), [#307](https://github.com/jandira-tech/docx-validate/issues/307)).
