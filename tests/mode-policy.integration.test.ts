@@ -12,7 +12,8 @@
  * so callers can tell a real success from a partial one.
  */
 
-import { writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -24,8 +25,8 @@ import { withTempDir } from "../src/lib/run-cli";
 import type { WordOutcome } from "../src/lib/word-verifier";
 import * as xsdEngine from "../src/lib/xsd-validator";
 import type { XsdValidator } from "../src/lib/xsd-validator";
-import { validate, type WordVerifier } from "../src/scripts/office/validate";
-import { buildDocx } from "./support/minimal-docx";
+import { validate, type ValidateOptions, type WordVerifier } from "../src/scripts/office/validate";
+import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const BROKEN = path.join(HERE, "fixtures", "broken");
@@ -205,6 +206,45 @@ describe("quick mode runs the common-defect preset and discloses its omissions",
         ]);
     });
 
+    it("rejects an archive it cannot open instead of passing the selected checks (#332)", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "notzip.docx");
+            writeFileSync(file, "this is not a zip archive at all");
+            // Only the ZIP-envelope checks can read an archive that does not open;
+            // every other check has no part to read, so it did not execute.
+            const envelope = ["zip-bytes-after-eocd", "zip-eocd-comment-overrun"];
+            const rows: [ValidateOptions, readonly string[]][] = [
+                [{ quick: true }, envelope],
+                [{ checks: ["xml-syntax"] }, []],
+                [{}, envelope],
+            ];
+            for (const [opts, executed] of rows) {
+                const result = await validate(file, opts);
+                const label = JSON.stringify(opts);
+                expect(result.valid, label).toBe(false);
+                expect(errorCodes(result.issues), label).toContain("package-open-failed");
+                expect(result.metadata?.executedChecks, label).toEqual(executed);
+            }
+        });
+    });
+
+    it("does not list the archive-only checks as executed for an unpacked directory", async () => {
+        const result = await withTempDir(async (dir) => {
+            const unpacked = path.join(dir, "unpacked");
+            for (const [name, xml] of Object.entries(MINIMAL_PARTS)) {
+                mkdirSync(path.dirname(path.join(unpacked, name)), { recursive: true });
+                writeFileSync(path.join(unpacked, name), xml);
+            }
+            return validate(unpacked, { quick: true, original: await quickDocx(dir) });
+        });
+
+        expect(result.valid).toBe(true);
+        // An unpacked directory has no ZIP envelope, so those checks never ran.
+        expect(result.metadata?.executedChecks).not.toContain("zip-bytes-after-eocd");
+        expect(result.metadata?.executedChecks).not.toContain("zip-eocd-comment-overrun");
+        expect(result.metadata?.executedChecks).toContain("xml-syntax");
+    });
+
     it("still rejects a defect the preset covers", async () => {
         const result = await validate(path.join(BROKEN, "package.word-row-without-cell.docx"), { quick: true });
 
@@ -281,6 +321,33 @@ describe("--verify-word asks Microsoft Word about the exact bytes", { timeout: 1
 
         expect(result.valid).toBe(false);
         expect(result.metadata?.wordVerification?.outcome).toBe("repair-warning");
+    });
+
+    it("reports a verifier that throws as unavailable instead of rejecting (#333)", async () => {
+        const bytes = await buildDocx();
+        const run = withTempDir(async (dir) => {
+            const file = path.join(dir, "control.docx");
+            writeFileSync(file, bytes);
+            return validate(file, {
+                verifyWord: true,
+                wordVerifier: async () => {
+                    throw new Error("transport launch failed");
+                },
+            });
+        });
+
+        await expect(run).resolves.toMatchObject({
+            valid: false,
+            metadata: {
+                wordVerification: {
+                    requested: true,
+                    outcome: "unavailable",
+                    satisfied: false,
+                    fileSha256: createHash("sha256").update(bytes).digest("hex"),
+                    details: expect.stringContaining("transport launch failed"),
+                },
+            },
+        });
     });
 
     it("hands the verifier the exact file bytes", async () => {
