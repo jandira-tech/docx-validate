@@ -873,7 +873,12 @@ Full validation accepts unpacked directories, including POSIX files whose stored
 names contain literal backslashes (for example `word\document.xml`). Such inputs
 are validated in a temporary copy under package part names (`word/document.xml`),
 using the same duplicate selection and extraction guards as packed inputs.
-Directories with ordinary forward-slash names are validated directly. Validation
+Directories whose tree holds a symbolic link — a stored entry or a directory
+segment — are staged the same way: the stored bytes are read through the link
+into the package view, while the write-back never follows it
+([#425](https://github.com/jandira-tech/docx-validate/issues/425)).
+Directories with ordinary forward-slash names and no links are validated
+directly. Validation
 leaves source files unchanged unless `autoRepair: true` / `--auto-repair` is used.
 For a staged directory, repairs write changed bytes back to each original stored
 file name and delete originals of parts removed by a repair; untouched files and
@@ -882,10 +887,18 @@ files are added to the input directory. Quick and named-check runs continue to
 read the directory's package view directly ([#374](https://github.com/jandira-tech/docx-validate/issues/374)).
 
 A stored file that cannot be read fails the run with `package-extract-failed`,
-naming the stored file — the package view cannot be staged. (Under ordinary
+naming the stored file — the package view cannot be staged. This includes a
+stored entry that can never yield part bytes at all: a broken symbolic link,
+or a non-regular file such as a FIFO, which is reported by its stored name
+instead of silently vanishing from the package
+([#426](https://github.com/jandira-tech/docx-validate/issues/426)); a FIFO is
+never opened, so it cannot hang the run. Full, quick and named-check runs
+report the same failure. (Under ordinary
 forward-slash names the direct path reads parts lazily, so the same file yields
 `check-crashed` warnings instead.) When a write-back cannot reach its stored
-file — a read-only file, or one removed mid-run — the run reports a
+file — a read-only file, one removed mid-run, or a stored file that is a
+symbolic link or resolves outside the input directory, whose target the
+write-back never touches — the run reports a
 `repair-write-back-failed` error naming the part and keeps writing back the
 remaining repairs; the stored file is left untouched. `repairs` counts repairs
 applied to the package view, so a repair whose write-back failed still counts

@@ -39,7 +39,7 @@
  * `validate()` and merge the per-check results with `mergeResults`.
  */
 
-import { existsSync, promises as fs, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
+import { existsSync, lstatSync, promises as fs, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -1942,9 +1942,31 @@ export function packageEntries(dir: string, extensions?: ReadonlyArray<string>):
     return indexByPartName(walkFiles(dir, extensions).map((file) => [path.relative(dir, file).split(path.sep).join("/"), file] as const));
 }
 
-/** Walk `dir` recursively, returning absolute paths. Optional `extensions` (with leading dot) filter. */
-export function walkFiles(dir: string, extensions?: ReadonlyArray<string>): string[] {
-    const results: string[] = [];
+/** A stored entry `walkDirectory` cannot read, with the reason naming its kind (#426). */
+export interface UnreadableEntry {
+    /** Absolute path of the stored entry. */
+    file: string;
+    /** Why it cannot be read: `"a broken symbolic link"`, `"not a regular file"`. */
+    reason: string;
+}
+
+/**
+ * Walk `dir` recursively the way {@link walkFiles} does, without dropping
+ * what that walk silently skips (#426): stored entries that cannot be read
+ * — a broken symbolic link, or anything that resolves to neither a regular
+ * file nor a directory (a FIFO, a socket, a device) — are reported in
+ * `unreadable` instead of vanishing from the package, and `holdsSymlinks`
+ * marks a tree where any stored entry or directory segment is itself a
+ * symbolic link, whose auto-repair write-back must never follow the link
+ * (#425). `files` is exactly what `walkFiles` returns.
+ */
+export function walkDirectory(
+    dir: string,
+    extensions?: ReadonlyArray<string>,
+): { files: string[]; unreadable: UnreadableEntry[]; holdsSymlinks: boolean } {
+    const files: string[] = [];
+    const unreadable: UnreadableEntry[] = [];
+    let holdsSymlinks = false;
     const stack: string[] = [dir];
     while (stack.length > 0) {
         const current = stack.pop();
@@ -1957,22 +1979,46 @@ export function walkFiles(dir: string, extensions?: ReadonlyArray<string>): stri
         }
         for (const name of entries) {
             const full = path.join(current, name);
+            let listed;
+            try {
+                listed = lstatSync(full);
+            } catch {
+                continue;
+            }
+            if (listed.isSymbolicLink()) holdsSymlinks = true;
             let st;
             try {
                 st = statSync(full);
-            } catch {
+            } catch (err) {
+                unreadable.push({
+                    file: full,
+                    reason: listed.isSymbolicLink()
+                        ? "a broken symbolic link"
+                        : `unreadable (${(err as NodeJS.ErrnoException).code ?? "error"})`,
+                });
                 continue;
             }
             if (st.isDirectory()) {
                 stack.push(full);
             } else if (st.isFile()) {
                 if (!extensions || extensions.some((e) => full.endsWith(e))) {
-                    results.push(full);
+                    files.push(full);
                 }
+            } else {
+                unreadable.push({ file: full, reason: "not a regular file" });
             }
         }
     }
-    return results.sort();
+    return {
+        files: files.sort(),
+        unreadable: unreadable.sort((a, b) => a.file.localeCompare(b.file)),
+        holdsSymlinks,
+    };
+}
+
+/** Walk `dir` recursively, returning absolute paths. Optional `extensions` (with leading dot) filter. */
+export function walkFiles(dir: string, extensions?: ReadonlyArray<string>): string[] {
+    return walkDirectory(dir, extensions).files;
 }
 
 function localName(qname: string): string {

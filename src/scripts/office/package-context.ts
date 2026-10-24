@@ -9,16 +9,24 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import { ValidationContext, PackageViewError } from "../../lib/validation-context";
-import { walkFiles } from "./validators/base";
+import { walkFiles, type UnreadableEntry } from "./validators/base";
 
 /**
  * A context over an unpacked package directory. Parts are read lazily and at
  * most once; archive-only checks report unavailable, since a directory has no
  * ZIP envelope.
+ *
+ * `unreadableStoredEntries` (#426) names stored entries that can never yield
+ * part bytes — a broken symbolic link, a FIFO. They stay in the context as
+ * names without content, so the stored-names checks still see every name;
+ * the run that could not read them fails before any check reads a part.
  */
-export function contextFromDirectory(dir: string): ValidationContext {
+export function contextFromDirectory(dir: string, unreadableStoredEntries: readonly UnreadableEntry[] = []): ValidationContext {
     const entries = walkFiles(dir).map((file) => [path.relative(dir, file).split(path.sep).join("/"), () => readFileSync(file)] as const);
-    return ValidationContext.fromEntries(entries, { source: "directory" });
+    const unreadable = unreadableStoredEntries.map(
+        (entry) => [path.relative(dir, entry.file).split(path.sep).join("/"), "" as const] as const,
+    );
+    return ValidationContext.fromEntries([...entries, ...unreadable], { source: "directory" });
 }
 
 /**

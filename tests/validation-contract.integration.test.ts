@@ -13,6 +13,7 @@
  * fixture error happened to make the result invalid.
  */
 
+import { execFile } from "node:child_process";
 import { existsSync, mkdirSync, promises as fs, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -787,6 +788,19 @@ describe.skipIf(process.platform === "win32")("directory package staging (#374)"
         expect(findings(actual)).toEqual(findings(control));
         expect(actual.metadata?.schemaCompleted).toBe(control.metadata?.schemaCompleted);
     };
+    const mkfifo = (file: string) =>
+        new Promise<void>((resolve, reject) => execFile("mkfifo", [file], (err) => (err ? reject(err) : resolve())));
+    // A directory input whose main part's stored file cannot be read at all
+    // — a broken symbolic link, or a FIFO (#426).
+    const unreadableInput = async (dir: string, kind: "broken-symlink" | "fifo"): Promise<string> => {
+        const parts: Record<string, string | Uint8Array> = { ...MINIMAL_PARTS };
+        delete parts["word/document.xml"];
+        const input = await writeDirectory(path.join(dir, `input-${kind}.docx`), parts, true);
+        const stored = path.join(input, storedName("word/document.xml"));
+        if (kind === "broken-symlink") await fs.symlink(path.join(dir, "missing-target.xml"), stored);
+        else await mkfifo(stored);
+        return input;
+    };
 
     it.each([false, true])("schema-walks a backslash main part (invalid=%s), preserving every input byte", async (invalid) => {
         await withTempDir(async (dir) => {
@@ -906,6 +920,194 @@ describe.skipIf(process.platform === "win32")("directory package staging (#374)"
             );
         });
     });
+
+    it("never writes an auto-repair through a stored symlink, reports the refused write-back, and still applies the other repairs (#425)", async () => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...MINIMAL_PARTS,
+                "word/document.xml": MINIMAL_PARTS["word/document.xml"].replace(">Hello<", "> Hello <"),
+                "word/_rels/unused.xml.rels": '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>',
+            };
+            const input = path.join(dir, "input.docx");
+            await fs.mkdir(input, { recursive: true });
+            for (const [part, bytes] of Object.entries(parts)) {
+                if (part === "word/document.xml") continue;
+                await fs.writeFile(path.join(input, storedName(part)), bytes);
+            }
+            // The main part's stored file is a symlink to a regular file
+            // OUTSIDE the input directory: reading follows it, so the package
+            // view holds the part, but the repair must never reach the target.
+            const outside = path.join(dir, "outside");
+            await fs.mkdir(outside);
+            const target = path.join(outside, "document-target.xml");
+            await fs.writeFile(target, parts["word/document.xml"]);
+            const targetBefore = await fs.readFile(target);
+            await fs.symlink(target, path.join(input, storedName("word/document.xml")));
+
+            const control = await validate(await writeDirectory(path.join(dir, "control.docx"), parts, true), {
+                strict: true,
+                autoRepair: true,
+            });
+            const actual = await validateResolves(input, { strict: true, autoRepair: true });
+            // The link itself still stands and its outside target is byte-identical.
+            expect((await fs.lstat(path.join(input, storedName("word/document.xml")))).isSymbolicLink()).toBe(true);
+            expect(await fs.readFile(target)).toEqual(targetBefore);
+            expect(targetBefore.toString()).not.toContain('xml:space="preserve"');
+            // The repair applied to the package view either way; only its
+            // write-back into the input is refused.
+            expect(actual.repairs).toBe(control.repairs);
+            expect(actual.valid).toBe(false);
+            expect(actual.issues).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        severity: "error",
+                        code: "repair-write-back-failed",
+                        path: "word/document.xml",
+                        message: expect.stringContaining(storedName("word/document.xml")),
+                    }),
+                ]),
+            );
+            // The other repair — deleting the empty .rels — still lands on
+            // its own regular stored file.
+            expect(existsSync(path.join(input, storedName("word/_rels/unused.xml.rels")))).toBe(false);
+        });
+    });
+
+    it("never writes an auto-repair through a symlinked directory segment, with the same findings as a plain directory (#425)", async () => {
+        await withTempDir(async (dir) => {
+            const parts: Parts = {
+                ...MINIMAL_PARTS,
+                "word/document.xml": MINIMAL_PARTS["word/document.xml"].replace(">Hello<", "> Hello <"),
+            };
+            // The whole word/ tree lives outside the input; a symlink inside
+            // the input carries the segment, so the stored files themselves
+            // are regular files reached through a link.
+            const wordDir = path.join(dir, "outside-word");
+            await fs.mkdir(path.join(wordDir, "_rels"), { recursive: true });
+            await fs.writeFile(path.join(wordDir, "document.xml"), parts["word/document.xml"]);
+            await fs.writeFile(path.join(wordDir, "_rels", "document.xml.rels"), parts["word/_rels/document.xml.rels"]);
+            await fs.writeFile(path.join(wordDir, "styles.xml"), parts["word/styles.xml"]);
+            const outsideBefore = await snapshot(wordDir);
+
+            const input = path.join(dir, "input.docx");
+            await fs.mkdir(path.join(input, "_rels"), { recursive: true });
+            await fs.writeFile(path.join(input, "[Content_Types].xml"), parts["[Content_Types].xml"]);
+            await fs.writeFile(path.join(input, "_rels", ".rels"), parts["_rels/.rels"]);
+            await fs.symlink(wordDir, path.join(input, "word"));
+
+            const actual = await validateResolves(input, { strict: true, autoRepair: true });
+            // Nothing outside the input directory changed...
+            expect(await snapshot(wordDir)).toEqual(outsideBefore);
+            // ...while the repair still counts (it landed on the staged
+            // package view) and the refused write-back fails the run.
+            expect(actual.repairs).toBe(1);
+            expect(actual.valid).toBe(false);
+            expect(actual.issues).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({ severity: "error", code: "repair-write-back-failed", path: "word/document.xml" }),
+                ]),
+            );
+            // Without --auto-repair the layout reports what the plain (and
+            // plain-staged) control does: only the write path may differ.
+            const control = await validate(await writeDirectory(path.join(dir, "control.docx"), parts, false), { strict: true });
+            assertSameVerdict(await validateResolves(input, { strict: true }), control);
+        });
+    });
+
+    it.each(["strict", "word-valid", "lenient"] as const)(
+        "fails with package-extract-failed naming a stored part that is a broken symlink (%s, #426)",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                const input = await unreadableInput(dir, "broken-symlink");
+                const before = await snapshot(input);
+                const result = await validateResolves(input, { profile });
+                // The part silently vanished before (#426): the run judged the
+                // remaining parts and never said the stored file cannot be read.
+                expect(result.valid).toBe(false);
+                expect(result.issues).toEqual([
+                    expect.objectContaining({
+                        severity: "error",
+                        code: "package-extract-failed",
+                        message: expect.stringContaining(storedName("word/document.xml")),
+                    }),
+                ]);
+                expect(result.xsdWalk.started).toBe(false);
+                expect(result.metadata?.schemaCompleted).toBe(false);
+                expect(result.repairs).toBe(0);
+                expect(await snapshot(input)).toEqual(before);
+            });
+        },
+    );
+
+    it.each(["strict", "lenient"] as const)(
+        "fails with package-extract-failed naming a stored FIFO part, without opening it (%s, #426)",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                const input = await unreadableInput(dir, "fifo");
+                // Reading a FIFO would block: completing this test at all is
+                // the no-hang assertion.
+                const result = await validateResolves(input, { profile });
+                expect(result.valid).toBe(false);
+                expect(result.issues).toEqual([
+                    expect.objectContaining({
+                        severity: "error",
+                        code: "package-extract-failed",
+                        message: expect.stringContaining(storedName("word/document.xml")),
+                    }),
+                    // The reason names the kind of entry.
+                ]);
+                expect(result.issues[0]?.message).toContain("not a regular file");
+                expect(result.repairs).toBe(0);
+                expect(result.xsdWalk.started).toBe(false);
+            });
+        },
+    );
+
+    it("fails the direct path too when a forward-slash stored part is a broken symlink (#426)", async () => {
+        await withTempDir(async (dir) => {
+            const parts: Record<string, string | Uint8Array> = { ...MINIMAL_PARTS };
+            delete parts["word/document.xml"];
+            const input = await writeDirectory(path.join(dir, "input.docx"), parts, false);
+            await fs.symlink(path.join(dir, "missing-target.xml"), path.join(input, "word", "document.xml"));
+            const result = await validateResolves(input, { strict: true });
+            expect(result.valid).toBe(false);
+            expect(result.issues).toEqual([
+                expect.objectContaining({
+                    severity: "error",
+                    code: "package-extract-failed",
+                    message: expect.stringContaining("word/document.xml"),
+                }),
+            ]);
+        });
+    });
+
+    it.each(["broken-symlink", "fifo"] as const)(
+        "quick and named partial runs report the unreadable stored file, never more than the full run (%s, #426, #381)",
+        async (kind) => {
+            await withTempDir(async (dir) => {
+                const input = await unreadableInput(dir, kind);
+                const full = await validateResolves(input, { profile: "word-valid" });
+                expect(full.valid).toBe(false);
+                const errors = (result: Awaited<ReturnType<typeof validate>>) =>
+                    new Set(result.issues.filter((i) => i.severity === "error").map((i) => `${i.code}@${i.path ?? ""}`));
+                for (const selection of [{ quick: true }, { checks: ["xml-syntax"] }]) {
+                    const partial = await validateResolves(input, { profile: "word-valid", ...selection });
+                    expect(partial.valid).toBe(false);
+                    expect(partial.issues).toEqual(
+                        expect.arrayContaining([
+                            expect.objectContaining({
+                                severity: "error",
+                                code: "package-extract-failed",
+                                message: expect.stringContaining(storedName("word/document.xml")),
+                            }),
+                        ]),
+                    );
+                    // #381: a partial run never reports an error the full run does not.
+                    for (const error of errors(partial)) expect(errors(full)).toContain(error);
+                }
+            });
+        },
+    );
 
     it("does not stage a normal directory, and stages only the backslash control", async () => {
         await withTempDir(async (dir) => {
