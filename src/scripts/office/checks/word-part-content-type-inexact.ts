@@ -149,12 +149,13 @@ const SPEC_SEGMENTS: ReadonlySet<string> = new Set([...OBSERVED_SEGMENTS, ...SPE
 /**
  * The segments a reached glossary's relationships were probed on (#579):
  * its styles part — eagerly parsed (#562, session 19), so a relationship
- * is enough (session 21) — and a header it references (session 22), gated
- * by `wordReadParts` as a lazy segment is. The other glossary-eager
+ * is enough (session 21) — a header it references (session 22), and footer,
+ * footnotes, endnotes and comments it references (session 23, #596), gated
+ * by `wordReadParts` as lazy segments are. The other glossary-eager
  * segments were not probed for an inexact type, so they stay silent under
  * word-valid.
  */
-const GLOSSARY_OBSERVED_SEGMENTS: ReadonlySet<string> = new Set(["styles", "header"]);
+const GLOSSARY_OBSERVED_SEGMENTS: ReadonlySet<string> = new Set(["styles", "header", "footer", "footnotes", "endnotes", "comments"]);
 
 /** The glossary segments a strict run judges by the spec: every Part 1 WordprocessingML part type plus theme (#579). */
 const GLOSSARY_SPEC_SEGMENTS: ReadonlySet<string> = new Set([...SPEC_SEGMENTS].filter((segment) => segment !== OFFICE_DOCUMENT_SEGMENT));
@@ -226,11 +227,11 @@ export const wordPartContentTypeInexactFindings = async (
 
     const targets = await wordTypedRelationshipTargets(ctx, scope === "spec" ? SPEC_SEGMENTS : OBSERVED_SEGMENTS);
     // A reached glossary is a second story root (#549), so its own
-    // relationships name parts this check judges too: its styles and a
-    // header it references under the observed scope (#579, sessions 21 and
-    // 22), every Part 1 WordprocessingML type and theme under the spec
-    // scope. A part the main document already named keeps the main
-    // document's entry — one finding per part.
+    // relationships name parts this check judges too: its styles and the
+    // stories it references under the observed scope (#579, #596, sessions
+    // 21–23), every Part 1 WordprocessingML type and theme under the spec
+    // scope. A part the main document also names keeps both entries, and
+    // is still reported once (#593).
     const glossaryTargets = await glossaryTypedRelationshipTargets(
         ctx,
         scope === "spec" ? GLOSSARY_SPEC_SEGMENTS : GLOSSARY_OBSERVED_SEGMENTS,
@@ -247,7 +248,8 @@ export const wordPartContentTypeInexactFindings = async (
     // computes gate the lazy candidates the reachability walk named, the
     // same usage decision the XML diagnostics make, and the glossary's
     // targets too: its styles part is eagerly parsed (always read) while
-    // its header is lazy like the main document's (#579). The set is
+    // its referenced stories are lazy like the main document's (#579,
+    // #596). The set is
     // computed under the spec scope as well: strict still judges every
     // relationship, but its verdict follows the observation, and session 21
     // (s21b) observed a related-but-unused lazy part open clean — so under
@@ -315,7 +317,7 @@ export const wordPartContentTypeInexactFindings = async (
                 !readKeys.has(`${via ?? "main"}\n${canonical}\n${segment}`)
             );
         // The observed pairs are the main-document probes plus the
-        // glossary's probed styles and referenced header (#579); every
+        // glossary's probed styles and referenced stories (#579, #596); every
         // other glossary segment is spec-only.
         const isProbed = ({ segment, via }: (typeof matching)[number]): boolean =>
             via === "glossary" ? GLOSSARY_OBSERVED_SEGMENTS.has(segment) : OBSERVED_SEGMENTS.has(segment);

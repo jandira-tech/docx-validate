@@ -553,7 +553,14 @@ adds related numbering (`word/numbering.xml`) and theme
 (`word/theme/theme1.xml`) typed only by the `application/xml` Default:
 Word 16.115.26100424 raised a repair warning for both, and opened their exact
 Override controls clean (session 20, chunks s20c and s20d, in
-`docs/plans/evidence/word-probes-2026-10-24.md`; [#571](https://github.com/jandira-tech/docx-validate/issues/571)).
+`docs/plans/evidence/word-probes-2026-10-24.md`; [#571](https://github.com/jandira-tech/docx-validate/issues/571)). Session 23
+also observed recovery for a theme only a reached glossary relates, typed
+by the `application/xml` Default; its exact-Override control opened clean
+([#595](https://github.com/jandira-tech/docx-validate/issues/595)). The
+finding names the glossary's theme relationship. Only theme joins the
+glossary's generic-type scope, with the same severities and strict's
+same-path `ct-undeclared-part` suppression; other generic spellings are
+inference from resolution.
 Other generic spellings for numbering and theme are inference from the same
 resolution. Strict keeps only `ct-undeclared-part` for the observed
 Default-typed theme, while numbering keeps `word-part-content-type-generic`;
@@ -609,7 +616,14 @@ an inexact Override on its styles part — eagerly parsed, so related is
 enough — and on a header its `w:headerReference` uses gets the repair
 warning, and the finding names the glossary's relationship, not the main
 document's
-([#579](https://github.com/jandira-tech/docx-validate/issues/579)). The
+([#579](https://github.com/jandira-tech/docx-validate/issues/579)). Session 23
+observed the same recovery offer for a `; charset=utf-8` Override on a footer,
+footnotes, endnotes or comments the glossary references, with every exact
+type control opening clean
+([#596](https://github.com/jandira-tech/docx-validate/issues/596)). These
+stories are gated by `wordReadParts` just like the glossary's header:
+unreferenced parts stay silent under word-valid, while strict uses the
+spec text without a Word recovery claim (#589). The
 glossary's settings, fontTable, webSettings, numbering and theme were not
 probed for an inexact type and stay silent under word-valid; strict judges
 every Part 1 WordprocessingML relationship — and theme — on the glossary
