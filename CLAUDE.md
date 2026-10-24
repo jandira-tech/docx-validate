@@ -114,7 +114,8 @@ Content-type checks share `src/lib/content-types.ts`: exact `Override` precedes 
 
 ## Known gaps
 
-- **Relationship checks ignore OPC part-name equivalence (#346).** `rels-broken`, `rels-unreferenced` and `rels-target-missing` resolve a `Target` through the filesystem (`existsSync`, exact path strings) instead of matching package entries by `canonicalPartName`. An equivalent spelling (`WORD/document.xml`, `word/%64ocument.xml`) is reported as unreferenced or broken, and the code depends on the host filesystem's case sensitivity. `word-document-root` and the schema walk's main-part test already resolve by canonical name (#344).
+- **Relationship checks ignore OPC part-name equivalence (#346).** `rels-broken`, `rels-unreferenced` and `rels-target-missing` resolve a `Target` through the filesystem (`existsSync`, exact path strings) instead of matching package entries by `canonicalPartName`. An equivalent spelling (`WORD/document.xml`, `word/%64ocument.xml`) is reported as unreferenced or broken, and the code depends on the host filesystem's case sensitivity. `word-document-root` and the schema walk's main-part test already resolve through `resolvePartName` in `src/lib/content-types.ts` (#344, #349).
+- **Equivalent part names are not reported (#351).** ECMA-376 Part 2 [M1.12] forbids a package from holding two equivalent part names (`WORD/document.xml` and `word/document.xml`). No check reports it; `resolvePartName` picks one entry deterministically (the exact match, otherwise the first in code-unit order). A Word-valid check needs a real-Word observation first.
 
 - **soffice end-to-end tests are gated on `process.env.SOFFICE_AVAILABLE`.** Both `tests/accept-changes.test.ts` and `tests/soffice.test.ts` skip real-LibreOffice invocations unless that env var is set; CI images typically don't include LibreOffice. Run with `SOFFICE_AVAILABLE=1 pnpm test` locally to exercise them.
 

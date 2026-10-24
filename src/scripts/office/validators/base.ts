@@ -43,7 +43,7 @@ import { existsSync, promises as fs, readdirSync, readFileSync, realpathSync, st
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { canonicalPartName, parseContentTypes, partExtension, resolveContentType } from "../../../lib/content-types";
+import { parseContentTypes, partExtension, resolveContentType, resolvePartName } from "../../../lib/content-types";
 import { applyMarkupCompatibility, STRICT_UNDERSTOOD_NAMESPACES, UNDERSTOOD_NAMESPACES } from "../../../lib/markup-compatibility";
 import { withTempDir } from "../../../lib/run-cli";
 import type { Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
@@ -1458,9 +1458,13 @@ export class BaseSchemaValidator {
     private isMainDocumentPart(xmlFile: string): boolean {
         try {
             const relationships = parseXml(readFileSync(path.join(this.unpackedDir, "_rels", ".rels"), "utf-8"));
-            // Compare canonical names, which keep reserved escapes distinct:
-            // `word%2Fdocument.xml` does not name word/document.xml (#344).
-            const part = canonicalPartName(this.relPath(xmlFile).split(path.sep).join("/"));
+            // Resolve the target to an entry as the word-document-root check
+            // does, so both agree on which entry is the main part: reserved
+            // escapes stay distinct (`word%2Fdocument.xml` is another part,
+            // #344), `\` reads as `/`, and of two equivalent entries only the
+            // one the target names is main (#349).
+            const part = this.relPath(xmlFile).split(path.sep).join("/");
+            const names = walkFiles(this.unpackedDir).map((file) => this.relPath(file).split(path.sep).join("/"));
             return getElementsByTagNameNSAll(relationships, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship").some((relationship) => {
                 const type = relationship.getAttribute("Type");
                 if (
@@ -1470,7 +1474,7 @@ export class BaseSchemaValidator {
                 ) {
                     return false;
                 }
-                return canonicalPartName(path.posix.normalize((relationship.getAttribute("Target") || "").replace(/^\/+/, ""))) === part;
+                return resolvePartName(names, relationship.getAttribute("Target") ?? "") === part;
             });
         } catch {
             // Missing or malformed package relationships are diagnosed by their own checks.

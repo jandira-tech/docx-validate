@@ -51,6 +51,29 @@ describe("word-attached-toolbar-utf8", () => {
         const issues = await wordAttachedToolbarUtf8Check.run(ctx);
         expect(issues.map((issue) => issue.path).sort()).toEqual(["word/attachedToolbars.bin", "word/attachedToolbars2.bin"]);
     });
+    it.each([
+        ["a backslash", "a\\tb.bin"],
+        ["a case variant", "A/TB.bin"],
+    ])("reports the entry %s target names, once, under its real name (#350)", async (_label, spelling) => {
+        const ctx = ValidationContext.fromEntries({
+            "word/fontTable.xml": document(`<wne:toolbarData r:id="rId1"/><wne:toolbarData r:id="rId2"/>`),
+            "word/_rels/fontTable.xml.rels": rels(
+                relation("rId1", "attachedToolbars", "", spelling) + relation("rId2", "attachedToolbars", "", "a/tb.bin"),
+            ),
+            "word/a/tb.bin": new Uint8Array([0xef, 0xbf, 0xbd]),
+        });
+        const issues = await wordAttachedToolbarUtf8Check.run(ctx);
+        expect(issues.map((issue) => issue.path)).toEqual(["word/a/tb.bin"]);
+    });
+    it("finds the entry a case-variant target alone names (#350)", async () => {
+        const ctx = ValidationContext.fromEntries({
+            "word/fontTable.xml": document(`<wne:toolbarData r:id="rId1"/>`),
+            "word/_rels/fontTable.xml.rels": rels(relation("rId1", "attachedToolbars", "", "A/TB.bin")),
+            "word/a/tb.bin": new Uint8Array([0xef, 0xbf, 0xbd]),
+        });
+        const issues = await wordAttachedToolbarUtf8Check.run(ctx);
+        expect(issues.map((issue) => issue.path)).toEqual(["word/a/tb.bin"]);
+    });
     it("skips absent, irrelevant and unparseable parts", async () => {
         expect(await wordAttachedToolbarUtf8Check.run(ValidationContext.fromEntries({}))).toEqual([]);
         expect(
