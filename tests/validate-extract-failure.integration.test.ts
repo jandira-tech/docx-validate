@@ -190,7 +190,7 @@ describe("the paths that are already consistent stay unchanged (#454)", { timeou
                 // Only the ZIP-envelope checks read the bytes, and lenient
                 // runs neither them nor a Word rule.
                 expect(full.metadata?.executedChecks, tag).toEqual(
-                    profile === "word-valid" ? ["zip-bytes-after-eocd", "zip-eocd-comment-overrun"] : [],
+                    profile === "word-valid" ? ["zip-bytes-after-eocd", "zip-bytes-before-archive", "zip-eocd-comment-overrun"] : [],
                 );
                 const partial = await validate(file, { profile, quick: true });
                 expect(
