@@ -622,6 +622,25 @@ export const duplicateContentTypeDeclarations = (dom: Document, stream: string):
 };
 
 /**
+ * The media type of a content-type value: everything before the first `;`,
+ * trimmed and ASCII-lowercased. RFC 7303 §9.1 registers parameters such as
+ * `charset` as optional additions to a media type, so two values that differ
+ * only in parameters share one media type (#540).
+ */
+export const contentTypeMediaType = (contentType: string): string => {
+    const semicolon = contentType.indexOf(";");
+    return asciiLowercase((semicolon === -1 ? contentType : contentType.slice(0, semicolon)).trim());
+};
+
+/**
+ * Whether a content-type value carries a MIME parameter section — a `;`
+ * after the media type (#540). Word 16.115 compares the declared string
+ * exactly, so a parameter it does not honour is a defect in its own right,
+ * not a different media type.
+ */
+export const hasContentTypeParameter = (contentType: string): boolean => contentType.includes(";");
+
+/**
  * Resolve a part name against the table (ECMA-376 Part 2 §10.1.2.4): an
  * exact `<Override PartName>` match wins; otherwise the `<Default
  * Extension>` for the part's OPC extension applies; `null` when neither

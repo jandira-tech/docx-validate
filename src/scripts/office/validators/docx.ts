@@ -81,6 +81,8 @@ import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "../checks/index";
 import { WORD_PART_CONTENT_TYPE_GENERIC, wordPartContentTypeGenericFindings } from "../checks/word-part-content-type-generic";
 import { contextFromDirectory } from "../package-context";
 import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
+import { WORD_PART_CONTENT_TYPE_PARAMETER, wordPartContentTypeParameterFindings } from "../checks/word-part-content-type-parameter";
+
 export { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
 /** OpenXmlPowerTools DocumentBuilder Insert — `PtOpenXml.ptOpenXml` in PtOpenXmlUtil.cs */
 const DOCUMENT_BUILDER_INSERT_NAMESPACE = "http://powertools.codeplex.com/documentbuilder/2011/insert";
@@ -524,8 +526,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     }
 
     /**
-     * The `word-part-content-type-generic` rule (#432) over the shared
-     * context, at the severity the profile gives it: an error under
+     * The `word-part-content-type-generic` rule (#432) and the
+     * `word-part-content-type-parameter` rule (#540) over the shared
+     * context, at the severity the profile gives them: an error under
      * word-valid (Word 16.115 offers to recover the package) and under
      * strict (ECMA-376 Part 1, clause 11.3, gives every WordprocessingML
      * part its own content type, so strict also judges the unprobed Part 1
@@ -544,12 +547,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // Strict judges every Part 1 WordprocessingML part type, not only
         // the probed five (#506); word-valid and lenient keep the probed set.
         const found = await wordPartContentTypeGenericFindings(view, this.profile === "strict" ? "spec" : "observed");
+        const parameterized = await wordPartContentTypeParameterFindings(view);
         this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_GENERIC);
+        this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_PARAMETER);
         // The base pass skips non-XML names and docProps/. Suppress a
         // Default-typed main only if its own path has a replacement error;
         // otherwise strict must retain the Word-blocking finding (#535).
         const replacements = this.profile === "strict" ? (await contentTypes).issues : [];
-        const judged = found.filter(
+        const judged = [...found, ...parameterized].filter(
             (finding) =>
                 !(
                     finding.segment === "officeDocument" &&

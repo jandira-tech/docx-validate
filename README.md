@@ -268,8 +268,9 @@ The complete named check catalogue is below. Each Word check except
 XML prerequisite. All `word-*` checks apply to DOCX/DOCM only.
 `ct-duplicate-declaration`, `ct-override-partname-invalid`,
 `ct-override-partname-word-refused` and `ct-markup-compatibility` apply to
-every package format; `word-content-type-invalid` and
-`word-part-content-type-generic` apply to DOCX/DOCM only.
+every package format; `word-content-type-invalid`,
+`word-part-content-type-generic` and `word-part-content-type-parameter`
+apply to DOCX/DOCM only.
 
 `zip-bytes-before-archive` applies to DOCX/DOCM, PPTX, and XLSX package
 selections, including the `package` quick group, and reads the archive bytes
@@ -394,7 +395,7 @@ names and input bytes unchanged.
 | `story`                   | `word-shading-color`, `word-page-margin-attributes`, `word-run-misplaced`, `word-run-properties-misplaced`, `word-underline-misplaced`, `word-paragraph-properties-misplaced`, `word-section-properties-misplaced`, `word-footnote-reference-missing`, `word-numbering-picture-bullet`, `word-sdt-id-empty`, `word-text-contains-paragraph`         |
 | `tables`                  | `word-grid-column-attributes`, `word-cell-margin-order`, `word-table-properties-required`, `word-table-properties-misplaced`, `word-row-without-cell`, `word-cell-ends-with-table`                                                                                                                                                                  |
 | `drawings`                | `word-textbox-content-namespace`, `word-drawing-extent-missing`, `word-drawing-extent-misplaced`, `word-picture-nvpicpr-missing`, `word-picture-sppr-missing`, `word-empty-drawing`, `word-anchor-missing-attribute`, `word-position-offset-and-align`, `word-drawing-scalar-whitespace`, `word-drawing-arc-radius`, `word-drawing-extent-negative` |
-| `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`, `ct-override-partname-invalid`, `ct-override-partname-word-refused`, `ct-markup-compatibility`, `word-part-content-type-generic`                                                                                                                                                           |
+| `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`, `ct-override-partname-invalid`, `ct-override-partname-word-refused`, `ct-markup-compatibility`, `word-part-content-type-generic`, `word-part-content-type-parameter`                                                                                                                       |
 | `relationships`           | `word-duplicate-theme-relationship`, `word-duplicate-font-table-relationship`, `word-duplicate-web-settings-relationship`, `word-duplicate-settings-relationship`, `word-hyperlink-relationship`, `word-main-document-part`, `opc-relationships-structure`                                                                                          |
 | `tracked-changes`         | `word-textbox-deleted-text`, `word-move-from-deleted-text`                                                                                                                                                                                                                                                                                          |
 | `settings`                | `word-custom-property-filetime-empty`, `word-attached-toolbar-utf8`                                                                                                                                                                                                                                                                                 |
@@ -485,7 +486,8 @@ in either orientation — while the declared-only control opens clean
 session 14, `docs/plans/evidence/word-probes-2026-10-24.md`). The check reads
 the raw stored stream, while `ct-duplicate-declaration`,
 `ct-override-partname-invalid`, `ct-override-partname-word-refused`,
-`word-content-type-invalid`, `word-part-content-type-generic` and content-type
+`word-content-type-invalid`, `word-part-content-type-generic`,
+`word-part-content-type-parameter` and content-type
 resolution all judge the stream after Markup Compatibility processing, as OPC
 [M1.19] requires — so an `Override` in an ignored `mc:Choice` no longer draws
 a `ct-override-partname-invalid` finding, and a bad `mc:Fallback` still does.
@@ -499,11 +501,13 @@ under strict (whose schema walk already refuses the same stream); lenient and
 the unobserved PPTX/XLSX warn. Full, quick and named runs agree.
 
 `word-part-content-type-generic` reports a part Word reads whose content type
-resolves to a generic XML type — `application/xml` or `text/xml`, compared
-ASCII case-insensitively — from either source: an `Override`, or the
-`<Default>` for the part's own extension, which the finding names
-([#504](https://github.com/jandira-tech/docx-validate/issues/504),
-[#517](https://github.com/jandira-tech/docx-validate/issues/517)). The reached parts
+resolves to a generic XML type — media type `application/xml` or `text/xml`,
+compared ASCII case-insensitively with any MIME parameter stripped, so
+`application/xml; charset=utf-8` counts as generic — from either source: an
+`Override`, or the `<Default>` for the part's own extension, which the finding
+names ([#504](https://github.com/jandira-tech/docx-validate/issues/504),
+[#517](https://github.com/jandira-tech/docx-validate/issues/517),
+[#540](https://github.com/jandira-tech/docx-validate/issues/540)). The reached parts
 are the main document (the package `officeDocument` relationship's target) and
 the parts the main document's relationships of type styles, settings,
 fontTable or webSettings name, wherever they are stored. Resolution follows
@@ -533,11 +537,36 @@ probed the main document and styles with `text/xml` by Default or Override
 and with `application/xml` by Override, and Word offers to recover every
 spelling; the Override and `text/xml` spellings for settings, fontTable and
 webSettings are inference from the same resolution ([#517](https://github.com/jandira-tech/docx-validate/issues/517)).
+Session 16 probed styles typed `application/xml; charset=utf-8` by an
+Override — the media-type comparison above comes from that observation —
+and the parameterized spellings on settings, fontTable and webSettings
+are inference from the same resolution
+([#540](https://github.com/jandira-tech/docx-validate/issues/540)).
 The finding
 is an error, and Word-blocking, under word-valid for DOCX/DOCM, and an error
 under strict, where a Default-typed main is not reported twice when
 `ct-undeclared-part` rejects that same path; lenient
 reports a warning. Full,
+quick and named runs agree.
+
+`word-part-content-type-parameter` reports a part Word reads whose content
+type has the part's own Word type as its media type but carries a MIME
+parameter — any `; …` section, as Word 16.115 comparing the declared string
+exactly refuses `; charset=utf-8` even where RFC 7303 §9.1 registers the
+parameter ([#540](https://github.com/jandira-tech/docx-validate/issues/540);
+probe session 16, 2026-10-24, the table living with the issue). Scope is the
+main document — all four Word main-document content types
+([#505](https://github.com/jandira-tech/docx-validate/issues/505)) — and
+styles, the parts session 16 observed, under word-valid and strict; lenient
+reports a warning. One finding is reported per part, naming the declared
+value and whether a Default or an Override produced it; the generic check
+judges the media type with parameters stripped, so a part is never reported
+by both checks. Settings, fontTable and webSettings, and the Part 1 part
+types strict judges for the generic defect, are unprobed for a parameterized
+type and stay silent until a probe observes them. Under strict, a
+Default-typed main finding is suppressed only when `ct-undeclared-part`
+actually reports an error on that same path, exactly as the generic check's
+([#535](https://github.com/jandira-tech/docx-validate/issues/535)). Full,
 quick and named runs agree.
 
 The `schema` group contains structural checks, not an XSD walk. The `comments`
