@@ -548,7 +548,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * with no recovery claim for a lazy part `wordReadParts` does not
      * include — session 21 (s21b) observed those open clean (#589). A
      * Default-typed main or theme finding is dropped only when strict
-     * actually reports ct-undeclared-part for that same part (#535, #571).
+     * actually reports ct-undeclared-part for that same part (#535, #571);
+     * a part reached by several relationship types counts as main or theme
+     * when any of its reaching segments says so, whichever segment the
+     * finding names (#593).
      */
     private async validateWordPartContentTypes(
         context: ValidationContext,
@@ -569,12 +572,15 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_INEXACT);
         // The base pass skips non-XML names and docProps/. Suppress a
         // Default-typed main or theme only if its own path has a replacement error;
-        // otherwise strict must retain the Word-blocking finding (#535).
+        // otherwise strict must retain the Word-blocking finding (#535). The
+        // part counts as main or theme when any reaching segment says so —
+        // the walk keeps every segment, so an earlier unrelated relationship
+        // cannot make the duplicate return (#593).
         const replacements = this.profile === "strict" ? (await contentTypes).issues : [];
         const judged = [...found, ...inexact].filter(
             (finding) =>
                 !(
-                    (finding.segment === "officeDocument" || finding.segment === "theme") &&
+                    (finding.segments.includes("officeDocument") || finding.segments.includes("theme")) &&
                     finding.source === "default" &&
                     replacements.some(
                         (issue) => issue.code === "ct-undeclared-part" && issue.severity === "error" && issue.path === finding.issue.path,

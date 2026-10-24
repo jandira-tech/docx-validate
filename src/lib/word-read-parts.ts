@@ -54,6 +54,11 @@
  *    segment, so `…/relationships/custom/styles` is an unobserved type too,
  *    not the `styles` type (#519).
  *
+ * A part two relationship types name yields one entry per type in the
+ * typed walks and one typed read per type in `wordReadTypedTargets`, so the
+ * order of the relationships in the relationships part cannot decide which
+ * type a consumer judges or reads the part through (#593).
+ *
  * Compute once per run, as `propertiesParts` (#409) is, and pass the set to
  * `isWordBlockingIssue`, so full and partial runs agree (#381). Evidence:
  * docs/plans/evidence/word-probes-2026-10-24.md, sessions 3c, 4, 5, 8b, 9a;
@@ -287,9 +292,12 @@ export const wordMainDocumentParts = async (context: ValidationContext): Promise
 /**
  * The parts the named relationship segments reach (#432): every main document
  * (`officeDocument`), and the target of every main-document relationship of
- * one of the other segments, Transitional or Strict. One entry per part, in
- * traversal order; a part reached twice keeps the segment that reached it
- * first.
+ * one of the other segments, Transitional or Strict. One entry per
+ * (part, segment) pair, in traversal order: a part reached twice through the
+ * same type keeps the entry that reached it first, while a part reached
+ * through two types keeps both, so the order of the relationships in the
+ * relationships part cannot decide which type a consumer judges the part
+ * against (#593).
  */
 export const wordTypedRelationshipTargets = async (
     context: ValidationContext,
@@ -302,11 +310,11 @@ export const wordTypedRelationshipTargets = async (
     const targets: WordTypedTarget[] = [];
     const seen = new Set<string>();
     const add = (part: string, segment: string): void => {
-        const canonical = canonicalPartName(part);
-        if (seen.has(canonical)) {
+        const key = `${canonicalPartName(part)}\n${segment}`;
+        if (seen.has(key)) {
             return;
         }
-        seen.add(canonical);
+        seen.add(key);
         // The stored spelling is what the finding reports, as every other
         // check reports the part names the package view holds.
         targets.push({ part, segment });
@@ -345,12 +353,14 @@ export const wordTypedRelationshipTargets = async (
  * reaches is a second story root (#549, session 17), and each of its
  * relationships whose type segment is in `segments` yields its stored
  * target, marked `via: "glossary"` so a finding can name the glossary's
- * relationship rather than the main document's. One entry per part, in
- * traversal order; a part reached twice keeps the entry that reached it
- * first. A nested `glossaryDocument` is observed, not read (session 20),
+ * relationship rather than the main document's. One entry per
+ * (part, segment) pair, in traversal order; a part reached twice keeps every
+ * segment that reached it (#593). A nested `glossaryDocument` is observed,
+ * not read (session 20),
  * so the walk does not recurse, and `officeDocument` never matches: a
  * glossary's relationship of that segment would misattribute the package
- * root. The caller drops any part a main-document target already names.
+ * root. The caller drops any part a main-document target already names by
+ * the same segment.
  */
 export const glossaryTypedRelationshipTargets = async (
     context: ValidationContext,
@@ -397,10 +407,11 @@ export const glossaryTypedRelationshipTargets = async (
                 continue;
             }
             const canonical = canonicalPartName(target);
-            if (canonical === canonicalPartName(glossary) || seen.has(canonical)) {
+            const key = `${canonical}\n${segment}`;
+            if (canonical === canonicalPartName(glossary) || seen.has(key)) {
                 continue;
             }
-            seen.add(canonical);
+            seen.add(key);
             targets.push({ part: target, segment, via: "glossary" });
         }
     }
@@ -410,7 +421,8 @@ export const glossaryTypedRelationshipTargets = async (
 /**
  * The parts a story root — the main document or a reached glossary document
  * — reads through its own relationships part: the sidecar itself, and each
- * relationship's stored target as `{ part, segment }`. `eagerTypes` names
+ * relationship's stored target as `{ part, segment }`, marked `via` when the
+ * root is a reached glossary (#593). `eagerTypes` names
  * the eagerly parsed segments whose targets are added: `EAGER_TYPES` for a
  * main document, `GLOSSARY_EAGER_TYPES` for a glossary — a glossary's
  * `styles`, `settings`, `fontTable`, `webSettings`, `numbering` and
@@ -430,15 +442,17 @@ const storyRootReadParts = async (
     reach: PackageReach,
     root: string,
     eagerTypes: ReadonlySet<string>,
+    via?: "glossary",
 ): Promise<readonly WordTypedTarget[]> => {
-    const targets: WordTypedTarget[] = [{ part: root, segment: "officeDocument" }];
+    const typed = (part: string, segment: string): WordTypedTarget => (via === undefined ? { part, segment } : { part, segment, via });
+    const targets: WordTypedTarget[] = [typed(root, "officeDocument")];
     const sidecar = sidecarOf(reach.names, root);
     if (sidecar !== undefined) {
         // Word reads a story root's own relationships part to reach its
         // stories, and offers recovery when it does not parse — the main
         // document's (#514, session 15) and a reached glossary's (#549,
         // session 17) alike.
-        targets.push({ part: sidecar, segment: "relationships" });
+        targets.push(typed(sidecar, "relationships"));
     }
     const bytes = context.bytes(root);
     const readable = bytes !== undefined && !(await checkXmlSyntax(bytes, root)).some((issue) => issue.severity === "error");
@@ -482,10 +496,10 @@ const storyRootReadParts = async (
         }
         if (EAGER_TYPES.has(segment)) {
             if (eagerTypes.has(segment)) {
-                targets.push({ part: target, segment });
+                targets.push(typed(target, segment));
             }
         } else if (LAZY_TYPES.has(segment) && lazyUsed(segment, relationship.getAttribute("Id") ?? "") !== false) {
-            targets.push({ part: target, segment });
+            targets.push(typed(target, segment));
         }
     }
     return targets;
@@ -498,27 +512,32 @@ const storyRootReadParts = async (
  * main document that does not parse keeps its lazily parsed parts reached —
  * whether it uses them cannot be decided, and no new false negative may open.
  */
-export const wordReadParts = async (context: ValidationContext): Promise<ReadonlySet<string>> => {
-    const parts = new Set<string>();
+/**
+ * The story roots — every main document, then every reached glossary — and
+ * the typed parts each reads, computed once. A glossary's entries carry
+ * `via: "glossary"` so a (part, segment) pair the main document and a
+ * glossary both read stays distinguishable (#593).
+ */
+const wordStoryReadTargets = async (
+    context: ValidationContext,
+): Promise<{ readonly targets: readonly WordTypedTarget[]; readonly reach: PackageReach } | undefined> => {
     const reach = await packageReach(context);
     if (reach === undefined) {
-        return parts;
+        return undefined;
     }
-    const { names, lookup } = reach;
+    const targets: WordTypedTarget[] = [];
     // Glossary documents reached eagerly through a main-document
     // glossaryDocument relationship, canonical name to stored spelling, for
     // the second story-root pass below (#539).
     const glossaryParts = new Map<string, string>();
-
     for (const mainPart of reach.mainParts) {
-        for (const { part, segment } of await storyRootReadParts(context, reach, mainPart, EAGER_TYPES)) {
-            parts.add(canonicalPartName(part));
-            if (segment === "glossaryDocument") {
-                glossaryParts.set(canonicalPartName(part), part);
+        for (const target of await storyRootReadParts(context, reach, mainPart, EAGER_TYPES)) {
+            targets.push(target);
+            if (target.segment === "glossaryDocument") {
+                glossaryParts.set(canonicalPartName(target.part), target.part);
             }
         }
     }
-
     // Each reached glossary document is a second story root (#549, session
     // 17): its own relationships part is read — even when the glossary
     // references nothing (unclosed, zero-byte and unreferenced sidecars all
@@ -533,9 +552,33 @@ export const wordReadParts = async (context: ValidationContext): Promise<Readonl
     // fails byte-level XML checks leaves usage unknown, as an unparseable
     // main does (#536), so its lazy targets stay reached.
     for (const glossaryPart of glossaryParts.values()) {
-        for (const { part } of await storyRootReadParts(context, reach, glossaryPart, GLOSSARY_EAGER_TYPES)) {
-            parts.add(canonicalPartName(part));
-        }
+        targets.push(...(await storyRootReadParts(context, reach, glossaryPart, GLOSSARY_EAGER_TYPES, "glossary")));
+    }
+    return { targets, reach };
+};
+
+/**
+ * The parts Word reads at open through relationships, as typed targets
+ * (#593): each entry says which relationship type reads the part — and which
+ * story root's, through `via` — so a part Word reads through one type but
+ * not another keeps both answers, and a consumer that gates lazily parsed
+ * relationships can decide per (part, segment) pair instead of per part. A
+ * part read through two types yields an entry per type, in document order.
+ * The unobserved-type pass adds no typed read and stays in `wordReadParts`.
+ */
+export const wordReadTypedTargets = async (context: ValidationContext): Promise<readonly WordTypedTarget[]> =>
+    (await wordStoryReadTargets(context))?.targets ?? [];
+
+export const wordReadParts = async (context: ValidationContext): Promise<ReadonlySet<string>> => {
+    const parts = new Set<string>();
+    const story = await wordStoryReadTargets(context);
+    if (story === undefined) {
+        return parts;
+    }
+    const { reach } = story;
+    const { names, lookup } = reach;
+    for (const { part } of story.targets) {
+        parts.add(canonicalPartName(part));
     }
 
     // Unobserved types keep the old `word/`-folder behaviour: a part under

@@ -531,7 +531,14 @@ assigns rather than a Word observation
 ([#506](https://github.com/jandira-tech/docx-validate/issues/506)). Under strict, a Default-typed main or theme finding is suppressed only when
 `ct-undeclared-part` actually reports an error on that same path; renamed
 main parts, including non-XML names and parts under `docProps/`, retain their
-generic-type error ([#535](https://github.com/jandira-tech/docx-validate/issues/535)). One finding
+generic-type error ([#535](https://github.com/jandira-tech/docx-validate/issues/535)). A part reached by two
+relationship types is judged against every type that reaches it — a
+Default-typed theme also named by an unreferenced footer relationship still
+counts as the theme for that suppression — and the finding names the
+segment the check's fixed reporting order ranks first, an observed
+relationship before a spec-only one, so the order of the relationships in
+the relationships part decides neither the verdict nor the message
+([#593](https://github.com/jandira-tech/docx-validate/issues/593)). One finding
 is reported per part, at the part's path, naming the relationship type and
 the content type the part needs — for the main document, all four Word
 main-document content types, since the package does not say whether it is
@@ -608,8 +615,13 @@ probed for an inexact type and stay silent under word-valid; strict judges
 every Part 1 WordprocessingML relationship — and theme — on the glossary
 too, citing clause 11.3 for the unprobed WordprocessingML segments; the
 theme, a DrawingML part, cites no clause. A part the main document
-and the glossary both relate is reported once, under the main document's
-entry. Strict
+and the glossary both relate by the same type is reported once, under the
+main document's entry. A part several relationship types reach is judged
+against each: the finding names the type whose expected content type's
+media type matches the declared value — the types are pairwise distinct,
+so at most one can — and an unreferenced lazy relationship neither reports
+nor hides a read one, because usage is decided per (part, type) pair
+([#593](https://github.com/jandira-tech/docx-validate/issues/593)). Strict
 judges the same probed set — theme included, though it is a DrawingML part,
 not a clause-11.3 one — plus the unprobed Part 1 WordprocessingML
 glossaryDocument type, citing the content type ECMA-376 Part 1

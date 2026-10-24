@@ -4131,3 +4131,61 @@ describe("validation contract: empty main-document content type (#581, #381)", (
         60_000,
     );
 });
+
+// session 20 (s20b) plus an unreferenced second relationship (#593, #381).
+describe("validation contract: a part reached by two relationship types (#593, #381)", () => {
+    const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const NUMBERING_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml";
+    const NUMBERING_XML =
+        `<w:numbering xmlns:w="${W}"><w:abstractNum w:abstractNumId="0"><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="decimal"/>` +
+        `<w:lvlText w:val="%1."/></w:lvl></w:abstractNum><w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num></w:numbering>`;
+    const code = "word-part-content-type-inexact";
+    const inexactFindings = (result: Awaited<ReturnType<typeof validate>>) => result.issues.filter((issue) => issue.code === code);
+
+    /** The s20b numbering specimen, plus a `second`-typed relationship naming the same part, in the given order. */
+    const dualRelated = (first: "footer" | "numbering", second: "footer" | "numbering"): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        "word/numbering.xml": NUMBERING_XML,
+        "word/_rels/document.xml.rels": (MINIMAL_PARTS["word/_rels/document.xml.rels"] as string).replace(
+            "</Relationships>",
+            `<Relationship Id="rIdA" Type="${R}/${first}" Target="numbering.xml"/>` +
+                `<Relationship Id="rIdB" Type="${R}/${second}" Target="numbering.xml"/></Relationships>`,
+        ),
+        "[Content_Types].xml": (MINIMAL_PARTS["[Content_Types].xml"] as string).replace(
+            "</Types>",
+            `<Override PartName="/word/numbering.xml" ContentType="${NUMBERING_TYPE}; charset=utf-8"/></Types>`,
+        ),
+    });
+
+    it.each([
+        ["footer", "numbering"],
+        ["numbering", "footer"],
+    ] as const)(
+        "rejects the numbering Override whichever relationship comes first, and partial runs agree",
+        async (first, second) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, `dual-${first}.docx`);
+                writeFileSync(file, await buildDocx(dualRelated(first, second)));
+                const word = await validate(file, { profile: "word-valid" });
+                expect(word.valid).toBe(false);
+                const [finding] = inexactFindings(word);
+                expect(inexactFindings(word)).toHaveLength(1);
+                expect(finding).toMatchObject({ code, severity: "error", path: "word/numbering.xml" });
+                expect(finding?.message).toContain("the main document's numbering relationship");
+                const strict = await validate(file, { profile: "strict" });
+                expect(strict.valid).toBe(false);
+                expect(inexactFindings(strict)).toEqual(inexactFindings(word));
+                const lenient = await validate(file, { profile: "lenient" });
+                expect(inexactFindings(lenient)).toEqual([{ ...finding!, severity: "warning" }]);
+                for (const selection of [{ quick: true }, { checks: [code] }, { checks: ["content-types"] }]) {
+                    const partial = await validate(file, { profile: "word-valid", ...selection });
+                    expect(partial.valid).toBe(word.valid);
+                    expect(inexactFindings(partial)).toEqual(inexactFindings(word));
+                    expect([...errorCodes(partial.issues)].every((error) => errorCodes(word.issues).has(error))).toBe(true);
+                }
+            });
+        },
+        60_000,
+    );
+});
