@@ -115,14 +115,22 @@ const CP437_HIGH =
 
 const utf8 = new TextDecoder();
 
+/** Decode APPNOTE's default ZIP name/comment encoding; shared with JSZip's loader. */
+export const decodeCp437 = (bytes: Uint8Array): string => {
+    let name = "";
+    for (const byte of bytes) {
+        name += byte < 0x80 ? String.fromCharCode(byte) : CP437_HIGH[byte - 0x80]!;
+    }
+    return name;
+};
+
 /**
  * The stored name's decode: UTF-8 when general-purpose flag bit 11 is set,
  * CP437 otherwise. ASCII names decode identically under both, which is the
- * ordinary case and what `unsafeOriginalName` holds. JSZip decodes every name
- * as UTF-8 unless the caller overrides it, so for a non-ASCII name stored
- * without the flag this name can differ from the loaded entry's — the
- * central-directory bytes are authoritative for the stored spelling. The
- * Info-ZIP unicode-path extra field is not consulted.
+ * ordinary case and what `unsafeOriginalName` holds. The validator's JSZip
+ * loader shares decodeCp437 for flag-less names (#480); the central-directory
+ * bytes are authoritative for the stored spelling. The Info-ZIP unicode-path
+ * extra field is not consulted here.
  */
 const decodeName = (buf: Uint8Array, offset: number, length: number, flags: number): string => {
     const bytes = buf.subarray(offset, offset + length);
@@ -130,11 +138,7 @@ const decodeName = (buf: Uint8Array, offset: number, length: number, flags: numb
     if (flags % 0x1000 >= UTF8_NAME_FLAG) {
         return utf8.decode(bytes);
     }
-    let name = "";
-    for (const byte of bytes) {
-        name += byte < 0x80 ? String.fromCharCode(byte) : CP437_HIGH[byte - 0x80]!;
-    }
-    return name;
+    return decodeCp437(bytes);
 };
 
 export type ZipStoredEntry = {
