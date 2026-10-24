@@ -95,7 +95,7 @@ const allFixtures = (await fs.readdir(FIXTURE_DIR))
 
 const validFixturesLenient = allFixtures.filter((f) => !KNOWN_FAILURES_LENIENT[f] && !SKIP.has(f));
 
-describe("docx-templates corpus — valid templates pass under default (lenient) profile", () => {
+describe("docx-templates corpus — valid templates pass under the default profile", () => {
     it.each(validFixturesLenient)("%s validates as ok", async (name) => {
         const result = await validate(path.join(FIXTURE_DIR, name));
         if (!result.valid) {
@@ -117,7 +117,9 @@ describe("docx-templates corpus — known failures under lenient profile", () =>
     it.each(Object.keys(KNOWN_FAILURES_LENIENT).sort())("%s is rejected with the expected codes", async (name) => {
         const expected = KNOWN_FAILURES_LENIENT[name];
         if (!expected) throw new Error(`missing expectation for ${name}`);
-        const result = await validate(path.join(FIXTURE_DIR, name));
+        // Explicit lenient: the default profile is now `word-valid`, which
+        // downgrades these schema/relationship hygiene findings to warnings.
+        const result = await validate(path.join(FIXTURE_DIR, name), { profile: "lenient" });
         expect(result.valid).toBe(false);
         for (const code of expected.codes) {
             expect(result.issues.some((i) => i.code === code)).toBe(true);
@@ -145,7 +147,7 @@ describe("docx-templates corpus — strict profile flags BOM and other quirks", 
         // the gap visible in `result.issues` for callers who audit them,
         // without flipping `valid` to false. The XSD sequence-order issue
         // is a separate concern (see KNOWN_FAILURES_LENIENT).
-        const result = await validate(path.join(FIXTURE_DIR, "office365.docx"));
+        const result = await validate(path.join(FIXTURE_DIR, "office365.docx"), { profile: "lenient" });
         expect(result.issues.some((i) => i.code === "xml-syntax")).toBe(false);
         const bomIssues = result.issues.filter((i) => i.code === "xml-bom-leading");
         expect(bomIssues.length).toBeGreaterThan(0);
