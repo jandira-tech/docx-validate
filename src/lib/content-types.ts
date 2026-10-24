@@ -168,6 +168,19 @@ export const canonicalPartName = (partName: string): string => {
 };
 
 /**
+ * The entry in `names` that `partName` names under OPC part-name
+ * equivalence ({@link canonicalPartName}), preferring an exact match;
+ * `undefined` when no entry is equivalent (#344).
+ */
+export const findEquivalentPart = (names: readonly string[], partName: string): string | undefined => {
+    if (names.includes(partName)) {
+        return partName;
+    }
+    const key = canonicalPartName(partName);
+    return names.find((name) => canonicalPartName(name) === key);
+};
+
+/**
  * The fully percent-decoded form of a part name: leading `/` separators
  * stripped (after decoding, so an encoded leading `%2F` strips too) and
  * ASCII-lowercased. This is the decoded display form, not the comparison

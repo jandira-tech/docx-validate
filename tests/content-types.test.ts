@@ -16,6 +16,7 @@ import { describe, expect, it } from "vitest";
 import {
     canonicalPartName,
     CONTENT_TYPES_NAMESPACE,
+    findEquivalentPart,
     normalizePartName,
     parseContentTypes,
     partExtension,
@@ -110,6 +111,28 @@ describe("canonicalPartName", () => {
     it("uppercases escape hex and then compares ASCII case-insensitively", () => {
         expect(canonicalPartName("/Word/Media/IMAGE1.JPEG")).toBe("word/media/image1.jpeg");
         expect(canonicalPartName("a%2fb")).toBe(canonicalPartName("a%2Fb"));
+    });
+});
+
+describe("findEquivalentPart (#344)", () => {
+    const names = ["word/document.xml", "word/media/a~b.png", "word/a%2Fb.xml"];
+
+    it("prefers the exact entry", () => {
+        expect(findEquivalentPart([...names, "WORD/document.xml"], "WORD/document.xml")).toBe("WORD/document.xml");
+    });
+
+    it.each([
+        ["WORD/document.xml", "word/document.xml"],
+        ["/Word/Document.XML", "word/document.xml"],
+        ["word/%64ocument.xml", "word/document.xml"],
+        ["word/media/a%7Eb.png", "word/media/a~b.png"],
+        ["word/a%2fb.xml", "word/a%2Fb.xml"],
+    ])("finds the entry %s names under OPC equivalence", (target, entry) => {
+        expect(findEquivalentPart(names, target)).toBe(entry);
+    });
+
+    it.each(["word%2Fdocument.xml", "word/other.xml", ""])("finds nothing for %j", (target) => {
+        expect(findEquivalentPart(names, target)).toBeUndefined();
     });
 });
 
