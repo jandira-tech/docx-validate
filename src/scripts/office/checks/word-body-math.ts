@@ -24,6 +24,7 @@ export const wordMathParseCheck: CheckDefinition = {
     groups: ["math"],
     formats: ["docx"],
     requires: ["xml-syntax"],
+    reportsParseFailures: true,
     run: (ctx: ValidationContext): ValidationIssue[] => {
         const issues: ValidationIssue[] = [];
         const documentXml = ctx.partNames.find((part) => path.posix.basename(part) === "document.xml" && part.startsWith("word/"));

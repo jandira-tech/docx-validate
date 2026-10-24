@@ -357,3 +357,59 @@ describe("portable extraction failures (#475, #476)", { timeout: 120_000 }, () =
         });
     });
 });
+
+describe("math parse diagnostics agree across validation paths (#500)", { timeout: 120_000 }, () => {
+    describe.each(["docx", "docm"] as const)("%s", (suffix) => {
+        it.each(PROFILES)("keeps the positioned parser findings under %s", async (profile) => {
+            await withTempDir(async (dir) => {
+                const findings = new Map<boolean, ValidationIssue[]>();
+                for (const unstageable of [false, true]) {
+                    const bytes = buildRawZip([
+                        ...Object.entries({ ...MINIMAL_PARTS, "word/document.xml": "<w:document" }).map(([name, content]) => ({
+                            name,
+                            content,
+                        })),
+                        ...(unstageable ? [{ name: "word", content: "file blocks word directory" }] : []),
+                    ]);
+                    const file = path.join(dir, `${unstageable}.${suffix}`);
+                    writeFileSync(file, bytes);
+                    const full = await validate(file, { profile });
+                    const tag = `${suffix} ${profile} ${unstageable}`;
+                    expect(
+                        full.issues.some((issue) => issue.code === "package-extract-failed"),
+                        tag,
+                    ).toBe(unstageable);
+                    findings.set(
+                        unstageable,
+                        full.issues.filter((issue) => issue.code?.startsWith("xml-") || issue.code === "word-math-parse"),
+                    );
+                    if (profile !== "strict") {
+                        const checks = profile === "lenient" ? ["xml-syntax"] : ["word-math-parse"];
+                        const partial = await validate(file, { profile, checks });
+                        if (full.valid) expect(partial.valid, tag).toBe(true);
+                        expect.soft(errorPairs(full.issues), tag).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
+                    }
+                    expect(readFileSync(file)).toEqual(bytes);
+                }
+                expect(findings.get(false)).toEqual([
+                    expect.objectContaining({ code: "xml-undeclared-prefix", path: "word/document.xml", severity: "error", line: 1 }),
+                    expect.objectContaining({ code: "xml-syntax", path: "word/document.xml", severity: "error", line: 1 }),
+                ]);
+                expect(findings.get(true)).toEqual(findings.get(false));
+            });
+        });
+
+        it.each(["word-valid", "lenient"] as const)("keeps valid full and partial controls valid under %s", async (profile) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, `valid.${suffix}`);
+                writeFileSync(file, buildRawZip(Object.entries(MINIMAL_PARTS).map(([name, content]) => ({ name, content }))));
+                const full = await validate(file, { profile });
+                const checks = profile === "lenient" ? ["xml-syntax"] : ["word-math-parse"];
+                const partial = await validate(file, { profile, checks });
+                expect(full.valid).toBe(true);
+                expect(partial.valid).toBe(true);
+                expect(errorPairs(full.issues)).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
+            });
+        });
+    });
+});

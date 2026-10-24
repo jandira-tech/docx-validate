@@ -479,6 +479,10 @@ full lenient run stops at a malformed part, so the comment checks then do not ru
 `executedChecks`; `--quick` does not select them. Like every other check, they
 find a comment part under an OPC-equivalent name (`word/comments.XML`).
 
+Named `word-math-parse` runs and full runs that cannot stage the archive retain
+the positioned XML diagnostics without repeating `word-math-parse` for the same
+malformed part ([#500](https://github.com/jandira-tech/docx-validate/issues/500)).
+
 The math-run insertion/deletion, shading-color, grid-column-attributes,
 cell-margin-order, table-properties-required, page-margin-attributes, and
 textbox-content-namespace checks emit warnings. They remain advisories in
