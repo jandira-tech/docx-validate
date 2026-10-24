@@ -28,7 +28,8 @@ export function contextFromDirectory(dir: string): ValidationContext {
  * reason the archive could not be opened is returned beside it. An archive
  * that opens but whose package view cannot be read ({@link PackageViewError}
  * — a refused item name or an unreadable entry) is reported with
- * `extractFailed`, since extraction fails it for the same reason (#413).
+ * `extractFailed`, since extraction fails it for the same reason (#413); its
+ * context carries no parts but keeps the stored entry names (#420).
  */
 export async function contextFromArchive(
     bytes: Uint8Array,
@@ -37,7 +38,12 @@ export async function contextFromArchive(
         return { context: await ValidationContext.fromArchive(bytes) };
     } catch (err) {
         return {
-            context: ValidationContext.fromEntries({}, { source: "archive", archiveBytes: bytes }),
+            // A refused package view still carries the stored entry names, so the
+            // checks that need only them can run on it (#420).
+            context: ValidationContext.fromStoredNames(err instanceof PackageViewError ? err.storedNames : [], {
+                source: "archive",
+                archiveBytes: bytes,
+            }),
             openError: err instanceof Error ? err.message : String(err),
             extractFailed: err instanceof PackageViewError || undefined,
         };

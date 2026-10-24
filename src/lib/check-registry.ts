@@ -65,6 +65,11 @@ export type CheckDefinition = {
     readonly reportsParseFailures?: boolean;
     /** Needs the packed archive bytes; unavailable for unpacked directories. */
     readonly archiveOnly?: boolean;
+    /**
+     * Needs only the archive's stored entry names, not its parts; still runs
+     * when the archive opens but its package view is refused (#420).
+     */
+    readonly storedNamesOnly?: boolean;
     readonly run: (ctx: ValidationContext) => readonly ValidationIssue[] | Promise<readonly ValidationIssue[]>;
 };
 

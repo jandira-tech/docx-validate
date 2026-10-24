@@ -10,8 +10,9 @@ import JSZip from "jszip";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
-import { ValidationContext } from "../src/lib/validation-context";
+import { PackageViewError, ValidationContext } from "../src/lib/validation-context";
 import { contextFromArchive, contextFromDirectory } from "../src/scripts/office/package-context";
+import { buildRawZip } from "./support/raw-zip";
 
 afterEach(() => {
     vi.restoreAllMocks();
@@ -55,5 +56,32 @@ describe("contextFromArchive", () => {
         const { context, openError } = await contextFromArchive(new Uint8Array([1, 2, 3]));
         expect(openError).toBe("not a zip");
         expect(context.partNames).toEqual([]);
+    });
+
+    it("keeps the stored entry names, with no parts, when the package view is refused (#420)", async () => {
+        const bytes = buildRawZip([
+            { name: "word/document.xml", content: "<w:document/>" },
+            { name: "word/a/../b.xml", content: "<x/>" },
+        ]);
+        const { context, openError, extractFailed } = await contextFromArchive(bytes);
+        expect(extractFailed).toBe(true);
+        expect(openError).toEqual(expect.any(String));
+        expect(context.partNames).toEqual([]);
+        expect(context.storedNames).toEqual(["word/a/../b.xml", "word/document.xml"]);
+    });
+
+    it("builds a no-part context from stored names alone", () => {
+        const context = ValidationContext.fromStoredNames(["word/document.xml"]);
+        expect(context.partNames).toEqual([]);
+        expect(context.storedNames).toEqual(["word/document.xml"]);
+    });
+
+    it("keeps no stored names when the refused view never produced them", async () => {
+        vi.spyOn(ValidationContext, "fromArchive").mockRejectedValue(new PackageViewError("refused"));
+        const { context, openError, extractFailed } = await contextFromArchive(new Uint8Array([1, 2, 3]));
+        expect(extractFailed).toBe(true);
+        expect(openError).toBe("refused");
+        expect(context.partNames).toEqual([]);
+        expect(context.storedNames).toEqual([]);
     });
 });
