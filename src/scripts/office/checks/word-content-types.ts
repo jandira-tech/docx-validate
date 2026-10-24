@@ -16,7 +16,10 @@ import {
     findContentTypesStream,
     isContentTypesStreamName,
     partExtension,
+    parseContentTypes,
+    resolveContentType,
 } from "../../../lib/content-types";
+import { wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
 import type { ValidationContext } from "../../../lib/validation-context";
 import type { ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
@@ -41,13 +44,46 @@ export const ctDuplicateDeclarationCheck: CheckDefinition = {
     },
 };
 
+/**
+ * Word 16.115.26100424 offers recovery for an empty ContentType on the main
+ * document's Override (session 22 in
+ * docs/plans/evidence/word-probes-2026-10-24.md, #581). Other parts, Defaults,
+ * missing attributes and whitespace-only values are unobserved and stay out.
+ * Resolve the effective stream through the shared table, like the generic
+ * and inexact checks; the package officeDocument relationship names the main.
+ */
+const emptyMainContentTypeFindings = async (ctx: ValidationContext): Promise<ValidationIssue[]> => {
+    const stream = findContentTypesStream(ctx.partNames);
+    if (stream === undefined) return [];
+    const parsed = ctx.effectiveXml(stream);
+    if (!parsed?.ok) return [];
+    const table = parseContentTypes(parsed.document);
+    const overrides = getElementsByTagNameNSAll(parsed.document, CONTENT_TYPES_NAMESPACE, "Override");
+    const issues: ValidationIssue[] = [];
+    for (const { part } of await wordTypedRelationshipTargets(ctx, new Set(["officeDocument"]))) {
+        const resolved = resolveContentType(table, part);
+        if (resolved?.source !== "override" || resolved.contentType !== "") continue;
+        // The table represents a missing ContentType as "" too. Only the
+        // explicitly empty attribute on the winning declaration was probed.
+        const declaration = overrides.find((elem) => canonicalPartName(elem.getAttribute("PartName") ?? "") === canonicalPartName(part));
+        if (!declaration?.hasAttribute("ContentType")) continue;
+        issues.push({
+            severity: "error",
+            code: "word-content-type-invalid",
+            path: stream,
+            message: `Microsoft Word refuses empty content type '' for ${part} (main document Override)`,
+        });
+    }
+    return issues;
+};
+
 export const wordContentTypeInvalidCheck: CheckDefinition = {
     id: "word-content-type-invalid",
-    description: "Content types using Word-rejected invalid-* values are diagnosed.",
+    description: "Word-rejected invalid-* content types and an empty main-document Override are diagnosed.",
     groups: ["content-types"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx: ValidationContext): ValidationIssue[] => {
+    run: async (ctx: ValidationContext): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
 
         const contentTypesFile = findContentTypesStream(ctx.partNames);
@@ -90,6 +126,6 @@ export const wordContentTypeInvalidCheck: CheckDefinition = {
             }
         }
 
-        return issues;
+        return [...issues, ...(await emptyMainContentTypeFindings(ctx))];
     },
 };

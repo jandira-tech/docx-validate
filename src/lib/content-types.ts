@@ -633,14 +633,6 @@ export const contentTypeMediaType = (contentType: string): string => {
 };
 
 /**
- * Whether a content-type value carries a MIME parameter section — a `;`
- * after the media type (#540). Word 16.115 folds ASCII case and nothing
- * else, so a parameter it does not honour is a defect in its own right,
- * not a different media type (#550).
- */
-export const hasContentTypeParameter = (contentType: string): boolean => contentType.includes(";");
-
-/**
  * Resolve a part name against the table (ECMA-376 Part 2 §10.1.2.4): an
  * exact `<Override PartName>` match wins; otherwise the `<Default
  * Extension>` for the part's OPC extension applies; `null` when neither
