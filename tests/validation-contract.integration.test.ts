@@ -513,6 +513,16 @@ describe.skipIf(process.platform === "win32")("directory package staging (#374)"
         return files;
     };
     const findings = (result: Awaited<ReturnType<typeof validate>>) => result.issues.map((issue) => JSON.stringify(issue)).sort();
+    // validate() must resolve, never reject (#412): a rejection fails here as
+    // an assertion, naming the error, instead of escaping the test.
+    const validateResolves = async (...args: Parameters<typeof validate>) => {
+        const settled = await validate(...args).then(
+            (result) => ({ result, error: undefined }),
+            (error: unknown) => ({ result: undefined, error: error instanceof Error ? error.message : String(error) }),
+        );
+        expect(settled.error, "validate() rejected instead of resolving").toBeUndefined();
+        return settled.result!;
+    };
     const assertSameVerdict = (actual: Awaited<ReturnType<typeof validate>>, control: Awaited<ReturnType<typeof validate>>) => {
         expect(actual.valid).toBe(control.valid);
         expect(findings(actual)).toEqual(findings(control));
@@ -717,4 +727,238 @@ describe.skipIf(process.platform === "win32")("directory package staging (#374)"
             });
         },
     );
+
+    // chmod has no effect for root, and the whole describe is skipped on win32.
+    const runsAsRoot = process.getuid?.() === 0;
+
+    it.skipIf(runsAsRoot)(
+        "returns package-extract-failed for a stored file that cannot be read, where the direct path only warns (#412)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const parts: Parts = { ...MINIMAL_PARTS, "word/media/image1.png": new Uint8Array([1, 2, 3]) };
+                const input = await writeDirectory(path.join(dir, "input.docx"), parts, true);
+                const unreadable = path.join(input, storedName("word/media/image1.png"));
+                await fs.chmod(unreadable, 0o000);
+                try {
+                    const actual = await validateResolves(input, { strict: true });
+                    expect(actual.valid).toBe(false);
+                    expect(actual.issues).toEqual([
+                        expect.objectContaining({
+                            severity: "error",
+                            code: "package-extract-failed",
+                            message: expect.stringContaining("image1.png"),
+                        }),
+                    ]);
+                    expect(actual.xsdWalk.started).toBe(false);
+                    expect(actual.metadata?.schemaCompleted).toBe(false);
+                    expect(actual.repairs).toBe(0);
+                } finally {
+                    await fs.chmod(unreadable, 0o644);
+                }
+                // The same unreadable file under slash names takes the direct
+                // path: validators read it lazily, so each failed read becomes
+                // a check-crashed warning and the run stays valid. The staged
+                // path must read the file up front, so it fails the run
+                // instead — it cannot name which parts a package view holds.
+                const direct = await writeDirectory(path.join(dir, "direct.docx"), parts, false);
+                const directUnreadable = path.join(direct, "word", "media", "image1.png");
+                await fs.chmod(directUnreadable, 0o000);
+                try {
+                    const control = await validate(direct);
+                    expect(control.valid).toBe(true);
+                    expect(control.issues.some((issue) => issue.code === "check-crashed")).toBe(true);
+                } finally {
+                    await fs.chmod(directUnreadable, 0o644);
+                }
+            });
+        },
+    );
+
+    it.skipIf(runsAsRoot)(
+        "reports a failed auto-repair write-back, keeps repairing the remaining files, and leaves the read-only source untouched (#412)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const parts = {
+                    ...MINIMAL_PARTS,
+                    "word/document.xml": MINIMAL_PARTS["word/document.xml"].replace(">Hello<", "> Hello <"),
+                    "word/_rels/unused.xml.rels": '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>',
+                };
+                const input = await writeDirectory(path.join(dir, "input.docx"), parts, true);
+                const normal = await writeDirectory(path.join(dir, "control.docx"), parts, false);
+                const readOnly = path.join(input, storedName("word/document.xml"));
+                const before = await snapshot(input);
+                await fs.chmod(readOnly, 0o444);
+                let actual;
+                try {
+                    actual = await validateResolves(input, { strict: true, autoRepair: true });
+                } finally {
+                    await fs.chmod(readOnly, 0o644);
+                }
+                // The control's write-back succeeds; `repairs` counts repairs
+                // applied to the package view, on either path.
+                const control = await validate(normal, { strict: true, autoRepair: true });
+                expect(actual.repairs).toBe(control.repairs);
+                expect(actual.valid).toBe(false);
+                expect(actual.issues).toEqual(
+                    expect.arrayContaining([
+                        expect.objectContaining({
+                            severity: "error",
+                            code: "repair-write-back-failed",
+                            path: "word/document.xml",
+                            message: expect.stringContaining(storedName("word/document.xml")),
+                        }),
+                    ]),
+                );
+                const after = await snapshot(input);
+                // The failed write-back left the stored bytes unfixed.
+                expect(after[storedName("word/document.xml")]).toEqual(before[storedName("word/document.xml")]);
+                // The other repair — deleting the empty .rels — still landed.
+                expect(after).not.toHaveProperty(storedName("word/_rels/unused.xml.rels"));
+                for (const [name, bytes] of Object.entries(before)) {
+                    if (name !== storedName("word/_rels/unused.xml.rels")) expect(after[name]).toEqual(bytes);
+                }
+            });
+        },
+    );
+
+    it("treats an already-removed write-back target as done when the repair deleted the part (#412)", async () => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...MINIMAL_PARTS,
+                "word/_rels/unused.xml.rels": '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>',
+            };
+            const input = await writeDirectory(path.join(dir, "input.docx"), parts, true);
+            const realRm = fs.rm.bind(fs);
+            // The write-back removes the stored file for the deleted part; a
+            // removal that already happened mid-run makes the second rm throw
+            // ENOENT. Only the call into the input directory is doubled — the
+            // repair's own rm lands in the temp copy.
+            const spy = vi.spyOn(fs, "rm").mockImplementation(async (target, options) => {
+                await realRm(target, options);
+                if (typeof target === "string" && target.startsWith(input)) await realRm(target, options);
+            });
+            let actual;
+            try {
+                actual = await validateResolves(input, { strict: true, autoRepair: true });
+            } finally {
+                spy.mockRestore();
+            }
+            expect(actual.repairs).toBe(1);
+            expect(actual.issues.filter((issue) => issue.code === "repair-write-back-failed")).toEqual([]);
+            expect(existsSync(path.join(input, storedName("word/_rels/unused.xml.rels")))).toBe(false);
+        });
+    });
+
+    it("reports a write-back removal that fails for a reason other than the source already being gone (#412)", async () => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...MINIMAL_PARTS,
+                "word/_rels/unused.xml.rels": '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>',
+            };
+            const input = await writeDirectory(path.join(dir, "input.docx"), parts, true);
+            const realRm = fs.rm.bind(fs);
+            const spy = vi.spyOn(fs, "rm").mockImplementation(async (target, options) => {
+                if (typeof target === "string" && target.startsWith(input)) {
+                    throw Object.assign(new Error("EACCES: permission denied, rm"), { code: "EACCES" });
+                }
+                return realRm(target, options);
+            });
+            let actual;
+            try {
+                actual = await validateResolves(input, { strict: true, autoRepair: true });
+            } finally {
+                spy.mockRestore();
+            }
+            expect(actual.valid).toBe(false);
+            expect(actual.issues).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        severity: "error",
+                        code: "repair-write-back-failed",
+                        path: "word/_rels/unused.xml.rels",
+                    }),
+                ]),
+            );
+            // The staged part was still removed — only the stored file stayed.
+            expect(existsSync(path.join(input, storedName("word/_rels/unused.xml.rels")))).toBe(true);
+        });
+    });
+
+    it("skips the write-back when the staged copy cannot be snapshotted before repair (#412)", async () => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...MINIMAL_PARTS,
+                "word/document.xml": MINIMAL_PARTS["word/document.xml"].replace(">Hello<", "> Hello <"),
+            };
+            const input = await writeDirectory(path.join(dir, "input.docx"), parts, true);
+            const realRead = fs.readFile;
+            let failed = false;
+            // The first read of the staged word/document.xml is the pre-repair
+            // snapshot in runStaged: the input's stored name uses a backslash
+            // and the temp copy holds only forward-slash part names.
+            const spy = vi.spyOn(fs, "readFile").mockImplementation(((
+                target: Parameters<typeof fs.readFile>[0],
+                ...rest: readonly unknown[]
+            ) => {
+                if (!failed && typeof target === "string" && target.endsWith("word/document.xml")) {
+                    failed = true;
+                    return Promise.reject(Object.assign(new Error("EPERM: staged read failed"), { code: "EPERM" }));
+                }
+                return (realRead as (...args: readonly unknown[]) => unknown)(target, ...rest);
+            }) as typeof fs.readFile);
+            let actual;
+            try {
+                actual = await validateResolves(input, { strict: true, autoRepair: true });
+            } finally {
+                spy.mockRestore();
+            }
+            expect(failed).toBe(true);
+            expect(actual.valid).toBe(false);
+            expect(actual.issues).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({ severity: "error", code: "repair-write-back-failed", path: "word/document.xml" }),
+                ]),
+            );
+            // Without the pre-repair bytes the write-back cannot prove what
+            // changed, so the source is left untouched.
+            const back = await fs.readFile(path.join(input, storedName("word/document.xml")), "utf-8");
+            expect(back).toContain("> Hello <");
+            expect(back).not.toContain('xml:space="preserve"');
+        });
+    });
+
+    it.skipIf(runsAsRoot)("reports a staged part that turns unreadable before its write-back (#412)", async () => {
+        await withTempDir(async (dir) => {
+            const parts = {
+                ...MINIMAL_PARTS,
+                "word/document.xml": MINIMAL_PARTS["word/document.xml"].replace(">Hello<", "> Hello <"),
+            };
+            const input = await writeDirectory(path.join(dir, "input.docx"), parts, true);
+            const realRepair = DOCXSchemaValidator.prototype.repair;
+            // Deterministic mid-run hook: once auto-repair has rewritten the
+            // staged copy, the staged document turns unreadable, so the
+            // write-back re-read fails with EACCES instead of ENOENT.
+            const spy = vi.spyOn(DOCXSchemaValidator.prototype, "repair").mockImplementation(async function (this: DOCXSchemaValidator) {
+                const repairs = await realRepair.call(this);
+                await fs.chmod(path.join(this.unpackedDir, "word", "document.xml"), 0o000);
+                return repairs;
+            });
+            let actual;
+            try {
+                actual = await validateResolves(input, { strict: true, autoRepair: true });
+            } finally {
+                spy.mockRestore();
+            }
+            expect(actual.valid).toBe(false);
+            expect(actual.issues).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({ severity: "error", code: "repair-write-back-failed", path: "word/document.xml" }),
+                ]),
+            );
+            expect(actual.repairs).toBe(1);
+            const back = await fs.readFile(path.join(input, storedName("word/document.xml")), "utf-8");
+            expect(back).toContain("> Hello <");
+            expect(back).not.toContain('xml:space="preserve"');
+        });
+    });
 });
