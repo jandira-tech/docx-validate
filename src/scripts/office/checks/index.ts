@@ -38,6 +38,7 @@ import { wordMarkupCompatibilityCheck } from "./word-markup-compatibility";
 import { wordDocumentRootCheck, wordMainDocumentPartCheck } from "./word-document-root";
 import { ctDuplicateDeclarationCheck, wordContentTypeInvalidCheck } from "./word-content-types";
 import { ctOverridePartnameInvalidCheck } from "./ct-override-partname";
+import { wordPartContentTypeGenericCheck } from "./word-part-content-type-generic";
 import { wordDrawingScalarWhitespaceCheck, wordDrawingArcRadiusCheck, wordDrawingExtentNegativeCheck } from "./word-drawing-values";
 import { wordEmptyDrawingCheck, wordAnchorMissingAttributeCheck, wordPositionOffsetAndAlignCheck } from "./word-drawing-anchors";
 import { wordCellEndsWithTableCheck } from "./word-cell-ending";
@@ -132,6 +133,7 @@ export function createDefaultCheckRegistry(): CheckRegistry {
         ctOverridePartnameInvalidCheck,
         ctOverridePartnameWordRefusedCheck,
         ctMarkupCompatibilityCheck,
+        wordPartContentTypeGenericCheck,
         commentMarkersCheck,
         commentThreadingCheck,
         ...WORD_RULE_CHECKS,

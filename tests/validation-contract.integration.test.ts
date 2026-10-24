@@ -540,6 +540,82 @@ describe("validation contract: a full run keeps every part's own name (#376, #37
     });
 });
 
+describe("validation contract: a Word-read part typed only by the generic Default (#432)", { timeout: 120000 }, () => {
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    const CT_MAIN = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
+    /** The five parts Word 16.115 offers to recover when only the xml Default types them (session 8a). */
+    const GENERIC_DEFAULT_PARTS: readonly (readonly [string, string, string])[] = [
+        ["word/document.xml", "officeDocument", CT_MAIN],
+        ["word/styles.xml", "styles", "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"],
+        ["word/settings.xml", "settings", "application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"],
+        ["word/fontTable.xml", "fontTable", "application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml"],
+        ["word/webSettings.xml", "webSettings", "application/vnd.openxmlformats-officedocument.wordprocessingml.webSettings+xml"],
+    ];
+    const ROOTS: Readonly<Record<string, string>> = {
+        "word/settings.xml": "w:settings",
+        "word/fontTable.xml": "w:fonts",
+        "word/webSettings.xml": "w:webSettings",
+    };
+
+    const specimen = async (part: string, segment: string, contentType: string, override: boolean): Promise<Uint8Array> => {
+        const extra: Record<string, string> =
+            ROOTS[part] === undefined
+                ? {}
+                : { [part]: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<${ROOTS[part]} xmlns:w="${W}"/>` };
+        const rels =
+            part === "word/document.xml"
+                ? MINIMAL_PARTS["word/_rels/document.xml.rels"]
+                : MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                      "</Relationships>",
+                      `<Relationship Id="rId9" Type="${R}/${segment}" Target="${part.replace("word/", "")}"/></Relationships>`,
+                  );
+        const stream = MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+            new RegExp(`<Override PartName="/${part.replaceAll(".", "\\.")}" ContentType="[^"]+"/>`),
+            "",
+        ).replace("</Types>", override ? `<Override PartName="/${part}" ContentType="${contentType}"/></Types>` : "</Types>");
+        return buildDocx({ ...MINIMAL_PARTS, ...extra, "word/_rels/document.xml.rels": rels, "[Content_Types].xml": stream });
+    };
+
+    it.each(GENERIC_DEFAULT_PARTS)(
+        "word-valid and strict both fail %s typed only by the generic Default",
+        { timeout: 120000 },
+        async (part, segment, contentType) => {
+            const [wordValid, strict] = await Promise.all([
+                validateBytes(await specimen(part, segment, contentType, false), "word-valid"),
+                validateBytes(await specimen(part, segment, contentType, false), "strict"),
+            ]);
+            expect(wordValid.valid).toBe(false);
+            expect(strict.valid).toBe(false);
+            expect(wordValid.issues).toContainEqual(
+                expect.objectContaining({ code: "word-part-content-type-generic", severity: "error", path: part }),
+            );
+            if (segment === "officeDocument") {
+                // Strict already rejects the main document through its
+                // declarable root; the defect is not reported twice.
+                expect(strict.issues.some((issue) => issue.code === "word-part-content-type-generic")).toBe(false);
+                expect(errorCodes(strict.issues).has("ct-undeclared-part")).toBe(true);
+            } else {
+                expect(strict.issues).toContainEqual(
+                    expect.objectContaining({ code: "word-part-content-type-generic", severity: "error", path: part }),
+                );
+            }
+        },
+    );
+
+    it.each(GENERIC_DEFAULT_PARTS)(
+        "every profile passes %s with its proper Override",
+        { timeout: 120000 },
+        async (part, segment, contentType) => {
+            for (const profile of ["word-valid", "strict"] as const) {
+                const result = await validateBytes(await specimen(part, segment, contentType, true), profile);
+                expect(errorCodes(result.issues).has("word-part-content-type-generic"), `${part} ${profile}`).toBe(false);
+                expect(result.valid, `${part} ${profile}`).toBe(true);
+            }
+        },
+    );
+});
+
 // These are filesystem integration tests: literal backslashes are file-name
 // characters on POSIX, and separators on Windows.
 describe.skipIf(process.platform === "win32")("directory package staging (#374)", { timeout: 120000 }, () => {

@@ -4,7 +4,8 @@
  */
 
 /**
- * The parts Microsoft Word reads at open, through relationships (#437).
+ * The parts Microsoft Word reads at open, through relationships (#437), and
+ * which relationship type reaches each of them (#432).
  *
  * Word 16.115 does not read a part because it lies under `word/`: an
  * unreferenced truncated `word/xtra.xml` opens clean even with its own
@@ -106,6 +107,19 @@ const resolveTarget = (lookup: (partName: string) => string | undefined, baseDir
     return lookup(joined);
 };
 
+/** The relationships part of a source part, found by OPC part-name equivalence. */
+const sidecarOf = (names: readonly string[], part: string): string | undefined =>
+    findEquivalentPart(names, path.posix.join(path.posix.dirname(part), "_rels", `${path.posix.basename(part)}.rels`));
+
+/** Each relationship a part's relationships part holds, with its parsed DOM, or `undefined`. */
+const relationshipsOf = (context: ValidationContext, relsPart: string | undefined): readonly Element[] => {
+    if (relsPart === undefined) {
+        return [];
+    }
+    const parsed = context.xml(relsPart);
+    return parsed?.ok ? getRelationshipChildren(parsed.document) : [];
+};
+
 /** The relationship ids the main document's `w:footerReference` elements name. */
 const footerReferenceIds = (document: Document): ReadonlySet<string> => {
     const ids = new Set<string>();
@@ -134,6 +148,118 @@ const footerReferenceIds = (document: Document): ReadonlySet<string> => {
 const hasReference = (document: Document, localName: string): boolean =>
     WORD_MAIN_NAMESPACES.some((namespace) => getElementsByTagNameNSAll(document, namespace, localName).length > 0);
 
+/** The package traversal the reachability views share: the names, the lookup, the main documents. */
+type PackageReach = {
+    readonly names: readonly string[];
+    readonly lookup: (partName: string) => string | undefined;
+    /** Stored spellings of the main document parts. */
+    readonly mainParts: readonly string[];
+};
+
+/**
+ * Read the package relationships part and find the main documents. As
+ * `propertiesParts` does (#409, #388), a package relationships part that is
+ * missing or does not parse yields nothing: its own diagnostics already block
+ * the run, and no view should trust relationships the DOM parser recovered.
+ */
+const packageReach = async (context: ValidationContext): Promise<PackageReach | undefined> => {
+    const names = context.partNames;
+    const lookup = equivalentPartLookup(names);
+    const packageRelsName = findEquivalentPart(names, "_rels/.rels");
+    if (packageRelsName === undefined) {
+        return undefined;
+    }
+    const bytes = context.bytes(packageRelsName);
+    if (bytes === undefined || (await checkXmlSyntax(bytes, packageRelsName)).some((issue) => issue.severity === "error")) {
+        return undefined;
+    }
+    const packageRels = context.xml(packageRelsName);
+    if (!packageRels?.ok) {
+        return undefined;
+    }
+    const mainParts = new Set<string>();
+    for (const relationship of getRelationshipChildren(packageRels.document)) {
+        if (relationship.getAttribute("TargetMode") === "External" || !OFFICE_DOCUMENT_TYPES.has(relationship.getAttribute("Type") ?? "")) {
+            continue;
+        }
+        // Package relationships resolve from the root, never from _rels/.
+        const target = resolveTarget(lookup, ".", relationship.getAttribute("Target") ?? "");
+        if (target !== undefined) {
+            mainParts.add(target);
+        }
+    }
+    return { names, lookup, mainParts: [...mainParts] };
+};
+
+/** One relationship target, with the type segment that reached it. */
+export type WordTypedTarget = {
+    /** The stored part-name spelling, as the package view holds it. */
+    readonly part: string;
+    /** The relationship type's last path segment, or `officeDocument` for the main document. */
+    readonly segment: string;
+};
+
+/** Canonical names of the main document parts, wherever they are stored. */
+export const wordMainDocumentParts = async (context: ValidationContext): Promise<ReadonlySet<string>> => {
+    const reach = await packageReach(context);
+    return new Set((reach?.mainParts ?? []).map(canonicalPartName));
+};
+
+/**
+ * The parts the named relationship segments reach (#432): every main document
+ * (`officeDocument`), and the target of every main-document relationship of
+ * one of the other segments, Transitional or Strict. One entry per part, in
+ * traversal order; a part reached twice keeps the segment that reached it
+ * first.
+ */
+export const wordTypedRelationshipTargets = async (
+    context: ValidationContext,
+    segments: ReadonlySet<string>,
+): Promise<readonly WordTypedTarget[]> => {
+    const reach = await packageReach(context);
+    if (reach === undefined) {
+        return [];
+    }
+    const targets: WordTypedTarget[] = [];
+    const seen = new Set<string>();
+    const add = (part: string, segment: string): void => {
+        const canonical = canonicalPartName(part);
+        if (seen.has(canonical)) {
+            return;
+        }
+        seen.add(canonical);
+        // The stored spelling is what the finding reports, as every other
+        // check reports the part names the package view holds.
+        targets.push({ part, segment });
+    };
+    if (segments.has("officeDocument")) {
+        for (const mainPart of reach.mainParts) {
+            add(mainPart, "officeDocument");
+        }
+    }
+    const namedSegments = [...segments].filter((segment) => segment !== "officeDocument");
+    if (namedSegments.length === 0) {
+        return targets;
+    }
+    const wanted = new Set(namedSegments);
+    for (const mainPart of reach.mainParts) {
+        for (const relationship of relationshipsOf(context, sidecarOf(reach.names, mainPart))) {
+            if (relationship.getAttribute("TargetMode") === "External") {
+                continue;
+            }
+            const type = relationship.getAttribute("Type") ?? "";
+            if (!isOfficeRelationshipType(type) || !wanted.has(typeSegment(type))) {
+                continue;
+            }
+            const target = resolveTarget(reach.lookup, path.posix.dirname(mainPart), relationship.getAttribute("Target") ?? "");
+            if (target !== undefined) {
+                add(target, typeSegment(type));
+            }
+        }
+    }
+    return targets;
+};
+
 /**
  * Canonical names of the parts Word reads at open through relationships.
  * Mirrors `propertiesParts`: a package relationships part that does not parse
@@ -143,62 +269,27 @@ const hasReference = (document: Document, localName: string): boolean =>
  */
 export const wordReadParts = async (context: ValidationContext): Promise<ReadonlySet<string>> => {
     const parts = new Set<string>();
-    const names = context.partNames;
-    const lookup = equivalentPartLookup(names);
+    const reach = await packageReach(context);
+    if (reach === undefined) {
+        return parts;
+    }
+    const { names, lookup } = reach;
 
-    const packageRelsName = findEquivalentPart(names, "_rels/.rels");
-    if (packageRelsName === undefined) {
-        return parts;
-    }
-    // Do not use relationships recovered by the DOM parser. An unreadable
-    // package relationships part already blocks Word-valid on its own (#388).
-    const bytes = context.bytes(packageRelsName);
-    if (bytes === undefined || (await checkXmlSyntax(bytes, packageRelsName)).some((issue) => issue.severity === "error")) {
-        return parts;
-    }
-    const packageRels = context.xml(packageRelsName);
-    if (!packageRels?.ok) {
-        return parts;
-    }
-
-    // The main document, wherever the package relationship stores it.
-    const mainParts = new Set<string>();
-    for (const relationship of getRelationshipChildren(packageRels.document)) {
-        if (relationship.getAttribute("TargetMode") === "External" || !OFFICE_DOCUMENT_TYPES.has(relationship.getAttribute("Type") ?? "")) {
-            continue;
-        }
-        // Package relationships resolve from the root, never from _rels/.
-        const target = resolveTarget(lookup, ".", relationship.getAttribute("Target") ?? "");
-        if (target === undefined) {
-            continue;
-        }
-        mainParts.add(target);
-        parts.add(canonicalPartName(target));
+    for (const mainPart of reach.mainParts) {
+        parts.add(canonicalPartName(mainPart));
     }
 
     // Main-document relationships: eager types always, lazy types only when
     // the document uses them. Usage is read from the effective view Word
     // consumes, after markup compatibility has selected its branches.
-    for (const mainPart of mainParts) {
+    for (const mainPart of reach.mainParts) {
         const main = context.has(mainPart) ? context.effectiveXml(mainPart) : undefined;
         const footerIds = main?.ok ? footerReferenceIds(main.document) : undefined;
         const usesComments = main?.ok ? hasReference(main.document, "commentReference") : undefined;
         const usesFootnotes = main?.ok ? hasReference(main.document, "footnoteReference") : undefined;
 
-        const sidecarName = findEquivalentPart(
-            names,
-            path.posix.join(path.posix.dirname(mainPart), "_rels", `${path.posix.basename(mainPart)}.rels`),
-        );
-        if (sidecarName === undefined) {
-            continue;
-        }
-        const sidecar = context.xml(sidecarName);
-        if (!sidecar?.ok) {
-            continue;
-        }
-
         const baseDir = path.posix.dirname(mainPart);
-        for (const relationship of getRelationshipChildren(sidecar.document)) {
+        for (const relationship of relationshipsOf(context, sidecarOf(names, mainPart))) {
             if (relationship.getAttribute("TargetMode") === "External") {
                 continue;
             }
@@ -237,12 +328,8 @@ export const wordReadParts = async (context: ValidationContext): Promise<Readonl
         if (!isRelationshipsPartName(name)) {
             continue;
         }
-        const rels = context.xml(name);
-        if (!rels?.ok) {
-            continue;
-        }
         const baseDir = relationshipsBaseDir(name);
-        for (const relationship of getRelationshipChildren(rels.document)) {
+        for (const relationship of relationshipsOf(context, name)) {
             if (relationship.getAttribute("TargetMode") === "External") {
                 continue;
             }

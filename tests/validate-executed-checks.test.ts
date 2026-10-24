@@ -72,6 +72,7 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
                 "ct-override-partname-word-refused",
                 // The content-types Markup Compatibility refusal (#459).
                 "ct-markup-compatibility",
+                "word-part-content-type-generic",
                 "comment-markers",
                 "comment-threading",
             ]);
@@ -160,6 +161,8 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
                     "ct-override-partname-invalid",
                     "ct-override-partname-word-refused",
                     "ct-markup-compatibility",
+                    // A DOCX content-types check, run under every profile (#432).
+                    "word-part-content-type-generic",
                     "comment-markers",
                     "comment-threading",
                 ]);

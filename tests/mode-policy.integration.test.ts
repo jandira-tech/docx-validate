@@ -166,6 +166,7 @@ describe("quick mode runs the common-defect preset and discloses its omissions",
             "ct-override-partname-word-refused",
             // Its Markup Compatibility refusal (#459).
             "ct-markup-compatibility",
+            "word-part-content-type-generic",
             "word-grid-column-attributes",
             "word-cell-margin-order",
             "word-table-properties-required",

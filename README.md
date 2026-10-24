@@ -268,7 +268,8 @@ The complete named check catalogue is below. Each Word check except
 XML prerequisite. All `word-*` checks apply to DOCX/DOCM only.
 `ct-duplicate-declaration`, `ct-override-partname-invalid`,
 `ct-override-partname-word-refused` and `ct-markup-compatibility` apply to
-every package format; `word-content-type-invalid` applies to DOCX/DOCM only.
+every package format; `word-content-type-invalid` and
+`word-part-content-type-generic` apply to DOCX/DOCM only.
 
 `zip-bytes-before-archive` applies to DOCX/DOCM, PPTX, and XLSX package
 selections, including the `package` quick group, and reads the archive bytes
@@ -365,7 +366,7 @@ names and input bytes unchanged.
 | `story`                   | `word-shading-color`, `word-page-margin-attributes`, `word-run-misplaced`, `word-run-properties-misplaced`, `word-underline-misplaced`, `word-paragraph-properties-misplaced`, `word-section-properties-misplaced`, `word-footnote-reference-missing`, `word-numbering-picture-bullet`, `word-sdt-id-empty`, `word-text-contains-paragraph`         |
 | `tables`                  | `word-grid-column-attributes`, `word-cell-margin-order`, `word-table-properties-required`, `word-table-properties-misplaced`, `word-row-without-cell`, `word-cell-ends-with-table`                                                                                                                                                                  |
 | `drawings`                | `word-textbox-content-namespace`, `word-drawing-extent-missing`, `word-drawing-extent-misplaced`, `word-picture-nvpicpr-missing`, `word-picture-sppr-missing`, `word-empty-drawing`, `word-anchor-missing-attribute`, `word-position-offset-and-align`, `word-drawing-scalar-whitespace`, `word-drawing-arc-radius`, `word-drawing-extent-negative` |
-| `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`, `ct-override-partname-invalid`, `ct-override-partname-word-refused`, `ct-markup-compatibility`                                                                                                                                                                                             |
+| `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`, `ct-override-partname-invalid`, `ct-override-partname-word-refused`, `ct-markup-compatibility`, `word-part-content-type-generic`                                                                                                                                                           |
 | `relationships`           | `word-duplicate-theme-relationship`, `word-duplicate-font-table-relationship`, `word-duplicate-web-settings-relationship`, `word-duplicate-settings-relationship`, `word-hyperlink-relationship`, `word-main-document-part`, `opc-relationships-structure`                                                                                          |
 | `tracked-changes`         | `word-textbox-deleted-text`, `word-move-from-deleted-text`                                                                                                                                                                                                                                                                                          |
 | `settings`                | `word-custom-property-filetime-empty`, `word-attached-toolbar-utf8`                                                                                                                                                                                                                                                                                 |
@@ -436,6 +437,27 @@ a `ct-override-partname-invalid` finding, and a bad `mc:Fallback` still does.
 The finding is an error, and Word-blocking, under word-valid for DOCX/DOCM and
 under strict (whose schema walk already refuses the same stream); lenient and
 the unobserved PPTX/XLSX warn. Full, quick and named runs agree.
+
+`word-part-content-type-generic` reports a part Word reads whose content type
+resolves only through the generic `<Default Extension="xml"
+ContentType="application/xml"/>` — no Override of its own. The reached parts
+are the main document (the package `officeDocument` relationship's target) and
+the parts the main document's relationships of type styles, settings,
+fontTable or webSettings name, wherever they are stored. Resolution follows
+ECMA-376 Part 2 §10.1.2.4 through the shared table: an exact `Override` wins,
+so a part with a specific Override — right or wrong — is out of scope, and
+numbering and customXml stay silent until a probe observes them. One finding
+is reported per part, at the part's path, naming the relationship type and
+the content type the part needs. Word 16.115 offers to recover the package
+for all five parts probed typed only by the generic Default — the main
+document and styles with their Override removed, and settings, fontTable and
+webSettings added with a relationship but no Override — and opens every
+proper-Override control clean ([#432](https://github.com/jandira-tech/docx-validate/issues/432),
+session 8a in `docs/plans/evidence/word-probes-2026-10-24.md`). The finding
+is an error, and Word-blocking, under word-valid for DOCX/DOCM, and an error
+under strict, where the main document is not reported twice because
+`ct-undeclared-part` already rejects it; lenient reports a warning. Full,
+quick and named runs agree.
 
 The `schema` group contains structural checks, not an XSD walk. The `comments`
 group runs `comment-markers` (range pairing and references to existing comments)
