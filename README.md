@@ -274,19 +274,23 @@ every package format; `word-content-type-invalid` and
 `zip-bytes-before-archive` applies to DOCX/DOCM, PPTX, and XLSX package
 selections, including the `package` quick group, and reads the archive bytes
 before extraction. It reports the bytes in front of the archive JSZip loads —
-the rebase offset plus the lowest stored local-header offset, so a prepended
-ZIP, junk with relative offsets, and junk with the absolute offsets a
-self-extractor writes all measure the same prefix — as one blocking error
-under strict and Word-valid. Word 16.115 offers to recover every prefixed
-package probed ([#464](https://github.com/jandira-tech/docx-validate/issues/464);
+the rebase offset plus the lowest local-header offset as JSZip resolves it,
+so a prepended ZIP, junk with relative offsets, junk with the absolute
+offsets a self-extractor writes, and the ZIP64 spelling (a saturated offset
+whose 0x0001 extra field carries the value) all measure the same prefix — as
+one blocking error under strict and Word-valid. Word 16.115 offers to recover
+every prefixed package probed
+([#464](https://github.com/jandira-tech/docx-validate/issues/464);
 probe session 14 in
 [docs/plans/evidence/word-probes-2026-10-24.md](docs/plans/evidence/word-probes-2026-10-24.md)).
 Lenient runs no ZIP-envelope check. A concatenated `[zip][docx]` is reported
 once, by this check: the earlier archive lies wholly in front of the archive
 JSZip loads, so `zip-bytes-after-eocd` no longer counts the live archive as
-undeclared trailing bytes. Trailing data behind a prefixed archive is still
-`zip-bytes-after-eocd`'s finding, measured from the loaded archive's own
-record.
+undeclared trailing bytes — the earlier record's fixed extent decides, even
+when its declared comment reaches into the live archive
+([#491](https://github.com/jandira-tech/docx-validate/issues/491)). Trailing
+data behind a prefixed archive is still `zip-bytes-after-eocd`'s finding,
+measured from the loaded archive's own record.
 
 `opc-equivalent-part-names` applies to DOCX/DOCM, PPTX, and XLSX package selections,
 including the `package` quick group. It reads stored ZIP item names before full-run

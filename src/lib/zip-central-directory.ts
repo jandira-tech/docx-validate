@@ -38,6 +38,7 @@
 export const EOCD_SIGNATURE = 0x06054b50;
 export const EOCD_BYTES = Buffer.from([0x50, 0x4b, 0x05, 0x06]);
 export const CENTRAL_DIRECTORY_SIGNATURE = 0x02014b50;
+export const LOCAL_HEADER_SIGNATURE = 0x04034b50;
 export const ZIP64_LOCATOR_SIGNATURE = 0x07064b50;
 export const EOCD_FIXED_LENGTH = 22;
 export const ZIP64_LOCATOR_LENGTH = 20;
@@ -50,6 +51,7 @@ const ZIP64_COUNT = 0xffff;
 /** `utils.MAX_VALUE_32BITS`: a saturated 4-byte field as `readJszipInt` reads it. */
 const JSZIP_MAX_32 = -1;
 const CENTRAL_HEADER_FIXED_LENGTH = 46;
+const ZIP64_EXTRA_FIELD = 0x0001;
 const UTF8_NAME_FLAG = 0x0800;
 const DOS_DIRECTORY_ATTRIBUTE = 0x10;
 
@@ -216,8 +218,10 @@ export type CentralDirectoryView = {
  * record yields JSZip's empty directory, and a record whose directory would
  * end past it is refused, as JSZip refuses it. The walk is JSZip's
  * `readCentralDir`: records are read while the central-header signature
- * matches, a record whose declared name, extra or comment fields would run
- * past the buffer refuses as `readData` refuses, fewer than four bytes left
+ * matches, a record whose 46-byte fixed header the buffer cuts off refuses
+ * as `readCentralPart`'s bounded reads refuse (#498), a record whose
+ * declared name, extra or comment fields would run past the buffer refuses
+ * as `readData` refuses, fewer than four bytes left
  * for the next signature read refuses too, and the declared count only
  * refuses when no record at all is found (#478). ZIP64 follows JSZip too: the
  * last locator, its record or else the last ZIP64 record, and an expected
@@ -275,10 +279,11 @@ export const readCentralDirectoryView = (buf: Uint8Array): CentralDirectoryView 
         // The locator, then the ZIP64 record: 12 leading bytes plus its declared size.
         expected = offset + size + ZIP64_LOCATOR_LENGTH + 12 + recordSize;
     }
-    // JSZip throws on a negative index; a negative size or count is no
-    // directory it walks either.
+    // JSZip throws on a negative index — a negative offset or a negative
+    // declared size, which only feeds the rebase — and a declared count it
+    // reads as -1 is refused only when the walk finds no record (#492).
     const zero = eocd - expected;
-    if (zero < 0 || offset < 0 || size < 0 || count < 0) {
+    if (zero < 0 || offset < 0 || size < 0) {
         return undefined;
     }
     offset += zero;
@@ -296,6 +301,11 @@ export const readCentralDirectoryView = (buf: Uint8Array): CentralDirectoryView 
         }
         if (!hasSignature(buf, offset, CENTRAL_DIRECTORY_SIGNATURE)) {
             break;
+        }
+        // The record's fixed header is `readCentralPart`'s `readInt`/`skip`
+        // sequence: it throws when the 46 bytes would pass the buffer (#498).
+        if (offset + CENTRAL_HEADER_FIXED_LENGTH > buf.length) {
+            return undefined;
         }
         const flags = readU16(buf, offset + 8);
         const nameLength = readU16(buf, offset + 28);
@@ -345,16 +355,94 @@ export const readCentralDirectoryView = (buf: Uint8Array): CentralDirectoryView 
 };
 
 /**
- * The bytes in front of the archive JSZip loads, or `undefined` when the
- * central directory cannot be read (#464). JSZip reads each entry's local
- * header at `zero + localHeaderOffset` (`dataReader`'s `byteAt` adds the
- * rebase), so the archive it loads begins at the lowest of those positions —
- * the rebase `zero` plus the lowest stored local-header offset, which covers
- * a self-extractor's absolute offsets (`zero` 0, first offset raised) and a
+ * The record's local-header offset as JSZip resolves it (`readCentralPart`
+ * plus `parseZIP64ExtraField`): the base field read as `readJszipInt`, or —
+ * when it saturates to -1 — the 8-byte value the record's ZIP64 extra field
+ * (0x0001) stores for it, after the slots any saturated uncompressed and
+ * compressed sizes consume first, in that order. `undefined` where JSZip's
+ * `load` throws: no 0x0001 field for a saturated value, a value too short
+ * for the read, a size still -1 after resolution, a negative effective
+ * offset, or no local signature at the resolved position (#490).
+ */
+const localHeaderOffsetOf = (buf: Uint8Array, view: CentralDirectoryView, record: ZipCentralRecord): number | undefined => {
+    const nameEnd = record.recordOffset + CENTRAL_HEADER_FIXED_LENGTH + record.nameBytes.length;
+    const extraEnd = nameEnd + record.extraBytes.length;
+    let zip64: Uint8Array | undefined;
+    for (let cursor = nameEnd; cursor + 4 < extraEnd;) {
+        const id = readU16(buf, cursor);
+        const length = readU16(buf, cursor + 2);
+        // `readData` throws when a declared field passes the buffer's end.
+        if (cursor + 4 + length > buf.length) {
+            return undefined;
+        }
+        if (id === ZIP64_EXTRA_FIELD) {
+            zip64 = buf.subarray(cursor + 4, cursor + 4 + length);
+        }
+        cursor += 4 + length;
+    }
+    let uncompressed = readJszipInt(buf, record.recordOffset + 24);
+    let compressed = readJszipInt(buf, record.recordOffset + 20);
+    let offset = readJszipInt(buf, record.recordOffset + 42);
+    if (uncompressed === JSZIP_MAX_32 || compressed === JSZIP_MAX_32 || offset === JSZIP_MAX_32) {
+        if (zip64 === undefined) {
+            return undefined;
+        }
+        const field = zip64;
+        let cursor = 0;
+        // `extraReader.readInt(8)`: the low 32 bits, signed; a value too
+        // short for the read throws.
+        const take = (): number | undefined => {
+            if (cursor + 8 > field.length) {
+                return undefined;
+            }
+            const value = readJszipInt(field, cursor);
+            cursor += 8;
+            return value;
+        };
+        if (uncompressed === JSZIP_MAX_32) {
+            const value = take();
+            if (value === undefined) {
+                return undefined;
+            }
+            uncompressed = value;
+        }
+        if (compressed === JSZIP_MAX_32) {
+            const value = take();
+            if (value === undefined) {
+                return undefined;
+            }
+            compressed = value;
+        }
+        if (offset === JSZIP_MAX_32) {
+            const value = take();
+            if (value === undefined) {
+                return undefined;
+            }
+            offset = value;
+        }
+    }
+    // `readLocalPart` refuses a size still -1; `readLocalFiles`' `setIndex`
+    // refuses a negative offset.
+    if (uncompressed === JSZIP_MAX_32 || compressed === JSZIP_MAX_32 || offset < 0) {
+        return undefined;
+    }
+    // `readLocalFiles` seeks to `zero + offset` and reads the local signature.
+    if (!hasSignature(buf, view.zero + offset, LOCAL_HEADER_SIGNATURE)) {
+        return undefined;
+    }
+    return offset;
+};
+
+/**
+ * The bytes in front of the archive JSZip loads, or `undefined` where its
+ * reader throws (#464, #490). JSZip reads each entry's local header at
+ * `zero + localHeaderOffset` (`dataReader`'s `byteAt` adds the rebase), the
+ * offset resolved as {@link localHeaderOffsetOf} resolves it — the ZIP64
+ * extra field's value where the base field is saturated — so the archive it
+ * loads begins at the lowest of those positions, which covers a
+ * self-extractor's absolute offsets (`zero` 0, first offset raised) and a
  * prepended archive (`zero` raised, offsets relative). An empty directory
- * names no local header; the rebase alone is the prefix. The base field only:
- * a per-entry ZIP64 extra field can override a saturated offset, but an
- * archive that large cannot be read as doubles anyway.
+ * names no local header; the rebase alone is the prefix.
  */
 export const zipBytesBeforeArchive = (buf: Uint8Array): number | undefined => {
     const view = readCentralDirectoryView(buf);
@@ -363,7 +451,12 @@ export const zipBytesBeforeArchive = (buf: Uint8Array): number | undefined => {
     }
     let lowest: number | undefined = undefined;
     for (const record of view.records) {
-        lowest = lowest === undefined ? record.localHeaderOffset : Math.min(lowest, record.localHeaderOffset);
+        const offset = localHeaderOffsetOf(buf, view, record);
+        if (offset === undefined) {
+            return undefined;
+        }
+        lowest = lowest === undefined ? offset : Math.min(lowest, offset);
     }
-    return lowest === undefined ? view.zero : view.zero + lowest;
+    const prefix = lowest === undefined ? view.zero : view.zero + lowest;
+    return Number.isFinite(prefix) ? prefix : undefined;
 };

@@ -140,6 +140,87 @@ export const buildRawZip = (entries: readonly RawZipEntry[], options: { readonly
     return Buffer.concat(records);
 };
 
+const EOCD_RECORD_BYTES = Buffer.from([0x50, 0x4b, 0x05, 0x06]);
+
+/**
+ * A buffer whose whole archive is a central-directory signature at offset 0
+ * and an end-of-central-directory record declaring one record there, padded
+ * with zeros to `length`: `length` decides how much of the record's 46-byte
+ * fixed header the buffer holds (#498).
+ */
+export const truncatedCentralStub = (length: number): Buffer => {
+    const bytes = Buffer.alloc(length);
+    bytes.writeUInt32LE(0x02014b50, 0);
+    bytes.writeUInt32LE(0x06054b50, 4);
+    bytes.writeUInt16LE(1, 12);
+    bytes.writeUInt16LE(1, 14);
+    bytes.writeUInt32LE(4, 16);
+    bytes.writeUInt32LE(0, 20);
+    return bytes;
+};
+
+/**
+ * Rewrite the first `count` central records' local-header-offset field to the
+ * ZIP64 spelling: a saturated 0xFFFFFFFF base field plus a 0x0001 extra field
+ * holding `value` — the stored offset by default — in `fieldLength` bytes.
+ * `sizes` also saturates the record's size fields, which JSZip resolves from
+ * the same extra field first, in order (#490).
+ */
+export const saturateLocalHeaderOffsets = (
+    zip: Uint8Array,
+    options: { readonly count?: number; readonly sizes?: boolean; readonly fieldLength?: number; readonly value?: bigint } = {},
+): Buffer => {
+    const buf = Buffer.from(zip);
+    const eocd = buf.lastIndexOf(EOCD_RECORD_BYTES);
+    const count = buf.readUInt16LE(eocd + 10);
+    const cdOffset = buf.readUInt32LE(eocd + 16);
+    const cdEnd = eocd;
+    const records: Buffer[] = [];
+    const patches = Math.min(options.count ?? count, count);
+    let offset = cdOffset;
+    for (let i = 0; i < count; i += 1) {
+        if (buf.readUInt32LE(offset) !== 0x02014b50) throw new Error("bad central header");
+        const nameLength = buf.readUInt16LE(offset + 28);
+        const extraLength = buf.readUInt16LE(offset + 30);
+        const commentLength = buf.readUInt16LE(offset + 32);
+        const end = offset + 46 + nameLength + extraLength + commentLength;
+        const record = Buffer.from(buf.subarray(offset, end));
+        if (i < patches) {
+            // The ZIP64 extra field's values in APPNOTE order: the saturated
+            // fields only — uncompressed size, compressed size, offset.
+            const valueParts: Buffer[] = [];
+            if (options.sizes === true) {
+                const sizes = Buffer.alloc(16);
+                sizes.writeBigUInt64LE(BigInt.asUintN(64, BigInt(record.readUInt32LE(24))), 0);
+                sizes.writeBigUInt64LE(BigInt.asUintN(64, BigInt(record.readUInt32LE(20))), 8);
+                valueParts.push(sizes);
+                record.writeUInt32LE(0xffffffff, 20);
+                record.writeUInt32LE(0xffffffff, 24);
+            }
+            const raw = Buffer.alloc(8);
+            raw.writeBigUInt64LE(BigInt.asUintN(64, options.value ?? BigInt(record.readUInt32LE(42))), 0);
+            valueParts.push(raw.subarray(0, options.fieldLength ?? 8));
+            const value = Buffer.concat(valueParts);
+            const field = Buffer.alloc(4 + value.length);
+            field.writeUInt16LE(0x0001, 0);
+            field.writeUInt16LE(value.length, 2);
+            value.copy(field, 4);
+            record.writeUInt32LE(0xffffffff, 42);
+            record.writeUInt16LE(extraLength + field.length, 30);
+            const insert = 46 + nameLength;
+            const grown = Buffer.concat([record.subarray(0, insert), field, record.subarray(insert)]);
+            records.push(grown);
+        } else {
+            records.push(record);
+        }
+        offset = end;
+    }
+    const central = Buffer.concat(records);
+    const tail = Buffer.from(buf.subarray(cdEnd));
+    tail.writeUInt32LE(central.length, 12);
+    return Buffer.concat([buf.subarray(0, cdOffset), central, tail]);
+};
+
 /**
  * Raise every stored offset by `prefix` bytes, as a self-extractor writes a
  * ZIP behind its stub: the EOCD's central-directory offset and each central
@@ -148,7 +229,7 @@ export const buildRawZip = (entries: readonly RawZipEntry[], options: { readonly
  */
 export const absoluteOffsetsAfter = (zip: Uint8Array, prefix: number): Buffer => {
     const buf = Buffer.from(zip);
-    const eocd = buf.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
+    const eocd = buf.lastIndexOf(EOCD_RECORD_BYTES);
     const count = buf.readUInt16LE(eocd + 10);
     let offset = buf.readUInt32LE(eocd + 16);
     buf.writeUInt32LE(offset + prefix, eocd + 16);

@@ -24,9 +24,8 @@ import {
     ZIP64_LOCATOR_SIGNATURE,
     ZIP64_OFFSET,
     type ZipCentralRecord,
+    LOCAL_HEADER_SIGNATURE,
 } from "./zip-central-directory";
-
-const LOCAL_HEADER_SIGNATURE = 0x04034b50;
 const LOCAL_HEADER_FIXED_LENGTH = 30;
 const CENTRAL_HEADER_FIXED_LENGTH = 46;
 const UNICODE_PATH_FIELD = 0x7075;

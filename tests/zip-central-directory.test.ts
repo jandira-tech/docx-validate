@@ -9,7 +9,7 @@ import { readCentralDirectoryView, zipBytesBeforeArchive, zipCentralDirectoryEnt
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import JSZip from "jszip";
 
-import { absoluteOffsetsAfter, buildRawZip } from "./support/raw-zip";
+import { absoluteOffsetsAfter, buildRawZip, truncatedCentralStub, saturateLocalHeaderOffsets } from "./support/raw-zip";
 import {
     extensibleDataArchive,
     multiVolumeArchive,
@@ -333,6 +333,136 @@ describe("zipBytesBeforeArchive: bytes in front of the archive JSZip loads (#464
         ],
     ])("returns undefined on %s", (_label, bytes) => {
         expect(zipBytesBeforeArchive(bytes)).toBeUndefined();
+    });
+});
+
+// A central-directory signature the buffer cuts off inside the record's
+
+// A ZIP64 record whose declared total count reads -1 through `readInt(8)`
+// (all FF bytes) is no error for JSZip when records exist: `readCentralDir`
+// throws only for a nonzero count that finds no record (#492).
+describe("the ZIP64 declared count (#492)", () => {
+    const loaded = async (bytes: Uint8Array) => Object.keys((await JSZip.loadAsync(bytes)).files).sort();
+    const single = () => buildRawZip([{ name: "a.xml", content: "<a/>" }], { zip64: true });
+    const zip64Count = (bytes: Buffer, count: bigint): Buffer => {
+        const record = bytes.lastIndexOf(Buffer.from([0x50, 0x4b, 0x06, 0x06]));
+        const stored = BigInt.asUintN(64, count);
+        bytes.writeBigUInt64LE(stored, record + 24);
+        bytes.writeBigUInt64LE(stored, record + 32);
+        return bytes;
+    };
+
+    it.each([-1n, 0n, 2n])("tolerates a declared count of %s, as JSZip does", async (count) => {
+        const bytes = zip64Count(single(), count);
+        expect(await loaded(bytes)).toEqual(["a.xml"]);
+        expect(names(bytes)).toEqual(["a.xml"]);
+        expect(zipBytesBeforeArchive(bytes)).toBe(0);
+    });
+
+    it("returns undefined where JSZip throws: count -1 and no record found", async () => {
+        const bytes = zip64Count(single(), -1n);
+        const record = bytes.lastIndexOf(Buffer.from([0x50, 0x4b, 0x06, 0x06]));
+        const directory = Number(bytes.readBigUInt64LE(record + 48));
+        bytes.writeUInt32LE(0, directory);
+        await expect(JSZip.loadAsync(bytes)).rejects.toThrow();
+        expect(names(bytes)).toBeUndefined();
+        expect(zipBytesBeforeArchive(bytes)).toBeUndefined();
+    });
+});
+
+// A saturated local-header offset whose record's ZIP64 extra field (0x0001)
+// carries the real value is how JSZip reads the entry (zipEntry.js
+// `parseZIP64ExtraField`): `readInt(4)` sees -1, the extra's 8-byte field —
+// read with the same 32-bit arithmetic — replaces it (#490). The measure is
+// what JSZip loads, and `undefined` exactly where JSZip throws.
+describe("the ZIP64 extra field's local-header offset (#490)", () => {
+    const loaded = async (bytes: Uint8Array) => {
+        const files = (await JSZip.loadAsync(bytes)).files;
+        return Object.keys(files)
+            .filter((name) => !files[name]!.dir)
+            .sort();
+    };
+    const DOCX_NAMES = [...Object.keys(MINIMAL_PARTS)].sort();
+    const JUNK = Buffer.alloc(4096, 0x20);
+
+    it.each([1, 2, undefined] as const)(
+        "measures the extra field's value, not the saturated base field, when %s record(s) use the spelling",
+        async (count) => {
+            const bytes = saturateLocalHeaderOffsets(await buildDocx(), { count });
+            expect(await loaded(bytes)).toEqual(DOCX_NAMES);
+            expect(zipBytesBeforeArchive(bytes)).toBe(0);
+        },
+    );
+
+    it("reads the extra field in JSZip's order, after saturated size fields", async () => {
+        const bytes = saturateLocalHeaderOffsets(buildRawZip([{ name: "a.xml", content: "<a/>" }]), {
+            sizes: true,
+        });
+        expect(await loaded(bytes)).toEqual(["a.xml"]);
+        expect(zipBytesBeforeArchive(bytes)).toBe(0);
+    });
+
+    it("measures a real prefix in front of the archive exactly", async () => {
+        const archive = saturateLocalHeaderOffsets(await buildDocx(), { count: 1 });
+        const bytes = Buffer.concat([JUNK, archive]);
+        expect(await loaded(bytes)).toEqual(DOCX_NAMES);
+        expect(zipBytesBeforeArchive(bytes)).toBe(JUNK.length);
+    });
+
+    it.each([
+        [
+            "a saturated offset with no extra field",
+            async () => {
+                const docx = await buildDocx();
+                const eocd = docx.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
+                docx.writeUInt32LE(0xffffffff, docx.readUInt32LE(eocd + 16) + 42);
+                return docx;
+            },
+        ],
+        [
+            "an extra field too short for the offset read",
+            () => saturateLocalHeaderOffsets(buildRawZip([{ name: "a.xml", content: "<a/>" }]), { fieldLength: 4 }),
+        ],
+        [
+            "a negative effective offset",
+            () => saturateLocalHeaderOffsets(buildRawZip([{ name: "a.xml", content: "<a/>" }]), { value: -1n }),
+        ],
+        [
+            "a base field in [0x80000000, 0xFFFFFFFE]",
+            () => {
+                const bytes = buildRawZip([{ name: "a.xml", content: "<a/>" }]);
+                const eocd = bytes.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
+                bytes.writeUInt32LE(0x80000000, bytes.readUInt32LE(eocd + 16) + 42);
+                return bytes;
+            },
+        ],
+    ])("returns undefined where JSZip throws: %s", async (_label, make) => {
+        const bytes = await make();
+        await expect(JSZip.loadAsync(bytes)).rejects.toThrow();
+        expect(zipBytesBeforeArchive(bytes)).toBeUndefined();
+    });
+});
+
+// 46-byte fixed header: JSZip's `readCentralPart` reads every field through a
+// bounds-checked read, so it throws; the walk must refuse the same bytes
+// instead of reading `undefined` fields into a phantom record (#498).
+describe("the truncated fixed record header JSZip refuses (#498)", () => {
+    it.each(Array.from({ length: 23 }, (_unused, i) => 26 + i))(
+        "returns undefined with %i bytes from the signature to the buffer's end, where JSZip throws",
+        async (length) => {
+            const bytes = truncatedCentralStub(length);
+            await expect(JSZip.loadAsync(bytes)).rejects.toThrow();
+            expect(readCentralDirectoryView(bytes)).toBeUndefined();
+            expect(zipCentralDirectoryEntries(bytes)).toBeUndefined();
+            expect(zipBytesBeforeArchive(bytes)).toBeUndefined();
+        },
+    );
+
+    it("never produces a non-finite prefix count", () => {
+        for (const bytes of [truncatedCentralStub(26), buildRawZip([{ name: "a.xml", content: "<a/>" }])]) {
+            const prefix = zipBytesBeforeArchive(bytes);
+            expect(prefix === undefined || Number.isFinite(prefix)).toBe(true);
+        }
     });
 });
 
