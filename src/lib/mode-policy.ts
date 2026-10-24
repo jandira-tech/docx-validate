@@ -104,6 +104,8 @@ export const defaultProfileForFormat = (format: PackageFormat): Profile => (form
  * an error under strict, and under word-valid for DOCX/DOCM — Word 16.115
  * offers recovery for every malformed name probed (#351, #408, #414) — and a
  * warning under lenient, and under word-valid for the unobserved PPTX/XLSX.
+ * Word-valid then demotes what Word opens clean through `isWordBlockingIssue`,
+ * as it does an Override PartName whose folder segment ends with `.` (#450).
  */
 export const opcNameIssueSeverity = (profile: Profile, format: PackageFormat): "error" | "warning" =>
     profile === "strict" || (profile === "word-valid" && format === "docx") ? "error" : "warning";

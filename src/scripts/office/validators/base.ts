@@ -1314,8 +1314,10 @@ export class BaseSchemaValidator {
      * `PartName` is not a valid OPC part name. The named check runs under
      * every profile, so a full run and a partial run report the same
      * finding: an error under strict and under word-valid for DOCX/DOCM
-     * (Word 16.115 offers recovery for every malformed PartName probed), and
-     * a warning under lenient and for the unobserved PPTX/XLSX.
+     * (Word 16.115 offers recovery for every malformed PartName probed but a
+     * folder segment ending with `.`, which the word-valid profile then
+     * tolerates, #450), and a warning under lenient and for the unobserved
+     * PPTX/XLSX.
      *
      * The parts that do not parse are hidden from the check, as the XML
      * syntax gate hides them from every other DOM-reading rule (#307): a

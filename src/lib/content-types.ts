@@ -301,6 +301,14 @@ export const partExtension = (partPath: string): string => {
 };
 
 /**
+ * The {@link partNameViolation} rule for a folder segment that ends with a
+ * dot ([M1.9]). Word 16.115 opens `/word./x.xml`, `/word/sub./x.xml` and
+ * `/x./x.xml` clean, and offers recovery when the last segment ends with one
+ * (#450; session 7 in docs/plans/evidence/word-probes-2026-10-24.md).
+ */
+export const PART_NAME_FOLDER_SEGMENT_DOT = "must not have a folder segment ending with '.'";
+
+/**
  * Why a part name is not a valid OPC part name (ECMA-376 Part 2 §6.2.2.2,
  * [M1.1]–[M1.9]), or `undefined` when it names one.
  *
@@ -309,6 +317,11 @@ export const partExtension = (partPath: string): string => {
  * dot, it carries no query, fragment or backslash, and every character in it
  * is an RFC 3986 `pchar` or a percent-escape. A percent-escaped separator
  * ([M1.7]) or unreserved character ([M1.8]) is forbidden too.
+ *
+ * A folder segment ending with a dot ({@link PART_NAME_FOLDER_SEGMENT_DOT}) is
+ * judged last. Word 16.115 opens such a name clean while it refuses every
+ * other violation (#450), so a name that breaks another rule as well reports
+ * that rule.
  *
  * These are the part-name rules, not the stored item-name rules: a part name
  * starts with a slash, where a stored item name must not.
@@ -327,8 +340,8 @@ export const partNameViolation = (partName: string): string | undefined => {
     if (segments.some((segment) => segment === "")) {
         return "must not have an empty segment";
     }
-    if (segments.some((segment) => segment.endsWith("."))) {
-        return "must not have a segment ending with '.'";
+    if (partName.endsWith(".")) {
+        return "must not end with '.'";
     }
     if (/[?#\\]/.test(partName)) {
         return "must not contain '?', '#' or '\\'";
@@ -341,6 +354,9 @@ export const partNameViolation = (partName: string): string | undefined => {
     }
     if (hasNonPcharCharacter(partName)) {
         return "must contain only RFC 3986 pchar characters";
+    }
+    if (segments.slice(0, -1).some((segment) => segment.endsWith("."))) {
+        return PART_NAME_FOLDER_SEGMENT_DOT;
     }
     return undefined;
 };

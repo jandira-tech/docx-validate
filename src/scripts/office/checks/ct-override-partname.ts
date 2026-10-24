@@ -18,14 +18,17 @@ export const CT_OVERRIDE_PARTNAME_INVALID = "ct-override-partname-invalid";
 /**
  * Report every `Override` whose `PartName` is not a valid OPC part name
  * (ECMA-376 Part 2 §6.2.2.2). Such a PartName names no part, so the
- * declaration is malformed whatever its content type — System.IO.Packaging
- * refuses it in `ValidatePartUri` — and the resolution is left untouched: the
- * PartName is never mapped onto a stored part.
+ * declaration is malformed whatever its content type, and the resolution is
+ * left untouched: the PartName is never mapped onto a stored part.
+ * System.IO.Packaging is no reference here: `GetNormalizedPartUri` (.NET 10)
+ * accepts an empty segment, `%2F`, a segment ending with `.`, `[` and `]`.
  *
  * Word 16.115 offers to recover a package that declares one (probe sessions
- * 3c, 4 and 5), even when nothing is stored under that name and the content type
- * is well formed, so the finding is Word-blocking for DOCX/DOCM; strict
- * reports it as an error, and lenient and the unobserved PPTX/XLSX warn.
+ * 3c, 4, 5 and 7), even when nothing is stored under that name and the content
+ * type is well formed, so the finding is Word-blocking for DOCX/DOCM; strict
+ * reports it as an error, and lenient and the unobserved PPTX/XLSX warn. A
+ * folder segment ending with `.` is the exception: Word opens it clean, so
+ * word-valid warns on it (#450).
  *
  * A content-types stream that does not parse is reported by the XML syntax
  * gate (#388); nothing is reported from it here.
