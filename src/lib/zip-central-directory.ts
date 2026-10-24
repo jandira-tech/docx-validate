@@ -80,15 +80,18 @@ export const isStructuralEocd = (buf: Uint8Array, offset: number): boolean => {
 
 /**
  * The offset of the last structural end-of-central-directory record — the one
- * a reader uses — or `undefined` when the bytes hold none. The record's
- * comment can be up to 65535 bytes, so the search window is 64 KiB + 22.
+ * a reader uses — or `undefined` when the bytes hold none. The whole buffer is
+ * scanned backwards, one pass, as JSZip's `lastIndexOfSignature` does: an
+ * archive can carry any amount of undeclared data after the record (#447), so
+ * the record need not sit within the 64 KiB + 22 its comment can span. The
+ * structural validation still rejects a signature embedded in a comment or in
+ * trailing data, and the first record found from the end is the reader's.
  */
 export const lastStructuralEocdOffset = (buf: Uint8Array): number | undefined => {
     if (buf.length < EOCD_FIXED_LENGTH) {
         return undefined;
     }
-    const earliest = Math.max(0, buf.length - (EOCD_FIXED_LENGTH + MAX_COMMENT_LENGTH));
-    for (let offset = buf.length - EOCD_FIXED_LENGTH; offset >= earliest; offset -= 1) {
+    for (let offset = buf.length - EOCD_FIXED_LENGTH; offset >= 0; offset -= 1) {
         if (readU32(buf, offset) !== EOCD_SIGNATURE) {
             continue;
         }
