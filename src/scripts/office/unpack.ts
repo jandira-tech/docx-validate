@@ -23,6 +23,11 @@
  * - Merges adjacent runs with identical formatting (DOCX only)
  * - Simplifies adjacent tracked changes from same author (DOCX only)
  *
+ * Keeps raw JSZip names rather than the validator's central-keyed view (#469).
+ * In particular, flag-less CP437 `caf\x82.xml` extracts as `caf�.xml` under
+ * JSZip's default UTF-8 decoding, not the validator's `café.xml` (#480).
+ * Directory validation of that extracted tree sees `caf�.xml` too.
+ *
  * CLI:
  *   tsx unpack.ts <office_file> <output_dir> [--merge-runs true|false] [--simplify-redlines true|false]
  */
