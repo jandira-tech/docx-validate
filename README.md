@@ -261,7 +261,7 @@ XML prerequisite. All `word-*` checks apply to DOCX/DOCM only.
 | `tables`                  | `word-grid-column-attributes`, `word-cell-margin-order`, `word-table-properties-required`, `word-table-properties-misplaced`, `word-row-without-cell`, `word-cell-ends-with-table`                                                                                                                                                                  |
 | `drawings`                | `word-textbox-content-namespace`, `word-drawing-extent-missing`, `word-drawing-extent-misplaced`, `word-picture-nvpicpr-missing`, `word-picture-sppr-missing`, `word-empty-drawing`, `word-anchor-missing-attribute`, `word-position-offset-and-align`, `word-drawing-scalar-whitespace`, `word-drawing-arc-radius`, `word-drawing-extent-negative` |
 | `content-types`           | `word-content-type-invalid`                                                                                                                                                                                                                                                                                                                         |
-| `relationships`           | `word-duplicate-theme-relationship`, `word-duplicate-font-table-relationship`, `word-duplicate-web-settings-relationship`, `word-duplicate-settings-relationship`, `word-hyperlink-relationship`                                                                                                                                                    |
+| `relationships`           | `word-duplicate-theme-relationship`, `word-duplicate-font-table-relationship`, `word-duplicate-web-settings-relationship`, `word-duplicate-settings-relationship`, `word-hyperlink-relationship`, `word-main-document-part`                                                                                                                         |
 | `tracked-changes`         | `word-textbox-deleted-text`, `word-move-from-deleted-text`                                                                                                                                                                                                                                                                                          |
 | `settings`                | `word-custom-property-filetime-empty`, `word-attached-toolbar-utf8`                                                                                                                                                                                                                                                                                 |
 | `xml`                     | `word-markup-compatibility`, `word-document-root`, `word-choice-requires-undeclared`                                                                                                                                                                                                                                                                |
@@ -309,6 +309,13 @@ relationship and requires an effective `document` root in the Transitional or
 Strict WordprocessingML namespace. A foreign root makes Word refuse to open the
 file; an ignored root makes Word silently drop all content. Both are blocking
 errors in Word-valid and strict, and the check is included in the quick preset.
+
+`word-main-document-part` reports a package that names no main part: `_rels/.rels`
+is missing, or none of its internal `officeDocument` relationships targets a part
+in the package (an empty ZIP, a package of only `[Content_Types].xml` or only core
+properties). ECMA-376 requires the main document part. Strict fails on it; full
+and quick Word-valid report a warning until a real-Word observation shows Word
+refusing such a package; lenient runs no Word rule (#380).
 
 `word-markup-compatibility` reports processor errors for XML parts under `word/`.
 Root validation, the processor, and the schema walk use these stable codes:

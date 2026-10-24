@@ -32,7 +32,13 @@ describe("default check registry", () => {
             expect(def.formats.length).toBeGreaterThan(0);
         }
         expect(ids).toEqual(
-            expect.arrayContaining(["zip-bytes-after-eocd", "zip-eocd-comment-overrun", "xml-syntax", "word-row-without-cell"]),
+            expect.arrayContaining([
+                "zip-bytes-after-eocd",
+                "zip-eocd-comment-overrun",
+                "xml-syntax",
+                "word-row-without-cell",
+                "word-main-document-part",
+            ]),
         );
     });
 

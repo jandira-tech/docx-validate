@@ -75,3 +75,55 @@ export const wordDocumentRootCheck: CheckDefinition = {
         return issues;
     },
 };
+
+/**
+ * ECMA-376's Minimal WordprocessingML Document requires package relationships
+ * pointing to a main document part (#380). No real-Word observation exists
+ * yet, so this spec finding remains advisory under full Word-valid.
+ */
+export const wordMainDocumentPartCheck: CheckDefinition = {
+    id: "word-main-document-part",
+    description: "The package has an internal officeDocument relationship targeting an existing main document part.",
+    groups: ["relationships"],
+    formats: ["docx"],
+    requires: ["xml-syntax"],
+    run: (ctx): ValidationIssue[] => {
+        const relationshipsPart = findEquivalentPart(ctx.partNames, "_rels/.rels");
+        if (relationshipsPart === undefined) {
+            return [
+                {
+                    code: wordMainDocumentPartCheck.id,
+                    severity: "error",
+                    message:
+                        "Package relationships part _rels/.rels is missing; ECMA-376 requires the main document part and its package relationship.",
+                },
+            ];
+        }
+        const relationships = ctx.xml(relationshipsPart);
+        if (!relationships?.ok) return [];
+
+        const hasMainPart = getElementsByTagNameNSAll(relationships.document, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship").some(
+            (relationship) => {
+                if (
+                    relationship.getAttribute("TargetMode") === "External" ||
+                    !OFFICE_DOCUMENT_TYPES.has(relationship.getAttribute("Type") ?? "")
+                ) {
+                    return false;
+                }
+                const part = resolvePartName(ctx.partNames, relationship.getAttribute("Target") ?? "");
+                return part !== undefined && ctx.partNames.includes(part);
+            },
+        );
+        if (hasMainPart) return [];
+
+        return [
+            {
+                code: wordMainDocumentPartCheck.id,
+                severity: "error",
+                path: relationshipsPart,
+                message:
+                    "No internal officeDocument relationship targets an existing part; ECMA-376 requires the main document part and its package relationship.",
+            },
+        ];
+    },
+};
