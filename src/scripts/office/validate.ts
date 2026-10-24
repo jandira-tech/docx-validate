@@ -950,11 +950,18 @@ function openedFromDirectory(dir: string): { context: ValidationContext; openErr
 }
 
 /**
- * Why a directory input's package view cannot be read: one clause per stored
- * entry that can never yield part bytes, each naming the stored file (#426).
+ * Why a directory input's package view cannot be read: one clause per
+ * stored entry that can never yield part bytes, each naming the stored file
+ * (#426) — or per directory the walk cannot list, naming the directory
+ * (#543), with `.` standing for the input directory itself.
  */
 function unreadableStoredDetail(dir: string, unreadable: readonly UnreadableEntry[]): string {
-    return unreadable.map((entry) => `Cannot read ${path.relative(dir, entry.file).split(path.sep).join("/")}: ${entry.reason}`).join("; ");
+    return unreadable
+        .map((entry) => {
+            const name = path.relative(dir, entry.file).split(path.sep).join("/");
+            return `Cannot read ${name === "" ? "." : name}: ${entry.reason}`;
+        })
+        .join("; ");
 }
 
 /**
