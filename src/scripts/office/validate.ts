@@ -61,13 +61,13 @@ import {
 } from "../../lib/types";
 import type { XsdValidator } from "../../lib/xsd-validator";
 import { verifyInWord, type WordVerification } from "../../lib/word-verifier";
-import { ValidationContext } from "../../lib/validation-context";
+import { indexByPartName, normalizePartName, ValidationContext } from "../../lib/validation-context";
 import { extractPackageParts } from "../../lib/zip-path";
 import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "./checks";
 import { XML_SYNTAX_CHECK_ID } from "./checks/xml";
 import { OPC_EQUIVALENT_PART_NAMES } from "./checks/opc-equivalent-part-names";
 import { contextFromArchive, contextFromDirectory } from "./package-context";
-import { BaseSchemaValidator } from "./validators/base";
+import { BaseSchemaValidator, walkFiles } from "./validators/base";
 import { DOCXSchemaValidator } from "./validators/docx";
 import { buildRepairPlanIssues, collectDocxSemanticInventory, compareDocxSemanticInventories } from "./validators/docx-diagnostics";
 import { PPTXSchemaValidator } from "./validators/pptx";
@@ -226,82 +226,123 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         };
     };
 
+    // A packed input, or a directory holding a stored name that differs from
+    // its part name (`word\document.xml`), is judged through the package view
+    // staged under part names, so the path-keyed validators see one entry per
+    // part (#371, #374). `sources` maps each staged part to the directory file
+    // it came from, so `--auto-repair` keeps writing to the stored names.
+    const runStaged = async (
+        zip: JSZip,
+        envelope: { issues: ValidationResult["issues"]; executed: readonly string[] },
+        sources?: ReadonlyMap<string, string>,
+    ): Promise<ValidateRunResult> =>
+        withTempDir(async (tempDir) => {
+            try {
+                await extractPackageParts(zip, tempDir);
+            } catch (err) {
+                const detail = err instanceof Error ? err.message : String(err);
+                return {
+                    valid: false,
+                    issues: [
+                        ...envelope.issues,
+                        {
+                            severity: "error" as const,
+                            message: `Cannot extract ${target}: ${detail}`,
+                            code: "package-extract-failed",
+                        },
+                    ],
+                    repairs: 0,
+                    suffix: dispatchSuffix,
+                    xsdWalk: xsdWalkNotStarted(),
+                    // The envelope was read from the bytes before extraction failed,
+                    // so its checks ran (CodeRabbit on #335).
+                    metadata: {
+                        profile,
+                        executedChecks: orderedExecutedChecks(format, envelope.executed),
+                        omittedChecks: [],
+                        schemaCompleted: false,
+                    },
+                };
+            }
+            const before = new Map<string, Buffer>();
+            if (autoRepair && sources) {
+                for (const part of sources.keys()) before.set(part, await fs.readFile(path.join(tempDir, part)));
+            }
+            const unpacked = await runWithUnpacked(tempDir, envelope);
+            // A staged directory still repairs its source, under stored names.
+            // Bytes are compared so untouched files are never rewritten, and a
+            // dropped duplicate entry has no write-back destination at all.
+            if (autoRepair && sources) {
+                for (const [part, file] of sources) {
+                    let repaired: Buffer;
+                    try {
+                        repaired = await fs.readFile(path.join(tempDir, part));
+                    } catch (err) {
+                        if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+                        await fs.rm(file);
+                        continue;
+                    }
+                    if (!repaired.equals(before.get(part)!)) await fs.writeFile(file, repaired);
+                }
+            }
+            return unpacked;
+        });
+
     if (targetIsPackedFile) {
+        const buf = await fs.readFile(target);
+        const envelope = runsWordPackageChecks(profile) ? await zipEnvelopeRun(buf, dispatchSuffix) : EMPTY_ENVELOPE_RUN;
+        let zip: JSZip;
+        try {
+            zip = await JSZip.loadAsync(buf);
+        } catch (err) {
+            // The file is not a readable OPC (zip) package: encrypted OOXML
+            // (a CFB/OLE compound file), or a truncated/corrupted archive.
+            // Word refuses to open all of these, so this is an error — but
+            // `validate()` must NEVER throw here (a thrown validator silently
+            // crashes callers that shell out, e.g. python-jubarte, instead of
+            // reporting the file invalid). Surface it as a structured issue.
+            // Kept blocking under every profile: an unopenable package is not
+            // something Word tolerates.
+            const detail = err instanceof Error ? err.message : String(err);
+            return finish({
+                valid: false,
+                issues: [...envelope.issues, packageOpenFailedIssue(target, detail)],
+                repairs: 0,
+                suffix: dispatchSuffix,
+                xsdWalk: xsdWalkNotStarted(),
+                // Only the envelope checks could read these bytes (#332).
+                metadata: {
+                    profile,
+                    executedChecks: orderedExecutedChecks(format, envelope.executed),
+                    omittedChecks: [],
+                    schemaCompleted: false,
+                },
+            });
+        }
+        // Diagnose the archive's own names before extraction can reject
+        // case/normalization collisions on the host filesystem (#351).
+        const names = Object.values(zip.files)
+            .filter((entry) => !entry.dir)
+            .map((entry) => [entry.unsafeOriginalName ?? entry.name, ""] as const);
+        const diagnostic = await equivalentNamesRun(ValidationContext.fromEntries(names), format, profile);
         return finish(
-            await withTempDir(async (tempDir) => {
-                const buf = await fs.readFile(target);
-                let envelope = runsWordPackageChecks(profile) ? await zipEnvelopeRun(buf, dispatchSuffix) : EMPTY_ENVELOPE_RUN;
-                const envelopeIssues: ValidationResult["issues"] = [...envelope.issues];
-                let zip: JSZip;
-                try {
-                    zip = await JSZip.loadAsync(buf);
-                } catch (err) {
-                    // The file is not a readable OPC (zip) package: encrypted OOXML
-                    // (a CFB/OLE compound file), or a truncated/corrupted archive.
-                    // Word refuses to open all of these, so this is an error — but
-                    // `validate()` must NEVER throw here (a thrown validator silently
-                    // crashes callers that shell out, e.g. python-jubarte, instead of
-                    // reporting the file invalid). Surface it as a structured issue.
-                    // Kept blocking under every profile: an unopenable package is not
-                    // something Word tolerates.
-                    const detail = err instanceof Error ? err.message : String(err);
-                    return {
-                        valid: false,
-                        issues: [...envelopeIssues, packageOpenFailedIssue(target, detail)],
-                        repairs: 0,
-                        suffix: dispatchSuffix,
-                        xsdWalk: xsdWalkNotStarted(),
-                        // Only the envelope checks could read these bytes (#332).
-                        metadata: {
-                            profile,
-                            executedChecks: orderedExecutedChecks(format, envelope.executed),
-                            omittedChecks: [],
-                            schemaCompleted: false,
-                        },
-                    };
-                }
-                // Diagnose the archive's own names before extraction can reject
-                // case/normalization collisions on the host filesystem (#351).
-                const names = Object.values(zip.files)
-                    .filter((entry) => !entry.dir)
-                    .map((entry) => [entry.unsafeOriginalName ?? entry.name, ""] as const);
-                const diagnostic = await equivalentNamesRun(ValidationContext.fromEntries(names), format, profile);
-                envelopeIssues.push(...diagnostic.issues);
-                envelope = { issues: envelopeIssues, executed: [...envelope.executed, ...diagnostic.executed] };
-                try {
-                    await extractAll(zip, tempDir);
-                } catch (err) {
-                    const detail = err instanceof Error ? err.message : String(err);
-                    return {
-                        valid: false,
-                        issues: [
-                            ...envelopeIssues,
-                            {
-                                severity: "error" as const,
-                                message: `Cannot extract ${target}: ${detail}`,
-                                code: "package-extract-failed",
-                            },
-                        ],
-                        repairs: 0,
-                        suffix: dispatchSuffix,
-                        xsdWalk: xsdWalkNotStarted(),
-                        // The envelope was read from the bytes before extraction failed,
-                        // so its checks ran (CodeRabbit on #335).
-                        metadata: {
-                            profile,
-                            executedChecks: orderedExecutedChecks(format, envelope.executed),
-                            omittedChecks: [],
-                            schemaCompleted: false,
-                        },
-                    };
-                }
-                return runWithUnpacked(tempDir, envelope);
+            await runStaged(zip, {
+                issues: [...envelope.issues, ...diagnostic.issues],
+                executed: [...envelope.executed, ...diagnostic.executed],
             }),
         );
     }
 
     const dir = path.resolve(target);
-    return finish(await runWithUnpacked(dir, await equivalentNamesRun(contextFromDirectory(dir), format, profile)));
+    const diagnostic = await equivalentNamesRun(contextFromDirectory(dir), format, profile);
+    const entries = walkFiles(dir).map((file) => [path.relative(dir, file).split(path.sep).join("/"), file] as const);
+    if (entries.some(([name]) => name !== normalizePartName(name))) {
+        // JSZip is only an in-memory entry collection here: no ZIP is written.
+        const zip = new JSZip();
+        for (const [name, file] of entries) zip.file(name, await fs.readFile(file), { createFolders: false });
+        return finish(await runStaged(zip, diagnostic, indexByPartName(entries)));
+    }
+    return finish(await runWithUnpacked(dir, diagnostic));
 }
 
 /**
@@ -747,9 +788,6 @@ async function assertIsFile(p: string, message: string): Promise<void> {
         throw new Error(message);
     }
 }
-
-// A full run judges the package view, as a quick run does (#371).
-const extractAll = (zip: JSZip, outputPath: string): Promise<void> => extractPackageParts(zip, outputPath);
 
 interface CliOptions {
     original?: string;
