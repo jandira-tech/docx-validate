@@ -70,6 +70,8 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
                 "ct-duplicate-declaration",
                 "ct-override-partname-invalid",
                 "ct-override-partname-word-refused",
+                // The content-types Markup Compatibility refusal (#459).
+                "ct-markup-compatibility",
                 "comment-markers",
                 "comment-threading",
             ]);
@@ -156,6 +158,7 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
                     "ct-duplicate-declaration",
                     "ct-override-partname-invalid",
                     "ct-override-partname-word-refused",
+                    "ct-markup-compatibility",
                     "comment-markers",
                     "comment-threading",
                 ]);

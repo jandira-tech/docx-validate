@@ -32,6 +32,11 @@ export const CT_OVERRIDE_PARTNAME_INVALID = "ct-override-partname-invalid";
  * exception: Word opens it clean, so word-valid warns on it (#450). A dot-only
  * folder segment is refused, and reported under its own rule (#453).
  *
+ * The stream is judged after Markup Compatibility processing (OPC [M1.19],
+ * as `word-content-type-invalid` already reads it), so an `Override` in an
+ * ignored branch is not judged; Word refuses the markup itself, which
+ * `ct-markup-compatibility` reports (#459).
+ *
  * A content-types stream that does not parse is reported by the XML syntax
  * gate (#388); nothing is reported from it here.
  */
@@ -46,7 +51,7 @@ export const ctOverridePartnameInvalidCheck: CheckDefinition = {
 
         const stream = findContentTypesStream(ctx.partNames);
         if (stream === undefined) return issues;
-        const parsed = ctx.xml(stream);
+        const parsed = ctx.effectiveXml(stream);
         if (!parsed?.ok) return issues;
 
         for (const elem of getElementsByTagNameNSAll(parsed.document, CONTENT_TYPES_NAMESPACE, "Override")) {

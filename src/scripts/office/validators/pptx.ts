@@ -78,6 +78,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
                     xml,
                     await this.validateDuplicateDeclarations(context, malformed),
                     await this.validateOverridePartNames(context, "pptx", malformed),
+                    await this.validateContentTypesMarkupCompatibility(context, "pptx", malformed),
                 ),
             );
         }
@@ -92,6 +93,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
             await this.validateSlideLayoutIds(),
             await this.validateContentTypes(),
             await this.validateOverridePartNames(contextFromDirectory(this.unpackedDir), "pptx", malformed),
+            await this.validateContentTypesMarkupCompatibility(contextFromDirectory(this.unpackedDir), "pptx", malformed),
             await this.validateAgainstXsd(),
             await this.validateNotesSlideReferences(),
             await this.validateAllRelationshipIds(),

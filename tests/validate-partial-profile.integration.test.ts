@@ -470,6 +470,8 @@ describe("a partial run applies its profile's policy (#381)", { timeout: 120_000
             // The content-types group's Override PartName grammar (#414).
             "ct-override-partname-invalid",
             "ct-override-partname-word-refused",
+            // Its Markup Compatibility refusal (#459).
+            "ct-markup-compatibility",
         ]);
         expect(result.metadata?.omittedChecks).toEqual(expect.arrayContaining(["word-row-without-cell", "zip-bytes-after-eocd"]));
         expect(errorCodes((await validate(ROW_WITHOUT_CELL, { profile: "lenient" })).issues)).not.toContain("word-row-without-cell");

@@ -11,7 +11,7 @@ import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { contentTypeSpecimens } from "./support/word-content-types-specimens";
 import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
 
-it("registers duplicate declarations for all formats, reads the raw stored stream and skips absent/unparseable streams (#431)", async () => {
+it("registers duplicate declarations for all formats, reads the Markup-Compatibility-processed stream and skips absent/unparseable streams (#431, #459)", async () => {
     const check = createDefaultCheckRegistry().get("ct-duplicate-declaration");
     expect(check).toMatchObject({
         id: "ct-duplicate-declaration",

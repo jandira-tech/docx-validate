@@ -460,6 +460,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             this.validateRelationshipElements(),
             this.validateContentTypes(),
             this.validateOverridePartNames(this.context(), "docx", this.malformedParts),
+            this.validateContentTypesMarkupCompatibility(this.context(), "docx", this.malformedParts),
             this.validateWhitespacePreservation(),
             this.validateDeletions(),
             this.validateInsertions(),
