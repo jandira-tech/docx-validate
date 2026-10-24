@@ -10,7 +10,7 @@
  * one predicate, so they cannot drift (#381).
  */
 
-import { canonicalPartName, isContentTypesStreamName } from "../../../lib/content-types";
+import { canonicalPartName, isContentTypesStreamName, PART_NAME_FOLDER_SEGMENT_DOT } from "../../../lib/content-types";
 import type { ValidationIssue } from "../../../lib/types";
 
 /**
@@ -136,6 +136,16 @@ export const isWordBlockingIssue = (issue: ValidationIssue, propertiesParts: Rea
         // evidence in docs/plans/evidence/word-probes-2026-10-24.md).
         case "opc-part-name-escaped-slash":
             return true;
+        // Word 16.115 offers recovery for every malformed Override PartName
+        // probed, even when nothing is stored under that name and the content
+        // type is well formed (#414; probe sessions 3c, 4, 5 and 7 in
+        // docs/plans/evidence/word-probes-2026-10-24.md). A well-formed
+        // PartName for a missing part opens clean (#401), so the PartName
+        // alone decides it. A folder segment ending with a dot opens clean
+        // too (#450, session 7). The message ends with the rule broken, after
+        // the quoted PartName, so only its end is read.
+        case "ct-override-partname-invalid":
+            return !issue.message.endsWith(`it ${PART_NAME_FOLDER_SEGMENT_DOT}.`);
         // NB: comment-orphan-start/end and comment-marker-missing are NOT
         // promoted here. Empirically Word TOLERATES an orphan comment-range
         // marker (a commentRangeStart with no End, referencing a missing

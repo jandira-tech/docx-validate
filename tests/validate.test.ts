@@ -734,15 +734,19 @@ describe("packed content-types stream names (#396)", () => {
 });
 
 describe("stored content-type scope in full and partial runs (#401)", () => {
-    it.each(contentTypeSpecimens)("$name", async ({ parts, rejected }) => {
+    it.each(contentTypeSpecimens)("$name", async ({ parts, rejected, malformedPartName }) => {
         await withTempDir(async (dir) => {
             const file = path.join(dir, "scope.docx");
             const bytes = await buildDocx(parts);
             await fs.writeFile(file, bytes);
             const full = await validate(file, { profile: "word-valid" });
-            const partial = await validate(file, { profile: "word-valid", checks: ["word-content-type-invalid"] });
+            // The whole content-types group, so the partial run judges the
+            // Override PartName grammar (#414) as the full run does.
+            const partial = await validate(file, { profile: "word-valid", checks: ["content-types"] });
             const findings = (result: typeof full) => result.issues.filter((issue) => issue.code === "word-content-type-invalid");
-            expect(full.valid).toBe(!rejected);
+            // A malformed Override PartName is a defect of its own (#414), so
+            // the package is invalid on that account too.
+            expect(full.valid).toBe(!rejected && !malformedPartName);
             expect(partial.valid).toBe(full.valid);
             expect(findings(full)).toHaveLength(rejected ? 1 : 0);
             expect(findings(partial)).toEqual(findings(full));
