@@ -5,7 +5,8 @@
 
 /**
  * The `word-part-content-type-generic` check (#432): a part Word reads, typed
- * only by `<Default Extension="xml" ContentType="application/xml"/>`.
+ * by a generic XML content type — `application/xml` or `text/xml`, from a
+ * Default or an Override (#517).
  *
  * Word 16.115 offers to recover the package for every part probed that
  * resolves only through the generic Default: the main document and styles
@@ -103,6 +104,15 @@ const genericDefault = (part: string): Parts => {
     return extra === undefined ? parts : withDocRel({ ...parts, [part]: extra.xml }, extra.type, path.posix.basename(part));
 };
 
+/** The same package with the `xml` Default carrying `contentType` instead of application/xml. */
+const typedByDefault = (part: string, contentType: string): Parts => ({
+    ...genericDefault(part),
+    "[Content_Types].xml": (genericDefault(part)["[Content_Types].xml"] as string).replace(
+        '<Default Extension="xml" ContentType="application/xml"/>',
+        `<Default Extension="xml" ContentType="${contentType}"/>`,
+    ),
+});
+
 /** The control: the same package with the part's proper Override. */
 const properOverride = (part: string): Parts => {
     const contentType =
@@ -117,15 +127,49 @@ const properOverride = (part: string): Parts => {
     };
 };
 
-const expectedFinding = (part: string, segment: string, severity: "error" | "warning") => ({
-    code: ID,
-    severity,
-    path: part,
-    message:
-        `${part}, named by ${segment === "officeDocument" ? "the package officeDocument relationship" : `the main document's ${segment} relationship`}, ` +
-        `resolves only through the Default for extension "xml" to "application/xml"; it needs its own Override ` +
-        `"${segment === "officeDocument" ? CT.document : CT[segment as keyof typeof CT]}". Word 16.115 offers to recover the package.`,
-});
+/** The Word main-document content types the officeDocument finding names (#505). */
+const MAIN_DOCUMENT_TYPES = [
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml",
+    "application/vnd.ms-word.document.macroEnabled.main+xml",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml",
+    "application/vnd.ms-word.template.macroEnabledTemplate.main+xml",
+] as const;
+
+const mainDocumentNeeds = (source: "default" | "override"): string => {
+    const list = MAIN_DOCUMENT_TYPES.map((type) => `"${type}"`);
+    const types = `${list.slice(0, -1).join(", ")} or ${list[list.length - 1]}`;
+    return source === "default"
+        ? `it needs its own Override carrying one of the Word main-document content types — ${types}`
+        : `its Override should carry one of the Word main-document content types — ${types}`;
+};
+
+const expectedFinding = (
+    part: string,
+    segment: string,
+    severity: "error" | "warning",
+    options: { readonly source?: "default" | "override"; readonly contentType?: string } = {},
+) => {
+    const source = options.source ?? "default";
+    const contentType = options.contentType ?? "application/xml";
+    const by = segment === "officeDocument" ? "the package officeDocument relationship" : `the main document's ${segment} relationship`;
+    const extension = part.slice(part.lastIndexOf(".") + 1);
+    const resolved =
+        source === "default"
+            ? `resolves only through the Default for extension "${extension}" to "${contentType}"`
+            : `is typed "${contentType}" by an Override`;
+    const needed =
+        segment === "officeDocument"
+            ? mainDocumentNeeds(source)
+            : source === "default"
+              ? `it needs its own Override "${CT[segment as keyof typeof CT]}"`
+              : `its Override should carry "${CT[segment as keyof typeof CT]}"`;
+    return {
+        code: ID,
+        severity,
+        path: part,
+        message: `${part}, named by ${by}, ${resolved}; ${needed}. Word 16.115 offers to recover the package.`,
+    };
+};
 
 const findings = (issues: readonly { code?: string }[]) => issues.filter((issue) => issue.code === ID);
 
@@ -240,6 +284,41 @@ describe("word-part-content-type-generic (#432)", () => {
         ]);
         expect(await diagnose(ValidationContext.fromEntries(alternate("", styles)))).toEqual([]);
     });
+
+    it("names the Default the part's extension actually used, whatever the extension (#504)", async () => {
+        // word/styles.sty is covered by the `sty` Default, not the `xml` one;
+        // Word receives the resolved content type either way, so the check
+        // reports it and names the Default that resolved the part.
+        const parts = {
+            ...MINIMAL_PARTS,
+            "word/styles.sty": `<w:styles xmlns:w="${W}"/>`,
+            "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                'Target="styles.xml"',
+                'Target="styles.sty"',
+            ),
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                '<Default Extension="sty" ContentType="application/xml"/></Types>',
+            ),
+        };
+        const [issue] = await diagnose(ValidationContext.fromEntries(parts));
+        expect(issue).toMatchObject({ code: ID, severity: "error", path: "word/styles.sty" });
+        expect(issue?.message).toContain('the Default for extension "sty" to "application/xml"');
+    });
+
+    it.each([
+        { label: "an Override to application/xml", source: "override", contentType: "application/xml" },
+        { label: "an Override to text/xml", source: "override", contentType: "text/xml" },
+        { label: "the Default to text/xml", source: "default", contentType: "text/xml" },
+    ] as const)("reports styles typed by $label (#517)", async ({ source, contentType }) => {
+        const parts =
+            source === "override"
+                ? withOverride(genericDefault("word/styles.xml"), "word/styles.xml", contentType)
+                : typedByDefault("word/styles.xml", contentType);
+        expect(await diagnose(ValidationContext.fromEntries(parts))).toEqual([
+            expectedFinding("word/styles.xml", "styles", "error", { source, contentType }),
+        ]);
+    });
 });
 
 describe.each(["docx", "docm"] as const)("word-part-content-type-generic in a %s package", { timeout: 120_000 }, (extension) => {
@@ -340,5 +419,149 @@ describe.each(["docx", "docm"] as const)("word-part-content-type-generic in a %s
                 await expect(validate(file, { profile: "strict", ...selection }), JSON.stringify(selection)).rejects.toThrow(/strict/i);
             }
         });
+    });
+});
+
+/**
+ * Session 15 (2026-10-24, `s15-evidence/table.md`): Word 16.115 offers to
+ * recover the five generic-XML shapes — `text/xml` by Default or Override
+ * and `application/xml` by Override — on the parts probed, so word-valid and
+ * strict both reject them (#517).
+ */
+describe("word-part-content-type-generic on the generic XML spellings (#517)", { timeout: 120_000 }, () => {
+    const specimen = async (dir: string, label: string, parts: Parts): Promise<string> => {
+        const file = path.join(dir, `${label}.docx`);
+        writeFileSync(file, await buildDocx(parts));
+        return file;
+    };
+
+    it.each([
+        {
+            label: "main part typed by the Default to text/xml",
+            part: "word/document.xml",
+            segment: "officeDocument",
+            source: "default",
+            contentType: "text/xml",
+        },
+        {
+            label: "main part Override to application/xml",
+            part: "word/document.xml",
+            segment: "officeDocument",
+            source: "override",
+            contentType: "application/xml",
+        },
+        {
+            label: "main part Override to text/xml",
+            part: "word/document.xml",
+            segment: "officeDocument",
+            source: "override",
+            contentType: "text/xml",
+        },
+        {
+            label: "styles Override to application/xml",
+            part: "word/styles.xml",
+            segment: "styles",
+            source: "override",
+            contentType: "application/xml",
+        },
+        {
+            label: "styles typed by the Default to text/xml",
+            part: "word/styles.xml",
+            segment: "styles",
+            source: "default",
+            contentType: "text/xml",
+        },
+        {
+            label: "settings Override to application/xml (inferred, not probed)",
+            part: "word/settings.xml",
+            segment: "settings",
+            source: "override",
+            contentType: "application/xml",
+        },
+    ] as const)("word-valid and strict both fail the $label", { timeout: 120_000 }, async ({ part, segment, source, contentType }) => {
+        await withTempDir(async (dir) => {
+            const parts = source === "override" ? withOverride(genericDefault(part), part, contentType) : typedByDefault(part, contentType);
+            const file = await specimen(dir, "generic-spelling", parts);
+            const wanted = expectedFinding(part, segment, "error", { source, contentType });
+            const wordValid = await validate(file, { profile: "word-valid" });
+            expect(wordValid.issues).toContainEqual(wanted);
+            expect(wordValid.valid).toBe(false);
+            const strict = await validate(file, { profile: "strict" });
+            expect(strict.valid).toBe(false);
+            if (segment === "officeDocument" && source === "default") {
+                // The declarable `document` root without an Override is
+                // ct-undeclared-part's rejection; it is not reported twice.
+                expect(findings(strict.issues)).toEqual([]);
+                expect(strict.issues.some((issue) => issue.code === "ct-undeclared-part" && issue.path === part)).toBe(true);
+            } else {
+                expect(strict.issues).toContainEqual(wanted);
+            }
+        });
+    });
+});
+
+/**
+ * ECMA-376 Part 1 (4th edition), clause 11.3 gives every WordprocessingML
+ * part its own content type — not only the five Word was probed on — so
+ * strict, which justifies this check by the spec, reports a Part 1 part
+ * typed only by the generic Default, while word-valid keeps judging only
+ * the probed parts until a probe observes more (#506).
+ */
+describe("word-part-content-type-generic under strict covers Part 1 parts (#506)", { timeout: 120_000 }, () => {
+    const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+    const SPEC_PARTS = [
+        { segment: "numbering", part: "word/numbering.xml", root: "numbering", contentType: `${WML}.numbering+xml` },
+        { segment: "header", part: "word/header1.xml", root: "hdr", contentType: `${WML}.header+xml` },
+        { segment: "footer", part: "word/footer1.xml", root: "ftr", contentType: `${WML}.footer+xml` },
+    ] as const;
+
+    /** A Part 1 part with its relationship and no Override: it resolves through the xml Default. */
+    const specTyped = (part: string, segment: string, root: string): Parts =>
+        withDocRel({ ...MINIMAL_PARTS, [part]: `<w:${root} xmlns:w="${W}"/>` }, `${R}/${segment}`, path.posix.basename(part));
+
+    it.each(SPEC_PARTS)(
+        "strict reports the $segment part, citing ECMA-376 Part 1",
+        { timeout: 120_000 },
+        async ({ segment, part, root, contentType }) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, `generic-${segment}.docx`);
+                writeFileSync(file, await buildDocx(specTyped(part, segment, root)));
+                const result = await validate(file, { profile: "strict" });
+                const [finding] = result.issues.filter((issue) => issue.code === ID);
+                expect(finding).toMatchObject({ code: ID, severity: "error", path: part });
+                expect(finding?.message).toContain(`the main document's ${segment} relationship`);
+                expect(finding?.message).toContain(`"${contentType}"`);
+                expect(finding?.message).toMatch(/ECMA-376 Part 1.*11\.3/);
+                expect(result.valid).toBe(false);
+            });
+        },
+    );
+
+    it.each(SPEC_PARTS)(
+        "word-valid stays silent for the $segment part until a probe observes it",
+        { timeout: 120_000 },
+        async ({ segment, part, root }) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, `generic-${segment}.docx`);
+                writeFileSync(file, await buildDocx(specTyped(part, segment, root)));
+                const result = await validate(file, { profile: "word-valid" });
+                expect(result.issues.filter((issue) => issue.code === ID)).toEqual([]);
+                expect(result.valid).toBe(true);
+            });
+        },
+    );
+});
+
+it("names the Word main-document content types, including the macro-enabled one, for a .docm (#505)", async () => {
+    // The check judges the package, not the file name, so the officeDocument
+    // finding cannot assert the macro-free type alone: advising it would turn
+    // a macro-enabled package into a macro-free document.
+    await withTempDir(async (dir) => {
+        const file = path.join(dir, "main-generic.docm");
+        writeFileSync(file, await buildDocx(genericDefault("word/document.xml")));
+        const result = await validate(file, { profile: "word-valid" });
+        const [finding] = result.issues.filter((issue) => issue.code === ID);
+        expect(finding?.message).toContain("application/vnd.ms-word.document.macroEnabled.main+xml");
+        expect(finding?.message).toContain(CT.document);
     });
 });

@@ -480,24 +480,42 @@ under strict (whose schema walk already refuses the same stream); lenient and
 the unobserved PPTX/XLSX warn. Full, quick and named runs agree.
 
 `word-part-content-type-generic` reports a part Word reads whose content type
-resolves only through the generic `<Default Extension="xml"
-ContentType="application/xml"/>` — no Override of its own. The reached parts
+resolves to a generic XML type — `application/xml` or `text/xml`, compared
+ASCII case-insensitively — from either source: an `Override`, or the
+`<Default>` for the part's own extension, which the finding names
+([#504](https://github.com/jandira-tech/docx-validate/issues/504),
+[#517](https://github.com/jandira-tech/docx-validate/issues/517)). The reached parts
 are the main document (the package `officeDocument` relationship's target) and
 the parts the main document's relationships of type styles, settings,
 fontTable or webSettings name, wherever they are stored. Resolution follows
-ECMA-376 Part 2 §10.1.2.4 through the shared table: an exact `Override` wins,
-so a part with a specific Override — right or wrong — is out of scope, and
-numbering and customXml stay silent until a probe observes them. One finding
+ECMA-376 Part 2 §10.1.2.4 through the shared table: a part with a specific
+non-generic Override — right or wrong — is out of scope, and under
+word-valid and lenient numbering and customXml stay silent until a probe
+observes them. Under strict the check also judges every other Part 1
+WordprocessingML part type a main-document relationship names — numbering,
+header, footer, endnotes, footnotes, comments and glossaryDocument — whose
+findings cite the content type ECMA-376 Part 1 (4th edition), clause 11.3,
+assigns rather than a Word observation
+([#506](https://github.com/jandira-tech/docx-validate/issues/506)). One finding
 is reported per part, at the part's path, naming the relationship type and
-the content type the part needs. Word 16.115 offers to recover the package
+the content type the part needs — for the main document, all four Word
+main-document content types, since the package does not say whether it is
+macro-enabled
+([#505](https://github.com/jandira-tech/docx-validate/issues/505)). Word 16.115 offers to recover the package
 for all five parts probed typed only by the generic Default — the main
 document and styles with their Override removed, and settings, fontTable and
 webSettings added with a relationship but no Override — and opens every
 proper-Override control clean ([#432](https://github.com/jandira-tech/docx-validate/issues/432),
-session 8a in `docs/plans/evidence/word-probes-2026-10-24.md`). The finding
+session 8a in `docs/plans/evidence/word-probes-2026-10-24.md`). Session 15
+probed the main document and styles with `text/xml` by Default or Override
+and with `application/xml` by Override, and Word offers to recover every
+spelling; the Override and `text/xml` spellings for settings, fontTable and
+webSettings are inference from the same resolution ([#517](https://github.com/jandira-tech/docx-validate/issues/517)).
+The finding
 is an error, and Word-blocking, under word-valid for DOCX/DOCM, and an error
-under strict, where the main document is not reported twice because
-`ct-undeclared-part` already rejects it; lenient reports a warning. Full,
+under strict, where a main document resolved through a Default is not
+reported twice because `ct-undeclared-part` already rejects it; lenient
+reports a warning. Full,
 quick and named runs agree.
 
 The `schema` group contains structural checks, not an XSD walk. The `comments`

@@ -667,6 +667,91 @@ describe("validation contract: a Word-read part typed only by the generic Defaul
     );
 });
 
+describe("validation contract: a Word-read part typed by a generic XML type (#517)", { timeout: 120000 }, () => {
+    const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    const CT = MINIMAL_PARTS["[Content_Types].xml"]!;
+    const DOCM = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
+    const STYLES = "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml";
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+
+    const specimen = (mutated: string, extra: Record<string, string> = {}, rels?: string) =>
+        buildDocx({
+            ...MINIMAL_PARTS,
+            ...extra,
+            "word/_rels/document.xml.rels": rels ?? MINIMAL_PARTS["word/_rels/document.xml.rels"]!,
+            "[Content_Types].xml": mutated,
+        });
+
+    for (const [label, bytes] of [
+        ["the main part's Override to application/xml", specimen(CT.replace(`ContentType="${DOCM}"`, 'ContentType="application/xml"'))],
+        ["the main part's Override to text/xml", specimen(CT.replace(`ContentType="${DOCM}"`, 'ContentType="text/xml"'))],
+        [
+            "styles typed by the Default to text/xml",
+            specimen(
+                CT.replace(`<Override PartName="/word/styles.xml" ContentType="${STYLES}"/>`, "").replace(
+                    '<Default Extension="xml" ContentType="application/xml"/>',
+                    '<Default Extension="xml" ContentType="text/xml"/>',
+                ),
+            ),
+        ],
+        [
+            "styles typed by an Override to application/xml",
+            specimen(CT.replace(`ContentType="${STYLES}"`, 'ContentType="application/xml"')),
+        ],
+        [
+            "settings typed by an Override to application/xml",
+            specimen(
+                CT.replace("</Types>", '<Override PartName="/word/settings.xml" ContentType="application/xml"/></Types>'),
+                { "word/settings.xml": `<w:settings xmlns:w="${W}"/>` },
+                MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                    "</Relationships>",
+                    `<Relationship Id="rId9" Type="${R}/settings" Target="settings.xml"/></Relationships>`,
+                ),
+            ),
+        ],
+    ] as const) {
+        it(`word-valid and strict both reject ${label}`, async () => {
+            const wordValid = await validateBytes(await bytes, "word-valid");
+            expect(wordValid.issues).toContainEqual(expect.objectContaining({ code: "word-part-content-type-generic", severity: "error" }));
+            expect(wordValid.valid).toBe(false);
+            const strict = await validateBytes(await bytes, "strict");
+            expect(strict.issues).toContainEqual(expect.objectContaining({ code: "word-part-content-type-generic", severity: "error" }));
+            expect(strict.valid).toBe(false);
+        });
+    }
+});
+
+describe("validation contract: strict judges the other Part 1 part types too (#506)", { timeout: 120000 }, () => {
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+
+    for (const [segment, part, root] of [
+        ["numbering", "word/numbering.xml", "numbering"],
+        ["header", "word/header1.xml", "hdr"],
+        ["footer", "word/footer1.xml", "ftr"],
+    ] as const) {
+        it(`a ${segment} part typed only by the generic Default fails strict but stays silent under word-valid`, async () => {
+            const parts = {
+                ...MINIMAL_PARTS,
+                [part]: `<w:${root} xmlns:w="${W}"/>`,
+                "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                    "</Relationships>",
+                    `<Relationship Id="rId9" Type="${R}/${segment}" Target="${part.replace("word/", "")}"/></Relationships>`,
+                ),
+            };
+            const [wordValid, strict] = await Promise.all([
+                validateBytes(await buildDocx(parts), "word-valid"),
+                validateBytes(await buildDocx(parts), "strict"),
+            ]);
+            expect(wordValid.issues.some((issue) => issue.code === "word-part-content-type-generic")).toBe(false);
+            expect(strict.issues).toContainEqual(
+                expect.objectContaining({ code: "word-part-content-type-generic", severity: "error", path: part }),
+            );
+            expect(strict.valid).toBe(false);
+        });
+    }
+});
+
 // These are filesystem integration tests: literal backslashes are file-name
 // characters on POSIX, and separators on Windows.
 describe.skipIf(process.platform === "win32")("directory package staging (#374)", { timeout: 120000 }, () => {
