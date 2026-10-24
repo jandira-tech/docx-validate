@@ -44,7 +44,10 @@ export const resolveSafeZipEntry = (outputDir: string, entryName: string): strin
 export const extractZipEntries = async (zip: JSZip, outputDir: string): Promise<void> => {
     const entries: { name: string; file: JSZip.JSZipObject }[] = [];
     zip.forEach((relativePath, file) => {
-        entries.push({ name: relativePath, file });
+        // Fallback to unsafeOriginalName (if present) for proper ZipSlip validation,
+        // because JSZip >= 3.10 sanitizes `relativePath` by default.
+        const nameToValidate = (file as any).unsafeOriginalName ?? relativePath;
+        entries.push({ name: nameToValidate, file });
     });
     for (const { name, file } of entries) {
         const resolved = resolveSafeZipEntry(outputDir, name);

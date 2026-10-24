@@ -32,3 +32,7 @@
 
 **Learning:** JSZip 3.8+ (we pin 3.10.2) stores every entry under `utils.resolve(name)` on load and keeps the raw name in `unsafeOriginalName`: `../../evil.xml` loads as `evil.xml`, and `zip.file("../../evil.xml")` returns null. `_getOriginalFileErrors` looks entries up by name and returns before writing when the lookup fails, so the zip slip reported in PR #189 is unreachable; its test had to monkeypatch JSZip to recreate it. An absolute name (`/abs.xml`) is kept as is, but `path.join(tmpDir, rel)` cannot leave `tmpDir` with it.
 **Prevention:** Code that iterates `zip.files` or reads `unsafeOriginalName` to write files must still check containment with `path.relative`, as `extractZipEntries` does.
+## 2024-10-24 - JSZip Zip-Slip Masking
+**Vulnerability:** Zip-Slip path traversal vulnerability.
+**Learning:** JSZip v3.10+ automatically sanitizes directory traversal characters (`../`) from `relativePath` by default. This masks malicious path traversal attempts during zip extraction, because our custom path traversal checker `resolveSafeZipEntry` receives the sanitized path and mistakenly considers it safe.
+**Prevention:** Always use the raw, pre-sanitized entry name from the archive via `(file as any).unsafeOriginalName ?? relativePath` when performing custom path traversal validation before extraction.
