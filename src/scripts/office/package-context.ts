@@ -41,9 +41,13 @@ export function packageExtractFailedIssue(target: string, detail: string): Valid
  */
 export function contextFromDirectory(dir: string, unreadableStoredEntries: readonly UnreadableEntry[] = []): ValidationContext {
     const entries = walkFiles(dir).map((file) => [path.relative(dir, file).split(path.sep).join("/"), () => readFileSync(file)] as const);
-    const unreadable = unreadableStoredEntries.map(
-        (entry) => [path.relative(dir, entry.file).split(path.sep).join("/"), "" as const] as const,
-    );
+    const unreadable = unreadableStoredEntries.flatMap((entry) => {
+        // An unreadable directory names every stored file under it, but the
+        // input directory itself names no stored entry (#543): it stays out
+        // of the context, while the run still fails on it.
+        const name = path.relative(dir, entry.file).split(path.sep).join("/");
+        return name === "" ? [] : ([[name, "" as const]] as const);
+    });
     // Every stored name, readable or not, is judged for placeability (#424).
     const storedNames = [...entries, ...unreadable].map(([name]) => name);
     try {

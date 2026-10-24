@@ -985,7 +985,16 @@ stored entry that can never yield part bytes at all: a broken symbolic link,
 or a non-regular file such as a FIFO, which is reported by its stored name
 instead of silently vanishing from the package
 ([#426](https://github.com/jandira-tech/docx-validate/issues/426)); a FIFO is
-never opened, so it cannot hang the run. Full, quick and named-check runs
+never opened, so it cannot hang the run. A subdirectory the walk cannot list
+fails the same way, naming the directory — every stored file under it would
+otherwise vanish with it, leaving the run to judge the parts it can still see
+([#543](https://github.com/jandira-tech/docx-validate/issues/543); the input
+directory itself is named `.`). A symlink loop — a directory link whose target
+is already on the path into it, or a link chain that never resolves — is
+reported as `a symbolic link loop` at the link's stored name (`word/self`),
+not as a broken link under a synthetic multi-level path
+([#546](https://github.com/jandira-tech/docx-validate/issues/546)). Full,
+quick and named-check runs
 report the same failure. (Under ordinary
 forward-slash names the direct path reads parts lazily, so the same file yields
 `check-crashed` warnings instead.) When a write-back cannot reach its stored
