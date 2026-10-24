@@ -44,6 +44,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+    equivalentPartLookup,
     findContentTypesStream,
     findEquivalentPart,
     isContentTypesStreamName,
@@ -983,15 +984,18 @@ export class BaseSchemaValidator {
 
     async validateAllRelationshipIds(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
+        const entries = packageEntries(this.unpackedDir);
+        const findPart = equivalentPartLookup([...entries.keys()]);
 
         for (const xmlFile of this.xmlFiles) {
-            if (isRelationshipsPartName(this.entryName(xmlFile))) continue;
+            const part = this.entryName(xmlFile);
+            if (isRelationshipsPartName(part)) continue;
 
-            const relsDir = path.join(path.dirname(xmlFile), "_rels");
-            const relsFile = path.join(relsDir, `${path.basename(xmlFile)}.rels`);
+            const relsPart = findPart(path.posix.join(path.posix.dirname(part), "_rels", `${path.posix.basename(part)}.rels`));
+            const relsFile = relsPart === undefined ? undefined : entries.get(relsPart);
 
             // Gap 4: flag XML parts that use r:id attributes but have no .rels sidecar.
-            if (!existsSync(relsFile)) {
+            if (!relsFile) {
                 let xmlDomCheck: Document;
                 try {
                     xmlDomCheck = parseXmlBytes(await fs.readFile(xmlFile));

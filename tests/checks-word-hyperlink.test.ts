@@ -9,6 +9,14 @@ import { document, rels, relation } from "./support/word-rule-test-xml";
 import { wordHyperlinkRelationshipCheck } from "../src/scripts/office/checks/word-hyperlink";
 
 describe("word-hyperlink-relationship", () => {
+    it.each(["RELS", "Rels", "%72els"])("resolves an OPC-equivalent .%s sidecar (#402)", async (extension) => {
+        const entries = {
+            "word/document.xml": document('<w:p><w:hyperlink r:id="rId2"/></w:p>'),
+            [`word/_rels/document.xml.${extension}`]: rels(relation("rId2", "hyperlink", "External")),
+        };
+        expect(await wordHyperlinkRelationshipCheck.run(ValidationContext.fromEntries(entries))).toEqual([]);
+    });
+
     it("reports the Word-rejected shape with unchanged issue details", async () => {
         const ctx = ValidationContext.fromEntries({ "word/document.xml": document('<w:p><w:hyperlink r:id="rId1"/></w:p>') });
         expect(await wordHyperlinkRelationshipCheck.run(ctx)).toEqual([

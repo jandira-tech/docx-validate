@@ -26,6 +26,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Resolve relationship-id and hyperlink sidecars by OPC part-name equivalence, including `.RELS`, for packed and directory inputs and full, named and quick runs. Escaped names such as `.%72els` remain invalid under Word-valid and strict through the OPC [M1.8] check ([#402](https://github.com/jandira-tech/docx-validate/issues/402)).
+
 - A quick or named-check run now reports an archive whose package view cannot be read — a stored item name that places no part (`word//x.xml`, `c:doc/x.xml`, a `.` or `..` segment) or an unreadable entry — as `package-extract-failed`, with the same code and message the full run reports, instead of `package-open-failed` ([#413](https://github.com/jandira-tech/docx-validate/issues/413)).
 
 - Full validation stages directory inputs with literal backslashes in stored file names under package part names, sharing the packed-input extraction guards and duplicate selection. `--auto-repair` writes modified bytes and deletions back to their original stored names; untouched files remain byte-identical and validation without repair leaves the source unchanged ([#374](https://github.com/jandira-tech/docx-validate/issues/374)).
