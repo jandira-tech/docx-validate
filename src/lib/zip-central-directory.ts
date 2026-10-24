@@ -18,9 +18,8 @@
  * Byte-level reads of the ZIP envelope: the end-of-central-directory record
  * and the central directory's stored entry names.
  *
- * The structure helpers (`isStructuralEocd`, `lastStructuralEocdOffset`, the
- * readers and signatures) back the envelope checks in
- * `scripts/office/zip-bytes-after-eocd.ts`.
+ * The structure helpers (`isStructuralEocd`, the readers and signatures) back
+ * the envelope checks in `scripts/office/zip-bytes-after-eocd.ts`.
  *
  * `zipCentralDirectoryEntries` reads the names as stored, in central-directory
  * order, keeping duplicates. Loading loses them: JSZip keeps only the last
@@ -79,26 +78,17 @@ export const isStructuralEocd = (buf: Uint8Array, offset: number): boolean => {
 };
 
 /**
- * The offset of the last structural end-of-central-directory record — the one
- * a reader uses — or `undefined` when the bytes hold none. The whole buffer is
- * scanned backwards, one pass, as JSZip's `lastIndexOfSignature` does: an
- * archive can carry any amount of undeclared data after the record (#447), so
- * the record need not sit within the 64 KiB + 22 its comment can span. The
- * structural validation still rejects a signature embedded in a comment or in
- * trailing data, and the first record found from the end is the reader's.
+ * The offset of the last occurrence of `signature` in the whole buffer, or
+ * `undefined`. This is JSZip's `lastIndexOfSignature`: the search stops at the
+ * first match from the end and judges nothing about it, so an archive can
+ * carry any amount of undeclared data after its record (#447) and a later
+ * signature, structural or not, is the one read (#462).
  */
-export const lastStructuralEocdOffset = (buf: Uint8Array): number | undefined => {
-    if (buf.length < EOCD_FIXED_LENGTH) {
-        return undefined;
-    }
-    for (let offset = buf.length - EOCD_FIXED_LENGTH; offset >= 0; offset -= 1) {
-        if (readU32(buf, offset) !== EOCD_SIGNATURE) {
-            continue;
+const lastSignatureOffset = (buf: Uint8Array, signature: number): number | undefined => {
+    for (let offset = buf.length - 4; offset >= 0; offset -= 1) {
+        if (buf[offset] === 0x50 && readU32(buf, offset) === signature) {
+            return offset;
         }
-        if (!isStructuralEocd(buf, offset)) {
-            continue;
-        }
-        return offset;
     }
     return undefined;
 };
@@ -143,10 +133,20 @@ export type ZipStoredEntry = {
  * `undefined` when the envelope or directory cannot be read. The entry count
  * and declared size must match what the walk finds — a directory that lies is
  * not read at all.
+ *
+ * The directory is the one JSZip reads (`zipEntries.js` `readEndOfCentral`),
+ * so the names describe the archive the loaded view holds (#462): the record
+ * is the last EOCD signature, and the bytes before the archive — the record's
+ * offset minus where its directory says it should sit — rebase every offset
+ * (`reader.zero`). A prepended archive is skipped, a fake signature behind the
+ * record yields JSZip's empty directory, and a record whose directory would
+ * end past it is refused, as JSZip refuses it. ZIP64 follows JSZip too: the
+ * last locator, its record or else the last ZIP64 record, and an expected
+ * position that counts the locator and the ZIP64 record.
  */
 export const zipCentralDirectoryEntries = (buf: Uint8Array): readonly ZipStoredEntry[] | undefined => {
-    const eocd = lastStructuralEocdOffset(buf);
-    if (eocd === undefined) {
+    const eocd = lastSignatureOffset(buf, EOCD_SIGNATURE);
+    if (eocd === undefined || eocd + EOCD_FIXED_LENGTH > buf.length) {
         return undefined;
     }
     let offset = readU32(buf, eocd + 16);
@@ -159,19 +159,31 @@ export const zipCentralDirectoryEntries = (buf: Uint8Array): readonly ZipStoredE
         count === ZIP64_COUNT ||
         size === ZIP64_OFFSET ||
         offset === ZIP64_OFFSET;
+    // Where the record sits when nothing precedes the archive.
+    let expected = offset + size;
     if (zip64) {
-        const locator = eocd - ZIP64_LOCATOR_LENGTH;
-        if (!hasSignature(buf, locator, ZIP64_LOCATOR_SIGNATURE)) {
+        const locator = lastSignatureOffset(buf, ZIP64_LOCATOR_SIGNATURE);
+        if (locator === undefined || locator + ZIP64_LOCATOR_LENGTH > buf.length) {
             return undefined;
         }
-        const record = readU64(buf, locator + 8);
-        if (!hasSignature(buf, record, ZIP64_EOCD_SIGNATURE) || record + ZIP64_EOCD_FIXED_LENGTH > buf.length) {
+        let record: number | undefined = readU64(buf, locator + 8);
+        if (!hasSignature(buf, record, ZIP64_EOCD_SIGNATURE)) {
+            record = lastSignatureOffset(buf, ZIP64_EOCD_SIGNATURE);
+        }
+        if (record === undefined || record + ZIP64_EOCD_FIXED_LENGTH > buf.length) {
             return undefined;
         }
         count = readU64(buf, record + 32);
         size = readU64(buf, record + 40);
         offset = readU64(buf, record + 48);
+        // The locator, then the ZIP64 record: 12 leading bytes plus its declared size.
+        expected = offset + size + ZIP64_LOCATOR_LENGTH + 12 + readU64(buf, record + 4);
     }
+    const zero = eocd - expected;
+    if (zero < 0) {
+        return undefined;
+    }
+    offset += zero;
     const end = offset + size;
     if (end > buf.length || end > eocd) {
         return undefined;

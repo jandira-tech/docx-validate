@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { zipCentralDirectoryEntries, lastStructuralEocdOffset } from "../src/lib/zip-central-directory";
+import { zipCentralDirectoryEntries } from "../src/lib/zip-central-directory";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import JSZip from "jszip";
 
@@ -13,45 +13,68 @@ import { buildRawZip } from "./support/raw-zip";
 
 const names = (bytes: Uint8Array) => zipCentralDirectoryEntries(bytes)?.map((entry) => entry.name);
 
-describe("the EOCD record behind more than 64 KiB of trailing data (#447)", () => {
+describe("the archive JSZip loads (#447, #462)", () => {
     const duplicate = () =>
         buildRawZip([
             { name: "a.xml", content: "<1/>" },
             { name: "a.xml", content: "<2/>" },
         ]);
+    // A prepended archive: its record is structural when its offsets are read
+    // as absolute, the later archive's is not, and JSZip reads the later one.
+    const prefix = () =>
+        buildRawZip([
+            { name: "pad.bin", content: Buffer.alloc(600) },
+            { name: "../evil.xml", content: "x" },
+        ]);
     const withTrailing = (bytes: Buffer, count: number, fake?: Buffer): Buffer =>
         Buffer.concat(fake ? [bytes, fake, Buffer.alloc(count - fake.length)] : [bytes, Buffer.alloc(count)]);
     // A signature with no readable central directory behind it.
     const fakeEocd = (): Buffer => Buffer.concat([Buffer.from([0x50, 0x4b, 0x05, 0x06]), Buffer.alloc(18)]);
+    const loaded = async (bytes: Uint8Array) => Object.keys((await JSZip.loadAsync(bytes)).files).sort();
 
-    it("finds the last structural record however much data follows it", () => {
-        const bytes = duplicate();
-        const trailing = withTrailing(bytes, 70_000);
-        expect(lastStructuralEocdOffset(trailing)).toBe(bytes.length - 22);
-        expect(names(trailing)).toEqual(["a.xml", "a.xml"]);
-    });
-
-    it("agrees with JSZip, which loads the same archive from that record", async () => {
+    it("reads the record however much data follows it", async () => {
         const trailing = withTrailing(duplicate(), 70_000);
-        const zip = await JSZip.loadAsync(trailing);
-        expect(Object.keys(zip.files).sort()).toEqual(["a.xml"]);
-        expect(fileNames(trailing)).toEqual(["a.xml", "a.xml"]);
-    });
-
-    it("skips a fake EOCD signature in the trailing data", () => {
-        const bytes = duplicate();
-        const trailing = withTrailing(bytes, 70_000, fakeEocd());
-        expect(lastStructuralEocdOffset(trailing)).toBe(bytes.length - 22);
+        expect(await loaded(trailing)).toEqual(["a.xml"]);
         expect(names(trailing)).toEqual(["a.xml", "a.xml"]);
     });
 
-    it("reads the directory through a later structural record in the trailing data", () => {
+    it.each([0, 70_000])("reads the later archive of a prefixed one, as JSZip does, behind %i trailing bytes", async (count) => {
+        const bytes = withTrailing(Buffer.concat([prefix(), duplicate()]), count);
+        expect(await loaded(bytes)).toEqual(["a.xml"]);
+        expect(names(bytes)).toEqual(["a.xml", "a.xml"]);
+    });
+
+    it("reads the later ZIP64 archive of a prefixed one, as JSZip does", async () => {
+        const later = buildRawZip(
+            [
+                { name: "a.xml", content: "<1/>" },
+                { name: "a.xml", content: "<2/>" },
+            ],
+            { zip64: true },
+        );
+        const bytes = Buffer.concat([prefix(), later]);
+        expect(await loaded(bytes)).toEqual(["a.xml"]);
+        expect(names(bytes)).toEqual(["a.xml", "a.xml"]);
+    });
+
+    it("reads the empty directory JSZip reads behind a fake EOCD signature", async () => {
+        const trailing = withTrailing(duplicate(), 70_000, fakeEocd());
+        expect(await loaded(trailing)).toEqual([]);
+        expect(names(trailing)).toEqual([]);
+    });
+
+    it("stops at the last signature, as JSZip does, however many precede it (#463)", async () => {
+        const block = Buffer.concat([fakeEocd(), Buffer.alloc(4096 - 22)]);
+        const bytes = Buffer.concat([duplicate(), ...Array.from({ length: 64 }, () => block)]);
+        expect(await loaded(bytes)).toEqual([]);
+        expect(names(bytes)).toEqual([]);
+    });
+
+    it("reads nothing where JSZip refuses: a later copy of the record, whose offsets JSZip rebases", async () => {
         const bytes = duplicate();
-        // A later record whose fields still point at the real central directory.
-        const copy = bytes.subarray(bytes.length - 22);
-        const trailing = withTrailing(bytes, 70_000, copy);
-        expect(lastStructuralEocdOffset(trailing)).toBe(bytes.length);
-        expect(names(trailing)).toEqual(["a.xml", "a.xml"]);
+        const trailing = withTrailing(bytes, 70_000, bytes.subarray(bytes.length - 22));
+        await expect(JSZip.loadAsync(trailing)).rejects.toThrow();
+        expect(names(trailing)).toBeUndefined();
     });
 });
 
