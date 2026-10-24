@@ -121,6 +121,13 @@ export const hasEscapedUnreservedCharacter = (name: string): boolean =>
     Array.from(name.matchAll(/%([0-9a-f]{2})/gi)).some((match) => isUnreservedAscii(Number.parseInt(match[1]!, 16)));
 
 /**
+ * OPC [M1.7]: a part-name segment must not percent-encode `/` or `\`. The
+ * escape is three literal characters in the stored spelling, so a contiguous
+ * match cannot fire inside `%252F` (an encoded `%` before `2F`).
+ */
+export const hasEscapedSeparatorCharacter = (name: string): boolean => /%2f|%5c/i.test(name);
+
+/**
  * `pchar` (RFC 3986 §3.3: unreserved / pct-encoded / sub-delims / ":" / "@")
  * plus the "/" separator of the hierarchical part name.
  */

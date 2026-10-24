@@ -63,6 +63,7 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
             expect(lenientChecks).toEqual([
                 "opc-equivalent-part-names",
                 "opc-part-name-escaped-unreserved",
+                "opc-part-name-escaped-slash",
                 "xml-syntax",
                 "ct-duplicate-declaration",
                 "comment-markers",
@@ -132,11 +133,16 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
                         "zip-eocd-comment-overrun",
                         "opc-equivalent-part-names",
                         "opc-part-name-escaped-unreserved",
+                        "opc-part-name-escaped-slash",
                     ]);
                 }
                 // Lenient never runs the envelope checks.
                 const lenient = await validate(file, { profile: "lenient" });
-                expect(lenient.metadata?.executedChecks).toEqual(["opc-equivalent-part-names", "opc-part-name-escaped-unreserved"]);
+                expect(lenient.metadata?.executedChecks).toEqual([
+                    "opc-equivalent-part-names",
+                    "opc-part-name-escaped-unreserved",
+                    "opc-part-name-escaped-slash",
+                ]);
             });
         } finally {
             JSZip.loadAsync = originalLoadAsync;
