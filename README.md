@@ -277,7 +277,10 @@ duplicate probed, even when both spellings hold identical bytes ([#351](https://
 Lenient, and word-valid for PPTX/XLSX, report a warning. The existing entry choice
 is unchanged: two entries stored under the identical spelling report the same
 finding, naming the spelling once per entry (Word offers to recover these too),
-and the package view reads the last stored entry (#411).
+and the package view reads the last stored entry (#411). The stored names come
+from the central directory of the archive JSZip loads: the last end-of-central-directory
+signature, with its offsets rebased past any prepended bytes, so the names always
+describe the package view, even behind trailing data or a prepended archive (#447, #462).
 
 `opc-part-name-escaped-unreserved` uses the same formats, package-group selection,
 pre-extraction timing, directory support, and severity policy. It reports one
