@@ -25,7 +25,10 @@ import {
     ZIP64_OFFSET,
     type ZipCentralRecord,
     LOCAL_HEADER_SIGNATURE,
+    readU32,
+    type CentralDirectoryView,
 } from "./zip-central-directory";
+
 const LOCAL_HEADER_FIXED_LENGTH = 30;
 const CENTRAL_HEADER_FIXED_LENGTH = 46;
 const UNICODE_PATH_FIELD = 0x7075;
@@ -34,6 +37,12 @@ const EOCD_CD_OFFSET_OFFSET = 16;
 const LOCAL_NAME_LENGTH_OFFSET = 26;
 const LOCAL_EXTRA_LENGTH_OFFSET = 28;
 const CENTRAL_EXTRA_LENGTH_OFFSET = 30;
+const ZIP64_EOCD_SIGNATURE = 0x06064b50;
+const ZIP64_EOCD_FIXED_LENGTH = 56;
+const ZIP64_EOCD_SIZE_OFFSET = 4;
+const ZIP64_EOCD_CD_SIZE_OFFSET = 40;
+const ZIP64_EOCD_CD_OFFSET_OFFSET = 48;
+const ZIP64_LOCATOR_RECORD_OFFSET_OFFSET = 8;
 const CENTRAL_LOCAL_OFFSET_OFFSET = 42;
 
 /** One central record's local header and compressed stream, located. */
@@ -86,6 +95,61 @@ const localLayout = (bytes: Uint8Array, record: ZipCentralRecord, limit: number,
 const sameBytes = (a: Uint8Array, b: Uint8Array): boolean => a.length === b.length && a.every((byte, i) => byte === b[i]);
 
 /**
+ * The last occurrence of `signature`, scanning as the directory reader's
+ * `lastIndexOfSignature` does.
+ */
+const lastOffsetOf = (bytes: Uint8Array, signature: number): number | undefined => {
+    for (let offset = bytes.length - 4; offset >= 0; offset -= 1) {
+        if (bytes[offset] === 0x50 && readU32(bytes, offset) === signature) {
+            return offset;
+        }
+    }
+    return undefined;
+};
+
+/** The ZIP64 end-of-central-directory record and locator, located. */
+type Zip64Tail = {
+    /** The record's offset in the archive (its signature). */
+    readonly record: number;
+    /** The locator's offset in the archive (its signature). */
+    readonly locator: number;
+};
+
+/**
+ * The ZIP64 tail the rewrite can move: the record and the locator JSZip
+ * reads — the last of each signature, found as JSZip finds them, the record
+ * named by the locator's offset field (`isSignature`, whose `zero` is still 0
+ * there) or, failing that, the last record signature — adjacent, the record
+ * before the locator, the locator before the EOCD, and the record declaring
+ * its fixed 44 bytes. Anything else — extensible data, a record away from its
+ * locator, a later signature in a comment — is left to JSZip as given, since
+ * the rebuild moves only a tail it can re-point at itself (#479).
+ */
+const zip64Tail = (bytes: Uint8Array, view: CentralDirectoryView): Zip64Tail | undefined => {
+    const locator = view.eocdOffset - ZIP64_LOCATOR_LENGTH;
+    if (locator < 0 || lastOffsetOf(bytes, ZIP64_LOCATOR_SIGNATURE) !== locator) {
+        return undefined;
+    }
+    const named = readU32(bytes, locator + ZIP64_LOCATOR_RECORD_OFFSET_OFFSET);
+    const record = hasSignature(bytes, named, ZIP64_EOCD_SIGNATURE) ? named : lastOffsetOf(bytes, ZIP64_EOCD_SIGNATURE);
+    if (record === undefined || !hasSignature(bytes, record, ZIP64_EOCD_SIGNATURE)) {
+        return undefined;
+    }
+    // A record with extensible data, or short of the fixed 44 bytes JSZip
+    // reads at fixed offsets, does not move.
+    if (readU32(bytes, record + ZIP64_EOCD_SIZE_OFFSET) !== ZIP64_EOCD_FIXED_LENGTH - 12) {
+        return undefined;
+    }
+    // The record ends exactly where the locator begins: JSZip's rebase
+    // arithmetic (`expectedEndOfCentralDirOffset`) assumes the two, then the
+    // EOCD, are all that follows the directory.
+    if (record + ZIP64_EOCD_FIXED_LENGTH !== locator || record < view.cdEnd) {
+        return undefined;
+    }
+    return { record, locator };
+};
+
+/**
  * The extra field without its Info-ZIP unicode path (0x7075): JSZip prefers
  * the central record's over the stored name, and Word ignores it. A
  * truncated extra field keeps its unparseable tail verbatim, as JSZip's
@@ -130,33 +194,61 @@ const withoutUnicodePathField = (extra: Uint8Array): Uint8Array => {
  * other byte — the prefix, data descriptors, gaps between entries, the EOCD
  * comment, trailing bytes — is kept verbatim.
  *
+ * A ZIP64 package is rebuilt too (#479): its record and locator — the last of
+ * each signature, the record adjacent to the locator, the locator to the EOCD
+ * — move with the directory, and the record's directory size and offset and
+ * the locator's record offset are rebased like the 32-bit EOCD's fields,
+ * counting any bytes a declared size spans past its records (#478). The
+ * 32-bit EOCD keeps its saturated directory fields as stored: JSZip reads
+ * them only to decide to follow the ZIP64 structures.
+ *
  * Archives the rewrite cannot honor are returned as given, so their findings
  * stay JSZip's: a central directory `readCentralDirectoryView` cannot parse,
- * ZIP64 or multi-disk structure, bytes between the walked directory's end
- * and the EOCD, a local header missing or overlapping another entry's data,
- * or a compressed stream that overruns the directory.
+ * a ZIP64 tail it cannot move (a record with extensible data or short of its
+ * fixed 44 bytes, or one not adjacent to its locator), an entry whose
+ * local-header offset or compressed size lives in a ZIP64 extra field, bytes
+ * between the walked directory's end and the EOCD, a local header missing or
+ * overlapping another entry's data, or a compressed stream that overruns the
+ * directory.
  */
 export const centralKeyedArchive = (bytes: Uint8Array): Uint8Array => {
     const view = readCentralDirectoryView(bytes);
-    // Bytes between the walked directory's end (`cdEnd`, #478) and the EOCD
-    // are what JSZip reads past the last record — a signature record, a hidden
-    // directory — so a view with them is never rebuilt; moving the EOCD up to
-    // the directory would drop them (#468).
-    if (view === undefined || view.zip64 || view.cdEnd !== view.eocdOffset) {
+    if (view === undefined) {
         return bytes;
     }
-    // A ZIP64 locator record sits between the directory and the EOCD; leave
-    // its real offsets to JSZip rather than writing a locator for a directory
-    // that moved.
-    if (hasSignature(bytes, view.eocdOffset - ZIP64_LOCATOR_LENGTH, ZIP64_LOCATOR_SIGNATURE)) {
-        return bytes;
+    let zip64: Zip64Tail | undefined;
+    if (view.zip64) {
+        // A ZIP64 record and locator sit between the directory and the EOCD;
+        // the rewrite moves them with the directory, rebasing their offsets
+        // (#479).
+        zip64 = zip64Tail(bytes, view);
+        if (zip64 === undefined) {
+            return bytes;
+        }
+    } else {
+        // Bytes between the walked directory's end (`cdEnd`, #478) and the
+        // EOCD are what JSZip reads past the last record — a signature record,
+        // a hidden directory — so a view with them is never rebuilt; moving
+        // the EOCD up to the directory would drop them (#468).
+        if (view.cdEnd !== view.eocdOffset) {
+            return bytes;
+        }
+        // A ZIP64 locator record sits between the directory and the EOCD;
+        // leave its real offsets to JSZip rather than writing a locator for a
+        // directory that moved.
+        if (hasSignature(bytes, view.eocdOffset - ZIP64_LOCATOR_LENGTH, ZIP64_LOCATOR_SIGNATURE)) {
+            return bytes;
+        }
     }
     const locals: LocalRecord[] = [];
     let changed = false;
     for (const record of view.records) {
         // Saturated fields mean the real value lives in a ZIP64 extra field
-        // the rewrite does not move. Multi-disk entries likewise keep the
-        // bytes they came with.
+        // the rewrite does not move; such entries keep their bytes. Of the
+        // multi-disk fields, this record's `diskNumberStart` is the only one
+        // consulted here, and the locator's disk count is refused in
+        // `readCentralDirectoryView`; the EOCD's own disk fields are read only
+        // to detect ZIP64, as JSZip reads them (#482).
         if (record.localHeaderOffset === ZIP64_OFFSET || record.compressedSize === ZIP64_OFFSET || record.diskNumberStart !== 0) {
             return bytes;
         }
@@ -219,10 +311,32 @@ export const centralKeyedArchive = (bytes: Uint8Array): Uint8Array => {
         push(strippedExtra);
         push(record.commentBytes);
     }
-    const eocd = Buffer.from(bytes.subarray(view.eocdOffset, view.eocdEnd));
-    eocd.writeUInt32LE(outLength - cdOffset, EOCD_CD_SIZE_OFFSET);
-    eocd.writeUInt32LE(cdOffset - view.zero, EOCD_CD_OFFSET_OFFSET);
-    push(eocd);
+    if (zip64 === undefined) {
+        const eocd = Buffer.from(bytes.subarray(view.eocdOffset, view.eocdEnd));
+        eocd.writeUInt32LE(outLength - cdOffset, EOCD_CD_SIZE_OFFSET);
+        eocd.writeUInt32LE(cdOffset - view.zero, EOCD_CD_OFFSET_OFFSET);
+        push(eocd);
+    } else {
+        // The bytes between the walked directory and the ZIP64 record — a
+        // declared size spanning past its records (#478) — stay, and the
+        // record keeps counting them: JSZip locates the EOCD from these
+        // fields (`expectedEndOfCentralDirOffset`), so they must keep naming
+        // a position exactly the record and the locator (76 bytes) before the
+        // EOCD, or every offset would re-base past the difference.
+        push(bytes.subarray(view.cdEnd, zip64.record));
+        const zip64RecordOffset = outLength;
+        const record = Buffer.from(bytes.subarray(zip64.record, zip64.locator));
+        record.writeBigUInt64LE(BigInt(zip64RecordOffset - cdOffset), ZIP64_EOCD_CD_SIZE_OFFSET);
+        record.writeBigUInt64LE(BigInt(cdOffset - view.zero), ZIP64_EOCD_CD_OFFSET_OFFSET);
+        push(record);
+        const locator = Buffer.from(bytes.subarray(zip64.locator, view.eocdOffset));
+        locator.writeBigUInt64LE(BigInt(zip64RecordOffset - view.zero), ZIP64_LOCATOR_RECORD_OFFSET_OFFSET);
+        push(locator);
+        // The 32-bit EOCD keeps its saturated directory fields as stored:
+        // JSZip reads them only to decide to follow the ZIP64 structures,
+        // whose offsets are the rebased ones (#479).
+        push(bytes.subarray(view.eocdOffset, view.eocdEnd));
+    }
     push(bytes.subarray(view.eocdEnd));
     return Buffer.concat(parts.map((part) => Buffer.from(part.buffer, part.byteOffset, part.byteLength)));
 };

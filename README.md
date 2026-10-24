@@ -309,9 +309,15 @@ This check, the item-name refusal and the package view the checks judge all use
 those central-directory names, with one shared CP437 decoder for names without
 general-purpose bit 11 and UTF-8 for flagged names (#480). Re-keying uses the
 central spelling, as Word 16.115 does, and ignores the local file header's name
-and the Info-ZIP unicode-path extra field (0x7075) (#445). If re-keying is
-unavailable (for example, ZIP64), JSZip still prefers a valid central Unicode
-Path field. `unpack` is the exception: it extracts under raw JSZip's own names,
+and the Info-ZIP unicode-path extra field (0x7075) (#445). Re-keying covers
+ZIP64 packages: the ZIP64 end-of-central-directory record's directory size and
+offset and its locator's record offset are rebased with the directory, while
+the 32-bit record keeps its saturated fields (#479). If re-keying is
+unavailable (for example, an entry whose local-header offset or compressed
+size lives in a ZIP64 extra field), JSZip still prefers a valid central Unicode
+Path field. An entry's kind follows the central name as well: JSZip decides
+`dir` from the name it reads, so a central name ending in `/` is a folder in
+the package view and its part leaves the view ([#482](https://github.com/jandira-tech/docx-validate/issues/482)). `unpack` is the exception: it extracts under raw JSZip's own names,
 the local header's or the unicode-path field's (#469), with UTF-8 as its default
 decoder. A flag-less CP437 `caf\x82.xml` therefore extracts as `caf�.xml`, while
 the validator's archive view uses `café.xml`; directory validation of that

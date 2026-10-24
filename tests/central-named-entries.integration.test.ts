@@ -52,10 +52,11 @@ const UPATH_HIDES = buildRawZip([...minimalEntries(), { name: "a/../x.xml", unic
 
 // review Y `ry-dup-central-distinct-local`: two central entries under one
 // spelling, with distinct local names and distinct content.
-const DUP_DISTINCT_LOCAL = buildRawZip([
+const DUP_DISTINCT_LOCAL_ENTRIES: readonly RawZipEntry[] = [
     ...minimalEntries().map((entry) => (entry.name === "word/document.xml" ? { ...entry, localName: "AAAA-first.xml" } : entry)),
     { name: "word/document.xml", localName: "BBBB-second.xml", content: SECOND_DOCUMENT },
-]);
+];
+const DUP_DISTINCT_LOCAL = buildRawZip(DUP_DISTINCT_LOCAL_ENTRIES);
 
 const specimen = (dir: string, name: string, bytes: Uint8Array): string => {
     const file = path.join(dir, name);
@@ -110,9 +111,13 @@ describe("central and package name decoding (#480)", () => {
     });
 
     it("keeps JSZip's valid central Unicode Path preference when re-keying is unavailable", async () => {
-        // ZIP64 stays as given: the decoder must not override JSZip's valid
-        // 0x7075 field. Re-keyable archives deliberately strip it (#445).
-        const bytes = buildRawZip([{ name: "café.xml", nameBytes: cp437, unicodePath: "unicode-é.xml", content: "<x/>" }], { zip64: true });
+        // An entry whose local-header offset lives in a ZIP64 extra field
+        // stays as given: the decoder must not override JSZip's valid 0x7075
+        // field. Re-keyable archives deliberately strip it (#445), ZIP64
+        // included (#479).
+        const bytes = buildRawZip([{ name: "café.xml", nameBytes: cp437, unicodePath: "unicode-é.xml", zip64LocalOffset: true }], {
+            zip64: true,
+        });
         expect(centralKeyedArchive(bytes)).toBe(bytes);
         expect(Object.keys((await loadCentralNamedArchive(bytes)).files)).toEqual(["unicode-é.xml"]);
     });
@@ -289,10 +294,15 @@ describe("the package view reads central-directory names (#445, #446)", { timeou
             expect(zip.file("word/document.xml")).not.toBeNull();
         });
 
-        it("leaves malformed, ZIP64 and truncated bytes alone", async () => {
+        it("leaves malformed, sentinel-offset and truncated bytes alone", async () => {
             for (const bytes of [
                 Buffer.from("not a zip"),
-                buildRawZip(minimalEntries(), { zip64: true }),
+                // An entry whose local-header offset lives in a ZIP64 extra field
+                // (#479): such entries keep their bytes.
+                buildRawZip(
+                    [...minimalEntries(), { name: "word/extra.xml", localName: "../evil.xml", content: "<x/>", zip64LocalOffset: true }],
+                    { zip64: true },
+                ),
                 (await buildDocx()).subarray(0, 40),
             ]) {
                 expect(centralKeyedArchive(bytes)).toBe(bytes);
@@ -424,5 +434,159 @@ describe("the central-keyed view reads the archive JSZip reads (#467, #468, #469
         const local = Buffer.from(UPATH_INJECTS).indexOf(Buffer.from([...Buffer.from("x.xml"), 0x75, 0x70]));
         expect(local).toBeGreaterThan(0);
         expect(Buffer.from(normalized.subarray(0, local + 5 + field))).toEqual(Buffer.from(UPATH_INJECTS.subarray(0, local + 5 + field)));
+    });
+});
+
+// #479: a ZIP64 package. The 32-bit EOCD's directory fields are saturated, so
+// JSZip reads the directory through the ZIP64 record and locator; the rewrite
+// must rebase those with the directory, or the package view stays keyed by the
+// local names — the #445/#446 state.
+const LOCAL_DOTDOT_ZIP64 = buildRawZip([...minimalEntries(), { name: "word/extra.xml", localName: "../evil.xml", content: "<x/>" }], {
+    zip64: true,
+});
+const DUP_DISTINCT_LOCAL_ZIP64 = buildRawZip(DUP_DISTINCT_LOCAL_ENTRIES, { zip64: true });
+const PREFIXED_LOCAL_DOTDOT_ZIP64 = Buffer.concat([PREFIX, LOCAL_DOTDOT_ZIP64]);
+const SENTINEL_LOCAL_DOTDOT_ZIP64 = buildRawZip(
+    [...minimalEntries(), { name: "word/extra.xml", localName: "../evil.xml", content: "<x/>", zip64LocalOffset: true }],
+    { zip64: true },
+);
+
+/** The minimal parts plus the re-keyed extra part, as (name, content) pairs. */
+const expectedParts = (): readonly (readonly [string, string])[] => [...Object.entries(MINIMAL_PARTS), ["word/extra.xml", "<x/>"]];
+
+describe("the central-keyed view handles ZIP64 (#479)", { timeout: 120_000 }, () => {
+    it("returns a ZIP64 archive with agreeing names and no 0x7075 unchanged", () => {
+        const bytes = buildRawZip(minimalEntries(), { zip64: true });
+        expect(centralKeyedArchive(bytes)).toBe(bytes);
+    });
+
+    it("holds the central names, byte-exact under each", async () => {
+        const keyed = centralKeyedArchive(LOCAL_DOTDOT_ZIP64);
+        expect(keyed).not.toBe(LOCAL_DOTDOT_ZIP64);
+        const zip = await loadCentralNamedArchive(LOCAL_DOTDOT_ZIP64);
+        const names = Object.keys(zip.files).sort();
+        expect(names).toContain("word/extra.xml");
+        expect(names).toContain("word/document.xml");
+        expect(names).not.toContain("evil.xml");
+        for (const [name, content] of expectedParts()) {
+            expect(await zip.file(name)!.async("uint8array"), name).toEqual(new TextEncoder().encode(content));
+        }
+        expect(zipCentralDirectoryEntries(keyed)!.map((entry) => entry.name)).toEqual(
+            zipCentralDirectoryEntries(LOCAL_DOTDOT_ZIP64)!.map((entry) => entry.name),
+        );
+    });
+
+    it.each(["word-valid", "lenient", "strict"] as const)("does not refuse a local-only `..` under $profile", async (profile) => {
+        await withTempDir(async (dir) => {
+            const file = specimen(dir, "local-dotdot-zip64.docx", LOCAL_DOTDOT_ZIP64);
+            const result = await validate(file, { profile });
+            expect(codes(result), profile).not.toContain("package-extract-failed");
+            expect(codes(result), profile).not.toContain("package-open-failed");
+            expect(
+                result.issues.filter((issue) => issue.message.includes("evil.xml")),
+                profile,
+            ).toEqual([]);
+            if (profile !== "word-valid") return;
+            expect(result.valid, JSON.stringify(result.issues)).toBe(true);
+            expect(result.issues).toContainEqual(
+                expect.objectContaining({ code: "rels-unreferenced", severity: "warning", path: "word/extra.xml" }),
+            );
+        });
+    });
+
+    it("reports opc-equivalent-part-names for two central entries under one spelling (#446)", async () => {
+        await withTempDir(async (dir) => {
+            const file = specimen(dir, "dup-central-distinct-local-zip64.docx", DUP_DISTINCT_LOCAL_ZIP64);
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            const equivalent = result.issues.filter((issue) => issue.code === "opc-equivalent-part-names");
+            expect(equivalent).toHaveLength(1);
+            expect(equivalent[0]).toMatchObject({ severity: "error", path: "word/document.xml" });
+            expect(codes(result)).not.toContain("package-extract-failed");
+        });
+        const context = await ValidationContext.fromArchive(DUP_DISTINCT_LOCAL_ZIP64);
+        expect(new TextDecoder().decode(context.bytes("word/document.xml"))).toBe(SECOND_DOCUMENT);
+        expect(context.bytes("AAAA-first.xml")).toBeUndefined();
+        expect(context.bytes("BBBB-second.xml")).toBeUndefined();
+    });
+
+    it("keeps a prefix a prefix, re-keying the ZIP64 archive behind it (#467)", async () => {
+        const bytes = PREFIXED_LOCAL_DOTDOT_ZIP64;
+        const normalized = centralKeyedArchive(bytes);
+        expect(normalized).not.toBe(bytes);
+        expect(Buffer.from(normalized.subarray(0, PREFIX.length))).toEqual(PREFIX);
+        const zip = await loadCentralNamedArchive(bytes);
+        expect(Object.keys(zip.files)).toContain("word/extra.xml");
+        expect(Object.keys(zip.files)).not.toContain("evil.xml");
+        expect(await zip.file("word/document.xml")!.async("string")).toBe(MINIMAL_PARTS["word/document.xml"]);
+        // The ZIP64 record's directory size and offset and the locator's
+        // record offset are rebased like the 32-bit EOCD's fields: the record
+        // and locator still end exactly 76 bytes before the EOCD, and every
+        // stored offset stays relative to the archive behind the prefix.
+        const buf = Buffer.from(normalized);
+        const eocd = buf.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
+        const locator = eocd - 20;
+        const record = Number(buf.readBigUInt64LE(locator + 8)) + PREFIX.length;
+        expect(buf.subarray(record, record + 4).equals(Buffer.from([0x50, 0x4b, 0x06, 0x06]))).toBe(true);
+        const cdSize = Number(buf.readBigUInt64LE(record + 40));
+        const cdOffset = Number(buf.readBigUInt64LE(record + 48));
+        expect(eocd - (cdOffset + cdSize + 76)).toBe(PREFIX.length);
+    });
+
+    it("keeps the slack a declared directory size spans past its records (#478)", async () => {
+        const bytes = buildRawZip([...minimalEntries(), { name: "word/extra.xml", localName: "../evil.xml", content: "<x/>" }], {
+            zip64: true,
+            cdSlack: 16,
+        });
+        const zip = await loadCentralNamedArchive(bytes);
+        expect(Object.keys(zip.files)).toContain("word/extra.xml");
+        expect(Object.keys(zip.files)).not.toContain("evil.xml");
+        expect(await zip.file("word/document.xml")!.async("string")).toBe(MINIMAL_PARTS["word/document.xml"]);
+    });
+
+    it("bails for an entry whose local-header offset lives in a ZIP64 extra field", async () => {
+        expect(centralKeyedArchive(SENTINEL_LOCAL_DOTDOT_ZIP64)).toBe(SENTINEL_LOCAL_DOTDOT_ZIP64);
+        // JSZip loads the archive as given, keyed by the local name.
+        expect(Object.keys((await JSZip.loadAsync(SENTINEL_LOCAL_DOTDOT_ZIP64)).files)).toContain("evil.xml");
+        expect(Object.keys((await loadCentralNamedArchive(SENTINEL_LOCAL_DOTDOT_ZIP64)).files)).toContain("evil.xml");
+    });
+
+    it("never loads a ZIP64 archive JSZip refuses: a locator naming a record outside the buffer", async () => {
+        const buf = Buffer.from(LOCAL_DOTDOT_ZIP64);
+        const locator = buf.lastIndexOf(Buffer.from([0x50, 0x4b, 0x06, 0x07]));
+        buf.writeUInt32LE(0x7ffffff0, locator + 8);
+        await expect(JSZip.loadAsync(buf)).rejects.toThrow();
+        await expect(loadCentralNamedArchive(buf)).rejects.toThrow();
+    });
+});
+
+// #482: JSZip decides an entry's kind after loading, from the name it reads
+// (`zipEntry.js` `processAttributes`): the MS-DOS directory attribute, then a
+// trailing-`/` fallback. The rewrite stores the central name in the local
+// header, so a central name ending in `/` reclassifies a file entry as a
+// folder — the Word-faithful reading, since Word reads the central name.
+const CENTRAL_FOLDER = buildRawZip([...minimalEntries(), { name: "word/", localName: "word/extra.xml", content: "<x/>" }]);
+
+describe("the entry's kind follows the central name (#482)", { timeout: 120_000 }, () => {
+    it("reclassifies a file entry as a folder when the central name ends in '/'", async () => {
+        expect(centralKeyedArchive(CENTRAL_FOLDER)).not.toBe(CENTRAL_FOLDER);
+        // As given, JSZip reads the file-like local name: a file entry.
+        expect((await JSZip.loadAsync(CENTRAL_FOLDER)).files["word/extra.xml"]?.dir).toBe(false);
+        const zip = await loadCentralNamedArchive(CENTRAL_FOLDER);
+        expect(zip.files["word/"]?.dir).toBe(true);
+        expect(zip.files["word/extra.xml"]).toBeUndefined();
+    });
+
+    it("drops the part from the package view, without a refusal", async () => {
+        const context = await ValidationContext.fromArchive(CENTRAL_FOLDER);
+        expect(context.has("word/extra.xml")).toBe(false);
+        expect(context.bytes("word/extra.xml")).toBeUndefined();
+        await withTempDir(async (dir) => {
+            const file = specimen(dir, "central-folder.docx", CENTRAL_FOLDER);
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid, JSON.stringify(result.issues)).toBe(true);
+            expect(codes(result)).not.toContain("package-extract-failed");
+            expect(result.issues.filter((issue) => issue.path === "word/extra.xml")).toEqual([]);
+        });
     });
 });
