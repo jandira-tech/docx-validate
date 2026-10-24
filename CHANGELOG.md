@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+- Judge a reached glossary's theme typed by generic XML in `word-part-content-type-generic` ([#595](https://github.com/jandira-tech/docx-validate/issues/595)). Session 23 (s23a) observed recovery for the `application/xml` Default and a clean exact-Override control. Findings name the glossary's theme relationship, block word-valid, and warn under lenient; strict retains only a same-path `ct-undeclared-part` error when present (#535, #571). Only theme joins this glossary scope. Both relationship orders and full/quick/named agreement are covered (#593, #381).
+
 ### Added
 
 - Pin partial/full error-subset parity for case, NFC/NFD and NUL-bearing ZIP names under Word-valid and lenient (#423). The collision fallback added in #454 already fixes the reported subset defect; this adds regression coverage without changing validation policy.

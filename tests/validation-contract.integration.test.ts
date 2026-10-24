@@ -1,3 +1,4 @@
+import { GLOSSARY_THEME_PART, glossaryThemeParts } from "./support/glossary-content-type-specimens";
 /*
  * Copyright 2026 Jandira Technologies, LLC
  * Licensed under the Apache License, Version 2.0.
@@ -4244,6 +4245,48 @@ describe("validation contract: a part reached by two relationship types (#593, #
                     expect(partial.valid).toBe(word.valid);
                     expect(inexactFindings(partial)).toEqual(inexactFindings(word));
                     expect([...errorCodes(partial.issues)].every((error) => errorCodes(word.issues).has(error))).toBe(true);
+                }
+            });
+        },
+        60_000,
+    );
+});
+
+// Session 23 (s23a): exact builder shapes, including the controls' existing strict paraId findings.
+describe("validation contract: reached glossary generic theme (#595, #535, #381)", () => {
+    it.each([undefined, "theme-first", "footer-first"] as const)(
+        "full, quick and named agree (%s)",
+        async (order) => {
+            await withTempDir(async (dir) => {
+                const code = "word-part-content-type-generic";
+                for (const exact of [false, true]) {
+                    const file = path.join(dir, `glossary-theme-${exact}.docx`);
+                    writeFileSync(file, await buildDocx(glossaryThemeParts(exact, order)));
+                    const full = await validate(file, { profile: "word-valid" });
+                    expect(full.valid).toBe(exact);
+                    const found = full.issues.filter((issue) => issue.code === code);
+                    expect(found).toEqual(exact ? [] : [expect.objectContaining({ code, path: GLOSSARY_THEME_PART, severity: "error" })]);
+                    if (!exact) expect(found[0]?.message).toContain("named by the glossary's theme relationship");
+                    const strict = await validate(file, { profile: "strict" });
+                    expect(strict.valid && !full.valid).toBe(false);
+                    expect(strict.issues.filter((issue) => issue.code === code)).toEqual([]);
+                    expect(
+                        strict.issues
+                            .filter((issue) => issue.path === GLOSSARY_THEME_PART && issue.severity === "error")
+                            .map((issue) => issue.code),
+                    ).toEqual(exact ? [] : ["ct-undeclared-part"]);
+                    const lenient = await validate(file, { profile: "lenient" });
+                    expect(lenient.issues.filter((issue) => issue.code === code)).toEqual(
+                        exact ? [] : [expect.objectContaining({ code, path: GLOSSARY_THEME_PART, severity: "warning" })],
+                    );
+                    for (const selection of [{ quick: true }, { checks: [code] }, { checks: ["word-part-content-type-inexact"] }]) {
+                        const partial = await validate(file, { profile: "word-valid", ...selection });
+                        // The inexact-only selection intentionally omits the generic defect.
+                        const selected = !selection.checks || selection.checks.includes(code);
+                        expect(partial.valid).toBe(selected ? full.valid : true);
+                        expect(partial.issues.filter((issue) => issue.code === code)).toEqual(selected ? found : []);
+                        expect([...errorCodes(partial.issues)].every((error) => errorCodes(full.issues).has(error))).toBe(true);
+                    }
                 }
             });
         },

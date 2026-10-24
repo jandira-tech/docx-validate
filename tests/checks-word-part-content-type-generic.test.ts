@@ -1,3 +1,4 @@
+import { GLOSSARY_THEME_PART, glossaryThemeParts } from "./support/glossary-content-type-specimens";
 /*
  * Copyright 2026 Jandira Technologies, LLC
  * Licensed under the Apache License, Version 2.0.
@@ -1958,4 +1959,51 @@ describe("a theme part reached by an unreferenced footer relationship too (#593,
             }
         });
     }, 60_000);
+});
+
+// Session 23 (s23a), committed Word evidence: generic Default repairs, exact Override opens clean.
+describe("reached glossary generic theme (#595)", () => {
+    it.each([undefined, "theme-first", "footer-first"] as const)(
+        "reports once, naming the glossary's theme relationship (%s)",
+        async (order) => {
+            const ctx = ValidationContext.fromEntries(glossaryThemeParts(false, order));
+            for (const scope of ["observed", "spec"] as const) {
+                const found = await wordPartContentTypeGenericFindings(ctx, scope);
+                expect(found).toHaveLength(1);
+                expect(found[0]?.issue).toMatchObject({ code: ID, severity: "error", path: GLOSSARY_THEME_PART });
+                expect(found[0]?.issue.message).toContain("named by the glossary's theme relationship");
+                expect(found[0]?.issue.message).toContain('Default for extension "xml" to "application/xml"');
+                expect(isWordBlockingIssue(found[0]!.issue)).toBe(true);
+            }
+            expect(await diagnose(ValidationContext.fromEntries(glossaryThemeParts(true, order)))).toEqual([]);
+        },
+    );
+
+    it("keeps other glossary generic relationships outside the observed scope", async () => {
+        for (const segment of [
+            "styles",
+            "settings",
+            "fontTable",
+            "webSettings",
+            "numbering",
+            "header",
+            "footer",
+            "footnotes",
+            "endnotes",
+            "comments",
+        ]) {
+            const parts = glossaryThemeParts();
+            parts["word/glossary/_rels/document.xml.rels"] = parts["word/glossary/_rels/document.xml.rels"]!.replace(
+                '/theme"',
+                `/${segment}"`,
+            );
+            expect(await diagnose(ValidationContext.fromEntries(parts)), segment).toEqual([]);
+        }
+    });
+
+    it("ignores a theme in an unreached glossary", async () => {
+        const parts = glossaryThemeParts();
+        parts["word/_rels/document.xml.rels"] = MINIMAL_PARTS["word/_rels/document.xml.rels"]!;
+        expect(await diagnose(ValidationContext.fromEntries(parts))).toEqual([]);
+    });
 });
