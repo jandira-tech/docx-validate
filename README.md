@@ -969,7 +969,15 @@ using the same duplicate selection and extraction guards as packed inputs.
 Directories whose tree holds a symbolic link — a stored entry or a directory
 segment — are staged the same way: the stored bytes are read through the link
 into the package view, while the write-back never follows it
-([#425](https://github.com/jandira-tech/docx-validate/issues/425)).
+([#425](https://github.com/jandira-tech/docx-validate/issues/425)). A stored
+destination is refused when any path segment between the input root and that
+destination is a symbolic link. When several stored paths name one physical
+file and any of them reaches it through a link, the whole group is refused, so
+the link's target stays untouched and one physical file is never written twice
+([#544](https://github.com/jandira-tech/docx-validate/issues/544)). A stored
+regular file whose link count is greater than one is also refused, because a
+hard-link alias may name a file outside the input directory
+([#545](https://github.com/jandira-tech/docx-validate/issues/545)).
 Directories with ordinary forward-slash names and no links are validated
 directly. Validation
 leaves source files unchanged unless `autoRepair: true` / `--auto-repair` is used.
@@ -999,8 +1007,9 @@ report the same failure. (Under ordinary
 forward-slash names the direct path reads parts lazily, so the same file yields
 `check-crashed` warnings instead.) When a write-back cannot reach its stored
 file — a read-only file, one removed mid-run, or a stored file that is a
-symbolic link or resolves outside the input directory, whose target the
-write-back never touches — the run reports a
+symbolic link, whose root-relative path contains a symbolic-link segment, has
+more than one hard link, or resolves outside the input directory, whose target
+the write-back never touches — the run reports a
 `repair-write-back-failed` error naming the part and keeps writing back the
 remaining repairs; the stored file is left untouched. That error is
 profile-independent: a repair the caller asked for and did not get is an
@@ -1008,6 +1017,13 @@ operational failure, not a property of the document, so no profile downgrades
 it ([#428](https://github.com/jandira-tech/docx-validate/issues/428)). `repairs` counts repairs
 applied to the package view, so a repair whose write-back failed still counts
 ([#412](https://github.com/jandira-tech/docx-validate/issues/412)).
+
+These write-back checks are not race-resistant. They inspect the stored path
+and inode, then later write by path; a symbolic or hard link swapped in
+between the check and the write can still be followed. The same check-then-use
+limit is documented by `containRelationshipTarget`; descriptor-based
+no-follow writes would be required to close that race
+([#545](https://github.com/jandira-tech/docx-validate/issues/545)).
 
 Distinct normalized part names that collide under ASCII case folding and NFC
 normalization now refuse the package view **on every host**, before extraction
