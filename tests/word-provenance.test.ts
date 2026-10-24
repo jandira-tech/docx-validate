@@ -7,7 +7,19 @@
 
 import { describe, expect, it } from "vitest";
 
-import { classifyWordOutcome, effectiveOutcome, mergeWordObservation, parseWordField, wordAccuracy } from "../src/lib/word-provenance";
+import {
+    classifyWordOutcome,
+    effectiveOutcome,
+    mergeWordObservation,
+    parseWordField,
+    REJECTED_OUTCOMES,
+    toManifestOutcome,
+    UNATTRIBUTABLE_OUTCOMES,
+    VERIFIER_OUTCOME_TO_MANIFEST,
+    wordAccuracy,
+    type WordOutcomeClass,
+} from "../src/lib/word-provenance";
+import { WORD_OUTCOMES, type WordOutcome } from "../src/lib/word-verifier";
 
 describe("effectiveOutcome", () => {
     it("binds a structured observation to its sha256: matching hash keeps the outcome, a differing hash is stale (unknown), never clean or rejected", () => {
@@ -36,6 +48,52 @@ describe("accuracy accounting", () => {
             { field: null, sha256: "aaaa" },
         ]);
         expect(counts).toEqual({ clean: 1, rejected: 0, unattributable: 4 });
+    });
+
+    it("counts only Word's verdict as a rejection: crash, unavailable and unmapped spellings are unattributable (#316)", () => {
+        expect(classifyWordOutcome("crash")).toBe("unattributable");
+        expect(classifyWordOutcome("unavailable")).toBe("unattributable");
+        // Verifier spellings that were never translated to the manifest
+        // vocabulary must not silently count as rejections.
+        expect(classifyWordOutcome("repair-warning")).toBe("unattributable");
+        expect(classifyWordOutcome("password-prompt")).toBe("unattributable");
+        // Nor may an unknown future outcome.
+        expect(classifyWordOutcome("a-future-outcome")).toBe("unattributable");
+    });
+});
+
+describe("verifier → manifest outcome mapping (#316)", () => {
+    it("maps every verifier outcome to a manifest outcome the accounting knows — a new WordOutcome without a mapping fails here", () => {
+        // A duplicate spelling in WORD_OUTCOMES could shadow a missing mapping.
+        expect(WORD_OUTCOMES).toHaveLength(new Set(WORD_OUTCOMES).size);
+        // The mapping table is keyed by exactly the verifier outcomes.
+        expect(Object.keys(VERIFIER_OUTCOME_TO_MANIFEST).sort()).toEqual([...WORD_OUTCOMES].sort());
+        const known = ["clean-open", ...REJECTED_OUTCOMES, ...UNATTRIBUTABLE_OUTCOMES];
+        for (const outcome of WORD_OUTCOMES) {
+            expect(known, `verifier outcome "${outcome}" maps to no known manifest outcome`).toContain(toManifestOutcome(outcome));
+        }
+    });
+
+    it("spells the dialog outcomes the manifest's way and never turns a no-verdict outcome into a rejection", () => {
+        expect(toManifestOutcome("repair-warning")).toBe("unreadable-content-warning");
+        expect(toManifestOutcome("password-prompt")).toBe("password-required");
+        expect(toManifestOutcome("unavailable")).toBe("unknown");
+        for (const outcome of ["clean-open", "open-error", "crash", "unknown-dialog", "timeout"] as const) {
+            expect(toManifestOutcome(outcome)).toBe(outcome);
+        }
+        const expected: Record<WordOutcome, WordOutcomeClass> = {
+            "clean-open": "clean",
+            "repair-warning": "rejected",
+            "open-error": "rejected",
+            "password-prompt": "rejected",
+            "unknown-dialog": "rejected",
+            crash: "unattributable",
+            timeout: "unattributable",
+            unavailable: "unattributable",
+        };
+        for (const outcome of WORD_OUTCOMES) {
+            expect(classifyWordOutcome(toManifestOutcome(outcome)), outcome).toBe(expected[outcome]);
+        }
     });
 });
 

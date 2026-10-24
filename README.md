@@ -351,7 +351,11 @@ and `wordBuild`. Outcomes are `clean-open`, `repair-warning`, `open-error`,
 Only `clean-open` satisfies verification. Unavailable or inconclusive results
 make an explicitly requested run invalid even when `issues` contains no errors.
 An unpacked directory has no packed bytes to verify and returns `unavailable`;
-other platforms or missing Word also return `unavailable`.
+other platforms or missing Word also return `unavailable`. `crash` requires a
+Microsoft Word crash report written after this run's open; a Word process that
+vanishes without one (an external kill or quit) is `unavailable` (#305). The Word
+version and availability calls run inside the same budget as the rest of the run,
+so a hanging call ends as `timeout` instead of outliving it (#320).
 
 Before opening, the verifier observes Word once. If a dialog is already showing,
 it returns `unavailable` without opening or closing anything: that dialog cannot
@@ -494,11 +498,16 @@ using it. CI runs the same gate after its coverage test step.
 `tests/fixtures-all.manifest.json`. `tests/fixtures-all-word-valid.test.ts` instead
 compares each attributable DOCX fixture against Word's hash-bound observation:
 `clean-open` means valid, observed rejection means invalid. Unknown, timed-out,
-and stale observations are excluded; floors of 358 clean opens and 67 rejections
+crashed, and stale observations, and any outcome spelling the accounting does not
+know, are excluded (#316); floors of 358 clean opens and 67 rejections
 prevent silent loss of evidence. The 24 jubarte 0.13.0 specimens live separately
 under `tests/lane/` with their own integration suite.
 
 Manifest `word` observations use `{ outcome, sha256, observedAt?, wordVersion? }`.
+The rejections are `open-error`, `unreadable-content-warning`, `password-required`,
+and `unknown-dialog`. In source, `toManifestOutcome` translates a verifier outcome
+to these spellings (`repair-warning` → `unreadable-content-warning`,
+`password-prompt` → `password-required`, `unavailable` → `unknown`).
 A mismatching hash makes the observation `unknown`; legacy strings remain readable
 but cannot be checked for staleness. `mergeWordObservation` preserves superseded
 observations in `history` and does not let a timeout/unknown re-probe displace

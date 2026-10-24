@@ -32,6 +32,12 @@ interface FakeSpec {
     snapshots?: SnapshotScript[];
     /** What an observation taken before the open sees (#315). Default: Word not running, no dialog. */
     before?: WordSnapshot;
+    /**
+     * The crash-report lookup after the Word process vanishes (#305):
+     * "report" — a new Word crash report exists; "none" (default) — none
+     * does (an external kill or quit); "hang" — the lookup never settles.
+     */
+    crashReport?: "report" | "none" | "hang";
 }
 
 const openDoc = (documentName: string, dialogText = "", dialogButtons: string[] = []): WordSnapshot => ({
@@ -46,6 +52,7 @@ class FakeTransport implements WordTransport {
     private readonly spec: { platform: string; available: boolean; version: { version: string; build?: string } | undefined };
     private readonly snapshots: SnapshotScript[];
     private readonly before: WordSnapshot;
+    private readonly crashReport: "report" | "none" | "hang";
     private observeCount = 0;
     private opened = false;
 
@@ -57,6 +64,7 @@ class FakeTransport implements WordTransport {
         };
         this.snapshots = spec.snapshots ?? [];
         this.before = spec.before ?? PENDING;
+        this.crashReport = spec.crashReport ?? "none";
     }
 
     platform(): string {
@@ -91,6 +99,14 @@ class FakeTransport implements WordTransport {
     async close(documentName: string): Promise<void> {
         this.calls.push(`close:${documentName}`);
         if (this.closeError !== undefined) throw this.closeError;
+    }
+
+    async crashReportedSince(sinceMs: number): Promise<boolean> {
+        this.calls.push(`crashReportedSince:${sinceMs}`);
+        if (this.crashReport === "hang") {
+            return new Promise<boolean>(() => undefined);
+        }
+        return this.crashReport === "report";
     }
 
     closeError?: unknown;
@@ -290,16 +306,6 @@ describe("verifyInWord", () => {
         expect(result.details).toContain("wants to access your contacts");
     });
 
-    it("reports crash when the Word process disappears after opening the file", async () => {
-        const transport = new FakeTransport({
-            snapshots: [PENDING, (name) => openDoc(name), PENDING],
-        });
-        const clock = new FakeClock();
-        const result = await verifyInWord(BYTES, { transport, clock });
-        expect(result.outcome).toBe("crash");
-        expect(result.satisfied).toBe(false);
-    });
-
     it("reports timeout when the document never appears inside the budget", async () => {
         const transport = new FakeTransport({
             snapshots: [{ processAlive: true, documentNames: [], dialogText: "", dialogButtons: [] }],
@@ -440,6 +446,7 @@ describe("verifyInWord", () => {
             close: async () => {
                 closed = true;
             },
+            crashReportedSince: async () => false,
         });
         await expect(verifyInWord(new Uint8Array([1]), { transport, clock: new FakeClock() })).rejects.toThrow("Apple event");
         expect(closed).toBe(true);
@@ -458,6 +465,7 @@ describe("verifyInWord", () => {
             close: async () => {
                 closed = true;
             },
+            crashReportedSince: async () => false,
         };
         await expect(verifyInWord(BYTES, { transport, clock: new FakeClock() })).rejects.toThrow("open -g failed");
         expect(closed).toBe(true);
@@ -475,6 +483,7 @@ describe("verifyInWord", () => {
             close: async () => {
                 throw new Error("close also failed");
             },
+            crashReportedSince: async () => false,
         });
         await expect(verifyInWord(BYTES, { transport, clock: new FakeClock() })).rejects.toThrow("Apple event");
     });
@@ -495,6 +504,7 @@ describe("verifyInWord", () => {
                 dialogButtons: [],
             }),
             close: async () => undefined,
+            crashReportedSince: async () => false,
         };
         const result = await verifyInWord(new Uint8Array([1]), {
             transport,
@@ -530,6 +540,7 @@ describe("verifyInWord", () => {
                 return { processAlive: true, documentNames: [name], dialogText: "", dialogButtons: [] };
             },
             close: async () => undefined,
+            crashReportedSince: async () => false,
         });
         const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 20, pollMs: 5, observationMs: 0 });
         expect(result.outcome).toBe("timeout");
@@ -548,6 +559,7 @@ describe("verifyInWord", () => {
                 dialogButtons: [],
             }),
             close: async () => undefined,
+            crashReportedSince: async () => false,
         };
         const result = await verifyInWord(BYTES, { transport, clock: wallClock(), timeoutMs: 20, pollMs: 5 });
         expect(result.outcome).toBe("timeout");
@@ -562,6 +574,7 @@ describe("verifyInWord", () => {
             open: async () => undefined,
             observe: () => new Promise<WordSnapshot>(() => undefined),
             close: async () => undefined,
+            crashReportedSince: async () => false,
         });
         const result = await verifyInWord(BYTES, { transport, clock: wallClock(), timeoutMs: 20, pollMs: 5 });
         expect(result.outcome).toBe("timeout");
@@ -579,6 +592,7 @@ describe("verifyInWord", () => {
                     setTimeout(() => reject(new Error("late Apple event failure")), 40);
                 }),
             close: async () => undefined,
+            crashReportedSince: async () => false,
         });
         const result = await verifyInWord(BYTES, { transport, clock: wallClock(), timeoutMs: 20, pollMs: 5 });
         expect(result.outcome).toBe("timeout");
@@ -599,6 +613,7 @@ describe("verifyInWord", () => {
                 dialogButtons: [],
             }),
             close: () => new Promise<void>(() => undefined),
+            crashReportedSince: async () => false,
         };
         const result = await verifyInWord(BYTES, { transport, clock: wallClock(), timeoutMs: 20, pollMs: 5, observationMs: 0 });
         expect(result.outcome).toBe("clean-open");
@@ -622,6 +637,7 @@ describe("verifyInWord", () => {
             close: async (name) => {
                 closed.push(name);
             },
+            crashReportedSince: async () => false,
             ...hang,
         });
         const result = await verifyInWord(BYTES, { transport, clock: wallClock(), timeoutMs: 40, pollMs: 5 });
@@ -644,6 +660,7 @@ describe("verifyInWord", () => {
             close: async (name) => {
                 closed.push(name);
             },
+            crashReportedSince: async () => false,
         };
         const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 5_000, observationMs: 1_000 });
         expect(result.outcome).toBe("timeout");
@@ -717,6 +734,7 @@ describe("verifyInWord: a dialog already showing before the open (#315)", () => 
             close: async () => {
                 calls.push("close");
             },
+            crashReportedSince: async () => false,
         };
         const result = await verifyInWord(BYTES, { transport, clock: wallClock(), timeoutMs: 20, pollMs: 5 });
         expect(result.outcome).toBe("timeout");
@@ -739,9 +757,150 @@ describe("verifyInWord: a dialog already showing before the open (#315)", () => 
             close: async () => {
                 calls.push("close");
             },
+            crashReportedSince: async () => false,
         };
         await expect(verifyInWord(BYTES, { transport, clock: new FakeClock() })).rejects.toThrow("Apple event");
         expect(calls).toEqual([]);
+    });
+});
+
+describe("verifyInWord: a vanished Word process needs crash evidence (#305)", () => {
+    // The process is seen alive with our document, then vanishes.
+    const VANISHED: SnapshotScript[] = [PENDING, (name) => openDoc(name), PENDING];
+
+    it("reports crash when the process disappears and a new Word crash report was written after the open", async () => {
+        const transport = new FakeTransport({ crashReport: "report", snapshots: VANISHED });
+        const clock = new FakeClock();
+        const result = await verifyInWord(BYTES, { transport, clock });
+        expect(result.outcome).toBe("crash");
+        expect(result.satisfied).toBe(false);
+        expect(result.details).toContain("crash report");
+        // Only a report written after this run's open counts; the lookup
+        // receives the open instant (FakeClock time starts at 0).
+        expect(transport.calls).toContain("crashReportedSince:0");
+    });
+
+    it("reports unavailable, not crash, when Word vanishes without a crash report (an external kill or quit)", async () => {
+        const transport = new FakeTransport({ snapshots: VANISHED });
+        const clock = new FakeClock();
+        const result = await verifyInWord(BYTES, { transport, clock });
+        expect(result.outcome).toBe("unavailable");
+        expect(result.satisfied).toBe(false);
+        expect(result.details).toContain("Word exited without a crash report");
+    });
+
+    it("ends as timeout when the crash-report lookup does not settle within the budget", async () => {
+        const transport = new FakeTransport({ crashReport: "hang", snapshots: VANISHED });
+        const result = await verifyInWord(BYTES, { transport, clock: wallClock(), timeoutMs: 40, pollMs: 5 });
+        expect(result.outcome).toBe("timeout");
+        expect(result.details).toContain("the crash-report lookup did not settle");
+    });
+});
+
+describe("verifyInWord: the version and availability calls race the budget (#320)", () => {
+    it("keeps a version that settles within the budget", async () => {
+        const clock = new FakeClock();
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            version: async () => {
+                clock.advance(2_000);
+                return { version: "16.89", build: "24091315" };
+            },
+            available: async () => true,
+            open: async () => undefined,
+            observe: async (name) => openDoc(name),
+            close: async () => undefined,
+            crashReportedSince: async () => false,
+        };
+        const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 10_000 });
+        expect(result.outcome).toBe("clean-open");
+        expect(result.wordVersion).toBe("16.89");
+        expect(result.wordBuild).toBe("24091315");
+    });
+
+    it("omits the version when its call settles only after the budget is spent", async () => {
+        const clock = new FakeClock();
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            version: async () => {
+                // The budget expires while the call is in flight; it answers only after.
+                await Promise.resolve().then(() => clock.advance(5_000));
+                return { version: "16.89" };
+            },
+            available: async () => true,
+            open: async () => undefined,
+            observe: async (name) => openDoc(name),
+            close: async () => undefined,
+            crashReportedSince: async () => false,
+        };
+        const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 5_000 });
+        expect(result.outcome).toBe("timeout");
+        expect(result.wordVersion).toBeUndefined();
+        expect(result.observationMs).toBeLessThanOrEqual(5_000);
+    });
+
+    it("ends as timeout when the availability call settles only after the budget is spent", async () => {
+        const clock = new FakeClock();
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            version: async () => undefined,
+            available: async () => {
+                // The budget expires while the call is in flight; it answers only after.
+                await Promise.resolve().then(() => clock.advance(5_000));
+                return true;
+            },
+            open: async () => undefined,
+            observe: async (name) => openDoc(name),
+            close: async () => undefined,
+            crashReportedSince: async () => false,
+        };
+        const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 5_000 });
+        expect(result.outcome).toBe("timeout");
+        expect(result.details).toContain("the availability check did not settle");
+        expect(result.observationMs).toBeLessThanOrEqual(5_000);
+    });
+
+    it("settles within the budget when the availability call never settles", async () => {
+        const clock = new FakeClock();
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            version: async () => undefined,
+            available: () => {
+                const never = new Promise<boolean>(() => undefined);
+                // The budget expires while the call is still in flight.
+                queueMicrotask(() => clock.advance(5_000));
+                return never;
+            },
+            open: async () => undefined,
+            observe: async (name) => openDoc(name),
+            close: async () => undefined,
+            crashReportedSince: async () => false,
+        };
+        const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 5_000 });
+        expect(result.outcome).toBe("timeout");
+        expect(result.details).toContain("the availability check did not settle");
+        expect(clock.nowValue).toBeLessThanOrEqual(5_000);
+    });
+
+    it("settles within the budget when the version call never settles", async () => {
+        const clock = new FakeClock();
+        const transport: WordTransport = {
+            platform: () => "darwin",
+            version: () => {
+                const never = new Promise<{ version: string }>(() => undefined);
+                queueMicrotask(() => clock.advance(5_000));
+                return never;
+            },
+            available: async () => true,
+            open: async () => undefined,
+            observe: async (name) => openDoc(name),
+            close: async () => undefined,
+            crashReportedSince: async () => false,
+        };
+        const result = await verifyInWord(BYTES, { transport, clock, timeoutMs: 5_000 });
+        expect(result.outcome).toBe("timeout");
+        expect(result.wordVersion).toBeUndefined();
+        expect(clock.nowValue).toBeLessThanOrEqual(5_000);
     });
 });
 
