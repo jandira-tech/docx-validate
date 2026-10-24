@@ -46,6 +46,11 @@ describe("isWordBlockingIssue", () => {
         "word-math-spre-body",
         "word-content-type-invalid",
         "word-document-root",
+        // Word 16.115 offers recovery for a package without [Content_Types].xml
+        // and for one naming no main document part (#435, #380; session 3c in
+        // docs/plans/evidence/word-probes-2026-10-24.md).
+        "ct-missing",
+        "word-main-document-part",
         "ct-uncovered-part",
         "word-custom-property-filetime-empty",
         "word-drawing-extent-missing",

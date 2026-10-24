@@ -51,6 +51,14 @@ export const isWordBlockingIssue = (issue: ValidationIssue, propertiesParts: Rea
         case "word-content-type-invalid":
         // #317, Word 16.115: a foreign main root prevents opening; an ignored main root silently drops all content.
         case "word-document-root":
+        // Word 16.115 offers recovery for a package without
+        // [Content_Types].xml — it cannot type a single part (#435; session
+        // 3c in docs/plans/evidence/word-probes-2026-10-24.md).
+        case "ct-missing":
+        // Word 16.115 offers recovery for an empty archive and for a package
+        // whose main document part is gone (#380, session 3c, same file), and
+        // for one whose officeDocument relationship is removed (session 4).
+        case "word-main-document-part":
         // A part with no Override and no Default makes Word offer recovery
         // ([trash]/0000.dat). A part that has a content type but no
         // relationship is tolerated, so rels-unreferenced stays a warning.

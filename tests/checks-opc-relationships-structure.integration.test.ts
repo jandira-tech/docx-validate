@@ -72,9 +72,10 @@ describe("relationships structure profile and selection parity (#433, #434, #381
                             ? []
                             : [expect.objectContaining({ path: specimen.part, severity: blocks ? "error" : "warning" })],
                     );
+                    // No main part blocks under Word-valid as under strict (#380, #435).
                     expect(full.issues.filter((issue) => issue.code === "word-main-document-part")).toEqual(
                         profile !== "lenient" && specimen.missingMain
-                            ? [expect.objectContaining({ path: PACKAGE, severity: profile === "strict" ? "error" : "warning" })]
+                            ? [expect.objectContaining({ path: PACKAGE, severity: "error" })]
                             : [],
                     );
                     if (profile !== "lenient") expect(full.metadata?.executedChecks).toContain(CODE);
