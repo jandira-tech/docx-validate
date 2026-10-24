@@ -27,8 +27,8 @@ import { validate } from "../src/scripts/office/validate";
 import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
 import { walkFiles } from "../src/scripts/office/validators/base";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
-import { DUPLICATE_MAIN_DOCUMENT_PARTS } from "./support/main-document-specimens";
 import { buildRawZip } from "./support/raw-zip";
+import { DUPLICATE_MAIN_DOCUMENT_PARTS } from "./support/main-document-specimens";
 
 /** The profile a `.docx` is validated under when the caller names none. */
 const DEFAULT_DOCX_PROFILE = defaultProfileForFormat("docx");
@@ -78,6 +78,40 @@ describe("validation contract: multiple main relationships (#515, #381)", () => 
         },
         60_000,
     );
+});
+
+describe("validation contract: no prefix claim where JSZip's local read throws (#524, #381)", { timeout: 120_000 }, () => {
+    // Review AP A2: the first record's local header points at a local
+    // signature appended as the EOCD comment. JSZip reads the signature and
+    // then past the buffer (zipEntry.js `readLocalPart`), so the archive
+    // never opens and `zip-bytes-before-archive` claims no prefix for it.
+    it("word-valid and strict report the refusal alone, and partial runs agree", async () => {
+        const bytes = buildRawZip(Object.entries(MINIMAL_PARTS).map(([name, content]) => ({ name, content })));
+        const cd = bytes.readUInt32LE(bytes.length - 22 + 16);
+        bytes.writeUInt32LE(bytes.length, cd + 42);
+        bytes.writeUInt16LE(4, bytes.length - 2);
+        const specimen = Buffer.concat([bytes, Buffer.from([0x50, 0x4b, 0x03, 0x04])]);
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "specimen.docx");
+            writeFileSync(file, specimen);
+            for (const profile of ["word-valid", "strict"] as const) {
+                const full = await validate(file, { profile });
+                expect(full.valid, profile).toBe(false);
+                expect([...errorCodes(full.issues)], profile).toEqual(["package-open-failed"]);
+                if (profile === "strict") continue; // Strict rejects partial selectors.
+                for (const selection of [{ quick: true }, { checks: ["zip-bytes-before-archive"] }, { checks: ["package"] }]) {
+                    const partial = await validate(file, { profile, ...selection });
+                    const tag = `${profile} ${JSON.stringify(selection)}`;
+                    expect(partial.valid, tag).toBe(false);
+                    expect(errorCodes(partial.issues).has("package-open-failed"), tag).toBe(true);
+                    expect(
+                        [...errorCodes(partial.issues)].every((code) => errorCodes(full.issues).has(code)),
+                        `${tag}: partial errors ⊆ full errors`,
+                    ).toBe(true);
+                }
+            }
+        });
+    });
 });
 
 describe("validation contract: strict includes every Word-valid package check", { timeout: 120000 }, () => {

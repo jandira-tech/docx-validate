@@ -107,6 +107,32 @@ describe("bytes before the ZIP archive (#464)", { timeout: 300_000 }, () => {
         });
     });
 
+    // Review AP A2 (#524): the first record's local header points at a local
+    // signature appended as the EOCD comment. JSZip reads the signature and
+    // then runs past the buffer, so the package never opens — no prefix may
+    // be claimed for it.
+    it("does not report a prefix whose local header JSZip reads past the buffer (#524)", async () => {
+        await withTempDir(async (dir) => {
+            const bytes = buildRawZip(Object.entries(MINIMAL_PARTS).map(([name, content]) => ({ name, content })));
+            const cd = bytes.readUInt32LE(bytes.length - 22 + 16);
+            bytes.writeUInt32LE(bytes.length, cd + 42);
+            bytes.writeUInt16LE(4, bytes.length - 2);
+            const specimenBytes = Buffer.concat([bytes, Buffer.from([0x50, 0x4b, 0x03, 0x04])]);
+            const file = path.join(dir, "fake-local-at-eof.docx");
+            writeFileSync(file, specimenBytes);
+            for (const mode of [{}, { quick: true }, { checks: [ID] }] as const) {
+                const result = await validate(file, { profile: "word-valid", ...mode });
+                const tag = JSON.stringify(mode);
+                expect(result.valid, tag).toBe(false);
+                expect(
+                    result.issues.some((issue) => issue.code === "package-open-failed"),
+                    tag,
+                ).toBe(true);
+                expect(findings(result.issues), tag).toEqual([]);
+            }
+        });
+    });
+
     // A saturated local-header offset whose 0x0001 extra field carries the
     // real value is the legal ZIP64 spelling JSZip reads, not a prefix (#490).
     it("does not report a clean package whose records use the ZIP64-extra offset spelling", async () => {

@@ -87,7 +87,27 @@ export const outOfRangeLocatorArchive = (entries: readonly RawZipEntry[]): Buffe
 };
 
 /**
- * A ZIP64 archive whose record declares 8 bytes of extensible data, present
+ * Review AP F1's specimen (#521): a ZIP64 package behind a prefix, its
+ * locator naming the record absolutely as a self-extractor writes it, and a
+ * fake ZIP64-record signature in the EOCD comment — the last `50 4B 06 06`
+ * JSZip falls back to when the locator's named position misses. JSZip loads
+ * the original because the absolute name hits the real record before any
+ * fallback runs.
+ */
+export const selfExtractorZip64Archive = (entries: readonly RawZipEntry[], prefixLength: number): Buffer => {
+    const inner = Buffer.from(buildRawZip(entries, { zip64: true }));
+    const eocdAt = inner.length - 22;
+    const comment = Buffer.concat([Buffer.from([0x50, 0x4b, 0x06, 0x06]), Buffer.alloc(40, 0x42)]);
+    inner.writeUInt16LE(comment.length, eocdAt + 20);
+    const bytes = Buffer.concat([Buffer.alloc(prefixLength, 0x41), inner, comment]);
+    // The record ends exactly where the locator begins, so the absolute name
+    // is the locator's own offset minus the record's fixed 56 bytes.
+    const locator = bytes.lastIndexOf(Buffer.from([0x50, 0x4b, 0x06, 0x07]));
+    bytes.writeBigUInt64LE(BigInt(locator - ZIP64_RECORD_LENGTH), locator + 8);
+    return bytes;
+};
+
+/** A ZIP64 archive whose record declares 8 bytes of extensible data, present
  * and accounted for in every offset. JSZip's extensible-data loop never
  * advances its index, so it reads until the buffer ends and throws.
  */
