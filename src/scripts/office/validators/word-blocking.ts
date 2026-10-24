@@ -168,9 +168,11 @@ export const isWordBlockingIssue = (
         // 8a): the main document, styles, settings, fontTable and webSettings.
         case "word-part-content-type-generic":
         // Word 16.115 offers to recover the package when a Word-read part's
-        // content type carries a MIME parameter, even with the right media
-        // type (#540; session 16, 2026-10-24, the table living with the issue).
-        case "word-part-content-type-parameter":
+        // content type is not exactly the part's type ignoring ASCII case —
+        // any MIME parameter or padding refuses, an upper-case spelling
+        // opens clean (#540, #550; sessions 16–17, 2026-10-24, the table
+        // living with issue #550).
+        case "word-part-content-type-inexact":
             return true;
         // NB: comment-orphan-start/end and comment-marker-missing are NOT
         // promoted here. Empirically Word TOLERATES an orphan comment-range

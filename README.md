@@ -269,7 +269,7 @@ XML prerequisite. All `word-*` checks apply to DOCX/DOCM only.
 `ct-duplicate-declaration`, `ct-override-partname-invalid`,
 `ct-override-partname-word-refused` and `ct-markup-compatibility` apply to
 every package format; `word-content-type-invalid`,
-`word-part-content-type-generic` and `word-part-content-type-parameter`
+`word-part-content-type-generic` and `word-part-content-type-inexact`
 apply to DOCX/DOCM only.
 
 `zip-bytes-before-archive` applies to DOCX/DOCM, PPTX, and XLSX package
@@ -395,7 +395,7 @@ names and input bytes unchanged.
 | `story`                   | `word-shading-color`, `word-page-margin-attributes`, `word-run-misplaced`, `word-run-properties-misplaced`, `word-underline-misplaced`, `word-paragraph-properties-misplaced`, `word-section-properties-misplaced`, `word-footnote-reference-missing`, `word-numbering-picture-bullet`, `word-sdt-id-empty`, `word-text-contains-paragraph`         |
 | `tables`                  | `word-grid-column-attributes`, `word-cell-margin-order`, `word-table-properties-required`, `word-table-properties-misplaced`, `word-row-without-cell`, `word-cell-ends-with-table`                                                                                                                                                                  |
 | `drawings`                | `word-textbox-content-namespace`, `word-drawing-extent-missing`, `word-drawing-extent-misplaced`, `word-picture-nvpicpr-missing`, `word-picture-sppr-missing`, `word-empty-drawing`, `word-anchor-missing-attribute`, `word-position-offset-and-align`, `word-drawing-scalar-whitespace`, `word-drawing-arc-radius`, `word-drawing-extent-negative` |
-| `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`, `ct-override-partname-invalid`, `ct-override-partname-word-refused`, `ct-markup-compatibility`, `word-part-content-type-generic`, `word-part-content-type-parameter`                                                                                                                       |
+| `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`, `ct-override-partname-invalid`, `ct-override-partname-word-refused`, `ct-markup-compatibility`, `word-part-content-type-generic`, `word-part-content-type-inexact`                                                                                                                         |
 | `relationships`           | `word-duplicate-theme-relationship`, `word-duplicate-font-table-relationship`, `word-duplicate-web-settings-relationship`, `word-duplicate-settings-relationship`, `word-hyperlink-relationship`, `word-main-document-part`, `opc-relationships-structure`                                                                                          |
 | `tracked-changes`         | `word-textbox-deleted-text`, `word-move-from-deleted-text`                                                                                                                                                                                                                                                                                          |
 | `settings`                | `word-custom-property-filetime-empty`, `word-attached-toolbar-utf8`                                                                                                                                                                                                                                                                                 |
@@ -487,7 +487,7 @@ session 14, `docs/plans/evidence/word-probes-2026-10-24.md`). The check reads
 the raw stored stream, while `ct-duplicate-declaration`,
 `ct-override-partname-invalid`, `ct-override-partname-word-refused`,
 `word-content-type-invalid`, `word-part-content-type-generic`,
-`word-part-content-type-parameter` and content-type
+`word-part-content-type-inexact` and content-type
 resolution all judge the stream after Markup Compatibility processing, as OPC
 [M1.19] requires — so an `Override` in an ignored `mc:Choice` no longer draws
 a `ct-override-partname-invalid` finding, and a bad `mc:Fallback` still does.
@@ -549,23 +549,39 @@ under strict, where a Default-typed main is not reported twice when
 reports a warning. Full,
 quick and named runs agree.
 
-`word-part-content-type-parameter` reports a part Word reads whose content
-type has the part's own Word type as its media type but carries a MIME
-parameter — any `; …` section, as Word 16.115 comparing the declared string
-exactly refuses `; charset=utf-8` even where RFC 7303 §9.1 registers the
-parameter ([#540](https://github.com/jandira-tech/docx-validate/issues/540);
-probe session 16, 2026-10-24, the table living with the issue). Scope is the
-main document — all four Word main-document content types
-([#505](https://github.com/jandira-tech/docx-validate/issues/505)) — and
-styles, the parts session 16 observed, under word-valid and strict; lenient
+`word-part-content-type-inexact` — renamed from
+`word-part-content-type-parameter` for
+[#550](https://github.com/jandira-tech/docx-validate/issues/550) — reports a
+part Word reads whose declared content type is not exactly the part's own
+Word type ignoring ASCII case, while its media type — trimmed, parameters
+stripped — is: any `; …` parameter section, with or without a space and
+whether `charset` or not, and padding whitespace. Word 16.115 refuses
+`; charset=utf-8` even where RFC 7303 §9.1 registers the parameter, refuses
+a trailing space, and opens an upper-case spelling clean — it folds ASCII
+case and nothing else
+([#540](https://github.com/jandira-tech/docx-validate/issues/540),
+[#550](https://github.com/jandira-tech/docx-validate/issues/550); probe
+sessions 16–17, 2026-10-24, the table living with issue #550). Scope is the
+parts session 17 observed: the main document — all four Word main-document
+content types
+([#505](https://github.com/jandira-tech/docx-validate/issues/505)) —
+styles, settings, fontTable, webSettings, and a header the main document
+references through `w:headerReference`; a related-but-unused header opens
+clean ([#516](https://github.com/jandira-tech/docx-validate/issues/516)) and
+stays silent. Footer, comments, footnotes, endnotes, numbering, theme and
+glossaryDocument are unprobed for an inexact type and stay silent under
+word-valid; strict instead judges every Part 1 WordprocessingML part type
+the generic check's spec mode does — numbering, footer, endnotes, footnotes,
+comments and glossaryDocument — citing the content type ECMA-376 Part 1
+(4th edition), clause 11.3, assigns
+([#506](https://github.com/jandira-tech/docx-validate/issues/506)). Lenient
 reports a warning. One finding is reported per part, naming the declared
-value and whether a Default or an Override produced it; the generic check
-judges the media type with parameters stripped, so a part is never reported
-by both checks. Settings, fontTable and webSettings, and the Part 1 part
-types strict judges for the generic defect, are unprobed for a parameterized
-type and stay silent until a probe observes them. Under strict, a
-Default-typed main finding is suppressed only when `ct-undeclared-part`
-actually reports an error on that same path, exactly as the generic check's
+value — quoted, so padding is visible — and whether a Default or an
+Override produced it; the generic check judges the media type with
+parameters stripped, so a part is never reported by both checks. Under
+strict, a Default-typed main finding is suppressed only when
+`ct-undeclared-part` actually reports an error on that same path, exactly
+as the generic check's
 ([#535](https://github.com/jandira-tech/docx-validate/issues/535)). Full,
 quick and named runs agree.
 
