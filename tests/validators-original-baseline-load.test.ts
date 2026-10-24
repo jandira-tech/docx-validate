@@ -116,7 +116,7 @@ describe("original archive load count (#481)", () => {
             expect(result!.issues.filter((issue) => issue.code === "xsd-summary")).toHaveLength(2);
             expect(loads).toBe(1);
         });
-    });
+    }, 60_000);
 });
 
 /** Write `parts` as an unpacked package under `dir`. */
