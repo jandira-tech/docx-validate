@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
+import path from "node:path";
+
 import { describe, expect, it } from "vitest";
 
-import { resolveWordColumn, resolveWordOutcome } from "../scripts/update-manifest";
+import { manifestKey, resolveWordColumn, resolveWordOutcome } from "../scripts/update-manifest";
 import type { WordHistoryEntry } from "../src/lib/word-provenance";
 
 describe("resolveWordOutcome", () => {
@@ -69,5 +71,15 @@ describe("resolveWordColumn", () => {
             word: { outcome: "unknown", sha256: "aaaa" },
             history,
         });
+    });
+});
+
+describe("manifestKey", () => {
+    it("keys a fixture by its forward-slash path under the root on POSIX", () => {
+        expect(manifestKey("/repo/tests/fixtures", "/repo/tests/fixtures/broken/a.docx", path.posix)).toBe("broken/a.docx");
+    });
+
+    it("keys a fixture by its forward-slash path under the root on Windows", () => {
+        expect(manifestKey("C:\\repo\\tests\\fixtures", "C:\\repo\\tests\\fixtures\\broken\\a.docx", path.win32)).toBe("broken/a.docx");
     });
 });

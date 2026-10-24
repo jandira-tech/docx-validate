@@ -17,7 +17,9 @@
 /**
  * Runs a selection of named checks against one context and aggregates their
  * findings. Each selected check runs at most once. A check whose prerequisite
- * did not pass is skipped rather than run against input it cannot handle, a
+ * did not pass is skipped rather than run against input it cannot handle,
+ * except that a failed part gate (`gatesByPart`) only hides the parts it
+ * names from its dependents, a
  * check that throws becomes an error finding instead of crashing the run, and
  * an archive-only check on an unpacked directory is reported unavailable, not
  * passed.
@@ -61,10 +63,12 @@ export const runChecks = async (ctx: ValidationContext, registry: CheckRegistry,
 
     const outcomes: CheckOutcome[] = [];
     const status = new Map<string, CheckStatus>();
+    const byId = new Map<string, CheckOutcome>();
     // Registration order puts every prerequisite before its dependents.
     for (const def of registry.list(opts.format).filter((candidate) => selected.includes(candidate.id))) {
-        const outcome = await runOne(ctx, def, status);
+        const outcome = await runOne(ctx, def, status, byId, registry);
         status.set(def.id, outcome.status);
+        byId.set(def.id, outcome);
         outcomes.push(outcome);
     }
 
@@ -84,20 +88,53 @@ export const runChecks = async (ctx: ValidationContext, registry: CheckRegistry,
     };
 };
 
-const runOne = async (ctx: ValidationContext, def: CheckDefinition, status: ReadonlyMap<string, CheckStatus>): Promise<CheckOutcome> => {
+/** The parts a failed outcome's error findings name, with the first reason for each; `undefined` when one names no part. */
+const partFailures = (outcome: CheckOutcome | undefined): Map<string, string> | undefined => {
+    const failures = new Map<string, string>();
+    for (const issue of outcome?.issues ?? []) {
+        if (issue.severity !== "error") {
+            continue;
+        }
+        if (issue.path === undefined) {
+            return undefined;
+        }
+        if (!failures.has(issue.path)) {
+            failures.set(issue.path, issue.message);
+        }
+    }
+    return failures.size > 0 ? failures : undefined;
+};
+
+const runOne = async (
+    ctx: ValidationContext,
+    def: CheckDefinition,
+    status: ReadonlyMap<string, CheckStatus>,
+    outcomes: ReadonlyMap<string, CheckOutcome>,
+    registry: CheckRegistry,
+): Promise<CheckOutcome> => {
     if (def.archiveOnly && ctx.archiveBytes === undefined) {
         return { id: def.id, status: "unavailable", issues: [], reason: "needs the packed archive; the package was not loaded from one" };
     }
     // Resolution includes every prerequisite, so each one already has a status.
+    const unparseable = new Map<string, string>();
     for (const prerequisite of def.requires ?? []) {
         const prior = status.get(prerequisite);
-        if (prior !== "passed") {
+        if (prior === "passed") {
+            continue;
+        }
+        // A failed part gate excludes the parts it names; the dependent still
+        // judges the rest. Findings without a part leave nothing to exclude.
+        const failed = prior === "failed" && registry.get(prerequisite)?.gatesByPart ? partFailures(outcomes.get(prerequisite)) : undefined;
+        if (!failed) {
             return { id: def.id, status: "skipped", issues: [], reason: `prerequisite ${prerequisite} ${prior}` };
+        }
+        for (const [part, reason] of failed) {
+            unparseable.set(part, reason);
         }
     }
     let issues: readonly ValidationIssue[];
     try {
-        issues = await def.run(ctx);
+        issues = await def.run(unparseable.size > 0 ? ctx.withUnparseable(unparseable) : ctx);
     } catch (err) {
         issues = [
             {

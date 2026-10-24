@@ -25,6 +25,7 @@ import {
     WORD_2006_NAMESPACE,
     WORD_PARAGRAPH_NAMESPACES,
     WORD_STRICT_NAMESPACE,
+    withoutRepeatedCompatibilityFindings,
 } from "../src/scripts/office/validators/docx";
 
 const W_NS = `xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"`;
@@ -2659,5 +2660,30 @@ describe("DOCXSchemaValidator", () => {
                 expect(result.issues.some((i) => i.code === "del-contains-t")).toBe(true);
             });
         });
+    });
+});
+
+describe("withoutRepeatedCompatibilityFindings (#310 review)", () => {
+    const finding = (path: string) => ({
+        severity: "error" as const,
+        code: "mce-unbound-prefix",
+        path,
+        message: "Unbound prefix in mc:Ignorable: w15",
+    });
+
+    it("drops a schema-walk finding the Word rule made, whatever separator the schema walk's path uses", () => {
+        // The schema walk's path comes from path.relative (backslashes on
+        // Windows); the Word rule's from the normalized part name.
+        for (const schemaPath of ["word/document.xml", "word\\document.xml"]) {
+            const schema = { valid: false, issues: [finding(schemaPath)] };
+            const rules = { valid: false, issues: [finding("word/document.xml")] };
+            expect(withoutRepeatedCompatibilityFindings(schema, rules).issues, schemaPath).toEqual([]);
+        }
+    });
+
+    it("keeps a finding only the schema walk made", () => {
+        const schema = { valid: false, issues: [finding("word/styles.xml")] };
+        const rules = { valid: false, issues: [finding("word/document.xml")] };
+        expect(withoutRepeatedCompatibilityFindings(schema, rules).issues).toEqual(schema.issues);
     });
 });

@@ -121,7 +121,9 @@ const runPropertiesIssues = ({ part, document: doc }: WmlPartDocument): Validati
         if (!parent) {
             continue;
         }
-        const allowed = RUN_PROPERTIES_PARENTS[parent.namespaceURI ?? ""];
+        // Own keys only: a namespace URI such as "constructor" must not reach Object.prototype.
+        const namespace = parent.namespaceURI ?? "";
+        const allowed = Object.hasOwn(RUN_PROPERTIES_PARENTS, namespace) ? RUN_PROPERTIES_PARENTS[namespace] : undefined;
         if (allowed?.has(parent.localName ?? "")) {
             // CT_R admits w:rPr only as its first child, before run content; a
             // second or trailing w:rPr is the defect 5Errors.docx carries.
@@ -173,6 +175,7 @@ export const wordRunMisplacedCheck: CheckDefinition = {
     description: "Runs sit inside paragraph content, not directly in cells, rows, or the body.",
     groups: ["story"],
     formats: ["docx"],
+    requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => wmlPartDocuments(ctx).flatMap(runIssues),
 };
 
@@ -181,6 +184,7 @@ export const wordRunPropertiesMisplacedCheck: CheckDefinition = {
     description: "Run-properties blocks sit in their schema parents and lead their runs.",
     groups: ["story"],
     formats: ["docx"],
+    requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => wmlPartDocuments(ctx).flatMap(runPropertiesIssues),
 };
 
@@ -189,5 +193,6 @@ export const wordUnderlineMisplacedCheck: CheckDefinition = {
     description: "Underline run properties sit inside a run-properties block.",
     groups: ["story"],
     formats: ["docx"],
+    requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => wmlPartDocuments(ctx).flatMap(underlineIssues),
 };

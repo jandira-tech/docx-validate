@@ -16,6 +16,7 @@ export const wordCustomPropertyFiletimeEmptyCheck: CheckDefinition = {
     description: "Custom-property vt:filetime scalars contain a date and time.",
     groups: ["settings"],
     formats: ["docx"],
+    requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => {
         const parsed = ctx.effectiveXml("docProps/custom.xml");
         if (!parsed?.ok) {

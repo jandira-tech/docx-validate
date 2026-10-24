@@ -107,17 +107,27 @@ const EXTENSION_NAMESPACES = new Set([
 type Context = {
     ignorable: ReadonlySet<string>;
     processContent: ReadonlySet<string>;
-    extensionPayload: boolean;
 };
 const tokens = (value: string): string[] => value.trim().split(/\s+/).filter(Boolean);
+// XML 1.0 NCName: NameStartChar/NameChar without the namespace separator.
+const NCNAME_START =
+    "A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u{10000}-\u{EFFFF}";
+const NCNAME = new RegExp(`^[${NCNAME_START}][${NCNAME_START}0-9.\\-\u00B7\u0300-\u036F\u203F-\u2040]*$`, "u");
 const children = (element: Element): Element[] => Array.from(element.childNodes).filter((node) => node.nodeType === 1) as Element[];
 const namespaceUri = (element: Element, prefix: string): string | null => (prefix === "xml" ? NS.XML : element.lookupNamespaceURI(prefix));
+const unboundPrefixIssue = (directive: string, prefix: string): ValidationIssue => ({
+    severity: "error",
+    code: "mce-unbound-prefix",
+    message: `Unbound prefix in mc:${directive}: ${prefix}`,
+});
 const unwrap = (element: Element): void => {
     const parent = element.parentNode!;
-    while (element.firstChild) {
-        parent.insertBefore(element.firstChild, element);
-    }
+    const next = element.nextSibling;
+    // Detach first: a Document cannot contain both the old and selected roots.
     parent.removeChild(element);
+    while (element.firstChild) {
+        parent.insertBefore(element.firstChild, next);
+    }
 };
 
 /** Build a validation-only view; source XML and unselected branches remain untouched. */
@@ -129,25 +139,51 @@ export const applyMarkupCompatibility = (
     const issues: ValidationIssue[] = [];
     const undeclaredExtensions = new Map<string, Set<string>>();
     let extensionAttributeCount = 0;
-    const visit = (element: Element, inherited: Context): void => {
+    const visit = (element: Element, inherited: Context, attributesOnly = false): void => {
+        // Application extension slots are opaque to MCE, including their directives.
+        if (element.localName === "ext" && EXTENSION_NAMESPACES.has(element.namespaceURI || "")) {
+            return;
+        }
+        const directiveIssues: ValidationIssue[] = [];
         const ignorable = new Set(inherited.ignorable);
         const processContent = new Set(inherited.processContent);
         for (const prefix of tokens(element.getAttributeNS(NS.MC, "Ignorable") || "")) {
             const uri = namespaceUri(element, prefix);
             if (uri) {
                 ignorable.add(uri);
+            } else {
+                directiveIssues.push(unboundPrefixIssue("Ignorable", prefix));
             }
         }
         for (const name of tokens(element.getAttributeNS(NS.MC, "ProcessContent") || "")) {
-            const [prefix, local] = name.split(":");
+            const [prefix, local, ...rest] = name.split(":");
+            if (rest.length > 0 || !NCNAME.test(prefix) || (local !== "*" && !NCNAME.test(local ?? ""))) {
+                directiveIssues.push({
+                    severity: "error",
+                    code: "mce-invalid-token",
+                    message: `Malformed QName in mc:ProcessContent: ${name}`,
+                });
+                continue;
+            }
             const uri = namespaceUri(element, prefix);
-            if (uri && local) {
+            if (uri) {
                 processContent.add(`${uri}#${local}`);
+            } else {
+                directiveIssues.push(unboundPrefixIssue("ProcessContent", prefix));
             }
         }
+        const elementNamespace = element.namespaceURI || "";
+        const ignored = ignorable.has(elementNamespace) && !opts.understood.has(elementNamespace);
+        if (ignored && !processContent.has(`${elementNamespace}#${element.localName}`) && !processContent.has(`${elementNamespace}#*`)) {
+            element.parentNode!.removeChild(element);
+            return;
+        }
+        issues.push(...directiveIssues);
         for (const prefix of tokens(element.getAttributeNS(NS.MC, "MustUnderstand") || "")) {
             const uri = namespaceUri(element, prefix);
-            if (!uri || !opts.understood.has(uri)) {
+            if (!uri) {
+                issues.push(unboundPrefixIssue("MustUnderstand", prefix));
+            } else if (!opts.understood.has(uri)) {
                 issues.push({
                     severity: "error",
                     code: "mce-must-understand",
@@ -155,11 +191,12 @@ export const applyMarkupCompatibility = (
                 });
             }
         }
+        if (attributesOnly) {
+            return;
+        }
         const context = {
             ignorable,
             processContent,
-            extensionPayload:
-                inherited.extensionPayload || (element.localName === "ext" && EXTENSION_NAMESPACES.has(element.namespaceURI || "")),
         };
         for (const attr of Array.from(element.attributes)) {
             // Word understands Office extension attributes even when the part
@@ -181,15 +218,18 @@ export const applyMarkupCompatibility = (
             }
             if (
                 attr.namespaceURI === NS.MC ||
-                (!inherited.extensionPayload &&
-                    attr.namespaceURI &&
-                    ignorable.has(attr.namespaceURI) &&
-                    !opts.understood.has(attr.namespaceURI))
+                (attr.namespaceURI && ignorable.has(attr.namespaceURI) && !opts.understood.has(attr.namespaceURI))
             ) {
                 element.removeAttributeNode(attr);
             }
         }
         if (element.namespaceURI === NS.MC && element.localName === "AlternateContent") {
+            for (const child of children(element)) {
+                const uri = child.namespaceURI || "";
+                if (ignorable.has(uri) && !opts.understood.has(uri)) {
+                    element.removeChild(child);
+                }
+            }
             const branches = children(element);
             let choices = 0;
             let fallbacks = 0;
@@ -230,6 +270,16 @@ export const applyMarkupCompatibility = (
                             opts.understood.has(namespaceUri(node, prefix) || ""),
                         ),
                 ) ?? branches.find((node) => node.namespaceURI === NS.MC && node.localName === "Fallback");
+            for (const branch of branches) {
+                if (
+                    branch !== selected &&
+                    branch.namespaceURI === NS.MC &&
+                    (branch.localName === "Choice" || branch.localName === "Fallback")
+                ) {
+                    // Branch attributes always apply; unselected contents do not exist.
+                    visit(branch, context, true);
+                }
+            }
             if (selected) {
                 visit(selected, context);
                 unwrap(selected);
@@ -243,16 +293,11 @@ export const applyMarkupCompatibility = (
             unwrap(element);
             return;
         }
-        const elementNamespace = element.namespaceURI || "";
-        if (!inherited.extensionPayload && ignorable.has(elementNamespace) && !opts.understood.has(elementNamespace)) {
-            if (processContent.has(`${elementNamespace}#${element.localName}`) || processContent.has(`${elementNamespace}#*`)) {
-                for (const child of children(element)) {
-                    visit(child, context);
-                }
-                unwrap(element);
-            } else {
-                element.parentNode!.removeChild(element);
+        if (ignored) {
+            for (const child of children(element)) {
+                visit(child, context);
             }
+            unwrap(element);
             return;
         }
         for (const child of children(element)) {
@@ -263,7 +308,6 @@ export const applyMarkupCompatibility = (
         visit(document.documentElement, {
             ignorable: new Set(),
             processContent: new Set(),
-            extensionPayload: false,
         });
     }
     if (source.documentElement && !document.documentElement) {

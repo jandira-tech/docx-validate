@@ -36,6 +36,23 @@ describe("CheckRegistry", () => {
         expect(() => new CheckRegistry([check("a", { requires: ["b"] }), check("b")])).toThrow(/before/i);
     });
 
+    it("rejects a prerequisite that cannot run for the dependent check's format", () => {
+        // Issue #299: a docx-only dependent of a pptx-only prerequisite never
+        // runs — the scheduler would skip it for every docx package and report
+        // a valid run with nothing executed, so the configuration is rejected
+        // up front like an unknown prerequisite.
+        expect(() => new CheckRegistry([check("a", { formats: ["pptx"] }), check("b", { formats: ["docx"], requires: ["a"] })])).toThrow(
+            /"b" requires "a".*docx/,
+        );
+        expect(
+            () => new CheckRegistry([check("a", { formats: ["pptx"] }), check("b", { formats: ["docx", "pptx"], requires: ["a"] })]),
+        ).toThrow(/does not apply.*docx/);
+        // A prerequisite that covers every dependent format constructs fine.
+        expect(
+            () => new CheckRegistry([check("gate", { formats: ["docx", "pptx"] }), check("dependent", { requires: ["gate"] })]),
+        ).not.toThrow();
+    });
+
     it("resolves a selection to its checks and their prerequisites, in registration order", () => {
         const registry = new CheckRegistry([
             check("xml"),
@@ -244,5 +261,44 @@ describe("runChecks", () => {
         await expect(runChecks(ValidationContext.fromEntries({}), registry, { format: "docx", select: ["pptx-only"] })).rejects.toThrow(
             /does not apply to docx/,
         );
+    });
+});
+
+describe("runChecks: a prerequisite that gates by part (#307)", () => {
+    const parts = { "word/a.xml": DOCUMENT, "word/b.xml": DOCUMENT };
+    // Reports which parts it could read.
+    const reader = check("reader", {
+        requires: ["gate"],
+        run: (ctx) =>
+            ["word/a.xml", "word/b.xml"].map((part): ValidationIssue => ({
+                severity: "info",
+                code: ctx.xml(part)?.ok ? "read" : "unreadable",
+                message: ctx.xml(part)?.ok ? "read" : (ctx.xml(part) as { message: string }).message,
+                path: part,
+            })),
+    });
+
+    it("runs the dependents on the parts the gate passed, with the failed parts unparseable", async () => {
+        const gate = check("gate", { gatesByPart: true, run: () => [error("broken", "word/a.xml")] });
+        const ctx = ValidationContext.fromEntries(parts);
+        const run = await runChecks(ctx, new CheckRegistry([gate, reader]), { format: "docx" });
+        expect(run.executed).toEqual(["gate", "reader"]);
+        expect(run.issues.filter((issue) => issue.severity === "info")).toEqual([
+            expect.objectContaining({ code: "unreadable", path: "word/a.xml", message: expect.stringContaining("broken") }),
+            expect.objectContaining({ code: "read", path: "word/b.xml" }),
+        ]);
+        expect(run.valid).toBe(false);
+        // The shared context is not changed for checks outside the gate.
+        expect(ctx.xml("word/a.xml")?.ok).toBe(true);
+    });
+
+    it("still skips the dependents when the failing gate names no part, or does not gate by part", async () => {
+        for (const gate of [
+            check("gate", { gatesByPart: true, run: () => [error("broken")] }),
+            check("gate", { run: () => [error("broken", "word/a.xml")] }),
+        ]) {
+            const run = await runChecks(ValidationContext.fromEntries(parts), new CheckRegistry([gate, reader]), { format: "docx" });
+            expect(run.skipped).toEqual(["reader"]);
+        }
     });
 });

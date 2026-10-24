@@ -198,6 +198,41 @@ describe("validation contract: strict keeps checking after an XML failure", { ti
             expect(result.valid, profile).toBe(false);
         }
     });
+
+    it("reports the malformed part's syntax error exactly once", async () => {
+        const bytes = await buildDocx({
+            ...MINIMAL_PARTS,
+            "word/styles.xml": MINIMAL_PARTS["word/styles.xml"]!.replace("</w:styles>", ""),
+        });
+        for (const profile of ["word-valid", "strict"] as const) {
+            const result = await validateBytes(bytes, profile);
+            expect(
+                result.issues.filter((issue) => issue.code === "xml-syntax"),
+                profile,
+            ).toHaveLength(1);
+        }
+    });
+
+    it("keeps judging the well-formed parts when a part Word tolerates is malformed", async () => {
+        // A run directly in a table cell makes Word refuse the file
+        // (word-rejects-misplaced-run.docx); a malformed part outside word/
+        // is not a Word rejection on its own.
+        const bytes = await buildDocx({
+            ...MINIMAL_PARTS,
+            "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+                "<w:sectPr>",
+                `<w:tbl><w:tblPr/><w:tblGrid><w:gridCol w:w="100"/></w:tblGrid><w:tr w14:paraId="00000003" w14:textId="00000003"><w:tc><w:r><w:t>x</w:t></w:r></w:tc></w:tr></w:tbl><w:p w14:paraId="00000004" w14:textId="00000004"/><w:sectPr>`,
+            ),
+            "customXml/item1.xml": "<root><unclosed></root>",
+        });
+        for (const profile of ["word-valid", "strict"] as const) {
+            const result = await validateBytes(bytes, profile);
+            expect(result.issues, profile).toContainEqual(
+                expect.objectContaining({ code: "word-run-misplaced", severity: "error", path: "word/document.xml" }),
+            );
+            expect(result.valid, profile).toBe(false);
+        }
+    });
 });
 
 describe("validation contract: Word rules judge the content Word consumes (#291)", { timeout: 120000 }, () => {

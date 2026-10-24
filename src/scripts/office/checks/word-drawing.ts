@@ -15,6 +15,7 @@ export const wordDrawingExtentMissingCheck: CheckDefinition = {
     description: "Word drawing inline and anchor containers have a direct extent child.",
     groups: ["drawings"],
     formats: ["docx"],
+    requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => {
         const issues: ValidationIssue[] = [];
         for (const part of ctx.storyParts()) {

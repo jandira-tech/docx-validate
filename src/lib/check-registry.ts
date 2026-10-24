@@ -45,8 +45,13 @@ export type CheckDefinition = {
     readonly description: string;
     readonly groups: readonly CheckGroup[];
     readonly formats: readonly PackageFormat[];
-    /** Checks that must pass first. Each must be registered before this one. */
+    /** Checks that must pass first. Each must be registered before this one and apply to every format this check applies to. */
     readonly requires?: readonly string[];
+    /**
+     * A failure excludes the parts its error findings name from its
+     * dependents, instead of skipping them.
+     */
+    readonly gatesByPart?: boolean;
     /** Needs the packed archive bytes; unavailable for unpacked directories. */
     readonly archiveOnly?: boolean;
     readonly run: (ctx: ValidationContext) => readonly ValidationIssue[] | Promise<readonly ValidationIssue[]>;
@@ -73,15 +78,26 @@ export class CheckRegistry {
                 throw new Error(`Check registry: duplicate check id "${def.id}"`);
             }
             for (const prerequisite of def.requires ?? []) {
-                if (this.byId.has(prerequisite)) {
-                    continue;
+                const prior = this.byId.get(prerequisite);
+                if (prior === undefined) {
+                    const later = definitions.some((other) => other.id === prerequisite);
+                    throw new Error(
+                        later
+                            ? `Check registry: "${def.id}" requires "${prerequisite}", which must be registered before it`
+                            : `Check registry: "${def.id}" requires unknown check "${prerequisite}"`,
+                    );
                 }
-                const later = definitions.some((other) => other.id === prerequisite);
-                throw new Error(
-                    later
-                        ? `Check registry: "${def.id}" requires "${prerequisite}", which must be registered before it`
-                        : `Check registry: "${def.id}" requires unknown check "${prerequisite}"`,
-                );
+                // A prerequisite that never runs for one of this check's
+                // formats would leave the check permanently skipped for that
+                // format, silently reporting a valid run with nothing
+                // executed (issue #299) — a configuration error, like an
+                // unknown id.
+                const uncovered = def.formats.filter((format) => !prior.formats.includes(format));
+                if (uncovered.length > 0) {
+                    throw new Error(
+                        `Check registry: "${def.id}" requires "${prerequisite}", which does not apply to its format(s): ${uncovered.join(", ")}`,
+                    );
+                }
             }
             this.byId.set(def.id, def);
         }

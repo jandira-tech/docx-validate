@@ -206,3 +206,18 @@ describe("ValidationContext: the content Word consumes (#291)", () => {
         expect(ValidationContext.fromEntries({ "word/document.xml": "<w:document>" }).compatibilityIssues("word/document.xml")).toEqual([]);
     });
 });
+
+describe("ValidationContext: a view with unparseable parts (#307)", () => {
+    it("reports the listed parts unparseable, shares every other parse, and leaves the original untouched", () => {
+        const ctx = ValidationContext.fromEntries({ "word/document.xml": DOCUMENT, "word/styles.xml": DOCUMENT });
+        const view = ctx.withUnparseable(new Map([["/word/styles.xml", "not well-formed"]]));
+        expect(view.xml("word/styles.xml")).toEqual({ ok: false, message: "not well-formed" });
+        expect(view.effectiveXml("word/styles.xml")?.ok).toBe(false);
+        expect(view.compatibilityIssues("word/styles.xml")).toEqual([]);
+        expect(view.xml("word/document.xml")).toBe(ctx.xml("word/document.xml"));
+        expect(ctx.parseCount("word/document.xml")).toBe(1);
+        expect(ctx.xml("word/styles.xml")?.ok).toBe(true);
+        expect(view.partNames).toEqual(ctx.partNames);
+        expect(view.source).toBe(ctx.source);
+    });
+});

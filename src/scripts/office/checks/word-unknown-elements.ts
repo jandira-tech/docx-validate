@@ -112,11 +112,8 @@ export const wordUnknownElementCheck: CheckDefinition = {
     description: "Every WordprocessingML element name is one wml.xsd declares; extension namespaces are not this defect.",
     groups: ["schema"],
     formats: ["docx"],
-    run: (ctx): ValidationIssue[] =>
-        wmlPartDocuments(ctx).flatMap(({ part, document }) => [
-            ...unknownElementIssues(part, document),
-            ...linkWithoutNamespaceIssues(part, document),
-        ]),
+    requires: ["xml-syntax"],
+    run: (ctx): ValidationIssue[] => wmlPartDocuments(ctx).flatMap(({ part, document }) => unknownElementIssues(part, document)),
 };
 
 export const wordLinkWithoutNamespaceCheck: CheckDefinition = {
@@ -124,9 +121,6 @@ export const wordLinkWithoutNamespaceCheck: CheckDefinition = {
     description: "link elements carry a namespace; a namespace-less link is not part of any OOXML content model.",
     groups: ["schema"],
     formats: ["docx"],
-    run: (ctx): ValidationIssue[] =>
-        wmlPartDocuments(ctx).flatMap(({ part, document }) => [
-            ...unknownElementIssues(part, document),
-            ...linkWithoutNamespaceIssues(part, document),
-        ]),
+    requires: ["xml-syntax"],
+    run: (ctx): ValidationIssue[] => wmlPartDocuments(ctx).flatMap(({ part, document }) => linkWithoutNamespaceIssues(part, document)),
 };

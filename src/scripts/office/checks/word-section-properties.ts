@@ -66,5 +66,6 @@ export const wordSectionPropertiesMisplacedCheck: CheckDefinition = {
     description: "Section properties sit in the body, in paragraph properties, or in a section-properties revision.",
     groups: ["story"],
     formats: ["docx"],
+    requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => wmlPartDocuments(ctx).flatMap(sectionPropertiesIssues),
 };
