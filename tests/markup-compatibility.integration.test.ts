@@ -9,6 +9,7 @@ import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import { NS, type Profile } from "../src/lib/types";
 import { validate } from "../src/scripts/office/validate";
+import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
 const WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
@@ -67,7 +68,7 @@ describe("markup compatibility XSD integration", { timeout: 240_000 }, () => {
             expect(await fs.readFile(file)).toEqual(before);
         }
     });
-    for (const profile of ["lenient", "strict", "word-valid"] as const) {
+    for (const profile of ["lenient", "strict"] as const) {
         it(`removes non-ignorable Office attributes before XSD with a stable warning under ${profile}`, async () => {
             const result = await check(
                 {
@@ -99,18 +100,33 @@ describe("markup compatibility XSD integration", { timeout: 240_000 }, () => {
                     { ...MINIMAL_PARTS, "word/document.xml": MINIMAL_PARTS["word/document.xml"].replace("</w:p>", `${content}</w:p>`) },
                     profile,
                 );
-                expect(result.valid).toBe(profile === "word-valid");
+                expect(result.valid).toBe(false);
                 expect(result.issues).toContainEqual(
-                    expect.objectContaining({
-                        code: "xsd-error",
-                        severity: profile === "word-valid" ? "warning" : "error",
-                        path: "word/document.xml",
-                    }),
+                    expect.objectContaining({ code: "xsd-error", severity: "error", path: "word/document.xml" }),
                 );
                 expect(result.issues.some((issue) => issue.code === "mce-extension-not-ignorable")).toBe(false);
             }
         });
     }
+    // Word-valid walks no schema. Word understands wp14, so its view keeps
+    // the attributes and has nothing to warn about; foreign markup that no
+    // structural rule names is tolerated.
+    it("word-valid accepts the same Office attributes and foreign markup without a schema walk", async () => {
+        for (const [from, to] of [
+            ["<w:p ", `<w:p xmlns:wp14="${WP14}" wp14:paraId="1" wp14:textId="2" `],
+            ["</w:p>", '<w:r xmlns:foo="urn:example:foo" foo:flag="keep"/></w:p>'],
+            ["</w:p>", '<foo:foreign xmlns:foo="urn:example:foo"/></w:p>'],
+            ["</w:p>", `<wp14:foreign xmlns:wp14="${WP14}"/></w:p>`],
+        ] as const) {
+            const result = await check(
+                { ...MINIMAL_PARTS, "word/document.xml": MINIMAL_PARTS["word/document.xml"].replace(from, to) },
+                "word-valid",
+            );
+            expect(result.valid, JSON.stringify(result.issues)).toBe(true);
+            expect(result.xsdWalk.started).toBe(false);
+            expect(result.issues.filter((issue) => issue.code?.startsWith("xsd-") || issue.code?.startsWith("mce-"))).toEqual([]);
+        }
+    });
     it("validates fallback anchor positions without manufacturing missing-position errors", async () => {
         const result = await check({
             ...MINIMAL_PARTS,
@@ -222,4 +238,18 @@ describe("markup compatibility XSD integration", { timeout: 240_000 }, () => {
             expect(result.xsdWalk.parts, profile).toContain("word/txbx1.xml");
         }
     });
+});
+
+describe("markup compatibility: standalone extension parts (#288)", { timeout: 120_000 }, () => {
+    it("schema-validates word/commentsExtended.xml with its own w15 attributes intact", async () =>
+        withTempDir(async (dir) => {
+            const file = path.join(dir, "word", "commentsExtended.xml");
+            await fs.mkdir(path.dirname(file), { recursive: true });
+            await fs.writeFile(file, `<w15:commentsEx xmlns:w15="${NS.W15}"><w15:commentEx w15:paraId="00000001"/></w15:commentsEx>`);
+            for (const profile of ["lenient", "strict"] as const) {
+                const outcome = await new BaseSchemaValidator({ unpackedDir: dir, profile }).validateFileAgainstXsd(file);
+                expect(outcome.valid, profile).toBe(true);
+                expect(outcome.issues ?? [], profile).toEqual([]);
+            }
+        }));
 });

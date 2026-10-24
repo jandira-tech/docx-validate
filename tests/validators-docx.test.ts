@@ -1266,10 +1266,26 @@ describe("DOCXSchemaValidator", () => {
 
                 const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" });
                 const result = await v.validate();
-                const issue = result.issues.find((i) => i.code === "xsd-error" && i.path === "word/header1.xml");
+                // Named structurally (Task 7), before and independent of XSD.
+                const issue = result.issues.find((i) => i.code === "word-drawing-extent-missing" && i.path === "word/header1.xml");
                 expect(issue?.severity).toBe("error");
-                expect(issue?.message).toContain("graphic");
+                expect(issue?.message).toContain("wp:extent");
                 expect(result.valid).toBe(false);
+            });
+        });
+
+        it("reports all three independent structural codes for the incomplete inline picture", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(path.join(dir, "word", "header1.xml"), `<?xml version="1.0"?>${inlinePicture}`);
+                const result = await new DOCXSchemaValidator({ unpackedDir: dir, profile: "word-valid" }).validate();
+                expect(result.valid).toBe(false);
+                expect(result.issues).toEqual(
+                    expect.arrayContaining([
+                        expect.objectContaining({ code: "word-drawing-extent-missing", severity: "error", path: "word/header1.xml" }),
+                        expect.objectContaining({ code: "word-picture-nvpicpr-missing", severity: "error", path: "word/header1.xml" }),
+                        expect.objectContaining({ code: "word-picture-sppr-missing", severity: "error", path: "word/header1.xml" }),
+                    ]),
+                );
             });
         });
 

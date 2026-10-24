@@ -127,7 +127,7 @@ export const wordShadingColorCheck: CheckDefinition = {
     run: (ctx): ValidationIssue[] => {
         const issues: ValidationIssue[] = [];
         for (const part of shadingParts(ctx.storyParts(), ctx.partNames)) {
-            const parsed = ctx.xml(part);
+            const parsed = ctx.effectiveXml(part);
             if (!parsed?.ok) continue;
             for (const ns of WORD_PARAGRAPH_NAMESPACES) {
                 for (const shd of getElementsByTagNameNSAll(parsed.document, ns, "shd")) {

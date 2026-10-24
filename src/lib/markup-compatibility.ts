@@ -47,6 +47,47 @@ export const STRICT_UNDERSTOOD_NAMESPACES: ReadonlySet<string> = new Set([
     "http://purl.oclc.org/ooxml/officeDocument/sharedTypes",
 ]);
 
+// The namespaces Microsoft Word declares on the root of the document parts
+// it saves (Word for Mac 16.x, e.g. working/package.word-anchor-open-repaired
+// .docx), on top of both conformance classes. Word selects the
+// AlternateContent branches and keeps the Ignorable content of these
+// namespaces, so the Word rules judge the view this set produces.
+export const WORD_UNDERSTOOD_NAMESPACES: ReadonlySet<string> = new Set([
+    ...STRICT_UNDERSTOOD_NAMESPACES,
+    "http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas",
+    "http://schemas.microsoft.com/office/drawing/2010/main",
+    "http://schemas.microsoft.com/office/drawing/2014/chartex",
+    "http://schemas.microsoft.com/office/drawing/2015/9/8/chartex",
+    "http://schemas.microsoft.com/office/drawing/2015/10/21/chartex",
+    "http://schemas.microsoft.com/office/drawing/2016/5/9/chartex",
+    "http://schemas.microsoft.com/office/drawing/2016/5/10/chartex",
+    "http://schemas.microsoft.com/office/drawing/2016/5/11/chartex",
+    "http://schemas.microsoft.com/office/drawing/2016/5/12/chartex",
+    "http://schemas.microsoft.com/office/drawing/2016/5/13/chartex",
+    "http://schemas.microsoft.com/office/drawing/2016/5/14/chartex",
+    "http://schemas.microsoft.com/office/drawing/2016/ink",
+    "http://schemas.microsoft.com/office/drawing/2017/model3d",
+    "http://schemas.microsoft.com/office/2019/extlst",
+    "urn:schemas-microsoft-com:office:office",
+    "urn:schemas-microsoft-com:vml",
+    "urn:schemas-microsoft-com:office:word",
+    "http://schemas.microsoft.com/office/word/2006/wordml",
+    "http://schemas.microsoft.com/office/word/2010/wordml",
+    "http://schemas.microsoft.com/office/word/2012/wordml",
+    "http://schemas.microsoft.com/office/word/2015/wordml/symex",
+    "http://schemas.microsoft.com/office/word/2016/wordml/cid",
+    "http://schemas.microsoft.com/office/word/2018/wordml",
+    "http://schemas.microsoft.com/office/word/2018/wordml/cex",
+    "http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash",
+    "http://schemas.microsoft.com/office/word/2023/wordml/word16du",
+    "http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock",
+    "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing",
+    "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas",
+    "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup",
+    "http://schemas.microsoft.com/office/word/2010/wordprocessingInk",
+    "http://schemas.microsoft.com/office/word/2010/wordprocessingShape",
+]);
+
 // ISO-IEC29500-4_2016/dml-chart.xsd:30 and sml.xsd:232 CT_Extension
 // require one lax xsd:any child. dml-main.xsd:183 CT_OfficeArtExtension
 // and pml.xsd:761 CT_Extension allow zero or more lax xsd:any children.
@@ -124,7 +165,13 @@ export const applyMarkupCompatibility = (
             // Word understands Office extension attributes even when the part
             // omits Ignorable. The ISO schemas cannot validate these attributes;
             // remove them only from this clone and diagnose the missing directive.
-            if (attr.namespaceURI?.startsWith("http://schemas.microsoft.com/office/") && !ignorable.has(attr.namespaceURI)) {
+            // A namespace the consumer understands (a standalone extension
+            // part's own schema) keeps its attributes.
+            if (
+                attr.namespaceURI?.startsWith("http://schemas.microsoft.com/office/") &&
+                !ignorable.has(attr.namespaceURI) &&
+                !opts.understood.has(attr.namespaceURI)
+            ) {
                 const names = undeclaredExtensions.get(attr.namespaceURI) ?? new Set<string>();
                 names.add(attr.name);
                 undeclaredExtensions.set(attr.namespaceURI, names);
