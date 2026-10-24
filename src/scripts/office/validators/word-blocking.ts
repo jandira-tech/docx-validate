@@ -130,6 +130,11 @@ export const isWordBlockingIssue = (issue: ValidationIssue, propertiesParts: Rea
         // unreferenced item, and opens the %20 control clean (#408; evidence
         // in docs/plans/evidence/word-probes-2026-10-24.md).
         case "opc-part-name-escaped-unreserved":
+        // Word 16.115 offers recovery for an unreferenced `word%2Fxtra.xml`,
+        // refuses `word%5Cxtra.xml`, and opens the well-formed `word/xtra.xml`
+        // control clean — the stored name alone predicts the dialog (#436;
+        // evidence in docs/plans/evidence/word-probes-2026-10-24.md).
+        case "opc-part-name-escaped-slash":
             return true;
         // NB: comment-orphan-start/end and comment-marker-missing are NOT
         // promoted here. Empirically Word TOLERATES an orphan comment-range

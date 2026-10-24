@@ -263,7 +263,7 @@ marks archive-only checks `unavailable`; use packed input to check ZIP integrity
 The complete named check catalogue is below. Each Word check except
 `word-markup-compatibility` uses its id as its finding code. Package checks are
 `zip-bytes-after-eocd`, `zip-eocd-comment-overrun`, `opc-equivalent-part-names`,
-and `opc-part-name-escaped-unreserved`; `xml-syntax` is the shared
+`opc-part-name-escaped-unreserved`, and `opc-part-name-escaped-slash`; `xml-syntax` is the shared
 XML prerequisite. All `word-*` checks apply to DOCX/DOCM only.
 
 `opc-equivalent-part-names` applies to DOCX/DOCM, PPTX, and XLSX package selections,
@@ -284,15 +284,23 @@ finding per stored name containing a percent-encoded unreserved character
 order with the stored name as `path`. Word 16.115 offers recovery for every
 escape probed: letters in either case, a digit, `-` in either hex case, `.`, `_`
 and `~`. It does so even on an unreferenced extra item (`word/%78tra.xml`), and
-opens the `%20` control clean. Other escapes such as `%20`, `%2F`, `%25`, and
-`%5B`, malformed escapes, and plain names do not trigger this check. Word also
-refuses an escaped `/` or `\` (`%2F`, `%5C`, OPC [M1.7]), which nothing reports
-yet ([#436](https://github.com/jandira-tech/docx-validate/issues/436)). An escaped spelling beside its decoded twin reports both M1.8 and M1.12;
+opens the `%20` control clean. Other escapes such as `%20`, `%25`, and
+`%5B`, malformed escapes, and plain names do not trigger this check; an escaped
+separator has its own check below. An escaped spelling beside its decoded twin reports both M1.8 and M1.12;
 validation does not rewrite either name ([#408](https://github.com/jandira-tech/docx-validate/issues/408)).
+
+`opc-part-name-escaped-slash` uses the same formats, package-group selection,
+pre-extraction timing, directory support, and severity policy. It reports one
+finding per stored name with a segment holding a percent-encoded `/` or `\`
+(`%2F`, `%2f`, `%5C`, `%5c`), as OPC [M1.7] forbids, in code-unit order with the
+stored name as `path`; the escape must be whole, so `%252F` (an encoded `%`
+before `2F`) stays legal. Word 16.115 offers recovery for an unreferenced
+`word%2Fxtra.xml`, refuses `word%5Cxtra.xml`, and opens the well-formed
+`word/xtra.xml` control clean ([#436](https://github.com/jandira-tech/docx-validate/issues/436)).
 
 | Group                     | Named checks                                                                                                                                                                                                                                                                                                                                        |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `package`                 | `zip-bytes-after-eocd`, `zip-eocd-comment-overrun`, `opc-equivalent-part-names`, `opc-part-name-escaped-unreserved`                                                                                                                                                                                                                                 |
+| `package`                 | `zip-bytes-after-eocd`, `zip-eocd-comment-overrun`, `opc-equivalent-part-names`, `opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`                                                                                                                                                                                                  |
 | `math`, `tracked-changes` | `word-math-run-insertion`, `word-math-run-deletion`                                                                                                                                                                                                                                                                                                 |
 | `math`                    | `word-math-parse`, `word-math-spre-body`                                                                                                                                                                                                                                                                                                            |
 | `story`                   | `word-shading-color`, `word-page-margin-attributes`, `word-run-misplaced`, `word-run-properties-misplaced`, `word-underline-misplaced`, `word-paragraph-properties-misplaced`, `word-section-properties-misplaced`, `word-footnote-reference-missing`, `word-numbering-picture-bullet`, `word-sdt-id-empty`, `word-text-contains-paragraph`         |
@@ -616,8 +624,8 @@ interface ValidationResult {
 
 `ValidationMetadata` has optional `profile`, `executedChecks`, `omittedChecks`,
 `schemaCompleted`, and `wordVerification` fields. `executedChecks` reports the
-registry ids a complete run executed (#319): lenient lists `opc-equivalent-part-names`
-and `opc-part-name-escaped-unreserved` first, then `xml-syntax` and the rest; Word-valid
+registry ids a complete run executed (#319): lenient lists `opc-equivalent-part-names`,
+`opc-part-name-escaped-unreserved`, and `opc-part-name-escaped-slash` first, then `xml-syntax` and the rest; Word-valid
 and strict add the ZIP-envelope checks for a packed file and every Word rule whose
 prerequisites passed. A partial run lists the selected checks that ran, so an
 archive-only check is not listed for an unpacked directory. An archive that does
@@ -625,10 +633,11 @@ not open fails with `package-open-failed` in every mode, and only its envelope
 checks are listed (#332). One that opens but whose package view cannot be read —
 a stored item name that places no part, or an unreadable entry — fails with
 `package-extract-failed`, as the full run's extraction reports it (#413). Its stored
-entry names and archive bytes are still read. Selected `opc-equivalent-part-names`
-and `opc-part-name-escaped-unreserved` checks and selected envelope checks (such as
-`zip-bytes-after-eocd`) run and report what the full run reports. Every other
-selected check needs the package's parts and is listed in `omittedChecks`
+entry names and archive bytes are still read. Selected `opc-equivalent-part-names`,
+`opc-part-name-escaped-unreserved` and `opc-part-name-escaped-slash` checks and
+selected envelope checks (such as `zip-bytes-after-eocd`) run and report what the
+full run reports. Every other selected check needs the package's parts and is
+listed in `omittedChecks`
 ([#420](https://github.com/jandira-tech/docx-validate/issues/420)). It is not a
 per-method execution trace. In the source scheduler, use `runChecks().outcomes`
 for individual

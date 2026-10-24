@@ -72,6 +72,7 @@ import { extractPackageParts } from "../../lib/zip-path";
 import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "./checks";
 import { XML_SYNTAX_CHECK_ID } from "./checks/xml";
 import { OPC_EQUIVALENT_PART_NAMES } from "./checks/opc-equivalent-part-names";
+import { OPC_PART_NAME_ESCAPED_SLASH } from "./checks/opc-part-name-escaped-slash";
 import { OPC_PART_NAME_ESCAPED_UNRESERVED } from "./checks/opc-part-name-escaped-unreserved";
 import { contextFromArchive, contextFromDirectory } from "./package-context";
 import { BaseSchemaValidator, walkFiles } from "./validators/base";
@@ -551,15 +552,16 @@ function findingsUnderProfile(
     profile: Profile,
     properties: ReadonlySet<string>,
 ): ValidationIssue[] {
-    // Equivalent names and escaped unreserved characters are Word-blocking for
-    // DOCX/DOCM (#351, #408), and so are two entries under the identical
-    // spelling, for which Word offers recovery too (#411).
+    // Equivalent names, escaped unreserved characters and escaped separators are
+    // Word-blocking for DOCX/DOCM (#351, #408, #436), and so are two entries under
+    // the identical spelling, for which Word offers recovery too (#411).
     // Lenient keeps the earlier policy and runs no Word rule. No PowerPoint or
     // Excel behaviour has been observed, so those only warn. Duplicate content-
     // type declarations follow the same policy (#431, Word 16.115 session 3).
     const advisory = (issue: ValidationIssue): ValidationIssue =>
         (issue.code === OPC_EQUIVALENT_PART_NAMES ||
             issue.code === OPC_PART_NAME_ESCAPED_UNRESERVED ||
+            issue.code === OPC_PART_NAME_ESCAPED_SLASH ||
             issue.code === CT_DUPLICATE_DECLARATION) &&
         (profile === "lenient" || (profile === "word-valid" && format !== "docx"))
             ? { ...issue, severity: "warning" }

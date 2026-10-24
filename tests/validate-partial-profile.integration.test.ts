@@ -271,7 +271,7 @@ describe("a partial run of a refused package view still runs the stored-name che
     // the stored-name checks (#351, #408) read only the names — the full run
     // reports them before extraction, and a partial run that selects them must
     // report the same findings.
-    const STORED_NAME_CHECKS = ["opc-equivalent-part-names", "opc-part-name-escaped-unreserved"] as const;
+    const STORED_NAME_CHECKS = ["opc-equivalent-part-names", "opc-part-name-escaped-unreserved", "opc-part-name-escaped-slash"] as const;
     const SELECTIONS = [
         { checks: ["opc-equivalent-part-names"] },
         { checks: ["opc-part-name-escaped-unreserved"] },
@@ -458,6 +458,7 @@ describe("a partial run applies its profile's policy (#381)", { timeout: 120_000
         expect(result.metadata?.executedChecks).toEqual([
             "opc-equivalent-part-names",
             "opc-part-name-escaped-unreserved",
+            "opc-part-name-escaped-slash",
             "xml-syntax",
             "ct-duplicate-declaration",
         ]);
