@@ -186,6 +186,119 @@ describe("validation contract: Word-refused names also fail strict", { timeout: 
     });
 });
 
+describe("validation contract: the part-name grammar follows RFC 3987 §2.2 (#522)", { timeout: 120_000 }, () => {
+    const withOverride = (partName: string): Readonly<Record<string, string>> => ({
+        ...MINIMAL_PARTS,
+        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+            "</Types>",
+            `<Override PartName="${partName}" ContentType="application/xml"/></Types>`,
+        ),
+    });
+
+    // RFC 3987 §2.2 ends `ucschar` with %xE1000-EFFFD, so U+E0000..U+E0FFF
+    // is in neither the RFC 3986 `pchar` nor the RFC 3987 `ipchar` set: the
+    // Override PartName names no part, and both profiles report it.
+    it.each([
+        ["/word/x\u{E0000}y.xml", "U+E0000"],
+        ["/word/x\u{E0FFF}y.xml", "U+E0FFF"],
+    ])("%s is refused as ct-override-partname-invalid under both profiles", async (partName) => {
+        for (const profile of ["word-valid", "strict"] as const) {
+            const result = await validateBytes(await buildDocx(withOverride(partName)), profile);
+            expect(errorCodes(result.issues).has("ct-override-partname-invalid"), profile).toBe(true);
+            expect(result.valid, profile).toBe(false);
+        }
+    });
+
+    // The control: U+E1000 is the first code point of the last `ucschar`
+    // block, so the grammar accepts the name and only Word's refusal of a
+    // literal non-ASCII PartName is left.
+    it("the control at U+E1000 draws no part-name finding under either profile", async () => {
+        const partName = "/word/x\u{E1000}y.xml";
+        for (const profile of ["word-valid", "strict"] as const) {
+            const result = await validateBytes(await buildDocx(withOverride(partName)), profile);
+            expect(errorCodes(result.issues).has("ct-override-partname-invalid"), profile).toBe(false);
+            expect(errorCodes(result.issues).has("ct-override-partname-word-refused"), profile).toBe(true);
+        }
+    });
+
+    it("keeps partial runs in agreement with the full run (#381)", async () => {
+        const partName = "/word/x\u{E0000}y.xml";
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "specimen.docx");
+            writeFileSync(file, await buildDocx(withOverride(partName)));
+            const full = await validate(file, { profile: "word-valid" });
+            expect(full.valid).toBe(false);
+            for (const selection of [{ quick: true }, { checks: ["content-types"] }, { checks: ["ct-override-partname-invalid"] }]) {
+                const partial = await validate(file, { profile: "word-valid", ...selection });
+                const tag = JSON.stringify(selection);
+                expect(partial.valid, tag).toBe(full.valid);
+                expect(
+                    partial.issues.filter((issue) => issue.code === "ct-override-partname-invalid"),
+                    tag,
+                ).toEqual(full.issues.filter((issue) => issue.code === "ct-override-partname-invalid"));
+                expect(errorCodes(partial.issues), tag).toEqual(errorCodes(full.issues));
+            }
+        });
+    });
+});
+
+describe("validation contract: a malformed escape does not hide a later encoded iunreserved (#523)", { timeout: 120_000 }, () => {
+    const withOverride = (partName: string): Readonly<Record<string, string>> => ({
+        ...MINIMAL_PARTS,
+        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+            "</Types>",
+            `<Override PartName="${partName}" ContentType="application/xml"/></Types>`,
+        ),
+    });
+
+    // OPC [M1.8] reads "iunreserved" in the Part IRI form: a literal `é`
+    // leaves only that form, and the `%C3%A9` behind a malformed, overlong
+    // or truncated escape still encodes an `iunreserved` character.
+    it.each([
+        ["/word/x%E9%C3%A9-é.xml", "a lone continuation byte"],
+        ["/word/x%C0%AF%C3%A9-é.xml", "an overlong lead"],
+        ["/word/x%C3%C3%A9-é.xml", "a truncated sequence"],
+    ])("%s is refused as ct-override-partname-invalid under both profiles", async (partName) => {
+        for (const profile of ["word-valid", "strict"] as const) {
+            const result = await validateBytes(await buildDocx(withOverride(partName)), profile);
+            expect(errorCodes(result.issues).has("ct-override-partname-invalid"), profile).toBe(true);
+            expect(result.valid, profile).toBe(false);
+        }
+    });
+
+    // The control: a valid Part URI, whose escape encodes a non-ASCII
+    // character only, so the grammar accepts the name.
+    it("the control %s draws no part-name finding under either profile", async () => {
+        const partName = "/word/caf%C3%A9.xml";
+        for (const profile of ["word-valid", "strict"] as const) {
+            const result = await validateBytes(await buildDocx(withOverride(partName)), profile);
+            expect(errorCodes(result.issues).has("ct-override-partname-invalid"), profile).toBe(false);
+        }
+    });
+
+    it("keeps partial runs in agreement with the full run (#381)", async () => {
+        const partName = "/word/x%E9%C3%A9-é.xml";
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "specimen.docx");
+            writeFileSync(file, await buildDocx(withOverride(partName)));
+            const full = await validate(file, { profile: "word-valid" });
+            expect(full.valid).toBe(false);
+            for (const selection of [{ quick: true }, { checks: ["content-types"] }, { checks: ["ct-override-partname-invalid"] }]) {
+                const partial = await validate(file, { profile: "word-valid", ...selection });
+                const tag = JSON.stringify(selection);
+                expect(partial.valid, tag).toBe(full.valid);
+                expect(
+                    partial.issues.filter((issue) => issue.code === "ct-override-partname-invalid"),
+                    tag,
+                ).toEqual(full.issues.filter((issue) => issue.code === "ct-override-partname-invalid"));
+                // #381: the partial run's errors are a subset of the full
+                // run's; a named run judges fewer checks.
+                expect([...errorCodes(full.issues)], tag).toEqual(expect.arrayContaining([...errorCodes(partial.issues)]));
+            }
+        });
+    });
+});
+
 /**
  * Every Word-proven rejection rule, with the fixture pair its own suite uses:
  * the specimen Word refuses and the repaired control Word opens.
@@ -297,13 +410,49 @@ describe("validation contract: Markup Compatibility in the content-types stream 
         `<Types $1 xmlns:mc="${MC}" xmlns:x="urn:x:unknown" mc:Ignorable="x">`,
     );
 
+    // An MC element that carries an MC attribute of its own.
+    const withChoiceAttribute = {
+        ...MINIMAL_PARTS,
+        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+            "</Types>",
+            `<mc:AlternateContent xmlns:mc="${MC}" xmlns:x="urn:x:unknown">` +
+                `<mc:Choice Requires="x" mc:MustUnderstand="x"/><mc:Fallback/></mc:AlternateContent></Types>`,
+        ),
+    };
+
     for (const profile of ["word-valid", "strict"] as const) {
         it(`${profile}: mc:Ignorable in the content-types stream is rejected as ct-markup-compatibility`, async () => {
             const result = await validateBytes(await buildDocx({ ...MINIMAL_PARTS, "[Content_Types].xml": withIgnorable }), profile);
             expect(errorCodes(result.issues).has("ct-markup-compatibility")).toBe(true);
             expect(result.valid).toBe(false);
         });
+
+        // #526: DOM document order puts an element before its own attributes.
+        it(`${profile}: the Markup Compatibility message lists an MC element before its own MC attribute`, async () => {
+            const result = await validateBytes(await buildDocx(withChoiceAttribute), profile);
+            const findings = result.issues.filter((issue) => issue.code === "ct-markup-compatibility");
+            expect(findings).toHaveLength(1);
+            expect(findings[0]!.message).toContain(
+                "<mc:AlternateContent> element; <mc:Choice> element; mc:MustUnderstand attribute on <mc:Choice>",
+            );
+        });
     }
+
+    it("the Markup Compatibility message is the same in the full and the partial runs (#381)", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "specimen.docx");
+            writeFileSync(file, await buildDocx(withChoiceAttribute));
+            const full = await validate(file, { profile: "word-valid" });
+            const message = full.issues.find((issue) => issue.code === "ct-markup-compatibility")?.message;
+            expect(message).toBeDefined();
+            for (const selection of [{ quick: true }, { checks: ["content-types"] }, { checks: ["ct-markup-compatibility"] }]) {
+                const partial = await validate(file, { profile: "word-valid", ...selection });
+                const tag = JSON.stringify(selection);
+                expect(partial.issues.find((issue) => issue.code === "ct-markup-compatibility")?.message, tag).toBe(message);
+                expect(partial.valid, tag).toBe(full.valid);
+            }
+        });
+    });
 });
 
 describe("validation contract: strict keeps checking after an XML failure", { timeout: 120000 }, () => {

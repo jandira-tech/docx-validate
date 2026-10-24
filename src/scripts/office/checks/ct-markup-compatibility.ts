@@ -53,7 +53,10 @@ export const ctMarkupCompatibilityCheck: CheckDefinition = {
 
         // One entry per occurrence, in document order: the message lists
         // every Markup Compatibility element and attribute the stream holds
-        // (#495), not one mention per tag kind.
+        // (#495), not one mention per tag kind. Document order puts an
+        // element before its own attributes (WHATWG DOM: an attribute is
+        // FOLLOWING | CONTAINED_BY, 20, against the element owning it), so
+        // the element's entry comes first (#526).
         const found: string[] = [];
         const visit = (element: Element, inherited: ReadonlySet<string>): void => {
             // mc:Ignorable applies to the element it sits on and its
@@ -62,6 +65,11 @@ export const ctMarkupCompatibilityCheck: CheckDefinition = {
             for (const prefix of tokens(element.getAttributeNS(NS.MC, "Ignorable") ?? "")) {
                 const uri = prefix === "xml" ? NS.XML : element.lookupNamespaceURI(prefix);
                 if (uri) ignorable.add(uri);
+            }
+            if (element.namespaceURI === NS.MC) {
+                found.push(`<${element.tagName}> element`);
+            } else if (element.namespaceURI && ignorable.has(element.namespaceURI)) {
+                found.push(`element <${element.tagName}> in the ignorable namespace ${JSON.stringify(element.namespaceURI)}`);
             }
             for (const attr of Array.from(element.attributes)) {
                 if (isXmlnsAttribute(attr)) continue;
@@ -72,11 +80,6 @@ export const ctMarkupCompatibilityCheck: CheckDefinition = {
                         `${attr.name} attribute on <${element.tagName}> in the ignorable namespace ${JSON.stringify(attr.namespaceURI)}`,
                     );
                 }
-            }
-            if (element.namespaceURI === NS.MC) {
-                found.push(`<${element.tagName}> element`);
-            } else if (element.namespaceURI && ignorable.has(element.namespaceURI)) {
-                found.push(`element <${element.tagName}> in the ignorable namespace ${JSON.stringify(element.namespaceURI)}`);
             }
             for (let child = element.firstChild; child; child = child.nextSibling) {
                 if (child.nodeType === 1 /* ELEMENT_NODE */) visit(child as Element, ignorable);
