@@ -20,9 +20,13 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
+import { defaultProfileForFormat } from "../src/lib/mode-policy";
 import type { Profile } from "../src/lib/types";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+
+/** The profile a `.docx` is validated under when the caller names none. */
+const DEFAULT_DOCX_PROFILE = defaultProfileForFormat("docx");
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const BROKEN = path.join(HERE, "fixtures", "broken");
@@ -261,8 +265,16 @@ describe("validation contract: Word rules judge the content Word consumes (#291)
     });
 });
 
-describe("validation contract: default DOCX profile", () => {
-    // Flipped on in Task 10, after the structural checks of Task 7 replace
-    // the XSD-message heuristics. Until then the default stays `lenient`.
-    it.todo("default DOCX validation returns the same result as an explicit word-valid run");
+describe("validation contract: default DOCX profile", { timeout: 120000 }, () => {
+    // Flipped in Task 10: the default DOCX profile is `word-valid`, so a run
+    // without a profile must agree with an explicit `word-valid` run.
+    it("default DOCX validation returns the same result as an explicit word-valid run", async () => {
+        const specimen = await validateBytes(await buildDocx(), DEFAULT_DOCX_PROFILE);
+        const explicit = await validateBytes(await buildDocx(), "word-valid");
+        expect(specimen.valid).toBe(explicit.valid);
+        expect(specimen.metadata?.profile).toBe("word-valid");
+        expect(specimen.issues.map((i) => [i.severity, i.code, i.path, i.message])).toEqual(
+            explicit.issues.map((i) => [i.severity, i.code, i.path, i.message]),
+        );
+    });
 });

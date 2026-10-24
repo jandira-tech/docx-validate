@@ -38,8 +38,8 @@ import JSZip from "jszip";
 
 import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
 import { runChecks } from "../../lib/check-scheduler";
+import { assertModeCoherent, isPartialRequest, QUICK_CHECK_GROUPS, resolveMode, type ResolvedMode } from "../../lib/mode-policy";
 import {
-    DEFAULT_PROFILE,
     mergeResults,
     xsdWalkNotStarted,
     type PackageFormat,
@@ -47,9 +47,12 @@ import {
     type ValidationResult,
     type XsdWalkTrace,
 } from "../../lib/types";
+import type { XsdValidator } from "../../lib/xsd-validator";
+import { verifyInWord, type WordVerification } from "../../lib/word-verifier";
 import { ValidationContext } from "../../lib/validation-context";
 import { extractZipEntries } from "../../lib/zip-path";
 import { createDefaultCheckRegistry } from "./checks";
+import { contextFromArchive, contextFromDirectory } from "./package-context";
 import { BaseSchemaValidator } from "./validators/base";
 import { DOCXSchemaValidator } from "./validators/docx";
 import { buildRepairPlanIssues, collectDocxSemanticInventory, compareDocxSemanticInventories } from "./validators/docx-diagnostics";
@@ -58,6 +61,13 @@ import { validateRedlining } from "./validators/redlining";
 import { explainWordError } from "./validators/word-error-explanations";
 
 const SUPPORTED_SUFFIXES = new Set([".docm", ".docx", ".pptx", ".xlsx"]);
+
+/**
+ * Side-effect boundary for real-Word verification. Defaults to
+ * `verifyInWord` (a temporary copy, opened through the injectable
+ * `WordTransport`); tests substitute their own so no lane opens Word.
+ */
+export type WordVerifier = (bytes: Uint8Array) => Promise<WordVerification>;
 
 export interface ValidateOptions {
     /** Path to the original packed Office file. Required for DOCX redlining. */
@@ -77,6 +87,33 @@ export interface ValidateOptions {
      * constructs). See {@link Profile}.
      */
     profile?: Profile;
+    /** `--strict`: shorthand for `profile: "strict"`. */
+    strict?: boolean;
+    /** `--quick`: run the common-defect preset and disclose the omissions. */
+    quick?: boolean;
+    /** `--checks`: run these check ids or group names, plus their prerequisites. */
+    checks?: readonly string[];
+    /**
+     * `--verify-word`: after the portable mode passes, ask Microsoft Word
+     * about the exact bytes. Requested-but-unavailable or inconclusive
+     * verification is NOT satisfied, so the run reports `valid: false`.
+     */
+    verifyWord?: boolean;
+    /** Override the real-Word verifier. Defaults to {@link verifyInWord}. */
+    wordVerifier?: WordVerifier;
+    /**
+     * Override the XSD engine for every schema validator this run creates.
+     * When omitted, `BaseSchemaValidator` lazy-creates the default
+     * libxml2-wasm validator.
+     */
+    xsdValidator?: XsdValidator;
+}
+
+/** Package format a dispatch suffix maps to. `.docm` validates exactly like `.docx`. */
+export function formatForSuffix(suffix: string): PackageFormat {
+    if (suffix === ".pptx") return "pptx";
+    if (suffix === ".xlsx") return "xlsx";
+    return "docx";
 }
 
 export interface ValidateRunResult extends ValidationResult {
@@ -102,7 +139,13 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     const verbose = opts.verbose ?? false;
     const autoRepair = opts.autoRepair ?? false;
     const original = opts.original;
-    const profile: Profile = opts.profile ?? DEFAULT_PROFILE;
+
+    // Resolve the mode before touching the filesystem: a contradictory
+    // selection is a configuration error, not a verdict about a document.
+    const dispatchSuffix = path.extname(original ?? target).toLowerCase();
+    const format = formatForSuffix(dispatchSuffix);
+    const mode = resolveMode(format, opts);
+    const profile: Profile = mode.profile;
 
     await assertExists(target, `Error: ${target} does not exist`);
 
@@ -116,8 +159,6 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         originalFile = path.resolve(original);
     }
 
-    const dispatchSuffix = path.extname(originalFile ?? target).toLowerCase();
-
     if (!SUPPORTED_SUFFIXES.has(dispatchSuffix)) {
         throw new Error(`Error: Cannot determine file type from ${target}. Use --original or provide a .docx/.docm/.pptx/.xlsx file.`);
     }
@@ -130,6 +171,16 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         throw new Error(`Error: ${target} is not a directory or Office file`);
     }
 
+    // Read the exact bytes once, before any validation work, so Word is asked
+    // about the same file the portable mode inspected.
+    const packedBytes = opts.verifyWord === true && targetIsPackedFile ? await fs.readFile(target) : undefined;
+    const finish = async (result: ValidateRunResult): Promise<ValidateRunResult> =>
+        opts.verifyWord === true ? withWordVerification(result, packedBytes, opts.wordVerifier) : result;
+
+    if (mode.select !== undefined) {
+        return finish(await runSelectedChecks(target, targetIsPackedFile, dispatchSuffix, format, mode));
+    }
+
     const runWithUnpacked = async (unpackedDir: string): Promise<ValidateRunResult> => {
         const subclassResult = await runValidators(unpackedDir, {
             originalFile,
@@ -138,71 +189,187 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
             verbose,
             autoRepair,
             schemasDir: opts.schemasDir,
+            xsdValidator: opts.xsdValidator,
             profile,
         });
-        return { ...subclassResult, suffix: dispatchSuffix };
+        return {
+            ...subclassResult,
+            suffix: dispatchSuffix,
+            metadata: {
+                profile,
+                executedChecks: executedCheckIds(format),
+                omittedChecks: [],
+                schemaCompleted: schemaWalkCompleted(subclassResult.xsdWalk, subclassResult.engineFailures),
+            },
+        };
     };
 
     if (targetIsPackedFile) {
-        return withTempDir(async (tempDir) => {
-            const buf = await fs.readFile(target);
-            const envelopeIssues: ValidationResult["issues"] = runsWordPackageChecks(profile)
-                ? await zipEnvelopeIssues(buf, dispatchSuffix)
-                : [];
-            let zip: JSZip;
-            try {
-                zip = await JSZip.loadAsync(buf);
-            } catch (err) {
-                // The file is not a readable OPC (zip) package: encrypted OOXML
-                // (a CFB/OLE compound file), or a truncated/corrupted archive.
-                // Word refuses to open all of these, so this is an error — but
-                // `validate()` must NEVER throw here (a thrown validator silently
-                // crashes callers that shell out, e.g. python-jubarte, instead of
-                // reporting the file invalid). Surface it as a structured issue.
-                // Kept blocking under every profile: an unopenable package is not
-                // something Word tolerates.
-                const detail = err instanceof Error ? err.message : String(err);
+        return finish(
+            await withTempDir(async (tempDir) => {
+                const buf = await fs.readFile(target);
+                const envelopeIssues: ValidationResult["issues"] = runsWordPackageChecks(profile)
+                    ? await zipEnvelopeIssues(buf, dispatchSuffix)
+                    : [];
+                let zip: JSZip;
+                try {
+                    zip = await JSZip.loadAsync(buf);
+                } catch (err) {
+                    // The file is not a readable OPC (zip) package: encrypted OOXML
+                    // (a CFB/OLE compound file), or a truncated/corrupted archive.
+                    // Word refuses to open all of these, so this is an error — but
+                    // `validate()` must NEVER throw here (a thrown validator silently
+                    // crashes callers that shell out, e.g. python-jubarte, instead of
+                    // reporting the file invalid). Surface it as a structured issue.
+                    // Kept blocking under every profile: an unopenable package is not
+                    // something Word tolerates.
+                    const detail = err instanceof Error ? err.message : String(err);
+                    return {
+                        valid: false,
+                        issues: [
+                            ...envelopeIssues,
+                            {
+                                severity: "error" as const,
+                                message: `Cannot open ${target} as an OPC package (not a valid .docx/zip — encrypted, corrupted, or truncated): ${detail}`,
+                                code: "package-open-failed",
+                            },
+                        ],
+                        repairs: 0,
+                        suffix: dispatchSuffix,
+                        xsdWalk: xsdWalkNotStarted(),
+                        metadata: { profile, executedChecks: [], omittedChecks: [], schemaCompleted: false },
+                    };
+                }
+                try {
+                    await extractAll(zip, tempDir);
+                } catch (err) {
+                    const detail = err instanceof Error ? err.message : String(err);
+                    return {
+                        valid: false,
+                        issues: [
+                            ...envelopeIssues,
+                            {
+                                severity: "error" as const,
+                                message: `Cannot extract ${target}: ${detail}`,
+                                code: "package-extract-failed",
+                            },
+                        ],
+                        repairs: 0,
+                        suffix: dispatchSuffix,
+                        xsdWalk: xsdWalkNotStarted(),
+                        metadata: { profile, executedChecks: [], omittedChecks: [], schemaCompleted: false },
+                    };
+                }
+                const unpacked = await runWithUnpacked(tempDir);
+                if (envelopeIssues.length === 0) return unpacked;
                 return {
+                    ...unpacked,
                     valid: false,
-                    issues: [
-                        ...envelopeIssues,
-                        {
-                            severity: "error" as const,
-                            message: `Cannot open ${target} as an OPC package (not a valid .docx/zip — encrypted, corrupted, or truncated): ${detail}`,
-                            code: "package-open-failed",
-                        },
-                    ],
-                    repairs: 0,
-                    suffix: dispatchSuffix,
-                    xsdWalk: xsdWalkNotStarted(),
+                    issues: [...unpacked.issues, ...envelopeIssues],
+                    metadata: { ...(unpacked.metadata ?? {}), executedChecks: coveredEnvelopeChecks(unpacked.metadata, profile) },
                 };
-            }
-            try {
-                await extractAll(zip, tempDir);
-            } catch (err) {
-                const detail = err instanceof Error ? err.message : String(err);
-                return {
-                    valid: false,
-                    issues: [
-                        ...envelopeIssues,
-                        {
-                            severity: "error" as const,
-                            message: `Cannot extract ${target}: ${detail}`,
-                            code: "package-extract-failed",
-                        },
-                    ],
-                    repairs: 0,
-                    suffix: dispatchSuffix,
-                    xsdWalk: xsdWalkNotStarted(),
-                };
-            }
-            const unpacked = await runWithUnpacked(tempDir);
-            if (envelopeIssues.length === 0) return unpacked;
-            return { ...unpacked, valid: false, issues: [...unpacked.issues, ...envelopeIssues] };
-        });
+            }),
+        );
     }
 
-    return runWithUnpacked(path.resolve(target));
+    return finish(await runWithUnpacked(path.resolve(target)));
+}
+
+/**
+ * Run the requested portable mode's verdict through real Microsoft Word when
+ * the caller asked for it. Verification that was requested but could not run
+ * (no bytes, another platform, Word not installed) or that stayed
+ * inconclusive (timeout, unknown dialog) is NOT satisfied, so the run reports
+ * `valid: false` — an unanswered question is not a pass.
+ */
+async function withWordVerification(
+    result: ValidateRunResult,
+    packedBytes: Uint8Array | undefined,
+    injected: WordVerifier | undefined,
+): Promise<ValidateRunResult> {
+    const verify = injected ?? verifyInWord;
+    if (packedBytes === undefined) {
+        return applyWordVerification(result, {
+            requested: true,
+            outcome: "unavailable",
+            satisfied: false,
+            fileSha256: "",
+            platform: process.platform,
+            observedAt: new Date(0).toISOString(),
+            observationMs: 0,
+            details: "Word verification needs a packed Office file; the validated target is an unpacked directory",
+        });
+    }
+    return applyWordVerification(result, await verify(packedBytes));
+}
+
+function applyWordVerification(result: ValidateRunResult, verification: WordVerification): ValidateRunResult {
+    return {
+        ...result,
+        valid: result.valid && verification.satisfied,
+        metadata: { ...(result.metadata ?? {}), wordVerification: { ...verification } },
+    };
+}
+
+/** Every check id applicable to `format`, in registry order. */
+function executedCheckIds(format: PackageFormat): readonly string[] {
+    return createDefaultCheckRegistry()
+        .list(format)
+        .map((def) => def.id);
+}
+
+/**
+ * A partial run: only the selected named checks, against a context built from
+ * the package. No schema validator is constructed, so nothing compiles an XSD
+ * and no rule outside the selection runs. Everything the selection left out is
+ * reported as an omission — `valid` here means "the requested checks passed".
+ */
+async function runSelectedChecks(
+    target: string,
+    packed: boolean,
+    suffix: string,
+    format: PackageFormat,
+    mode: ResolvedMode,
+): Promise<ValidateRunResult> {
+    const registry = createDefaultCheckRegistry();
+    const select = mode.select ?? [];
+    const selected = registry.resolve(select, format);
+    const context = packed ? (await contextFromArchive(await fs.readFile(target))).context : contextFromDirectory(path.resolve(target));
+    const run = await runChecks(context, registry, { format, select });
+    return {
+        valid: run.valid,
+        issues: [...run.issues],
+        repairs: 0,
+        suffix,
+        xsdWalk: xsdWalkNotStarted(),
+        metadata: {
+            profile: mode.profile,
+            executedChecks: [...selected],
+            omittedChecks: [...run.omitted],
+            schemaCompleted: false,
+        },
+    };
+}
+
+/**
+ * The ZIP-envelope checks only cover the complete Word profiles and only run
+ * for a packed file (an unpacked directory has no envelope), so the executed
+ * set is empty for every other combination.
+ */
+function coveredEnvelopeChecks(metadata: ValidationResult["metadata"], profile: Profile): readonly string[] {
+    const all = metadata?.executedChecks ?? [];
+    return runsWordPackageChecks(profile) ? all : all.filter((id) => !ENVELOPE_CHECK_IDS.includes(id));
+}
+
+/** Check ids that read the packed archive's ZIP envelope. */
+const ENVELOPE_CHECK_IDS = ["zip-bytes-after-eocd", "zip-eocd-comment-overrun"];
+
+/**
+ * A schema walk "completed" when it started, offered every eligible part to
+ * the engine, and the engine answered for each one (no schema failed to load).
+ */
+function schemaWalkCompleted(walk: XsdWalkTrace, engineFailures: number): boolean {
+    return walk.started && walk.parts.length === walk.eligible && engineFailures === 0;
 }
 
 /**
@@ -236,13 +403,14 @@ interface RunValidatorsOptions {
     verbose: boolean;
     autoRepair: boolean;
     schemasDir?: string;
+    xsdValidator?: XsdValidator;
     profile: Profile;
 }
 
 async function runValidators(
     unpackedDir: string,
     opts: RunValidatorsOptions,
-): Promise<ValidationResult & { repairs: number; xsdWalk: XsdWalkTrace }> {
+): Promise<ValidationResult & { repairs: number; xsdWalk: XsdWalkTrace; engineFailures: number }> {
     const validators: ValidatorRunner[] = [];
     let schemaValidator: BaseSchemaValidator | undefined;
 
@@ -252,6 +420,7 @@ async function runValidators(
             originalFile: opts.originalFile ?? undefined,
             verbose: opts.verbose,
             schemasDir: opts.schemasDir,
+            xsdValidator: opts.xsdValidator,
             profile: opts.profile,
         });
         schemaValidator = docx;
@@ -282,6 +451,7 @@ async function runValidators(
             originalFile: opts.originalFile ?? undefined,
             verbose: opts.verbose,
             schemasDir: opts.schemasDir,
+            xsdValidator: opts.xsdValidator,
             profile: opts.profile,
         });
         schemaValidator = pptx;
@@ -303,6 +473,7 @@ async function runValidators(
             ],
             repairs: 0,
             xsdWalk: xsdWalkNotStarted(),
+            engineFailures: 0,
         };
     }
 
@@ -330,7 +501,12 @@ async function runValidators(
     const merged = mergeResults(...results, repairDiagnostics);
     // mergeResults drops xsdWalk. Copy the trace off the schema validator
     // after the walk, including the word-valid path that never started XSD.
-    return { ...merged, repairs, xsdWalk: schemaValidator?.xsdWalk ?? xsdWalkNotStarted() };
+    return {
+        ...merged,
+        repairs,
+        xsdWalk: schemaValidator?.xsdWalk ?? xsdWalkNotStarted(),
+        engineFailures: schemaValidator?.xsdEngineFailures ?? 0,
+    };
 }
 
 async function assertExists(p: string, message: string): Promise<void> {
@@ -360,14 +536,21 @@ interface CliOptions {
     verbose: boolean;
     autoRepair: boolean;
     author?: string;
-    profile: Profile;
+    profile?: Profile;
+    quick?: boolean;
+    strict?: boolean;
+    verifyWord?: boolean;
+    json?: boolean;
+    /** Comma-separated check ids or group names. */
+    checks?: string;
+    listChecks?: boolean;
 }
 
 export function buildValidateCommand(): Command {
     const cmd = new Command();
     cmd.name("validate")
         .description("Validate Office document XML files against XSD schemas and tracked changes")
-        .argument("<path>", "Path to unpacked directory or packed Office file (.docx/.docm/.pptx/.xlsx)")
+        .argument("[path]", "Path to unpacked directory or packed Office file (.docx/.docm/.pptx/.xlsx)")
         .option(
             "--original <file>",
             "Path to original file (.docx/.docm/.pptx/.xlsx). If omitted, all XSD errors are reported and redlining validation is skipped.",
@@ -377,24 +560,37 @@ export function buildValidateCommand(): Command {
         .option("--author <name>", "Author name for redlining validation (required when --original is provided)")
         .option(
             "--profile <profile>",
-            "Validation profile: 'lenient' (default), 'strict' (spec-purist), or 'word-valid' (Microsoft Word openability)",
-            DEFAULT_PROFILE,
-        );
+            "Validation profile: 'word-valid' (default for .docx/.docm), 'lenient' (default for every other format), or 'strict'",
+        )
+        .option("--quick", "Run the common-defect check preset and report the checks it omits", false)
+        .option("--strict", "Run the complete Word check set and require schema validation to complete", false)
+        .option("--verify-word", "Also ask Microsoft Word to open the exact file; unavailable or inconclusive is not a pass", false)
+        .option("--checks <ids-or-groups,...>", "Run only these named checks (or groups) plus their prerequisites")
+        .option("--list-checks", "List every named check with its id, groups, formats and description, then exit", false)
+        .option("--json", "Print one JSON document (every issue plus execution metadata) on stdout, with no human text", false);
     return cmd;
 }
 
-export async function runValidateFromArgv(argv: readonly string[]): Promise<number> {
-    // Fail loudly at startup if the wasm-backed XSD engine is broken — otherwise
-    // the per-file pipeline silently turns the same condition into per-file
-    // "xsd-validation-failed" errors that look like document corruption.
-    try {
-        await BaseSchemaValidator.assertXsdValidationAvailable();
-    } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        process.stderr.write(`${message}\n`);
-        return 1;
-    }
+/** Split `--checks a,b , c` into trimmed, non-empty names. */
+const parseCheckList = (raw: string | undefined): string[] =>
+    (raw ?? "")
+        .split(",")
+        .map((name) => name.trim())
+        .filter((name) => name !== "");
 
+/**
+ * Human-readable catalogue of the named checks, one per line:
+ * `id — groups: … | formats: … — description`.
+ */
+export function renderCheckList(): string {
+    const lines = ["Named checks (pass ids or groups to --checks):"];
+    for (const def of createDefaultCheckRegistry().list()) {
+        lines.push(`  ${def.id} — groups: ${def.groups.join(", ")} | formats: ${def.formats.join(", ")} — ${def.description}`);
+    }
+    return `${lines.join("\n")}\n`;
+}
+
+export async function runValidateFromArgv(argv: readonly string[]): Promise<number> {
     const cmd = buildValidateCommand();
     cmd.exitOverride();
     // Commander throws CommanderError under exitOverride() for missing args,
@@ -408,10 +604,48 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
     const opts = cmd.opts<CliOptions>();
     const [target] = cmd.args;
 
-    if (opts.profile !== "lenient" && opts.profile !== "strict" && opts.profile !== "word-valid") {
+    // Discovery validates nothing: it neither reads a package nor initialises
+    // the XML or XSD engines.
+    if (opts.listChecks === true) {
+        process.stdout.write(renderCheckList());
+        return 0;
+    }
+
+    if (target === undefined) {
+        process.stderr.write("Error: missing required argument 'path' (or use --list-checks).\n");
+        return 1;
+    }
+
+    if (opts.profile !== undefined && opts.profile !== "lenient" && opts.profile !== "strict" && opts.profile !== "word-valid") {
         const bad = String(opts.profile);
         process.stderr.write(`Invalid --profile: ${bad}. Must be 'lenient', 'strict', or 'word-valid'.\n`);
         return 1;
+    }
+
+    const checks = parseCheckList(opts.checks);
+
+    // Reject contradictory selectors before any validation work, so the caller
+    // gets one clear line instead of a verdict on a run they did not ask for.
+    try {
+        assertModeCoherent({ profile: opts.profile, strict: opts.strict, quick: opts.quick, checks });
+    } catch (err) {
+        process.stderr.write(`${err instanceof Error ? err.message : String(err)}\n`);
+        return 1;
+    }
+
+    // Fail loudly at startup if the wasm-backed XSD engine is broken — otherwise
+    // the per-file pipeline silently turns the same condition into per-file
+    // "xsd-validation-failed" errors that look like document corruption. A
+    // partial run never touches the engine, so it skips the probe (and so does
+    // any invocation that exits before validating).
+    if (!isPartialRequest({ quick: opts.quick, checks })) {
+        try {
+            await BaseSchemaValidator.assertXsdValidationAvailable();
+        } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            process.stderr.write(`${message}\n`);
+            return 1;
+        }
     }
 
     let result: ValidateRunResult;
@@ -422,6 +656,10 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
             author: opts.author,
             verbose: opts.verbose,
             profile: opts.profile,
+            strict: opts.strict,
+            quick: opts.quick,
+            checks,
+            verifyWord: opts.verifyWord,
         });
     } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
@@ -429,21 +667,51 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
         return 1;
     }
 
+    // --json owns stdout: one document, every issue (warnings and their
+    // locations included) plus the execution metadata, and nothing else. The
+    // exit code still carries the verdict.
+    if (opts.json === true) {
+        process.stdout.write(`${JSON.stringify({ valid: result.valid, issues: result.issues, metadata: result.metadata ?? {} })}\n`);
+        return result.valid ? 0 : 1;
+    }
+
     if (opts.autoRepair && result.repairs > 0) {
         process.stdout.write(`Auto-repaired ${result.repairs} issue(s)\n`);
     }
 
+    // A partial run is not a verdict on the whole document, so it discloses
+    // what it left out and never claims that every validation passed.
+    const omitted = result.metadata?.omittedChecks ?? [];
+    if (omitted.length > 0) {
+        process.stdout.write(`Omitted checks (not run): ${omitted.join(", ")}\n`);
+        if (opts.quick === true) {
+            process.stdout.write(`Quick preset groups: ${QUICK_CHECK_GROUPS.join(", ")}\n`);
+        }
+    }
+
     if (result.valid) {
-        process.stdout.write("All validations PASSED!\n");
+        if (omitted.length === 0) {
+            process.stdout.write("All validations PASSED!\n");
+        } else {
+            process.stdout.write(
+                `Selected checks passed (${result.metadata?.executedChecks?.length ?? 0} run, ${omitted.length} omitted).\n`,
+            );
+        }
     } else {
         for (const issue of result.issues) {
             if (issue.severity !== "error") continue;
             const where = issue.path ? ` [${issue.path}]` : "";
             process.stderr.write(`${issue.severity.toUpperCase()}${where}: ${issue.message}\n`);
-            if (opts.profile === "word-valid") {
+            if (result.metadata?.profile === "word-valid") {
                 const explanation = explainWordError(issue.code);
                 if (explanation) process.stderr.write(`  ↳ ${explanation}\n`);
             }
+        }
+        // An unsatisfied Word observation carries no issue of its own — say
+        // so, so a non-zero exit is never silent.
+        const observed = result.metadata?.wordVerification;
+        if (observed && !observed.satisfied) {
+            process.stderr.write(`WORD VERIFICATION ${observed.outcome}: ${observed.details}\n`);
         }
     }
 
