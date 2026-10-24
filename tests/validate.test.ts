@@ -488,22 +488,37 @@ describe("word-valid profile — applyWordValidProfile coverage", () => {
         });
     });
 
-    it("xml-syntax error in word/ file stays fatal under word-valid profile (Issue N)", async () => {
-        // isWordBlockingIssue returns true for xml-syntax when path starts with 'word/',
-        // so the error must NOT be downgraded to a warning by applyWordValidProfile.
+    it("xml-syntax error in a reached word/ file stays fatal under word-valid profile (Issue N, #437)", async () => {
+        // isWordBlockingIssue blocks an xml-syntax error on a part Word reads
+        // through a relationship — here the eagerly parsed styles part — while
+        // a part named by nothing (word/xtra.xml) only warns: Word 16.115
+        // opens an unreferenced truncated word/ part clean (#437).
         await withTempDir(async (dir) => {
             const unpacked = path.join(dir, "unpacked");
             await writeMinimalDocxDir(unpacked, "<w:body><w:p/></w:body>");
+            await fs.mkdir(path.join(unpacked, "word", "_rels"), { recursive: true });
+            await fs.writeFile(
+                path.join(unpacked, "word", "_rels", "document.xml.rels"),
+                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+                    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+                    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
+                    "</Relationships>",
+                "utf8",
+            );
             // Write an unparseable word/styles.xml so validateXml emits xml-syntax for it.
             await fs.writeFile(path.join(unpacked, "word", "styles.xml"), "this is <definitely not valid xml", "utf8");
+            await fs.writeFile(path.join(unpacked, "word", "xtra.xml"), "this is <also not valid xml", "utf8");
             const result = await validate(unpacked, {
                 profile: "word-valid",
                 original: path.join(BROKEN_DIR, "endnotes.paraid-overflow.docx"),
                 author: "Test",
             });
-            const xmlSyntaxIssue = result.issues.find((i) => i.code === "xml-syntax" && (i.path?.startsWith("word/") ?? false));
-            expect(xmlSyntaxIssue).toBeDefined();
-            expect(xmlSyntaxIssue?.severity).toBe("error");
+            const onStyles = result.issues.find((i) => i.code === "xml-syntax" && i.path === "word/styles.xml");
+            expect(onStyles).toBeDefined();
+            expect(onStyles?.severity).toBe("error");
+            const onXtra = result.issues.find((i) => i.code === "xml-syntax" && i.path === "word/xtra.xml");
+            expect(onXtra).toBeDefined();
+            expect(onXtra?.severity).toBe("warning");
         });
     });
 
@@ -529,13 +544,29 @@ describe("word-valid profile — applyWordValidProfile coverage", () => {
         });
     });
 
-    it("xml-undeclared-prefix in word/ stays fatal under word-valid, outside word/ it is a warning", async () => {
+    it("xml-undeclared-prefix stays fatal under word-valid on a reached part, and warns elsewhere (#437)", async () => {
         // An undeclared namespace prefix is the same class of defect as a
         // malformed part (Word reports unreadable content), so it follows the
-        // same word/ vs non-word/ policy as xml-syntax.
+        // same reachability policy as xml-syntax: the eagerly parsed settings
+        // part blocks; a part named by nothing and an unreferenced docProps
+        // part only warn.
         await withTempDir(async (dir) => {
             const unpacked = path.join(dir, "unpacked");
             await writeMinimalDocxDir(unpacked, "<w:body><w:p/></w:body>");
+            await fs.mkdir(path.join(unpacked, "word", "_rels"), { recursive: true });
+            await fs.writeFile(
+                path.join(unpacked, "word", "_rels", "document.xml.rels"),
+                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+                    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+                    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/>' +
+                    "</Relationships>",
+                "utf8",
+            );
+            await fs.writeFile(
+                path.join(unpacked, "word", "settings.xml"),
+                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:settings><w:zoom w:percent="100"/></w:settings>',
+                "utf8",
+            );
             await fs.writeFile(path.join(unpacked, "word", "comments.xml"), '<w:comments><w:comment w:id="0"/></w:comments>', "utf8");
             await fs.mkdir(path.join(unpacked, "docProps"), { recursive: true });
             await fs.writeFile(path.join(unpacked, "docProps", "custom.xml"), "<Properties><cp:Thing/></Properties>", "utf8");
@@ -546,9 +577,12 @@ describe("word-valid profile — applyWordValidProfile coverage", () => {
                 author: "Test",
             });
 
-            const wordPart = result.issues.find((i) => i.code === "xml-undeclared-prefix" && (i.path?.startsWith("word/") ?? false));
-            expect(wordPart).toBeDefined();
-            expect(wordPart?.severity).toBe("error");
+            const onSettings = result.issues.find((i) => i.code === "xml-undeclared-prefix" && i.path === "word/settings.xml");
+            expect(onSettings).toBeDefined();
+            expect(onSettings?.severity).toBe("error");
+            const onComments = result.issues.find((i) => i.code === "xml-undeclared-prefix" && i.path === "word/comments.xml");
+            expect(onComments).toBeDefined();
+            expect(onComments?.severity).toBe("warning");
             const docPropsPart = result.issues.find(
                 (i) => i.code === "xml-undeclared-prefix" && (i.path?.startsWith("docProps/") ?? false),
             );

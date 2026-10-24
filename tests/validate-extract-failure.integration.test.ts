@@ -287,6 +287,39 @@ describe("portable extraction failures (#475, #476)", { timeout: 120_000 }, () =
         });
     });
 
+    it.each(PROFILES)("keeps a reached part's XML error as the full run reports it under %s (#437)", async (profile) => {
+        // word/styles.xml is reached through the document's styles
+        // relationship, so word-valid blocks its malformed XML; the fallback
+        // must judge it with the same Word reachability set.
+        const parts = { ...MINIMAL_PARTS, "word/styles.xml": "<w:styles" };
+        await withTempDir(async (dir) => {
+            const found = new Map<boolean, ValidationIssue[]>();
+            for (const unstageable of [false, true]) {
+                const file = path.join(dir, `${unstageable ? "unstageable" : "stageable"}.docx`);
+                const bytes = buildRawZip([
+                    ...Object.entries(parts).map(([name, content]) => ({ name, content })),
+                    ...(unstageable ? [{ name: "word", content: "file blocks word directory" }] : []),
+                ]);
+                writeFileSync(file, bytes);
+                const result = await validate(file, { profile });
+                expect(
+                    result.issues.some((issue) => issue.code === "package-extract-failed"),
+                    `${profile} ${unstageable}`,
+                ).toBe(unstageable);
+                found.set(
+                    unstageable,
+                    result.issues.filter((issue) => issue.code === "xml-syntax" && issue.path === "word/styles.xml"),
+                );
+                expect(readFileSync(file)).toEqual(bytes);
+            }
+            expect(found.get(false), `${profile} stageable`).toEqual([expect.objectContaining({ severity: "error" })]);
+            expect(
+                found.get(true)!.map((issue) => issue.severity),
+                `${profile} unstageable`,
+            ).toEqual(found.get(false)!.map((issue) => issue.severity));
+        });
+    });
+
     it.each(PROFILES)("merges archive findings beside a file/folder collision under %s", async (profile) => {
         const bytes = buildRawZip([
             ...Object.entries(MINIMAL_PARTS).map(([name, content]) => ({
