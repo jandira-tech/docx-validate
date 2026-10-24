@@ -37,9 +37,19 @@ import { Command } from "commander";
 import JSZip from "jszip";
 
 import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
-import { DEFAULT_PROFILE, mergeResults, xsdWalkNotStarted, type Profile, type ValidationResult, type XsdWalkTrace } from "../../lib/types";
+import { runChecks } from "../../lib/check-scheduler";
+import {
+    DEFAULT_PROFILE,
+    mergeResults,
+    xsdWalkNotStarted,
+    type PackageFormat,
+    type Profile,
+    type ValidationResult,
+    type XsdWalkTrace,
+} from "../../lib/types";
+import { ValidationContext } from "../../lib/validation-context";
 import { extractZipEntries } from "../../lib/zip-path";
-import { countZipBytesAfterEocd, zipEocdCommentOverrun } from "./zip-bytes-after-eocd";
+import { createDefaultCheckRegistry } from "./checks";
 import { BaseSchemaValidator } from "./validators/base";
 import { DOCXSchemaValidator } from "./validators/docx";
 import { buildRepairPlanIssues, collectDocxSemanticInventory, compareDocxSemanticInventories } from "./validators/docx-diagnostics";
@@ -136,16 +146,8 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     if (targetIsPackedFile) {
         return withTempDir(async (tempDir) => {
             const buf = await fs.readFile(target);
-            const packageChecks = runsWordPackageChecks(profile);
-            const overrun = packageChecks ? zipEocdCommentOverrun(buf) : undefined;
-            const envelopeIssues: ValidationResult["issues"] = overrun
-                ? [
-                      {
-                          severity: "error",
-                          code: "zip-eocd-comment-overrun",
-                          message: `ZIP end-of-central-directory comment length is ${overrun.declared}, but only ${overrun.remaining} byte(s) remain in the file. Word offers to recover the document. Set the comment length to the bytes that are present.`,
-                      },
-                  ]
+            const envelopeIssues: ValidationResult["issues"] = runsWordPackageChecks(profile)
+                ? await zipEnvelopeIssues(buf, dispatchSuffix)
                 : [];
             let zip: JSZip;
             try {
@@ -195,26 +197,8 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                 };
             }
             const unpacked = await runWithUnpacked(tempDir);
-            if (!packageChecks) return unpacked;
-            const trailing = countZipBytesAfterEocd(buf);
-            if (trailing === 0 && envelopeIssues.length === 0) return unpacked;
-            return {
-                ...unpacked,
-                valid: false,
-                issues: [
-                    ...unpacked.issues,
-                    ...envelopeIssues,
-                    ...(trailing > 0
-                        ? [
-                              {
-                                  severity: "error" as const,
-                                  code: "zip-bytes-after-eocd",
-                                  message: `ZIP end of central directory is followed by ${trailing} undeclared byte(s). Word offers to recover the document. Remove the bytes after that record; a comment whose length is declared in the record is not this defect.`,
-                              },
-                          ]
-                        : []),
-                ],
-            };
+            if (envelopeIssues.length === 0) return unpacked;
+            return { ...unpacked, valid: false, issues: [...unpacked.issues, ...envelopeIssues] };
         });
     }
 
@@ -229,6 +213,14 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
  */
 function runsWordPackageChecks(profile: Profile): boolean {
     return profile === "word-valid" || profile === "strict";
+}
+
+/** Findings of the archive-only `package` checks on the packed file's bytes. */
+async function zipEnvelopeIssues(archiveBytes: Uint8Array, suffix: string): Promise<ValidationResult["issues"]> {
+    const format: PackageFormat = suffix === ".pptx" ? "pptx" : suffix === ".xlsx" ? "xlsx" : "docx";
+    const context = ValidationContext.fromEntries({}, { source: "archive", archiveBytes });
+    const run = await runChecks(context, createDefaultCheckRegistry(), { format, select: ["package"] });
+    return [...run.issues];
 }
 
 interface ValidatorRunner {
