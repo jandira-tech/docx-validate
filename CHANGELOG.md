@@ -24,6 +24,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Full validation stages directory inputs with literal backslashes in stored file names under package part names, sharing the packed-input extraction guards and duplicate selection. `--auto-repair` writes modified bytes and deletions back to their original stored names; untouched files remain byte-identical and validation without repair leaves the source unchanged ([#374](https://github.com/jandira-tech/docx-validate/issues/374)).
+
 - Scope `word-content-type-invalid` to stored parts. In Word 16.115, an Override for a missing part and an unused Default open clean; an invalid content type on an existing part is refused or recovered. The observations, with hashes, are in `docs/plans/evidence/word-probes-2026-10-24.md` ([#401](https://github.com/jandira-tech/docx-validate/issues/401)).
 
 - Resolve the content-types ZIP stream ASCII case-insensitively, without percent decoding, across Word checks, content-type coverage, XSD dispatch, and semantic diagnostics. Findings retain the stored stream name. Of two stored spellings, `[Content_Types].xml` is read, otherwise the first in code-unit order (System.IO.Packaging reads the last in ZIP order), and the second is now diagnosed as a strict error or word-valid/lenient warning ([#351](https://github.com/jandira-tech/docx-validate/issues/351)). In a directory input, a folder named `[Content_Types].xml` is now `ct-missing` rather than `ct-parse` ([#396](https://github.com/jandira-tech/docx-validate/issues/396)).
@@ -76,7 +78,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Known limitations
 
 - Of equivalent stored part names, the package view still validates one entry, chosen deterministically; the content of the others is not validated. Case/normalization collisions can still stop full extraction on such a filesystem ([#351](https://github.com/jandira-tech/docx-validate/issues/351)).
-- An unpacked directory on POSIX can hold a file whose name contains a literal `\`, such as `word\document.xml` (`unpack` writes such names). The package view reads that file as `word/document.xml`, but the schema walk and the `.rels` sidecar lookup key on the file path, so a full run skips its schema and can report a false `rels-missing-sidecar`. Packed files are not affected ([#374](https://github.com/jandira-tech/docx-validate/issues/374)).
 
 ### Security
 
