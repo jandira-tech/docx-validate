@@ -24,6 +24,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- A quick or named-check run now reports an archive whose package view cannot be read — a stored item name that places no part (`word//x.xml`, `c:doc/x.xml`, a `.` or `..` segment) or an unreadable entry — as `package-extract-failed`, with the same code and message the full run reports, instead of `package-open-failed` ([#413](https://github.com/jandira-tech/docx-validate/issues/413)).
+
 - Full validation stages directory inputs with literal backslashes in stored file names under package part names, sharing the packed-input extraction guards and duplicate selection. `--auto-repair` writes modified bytes and deletions back to their original stored names; untouched files remain byte-identical and validation without repair leaves the source unchanged ([#374](https://github.com/jandira-tech/docx-validate/issues/374)).
 
 - Scope `word-content-type-invalid` to stored parts. In Word 16.115, an Override for a missing part and an unused Default open clean; an invalid content type on an existing part is refused or recovered. The observations, with hashes, are in `docs/plans/evidence/word-probes-2026-10-24.md` ([#401](https://github.com/jandira-tech/docx-validate/issues/401)).

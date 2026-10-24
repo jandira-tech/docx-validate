@@ -23,6 +23,7 @@ import { ValidationContext } from "../src/lib/validation-context";
 import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+import { poisonEntry } from "./support/poison-entry";
 
 const ROW_WITHOUT_CELL = path.join(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -104,6 +105,130 @@ const UNREADABLE_PACKAGE_RELS = [
 ] as const;
 // A main part declaring an encoding no decoder knows: Word refuses the file,
 // and opens the windows-1252 control clean (#397).
+
+describe("a partial run reports a refused item name as the full run does (#413)", { timeout: 120_000 }, () => {
+    // Stored item names the package view refuses (#372, #378). JSZip rewrites
+    // `..`, `.` and empty segments at load, so both runs judge the stored
+    // spelling, through `entryNameRefusal`.
+    const REFUSED: readonly (readonly [string, string])[] = [
+        ["dotdot", "word/a/../x.xml"],
+        ["dot-only", "word/./x.xml"],
+        ["empty-segment", "word//x.xml"],
+        ["drive", "c:doc/x.xml"],
+    ];
+    const SELECTIONS = [{ checks: ["xml-syntax"] }, { checks: ["package"] }, { quick: true }] as const;
+
+    const issue = (result: { issues: readonly ValidationIssue[] }, code: string): ValidationIssue | undefined =>
+        result.issues.find((entry) => entry.severity === "error" && entry.code === code);
+
+    describe.each(REFUSED)("the stored item name %j", (label, name) => {
+        it.each(["word-valid", "lenient"] as const)(
+            "under %s, every partial selection reports the full run's failure, at the same code and message",
+            async (profile) => {
+                await withTempDir(async (dir) => {
+                    const file = await specimen(dir, `${label}.docx`, await buildDocx({ ...MINIMAL_PARTS, [name]: "<x/>" }));
+                    const full = await validate(file, { profile });
+                    const fullFailure = issue(full, "package-extract-failed");
+
+                    expect(full.valid).toBe(false);
+                    expect(fullFailure).toBeDefined();
+                    for (const selection of SELECTIONS) {
+                        const partial = await validate(file, { profile, ...selection });
+                        const tag = `${label} ${profile} ${JSON.stringify(selection)}`;
+
+                        // #381: partial errors are a subset of full errors as
+                        // code@path, and a valid full run means a valid partial
+                        // run (both are invalid here).
+                        if (full.valid) expect(partial.valid, tag).toBe(true);
+                        expect(partial.valid, tag).toBe(false);
+                        expect(errorPairs(full.issues), tag).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
+                        expect(issue(partial, "package-extract-failed")?.message, tag).toBe(fullFailure!.message);
+                    }
+                });
+            },
+        );
+
+        it("strict still refuses a partial run of it", async () => {
+            await withTempDir(async (dir) => {
+                const file = await specimen(dir, `${label}-strict.docx`, await buildDocx({ ...MINIMAL_PARTS, [name]: "<x/>" }));
+                for (const selection of SELECTIONS) {
+                    await expect(validate(file, { profile: "strict", ...selection }), JSON.stringify(selection)).rejects.toBeInstanceOf(
+                        ModeConflictError,
+                    );
+                }
+            });
+        });
+    });
+
+    it("agrees on a directory holding a drive-relative name", async () => {
+        // The other three names cannot be staged as directories: a filesystem
+        // resolves `word/a/../x.xml`, `word/./x.xml` and `word//x.xml` to
+        // `word/x.xml`, so the directory never holds them. `c:doc` is a plain
+        // directory name on POSIX; Windows forbids it.
+        if (process.platform === "win32") return;
+        await withTempDir(async (dir) => {
+            const root = unpacked(dir, "drive.docx", { ...MINIMAL_PARTS, "c:doc/x.xml": "<x/>" });
+            for (const profile of ["word-valid", "lenient"] as const) {
+                const full = await validate(root, { profile });
+                for (const selection of SELECTIONS) {
+                    const partial = await validate(root, { profile, ...selection });
+                    const tag = `${profile} ${JSON.stringify(selection)}`;
+
+                    if (full.valid) expect(partial.valid, tag).toBe(true);
+                    expect(errorPairs(full.issues), tag).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
+                }
+            }
+        });
+    });
+
+    it("reports an unreadable entry as the same extract failure in full and partial runs", async () => {
+        // Control: a stored entry whose compressed stream is damaged opens as
+        // a ZIP but cannot be read, so both views refuse it (#369).
+        await withTempDir(async (dir) => {
+            const poisoned = poisonEntry(await buildDocx({ ...MINIMAL_PARTS, "word/extra.xml": "<x/>" }), "word/extra.xml");
+            const file = await specimen(dir, "poisoned.docx", Buffer.from(poisoned));
+            for (const profile of ["word-valid", "lenient"] as const) {
+                const full = await validate(file, { profile });
+                const fullFailure = issue(full, "package-extract-failed");
+
+                expect(fullFailure, profile).toBeDefined();
+                for (const selection of SELECTIONS) {
+                    const partial = await validate(file, { profile, ...selection });
+                    const tag = `${profile} ${JSON.stringify(selection)}`;
+
+                    if (full.valid) expect(partial.valid, tag).toBe(true);
+                    expect(partial.valid, tag).toBe(false);
+                    expect(errorPairs(full.issues), tag).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
+                    expect(issue(partial, "package-extract-failed")?.message, tag).toBe(fullFailure!.message);
+                }
+            }
+        });
+    });
+
+    it("keeps package-open-failed, in full and partial runs, for bytes that are not a ZIP", async () => {
+        // Control: the archive itself cannot be opened, which stays
+        // package-open-failed in every run — only the package-view refusal
+        // changed.
+        await withTempDir(async (dir) => {
+            const file = await specimen(dir, "notzip.docx", Buffer.from("this is not a zip archive at all"));
+            for (const profile of ["word-valid", "lenient"] as const) {
+                const full = await validate(file, { profile });
+                const fullFailure = issue(full, "package-open-failed");
+
+                expect(fullFailure, profile).toBeDefined();
+                for (const selection of SELECTIONS) {
+                    const partial = await validate(file, { profile, ...selection });
+                    const tag = `${profile} ${JSON.stringify(selection)}`;
+
+                    expect(partial.valid, tag).toBe(false);
+                    expect(errorPairs(full.issues), tag).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
+                    expect(issue(partial, "package-open-failed")?.message, tag).toBe(fullFailure!.message);
+                }
+            }
+        });
+    });
+});
+
 const declaringEncoding = (encoding: string): Readonly<Record<string, string>> => ({
     ...MINIMAL_PARTS,
     "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace('encoding="UTF-8"', `encoding="${encoding}"`),

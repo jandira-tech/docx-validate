@@ -42,6 +42,19 @@ export type PartContent = string | Uint8Array | (() => Uint8Array);
 /** Outcome of parsing one XML part. */
 export type XmlPart = { readonly ok: true; readonly document: Document } | { readonly ok: false; readonly message: string };
 
+/**
+ * The archive opened, but its package view could not be read: an item name
+ * places no part, or an entry's bytes could not be read. Extraction refuses
+ * the same archive for the same reason, so callers that report it should use
+ * the extraction failure, not the open failure (#413).
+ */
+export class PackageViewError extends Error {
+    public constructor(message: string, options?: ErrorOptions) {
+        super(message, options);
+        this.name = "PackageViewError";
+    }
+}
+
 export type ValidationContextOptions = {
     readonly source?: PackageSource;
     /** The packed file's bytes; present only when `source` is `"archive"`. */
@@ -176,30 +189,37 @@ export class ValidationContext {
 
     /**
      * Load a packed OPC archive, one entry per part name. Throws when the
-     * bytes are not a readable ZIP or an item name places no part (#372).
+     * bytes are not a readable ZIP, or with a {@link PackageViewError} when
+     * the opened archive's package view cannot be read: an item name places
+     * no part (#372, #378), or an entry cannot be read (#369) — the same
+     * archives extraction refuses, so callers report the same failure.
      */
     public static async fromArchive(bytes: Uint8Array): Promise<ValidationContext> {
         const zip = await JSZip.loadAsync(bytes);
-        const files = Object.values(zip.files).filter((entry) => !entry.dir);
-        assertPlaceableEntries(files);
-        const kept = indexByPartName(files.map((entry) => [entry.name, entry] as const));
-        const parts = new Map<string, PartContent>();
-        // Every entry is read, as extraction reads it, so an unreadable one
-        // rejects the archive even when another entry names its part (#369).
-        await Promise.all(
-            files.map(async (entry) => {
-                const content = await entry.async("uint8array");
-                const part = normalizePartName(entry.name);
-                if (kept.get(part) === entry) {
-                    parts.set(part, content);
-                }
-            }),
-        );
-        return new ValidationContext(
-            parts,
-            { source: "archive", archiveBytes: bytes },
-            files.map((entry) => entry.unsafeOriginalName ?? entry.name),
-        );
+        try {
+            const files = Object.values(zip.files).filter((entry) => !entry.dir);
+            assertPlaceableEntries(files);
+            const kept = indexByPartName(files.map((entry) => [entry.name, entry] as const));
+            const parts = new Map<string, PartContent>();
+            // Every entry is read, as extraction reads it, so an unreadable one
+            // rejects the archive even when another entry names its part (#369).
+            await Promise.all(
+                files.map(async (entry) => {
+                    const content = await entry.async("uint8array");
+                    const part = normalizePartName(entry.name);
+                    if (kept.get(part) === entry) {
+                        parts.set(part, content);
+                    }
+                }),
+            );
+            return new ValidationContext(
+                parts,
+                { source: "archive", archiveBytes: bytes },
+                files.map((entry) => entry.unsafeOriginalName ?? entry.name),
+            );
+        } catch (err) {
+            throw new PackageViewError(err instanceof Error ? err.message : String(err), { cause: err });
+        }
     }
 
     /** Part names in sorted order, without a leading `/`. */
