@@ -25,6 +25,8 @@
  * the rejected denominators.
  */
 
+import type { WordOutcome } from "./word-verifier";
+
 /** One observed Microsoft Word outcome, bound to the observed bytes. */
 export type WordObservation = {
     /** Observed outcome, e.g. "clean-open", "open-error", "timeout". */
@@ -56,9 +58,40 @@ export const UNKNOWN_OUTCOME = "unknown";
 /**
  * Outcomes that carry no clean/rejected signal. `unknown` — never observed, or
  * the recorded hash no longer matches the bytes; `timeout` — the probe never
- * got an answer. Both are excluded from accuracy denominators.
+ * got an answer; `crash` — Word died before delivering a verdict on the
+ * content. All are excluded from accuracy denominators.
  */
-export const UNATTRIBUTABLE_OUTCOMES: readonly string[] = [UNKNOWN_OUTCOME, "timeout"];
+export const UNATTRIBUTABLE_OUTCOMES: readonly string[] = [UNKNOWN_OUTCOME, "timeout", "crash"];
+
+/**
+ * Outcomes that are Word's verdict against the content — the only outcomes
+ * counted as rejections (#316). Anything else, known or not, is never a
+ * rejection without evidence of Word's verdict.
+ */
+export const REJECTED_OUTCOMES: readonly string[] = ["open-error", "unreadable-content-warning", "password-required", "unknown-dialog"];
+
+/**
+ * Translate a verifier outcome (`WordOutcome`) into the manifest's outcome
+ * vocabulary (#316). The two spell the recovery and password dialogs
+ * differently (`repair-warning`/`unreadable-content-warning`,
+ * `password-prompt`/`password-required`); the shared spellings pass through,
+ * and outcomes that carry no Word verdict map to their honest no-signal
+ * equivalents — `crash` stays `crash` (Word died before a verdict) and
+ * `unavailable` becomes `unknown`. Use this wherever a verifier outcome
+ * becomes manifest evidence.
+ */
+export const VERIFIER_OUTCOME_TO_MANIFEST: Readonly<Record<WordOutcome, string>> = {
+    "clean-open": "clean-open",
+    "repair-warning": "unreadable-content-warning",
+    "open-error": "open-error",
+    crash: "crash",
+    "password-prompt": "password-required",
+    "unknown-dialog": "unknown-dialog",
+    timeout: "timeout",
+    unavailable: UNKNOWN_OUTCOME,
+};
+
+export const toManifestOutcome = (outcome: WordOutcome): string => VERIFIER_OUTCOME_TO_MANIFEST[outcome];
 
 /** Accuracy class of an (effective) Word outcome. */
 export type WordOutcomeClass = "clean" | "rejected" | "unattributable";
@@ -112,16 +145,19 @@ export const effectiveOutcome = (observation: WordObservation | null, currentSha
 };
 
 /**
- * Classify an (effective) outcome for accuracy accounting. `unknown` and
- * `timeout` carry no clean/rejected signal — they are `unattributable` and
- * stay out of both denominators. `clean-open` is the only clean outcome;
- * every other observed outcome is Word evidence of rejection.
+ * Classify an (effective) outcome for accuracy accounting. `clean-open` is
+ * the only clean outcome, and a rejection needs one of Word's verdict
+ * outcomes ({@link REJECTED_OUTCOMES}): an open error, a recovery offer, a
+ * password prompt or an unknown blocking dialog. Everything else — `unknown`,
+ * `timeout`, `crash`, stale or not-yet-mapped spellings — is `unattributable`
+ * and stays out of both denominators: never a rejection without evidence of
+ * Word's verdict (#316).
  */
 export const classifyWordOutcome = (outcome: string): WordOutcomeClass => {
-    if (UNATTRIBUTABLE_OUTCOMES.includes(outcome)) {
-        return "unattributable";
+    if (outcome === "clean-open") {
+        return "clean";
     }
-    return outcome === "clean-open" ? "clean" : "rejected";
+    return REJECTED_OUTCOMES.includes(outcome) ? "rejected" : "unattributable";
 };
 
 /** Clean/rejected/unattributable tally over manifest word fields. */
