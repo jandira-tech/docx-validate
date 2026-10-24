@@ -10,6 +10,7 @@ import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+import { DUPLICATE_MAIN_DOCUMENT_PARTS, ORPHAN_MAIN_DOCUMENT_PARTS } from "./support/main-document-specimens";
 
 const CODE = "word-main-document-part";
 const CORE_ONLY = {
@@ -24,6 +25,66 @@ const CORE_ONLY = {
         "</Relationships>",
     "docProps/core.xml": '<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties"/>',
 };
+
+describe("multiple internal officeDocument relationships (#515, Word probes session 15)", () => {
+    for (const extension of ["docx", "docm"] as const) {
+        for (const profile of ["word-valid", "strict"] as const) {
+            const formatParts = (parts: Readonly<Record<string, string>>) => ({
+                ...parts,
+                "[Content_Types].xml":
+                    extension === "docm"
+                        ? parts["[Content_Types].xml"]!.replaceAll(
+                              "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml",
+                              "application/vnd.ms-word.document.macroEnabled.main+xml",
+                          )
+                        : parts["[Content_Types].xml"]!,
+            });
+
+            it.each(DUPLICATE_MAIN_DOCUMENT_PARTS)(
+                `${extension} ${profile} rejects $label`,
+                async ({ parts }) => {
+                    await withTempDir(async (dir) => {
+                        const file = path.join(dir, `specimen.${extension}`);
+                        await writeFile(file, await buildDocx(formatParts(parts)));
+                        const result = await validate(file, { profile });
+                        expect(result.valid).toBe(false);
+                        expect(result.issues.filter((issue) => issue.code === CODE)).toEqual([
+                            expect.objectContaining({
+                                severity: "error",
+                                path: "_rels/.rels",
+                                message: expect.stringMatching(/rId1.*rId9/),
+                            }),
+                        ]);
+                        expect(result.issues.filter((issue) => issue.severity === "error").map((issue) => issue.code)).toEqual([CODE]);
+                    });
+                },
+                60_000,
+            );
+
+            it.each([
+                { label: "single relationship", parts: MINIMAL_PARTS },
+                { label: "orphan main-typed part", parts: ORPHAN_MAIN_DOCUMENT_PARTS },
+            ])(
+                `${extension} ${profile} preserves the $label verdict`,
+                async ({ label, parts }) => {
+                    await withTempDir(async (dir) => {
+                        const file = path.join(dir, `control.${extension}`);
+                        await writeFile(file, await buildDocx(formatParts(parts)));
+                        const result = await validate(file, { profile });
+                        expect(result.issues.filter((issue) => issue.code === CODE)).toEqual([]);
+                        expect(result.valid).toBe(label === "single relationship" || profile === "word-valid");
+                        if (!result.valid) {
+                            expect(result.issues.filter((issue) => issue.severity === "error").map((issue) => issue.code)).toEqual([
+                                "rels-unreferenced",
+                            ]);
+                        }
+                    });
+                },
+                60_000,
+            );
+        }
+    }
+});
 
 describe("missing main document part across profiles (#380)", () => {
     for (const profile of ["strict", "word-valid", "lenient"] as const) {

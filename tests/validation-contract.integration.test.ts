@@ -26,6 +26,7 @@ import { validate } from "../src/scripts/office/validate";
 import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
 import { walkFiles } from "../src/scripts/office/validators/base";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+import { DUPLICATE_MAIN_DOCUMENT_PARTS } from "./support/main-document-specimens";
 
 /** The profile a `.docx` is validated under when the caller names none. */
 const DEFAULT_DOCX_PROFILE = defaultProfileForFormat("docx");
@@ -44,6 +45,38 @@ async function validateBytes(bytes: Uint8Array, profile: Profile) {
         return validate(file, { profile });
     });
 }
+
+describe("validation contract: multiple main relationships (#515, #381)", () => {
+    it.each(DUPLICATE_MAIN_DOCUMENT_PARTS)(
+        "$label fails word-valid and strict, with partial/full agreement",
+        async ({ parts }) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "specimen.docx");
+                const control = path.join(dir, "control.docx");
+                writeFileSync(file, await buildDocx(parts));
+                writeFileSync(control, await buildDocx());
+                const code = "word-main-document-part";
+                for (const profile of ["word-valid", "strict"] as const) {
+                    const full = await validate(file, { profile });
+                    expect(full.valid).toBe(false);
+                    expect(errorCodes(full.issues)).toEqual(new Set([code]));
+                    expect((await validate(control, { profile })).valid).toBe(true);
+                    if (profile === "strict") continue; // Strict rejects partial selectors.
+                    for (const selection of [{ quick: true }, { checks: [code] }, { checks: ["relationships"] }]) {
+                        const partial = await validate(file, { profile, ...selection });
+                        expect(partial.valid).toBe(full.valid);
+                        expect(partial.issues.filter((issue) => issue.code === code)).toEqual(
+                            full.issues.filter((issue) => issue.code === code),
+                        );
+                        expect(errorCodes(partial.issues)).toEqual(errorCodes(full.issues));
+                        expect((await validate(control, { profile, ...selection })).valid).toBe(true);
+                    }
+                }
+            });
+        },
+        60_000,
+    );
+});
 
 describe("validation contract: strict includes every Word-valid package check", { timeout: 120000 }, () => {
     for (const profile of ["word-valid", "strict"] as const) {

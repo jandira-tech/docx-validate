@@ -26,7 +26,7 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
     "ct-missing":
         "The package has no [Content_Types].xml stream, so Word cannot type any part and offers to recover the file. Restore the content-types stream with a Default or Override covering every part.",
     "word-main-document-part":
-        "The package names no main document part: _rels/.rels is missing, or none of its internal officeDocument relationships targets a part in the package. Word offers to recover the file. Add the officeDocument relationship and the part it names.",
+        "The package needs exactly one internal officeDocument relationship in _rels/.rels targeting an existing main document part. Missing or multiple main relationships make Word offer recovery. Add the missing relationship and its part, or restore a missing target. Remove extra internal officeDocument relationships, even if their targets are identical.",
     "word-content-type-invalid":
         "A part's content type in [Content_Types].xml is missing or wrong, so Word cannot load that part. Add the correct <Override>/<Default> content-type entry.",
     "ct-uncovered-part":

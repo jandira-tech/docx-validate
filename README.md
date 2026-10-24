@@ -616,6 +616,17 @@ quick preset; lenient runs no Word rule (#380). An `_rels/.rels`
 that does not parse is left to `xml-syntax`, which Word-valid reports as a blocking
 error, because Word offers to recover such a package (#388).
 
+The same check also requires exactly one direct internal `officeDocument`
+relationship. More than one is a blocking error in Word-valid and strict for
+DOCX/DOCM, reported on `_rels/.rels` with every relationship `Id`. Word 16.115
+offers recovery both for distinct well-formed main targets and for a repeated
+target ([#515](https://github.com/jandira-tech/docx-validate/issues/515), Word probes
+session 15, s15b/s15d). A main-typed part with no relationship still passes
+Word-valid; strict retains its `rels-unreferenced` error. Transitional and Strict
+relationship types count together; the mixed pair is inferred, not observed.
+`TargetMode="External"` relationships do not count. Full, quick and named runs
+use the same finding and severity; lenient runs no Word rule.
+
 A package with no `[Content_Types].xml` stream at all is `ct-missing` — Word
 cannot type a single part and 16.115 offers to recover it (same evidence file),
 so that finding is Word-blocking too (#435).
