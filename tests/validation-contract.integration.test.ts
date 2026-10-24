@@ -278,3 +278,28 @@ describe("validation contract: default DOCX profile", { timeout: 120000 }, () =>
         );
     });
 });
+
+// A literal backslash name extracts to a file of its own only off Windows.
+describe.skipIf(process.platform === "win32")(
+    "validation contract: a full run judges the entries a quick run judges (#368)",
+    { timeout: 120000 },
+    () => {
+        it.each(["word-valid", "lenient", "strict"] as const)(
+            "%s judges only the entry the package view keeps when two entries name one part",
+            async (profile) => {
+                await withTempDir(async (dir) => {
+                    const file = path.join(dir, "specimen.docx");
+                    writeFileSync(file, await buildDocx({ ...MINIMAL_PARTS, "word\\document.xml": "<w:document" }));
+                    const quick = await validate(file, { checks: ["xml-syntax"] });
+                    const full = await validate(file, { profile });
+                    const syntax = (issues: readonly { code?: string; path?: string }[]): (string | undefined)[] =>
+                        issues.filter((issue) => issue.code === "xml-syntax").map((issue) => issue.path);
+
+                    expect(syntax(quick.issues)).toEqual([]);
+                    expect(syntax(full.issues)).toEqual([]);
+                    expect(full.issues.filter((issue) => issue.path?.includes("\\"))).toEqual([]);
+                });
+            },
+        );
+    },
+);
