@@ -38,6 +38,7 @@ import { Command } from "commander";
 import JSZip from "jszip";
 
 import { commanderExitCode, runCli, withTempDir } from "../../lib/run-cli";
+import { withoutConsequentialParseFailures } from "../../lib/parse-failures";
 import type { CheckRegistry } from "../../lib/check-registry";
 import { runChecks, type CheckRun } from "../../lib/check-scheduler";
 import {
@@ -63,6 +64,7 @@ import { verifyInWord, type WordVerification } from "../../lib/word-verifier";
 import { ValidationContext } from "../../lib/validation-context";
 import { extractPackageParts } from "../../lib/zip-path";
 import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "./checks";
+import { XML_SYNTAX_CHECK_ID } from "./checks/xml";
 import { contextFromArchive, contextFromDirectory } from "./package-context";
 import { BaseSchemaValidator } from "./validators/base";
 import { DOCXSchemaValidator } from "./validators/docx";
@@ -443,7 +445,11 @@ async function runSelectedChecks(
     mode: ResolvedMode,
 ): Promise<ValidateRunResult> {
     const registry = createDefaultCheckRegistry();
-    const select = selectionUnderProfile(registry, mode.select ?? [], format, mode.profile);
+    const selected = selectionUnderProfile(registry, mode.select ?? [], format, mode.profile);
+    const reportsParseFailures = registry.resolve(selected, format).some((id) => registry.get(id)?.reportsParseFailures);
+    // A companion, not a prerequisite: these checks still read every part
+    // with their own parser, even when xml-syntax rejects it (#385).
+    const select = reportsParseFailures ? [...selected, XML_SYNTAX_CHECK_ID] : selected;
     const opened = packed ? await contextFromArchive(await fs.readFile(target)) : { context: contextFromDirectory(path.resolve(target)) };
     if (opened.openError !== undefined) {
         // An archive that does not open has no parts: only the selected
@@ -480,7 +486,23 @@ async function runSelectedChecks(
         };
     }
     const run = await runChecks(opened.context, registry, { format, select });
-    const issues = findingsUnderProfile(run, registry, format, mode.profile);
+    const malformed = new Set(
+        run.outcomes
+            .filter((outcome) => outcome.id === XML_SYNTAX_CHECK_ID)
+            .flatMap((outcome) => outcome.issues)
+            .flatMap((issue) => (issue.severity === "error" && issue.path !== undefined ? [issue.path] : [])),
+    );
+    const outcomes = run.outcomes.map((outcome) =>
+        registry.get(outcome.id)?.reportsParseFailures
+            ? { ...outcome, issues: withoutConsequentialParseFailures(outcome.issues, malformed) }
+            : outcome,
+    );
+    const issues = findingsUnderProfile(
+        { ...run, outcomes, issues: outcomes.flatMap((outcome) => outcome.issues) },
+        registry,
+        format,
+        mode.profile,
+    );
     return {
         valid: issues.every((issue) => issue.severity !== "error"),
         issues,

@@ -39,6 +39,7 @@ describe("registered comment checks", () => {
         expect(registry.resolve(["comments"], "pptx")).toEqual([]);
         for (const id of ["comment-markers", "comment-threading"]) {
             expect(registry.get(id)?.requires ?? []).toEqual([]);
+            expect(registry.get(id)?.reportsParseFailures).toBe(true);
         }
     });
 

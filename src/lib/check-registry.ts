@@ -61,6 +61,8 @@ export type CheckDefinition = {
      * dependents, instead of skipping them.
      */
     readonly gatesByPart?: boolean;
+    /** Reports its own parse failures; partial runs add xml-syntax as a companion, without gating this check. */
+    readonly reportsParseFailures?: boolean;
     /** Needs the packed archive bytes; unavailable for unpacked directories. */
     readonly archiveOnly?: boolean;
     readonly run: (ctx: ValidationContext) => readonly ValidationIssue[] | Promise<readonly ValidationIssue[]>;
