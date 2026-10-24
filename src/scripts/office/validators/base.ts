@@ -814,14 +814,16 @@ export class BaseSchemaValidator {
 
     async validateFileReferences(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const relsFiles = [...packageEntries(this.unpackedDir, [".rels"]).values()];
+        const entries = packageEntries(this.unpackedDir);
+        const names = [...entries.keys()];
+        const relsFiles = [...entries.values()].filter((file) => file.endsWith(".rels"));
 
         if (relsFiles.length === 0) {
             return OK_RESULT;
         }
 
         const allFiles: string[] = [];
-        for (const f of packageEntries(this.unpackedDir).values()) {
+        for (const f of entries.values()) {
             const base = path.basename(f);
             if (base === "[Content_Types].xml" || f.endsWith(".rels")) continue;
             allFiles.push(path.resolve(f));
@@ -846,7 +848,6 @@ export class BaseSchemaValidator {
             if (!root) continue;
 
             const relsDir = path.dirname(relsFile);
-            const referenced: string[] = [];
             const broken: string[] = [];
 
             const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
@@ -872,9 +873,13 @@ export class BaseSchemaValidator {
                         broken.push(target);
                         continue;
                     }
-                    if (existsSync(targetPath) && statSync(targetPath).isFile()) {
-                        referenced.push(targetPath);
-                        allReferenced.add(targetPath);
+                    // Resolve against stored part names, as the main-part lookup
+                    // does. Filesystem existence and target spelling cannot decide
+                    // OPC equivalence (ASCII case and unreserved escapes, #393).
+                    const part = resolvePartName(names, this.entryName(targetPath));
+                    const file = part === undefined ? undefined : entries.get(part);
+                    if (file !== undefined && containRelationshipTarget(this.unpackedDir, file) !== null) {
+                        allReferenced.add(path.resolve(file));
                     } else {
                         broken.push(target);
                     }

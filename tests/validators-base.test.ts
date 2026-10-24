@@ -20,6 +20,7 @@ import path from "node:path";
 import JSZip from "jszip";
 import { describe, expect, it, vi } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
+import { validate } from "../src/scripts/office/validate";
 import { BaseSchemaValidator, withoutRestatedIgnorablePrefixes } from "../src/scripts/office/validators/base";
 
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
@@ -135,6 +136,102 @@ describe("BaseSchemaValidator", () => {
     });
 
     describe("validateFileReferences", () => {
+        describe("OPC part-name equivalence (#393)", { timeout: 120_000 }, () => {
+            const cases = [
+                {
+                    name: "WORD folder with lowercase relationship targets",
+                    parts: Object.fromEntries(Object.entries(MINIMAL_PARTS).map(([name, xml]) => [name.replace(/^word\//, "WORD/"), xml])),
+                    expected: [],
+                },
+                {
+                    name: "percent-encoded unreserved character in the main target",
+                    parts: {
+                        ...MINIMAL_PARTS,
+                        "_rels/.rels": MINIMAL_PARTS["_rels/.rels"]!.replace("word/document.xml", "word/%64ocument.xml"),
+                    },
+                    expected: [],
+                },
+                {
+                    name: "case and percent variants in a relative target",
+                    parts: {
+                        ...MINIMAL_PARTS,
+                        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                            "styles.xml",
+                            "%73TYLES.xml",
+                        ),
+                    },
+                    expected: [],
+                },
+                {
+                    name: "equivalent package-absolute target",
+                    parts: {
+                        ...MINIMAL_PARTS,
+                        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                            "styles.xml",
+                            "/WORD/%73tyles.xml",
+                        ),
+                    },
+                    expected: [],
+                },
+                {
+                    name: "target naming no part",
+                    parts: {
+                        ...MINIMAL_PARTS,
+                        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace("styles.xml", "missing.xml"),
+                    },
+                    expected: [
+                        { code: "rels-broken", path: "word/_rels/document.xml.rels", message: "Broken reference to missing.xml" },
+                        { code: "rels-unreferenced", path: "word/styles.xml", message: "Unreferenced file: word/styles.xml" },
+                    ],
+                },
+                {
+                    name: "part named by no relationship",
+                    parts: { ...MINIMAL_PARTS, "word/orphan.xml": "<extra/>" },
+                    expected: [{ code: "rels-unreferenced", path: "word/orphan.xml", message: "Unreferenced file: word/orphan.xml" }],
+                },
+            ];
+
+            // These are filesystem integration tests: exercise the public API
+            // against generated packages rather than host-dependent path mocks.
+            for (const profile of ["lenient", "strict"] as const) {
+                for (const input of ["directory", "packed"] as const) {
+                    for (const { name, parts, expected } of cases) {
+                        it(`${profile}, ${input}: ${name}`, async () => {
+                            await withTempDir(async (dir) => {
+                                const source = path.join(dir, "specimen.docx");
+                                const bytes = input === "packed" ? await buildDocx(parts) : undefined;
+                                if (bytes) {
+                                    await fs.writeFile(source, bytes);
+                                } else {
+                                    for (const [entry, xml] of Object.entries(parts)) {
+                                        await writeFile(path.join(source, entry), xml);
+                                    }
+                                }
+
+                                const result = await validate(source, { profile });
+                                const references = result.issues
+                                    .filter((issue) => issue.code === "rels-broken" || issue.code === "rels-unreferenced")
+                                    .map(({ code, path, message }) => ({ code, path, message }));
+                                expect(references).toEqual(expected);
+                                // The separate rels-target-missing pass still
+                                // rejects escaped targets (#346); #393 fixes
+                                // rels-broken and rels-unreferenced only.
+                                if (expected.length > 0) expect(result.valid).toBe(false);
+
+                                if (bytes) {
+                                    expect(await fs.readFile(source)).toEqual(bytes);
+                                } else {
+                                    for (const [entry, xml] of Object.entries(parts)) {
+                                        expect(await fs.readFile(path.join(source, entry), "utf-8")).toBe(xml);
+                                    }
+                                }
+                            });
+                        });
+                    }
+                }
+            }
+        });
+
         it("detects broken Target references in .rels", async () => {
             await withTempDir(async (dir) => {
                 await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
