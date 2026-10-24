@@ -82,7 +82,7 @@ import { OPC_PART_NAME_ESCAPED_UNRESERVED } from "./checks/opc-part-name-escaped
 import { CT_OVERRIDE_PARTNAME_INVALID } from "./checks/ct-override-partname";
 import { CT_MARKUP_COMPATIBILITY } from "./checks/ct-markup-compatibility";
 import { WORD_PART_CONTENT_TYPE_GENERIC } from "./checks/word-part-content-type-generic";
-import { contextFromArchive, contextFromDirectory } from "./package-context";
+import { contextFromArchive, openDirectoryContext } from "./package-context";
 import {
     BaseSchemaValidator,
     containRelationshipTarget,
@@ -508,16 +508,24 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
 
     const dir = path.resolve(target);
     const walked = walkDirectory(dir);
+    const opened = openDirectoryContext(dir, walked.unreadable);
+    if (opened.openError !== undefined) {
+        // #424: a stored name the package view refuses fails the directory
+        // as it fails the same names packed — before any part is read. The
+        // stored-names diagnosis still sees every stored name.
+        const diagnostic = await storedNamesRun(opened.context, format, profile);
+        return finish(stagingFailed(diagnostic, new Error(opened.openError)));
+    }
     if (walked.unreadable.length > 0) {
         // #426: a stored entry that can never yield part bytes — a broken
         // symbolic link, a FIFO — is not a part that silently vanishes: the
         // package view cannot be built, so the run fails as a failed
         // extraction does, naming the stored file (#412). The stored-names
         // diagnosis still sees every stored name, readable or not.
-        const diagnostic = await storedNamesRun(contextFromDirectory(dir, walked.unreadable), format, profile);
+        const diagnostic = await storedNamesRun(opened.context, format, profile);
         return finish(stagingFailed(diagnostic, new Error(unreadableStoredDetail(dir, walked.unreadable))));
     }
-    const diagnostic = await storedNamesRun(contextFromDirectory(dir), format, profile);
+    const diagnostic = await storedNamesRun(opened.context, format, profile);
     const entries = walked.files.map((file) => [path.relative(dir, file).split(path.sep).join("/"), file] as const);
     // A symlink in the tree stages too (#425): the stored bytes are read
     // through it into the package view, while every write-back destination
@@ -928,8 +936,10 @@ async function runSelectedChecks(
  */
 function openedFromDirectory(dir: string): { context: ValidationContext; openError?: string; extractFailed?: boolean } {
     const unreadable = walkDirectory(dir).unreadable;
-    const context = contextFromDirectory(dir, unreadable);
-    return unreadable.length === 0 ? { context } : { context, openError: unreadableStoredDetail(dir, unreadable), extractFailed: true };
+    // A refused stored name fails first, as in the full run (#424).
+    const opened = openDirectoryContext(dir, unreadable);
+    if (opened.openError !== undefined || unreadable.length === 0) return opened;
+    return { context: opened.context, openError: unreadableStoredDetail(dir, unreadable), extractFailed: true };
 }
 
 /**

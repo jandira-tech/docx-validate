@@ -8,7 +8,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { ValidationContext, PackageViewError, PackageOpenError } from "../../lib/validation-context";
+import { assertPlaceableNames, ValidationContext, PackageViewError, PackageOpenError } from "../../lib/validation-context";
 import { walkFiles, type UnreadableEntry } from "./validators/base";
 
 /**
@@ -26,7 +26,39 @@ export function contextFromDirectory(dir: string, unreadableStoredEntries: reado
     const unreadable = unreadableStoredEntries.map(
         (entry) => [path.relative(dir, entry.file).split(path.sep).join("/"), "" as const] as const,
     );
+    // Every stored name, readable or not, is judged for placeability (#424).
+    const storedNames = [...entries, ...unreadable].map(([name]) => name);
+    try {
+        assertPlaceableNames(storedNames);
+    } catch (err) {
+        throw new PackageViewError(err instanceof Error ? err.message : String(err), { cause: err, storedNames });
+    }
     return ValidationContext.fromEntries([...entries, ...unreadable], { source: "directory" });
+}
+
+/**
+ * Open a directory with the same refused-view result as an archive (#424):
+ * a stored name the package view refuses gives a part-free context that keeps
+ * every stored name, with `extractFailed`.
+ */
+export function openDirectoryContext(
+    dir: string,
+    unreadableStoredEntries: readonly UnreadableEntry[] = [],
+): {
+    context: ValidationContext;
+    openError?: string;
+    extractFailed?: boolean;
+} {
+    try {
+        return { context: contextFromDirectory(dir, unreadableStoredEntries) };
+    } catch (err) {
+        if (!(err instanceof PackageViewError)) throw err;
+        return {
+            context: ValidationContext.fromStoredNames(err.storedNames, { source: "directory" }),
+            openError: err.message,
+            extractFailed: true,
+        };
+    }
 }
 
 /**

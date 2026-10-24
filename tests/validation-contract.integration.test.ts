@@ -28,6 +28,7 @@ import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
 import { walkFiles } from "../src/scripts/office/validators/base";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { DUPLICATE_MAIN_DOCUMENT_PARTS } from "./support/main-document-specimens";
+import { buildRawZip } from "./support/raw-zip";
 
 /** The profile a `.docx` is validated under when the caller names none. */
 const DEFAULT_DOCX_PROFILE = defaultProfileForFormat("docx");
@@ -478,17 +479,13 @@ describe("validation contract: a full run judges what the package view holds (#3
                 [`customXml/${malformed}`]: "<broken",
                 [`customXml/${wellFormed}`]: "<x/>",
             },
-            async (file, dir) => {
-                mkdirSync(path.join(dir, "probe"));
-                writeFileSync(path.join(dir, "probe", malformed), "");
-                const merges = existsSync(path.join(dir, "probe", wellFormed));
+            async (file) => {
                 const quick = await validate(file, { checks: ["xml-syntax"] });
                 const full = await validate(file, { profile: "lenient" });
-                expect(quick.issues.filter((issue) => issue.code === "xml-syntax").map((issue) => issue.path)).toEqual([
-                    `customXml/${malformed}`,
-                ]);
+                expect(quick.issues.filter((issue) => issue.code === "xml-syntax")).toEqual([]);
+                expect(errorCodes(quick.issues)).toContain("package-extract-failed");
                 expect(full.valid).toBe(false);
-                expect(errorCodes(full.issues)).toContain(merges ? "package-extract-failed" : "xml-syntax");
+                expect(errorCodes(full.issues)).toContain("package-extract-failed");
             },
         );
     });
@@ -529,15 +526,13 @@ describe("validation contract: a full run keeps every part's own name (#376, #37
             [`${composed}/other.bin`]: new Uint8Array([1]),
             [`${decomposed}/toolbars.bin`]: new Uint8Array([0xef, 0xbf, 0xbd]),
         };
-        await withSpecimen(parts, async (file, dir) => {
-            mkdirSync(path.join(dir, "probe"));
-            writeFileSync(path.join(dir, "probe", composed), "");
-            const merges = existsSync(path.join(dir, "probe", decomposed));
+        await withSpecimen(parts, async (file) => {
             const quick = await validate(file, { checks: ["word-attached-toolbar-utf8"] });
             const full = await validate(file, { profile: "word-valid" });
-            expect(errorCodes(quick.issues)).toContain("word-attached-toolbar-utf8");
+            expect(errorCodes(quick.issues)).toContain("package-extract-failed");
+            expect(errorCodes(quick.issues)).not.toContain("word-attached-toolbar-utf8");
             expect(full.valid).toBe(false);
-            expect(errorCodes(full.issues)).toContain(merges ? "package-extract-failed" : "word-attached-toolbar-utf8");
+            expect(errorCodes(full.issues)).toContain("package-extract-failed");
         });
     });
 
@@ -1591,5 +1586,74 @@ describe.skipIf(process.platform === "win32")("directory package staging (#374)"
                 }
             });
         },
+    );
+});
+
+describe("validation contract: refused host names stay strict failures (#423)", () => {
+    it.each([["word/header1.xml", "word/HEADER1.xml"], ["word/caf\u00e9.xml", "word/cafe\u0301.xml"], ["word/x\0y.xml"]])(
+        "strict includes Word-valid errors for %j",
+        async (...names) => {
+            const bytes = buildRawZip([
+                ...Object.entries(MINIMAL_PARTS).map(([name, content]) => ({ name, content })),
+                ...names.map((name) => ({ name, content: "<w:hdr", utf8: true })),
+            ]);
+            const word = await validateBytes(bytes, "word-valid");
+            const strict = await validateBytes(bytes, "strict");
+            expect(word.valid).toBe(false);
+            expect(strict.valid).toBe(false);
+            expect([...errorCodes(strict.issues)]).toEqual(expect.arrayContaining([...errorCodes(word.issues)]));
+        },
+        60_000,
+    );
+});
+
+describe.skipIf(process.platform === "win32")("validation contract: directory refusal includes strict (#424)", () => {
+    it.each(["word\\.\\x.xml", "word\\\\x.xml", "word\\a\\..\\x.xml"])(
+        "refuses %j under both profiles",
+        async (stored) => {
+            await withTempDir(async (dir) => {
+                const root = path.join(dir, "directory.docx");
+                mkdirSync(root);
+                for (const [name, content] of Object.entries(MINIMAL_PARTS)) {
+                    writeFileSync(path.join(root, name.replaceAll("/", "\\")), content);
+                }
+                writeFileSync(path.join(root, stored), "<w:document");
+                for (const profile of ["word-valid", "strict"] as const) {
+                    const result = await validate(root, { profile });
+                    expect(result.valid).toBe(false);
+                    expect(errorCodes(result.issues)).toContain("package-extract-failed");
+                    expect(result.metadata?.executedChecks).not.toContain("xml-syntax");
+                }
+            });
+        },
+        60_000,
+    );
+});
+
+describe("validation contract: portable collisions include strict (#441)", () => {
+    it.each([
+        ["docProps/core.xml", "DOCPROPS/CORE.XML"],
+        ["word/document.xml", "WORD/DOCUMENT.XML"],
+        ["word/a.xml", "WORD/b.xml"],
+        ["caf\u00e9/a.xml", "cafe\u0301/b.xml"],
+    ])(
+        "refuses %j and %j before reading malformed parts",
+        async (first, second) => {
+            const bytes = buildRawZip([
+                ...Object.entries(MINIMAL_PARTS)
+                    .filter(([name]) => name !== first)
+                    .map(([name, content]) => ({ name, content })),
+                { name: first, content: "<x", utf8: true },
+                { name: second, content: "<x", utf8: true },
+            ]);
+            for (const profile of ["word-valid", "strict"] as const) {
+                const result = await validateBytes(bytes, profile);
+                expect(result.valid).toBe(false);
+                expect(errorCodes(result.issues)).toContain("package-extract-failed");
+                expect(result.metadata?.executedChecks).not.toContain("xml-syntax");
+                expect(result.xsdWalk.started).toBe(false);
+            }
+        },
+        60_000,
     );
 });
