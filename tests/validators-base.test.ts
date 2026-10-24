@@ -1373,6 +1373,17 @@ describe("content-types stream directory lookup (#396)", () => {
         });
     });
 
+    it("reports a folder named [Content_Types].xml as a missing stream, not a malformed one", async () => {
+        await withTempDir(async (dir) => {
+            // A folder holds no stream: the entries list files only, where
+            // existsSync matched the folder and readFile then failed (review S).
+            await fs.mkdir(path.join(dir, "[Content_Types].xml"));
+            const result = await new HarnessValidator({ unpackedDir: dir }).validateContentTypes();
+            expect(result.valid).toBe(false);
+            expect(result.issues.map((issue) => issue.code)).toEqual(["ct-missing"]);
+        });
+    });
+
     it("does not classify the uppercase stream as an unreferenced part", async () => {
         await withTempDir(async (dir) => {
             await writeFile(path.join(dir, "[CONTENT_TYPES].XML"), MINIMAL_PARTS["[Content_Types].xml"]);

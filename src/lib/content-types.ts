@@ -42,7 +42,14 @@ export const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/packag
 export const isContentTypesStreamName = (name: string): boolean =>
     /^\[content_types\]\.xml$/i.test(name.replace(/\\/g, "/").replace(/^\//, ""));
 
-/** Prefer the exact conventional spelling, otherwise the first stored match. */
+/**
+ * The stored content-types stream: `[Content_Types].xml` when it is stored,
+ * otherwise the first name {@link isContentTypesStreamName} accepts. Of two
+ * stored streams, System.IO.Packaging keeps the last matching ZIP item in
+ * central-directory order; this follows the rule the package view applies to
+ * equivalent entries (#366), which a directory input, having no ZIP order,
+ * can apply too. Nothing reports the second stream (#351).
+ */
 export const findContentTypesStream = (names: Iterable<string>): string | undefined => {
     let found: string | undefined;
     for (const name of names) {

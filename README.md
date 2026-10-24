@@ -312,6 +312,9 @@ Content-type checks, XSD dispatch, and semantic diagnostics find the ZIP stream
 ASCII case-insensitively and retain its stored name in findings. Stream lookup does
 not decode percent escapes: `%5BContent_Types%5D.xml` is an ordinary part, not the
 content-types stream ([#396](https://github.com/jandira-tech/docx-validate/issues/396)).
+Of two stored spellings, `[Content_Types].xml` is read, otherwise the first in
+code-unit order, where System.IO.Packaging reads the last in ZIP order; the second
+stream is not reported ([#351](https://github.com/jandira-tech/docx-validate/issues/351)).
 Content-type coverage resolves an exact `Override` before an extension `Default`.
 An image covered only by `Override` needs no matching `Default`. Part-name
 comparison is ASCII case-insensitive and decodes unreserved percent escapes;
