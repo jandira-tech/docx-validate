@@ -103,6 +103,13 @@ describe(CODE, () => {
         },
     );
 
+    it("reads package relationships stored under a case-variant name (#364)", async () => {
+        const { "_rels/.rels": packageRelationships, ...rest } = MINIMAL_PARTS;
+        expect(await rootIssues({ ...rest, "_RELS/.RELS": packageRelationships, "word/document.xml": FOREIGN })).toEqual([
+            expect.objectContaining({ code: CODE, path: "word/document.xml", severity: "error" }),
+        ]);
+    });
+
     it("does not equate an escaped reserved character with its literal (#344)", async () => {
         // `%2F` is an escaped "/", so this target names a different part.
         expect(

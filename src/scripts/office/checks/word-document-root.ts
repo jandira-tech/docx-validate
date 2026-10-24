@@ -20,7 +20,7 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
-import { resolvePartName } from "../../../lib/content-types";
+import { findEquivalentPart, resolvePartName } from "../../../lib/content-types";
 import type { ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
@@ -38,7 +38,9 @@ export const wordDocumentRootCheck: CheckDefinition = {
     formats: ["docx"],
     requires: ["xml-syntax"],
     run: (ctx): ValidationIssue[] => {
-        const relationships = ctx.xml("_rels/.rels");
+        // The package relationships part is found by OPC equivalence, so
+        // `_RELS/.RELS` names it too, as the schema walk finds it (#364).
+        const relationships = ctx.xml(findEquivalentPart(ctx.partNames, "_rels/.rels") ?? "_rels/.rels");
         if (!relationships?.ok) return [];
 
         const issues: ValidationIssue[] = [];
