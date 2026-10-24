@@ -942,8 +942,10 @@ A reference whose `r:id` names no Relationship stays `rels-id-missing`'s
 finding. The finding is an error under strict and Word-blocking under
 word-valid for DOCX/DOCM; lenient runs no Word rule. In a full word-valid or
 strict run `rels-id-mismatch` does not repeat an element this check reported
-— the run drops that duplicate — while `validateAllRelationshipIds()` called
-on its own still reports every mismatch (#612). A glossary no main-document
+— the run drops that duplicate, pairing the two findings by the element
+identity both checks register on the issue (part path, namespace URI, local
+name and raw `r:id`), never by message text — while `validateAllRelationshipIds()` called
+on its own still reports every mismatch (#612, #616). A glossary no main-document
 relationship reaches keeps its `rels-id-mismatch` under strict (Word does
 not read it, so word-valid stays silent), and lenient keeps every mismatch.
 Full, quick and named Word-valid runs agree (#381).

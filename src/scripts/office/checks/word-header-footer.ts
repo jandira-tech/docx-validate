@@ -28,7 +28,8 @@
  * finding. In a full word-valid or strict run each element this check
  * reports yields one finding, this check's: the run drops the matching
  * `rels-id-mismatch` for it (#612; `withoutRepeatedHeaderFooterFindings` in
- * validators/docx.ts). Everywhere else `rels-id-mismatch` keeps the element —
+ * validators/docx.ts), paired through the structured element identity the
+ * check registers on the issue, never message prose (#616). Everywhere else `rels-id-mismatch` keeps the element —
  * a standalone `validateAllRelationshipIds()` call, a foreign-namespace
  * `x:headerReference` this check does not match, a glossary no
  * main-document relationship reaches, and lenient, which runs no Word rule
@@ -44,6 +45,7 @@ import path from "node:path";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
 import { getElementsByTagNameNSAll, getRelationshipChildren } from "../../../lib/xml-helpers";
+import { registerStoryReferenceIdentity } from "../story-reference-identity";
 
 const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 
@@ -136,7 +138,8 @@ export const wordHeaderFooterRelationshipCheck: CheckDefinition = {
                         }
                         // No r:id, or an r:id naming no Relationship: never
                         // this check's finding (rels-id-missing owns it).
-                        const type = rid === null ? undefined : types.get(rid);
+                        if (rid === null) continue;
+                        const type = types.get(rid);
                         if (type === undefined) {
                             continue;
                         }
@@ -144,7 +147,7 @@ export const wordHeaderFooterRelationshipCheck: CheckDefinition = {
                         if (type === transitionalType || type === strictType) {
                             continue;
                         }
-                        issues.push({
+                        const issue: ValidationIssue = {
                             severity: "error",
                             message:
                                 `<w:${localName}> r:id="${rid}" names Relationship '${rid}' of Type '${type || "(none)"}'; ` +
@@ -152,7 +155,12 @@ export const wordHeaderFooterRelationshipCheck: CheckDefinition = {
                                 "Microsoft Word offers to recover the file. Point the r:id at such a Relationship, or retype that Relationship.",
                             path: root.part,
                             code: WORD_HEADER_FOOTER_RELATIONSHIP,
-                        });
+                        };
+                        // #616: the full run's hand-off pairs this finding with
+                        // rels-id-mismatch's copy through the registered element
+                        // identity, never the message prose.
+                        registerStoryReferenceIdentity(issue, { part: root.part, namespaceURI: ns, localName, rid });
+                        issues.push(issue);
                     }
                 }
             }

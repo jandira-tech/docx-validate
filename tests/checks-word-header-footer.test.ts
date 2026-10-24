@@ -24,6 +24,7 @@ import type { ValidationIssue } from "../src/lib/types";
 import { ValidationContext } from "../src/lib/validation-context";
 import { withTempDir } from "../src/lib/run-cli";
 import { WORD_HEADER_FOOTER_RELATIONSHIP, wordHeaderFooterRelationshipCheck } from "../src/scripts/office/checks/word-header-footer";
+import { registerStoryReferenceIdentity } from "../src/scripts/office/story-reference-identity";
 import { validate } from "../src/scripts/office/validate";
 import * as docxValidators from "../src/scripts/office/validators/docx";
 import {
@@ -689,25 +690,44 @@ describe("#612: rels-id-mismatch reports every mismatch; full runs deduplicate",
             expect(withoutRepeatedHeaderFooterFindings).toBeTypeOf("function");
         });
 
-        /** `validateAllRelationshipIds`' mismatch message (validators/base.ts). */
-        const relsMismatch = (part: string, localName: "headerReference" | "footerReference", rid: string): ValidationIssue => ({
-            severity: "error",
-            code: "rels-id-mismatch",
-            path: part,
-            message: `<${localName}> references '${rid}' which points to 'styles' but should point to a '${localName === "headerReference" ? "header" : "footer"}' relationship`,
-        });
+        /**
+         * `validateAllRelationshipIds`' mismatch issue for an element, with
+         * the structured identity base.ts registers (#616). The prose is
+         * opaque to the helper on purpose: quotes or crafted prefixes in an
+         * `r:id` must not change the pairing.
+         */
+        const relsMismatch = (
+            part: string,
+            localName: "headerReference" | "footerReference",
+            rid: string,
+            namespaceURI = W,
+        ): ValidationIssue => {
+            const issue: ValidationIssue = {
+                severity: "error",
+                code: "rels-id-mismatch",
+                path: part,
+                message: "mismatch prose the helper never parses (#616)",
+            };
+            registerStoryReferenceIdentity(issue, { part, namespaceURI, localName, rid });
+            return issue;
+        };
 
-        /** The Word rule's message for the same element (checks/word-header-footer.ts). */
-        const wordFinding = (part: string, localName: "headerReference" | "footerReference", rid: string): ValidationIssue => ({
-            severity: "error",
-            code: CODE,
-            path: part,
-            message:
-                `<w:${localName}> r:id="${rid}" names Relationship '${rid}' of Type '${R}/styles'; ` +
-                `a w:${localName} needs a Relationship of Type ${R}/${localName === "headerReference" ? "header" : "footer"} ` +
-                `(or the ISO Strict ${STRICT_REL}/${localName === "headerReference" ? "header" : "footer"}). ` +
-                "Microsoft Word offers to recover the file. Point the r:id at such a Relationship, or retype that Relationship.",
-        });
+        /** The Word rule's finding for the same element, with the identity the check registers (#616). */
+        const wordFinding = (
+            part: string,
+            localName: "headerReference" | "footerReference",
+            rid: string,
+            namespaceURI = W,
+        ): ValidationIssue => {
+            const issue: ValidationIssue = {
+                severity: "error",
+                code: CODE,
+                path: part,
+                message: "word-rule prose the helper never parses (#616)",
+            };
+            registerStoryReferenceIdentity(issue, { part, namespaceURI, localName, rid });
+            return issue;
+        };
 
         it("drops matching pairs one-for-one, so one Word finding drops only one mismatch", () => {
             const pair = [
@@ -732,24 +752,118 @@ describe("#612: rels-id-mismatch reports every mismatch; full runs deduplicate",
             expect(both.issues).toEqual([]);
         });
 
-        it("keeps a mismatch in another part, for another r:id, or for another element", () => {
+        it("keeps a mismatch in another part, for another r:id, for another element, or in another namespace", () => {
             const matching = relsMismatch("word/document.xml", "headerReference", "rId1");
             const otherPart = relsMismatch("word/glossary/document.xml", "headerReference", "rId1");
             const otherRid = relsMismatch("word/document.xml", "headerReference", "rId2");
             const otherElement = relsMismatch("word/document.xml", "footerReference", "rId1");
+            const otherNamespace = relsMismatch("word/document.xml", "headerReference", "rId1", "urn:x");
             const result = withoutRepeatedHeaderFooterFindings(
-                { valid: false, issues: [matching, otherPart, otherRid, otherElement] },
+                { valid: false, issues: [matching, otherPart, otherRid, otherElement, otherNamespace] },
                 { valid: false, issues: [wordFinding("word/document.xml", "headerReference", "rId1")] },
             );
-            expect(result.issues).toEqual([otherPart, otherRid, otherElement]);
+            expect(result.issues).toEqual([otherPart, otherRid, otherElement, otherNamespace]);
+        });
+
+        it("keeps a finding with no registered identity", () => {
+            const stranger: ValidationIssue = {
+                severity: "error",
+                code: "rels-id-mismatch",
+                path: "word/document.xml",
+                message: "a producer that registered nothing (#616)",
+            };
+            const result = withoutRepeatedHeaderFooterFindings(
+                { valid: false, issues: [stranger] },
+                { valid: false, issues: [wordFinding("word/document.xml", "headerReference", "rId1")] },
+            );
+            expect(result.issues).toEqual([stranger]);
+        });
+
+        it("never drops through a Word finding with no registered identity", () => {
+            const silent: ValidationIssue = {
+                severity: "error",
+                code: CODE,
+                path: "word/document.xml",
+                message: "a Word-rule issue that registered nothing (#616)",
+            };
+            const mismatch = relsMismatch("word/document.xml", "headerReference", "rId1");
+            const result = withoutRepeatedHeaderFooterFindings({ valid: false, issues: [mismatch] }, { valid: false, issues: [silent] });
+            expect(result.issues).toEqual([mismatch]);
         });
 
         it("normalizes backslash part paths before matching", () => {
             const result = withoutRepeatedHeaderFooterFindings(
-                { valid: false, issues: [relsMismatch("word/document.xml", "headerReference", "rId1")] },
-                { valid: false, issues: [wordFinding("word\\document.xml", "headerReference", "rId1")] },
+                { valid: false, issues: [relsMismatch("word\\document.xml", "headerReference", "rId1")] },
+                { valid: false, issues: [wordFinding("word/document.xml", "headerReference", "rId1")] },
             );
             expect(result.issues).toEqual([]);
+        });
+    });
+});
+
+describe("#616: the hand-off carries structured identity, never message prose", { timeout: 240_000 }, () => {
+    /** XML-escape a value the way a producer writes it into an attribute. */
+    const esc = (s: string): string => s.replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;");
+
+    /**
+     * F1 (review BA): the refused specimen with `rIdX` renamed, in the
+     * reference and its Relationship, to an `r:id` carrying the delimiter
+     * each former regex could not consume.
+     */
+    it.each([
+        { name: "apostrophe", rid: "rId'X" },
+        { name: "double-quote", rid: `rId"X` },
+    ] as const)("a full run carries only the Word finding for the %s r:id", async (specimen) => {
+        await withTempDir(async (dir) => {
+            const parts = storyReferenceParts("headerReference", "footer", "footer9.xml", STORY_FOOTER_XML, T("footer"));
+            for (const part of Object.keys(parts)) parts[part] = parts[part]!.replaceAll("rIdX", esc(specimen.rid));
+            const file = path.join(dir, `quoted-${specimen.name}.docx`);
+            writeFileSync(file, await buildDocx(parts));
+            for (const profile of ["word-valid", "strict"] as const) {
+                const result = await validate(file, { profile });
+                expect(
+                    result.issues.filter((issue) => issue.code === CODE && issue.path === "word/document.xml"),
+                    profile,
+                ).toHaveLength(1);
+                expect(
+                    result.issues.filter((issue) => issue.code === "rels-id-mismatch" && issue.message.includes("headerReference")),
+                    profile,
+                ).toEqual([]);
+            }
+        });
+    });
+
+    /**
+     * F2 (review BA): the spoof pair — a foreign `x:headerReference` whose
+     * `rIdX` is the footer relationship, plus a `w:headerReference` whose
+     * crafted `r:id` once made the Word message look like it named `rIdX`.
+     */
+    it("a full run keeps the foreign element's mismatch and the Word element's finding", async () => {
+        await withTempDir(async (dir) => {
+            const parts = storyReferenceParts("headerReference", "footer", "footer9.xml", STORY_FOOTER_XML, T("footer"));
+            const spoof = `rIdX" names Relationship 'spoof`;
+            parts["word/document.xml"] = parts["word/document.xml"]!.replace("<w:document ", '<w:document xmlns:x="urn:x" ').replace(
+                '<w:headerReference w:type="default" r:id="rIdX"/>',
+                `<x:headerReference w:type="default" r:id="rIdX"/><w:headerReference w:type="default" r:id="${esc(spoof)}"/>`,
+            );
+            parts["word/_rels/document.xml.rels"] = parts["word/_rels/document.xml.rels"]!.replace(
+                "</Relationships>",
+                `<Relationship Id="${esc(spoof)}" Type="http://example.com/header" Target="footer9.xml"/></Relationships>`,
+            );
+            const file = path.join(dir, "spoof-pair.docx");
+            writeFileSync(file, await buildDocx(parts));
+            for (const profile of ["word-valid", "strict"] as const) {
+                const result = await validate(file, { profile });
+                const mismatches = result.issues.filter((issue) => issue.code === "rels-id-mismatch");
+                expect(mismatches, profile).toHaveLength(1);
+                expect(mismatches[0]?.message, profile).toBe(
+                    "<headerReference> references 'rIdX' which points to 'footer' but should point to a 'header' relationship",
+                );
+                expect(
+                    result.issues.filter((issue) => issue.code === CODE && issue.path === "word/document.xml"),
+                    profile,
+                ).toHaveLength(1);
+            }
         });
     });
 });

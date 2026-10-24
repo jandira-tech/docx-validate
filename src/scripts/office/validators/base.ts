@@ -84,6 +84,7 @@ import { isXmlPartName, XML_SYNTAX_CHECK_ID } from "../checks/xml";
 import { CT_OVERRIDE_PARTNAME_WORD_REFUSED, ctOverridePartnameWordRefusedCheck } from "../checks/ct-override-partname-word-refused";
 import { CT_OVERRIDE_PARTNAME_INVALID, ctOverridePartnameInvalidCheck } from "../checks/ct-override-partname";
 import { ctDuplicateDeclarationCheck } from "../checks/word-content-types";
+import { isStoryReferenceLocalName, registerStoryReferenceIdentity } from "../story-reference-identity";
 import { loadCentralNamedArchive } from "../../../lib/zip-central-names";
 import { CT_MARKUP_COMPATIBILITY, ctMarkupCompatibilityCheck } from "../checks/ct-markup-compatibility";
 import type JSZip from "jszip";
@@ -1005,7 +1006,10 @@ export class BaseSchemaValidator {
      * composing it directly gets the full legacy finding set (#612). A full
      * `DOCXSchemaValidator.validate()` run hands the story reference
      * elements its Word rule already reported back to that rule
-     * (`withoutRepeatedHeaderFooterFindings` in docx.ts).
+     * (`withoutRepeatedHeaderFooterFindings` in docx.ts), through the
+     * structured story reference identity this method registers on each
+     * `headerReference`/`footerReference` mismatch (#616) — never through
+     * the message prose.
      */
     async validateAllRelationshipIds(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
@@ -1123,14 +1127,26 @@ export class BaseSchemaValidator {
                         if (expectedType) {
                             const actualType = ridToType.get(ridAttr) ?? "";
                             if (!actualType.toLowerCase().includes(expectedType)) {
-                                issues.push({
+                                const issue: ValidationIssue = {
                                     severity: "error",
                                     message:
                                         `<${elemName}> references '${ridAttr}' which points to '${actualType}' ` +
                                         `but should point to a '${expectedType}' relationship`,
                                     path: this.relPath(xmlFile),
                                     code: "rels-id-mismatch",
-                                });
+                                };
+                                // #616: the full run's Word-rule hand-off pairs
+                                // this copy with the rule's finding through the
+                                // registered element identity, never the prose.
+                                if (isStoryReferenceLocalName(elemName)) {
+                                    registerStoryReferenceIdentity(issue, {
+                                        part: this.relPath(xmlFile),
+                                        namespaceURI: elem.namespaceURI ?? "",
+                                        localName: elemName,
+                                        rid: ridAttr,
+                                    });
+                                }
+                                issues.push(issue);
                             }
                         }
                     }

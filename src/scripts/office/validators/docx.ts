@@ -79,6 +79,7 @@ import { runChecks } from "../../../lib/check-scheduler";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "../checks/index";
 import { WORD_HEADER_FOOTER_RELATIONSHIP } from "../checks/word-header-footer";
+import { type StoryReferenceIdentity, storyReferenceIdentity } from "../story-reference-identity";
 import { WORD_PART_CONTENT_TYPE_GENERIC, wordPartContentTypeGenericFindings } from "../checks/word-part-content-type-generic";
 import { contextFromDirectory, openDirectoryContext, packageExtractFailedIssue, storedNamesRun } from "../package-context";
 import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
@@ -2790,63 +2791,41 @@ export function withoutRepeatedCompatibilityFindings(schema: ValidationResult, r
     return { valid: schema.valid, issues };
 }
 
-/** The story element a relationship finding names: part path, element local name, `r:id`. */
-interface StoryReferenceFinding {
-    readonly part: string;
-    readonly localName: "headerReference" | "footerReference";
-    readonly rid: string;
-}
-
-/**
- * The story reference element a `rels-id-mismatch` issue or a
- * `word-header-footer-relationship` issue names — part, local name and
- * `r:id` — or `undefined` for any other issue. The two checks write
- * different messages for the same element:
- * `validateAllRelationshipIds` (base.ts) writes
- * `<headerReference> references 'rId1' which points to 'styles' but should
- * point to a 'header' relationship`, and the Word rule
- * (checks/word-header-footer.ts) writes
- * `<w:headerReference> r:id="rId1" names Relationship 'rId1' of Type …`.
- */
-const storyReferenceFinding = (issue: ValidationIssue): StoryReferenceFinding | undefined => {
-    if (issue.code !== "rels-id-mismatch" && issue.code !== WORD_HEADER_FOOTER_RELATIONSHIP) return undefined;
-    const part = (issue.path ?? "").replace(/\\/g, "/");
-    const mismatch = /^<(headerReference|footerReference)> references '([^']+)' which points to '/.exec(issue.message);
-    if (mismatch) return { part, localName: mismatch[1] as StoryReferenceFinding["localName"], rid: mismatch[2]! };
-    const wordRule = /^<w:(headerReference|footerReference)> r:id="([^"]+)" names Relationship '/.exec(issue.message);
-    if (wordRule) return { part, localName: wordRule[1] as StoryReferenceFinding["localName"], rid: wordRule[2]! };
-    return undefined;
-};
-
 /**
  * A full non-lenient run reports each story `w:headerReference`/
  * `w:footerReference` the `word-header-footer-relationship` rule judged
  * once — through that rule — so the same run's `validateAllRelationshipIds`
  * result drops its `rels-id-mismatch` copy of each reported element (#612).
- * An element counts as reported only when part path (backslashes normalized,
- * as `withoutRepeatedCompatibilityFindings` does), element local name and
- * `r:id` all match, and findings pair one-for-one: two identical elements
- * are both dropped only by two Word-rule findings. Where the Word rule
- * stays silent — a foreign-namespace `x:headerReference`, a glossary no
- * main-document relationship reaches — the mismatch stays, and
+ * The pairing is the structured identity both producers registered on the
+ * issue object when they created it (#616): part path (normalized on
+ * registration, as `withoutRepeatedCompatibilityFindings` compares paths),
+ * element namespace URI, local name and raw `r:id` all match, and findings
+ * pair one-for-one — two identical elements are both dropped only by two
+ * Word-rule findings. The former message-prose pairing let a quoted `r:id`
+ * double the report and a crafted `r:id` consume a foreign element's only
+ * mismatch. A finding without a registered identity — another producer, or
+ * a copy made between producer and helper — is never dropped. Where the
+ * Word rule stays silent — a foreign-namespace `x:headerReference`, a
+ * glossary no main-document relationship reaches — the mismatch stays, and
  * `validateAllRelationshipIds` called on its own reports every mismatch.
  */
 export function withoutRepeatedHeaderFooterFindings(relationshipIds: ValidationResult, rules: ValidationResult): ValidationResult {
-    const key = (finding: StoryReferenceFinding): string => `${finding.part}\u0000${finding.localName}\u0000${finding.rid}`;
+    const key = (identity: StoryReferenceIdentity): string =>
+        `${identity.part}\u0000${identity.namespaceURI}\u0000${identity.localName}\u0000${identity.rid}`;
     const reported = new Map<string, number>();
     for (const issue of rules.issues) {
         if (issue.code !== WORD_HEADER_FOOTER_RELATIONSHIP) continue;
-        const finding = storyReferenceFinding(issue);
-        if (!finding) continue;
-        reported.set(key(finding), (reported.get(key(finding)) ?? 0) + 1);
+        const identity = storyReferenceIdentity(issue);
+        if (!identity) continue;
+        reported.set(key(identity), (reported.get(key(identity)) ?? 0) + 1);
     }
     const issues = relationshipIds.issues.filter((issue) => {
         if (issue.code !== "rels-id-mismatch") return true;
-        const finding = storyReferenceFinding(issue);
-        if (!finding) return true;
-        const remaining = reported.get(key(finding)) ?? 0;
+        const identity = storyReferenceIdentity(issue);
+        if (!identity) return true;
+        const remaining = reported.get(key(identity)) ?? 0;
         if (remaining === 0) return true;
-        reported.set(key(finding), remaining - 1);
+        reported.set(key(identity), remaining - 1);
         return false;
     });
     return { valid: relationshipIds.valid, issues };
