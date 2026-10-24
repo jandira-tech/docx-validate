@@ -10,7 +10,7 @@ import JSZip from "jszip";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
-import { PackageViewError, ValidationContext } from "../src/lib/validation-context";
+import { PackageOpenError, PackageViewError, ValidationContext } from "../src/lib/validation-context";
 import { contextFromArchive, contextFromDirectory } from "../src/scripts/office/package-context";
 import { buildRawZip } from "./support/raw-zip";
 
@@ -51,10 +51,16 @@ describe("contextFromArchive", () => {
         expect(context.archiveBytes).toBe(bytes);
     });
 
-    it("reports a rejection that is not an Error by its string form", async () => {
+    it("propagates a rejection that is not a classified input failure (#427)", async () => {
         vi.spyOn(ValidationContext, "fromArchive").mockRejectedValue("not a zip");
-        const { context, openError } = await contextFromArchive(new Uint8Array([1, 2, 3]));
+        await expect(contextFromArchive(new Uint8Array([1, 2, 3]))).rejects.toBe("not a zip");
+    });
+
+    it("reports an archive that does not open as openError, not extractFailed", async () => {
+        vi.spyOn(ValidationContext, "fromArchive").mockRejectedValue(new PackageOpenError("not a zip"));
+        const { context, openError, extractFailed } = await contextFromArchive(new Uint8Array([1, 2, 3]));
         expect(openError).toBe("not a zip");
+        expect(extractFailed).toBeUndefined();
         expect(context.partNames).toEqual([]);
     });
 
