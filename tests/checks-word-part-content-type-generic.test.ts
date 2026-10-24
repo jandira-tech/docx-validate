@@ -42,6 +42,7 @@ const ID = WORD_PART_CONTENT_TYPE_GENERIC;
 
 const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const R_STRICT = "http://purl.oclc.org/ooxml/officeDocument/relationships";
 
 type Parts = Record<string, string | Uint8Array>;
 
@@ -201,6 +202,21 @@ describe("word-part-content-type-generic (#432)", () => {
         // A styles Override carrying the settings content type is a different
         // defect; this check judges only the generic application/xml Default.
         const parts = withOverride({ ...MINIMAL_PARTS }, "word/styles.xml", CT.settings);
+        expect(await diagnose(ValidationContext.fromEntries(parts))).toEqual([]);
+    });
+
+    it.each([
+        ["Transitional", R],
+        ["Strict", R_STRICT],
+    ] as const)("stays silent for the %s type `…/relationships/custom/styles`, an extra path segment (#519)", async (_label, namespace) => {
+        // A type has an Office segment only when it is exactly the namespace
+        // plus one segment: `custom/styles` is an unobserved type, not styles,
+        // so its target is judged by no relationship segment.
+        const parts = withDocRel(
+            { ...MINIMAL_PARTS, "word/extra.xml": `<w:styles xmlns:w="${W}"/>` },
+            `${namespace}/custom/styles`,
+            "extra.xml",
+        );
         expect(await diagnose(ValidationContext.fromEntries(parts))).toEqual([]);
     });
 
@@ -365,6 +381,22 @@ describe.each(["docx", "docm"] as const)("word-part-content-type-generic in a %s
         await withTempDir(async (dir) => {
             const file = await specimen(dir, "control", properOverride(part));
             for (const profile of ["word-valid", "lenient", "strict"] as const) {
+                const result = await validate(file, { profile });
+                expect(findings(result.issues), profile).toEqual([]);
+                expect(result.valid, profile).toBe(true);
+            }
+        });
+    });
+
+    it("does not report a part named only by `…/relationships/custom/styles` through validate() (#519)", async () => {
+        await withTempDir(async (dir) => {
+            const parts = withDocRel(
+                { ...MINIMAL_PARTS, "word/extra.xml": `<w:styles xmlns:w="${W}"/>` },
+                `${R}/custom/styles`,
+                "extra.xml",
+            );
+            const file = await specimen(dir, "custom-segment", parts);
+            for (const profile of ["word-valid", "lenient"] as const) {
                 const result = await validate(file, { profile });
                 expect(findings(result.issues), profile).toEqual([]);
                 expect(result.valid, profile).toBe(true);

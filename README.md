@@ -576,7 +576,10 @@ part wherever they are stored — offering repair or refusing the file when one
 is malformed — and opens a related-but-unused header or endnotes part clean,
 even under `word/` ([#516](https://github.com/jandira-tech/docx-validate/issues/516); probe session 15).
 Any other part under `word/` that a known Office relationship of an unobserved
-type names also blocks; on the content-types
+type names also blocks — a type has an Office segment only when it is exactly
+an Office relationship-type namespace plus one segment, so
+`…/relationships/custom/styles` is an unobserved type, not `styles`
+([#519](https://github.com/jandira-tech/docx-validate/issues/519)); on the content-types
 stream and the package relationships part `_rels/.rels` it always blocks.
 `word/` is matched as OPC compares part names, so `WORD/document.xml` counts, and
 the stream is matched in any case (`[CONTENT_TYPES].XML`), as System.IO.Packaging
