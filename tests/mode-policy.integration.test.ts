@@ -167,6 +167,8 @@ describe("quick mode runs the common-defect preset and discloses its omissions",
             // Its Markup Compatibility refusal (#459).
             "ct-markup-compatibility",
             "word-part-content-type-generic",
+            // A parameterized Word content type (#540).
+            "word-part-content-type-parameter",
             "word-grid-column-attributes",
             "word-cell-margin-order",
             "word-table-properties-required",
