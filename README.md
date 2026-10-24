@@ -98,6 +98,19 @@ Dev:
 
 ## Running CLIs
 
+The installed package ships a `docx-validate` bin that runs the validator CLI
+(`dist/cli.mjs`):
+
+```bash
+npx docx-validate <path>          # or: node node_modules/docx-validate/dist/cli.mjs <path>
+docx-validate --help              # prints only the validator's usage
+```
+
+`dist/index.mjs` is the library entry only — running or importing it never
+starts a CLI.
+
+From source, every script is still its own `tsx` entry point:
+
 ```bash
 pnpm exec tsx src/scripts/office/validate.ts <path>
 pnpm exec tsx src/scripts/office/unpack.ts <path>

@@ -14,7 +14,8 @@
  *   3. in that project, import the public entrypoints, validate one small
  *      fixture (copied in), and assert the bundled schemas resolve — both the
  *      Transitional tree and the XSD root strict uses;
- *   4. run the packaged CLI's --help (exit 0).
+ *   4. run the packaged CLI's --help (exit 0, exactly one Usage block) and
+ *      confirm the library bundle itself starts no CLI (#314).
  */
 
 import { execFile } from "node:child_process";
@@ -145,10 +146,21 @@ gated("package artifact smoke (skipped unless PACKAGE_SMOKE=1)", { timeout: 600_
             expect(summary.schemasDir).toContain(path.join("node_modules", "docx-validate"));
 
             // 4. The packaged CLI's --help exits 0 (execFile rejects on any
-            //    non-zero exit) and prints usage text.
-            const cli = path.join(consumer, "node_modules", "docx-validate", "dist", "index.mjs");
-            const help = await run(process.execPath, [cli, "--help"], { cwd: consumer, timeout: 60_000 });
-            expect(help.stdout).toContain("Usage:");
+            //    non-zero exit) and prints exactly one Usage block — the
+            //    validator's (#314). The library bundle itself starts no
+            //    CLI: --help on dist/index.mjs prints nothing.
+            const pkg = path.join(consumer, "node_modules", "docx-validate", "dist");
+            const help = await run(process.execPath, [path.join(pkg, "cli.mjs"), "--help"], {
+                cwd: consumer,
+                timeout: 60_000,
+            });
+            expect(help.stdout.match(/Usage:/g) ?? []).toHaveLength(1);
+            expect(help.stdout).toMatch(/Usage: validate/);
+            const lib = await run(process.execPath, [path.join(pkg, "index.mjs"), "--help"], {
+                cwd: consumer,
+                timeout: 60_000,
+            });
+            expect(lib.stdout).not.toContain("Usage:");
         });
     });
 });
