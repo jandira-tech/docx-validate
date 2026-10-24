@@ -33,6 +33,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `verifyInWord` reports `crash` only with a Microsoft Word crash report written after the open; a Word process that vanishes without one (an external kill or quit) is `unavailable`. Every `crash` behind the issue was an external SIGKILL ([#305](https://github.com/jandira-tech/docx-validate/issues/305)).
 - Race `verifyInWord`'s version and availability calls against its budget, so a hanging transport call ends as `timeout` ([#320](https://github.com/jandira-tech/docx-validate/issues/320)).
 - Count only Word's verdicts as rejections: `crash`, `unavailable` and unmapped outcome spellings are unattributable, and verifier outcomes map to the manifest's spellings ([#316](https://github.com/jandira-tech/docx-validate/issues/316)).
+- Quick and named-check runs fail an archive that does not open with `package-open-failed`, as complete runs do, instead of passing the selected checks on an empty package. Their `executedChecks` lists the checks that ran ([#332](https://github.com/jandira-tech/docx-validate/issues/332)).
+- A Word verifier that throws yields an `unavailable`, unsatisfied verification instead of rejecting `validate` ([#333](https://github.com/jandira-tech/docx-validate/issues/333)).
 - Return `unavailable` when a Word dialog is already showing before verification, without opening or closing anything; dismiss dialogs raised by this run during macOS cleanup so later probes remain attributable ([#315](https://github.com/jandira-tech/docx-validate/issues/315)).
 
 ### Security

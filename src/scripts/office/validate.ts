@@ -30,6 +30,7 @@
  * run). Exit code: 0 when every check passes, 1 otherwise.
  */
 
+import { createHash } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
@@ -51,6 +52,7 @@ import {
     xsdWalkNotStarted,
     type PackageFormat,
     type Profile,
+    type ValidationIssue,
     type ValidationResult,
     type XsdWalkTrace,
 } from "../../lib/types";
@@ -235,18 +237,12 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                     const detail = err instanceof Error ? err.message : String(err);
                     return {
                         valid: false,
-                        issues: [
-                            ...envelopeIssues,
-                            {
-                                severity: "error" as const,
-                                message: `Cannot open ${target} as an OPC package (not a valid .docx/zip — encrypted, corrupted, or truncated): ${detail}`,
-                                code: "package-open-failed",
-                            },
-                        ],
+                        issues: [...envelopeIssues, packageOpenFailedIssue(target, detail)],
                         repairs: 0,
                         suffix: dispatchSuffix,
                         xsdWalk: xsdWalkNotStarted(),
-                        metadata: { profile, executedChecks: [], omittedChecks: [], schemaCompleted: false },
+                        // Only the envelope checks could read these bytes (#332).
+                        metadata: { profile, executedChecks: [...envelope.executed], omittedChecks: [], schemaCompleted: false },
                     };
                 }
                 try {
@@ -308,7 +304,21 @@ async function withWordVerification(
             details: "Word verification needs a packed Office file; the validated target is an unpacked directory",
         });
     }
-    return applyWordVerification(result, await verify(packedBytes));
+    try {
+        return applyWordVerification(result, await verify(packedBytes));
+    } catch (err) {
+        // A verifier that throws could not run: report that, never reject (#333).
+        return applyWordVerification(result, {
+            requested: true,
+            outcome: "unavailable",
+            satisfied: false,
+            fileSha256: createHash("sha256").update(packedBytes).digest("hex"),
+            platform: process.platform,
+            observedAt: new Date().toISOString(),
+            observationMs: 0,
+            details: `Word verification failed to run: ${err instanceof Error ? err.message : String(err)}`,
+        });
+    }
 }
 
 function applyWordVerification(result: ValidateRunResult, verification: WordVerification): ValidateRunResult {
@@ -349,9 +359,38 @@ async function runSelectedChecks(
 ): Promise<ValidateRunResult> {
     const registry = createDefaultCheckRegistry();
     const select = mode.select ?? [];
-    const selected = registry.resolve(select, format);
-    const context = packed ? (await contextFromArchive(await fs.readFile(target))).context : contextFromDirectory(path.resolve(target));
-    const run = await runChecks(context, registry, { format, select });
+    const opened = packed ? await contextFromArchive(await fs.readFile(target)) : { context: contextFromDirectory(path.resolve(target)) };
+    if (opened.openError !== undefined) {
+        // An archive that does not open has no parts: only the selected
+        // envelope checks can read its bytes, and nothing else ran (#332).
+        const archiveOnly = new Set(
+            registry
+                .list(format)
+                .filter((definition) => definition.archiveOnly === true)
+                .map((definition) => definition.id),
+        );
+        const envelopeSelect = registry.resolve(select, format).filter((id) => archiveOnly.has(id));
+        const envelope =
+            envelopeSelect.length > 0 ? await runChecks(opened.context, registry, { format, select: envelopeSelect }) : undefined;
+        const executed = envelope?.executed ?? [];
+        return {
+            valid: false,
+            issues: [...(envelope?.issues ?? []), packageOpenFailedIssue(target, opened.openError)],
+            repairs: 0,
+            suffix,
+            xsdWalk: xsdWalkNotStarted(),
+            metadata: {
+                profile: mode.profile,
+                executedChecks: [...executed],
+                omittedChecks: registry
+                    .list(format)
+                    .map((definition) => definition.id)
+                    .filter((id) => !executed.includes(id)),
+                schemaCompleted: false,
+            },
+        };
+    }
+    const run = await runChecks(opened.context, registry, { format, select });
     return {
         valid: run.valid,
         issues: [...run.issues],
@@ -360,10 +399,25 @@ async function runSelectedChecks(
         xsdWalk: xsdWalkNotStarted(),
         metadata: {
             profile: mode.profile,
-            executedChecks: [...selected],
+            // What ran, not what was selected: an archive-only check is
+            // unavailable for an unpacked directory (CodeRabbit on #322).
+            executedChecks: [...run.executed],
             omittedChecks: [...run.omitted],
             schemaCompleted: false,
         },
+    };
+}
+
+/**
+ * The finding for a packed file that is not a readable OPC (zip) package:
+ * encrypted OOXML, or a truncated or corrupted archive. Word refuses to open
+ * all of these, so it is blocking under every profile.
+ */
+function packageOpenFailedIssue(target: string, detail: string): ValidationIssue {
+    return {
+        severity: "error",
+        message: `Cannot open ${target} as an OPC package (not a valid .docx/zip — encrypted, corrupted, or truncated): ${detail}`,
+        code: "package-open-failed",
     };
 }
 

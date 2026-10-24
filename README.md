@@ -355,7 +355,9 @@ other platforms or missing Word also return `unavailable`. `crash` requires a
 Microsoft Word crash report written after this run's open; a Word process that
 vanishes without one (an external kill or quit) is `unavailable` (#305). The Word
 version and availability calls run inside the same budget as the rest of the run,
-so a hanging call ends as `timeout` instead of outliving it (#320).
+so a hanging call ends as `timeout` instead of outliving it (#320). A verifier
+that throws is reported as `unavailable` with its message; `validate` does not
+reject because of it (#333).
 
 Before opening, the verifier observes Word once. If a dialog is already showing,
 it returns `unavailable` without opening or closing anything: that dialog cannot
@@ -463,7 +465,10 @@ interface ValidationResult {
 `schemaCompleted`, and `wordVerification` fields. `executedChecks` reports the
 registry ids a complete run executed (#319): lenient lists `xml-syntax`; Word-valid
 and strict add the ZIP-envelope checks for a packed file and every Word rule whose
-prerequisites passed. A partial run lists its resolved selection. It is not a
+prerequisites passed. A partial run lists the selected checks that ran, so an
+archive-only check is not listed for an unpacked directory. An archive that does
+not open fails with `package-open-failed` in every mode, and only its envelope
+checks are listed (#332). It is not a
 per-method execution trace. In the source scheduler, use `runChecks().outcomes`
 for individual
 `passed` / `failed` / `skipped` / `unavailable` statuses. `omittedChecks` names ids
