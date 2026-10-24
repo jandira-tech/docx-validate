@@ -250,6 +250,21 @@ describe("the package view reads central-directory names (#445, #446)", { timeou
             }
         });
 
+        it("bails when the walked directory ends before the record, leaving mismatched names to JSZip (#478)", async () => {
+            // A local name JSZip would show instead of the central one, plus
+            // a second record whose declared size covers the first. The walk
+            // ends at the original record, so `cdEnd !== eocdOffset` and the
+            // bytes come back untouched: the gap is what JSZip reads.
+            const archive = buildRawZip([...minimalEntries(), { name: "word/extra.xml", localName: "alias.xml", content: "<x/>" }]);
+            const eocd = archive.length - 22;
+            const appended = Buffer.from(archive.subarray(eocd));
+            appended.writeUInt32LE(archive.readUInt32LE(eocd + 12) + 22, 12);
+            const bytes = Buffer.concat([archive, appended]);
+            expect(await loadedNames(await JSZip.loadAsync(bytes))).toContain("alias.xml");
+            expect(centralKeyedArchive(bytes)).toBe(bytes);
+            expect(await loadedNames(await loadCentralNamedArchive(bytes))).toContain("alias.xml");
+        });
+
         it("does not modify the input bytes it rewrites", () => {
             const copy = Uint8Array.from(LOCAL_DOTDOT);
             const normalized = centralKeyedArchive(LOCAL_DOTDOT);
