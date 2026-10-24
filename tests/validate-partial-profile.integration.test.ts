@@ -433,7 +433,14 @@ describe("a partial run applies its profile's policy (#381)", { timeout: 120_000
 
         expect(result.valid).toBe(true);
         expect(result.issues.filter((issue) => issue.code === "word-row-without-cell")).toEqual([]);
-        expect(result.metadata?.executedChecks).toEqual(["opc-equivalent-part-names", "opc-part-name-escaped-unreserved", "xml-syntax"]);
+        // ct-duplicate-declaration is an OPC content-types check, not a Word rule:
+        // full lenient reports duplicates as warnings, so lenient quick runs it (#431).
+        expect(result.metadata?.executedChecks).toEqual([
+            "opc-equivalent-part-names",
+            "opc-part-name-escaped-unreserved",
+            "xml-syntax",
+            "ct-duplicate-declaration",
+        ]);
         expect(result.metadata?.omittedChecks).toEqual(expect.arrayContaining(["word-row-without-cell", "zip-bytes-after-eocd"]));
         expect(errorCodes((await validate(ROW_WITHOUT_CELL, { profile: "lenient" })).issues)).not.toContain("word-row-without-cell");
     });

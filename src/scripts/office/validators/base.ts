@@ -44,6 +44,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+    CT_DUPLICATE_DECLARATION,
+    duplicateContentTypeDeclarations,
     equivalentPartLookup,
     findContentTypesStream,
     findEquivalentPart,
@@ -1136,7 +1138,13 @@ export class BaseSchemaValidator {
 
     // ----- content types ------------------------------------------------------
 
+    /** Unobserved formats stay advisory outside strict; DOCX overrides Word-valid. */
+    protected get duplicateContentTypeSeverity(): "error" | "warning" {
+        return this.profile === "strict" ? "error" : "warning";
+    }
+
     async validateContentTypes(): Promise<ValidationResult> {
+        this.recordExecutedCheck(CT_DUPLICATE_DECLARATION);
         const issues: ValidationIssue[] = [];
         const entries = packageEntries(this.unpackedDir);
         const contentTypesName = findContentTypesStream(entries.keys());
@@ -1175,6 +1183,12 @@ export class BaseSchemaValidator {
         // declarable XML roots (ct-undeclared-part), known media extensions
         // (ct-undeclared-ext) and the residual invariant (ct-uncovered-part).
         const table = parseContentTypes(dom);
+        issues.push(
+            ...duplicateContentTypeDeclarations(dom, contentTypesName).map((issue) => ({
+                ...issue,
+                severity: this.duplicateContentTypeSeverity,
+            })),
+        );
 
         const declarableRoots = new Set<string>([
             "sld",

@@ -28,6 +28,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Diagnose repeated content-type Default extensions and Override part names in full, quick and named runs. Duplicates are errors under strict and Word-valid DOCX/DOCM, and warnings under lenient and Word-valid PPTX/XLSX ([#431](https://github.com/jandira-tech/docx-validate/issues/431)).
+
 - Validate relationships-part roots and direct children without an XSD walk. Word-valid rejects malformed package relationships and malformed relationships parts under `word/`, and warns on other sidecars; strict rejects all of them. Main-part discovery and other semantic relationship consumers read only direct `Relationship` children of a valid `Relationships` root under Word-valid and strict; legacy lenient traversal is preserved ([#433](https://github.com/jandira-tech/docx-validate/issues/433), [#434](https://github.com/jandira-tech/docx-validate/issues/434)).
 
 - Keep `xml-syntax`, `xml-encoding`, and `xml-undeclared-prefix` as Word-valid errors on core, extended, and custom properties parts named by their package relationships. Word reads those targets and offers recovery for the observed defects; unreferenced `docProps/*.xml` findings stay warnings. Full, quick and named runs resolve the targets by OPC part-name equivalence; strict verdicts are unchanged ([#409](https://github.com/jandira-tech/docx-validate/issues/409)).
