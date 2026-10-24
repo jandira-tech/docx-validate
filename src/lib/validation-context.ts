@@ -55,6 +55,24 @@ const STORY_PART = /(?:^|\/)(?:document|comments|footnotes|endnotes|header\d*|fo
 export const normalizePartName = (name: string): string => name.replace(/\\/g, "/").replace(/^\/+/, "");
 
 /**
+ * Why a ZIP item name places no part in the package, or `undefined` when it
+ * does. The ZIP format forbids a stored name that starts with a slash or
+ * names a drive (APPNOTE 4.4.17.1), and System.IO.Packaging ignores an item
+ * whose name starts with `/`. Reading `\\` as `/`, as part names do, the
+ * package view and extraction both refuse such a name on every platform (#372).
+ */
+export const entryNameRefusal = (name: string): string | undefined => {
+    const posix = name.replace(/\\/g, "/");
+    if (posix.startsWith("/")) {
+        return `ZIP item ${JSON.stringify(name)} names no package part: it starts with a slash`;
+    }
+    if (/^[A-Za-z]:/.test(posix)) {
+        return `ZIP item ${JSON.stringify(name)} names no package part: it names a drive`;
+    }
+    return undefined;
+};
+
+/**
  * Of two stored names for one part, the one to keep: the name that already is
  * the part name (no `\`, no leading `/`), else the smaller in code-unit
  * order. The choice never depends on entry order, so a packed archive and its
@@ -127,10 +145,19 @@ export class ValidationContext {
         return new ValidationContext(indexByPartName(pairs), opts);
     }
 
-    /** Load a packed OPC archive, one entry per part name. Throws when the bytes are not a readable ZIP. */
+    /**
+     * Load a packed OPC archive, one entry per part name. Throws when the
+     * bytes are not a readable ZIP or an item name places no part (#372).
+     */
     public static async fromArchive(bytes: Uint8Array): Promise<ValidationContext> {
         const zip = await JSZip.loadAsync(bytes);
         const files = Object.values(zip.files).filter((entry) => !entry.dir);
+        for (const entry of files) {
+            const refusal = entryNameRefusal(entry.name);
+            if (refusal !== undefined) {
+                throw new Error(refusal);
+            }
+        }
         const kept = indexByPartName(files.map((entry) => [entry.name, entry] as const));
         const parts = new Map<string, PartContent>();
         // Every entry is read, as extraction reads it, so an unreadable one

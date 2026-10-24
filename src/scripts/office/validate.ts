@@ -59,7 +59,7 @@ import {
 import type { XsdValidator } from "../../lib/xsd-validator";
 import { verifyInWord, type WordVerification } from "../../lib/word-verifier";
 import { ValidationContext } from "../../lib/validation-context";
-import { extractZipEntries } from "../../lib/zip-path";
+import { extractPackageParts } from "../../lib/zip-path";
 import { createDefaultCheckRegistry } from "./checks";
 import { contextFromArchive, contextFromDirectory } from "./package-context";
 import { BaseSchemaValidator } from "./validators/base";
@@ -613,7 +613,8 @@ async function assertIsFile(p: string, message: string): Promise<void> {
     }
 }
 
-const extractAll = (zip: JSZip, outputPath: string): Promise<void> => extractZipEntries(zip, outputPath);
+// A full run judges the package view, as a quick run does (#371).
+const extractAll = (zip: JSZip, outputPath: string): Promise<void> => extractPackageParts(zip, outputPath);
 
 interface CliOptions {
     original?: string;
