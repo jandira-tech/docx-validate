@@ -52,6 +52,7 @@ describe("checkCoverageGates", () => {
                 "src/lib/check-scheduler.ts 90/85",
                 "src/lib/check-registry.ts 90/85",
                 "src/lib/validation-context.ts 80/70",
+                "src/lib/properties-parts.ts 80/70",
                 "src/scripts/office/package-context.ts 80/70",
                 "src/scripts/office/checks/*.ts 80/70",
             ]),

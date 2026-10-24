@@ -79,6 +79,7 @@ import { DOCXSchemaValidator } from "./validators/docx";
 import { buildRepairPlanIssues, collectDocxSemanticInventory, compareDocxSemanticInventories } from "./validators/docx-diagnostics";
 import { PPTXSchemaValidator } from "./validators/pptx";
 import { validateRedlining } from "./validators/redlining";
+import { propertiesParts } from "../../lib/properties-parts";
 import { isWordBlockingIssue } from "./validators/word-blocking";
 import { explainWordError } from "./validators/word-error-explanations";
 
@@ -542,7 +543,13 @@ function selectionUnderProfile(
  * also reads the ZIP envelope outside that validator, so the envelope checks
  * keep their severity (#381).
  */
-function findingsUnderProfile(run: CheckRun, registry: CheckRegistry, format: PackageFormat, profile: Profile): ValidationIssue[] {
+function findingsUnderProfile(
+    run: CheckRun,
+    registry: CheckRegistry,
+    format: PackageFormat,
+    profile: Profile,
+    properties: ReadonlySet<string>,
+): ValidationIssue[] {
     // Equivalent names and escaped unreserved characters are Word-blocking for
     // DOCX/DOCM (#351, #408), and so are two entries under the identical
     // spelling, for which Word offers recovery too (#411).
@@ -559,7 +566,7 @@ function findingsUnderProfile(run: CheckRun, registry: CheckRegistry, format: Pa
             registry.get(outcome.id)?.archiveOnly === true
                 ? outcome.issues
                 : outcome.issues.map((issue): ValidationIssue =>
-                      issue.severity === "error" && !isWordBlockingIssue(issue) ? { ...issue, severity: "warning" } : issue,
+                      issue.severity === "error" && !isWordBlockingIssue(issue, properties) ? { ...issue, severity: "warning" } : issue,
                   ),
         )
         .map(advisory);
@@ -649,6 +656,7 @@ async function runSelectedChecks(
         registry,
         format,
         mode.profile,
+        mode.profile === "word-valid" && format === "docx" ? await propertiesParts(opened.context) : new Set(),
     );
     return {
         valid: issues.every((issue) => issue.severity !== "error"),
@@ -738,7 +746,7 @@ async function storedNamesRun(
 ): Promise<{ issues: ValidationIssue[]; executed: readonly string[] }> {
     const registry = createDefaultCheckRegistry();
     const run = await runChecks(context, registry, { format, select: [OPC_EQUIVALENT_PART_NAMES, OPC_PART_NAME_ESCAPED_UNRESERVED] });
-    return { issues: findingsUnderProfile(run, registry, format, profile), executed: run.executed };
+    return { issues: findingsUnderProfile(run, registry, format, profile, new Set()), executed: run.executed };
 }
 
 /** An envelope run that never happened: no findings, no executed checks. */

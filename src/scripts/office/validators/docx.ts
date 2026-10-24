@@ -54,6 +54,7 @@ import { nextSecureLongHexNumber } from "../../../lib/secure-id";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { withoutConsequentialParseFailures } from "../../../lib/parse-failures";
 import { mergeResults } from "../../../lib/types";
+import { propertiesParts } from "../../../lib/properties-parts";
 import { isWordBlockingIssue } from "./word-blocking";
 import {
     decodeXmlBytes,
@@ -522,9 +523,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         return { valid: issues.every((issue) => issue.severity !== "error"), issues };
     }
 
-    private applyWordValidProfile(result: ValidationResult): ValidationResult {
+    private async applyWordValidProfile(result: ValidationResult): Promise<ValidationResult> {
+        const properties = await propertiesParts(this.context());
         const issues = result.issues.map((issue): ValidationIssue => {
-            if (issue.severity !== "error" || isWordBlockingIssue(issue)) return issue;
+            if (issue.severity !== "error" || isWordBlockingIssue(issue, properties)) return issue;
             return { ...issue, severity: "warning" };
         });
         return finalize(issues);

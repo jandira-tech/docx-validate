@@ -30,7 +30,7 @@ const isWordFolderPart = (partName: string | undefined): boolean =>
 const isPackageRelationshipsPart = (partName: string | undefined): boolean =>
     partName !== undefined && canonicalPartName(partName) === "_rels/.rels";
 
-export const isWordBlockingIssue = (issue: ValidationIssue): boolean => {
+export const isWordBlockingIssue = (issue: ValidationIssue, propertiesParts: ReadonlySet<string> = new Set()): boolean => {
     switch (issue.code) {
         // NB: run-content-misplaced is NOT Word-blocking — a real Word probe
         // (open -g, no focus steal) opens bare <w:tab>/<w:br>/<w:drawing> under
@@ -139,7 +139,11 @@ export const isWordBlockingIssue = (issue: ValidationIssue): boolean => {
         // libxml2 cannot decode: macintosh, x-mac-cyrillic, IBM866, UTF-7
         // (#410). The other paths follow the xml-syntax policy above.
         case "xml-encoding":
+            // Word also reads the core, extended and custom properties parts a
+            // package relationship names, and offers recovery when one of them
+            // is unreadable (#409).
             return (
+                (issue.path !== undefined && propertiesParts.has(canonicalPartName(issue.path))) ||
                 isWordFolderPart(issue.path) ||
                 isPackageRelationshipsPart(issue.path) ||
                 (issue.path !== undefined && isContentTypesStreamName(issue.path))

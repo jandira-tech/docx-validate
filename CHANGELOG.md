@@ -28,6 +28,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Keep `xml-syntax`, `xml-encoding`, and `xml-undeclared-prefix` as Word-valid errors on core, extended, and custom properties parts named by their package relationships. Word reads those targets and offers recovery for the observed defects; unreferenced `docProps/*.xml` findings stay warnings. Full, quick and named runs resolve the targets by OPC part-name equivalence; strict verdicts are unchanged ([#409](https://github.com/jandira-tech/docx-validate/issues/409)).
+
 - Stored names are read from the ZIP central directory, in order and keeping duplicates, instead of from the loaded entry view, which keeps only the last entry under a given name and rewrites `.`/`..`/empty segments before that. Two entries stored under the identical name are now reported by `opc-equivalent-part-names` (naming the spelling once per entry), and a stored `..` name that resolution would hide behind the entry it resolves to is refused in either ZIP order, instead of the verdict depending on which entry came last. The identical-name shape is Word-blocking, as #351's spellings are: Word 16.115 offers recovery whether both entries are valid or only the second is. The package view still reads the last stored entry, which the finding's message says ([#411](https://github.com/jandira-tech/docx-validate/issues/411)).
 
 - Resolve relationship-id and hyperlink sidecars by OPC part-name equivalence, including `.RELS`, for packed and directory inputs and full, named and quick runs. Escaped names such as `.%72els` remain invalid under Word-valid and strict through the OPC [M1.8] check ([#402](https://github.com/jandira-tech/docx-validate/issues/402)).

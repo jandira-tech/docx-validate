@@ -75,7 +75,7 @@ describe("OPC M1.8 stored-name check", () => {
                 .sort()
                 .map((name) => expected(name)),
         );
-        expect(issues.every(isWordBlockingIssue)).toBe(true);
+        expect(issues.every((issue) => isWordBlockingIssue(issue, new Set()))).toBe(true);
         expect(ctx.partNames.every((name) => ctx.readCount(name) === 0)).toBe(true);
         expect(
             await diagnose(ValidationContext.fromEntries(Object.fromEntries([...names].reverse().map((name) => [name, "unused"])))),
