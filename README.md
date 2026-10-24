@@ -282,6 +282,8 @@ is unchanged.
 | `comments`                | `comment-markers`, `comment-threading`                                                                                                                                                                                                                                                                                                              |
 | `schema`                  | `word-unknown-element`, `word-link-without-namespace`                                                                                                                                                                                                                                                                                               |
 
+`word-content-type-invalid` reports `invalid-*` content types only when they apply to a stored part: an Override must name an existing part under OPC equivalence, and a Default must cover a stored part without its own Override. Word 16.115 opens an Override for a missing part and an unused Default cleanly; an invalid type on an existing part is refused or recovered.
+
 The `schema` group contains structural checks, not an XSD walk. The `comments`
 group runs `comment-markers` (range pairing and references to existing comments)
 and `comment-threading` (marker counts, paragraph ids, parent ids, and durable ids

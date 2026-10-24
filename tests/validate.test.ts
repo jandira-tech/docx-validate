@@ -24,6 +24,7 @@ import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import { runValidateFromArgv, validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+import { contentTypeSpecimens } from "./support/word-content-types-specimens";
 import { rels, relation } from "./support/word-rule-test-xml";
 import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
 
@@ -349,6 +350,7 @@ describe("word-valid profile — applyWordValidProfile coverage", () => {
         await withTempDir(async (dir) => {
             const unpacked = path.join(dir, "unpacked");
             await writeMinimalDocxDir(unpacked, "<w:body><w:p/></w:body>");
+            await fs.writeFile(path.join(unpacked, "data.json"), "{}");
             // Overwrite [Content_Types].xml to add a Default with invalid- ContentType
             await fs.writeFile(
                 path.join(unpacked, "[Content_Types].xml"),
@@ -671,13 +673,14 @@ describe("packed content-types stream names (#396)", () => {
                 .replace("</Types>", `<Override PartName="/word/x.xml" ContentType="invalid-type"/></Types>`);
             const { "[Content_Types].xml": _stream, ...otherParts } = MINIMAL_PARTS;
             const controlFile = path.join(dir, "control.docx");
-            await fs.writeFile(controlFile, await buildDocx({ ...otherParts, "[Content_Types].xml": types }));
+            const parts = { ...otherParts, "word/x.xml": MINIMAL_PARTS["word/document.xml"]! };
+            await fs.writeFile(controlFile, await buildDocx({ ...parts, "[Content_Types].xml": types }));
             const control = await validate(controlFile, options);
             const controlFindings = control.issues.filter((issue) => issue.code === "word-content-type-invalid");
             expect(controlFindings).toHaveLength(options.profile === "lenient" ? 0 : 1);
             for (const name of ["[CONTENT_TYPES].XML", "[content_types].xml"]) {
                 const file = path.join(dir, "variant.docx");
-                const bytes = await buildDocx({ ...otherParts, [name]: types });
+                const bytes = await buildDocx({ ...parts, [name]: types });
                 await fs.writeFile(file, bytes);
                 const result = await validate(file, options);
                 expect(result.valid).toBe(control.valid);
@@ -712,6 +715,28 @@ describe("packed content-types stream names (#396)", () => {
             expect(errors(result.issues, name)).toEqual(
                 errors(control.issues, "[Content_Types].xml").map((issue) => ({ ...issue, path: name })),
             );
+        });
+    });
+});
+
+describe("stored content-type scope in full and partial runs (#401)", () => {
+    it.each(contentTypeSpecimens)("$name", async ({ parts, rejected }) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "scope.docx");
+            const bytes = await buildDocx(parts);
+            await fs.writeFile(file, bytes);
+            const full = await validate(file, { profile: "word-valid" });
+            const partial = await validate(file, { profile: "word-valid", checks: ["word-content-type-invalid"] });
+            const findings = (result: typeof full) => result.issues.filter((issue) => issue.code === "word-content-type-invalid");
+            expect(full.valid).toBe(!rejected);
+            expect(partial.valid).toBe(full.valid);
+            expect(findings(full)).toHaveLength(rejected ? 1 : 0);
+            expect(findings(partial)).toEqual(findings(full));
+            const errors = (result: typeof full) =>
+                result.issues.filter((issue) => issue.severity === "error").map((issue) => `${issue.code}@${issue.path}`);
+            expect(errors(full)).toEqual(expect.arrayContaining(errors(partial)));
+            if (full.valid) expect(partial.valid).toBe(true);
+            await expect(fs.readFile(file)).resolves.toEqual(bytes);
         });
     });
 });

@@ -8,7 +8,13 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
-import { findContentTypesStream } from "../../../lib/content-types";
+import {
+    asciiLowercase,
+    canonicalPartName,
+    findContentTypesStream,
+    isContentTypesStreamName,
+    partExtension,
+} from "../../../lib/content-types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import type { ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
@@ -46,14 +52,20 @@ export const wordContentTypeInvalidCheck: CheckDefinition = {
         };
 
         const overrides = getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Override");
+        // Word ignores declarations that do not apply to a stored part (#401).
+        // The stream is a ZIP item, not a part covered by its own declarations.
+        const storedParts = new Set(ctx.partNames.filter((name) => !isContentTypesStreamName(name)).map(canonicalPartName));
+        const overriddenParts = new Set(overrides.map((elem) => canonicalPartName(elem.getAttribute("PartName") ?? "")));
         for (const elem of overrides) {
-            if (elem) {
+            if (storedParts.has(canonicalPartName(elem.getAttribute("PartName") ?? ""))) {
                 check(elem, "PartName");
             }
         }
+        const defaultExtensions = new Set([...storedParts].filter((name) => !overriddenParts.has(name)).map(partExtension));
         const defaults = getElementsByTagNameNSAll(dom, CONTENT_TYPES_NAMESPACE, "Default");
         for (const elem of defaults) {
-            if (elem) {
+            const extension = elem.getAttribute("Extension");
+            if (extension && defaultExtensions.has(asciiLowercase(extension))) {
                 check(elem, "Extension");
             }
         }

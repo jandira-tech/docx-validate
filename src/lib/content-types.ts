@@ -82,7 +82,7 @@ export type ResolvedContentType = {
  * matching are ASCII case-insensitive; full Unicode `toLowerCase()` would
  * fold non-ASCII letters (e.g. `É` → `é`) that OPC compares verbatim.
  */
-const asciiLowercase = (value: string): string => {
+export const asciiLowercase = (value: string): string => {
     let out = "";
     for (let i = 0; i < value.length; i += 1) {
         const code = value.charCodeAt(i);
