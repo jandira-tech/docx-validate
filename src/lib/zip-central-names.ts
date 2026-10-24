@@ -132,15 +132,16 @@ const withoutUnicodePathField = (extra: Uint8Array): Uint8Array => {
  *
  * Archives the rewrite cannot honor are returned as given, so their findings
  * stay JSZip's: a central directory `readCentralDirectoryView` cannot parse,
- * ZIP64 or multi-disk structure, bytes between the directory and the EOCD, a
- * local header missing or overlapping another entry's data, or a compressed
- * stream that overruns the directory.
+ * ZIP64 or multi-disk structure, bytes between the walked directory's end
+ * and the EOCD, a local header missing or overlapping another entry's data,
+ * or a compressed stream that overruns the directory.
  */
 export const centralKeyedArchive = (bytes: Uint8Array): Uint8Array => {
     const view = readCentralDirectoryView(bytes);
-    // Bytes between the directory and the EOCD are what JSZip reads as a
-    // prefix, so a view with them is never built; a rebuild that moved the
-    // EOCD up to the directory would drop them (#468).
+    // Bytes between the walked directory's end (`cdEnd`, #478) and the EOCD
+    // are what JSZip reads past the last record — a signature record, a hidden
+    // directory — so a view with them is never rebuilt; moving the EOCD up to
+    // the directory would drop them (#468).
     if (view === undefined || view.zip64 || view.cdEnd !== view.eocdOffset) {
         return bytes;
     }

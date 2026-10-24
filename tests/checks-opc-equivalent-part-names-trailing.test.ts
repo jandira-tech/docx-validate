@@ -112,6 +112,50 @@ describe("identical stored names behind trailing data (#447)", { timeout: 300_00
         });
     });
 
+    // A second copy of the record whose declared directory size covers the
+    // first ends the directory walk at the original record (#478): JSZip
+    // tolerates the overstatement (the size only feeds its rebase), so the
+    // duplicates are stored names and are reported under every profile. The
+    // original record's bytes between the directory's end and the live record
+    // are what `zip-bytes-after-eocd` counts as undeclared.
+    it("reports the duplicate behind a record whose declared size covers the original (#478)", async () => {
+        await withTempDir(async (dir) => {
+            const archive = duplicate();
+            const eocd = archive.length - 22;
+            const appended = Buffer.from(archive.subarray(eocd));
+            appended.writeUInt32LE(archive.readUInt32LE(eocd + 12) + 22, 12);
+            const bytes = Buffer.concat([archive, appended]);
+            const file = path.join(dir, "duplicate.docx");
+            writeFileSync(file, bytes);
+            for (const profile of ["word-valid", "lenient", "strict"] as const) {
+                const tag = `overstated ${profile}`;
+                const full = await validate(file, { profile });
+                expect(findings(full.issues), tag).toEqual([identical(severityUnder(profile))]);
+                expect(full.valid, tag).toBe(profile === "lenient");
+                expect(full.metadata?.executedChecks, tag).toContain(ID);
+                const afterEocd = full.issues.filter((issue) => issue.code === AFTER_EOCD);
+                if (profile === "lenient") {
+                    expect(afterEocd, tag).toEqual([]);
+                    expect(full.metadata?.executedChecks, tag).not.toContain(AFTER_EOCD);
+                } else {
+                    expect(afterEocd, tag).toEqual([expect.objectContaining({ severity: "error", code: AFTER_EOCD })]);
+                    expect(afterEocd[0]?.message, tag).toContain("22 undeclared byte(s)");
+                }
+                if (profile === "strict") continue;
+                for (const selection of [{ checks: [ID] }, { checks: ["package"] }, { quick: true }] as const) {
+                    const partialTag = `${tag} ${JSON.stringify(selection)}`;
+                    const partial = await validate(file, { profile, ...selection });
+                    expect(findings(partial.issues), partialTag).toEqual(findings(full.issues));
+                    expect(
+                        errorPairs(partial.issues).every((pair) => errorPairs(full.issues).includes(pair)),
+                        partialTag,
+                    ).toBe(true);
+                }
+            }
+            expect(readFileSync(file)).toEqual(bytes);
+        });
+    });
+
     // A later copy of the record is the last signature: JSZip rebases its
     // offsets and refuses the archive, so every profile reports the open
     // failure and no stored-name finding is invented (#447, #462).
