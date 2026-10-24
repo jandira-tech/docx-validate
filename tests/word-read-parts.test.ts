@@ -28,7 +28,12 @@ import { describe, expect, it } from "vitest";
 import { canonicalPartName } from "../src/lib/content-types";
 import { withTempDir } from "../src/lib/run-cli";
 import { ValidationContext } from "../src/lib/validation-context";
-import { wordReadParts, wordTypedRelationshipTargets } from "../src/lib/word-read-parts";
+import {
+    glossaryTypedRelationshipTargets,
+    wordReadParts,
+    wordReadTypedTargets,
+    wordTypedRelationshipTargets,
+} from "../src/lib/word-read-parts";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
@@ -1441,4 +1446,127 @@ describe("wordReadParts: byte-rejected main usage (#536)", () => {
         },
         60_000,
     );
+});
+
+/**
+ * A part related by two relationship types keeps every segment (#593):
+ * `wordTypedRelationshipTargets` and `glossaryTypedRelationshipTargets`
+ * yield one entry per (part, segment) pair — a part reached twice no longer
+ * keeps only the segment that reached it first, so the order of
+ * relationships in the relationships part cannot decide which type judges
+ * the part. Session 20 (s20b) observed Word 16.115 offer recovery for the
+ * footer-first specimen the first-segment rule let pass.
+ */
+describe("a part related by two relationship types keeps every segment (#593)", () => {
+    const NUMBERING_XML =
+        `<w:numbering xmlns:w="${W}"><w:abstractNum w:abstractNumId="0"><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="decimal"/>` +
+        `<w:lvlText w:val="%1."/></w:lvl></w:abstractNum><w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num></w:numbering>`;
+
+    /** The minimal package plus `word/numbering.xml`, related from the main document as `first` and then `second`. */
+    const dualRelated = (first: string, second: string): Parts => ({
+        ...MINIMAL_PARTS,
+        "word/numbering.xml": NUMBERING_XML,
+        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rIdA" Type="${R}/${first}" Target="numbering.xml"/>` +
+                `<Relationship Id="rIdB" Type="${R}/${second}" Target="numbering.xml"/></Relationships>`,
+        ),
+        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+            "</Types>",
+            `<Override PartName="/word/numbering.xml" ContentType="${CT.numbering}"/></Types>`,
+        ),
+    });
+
+    /** A reached glossary (referencing nothing) whose own relationships part relates `word/glossary/styles2.xml` as `first` and then `second`. */
+    const dualGlossary = (first: string, second: string): Parts => ({
+        ...MINIMAL_PARTS,
+        "word/glossary/document.xml": glossaryWith("", ""),
+        "word/glossary/_rels/document.xml.rels": relsPart(
+            `<Relationship Id="rIdA" Type="${R}/${first}" Target="styles2.xml"/>` +
+                `<Relationship Id="rIdB" Type="${R}/${second}" Target="styles2.xml"/>`,
+        ),
+        "word/glossary/styles2.xml": `<w:styles xmlns:w="${W}"></w:styles>`,
+        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rIdG" Type="${R}/glossaryDocument" Target="glossary/document.xml"/></Relationships>`,
+        ),
+        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+            "</Types>",
+            `<Override PartName="/word/glossary/document.xml" ContentType="${CT.glossary}"/>` +
+                `<Override PartName="/word/glossary/styles2.xml" ContentType="${CT.styles}"/></Types>`,
+        ),
+    });
+
+    it.each([
+        ["footer", "numbering"],
+        ["numbering", "footer"],
+    ] as const)("wordTypedRelationshipTargets keeps both segments, %s first", async (first, second) => {
+        expect(
+            await wordTypedRelationshipTargets(ValidationContext.fromEntries(dualRelated(first, second)), new Set(["footer", "numbering"])),
+        ).toEqual([
+            { part: "word/numbering.xml", segment: first },
+            { part: "word/numbering.xml", segment: second },
+        ]);
+    });
+
+    it("wordTypedRelationshipTargets yields one entry when two relationships of the same type name one part", async () => {
+        expect(
+            await wordTypedRelationshipTargets(
+                ValidationContext.fromEntries(dualRelated("numbering", "numbering")),
+                new Set(["numbering"]),
+            ),
+        ).toEqual([{ part: "word/numbering.xml", segment: "numbering" }]);
+    });
+
+    it.each([
+        ["header", "styles"],
+        ["styles", "header"],
+    ] as const)("glossaryTypedRelationshipTargets keeps both segments, %s first", async (first, second) => {
+        expect(
+            await glossaryTypedRelationshipTargets(
+                ValidationContext.fromEntries(dualGlossary(first, second)),
+                new Set(["header", "styles"]),
+            ),
+        ).toEqual([
+            { part: "word/glossary/styles2.xml", segment: first, via: "glossary" },
+            { part: "word/glossary/styles2.xml", segment: second, via: "glossary" },
+        ]);
+    });
+
+    it.each([
+        ["footer", "numbering"],
+        ["numbering", "footer"],
+    ] as const)("wordReadTypedTargets reads the part through its eager segment alone, %s first", async (first, second) => {
+        // The footer relationship is unreferenced — lazy and unread — while
+        // the numbering one is eagerly parsed: exactly one typed read.
+        const typed = await wordReadTypedTargets(ValidationContext.fromEntries(dualRelated(first, second)));
+        expect(typed.filter((target) => target.part === "word/numbering.xml")).toEqual([
+            { part: "word/numbering.xml", segment: "numbering" },
+        ]);
+    });
+
+    it.each([
+        ["header", "styles"],
+        ["styles", "header"],
+    ] as const)("wordReadTypedTargets reads the glossary's part through styles alone, %s first", async (first, second) => {
+        const typed = await wordReadTypedTargets(ValidationContext.fromEntries(dualGlossary(first, second)));
+        expect(typed.filter((target) => target.part === "word/glossary/styles2.xml")).toEqual([
+            { part: "word/glossary/styles2.xml", segment: "styles", via: "glossary" },
+        ]);
+    });
+
+    it.each([
+        ["footer", "numbering"],
+        ["numbering", "footer"],
+    ] as const)("wordReadTypedTargets keeps the lazy segment when the document uses it, %s first", async (first, second) => {
+        // A footerReference to the lazy relationship's r:id makes that typed
+        // read real: both segments are read, in either order.
+        const footerId = first === "footer" ? "rIdA" : "rIdB";
+        const parts: Parts = { ...dualRelated(first, second), "word/document.xml": documentUsingFooter(footerId) };
+        const typed = await wordReadTypedTargets(ValidationContext.fromEntries(parts));
+        expect(typed.filter((target) => target.part === "word/numbering.xml")).toEqual([
+            { part: "word/numbering.xml", segment: first },
+            { part: "word/numbering.xml", segment: second },
+        ]);
+    });
 });

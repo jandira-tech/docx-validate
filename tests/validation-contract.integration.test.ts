@@ -4131,3 +4131,122 @@ describe("validation contract: empty main-document content type (#581, #381)", (
         60_000,
     );
 });
+
+// session 20 (s20b) plus an unreferenced second relationship (#593, #381).
+describe("validation contract: a part reached by two relationship types (#593, #381)", () => {
+    const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const NUMBERING_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml";
+    const NUMBERING_XML =
+        `<w:numbering xmlns:w="${W}"><w:abstractNum w:abstractNumId="0"><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="decimal"/>` +
+        `<w:lvlText w:val="%1."/></w:lvl></w:abstractNum><w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num></w:numbering>`;
+    const code = "word-part-content-type-inexact";
+    const inexactFindings = (result: Awaited<ReturnType<typeof validate>>) => result.issues.filter((issue) => issue.code === code);
+
+    /** The s20b numbering specimen, plus a `second`-typed relationship naming the same part, in the given order. */
+    const dualRelated = (first: "footer" | "numbering", second: "footer" | "numbering"): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        "word/numbering.xml": NUMBERING_XML,
+        "word/_rels/document.xml.rels": (MINIMAL_PARTS["word/_rels/document.xml.rels"] as string).replace(
+            "</Relationships>",
+            `<Relationship Id="rIdA" Type="${R}/${first}" Target="numbering.xml"/>` +
+                `<Relationship Id="rIdB" Type="${R}/${second}" Target="numbering.xml"/></Relationships>`,
+        ),
+        "[Content_Types].xml": (MINIMAL_PARTS["[Content_Types].xml"] as string).replace(
+            "</Types>",
+            `<Override PartName="/word/numbering.xml" ContentType="${NUMBERING_TYPE}; charset=utf-8"/></Types>`,
+        ),
+    });
+
+    it.each([
+        ["footer", "numbering"],
+        ["numbering", "footer"],
+    ] as const)(
+        "rejects the numbering Override whichever relationship comes first, and partial runs agree",
+        async (first, second) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, `dual-${first}.docx`);
+                writeFileSync(file, await buildDocx(dualRelated(first, second)));
+                const word = await validate(file, { profile: "word-valid" });
+                expect(word.valid).toBe(false);
+                const [finding] = inexactFindings(word);
+                expect(inexactFindings(word)).toHaveLength(1);
+                expect(finding).toMatchObject({ code, severity: "error", path: "word/numbering.xml" });
+                expect(finding?.message).toContain("the main document's numbering relationship");
+                const strict = await validate(file, { profile: "strict" });
+                expect(strict.valid).toBe(false);
+                expect(inexactFindings(strict)).toEqual(inexactFindings(word));
+                const lenient = await validate(file, { profile: "lenient" });
+                expect(inexactFindings(lenient)).toEqual([{ ...finding!, severity: "warning" }]);
+                for (const selection of [{ quick: true }, { checks: [code] }, { checks: ["content-types"] }]) {
+                    const partial = await validate(file, { profile: "word-valid", ...selection });
+                    expect(partial.valid).toBe(word.valid);
+                    expect(inexactFindings(partial)).toEqual(inexactFindings(word));
+                    expect([...errorCodes(partial.issues)].every((error) => errorCodes(word.issues).has(error))).toBe(true);
+                }
+            });
+        },
+        60_000,
+    );
+
+    /**
+     * One header, two story roots: the s22a glossary header typed
+     * `header+xml; charset=utf-8`, which the glossary references, plus the
+     * main document's own unused header relationship to the same part, in
+     * either relationship order. Word reads the header through the glossary.
+     */
+    const GLOSSARY_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.glossary+xml";
+    const HEADER_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml";
+    const sharedHeader = (mainHeaderFirst: boolean): Record<string, string> => {
+        const glossaryRel = `<Relationship Id="rIdG" Type="${R}/glossaryDocument" Target="glossary/document.xml"/>`;
+        const headerRel = `<Relationship Id="rIdM" Type="${R}/header" Target="glossary/header9.xml"/>`;
+        return {
+            ...MINIMAL_PARTS,
+            "word/glossary/document.xml":
+                `<w:glossaryDocument xmlns:w="${W}" xmlns:r="${R}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+                `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+                `<w:docPartBody><w:p><w:r><w:t>Part</w:t></w:r></w:p><w:sectPr><w:headerReference w:type="default" r:id="rIdE"/></w:sectPr></w:docPartBody>` +
+                `</w:docPart></w:docParts></w:glossaryDocument>`,
+            "word/glossary/_rels/document.xml.rels":
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                `<Relationship Id="rIdE" Type="${R}/header" Target="header9.xml"/></Relationships>`,
+            "word/glossary/header9.xml": `<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header</w:t></w:r></w:p></w:hdr>`,
+            "word/_rels/document.xml.rels": (MINIMAL_PARTS["word/_rels/document.xml.rels"] as string).replace(
+                "</Relationships>",
+                `${mainHeaderFirst ? headerRel + glossaryRel : glossaryRel + headerRel}</Relationships>`,
+            ),
+            "[Content_Types].xml": (MINIMAL_PARTS["[Content_Types].xml"] as string).replace(
+                "</Types>",
+                `<Override PartName="/word/glossary/document.xml" ContentType="${GLOSSARY_TYPE}"/>` +
+                    `<Override PartName="/word/glossary/header9.xml" ContentType="${HEADER_TYPE}; charset=utf-8"/></Types>`,
+            ),
+        };
+    };
+
+    it.each([true, false])(
+        "rejects a glossary-referenced header the main document also relates unused (main relationship first: %s), and partial runs agree",
+        async (mainHeaderFirst) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, `shared-header-${mainHeaderFirst}.docx`);
+                writeFileSync(file, await buildDocx(sharedHeader(mainHeaderFirst)));
+                const word = await validate(file, { profile: "word-valid" });
+                expect(word.valid).toBe(false);
+                const [finding] = inexactFindings(word);
+                expect(inexactFindings(word)).toHaveLength(1);
+                expect(finding).toMatchObject({ code, severity: "error", path: "word/glossary/header9.xml" });
+                expect(finding?.message).toContain("the glossary's header relationship");
+                expect(finding?.message).toContain("offers to recover the package");
+                const strict = await validate(file, { profile: "strict" });
+                expect(strict.valid).toBe(false);
+                expect(inexactFindings(strict)).toEqual(inexactFindings(word));
+                for (const selection of [{ quick: true }, { checks: [code] }, { checks: ["content-types"] }]) {
+                    const partial = await validate(file, { profile: "word-valid", ...selection });
+                    expect(partial.valid).toBe(word.valid);
+                    expect(inexactFindings(partial)).toEqual(inexactFindings(word));
+                    expect([...errorCodes(partial.issues)].every((error) => errorCodes(word.issues).has(error))).toBe(true);
+                }
+            });
+        },
+        60_000,
+    );
+});
