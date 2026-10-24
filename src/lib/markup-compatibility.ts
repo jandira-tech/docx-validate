@@ -3,6 +3,7 @@
  * Licensed under the Apache License, Version 2.0.
  */
 
+import { CONTENT_TYPES_NAMESPACE, isContentTypesStreamName, isRelationshipsPartName } from "./content-types";
 import { NS, type ValidationIssue } from "./types";
 
 export const UNDERSTOOD_NAMESPACES: ReadonlySet<string> = new Set([
@@ -87,6 +88,23 @@ export const WORD_UNDERSTOOD_NAMESPACES: ReadonlySet<string> = new Set([
     "http://schemas.microsoft.com/office/word/2010/wordprocessingInk",
     "http://schemas.microsoft.com/office/word/2010/wordprocessingShape",
 ]);
+
+// The processor that applies OPC's Part 2 rules to a package stream
+// understands that stream's own vocabulary: an `mc:Ignorable` naming the
+// content-types namespace cannot un-declare every part's content type, and
+// one naming the package-relationships namespace cannot hide the
+// relationships from the checks that read `.rels` parts (#493). Word parts
+// keep the Word-understood set alone.
+export const CONTENT_TYPES_UNDERSTOOD_NAMESPACES: ReadonlySet<string> = new Set([...WORD_UNDERSTOOD_NAMESPACES, CONTENT_TYPES_NAMESPACE]);
+export const RELATIONSHIPS_UNDERSTOOD_NAMESPACES: ReadonlySet<string> = new Set([...WORD_UNDERSTOOD_NAMESPACES, NS.PR]);
+
+/** The understood namespaces for the processed view of one part: the stream's own vocabulary for the content-types and relationships streams, the Word set otherwise. */
+export const understoodNamespacesForPart = (part: string): ReadonlySet<string> => {
+    if (isContentTypesStreamName(part)) {
+        return CONTENT_TYPES_UNDERSTOOD_NAMESPACES;
+    }
+    return isRelationshipsPartName(part) ? RELATIONSHIPS_UNDERSTOOD_NAMESPACES : WORD_UNDERSTOOD_NAMESPACES;
+};
 
 // ISO-IEC29500-4_2016/dml-chart.xsd:30 and sml.xsd:232 CT_Extension
 // require one lax xsd:any child. dml-main.xsd:183 CT_OfficeArtExtension
@@ -261,15 +279,21 @@ export const applyMarkupCompatibility = (
                     message: "AlternateContent requires Choices with declared Requires prefixes, followed by at most one Fallback.",
                 });
             }
+            // mc.xsd declares Requires use="required": a Choice without a
+            // non-empty Requires is malformed (flagged above) and must never
+            // be selected — an empty token list would otherwise be vacuously
+            // understood and win over the well-formed Fallback (#494).
+            const selectableChoice = (node: Element): boolean => {
+                const required = tokens(node.getAttribute("Requires") || "");
+                return (
+                    node.namespaceURI === NS.MC &&
+                    node.localName === "Choice" &&
+                    required.length > 0 &&
+                    required.every((prefix) => opts.understood.has(namespaceUri(node, prefix) || ""))
+                );
+            };
             const selected =
-                branches.find(
-                    (node) =>
-                        node.namespaceURI === NS.MC &&
-                        node.localName === "Choice" &&
-                        tokens(node.getAttribute("Requires") || "").every((prefix) =>
-                            opts.understood.has(namespaceUri(node, prefix) || ""),
-                        ),
-                ) ?? branches.find((node) => node.namespaceURI === NS.MC && node.localName === "Fallback");
+                branches.find(selectableChoice) ?? branches.find((node) => node.namespaceURI === NS.MC && node.localName === "Fallback");
             for (const branch of branches) {
                 if (
                     branch !== selected &&

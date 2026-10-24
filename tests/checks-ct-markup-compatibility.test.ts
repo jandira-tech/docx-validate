@@ -48,6 +48,9 @@ const BAD = `<Override PartName="/word/a%41b.xml" ContentType="application/xml"/
 const GOOD = `<Override PartName="/word/fallback.xml" ContentType="application/xml"/>`;
 const alternate = (choice: string, fallback: string) =>
     `<mc:AlternateContent><mc:Choice Requires="x">${choice}</mc:Choice><mc:Fallback>${fallback}</mc:Fallback></mc:AlternateContent>`;
+/** An AlternateContent whose Choice carries no usable Requires (#494): none, empty, or blank. */
+const noRequires = (requires: string, choice: string, fallback: string) =>
+    `<mc:AlternateContent><mc:Choice${requires}>${choice}</mc:Choice><mc:Fallback>${fallback}</mc:Fallback></mc:AlternateContent>`;
 
 /** The content-types stream with extra namespace declarations/attributes on the root and extra children. */
 const withContentTypes = (
@@ -60,6 +63,8 @@ const withContentTypes = (
     return { ...parts, [STREAM]: source.replace(open, open.replace(/>$/, ` ${rootExtra}>`)).replace("</Types>", `${children}</Types>`) };
 };
 
+const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types";
+
 /** The session-14a specimens: name → parts. */
 const SPECIMENS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
     "459-mc-namespace-declared-only": withContentTypes(MINIMAL_PARTS, MC_DECL, ""),
@@ -67,6 +72,14 @@ const SPECIMENS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
     "459-mc-ignorable-ignored-element": withContentTypes(MINIMAL_PARTS, `${MC_DECL} mc:Ignorable="x"`, `<x:Foo/>`),
     "459-mc-choice-bad-fallback-good": withContentTypes(MINIMAL_PARTS, MC_DECL, alternate(BAD, GOOD)),
     "459-mc-choice-good-fallback-bad": withContentTypes(MINIMAL_PARTS, MC_DECL, alternate(GOOD, BAD)),
+    "494-mc-choice-no-requires-bad-fallback-good": withContentTypes(MINIMAL_PARTS, MC_DECL, noRequires("", BAD, GOOD)),
+    "494-mc-choice-no-requires-good-fallback-bad": withContentTypes(MINIMAL_PARTS, MC_DECL, noRequires("", GOOD, BAD)),
+    "494-mc-choice-empty-requires-bad-fallback-good": withContentTypes(MINIMAL_PARTS, MC_DECL, noRequires(' Requires=""', BAD, GOOD)),
+    "493-mc-ignorable-own-namespace": withContentTypes(
+        MINIMAL_PARTS,
+        `xmlns:mc="${MC}" xmlns:t="${CONTENT_TYPES_NAMESPACE}" mc:Ignorable="t"`,
+        `<t:Default Extension="png" ContentType="image/png"/>`,
+    ),
 };
 
 const findings = (issues: readonly ValidationIssue[]) => issues.filter((issue) => issue.code === ID);
@@ -137,6 +150,37 @@ describe("ct-markup-compatibility", () => {
         }
     });
 
+    it("lists every Markup Compatibility element once per occurrence, in document order (#495)", async () => {
+        // An outer AlternateContent whose Choice holds an inner one: two
+        // Choices and two Fallbacks, each listed once per occurrence.
+        const nested = withContentTypes(
+            MINIMAL_PARTS,
+            MC_DECL,
+            `<mc:AlternateContent><mc:Choice Requires="x">${alternate(BAD, GOOD)}</mc:Choice><mc:Fallback>${GOOD}</mc:Fallback></mc:AlternateContent>`,
+        );
+        expect(await diagnose(ValidationContext.fromEntries(nested))).toEqual([
+            found(
+                "<mc:AlternateContent> element",
+                "<mc:Choice> element",
+                "<mc:AlternateContent> element",
+                "<mc:Choice> element",
+                "<mc:Fallback> element",
+                "<mc:Fallback> element",
+            ),
+        ]);
+    });
+
+    it("lists an MC attribute once per element that carries it (#495)", async () => {
+        const ctx = ValidationContext.fromEntries(
+            withContentTypes(
+                MINIMAL_PARTS,
+                `${MC_DECL} mc:Ignorable="x"`,
+                `<Override PartName="/word/x.xml" ContentType="application/xml" mc:Ignorable="x"/>`,
+            ),
+        );
+        expect(await diagnose(ctx)).toEqual([found("mc:Ignorable attribute on <Types>", "mc:Ignorable attribute on <Override>")]);
+    });
+
     it("reports mc:MustUnderstand and mc:ProcessContent attributes", async () => {
         const ctx = ValidationContext.fromEntries(
             withContentTypes(MINIMAL_PARTS, `${MC_DECL} mc:MustUnderstand="x" mc:ProcessContent="x:Foo"`, ""),
@@ -166,6 +210,84 @@ describe("ct-markup-compatibility", () => {
 
     it("is Word-blocking for DOCX and DOCM", () => {
         expect(isWordBlockingIssue({ code: ID, severity: "error", message: "", path: STREAM }, new Set())).toBe(true);
+    });
+});
+
+describe("ct-markup-compatibility: a Choice without Requires is never selected (#494)", { timeout: 120_000 }, () => {
+    it.each(["494-mc-choice-no-requires-bad-fallback-good", "494-mc-choice-empty-requires-bad-fallback-good"] as const)(
+        "%s: the Fallback's declarations are judged, not the unselectable Choice's",
+        async (name) => {
+            await withTempDir(async (dir) => {
+                const target = path.join(dir, "specimen.docx");
+                writeFileSync(target, await buildDocx(SPECIMENS[name]!));
+                const wordValid = await validate(target, { profile: "word-valid" });
+                for (const profile of ["word-valid", "strict"] as const) {
+                    const result = profile === "word-valid" ? wordValid : await validate(target, { profile });
+                    // The BAD Override sits in the malformed Choice, which a
+                    // processor must not select (mc.xsd: Requires use="required");
+                    // the Fallback's GOOD Override draws nothing. The run stays
+                    // invalid through ct-markup-compatibility alone.
+                    expect(partnameFindings(result.issues), profile).toEqual([]);
+                    expect(findings(result.issues), profile).toEqual([
+                        expect.objectContaining({ code: ID, path: STREAM, severity: "error" }),
+                    ]);
+                    expect(result.valid, profile).toBe(false);
+                }
+                for (const selection of [{ checks: ["ct-override-partname-invalid"] }, { checks: ["content-types"] }]) {
+                    const partial = await validate(target, { profile: "word-valid", ...selection });
+                    const tag = JSON.stringify(selection);
+                    expect(partnameFindings(partial.issues), tag).toEqual([]);
+                    // #381: partial errors are a subset of the full run's.
+                    expect(errorPairs(wordValid.issues), tag).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
+                }
+            });
+        },
+    );
+
+    it("494-mc-choice-no-requires-good-fallback-bad: the Fallback is judged once the Choice is unselectable", async () => {
+        await withTempDir(async (dir) => {
+            const target = path.join(dir, "specimen.docx");
+            writeFileSync(target, await buildDocx(SPECIMENS["494-mc-choice-no-requires-good-fallback-bad"]!));
+            const result = await validate(target, { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            expect(partnameFindings(result.issues)).toEqual([
+                expect.objectContaining({ code: "ct-override-partname-invalid", path: STREAM }),
+            ]);
+            const partial = await validate(target, { profile: "word-valid", checks: ["ct-override-partname-invalid"] });
+            expect(partnameFindings(partial.issues)).toEqual(partnameFindings(result.issues));
+        });
+    });
+});
+
+describe("ct-markup-compatibility: an Ignorable naming the stream's own namespace blinds no pass (#493)", { timeout: 120_000 }, () => {
+    const coverageFindings = (issues: readonly ValidationIssue[]) =>
+        issues.filter((issue) => ["ct-uncovered-part", "ct-undeclared-part", "ct-undeclared-ext"].includes(issue.code ?? ""));
+
+    it("reports no coverage findings in full and partial runs", async () => {
+        await withTempDir(async (dir) => {
+            const target = path.join(dir, "specimen.docx");
+            writeFileSync(target, await buildDocx(SPECIMENS["493-mc-ignorable-own-namespace"]!));
+            for (const profile of ["word-valid", "lenient", "strict"] as const) {
+                const result = await validate(target, { profile });
+                // The processor applying OPC Part 2 §10 to this stream
+                // understands the content-types vocabulary itself, so the
+                // Ignorable naming it cannot un-declare every part's type.
+                expect(
+                    coverageFindings(result.issues).map((issue) => issue.code),
+                    profile,
+                ).toEqual([]);
+                expect(findings(result.issues), profile).toEqual([expect.objectContaining({ code: ID, path: STREAM })]);
+            }
+            for (const selection of [{ quick: true }, { checks: ["content-types"] }, { checks: [ID] }]) {
+                const partial = await validate(target, { profile: "word-valid", ...selection });
+                const tag = JSON.stringify(selection);
+                expect(
+                    coverageFindings(partial.issues).map((issue) => issue.code),
+                    tag,
+                ).toEqual([]);
+                expect(findings(partial.issues), tag).toEqual([expect.objectContaining({ code: ID, path: STREAM })]);
+            }
+        });
     });
 });
 
