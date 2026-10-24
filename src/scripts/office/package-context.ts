@@ -8,9 +8,37 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import type { ValidationIssue } from "../../lib/types";
+import type { PackageFormat, Profile, ValidationIssue } from "../../lib/types";
+import { runChecks } from "../../lib/check-scheduler";
+import { opcNameIssueSeverity, wordObservedIssueSeverity } from "../../lib/mode-policy";
 import { assertPlaceableNames, ValidationContext, PackageViewError, PackageOpenError } from "../../lib/validation-context";
+import { createDefaultCheckRegistry } from "./checks";
+import { OPC_PART_NAME_WORD_REFUSED } from "./checks/opc-part-name-word-refused";
 import { walkDirectory, walkFiles, type UnreadableEntry } from "./validators/base";
+
+/** Shared stored-name diagnosis before any XML/extraction gate (#572). */
+export async function storedNamesRun(
+    context: ValidationContext,
+    format: PackageFormat,
+    profile: Profile,
+): Promise<{ issues: ValidationIssue[]; executed: readonly string[] }> {
+    const registry = createDefaultCheckRegistry();
+    const select = registry
+        .list(format)
+        .filter((definition) => definition.storedNamesOnly === true)
+        .map((definition) => definition.id);
+    const run = await runChecks(context, registry, { format, select });
+    return {
+        issues: run.issues.map((issue) => ({
+            ...issue,
+            severity:
+                issue.code === OPC_PART_NAME_WORD_REFUSED
+                    ? wordObservedIssueSeverity(profile, format)
+                    : opcNameIssueSeverity(profile, format),
+        })),
+        executed: run.executed,
+    };
+}
 
 /**
  * The finding for an input whose package view cannot be read: an item name
