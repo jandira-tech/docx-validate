@@ -132,7 +132,8 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
                         profile,
                     ).toEqual(["package-extract-failed"]);
                     // The ZIP envelope is read from the bytes before extraction, so its checks ran.
-                    expect(result.metadata?.executedChecks, profile).toEqual([
+                    const executed = result.metadata?.executedChecks ?? [];
+                    expect(executed.slice(0, 6), profile).toEqual([
                         "zip-bytes-after-eocd",
                         "zip-eocd-comment-overrun",
                         "opc-equivalent-part-names",
@@ -140,14 +141,23 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
                         "opc-part-name-escaped-slash",
                         "opc-part-name-word-refused",
                     ]);
+                    // The archive still reads, so the checks a partial run runs
+                    // on it ran too, and their findings are in the failure (#454).
+                    expect(executed, profile).toContain("ct-override-partname-invalid");
                 }
-                // Lenient never runs the envelope checks.
+                // Lenient never runs the envelope checks, and it runs no Word rule.
                 const lenient = await validate(file, { profile: "lenient" });
                 expect(lenient.metadata?.executedChecks).toEqual([
                     "opc-equivalent-part-names",
                     "opc-part-name-escaped-unreserved",
                     "opc-part-name-escaped-slash",
                     "opc-part-name-word-refused",
+                    "xml-syntax",
+                    "ct-duplicate-declaration",
+                    "ct-override-partname-invalid",
+                    "ct-override-partname-word-refused",
+                    "comment-markers",
+                    "comment-threading",
                 ]);
             });
         } finally {
