@@ -316,6 +316,19 @@ export interface ParagraphCounts {
  * nesting context instead of checking `.parentNode` for every element,
  * eliminating O(N*D) worst-case scaling. Prunes drawings inside deletions.
  */
+/**
+ * Drop the `*-parse` findings a check reports for a part the XML diagnostics
+ * already rejected: the check could not read the part, which is the same
+ * defect reported again.
+ */
+const withoutConsequentialParseFailures = (result: ValidationResult, malformed: ReadonlySet<string>): ValidationResult => {
+    if (malformed.size === 0) return result;
+    const issues = result.issues.filter(
+        (issue) => !(issue.path !== undefined && malformed.has(issue.path) && issue.code?.endsWith("-parse")),
+    );
+    return issues.length === result.issues.length ? result : { valid: result.valid, issues };
+};
+
 const collectDeletedRunText = (root: Document | Element, localName: string): Element[] => {
     const out: Element[] = [];
     const stack: { node: Element; inDel: boolean }[] = [];
@@ -408,8 +421,18 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     async validate(): Promise<ValidationResult> {
         this.xsdWalk = { started: false, parts: [], eligible: 0 };
         this.runContext = undefined;
+        this.malformedParts = new Set();
         const xmlOk = await this.validateXml();
-        if (!xmlOk.valid && this.profile !== "word-valid") return xmlOk;
+        // Only lenient stops at a malformed part. Word-valid and strict keep
+        // running the checks of every other part, so strict reports every
+        // code word-valid does. The malformed part itself is reported once,
+        // by its XML diagnostics.
+        if (!xmlOk.valid && this.profile === "lenient") return xmlOk;
+        this.malformedParts = new Set(
+            xmlOk.issues.flatMap((issue) => (issue.severity === "error" && issue.path !== undefined ? [issue.path] : [])),
+        );
+        const settle = async (pending: Array<Promise<ValidationResult>>): Promise<ValidationResult[]> =>
+            (await Promise.all(pending)).map((result) => withoutConsequentialParseFailures(result, this.malformedParts));
 
         const checks: Array<Promise<ValidationResult>> = [
             this.validateNamespaces(),
@@ -442,21 +465,28 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             this.validateRelationshipIdStability(),
             this.validateRedundantRunProperties(),
         ];
-        if (this.profile !== "lenient") checks.push(this.validateRegisteredWordRules());
+        const wordRules = this.profile === "lenient" ? undefined : this.validateRegisteredWordRules();
+        if (wordRules) checks.push(wordRules);
         if (this.profile === "word-valid") {
-            // Non-XSD checks first. A blocking no returns before XSD starts.
+            // Word-valid judges what Word reads through structural checks
+            // alone: no schema is compiled or walked.
             checks.push(this.validateWordOpenCompatibility());
-            const profiled = this.applyWordValidProfile(mergeResults(xmlOk, ...(await Promise.all(checks))));
-            if (!profiled.valid) return profiled;
-            const xsd = await this.validateAgainstXsd();
-            return this.applyWordValidProfile(mergeResults(profiled, xsd));
+            return this.applyWordValidProfile(mergeResults(xmlOk, ...(await settle(checks))));
         }
 
         // Strict is a superset of word-valid: every Word-proven rejection
         // rule runs here too, at its native error severity.
         if (this.profile === "strict") checks.push(this.validateWordOpenCompatibility());
-        checks.push(this.validateAgainstXsd());
-        return mergeResults(xmlOk, ...(await Promise.all(checks)));
+        const xsd = this.validateAgainstXsd();
+        checks.push(xsd);
+        const results = await settle(checks);
+        if (!wordRules) return mergeResults(xmlOk, ...results);
+        const rules = results[checks.indexOf(wordRules)]!;
+        const schema = results[checks.indexOf(xsd)]!;
+        return mergeResults(
+            xmlOk,
+            ...results.map((result) => (result === schema ? withoutRepeatedCompatibilityFindings(schema, rules) : result)),
+        );
     }
 
     /**
@@ -471,34 +501,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             select: WORD_RULE_CHECKS.map((check) => check.id),
         });
         return { valid: run.valid, issues: [...run.issues] };
-    }
-
-    /**
-     * Stop only when a Word-blocking schema error is one of the issues this
-     * part will actually return. The three-message cap used to stop on a
-     * later blocking error while emitting only tolerated ones, and the
-     * profile then downgraded those to warnings.
-     */
-    protected override shouldStopXsdWalk(rel: string, errors: ReadonlySet<string>): boolean {
-        if (this.profile !== "word-valid") return false;
-        return this.xsdErrorsToReport(rel, errors).some((error) => this.wordBlocksXsdError(rel, error));
-    }
-
-    protected override xsdErrorsToReport(rel: string, errors: ReadonlySet<string>): readonly string[] {
-        const all = [...errors];
-        const reported = all.slice(0, 3);
-        if (this.profile !== "word-valid") return reported;
-        if (reported.some((error) => this.wordBlocksXsdError(rel, error))) return reported;
-        const hidden = all.slice(3).find((error) => this.wordBlocksXsdError(rel, error));
-        if (hidden !== undefined) reported.push(hidden);
-        return reported;
-    }
-
-    private wordBlocksXsdError(rel: string, error: string): boolean {
-        const truncated = error.length > 250 ? `${error.slice(0, 250)}...` : error;
-        const message = `  - ${truncated}`;
-        if (message.includes("Schema load failed") || message.includes("XSD engine failed:")) return true;
-        return isWordBlockingXsdIssue({ severity: "error", message, path: rel, code: "xsd-error" });
     }
 
     private applyWordValidProfile(result: ValidationResult): ValidationResult {
@@ -532,6 +534,32 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             // ([trash]/0000.dat). A part that has a content type but no
             // relationship is tolerated, so rels-unreferenced stays a warning.
             case "ct-uncovered-part":
+            // paragraph-sectpr-breaks.docx: empty vt:filetime causes Word unreadable-content recovery; empty lpwstr in complex2.docx opens clean.
+            case "word-custom-property-filetime-empty":
+            // header-with-rid-no-sidecar.docx: Word open-error with missing wp:extent; the complete scaffold in validators-docx.test.ts opens clean.
+            case "word-drawing-extent-missing":
+            // Historical WORD_BLOCKING_MISPLACED_LOCALS extent probe comment: misplaced extents are rejected; positive-extent drawing control opens clean.
+            case "word-drawing-extent-misplaced":
+            // header-with-rid-no-sidecar.docx: Word open-error without pic:nvPicPr; the complete header scaffold in validators-docx.test.ts is tolerated.
+            case "word-picture-nvpicpr-missing":
+            // header-with-rid-no-sidecar.docx: Word open-error without pic:spPr; the complete header scaffold in validators-docx.test.ts is tolerated.
+            case "word-picture-sppr-missing":
+            // word-rejects-misplaced-run.docx: a w:r directly inside w:tc makes Word refuse the file (OPEN_ERROR probe); the same runs under w:p/w:ins/w:del open clean.
+            case "word-run-misplaced":
+            // 5Errors.docx (word: unreadable-content-warning): a second w:rPr inside one run makes Word offer recovery; a single leading w:rPr opens clean.
+            case "word-run-properties-misplaced":
+            // invalid-underline.docx (word: unreadable-content-warning): w:u directly inside w:pPr makes Word offer recovery; w:u inside w:rPr opens clean.
+            case "word-underline-misplaced":
+            // 5Errors.docx (word: unreadable-content-warning): w:pPr nested inside w:pPr makes Word offer recovery; the duplicate-pPr-in-one-paragraph control (word-tolerated-duplicate-ppr.docx) opens clean.
+            case "word-paragraph-properties-misplaced":
+            // Corpus probe (word-invalid-fixtures/README.md, CLEAN-FP 0/1304): a w:sectPr where the schema forbids it is a Word rejection class; legal body/pPr placements (word-tolerated-misplaced-pgsz.docx) open clean.
+            case "word-section-properties-misplaced":
+            // table_tests_v2.docx (probed UNREADABLE_CONTENT): w:tblBorders ordered after w:tblLayout inside w:tblPr makes Word offer recovery; Word-opened jubarte k07/k08/k09 keep tcPr tolerated.
+            case "word-table-properties-misplaced":
+            // UnknownElement.docx (word: open-error): an unknown w:p2 block in the body makes Word refuse the file; unknown names in property containers (annotations_import_2.docx, clean-open) stay tolerated.
+            case "word-unknown-element":
+            // hyperlink-exported.docx (word: open-error): a namespace-less <link/> inside w:rPr makes Word refuse the file; the namespaced w:link style child opens clean (word-tolerated-misplaced-link.docx).
+            case "word-link-without-namespace":
             case "word-drawing-scalar-whitespace":
             case "word-drawing-arc-radius":
             case "word-empty-drawing":
@@ -644,12 +672,6 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             case "mce-malformed":
             case "mce-must-understand":
                 return true;
-            case "xsd-error":
-                // A schema the engine could not load is not a Word-tolerated
-                // quirk. The ignore list already dropped the Dublin Core
-                // false positive before this issue was built.
-                if (issue.message.includes("Schema load failed") || issue.message.includes("XSD engine failed:")) return true;
-                return isWordBlockingXsdIssue(issue);
             default:
                 return false;
         }
@@ -4286,57 +4308,25 @@ function finalize(issues: ValidationIssue[]): ValidationResult {
 }
 
 /**
- * Element local-names whose XSD "this element is not expected" (content-model)
- * violation makes real Microsoft Word refuse the file (OPEN_ERROR / unreadable),
- * as opposed to silently relocating it. Derived empirically from a real-Word
- * openability probe over a 1300+-file corpus; this set is DISJOINT from the
- * Word-tolerated misplacements (pgSz, headerReference, uiPriority, link, tr,
- * hyperlink, duplicate pPr, and EG_RunInnerContent under <w:p>), so promoting
- * only these keeps the word-valid profile free of false positives.
+ * Strict applies markup compatibility twice: the Word rules judge Word's view
+ * and the schema walk judges the schema's view. A finding both views make is
+ * reported once, by the Word rule; the schema walk keeps what only its view
+ * finds (a namespace Word understands but the schemas do not).
  */
-const WORD_BLOCKING_MISPLACED_LOCALS: ReadonlySet<string> = new Set([
-    "r", // a run misplaced (e.g. directly in the body where a sectPr is due)
-    "rPr", // run properties outside a run
-    // NB: pPr is intentionally NOT here. A duplicate <w:pPr> in one paragraph
-    // trips "pPr: not expected", but real Word silently merges/ignores it and
-    // opens cleanly (verified: superdoc exports, word-tolerated-duplicate-ppr.docx).
-    // The narrow line-3002 guard (pPr + "Expected is one of") still covers the
-    // genuinely Word-blocking pPr-misplacement variant.
-    "sectPr", // section properties misplaced
-    "extent", // drawing extent misplaced (corrupt <w:drawing> structure)
-    "tblBorders",
-    "tblCellSpacing", // table-property elements outside <w:tblPr>
-]);
-
-function isWordBlockingXsdIssue(issue: ValidationIssue): boolean {
-    if (issue.path && !issue.path.startsWith("word/") && issue.path !== "docProps/custom.xml") return false;
-    const msg = issue.message;
-    // Content-model violation ("Element '{ns}local': This element is not expected"):
-    // an element sits where the schema forbids it. Word's loader rejects a specific
-    // family of these (a misplaced run, run/paragraph/section/table-property block,
-    // or drawing extent) with OPEN_ERROR / unreadable; OTHER misplaced elements
-    // (sectPr CHILDREN like pgSz/headerReference, style children like uiPriority/
-    // link, table rows, hyperlinks, and run-inner-content under <w:p>) Word silently
-    // relocates and opens cleanly. The blocking allowlist below is derived
-    // empirically from a real-Word corpus probe (disjoint from the tolerated set);
-    // an allowlist keeps this false-positive-free (unknown elements stay warnings).
-    const notExpected = /Element '\{[^}]*\}([^']+)': This element is not expected/.exec(msg);
-    if (notExpected && WORD_BLOCKING_MISPLACED_LOCALS.has(notExpected[1])) return true;
-    return (
-        msg.includes("}p2': This element is not expected") ||
-        (msg.includes("}pPr': This element is not expected") && msg.includes("Expected is one of")) ||
-        msg.includes("}rPr': This element is not expected.") ||
-        msg.includes(
-            "}graphic': This element is not expected. Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}extent",
-        ) ||
-        msg.includes(
-            "}blipFill': This element is not expected. Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/picture}nvPicPr",
-        ) ||
-        msg.includes("Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/picture}spPr") ||
-        msg.includes("Element 'link': This element is not expected") ||
-        msg.includes("}u': This element is not expected") ||
-        msg.includes("}filetime': '' is not a valid value")
-    );
+function withoutRepeatedCompatibilityFindings(schema: ValidationResult, rules: ValidationResult): ValidationResult {
+    const key = (issue: ValidationIssue): string => `${issue.code}\u0000${issue.path ?? ""}\u0000${issue.message}`;
+    const reported = new Map<string, number>();
+    for (const issue of rules.issues) {
+        if (!issue.code?.startsWith("mce-")) continue;
+        reported.set(key(issue), (reported.get(key(issue)) ?? 0) + 1);
+    }
+    const issues = schema.issues.filter((issue) => {
+        const remaining = reported.get(key(issue)) ?? 0;
+        if (remaining === 0) return true;
+        reported.set(key(issue), remaining - 1);
+        return false;
+    });
+    return { valid: schema.valid, issues };
 }
 
 function directChild(parent: Element, namespaceURI: string, local: string): Element | null {

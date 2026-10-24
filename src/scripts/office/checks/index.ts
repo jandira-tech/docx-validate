@@ -19,6 +19,16 @@ import { wordShadingColorCheck } from "./shading-color";
 import { wordTablePropertiesRequiredCheck } from "./table-properties-required";
 import { wordRowWithoutCellCheck } from "./tables";
 import { textboxContentNamespaceCheck } from "./textbox-content-namespace";
+import { wordCustomPropertyFiletimeEmptyCheck } from "./word-custom-properties";
+import { wordDrawingExtentMissingCheck } from "./word-drawing";
+import { wordDrawingExtentMisplacedCheck } from "./word-drawing-extent-position";
+import { wordPictureNvpicprMissingCheck, wordPictureSpprMissingCheck } from "./word-picture";
+import { wordParagraphPropertiesMisplacedCheck } from "./word-paragraph-properties";
+import { wordRunMisplacedCheck, wordRunPropertiesMisplacedCheck, wordUnderlineMisplacedCheck } from "./word-run-placement";
+import { wordSectionPropertiesMisplacedCheck } from "./word-section-properties";
+import { wordTablePropertiesMisplacedCheck } from "./word-table-properties";
+import { wordLinkWithoutNamespaceCheck, wordUnknownElementCheck } from "./word-unknown-elements";
+import { wordMarkupCompatibilityCheck } from "./word-markup-compatibility";
 import { xmlSyntaxCheck } from "./xml";
 
 /**
@@ -36,6 +46,20 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordTablePropertiesRequiredCheck,
     pageMarginAttributesCheck,
     textboxContentNamespaceCheck,
+    wordCustomPropertyFiletimeEmptyCheck,
+    wordDrawingExtentMissingCheck,
+    wordDrawingExtentMisplacedCheck,
+    wordPictureNvpicprMissingCheck,
+    wordPictureSpprMissingCheck,
+    wordRunMisplacedCheck,
+    wordRunPropertiesMisplacedCheck,
+    wordUnderlineMisplacedCheck,
+    wordParagraphPropertiesMisplacedCheck,
+    wordSectionPropertiesMisplacedCheck,
+    wordTablePropertiesMisplacedCheck,
+    wordUnknownElementCheck,
+    wordLinkWithoutNamespaceCheck,
+    wordMarkupCompatibilityCheck,
 ];
 
 export function createDefaultCheckRegistry(): CheckRegistry {

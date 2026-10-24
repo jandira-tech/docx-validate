@@ -1,6 +1,6 @@
 {
     "generatedAt": "2026-10-23T09:03:55.628Z",
-    "totalFixtures": 619,
+    "totalFixtures": 621,
     "entries": [
         {
             "relativePath": "broken/comments.unmatched-comment-marker.docx",
@@ -66,7 +66,15 @@
             "relativePath": "broken/header-with-rid-no-sidecar.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "rels-missing-sidecar", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "paraid-missing-element",
+                    "rels-missing-sidecar",
+                    "word-drawing-extent-missing",
+                    "word-picture-nvpicpr-missing",
+                    "word-picture-sppr-missing",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -257,7 +265,7 @@
             "relativePath": "broken/word-rejects-misplaced-run.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "style-default-missing", "xsd-error", "xsd-summary"]
+                "errorCodes": ["paraid-missing-element", "style-default-missing", "word-run-misplaced", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -272,7 +280,14 @@
             "relativePath": "broken/word-rejects-table-cellspacing.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "style-default-missing", "word-cell-ends-with-table", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "paraid-missing-element",
+                    "style-default-missing",
+                    "word-cell-ends-with-table",
+                    "word-table-properties-misplaced",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -2675,7 +2690,14 @@
             "relativePath": "external/docx-parser-converter/tagged_tests/table_tests_v2.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "rels-empty-part", "word-cell-ends-with-table", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "paraid-missing-element",
+                    "rels-empty-part",
+                    "word-cell-ends-with-table",
+                    "word-table-properties-misplaced",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -2840,7 +2862,14 @@
             "relativePath": "external/docx-parser-converter/test_docx_files/table_advanced_demo.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "style-default-missing", "word-cell-ends-with-table", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "paraid-missing-element",
+                    "style-default-missing",
+                    "word-cell-ends-with-table",
+                    "word-table-properties-misplaced",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -4670,7 +4699,14 @@
             "relativePath": "external/open-xml-sdk/5Errors.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["comment-marker-missing", "paraid-missing-element", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "comment-marker-missing",
+                    "paraid-missing-element",
+                    "word-paragraph-properties-misplaced",
+                    "word-run-properties-misplaced",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -4745,7 +4781,7 @@
             "relativePath": "external/open-xml-sdk/UnknownElement.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["xsd-error", "xsd-summary"]
+                "errorCodes": ["word-run-misplaced", "word-unknown-element", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -5765,7 +5801,7 @@
             "relativePath": "external/superdoc/super-editor/annotations_import_2.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["xml-undeclared-prefix"]
+                "errorCodes": ["paraid-missing-element", "rels-unreferenced", "xml-undeclared-prefix", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -6845,7 +6881,7 @@
             "relativePath": "external/superdoc/super-editor/hyperlink-exported.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": ["paraid-missing-element", "rels-unreferenced", "word-link-without-namespace", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -6995,7 +7031,14 @@
             "relativePath": "external/superdoc/super-editor/invalid-underline.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-uncovered-part", "paraid-missing-element", "rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "ct-uncovered-part",
+                    "paraid-missing-element",
+                    "rels-unreferenced",
+                    "word-underline-misplaced",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -7505,7 +7548,14 @@
             "relativePath": "external/superdoc/super-editor/paragraph-sectpr-breaks.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-undeclared-ext", "paraid-missing-element", "rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "ct-undeclared-ext",
+                    "paraid-missing-element",
+                    "rels-unreferenced",
+                    "word-custom-property-filetime-empty",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -8242,7 +8292,14 @@
             "relativePath": "unknown/unknown/header-with-rid-no-sidecar.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["docprops-boolean-invalid", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "docprops-boolean-invalid",
+                    "word-drawing-extent-missing",
+                    "word-picture-nvpicpr-missing",
+                    "word-picture-sppr-missing",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -8413,7 +8470,15 @@
             "relativePath": "word-regenerate-invalid/original/broken/header-with-rid-no-sidecar.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "rels-missing-sidecar", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "paraid-missing-element",
+                    "rels-missing-sidecar",
+                    "word-drawing-extent-missing",
+                    "word-picture-nvpicpr-missing",
+                    "word-picture-sppr-missing",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -8589,7 +8654,14 @@
             "relativePath": "word-regenerate-invalid/original/external/open-xml-sdk/5Errors.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["comment-marker-missing", "paraid-missing-element", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "comment-marker-missing",
+                    "paraid-missing-element",
+                    "word-paragraph-properties-misplaced",
+                    "word-run-properties-misplaced",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -8619,7 +8691,7 @@
             "relativePath": "word-regenerate-invalid/original/external/open-xml-sdk/UnknownElement.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["xsd-error", "xsd-summary"]
+                "errorCodes": ["word-run-misplaced", "word-unknown-element", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -8709,7 +8781,7 @@
             "relativePath": "word-regenerate-invalid/original/external/superdoc/super-editor/hyperlink-exported.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": ["paraid-missing-element", "rels-unreferenced", "word-link-without-namespace", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -8724,7 +8796,14 @@
             "relativePath": "word-regenerate-invalid/original/external/superdoc/super-editor/invalid-underline.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-uncovered-part", "paraid-missing-element", "rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "ct-uncovered-part",
+                    "paraid-missing-element",
+                    "rels-unreferenced",
+                    "word-underline-misplaced",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -8739,7 +8818,14 @@
             "relativePath": "word-regenerate-invalid/original/external/superdoc/super-editor/paragraph-sectpr-breaks.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-undeclared-ext", "paraid-missing-element", "rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "ct-undeclared-ext",
+                    "paraid-missing-element",
+                    "rels-unreferenced",
+                    "word-custom-property-filetime-empty",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -8794,7 +8880,14 @@
             "relativePath": "word-regenerate-invalid/original/unknown/unknown/header-with-rid-no-sidecar.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["docprops-boolean-invalid", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "docprops-boolean-invalid",
+                    "word-drawing-extent-missing",
+                    "word-picture-nvpicpr-missing",
+                    "word-picture-sppr-missing",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -8956,7 +9049,13 @@
             "relativePath": "word-regenerate-invalid/regenerated/external/open-xml-sdk/5Errors.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["comment-marker-missing", "xsd-error", "xsd-summary"]
+                "errorCodes": [
+                    "comment-marker-missing",
+                    "word-paragraph-properties-misplaced",
+                    "word-run-properties-misplaced",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
             },
             "lenient": {
                 "valid": false,
@@ -8986,7 +9085,7 @@
             "relativePath": "word-regenerate-invalid/regenerated/external/open-xml-sdk/UnknownElement.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["xsd-error", "xsd-summary"]
+                "errorCodes": ["word-run-misplaced", "word-unknown-element", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -9046,7 +9145,7 @@
             "relativePath": "word-regenerate-invalid/regenerated/external/superdoc/super-editor/hyperlink-exported.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": ["rels-unreferenced", "word-link-without-namespace", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -9061,7 +9160,7 @@
             "relativePath": "word-regenerate-invalid/regenerated/external/superdoc/super-editor/invalid-underline.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-uncovered-part", "rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": ["ct-uncovered-part", "rels-unreferenced", "word-underline-misplaced", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -9076,7 +9175,7 @@
             "relativePath": "word-regenerate-invalid/regenerated/external/superdoc/super-editor/paragraph-sectpr-breaks.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["ct-undeclared-ext", "rels-unreferenced", "xsd-error", "xsd-summary"]
+                "errorCodes": ["ct-undeclared-ext", "rels-unreferenced", "word-custom-property-filetime-empty", "xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": false,
@@ -9450,6 +9549,40 @@
             "word": {
                 "outcome": "unknown",
                 "sha256": "cbb3bab8439ed65ac8be9ff830da40e0b7394d40f7c080dd7bc83a7679f6cc34"
+            }
+        },
+        {
+            "relativePath": "working/word-tolerated-style-table-borders-mixed.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["xsd-error", "xsd-summary"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "096636a13331c047fd2d85c9e440f37e4e796432d7dfbe94191e8415b3a055d4",
+                "observedAt": "2026-10-23T10:16:24.314Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/word-tolerated-style-table-layout-before-borders.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["xsd-error", "xsd-summary"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "2b79c5dd50e85248419f83782f7e5b4f475106e2a0fc16996694ccdc516ee288",
+                "observedAt": "2026-10-23T10:14:53.006Z",
+                "wordVersion": "16.115"
             }
         }
     ]

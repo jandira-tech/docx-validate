@@ -92,7 +92,7 @@ describe("textbox-content-namespace: synthetic single-defect package", { timeout
 });
 
 describe("textbox-content-namespace: jubarte 0.13.0 lane specimens", () => {
-    it("k12_1.redline.docx: five wne:txbxContent sites in document.xml, one more in header2.xml", async () => {
+    it("k12_1.redline.docx: five wne:txbxContent sites in the content Word consumes, all in document.xml", async () => {
         const { context } = await contextFromArchive(readFileSync(path.join(LANE, "k12_1.redline.docx")));
         const issues = await textboxContentNamespaceCheck.run(context);
         for (const issue of issues) {
@@ -103,13 +103,13 @@ describe("textbox-content-namespace: jubarte 0.13.0 lane specimens", () => {
         for (const issue of issues) {
             byPath.set(issue.path ?? "", (byPath.get(issue.path ?? "") ?? 0) + 1);
         }
-        // Issue #244 counts the five wp:txbx sites in document.xml; the same
-        // misuse also sits in header2.xml, which the issue did not enumerate.
-        expect(byPath).toEqual(
-            new Map([
-                ["word/document.xml", 5],
-                ["word/header2.xml", 1],
-            ]),
-        );
+        // Issue #244 counts the five wp:txbx sites in document.xml. The same
+        // misuse also sits in header2.xml, but inside the Fallback of an
+        // AlternateContent whose Choice requires VML ("v"), which Word
+        // understands and selects. Word never consumes that Fallback, so the
+        // Word rule does not report it (#291, ISO/IEC 29500-3: no error from
+        // an unselected branch). Strict still schema-validates it, because
+        // the schema view does not understand VML and keeps the Fallback.
+        expect(byPath).toEqual(new Map([["word/document.xml", 5]]));
     });
 });
