@@ -48,7 +48,7 @@
 
 import { promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
-import { canonicalPartName, isRelationshipsPartName, resolvePartName } from "../../../lib/content-types";
+import { isRelationshipsPartName, resolvePartName } from "../../../lib/content-types";
 import { opcNameIssueSeverity } from "../../../lib/mode-policy";
 import { nextSecureLongHexNumber } from "../../../lib/secure-id";
 import type { PackageFormat, ValidationIssue, ValidationResult } from "../../../lib/types";
@@ -56,7 +56,7 @@ import { withoutConsequentialParseFailures } from "../../../lib/parse-failures";
 import { mergeResults } from "../../../lib/types";
 import { promoteFullCheckIssue } from "../../../lib/mode-policy";
 import { propertiesParts } from "../../../lib/properties-parts";
-import { wordMainDocumentParts, wordReadParts } from "../../../lib/word-read-parts";
+import { wordReadParts } from "../../../lib/word-read-parts";
 import { isWordBlockingIssue } from "./word-blocking";
 import {
     decodeXmlBytes,
@@ -78,7 +78,7 @@ import {
 import { runChecks } from "../../../lib/check-scheduler";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "../checks/index";
-import { WORD_PART_CONTENT_TYPE_GENERIC, wordPartContentTypeGenericCheck } from "../checks/word-part-content-type-generic";
+import { WORD_PART_CONTENT_TYPE_GENERIC, wordPartContentTypeGenericFindings } from "../checks/word-part-content-type-generic";
 import { contextFromDirectory } from "../package-context";
 import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
 export { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
@@ -540,10 +540,13 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * The `word-part-content-type-generic` rule (#432) over the shared
      * context, at the severity the profile gives it: an error under
      * word-valid (Word 16.115 offers to recover the package) and under
-     * strict (ECMA-376 Part 1 gives each of these parts its own content
-     * type), a warning under lenient. Strict already rejects the main
-     * document through `ct-undeclared-part`, so that one finding is dropped
-     * here instead of reporting the same defect twice.
+     * strict (ECMA-376 Part 1, clause 11.3, gives every WordprocessingML
+     * part its own content type, so strict also judges the unprobed Part 1
+     * types — numbering, header, footer, endnotes, footnotes, comments and
+     * glossaryDocument; #506), a warning under lenient. Strict already
+     * rejects a Default-typed main document through `ct-undeclared-part`, so
+     * that one finding is dropped here instead of reporting the same defect
+     * twice.
      */
     private async validateWordPartContentTypes(
         context: ValidationContext,
@@ -551,15 +554,22 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         malformed: ReadonlySet<string>,
     ): Promise<ValidationResult> {
         const view = malformed.size > 0 ? context.withUnparseable(new Map([...malformed].map((part) => [part, "malformed"]))) : context;
-        const findings = await wordPartContentTypeGenericCheck.run(view);
+        // Strict judges every Part 1 WordprocessingML part type, not only
+        // the probed five (#506); word-valid and lenient keep the probed set.
+        const found = await wordPartContentTypeGenericFindings(view, this.profile === "strict" ? "spec" : "observed");
         this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_GENERIC);
-        const mainDocuments = this.profile === "strict" ? await wordMainDocumentParts(view) : undefined;
+        // Strict already rejects a main document resolved through a Default
+        // through ct-undeclared-part, so that finding is dropped instead of
+        // reporting the same defect twice; a main document carrying a generic
+        // Override is reported once, here (#517).
         const judged =
-            mainDocuments === undefined
-                ? findings
-                : findings.filter((issue) => !(issue.path !== undefined && mainDocuments.has(canonicalPartName(issue.path))));
+            this.profile === "strict"
+                ? found.filter((finding) => !(finding.segment === "officeDocument" && finding.source === "default"))
+                : found;
         const severity = opcNameIssueSeverity(this.profile, format);
-        return finalize([...judged].map((issue): ValidationIssue => (severity === "warning" ? { ...issue, severity: "warning" } : issue)));
+        return finalize(
+            judged.map((finding): ValidationIssue => (severity === "warning" ? { ...finding.issue, severity: "warning" } : finding.issue)),
+        );
     }
 
     private async applyWordValidProfile(result: ValidationResult): Promise<ValidationResult> {

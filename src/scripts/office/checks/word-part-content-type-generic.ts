@@ -5,87 +5,203 @@
 
 /**
  * The `word-part-content-type-generic` check (#432): a part Word reads, typed
- * only by the generic Default.
+ * by a generic XML content type.
  *
  * Word 16.115 offers to recover the package for every part probed whose
- * content type resolves only through
- * `<Default Extension="xml" ContentType="application/xml"/>`: the main
- * document and styles with their Override removed, and settings, fontTable
- * and webSettings added with a relationship but no Override. Every control
- * with the part's proper Override opens clean (session 8a in
- * docs/plans/evidence/word-probes-2026-10-24.md). Numbering and customXml
- * were not probed, so they stay silent until a probe observes them.
+ * content type resolves only through a Default to `application/xml`: the
+ * main document and styles with their Override removed, and settings,
+ * fontTable and webSettings added with a relationship but no Override. Every
+ * control with the part's proper Override opens clean (session 8a in
+ * docs/plans/evidence/word-probes-2026-10-24.md). Which Default supplied the
+ * type does not change what Word receives, so any extension's Default maps
+ * to this check; the finding names the one the part's own extension used
+ * (#504).
+ *
+ * Session 15 widened the same defect class: the main document and styles
+ * were probed with `text/xml` — by Default or Override — and with
+ * `application/xml` by Override, and Word offers to recover every spelling.
+ * Settings, fontTable and webSettings were probed only with the
+ * `application/xml` Default; reporting the Override and `text/xml` spellings
+ * for them is inference from the same resolution (the message names the
+ * declaration that produced the type), so the doc comment says so (#517).
+ * Numbering and customXml were not probed, so they stay silent until a
+ * probe observes them.
+ *
+ * The main document's finding names every Word main-document content type —
+ * document, macro-enabled, template, macro-enabled template — because the
+ * check judges the package, not the file name, and naming only the
+ * macro-free type would turn a `.docm` into a macro-free document (#505).
  *
  * Resolution follows ECMA-376 Part 2 §10.1.2.4 through the shared
  * `src/lib/content-types.ts` table: an exact Override wins, so a part with a
- * specific Override — right or wrong — is out of scope here. The finding is
- * an error, and Word-blocking, under word-valid for DOCX/DOCM, an error
- * under strict (Part 1 gives each of these parts its own content type), and
- * a warning under lenient. A full strict run does not report the main
- * document, which `ct-undeclared-part` already rejects.
+ * specific Override — right or wrong — is out of scope unless that Override
+ * itself carries a generic XML type. The finding is an error, and
+ * Word-blocking, under word-valid for DOCX/DOCM, an error under strict
+ * (Part 1 gives each of these parts its own content type), and a warning
+ * under lenient. A full strict run does not report a main document resolved
+ * through a Default, which `ct-undeclared-part` already rejects; a main
+ * document carrying a generic Override is reported once, here.
+ *
+ * Scope follows the justification. Word-valid predicts Word, so it judges
+ * only the probed parts above. Strict justifies the same defect by the spec
+ * — ECMA-376 Part 1 (4th edition), clause 11.3, gives every WordprocessingML
+ * part its own content type — so a full strict run also reports a part a
+ * main-document relationship of the other Part 1 types names: numbering,
+ * header, footer, endnotes, footnotes, comments and glossaryDocument, each
+ * citing the content type Part 1 assigns it (#506). `customXml` stays out at
+ * every profile — `application/xml` is the content type the spec gives the
+ * custom XML data storage part itself — and types outside this list stay
+ * unjudged.
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
-import { asciiLowercase, findContentTypesStream, parseContentTypes, resolveContentType } from "../../../lib/content-types";
+import { asciiLowercase, findContentTypesStream, parseContentTypes, partExtension, resolveContentType } from "../../../lib/content-types";
 import type { ValidationIssue } from "../../../lib/types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
 
 export const WORD_PART_CONTENT_TYPE_GENERIC = "word-part-content-type-generic";
 
-/** The only content type this check judges: the generic Default for `.xml`. */
-const GENERIC_CONTENT_TYPE = "application/xml";
+/** The generic XML content types this check judges, compared ASCII case-insensitively (#517). */
+const GENERIC_CONTENT_TYPES: ReadonlySet<string> = new Set(["application/xml", "text/xml"]);
 
-/** The relationship segments Word was observed to reject on the generic Default, and the content type each part needs. */
+/** The relationship segments Word was observed to reject on a generic XML type, and the content type each part needs. */
 const EXPECTED_CONTENT_TYPES: ReadonlyMap<string, string> = new Map([
-    ["officeDocument", "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"],
     ["styles", "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"],
     ["settings", "application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"],
     ["fontTable", "application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml"],
     ["webSettings", "application/vnd.openxmlformats-officedocument.wordprocessingml.webSettings+xml"],
 ]);
 
-export const wordPartContentTypeGenericCheck: CheckDefinition = {
-    id: WORD_PART_CONTENT_TYPE_GENERIC,
-    description: "Parts Word reads carry their own content type, not the generic application/xml Default.",
-    groups: ["content-types"],
-    formats: ["docx"],
-    requires: ["xml-syntax"],
-    run: async (ctx: ValidationContext): Promise<ValidationIssue[]> => {
-        const issues: ValidationIssue[] = [];
+/** The main document, reached through the package `officeDocument` relationship rather than a main-document one. */
+const OFFICE_DOCUMENT_SEGMENT = "officeDocument";
 
-        // A missing stream is `ct-missing`; one that does not parse is the
-        // XML syntax gate's finding. Neither is judged here.
-        const stream = findContentTypesStream(ctx.partNames);
-        if (stream === undefined) {
-            return issues;
-        }
-        // Resolution reads the stream after Markup Compatibility processing
-        // (OPC [M1.19]), as every content-type judgment does (#459, #489).
-        const parsed = ctx.effectiveXml(stream);
-        if (!parsed?.ok) {
-            return issues;
-        }
-        const table = parseContentTypes(parsed.document);
+/**
+ * The Word main-document content types (#505). The check judges the package,
+ * not the file name, so an officeDocument finding cannot name one of them —
+ * advising the macro-free type would turn a macro-enabled package into a
+ * macro-free document.
+ */
+const MAIN_DOCUMENT_CONTENT_TYPES = [
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml",
+    "application/vnd.ms-word.document.macroEnabled.main+xml",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml",
+    "application/vnd.ms-word.template.macroEnabledTemplate.main+xml",
+] as const;
 
-        const targets = await wordTypedRelationshipTargets(ctx, new Set(EXPECTED_CONTENT_TYPES.keys()));
-        for (const { part, segment } of targets) {
-            const resolved = resolveContentType(table, part);
-            if (resolved?.source !== "default" || asciiLowercase(resolved.contentType) !== GENERIC_CONTENT_TYPE) {
-                continue;
-            }
-            const by =
-                segment === "officeDocument" ? "the package officeDocument relationship" : `the main document's ${segment} relationship`;
-            issues.push({
+/**
+ * The Part 1 WordprocessingML part types the probes have not observed, with
+ * the content type ECMA-376 Part 1 (4th edition), clause 11.3 assigns each
+ * (#506). A main-document relationship of one of these types is judged under
+ * strict only.
+ */
+const SPEC_ONLY_CONTENT_TYPES: ReadonlyMap<string, string> = new Map([
+    ["numbering", "application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"],
+    ["header", "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"],
+    ["footer", "application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"],
+    ["endnotes", "application/vnd.openxmlformats-officedocument.wordprocessingml.endnotes+xml"],
+    ["footnotes", "application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml"],
+    ["comments", "application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml"],
+    ["glossaryDocument", "application/vnd.openxmlformats-officedocument.wordprocessingml.document.glossary+xml"],
+]);
+
+/** The relationship segments this check reaches for under word-valid and lenient: the probed parts plus the main document. */
+const OBSERVED_SEGMENTS: ReadonlySet<string> = new Set([OFFICE_DOCUMENT_SEGMENT, ...EXPECTED_CONTENT_TYPES.keys()]);
+
+/** The segments a strict run judges: the probed set plus every other Part 1 WordprocessingML part type (#506). */
+const SPEC_SEGMENTS: ReadonlySet<string> = new Set([...OBSERVED_SEGMENTS, ...SPEC_ONLY_CONTENT_TYPES.keys()]);
+
+/** What the part needs, named for the finding's message. */
+const expectedContentTypeText = (segment: string, source: "override" | "default"): string => {
+    if (segment === OFFICE_DOCUMENT_SEGMENT) {
+        const list = MAIN_DOCUMENT_CONTENT_TYPES.map((type) => `"${type}"`);
+        const types = `${list.slice(0, -1).join(", ")} or ${list[list.length - 1]}`;
+        return source === "default"
+            ? `it needs its own Override carrying one of the Word main-document content types — ${types}`
+            : `its Override should carry one of the Word main-document content types — ${types}`;
+    }
+    const specOnly = SPEC_ONLY_CONTENT_TYPES.get(segment);
+    if (specOnly !== undefined) {
+        return source === "default"
+            ? `it needs its own Override "${specOnly}", the content type ECMA-376 Part 1 (4th edition), clause 11.3 assigns the ${segment} part`
+            : `its Override should carry "${specOnly}", the content type ECMA-376 Part 1 (4th edition), clause 11.3 assigns the ${segment} part`;
+    }
+    const expected = EXPECTED_CONTENT_TYPES.get(segment)!;
+    return source === "default" ? `it needs its own Override "${expected}"` : `its Override should carry "${expected}"`;
+};
+
+/** A finding, with the resolution detail the full strict run's de-duplication needs (#517). */
+export type WordGenericContentTypeFinding = {
+    readonly issue: ValidationIssue;
+    /** Which relationship segment reached the part. */
+    readonly segment: string;
+    /** Which declaration produced the generic type. */
+    readonly source: "override" | "default";
+};
+
+/**
+ * The parts {@link wordPartContentTypeGenericCheck} reports, one finding per
+ * part. `scope` is `"observed"` for the profiles that predict Word — the
+ * probed parts only — and `"spec"` for strict, which also judges the other
+ * Part 1 WordprocessingML part types (#506). Findings for the spec-only
+ * types cite ECMA-376 Part 1 instead of Word recovery, which no probe has
+ * observed for them.
+ */
+export const wordPartContentTypeGenericFindings = async (
+    ctx: ValidationContext,
+    scope: "observed" | "spec" = "observed",
+): Promise<readonly WordGenericContentTypeFinding[]> => {
+    // A missing stream is `ct-missing`; one that does not parse is the
+    // XML syntax gate's finding. Neither is judged here.
+    const stream = findContentTypesStream(ctx.partNames);
+    if (stream === undefined) {
+        return [];
+    }
+    // Resolution reads the stream after Markup Compatibility processing
+    // (OPC [M1.19]), as every content-type judgment does (#459, #489).
+    const parsed = ctx.effectiveXml(stream);
+    if (!parsed?.ok) {
+        return [];
+    }
+    const table = parseContentTypes(parsed.document);
+
+    const findings: WordGenericContentTypeFinding[] = [];
+    const targets = await wordTypedRelationshipTargets(ctx, scope === "spec" ? SPEC_SEGMENTS : OBSERVED_SEGMENTS);
+    for (const { part, segment } of targets) {
+        const resolved = resolveContentType(table, part);
+        if (resolved === null || !GENERIC_CONTENT_TYPES.has(asciiLowercase(resolved.contentType))) {
+            continue;
+        }
+        const by =
+            segment === OFFICE_DOCUMENT_SEGMENT ? "the package officeDocument relationship" : `the main document's ${segment} relationship`;
+        const contentType = asciiLowercase(resolved.contentType);
+        const resolvedText =
+            resolved.source === "default"
+                ? `resolves only through the Default for extension "${partExtension(part)}" to "${contentType}"`
+                : `is typed "${contentType}" by an Override`;
+        const needed = expectedContentTypeText(segment, resolved.source);
+        // Word recovery was observed only for the probed parts (#506).
+        const verdict = SPEC_ONLY_CONTENT_TYPES.has(segment) ? "" : " Word 16.115 offers to recover the package.";
+        findings.push({
+            segment,
+            source: resolved.source,
+            issue: {
                 severity: "error",
                 code: WORD_PART_CONTENT_TYPE_GENERIC,
                 path: part,
-                message:
-                    `${part}, named by ${by}, resolves only through the Default for extension "xml" to "${GENERIC_CONTENT_TYPE}"; ` +
-                    `it needs its own Override "${EXPECTED_CONTENT_TYPES.get(segment)!}". Word 16.115 offers to recover the package.`,
-            });
-        }
+                message: `${part}, named by ${by}, ${resolvedText}; ${needed}.${verdict}`,
+            },
+        });
+    }
+    return findings;
+};
 
-        return issues;
-    },
+export const wordPartContentTypeGenericCheck: CheckDefinition = {
+    id: WORD_PART_CONTENT_TYPE_GENERIC,
+    description: "Parts Word reads carry their own content type, not a generic XML type.",
+    groups: ["content-types"],
+    formats: ["docx"],
+    requires: ["xml-syntax"],
+    run: async (ctx: ValidationContext): Promise<ValidationIssue[]> =>
+        (await wordPartContentTypeGenericFindings(ctx)).map((finding) => finding.issue),
 };
