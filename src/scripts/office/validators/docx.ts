@@ -79,7 +79,7 @@ import { runChecks } from "../../../lib/check-scheduler";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "../checks/index";
 import { WORD_PART_CONTENT_TYPE_GENERIC, wordPartContentTypeGenericFindings } from "../checks/word-part-content-type-generic";
-import { contextFromDirectory } from "../package-context";
+import { contextFromDirectory, openDirectoryContext, packageExtractFailedIssue } from "../package-context";
 import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
 import { WORD_PART_CONTENT_TYPE_PARAMETER, wordPartContentTypeParameterFindings } from "../checks/word-part-content-type-parameter";
 
@@ -434,6 +434,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         this.xsdWalk = { started: false, parts: [], eligible: 0 };
         this.malformedParts = new Set();
         this.resetExecutedChecks();
+        const opened = openDirectoryContext(this.unpackedDir);
+        if (opened.openError !== undefined) {
+            return { valid: false, issues: [packageExtractFailedIssue(this.unpackedDir, opened.openError)] };
+        }
+        this.runContext = opened.context;
         const xmlOk = await this.validateXml();
         // Only lenient stops at a malformed part. Word-valid and strict keep
         // running the checks of every other part, so strict reports every

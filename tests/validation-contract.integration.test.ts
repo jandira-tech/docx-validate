@@ -14,7 +14,7 @@
  */
 
 import { execFile } from "node:child_process";
-import { existsSync, mkdirSync, promises as fs, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, promises as fs, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -25,6 +25,7 @@ import { defaultProfileForFormat } from "../src/lib/mode-policy";
 import type { Profile } from "../src/lib/types";
 import { validate } from "../src/scripts/office/validate";
 import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
+import { PPTXSchemaValidator } from "../src/scripts/office/validators/pptx";
 import { walkFiles } from "../src/scripts/office/validators/base";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { buildRawZip } from "./support/raw-zip";
@@ -49,6 +50,35 @@ async function validateBytes(bytes: Uint8Array, profile: Profile) {
         return validate(file, { profile });
     });
 }
+
+it.skipIf(process.platform === "win32" || process.getuid?.() === 0)(
+    "validation contract: unreadable input keeps strict and partial/full messages aligned (#547, #381)",
+    async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "unreadable.docx");
+            writeFileSync(file, await buildDocx());
+            chmodSync(file, 0o000);
+            try {
+                const word = await validate(file, { profile: "word-valid" });
+                expect(word.issues).toEqual([
+                    expect.objectContaining({
+                        code: "package-open-failed",
+                        severity: "error",
+                        message: expect.stringMatching(/^Cannot read /),
+                    }),
+                ]);
+                for (const options of [{ strict: true }, { quick: true }, { checks: ["xml-syntax"] }]) {
+                    const result = await validate(file, options);
+                    expect(result.valid).toBe(false);
+                    expect(result.issues).toEqual(word.issues);
+                }
+            } finally {
+                chmodSync(file, 0o644);
+            }
+        });
+    },
+    60_000,
+);
 
 describe("validation contract: multiple main relationships (#515, #381)", () => {
     it.each(DUPLICATE_MAIN_DOCUMENT_PARTS)(
@@ -2071,6 +2101,43 @@ describe.skipIf(process.platform === "win32")("validation contract: directory re
                     expect(result.valid).toBe(false);
                     expect(errorCodes(result.issues)).toContain("package-extract-failed");
                     expect(result.metadata?.executedChecks).not.toContain("xml-syntax");
+                }
+            });
+        },
+        60_000,
+    );
+});
+
+describe.skipIf(process.platform === "win32")("validation contract: direct directory refusals (#548, #381)", () => {
+    it.each([
+        ["docx", DOCXSchemaValidator],
+        ["pptx", PPTXSchemaValidator],
+    ] as const)(
+        "%s agrees across direct, full, strict and partial runs",
+        async (suffix, Validator) => {
+            await withTempDir(async (dir) => {
+                const root = path.join(dir, `input.${suffix}`);
+                mkdirSync(root);
+                for (const [name, content] of Object.entries(MINIMAL_PARTS)) {
+                    writeFileSync(path.join(root, name.replaceAll("/", "\\")), content);
+                }
+                writeFileSync(path.join(root, "word\\a\\..\\x.xml"), "<x/>");
+                const word = await validate(root, { profile: "word-valid" });
+                expect(word.valid).toBe(false);
+                expect(word.issues).toEqual([expect.objectContaining({ code: "package-extract-failed", severity: "error" })]);
+                for (const profile of ["word-valid", "strict"] as const) {
+                    const full = await validate(root, { profile });
+                    expect(full.valid).toBe(false);
+                    expect(full.issues).toEqual(word.issues);
+                    await expect(new Validator({ unpackedDir: root, profile }).validate()).resolves.toEqual({
+                        valid: false,
+                        issues: full.issues,
+                    });
+                }
+                for (const selection of [{ quick: true }, { checks: ["xml-syntax"] }, { checks: ["package"] }]) {
+                    const partial = await validate(root, { profile: "word-valid", ...selection });
+                    expect(partial.valid).toBe(false);
+                    expect(partial.issues).toEqual(word.issues);
                 }
             });
         },

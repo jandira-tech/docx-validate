@@ -82,7 +82,7 @@ import { OPC_PART_NAME_ESCAPED_UNRESERVED } from "./checks/opc-part-name-escaped
 import { CT_OVERRIDE_PARTNAME_INVALID } from "./checks/ct-override-partname";
 import { CT_MARKUP_COMPATIBILITY } from "./checks/ct-markup-compatibility";
 import { WORD_PART_CONTENT_TYPE_GENERIC } from "./checks/word-part-content-type-generic";
-import { contextFromArchive, openDirectoryContext } from "./package-context";
+import { contextFromArchive, openDirectoryContext, packageExtractFailedIssue } from "./package-context";
 import {
     BaseSchemaValidator,
     containRelationshipTarget,
@@ -277,7 +277,11 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         return finish({
             valid: false,
             issues: [
-                packageOpenFailedIssue(target, packedRead.error instanceof Error ? packedRead.error.message : String(packedRead.error)),
+                packageOpenFailedIssue(
+                    target,
+                    packedRead.error instanceof Error ? packedRead.error.message : String(packedRead.error),
+                    "read",
+                ),
             ],
             repairs: 0,
             suffix: dispatchSuffix,
@@ -981,29 +985,19 @@ async function refusedWriteBackDestination(root: string, file: string): Promise<
 }
 
 /**
- * The finding for an input whose package view cannot be read: an item name
- * places no part, an entry cannot be read, the host filesystem cannot hold
- * two parts' names, or a staged directory's stored file cannot be read
- * (#412). The package view fails before the format validator runs, so
- * partial runs of a packed file report the same failure (#413).
- */
-function packageExtractFailedIssue(target: string, detail: string): ValidationIssue {
-    return {
-        severity: "error",
-        message: `Cannot extract ${target}: ${detail}`,
-        code: "package-extract-failed",
-    };
-}
-
-/**
  * The finding for a packed file that is not a readable OPC (zip) package:
  * encrypted OOXML, or a truncated or corrupted archive. Word refuses to open
- * all of these, so it is blocking under every profile.
+ * all of these, so it is blocking under every profile. A file the host cannot
+ * read at all (#422) names the system error instead, since nothing about the
+ * archive is known (#547).
  */
-function packageOpenFailedIssue(target: string, detail: string): ValidationIssue {
+function packageOpenFailedIssue(target: string, detail: string, failure: "read" | "archive" = "archive"): ValidationIssue {
     return {
         severity: "error",
-        message: `Cannot open ${target} as an OPC package (not a valid .docx/zip — encrypted, corrupted, or truncated): ${detail}`,
+        message:
+            failure === "read"
+                ? `Cannot read ${target}: ${detail}`
+                : `Cannot open ${target} as an OPC package (not a valid .docx/zip — encrypted, corrupted, or truncated): ${detail}`,
         code: "package-open-failed",
     };
 }

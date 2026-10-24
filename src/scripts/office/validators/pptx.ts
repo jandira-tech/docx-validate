@@ -33,7 +33,7 @@ import { mergeResults } from "../../../lib/types";
 import { getElementsByTagNameNSAll, parseXmlBytes } from "../../../lib/xml-helpers";
 import type { BaseSchemaValidatorOptions } from "./base";
 import { BaseSchemaValidator, OFFICE_RELATIONSHIPS_NAMESPACE, walkFiles, withoutRestatedIgnorablePrefixes } from "./base";
-import { contextFromDirectory } from "../package-context";
+import { openDirectoryContext, packageExtractFailedIssue } from "../package-context";
 
 export const PRESENTATIONML_NAMESPACE = "http://schemas.openxmlformats.org/presentationml/2006/main";
 
@@ -66,6 +66,11 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
 
     private async runEveryCheck(): Promise<ValidationResult> {
         this.resetExecutedChecks();
+        const opened = openDirectoryContext(this.unpackedDir);
+        if (opened.openError !== undefined) {
+            return { valid: false, issues: [packageExtractFailedIssue(this.unpackedDir, opened.openError)] };
+        }
+        const context = opened.context;
         const xml = await this.validateXml();
         const malformed = new Set(
             xml.issues.flatMap((issue) => (issue.severity === "error" && issue.path !== undefined ? [issue.path] : [])),
@@ -76,7 +81,6 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
             // content-types stream, so the full run reports what they do
             // rather than dropping it (#456).
             if (this.profile === "lenient") return xml;
-            const context = contextFromDirectory(this.unpackedDir);
             return withoutRestatedIgnorablePrefixes(
                 mergeResults(
                     xml,
@@ -96,8 +100,8 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
             await this.validateRelationshipElements(),
             await this.validateSlideLayoutIds(),
             await this.validateContentTypes(),
-            await this.validateOverridePartNames(contextFromDirectory(this.unpackedDir), "pptx", malformed),
-            await this.validateContentTypesMarkupCompatibility(contextFromDirectory(this.unpackedDir), "pptx", malformed),
+            await this.validateOverridePartNames(context, "pptx", malformed),
+            await this.validateContentTypesMarkupCompatibility(context, "pptx", malformed),
             await this.validateAgainstXsd(),
             await this.validateNotesSlideReferences(),
             await this.validateAllRelationshipIds(),
