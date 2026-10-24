@@ -1,6 +1,6 @@
 # Real-Word probes, 2026-10-24
 
-Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), and what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562).
+Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571).
 
 - Word: Microsoft Word for Mac 16.115 (build 16.115.26100424), platform `darwin`.
 - Transport, sessions 1 and 2: `verifyInWord` (`src/lib/word-verifier.ts`). It opens each specimen by path, reads Word's window and dialog state, and never saves.
@@ -8,7 +8,7 @@ Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398
 - Transport, sessions 4–13: the same driver in the same mode, run in the foreground, as its documentation requires. Single-specimen runs are attributed by the same parser. The runner and the helper that copies one specimen into its own run are reproduced at the end.
 - Outcomes: `clean-open` means Word opened the document with no dialog. `repair-warning` means Word showed "Word found unreadable content … Do you want to recover the contents of this document?". `open-error` means Word showed "Word experienced an error trying to open the file." In session 3, `inconclusive` means Word loaded no document in two passes and no alert named the file. Word stayed alive throughout, and `~/Library/Logs/DiagnosticReports` holds no Word report from any session. In session 3 the driver itself restarted Word after runs of empty loads, as designed.
 - Specimens: built in code from `MINIMAL_PARTS` (`tests/support/minimal-docx.ts`). The `398-dup-theme-*` specimens are built from `tests/fixtures/broken/package.word-duplicate-theme.docx`, which was only read. The probe script that builds, validates and opens them is reproduced at the end of this file. No fixture or manifest was changed.
-- Validator: the `word-valid` and `strict` columns record `validate()` **at probe time**, before the policy changes the probes motivated. They are not current verdicts. Session 1 (02:18Z–02:26Z) ran against `wfv/46-plan-audit` (199c2d5b); session 2 (03:10Z–03:19Z) ran against `wfv/51-directory-staging` (ad072db8). Session 3's columns are `validate()` at `wfv/57-central-directory-names` (ab7f311d), run on the exact files Word was given. The columns for sessions 4–6 are `validate()` at `wfv/62-ct-duplicate-declaration` (3126dcfc). They were recomputed after the sessions on the exact files Word was given, and every SHA-256 was checked against its record. Session 7's columns are `validate()` at `wfv/65-override-partname` before (9960b273) and after (34d0ace3) the #450 fix, recomputed the same way; the verdicts recorded at build time equal the 9960b273 ones. Sessions 8–13's columns are `validate()` at 49922e9a, the commit the specimens were built against, and at `wfv/66-partname-review-fixes` (e08611b1) after the #453 and #458 fixes, recomputed the same way with every SHA-256 checked; the verdicts recorded at build time equal the 49922e9a ones. Session 14's columns are `validate()` at ed34e3bf. Session 15's columns are `validate()` at `wfv/87-zip64-rekey` (8252ce4f), the commit the specimens were built against, recorded at build time on the exact files Word was given; every SHA-256 was re-checked against its record after the runs. Session 16's columns are `validate()` at `wfv/98-iri` (98902c85), recorded the same way. Session 17's columns are `validate()` at `wfv/100-word-probes-s16` (3ebe3e7f, whose source is layer 99's), session 18's at `wfv/101-glossary-header` (ab1fba79), and session 19's at `wfv/108-segment-doc` (4c86cbfe), recorded the same way.
+- Validator: the `word-valid` and `strict` columns record `validate()` **at probe time**, before the policy changes the probes motivated. They are not current verdicts. Session 1 (02:18Z–02:26Z) ran against `wfv/46-plan-audit` (199c2d5b); session 2 (03:10Z–03:19Z) ran against `wfv/51-directory-staging` (ad072db8). Session 3's columns are `validate()` at `wfv/57-central-directory-names` (ab7f311d), run on the exact files Word was given. The columns for sessions 4–6 are `validate()` at `wfv/62-ct-duplicate-declaration` (3126dcfc). They were recomputed after the sessions on the exact files Word was given, and every SHA-256 was checked against its record. Session 7's columns are `validate()` at `wfv/65-override-partname` before (9960b273) and after (34d0ace3) the #450 fix, recomputed the same way; the verdicts recorded at build time equal the 9960b273 ones. Sessions 8–13's columns are `validate()` at 49922e9a, the commit the specimens were built against, and at `wfv/66-partname-review-fixes` (e08611b1) after the #453 and #458 fixes, recomputed the same way with every SHA-256 checked; the verdicts recorded at build time equal the 49922e9a ones. Session 14's columns are `validate()` at ed34e3bf. Session 15's columns are `validate()` at `wfv/87-zip64-rekey` (8252ce4f), the commit the specimens were built against, recorded at build time on the exact files Word was given; every SHA-256 was re-checked against its record after the runs. Session 16's columns are `validate()` at `wfv/98-iri` (98902c85), recorded the same way. Session 17's columns are `validate()` at `wfv/100-word-probes-s16` (3ebe3e7f, whose source is layer 99's), session 18's at `wfv/101-glossary-header` (ab1fba79), session 19's at `wfv/108-segment-doc` (4c86cbfe), and session 20's at `wfv/113-glossary-eager` (52fdbd8b), recorded the same way.
 
 ## What the observations decide
 
@@ -137,6 +137,13 @@ Session 19 adds, for the glossary's eagerly parsed parts, which #549 left unobse
 
 - **#562: the glossary's own styles, settings, fontTable, webSettings and numbering are read.** Each specimen pairs a reached glossary that references no story with one part related from the glossary's own relationships part (`word/glossary/styles.xml`, `settings.xml`, `fontTable.xml`, `webSettings.xml` or `numbering.xml`, each with its Word `Override`). When that part is missing its root end tag, Word offers recovery, for all five types; every well-formed control opens clean. Word-valid at 4c86cbfe passes all ten. Strict fails the malformed ones through `xml-syntax`, and every glossary specimen through the strict-only `paraid-missing-element` on the glossary paragraph, which the session 16 and 17 glossary controls also carried while opening clean.
 
+Session 20 adds, for the items the open list named after session 19:
+
+- **#569: a reached glossary's theme part is read; its customXml part and a nested glossary are not.** Each specimen pairs a reached glossary that references no story with one part its own relationships part relates. A Word theme missing its root end tag at `word/glossary/theme/theme1.xml` gets the recovery offer, and the well-formed theme opens clean. A truncated `customXml/item1.xml` (target `../../customXml/item1.xml`) and an unclosed nested `glossaryDocument` (`word/glossary/glossary2.xml`) open clean, as do their controls. Word-valid at 52fdbd8b passes all six. Strict fails the malformed theme through `xml-syntax`, and every glossary specimen through the strict-only `paraid-missing-element` on the glossary paragraph. The well-formed theme is `word/theme/theme1.xml` of `tests/fixtures/working/package.word-anchor-open-repaired.docx`, read and not modified.
+- **#570: a MIME parameter on numbering, theme, a used footer, footnotes, endnotes or comments is refused.** Each specimen is the minimal package plus one part the main document relates. The lazy types are also used: a body `w:footerReference`, a `w:footnoteReference`, a `w:endnoteReference` or a `w:commentReference`. When the part's `Override` carries its own type plus `; charset=utf-8`, Word offers recovery for all six. With the exact type, each opens clean. The same parameter on the main document's glossary part opens clean. Word-valid at 52fdbd8b passes all seven. Strict reports `word-part-content-type-inexact` for numbering, the footer, footnotes, endnotes and comments, but not for theme.
+- **#571: numbering and theme typed by the generic Default are refused.** A related `word/numbering.xml` or `word/theme/theme1.xml` with no `Override`, so typed by `Default Extension="xml" ContentType="application/xml"`, gets the recovery offer. With its exact `Override`, each opens clean. Word-valid at 52fdbd8b passes both. Strict reports `word-part-content-type-generic` for numbering and `ct-undeclared-part` for theme.
+- **#549: footnotes, endnotes and comments a glossary relates but does not reference are not read.** Each part, missing its root end tag and related from the glossary's own relationships part with no reference in the glossary, opens clean, as session 17 observed for the header. Word-valid passes all three, as it should.
+
 ## Not observed
 
 Session 1. Another session began driving Word by 02:28Z: its first log line is at 02:28:14Z, and its map file was written at 02:27:55Z. Its preflight closes every open document, so rows observed from 02:26Z on were not treated as evidence. Session 2 observed all of them again (below).
@@ -175,15 +182,14 @@ Session 17 ran in the foreground (`s17a` 13:04Z–13:06Z, `s17b` 13:06Z–13:08Z
 
 Session 19 ran in the foreground (`s19a` 13:56Z–13:58Z, `s19b` 13:58Z), one driver run per chunk. Nothing was set aside, and every row is attributed by an alert or a manifest entry naming its staged file. No `word_watchdog.sh` was running. Before each chunk no other `word_pdf`, `word_redline` or `word_watchdog` process was running, and the other session's newest Word log (`fix013w/ab1721r/wrej.log`) was last written at 13:26:13Z. Both preflights found a Word process the driver had not launched, with no open document (`launched_by_us=False`, `open_documents=0`); it had been running since 13:26:18Z.
 
+Session 20 ran in the foreground (`s20a` 14:28Z, `s20b` 14:29Z, `s20c` 14:30Z, `s20d` 14:30Z), one driver run per chunk of eight. Nothing was set aside, and every row is attributed by an alert or a manifest entry naming its staged file. No `word_watchdog.sh` was running. Before each chunk, no other `osascript`, `word_pdf` or `word_redline` process was running. The other session was running a review whose notes say it uses no Word automation (`fix013w/rev1716/codex.md`, written 14:27Z). All four preflights found the Word process the driver had not launched, with no open document (`word_pid=81589`, `launched_by_us=False`, `open_documents=0`); it had been running since 13:26Z.
+
 Sessions 4–6 observed `main-relationship-missing` (#380), the #414 `PartName`s with `application/xml`, an escape in a folder segment (#408), a part-level relationships part (#433) and an unreferenced malformed `customXml/item9.xml` (#437). Still to be observed:
 
-- `numbering` and `theme` typed by the generic Default (#432). Sessions 8–13 observed settings, fontTable, webSettings, the main part and styles.
 - A part Word reads, such as the main part, whose local-header name differs from its central-directory name (#411, review Y).
 - A percent-escaped `PartName` that names a stored part (#451). Session 8 observed `%E9` for a missing part.
 - Markup Compatibility elements or attributes in `[Content_Types].xml` (#459).
-- A footnotes, endnotes or comments part the glossary relates but does not reference (#549). Session 17 observed only the header case.
-- A parameterized or padded content type on footer, comments, footnotes, endnotes, numbering, theme and glossary parts (#550). Session 17 observed the main part, styles, settings, fontTable, webSettings and a header.
-- `customXml` and `theme` parts, or a nested `glossaryDocument`, related from a glossary (#562). Session 19 observed styles, settings, fontTable, webSettings and numbering.
+- A padded content type (a trailing space) on footer, comments, footnotes, endnotes, numbering and theme, and a parameterized one on a related but unused footer, footnotes, endnotes or comments part (#570). Session 20 observed the parameterized type on used parts; session 17 observed padding on styles only.
 
 ## Observations
 
@@ -1231,6 +1237,86 @@ The four controls are minimal packages; `s19a-control-minimal-end` and `s19b-con
 {"run": "s19b", "name": "glossary-fonttable-wellformed-control", "sha256": "6fa53cf2a2976787f43badf42cf1cdbf64e3393896e158461e4b52ad71fc777b", "observedAt": "2026-10-24T13:58:33+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 {"run": "s19b", "name": "glossary-websettings-wellformed-control", "sha256": "a28641bef2bf059180f4d84f66a51ea932c946c399abfa74c229a681e4643016", "observedAt": "2026-10-24T13:58:33+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 {"run": "s19b", "name": "s19b-control-minimal-end", "sha256": "19cd78173931a680dbd8898262a30f1ede701d4ca8598c5762d33ddfd707a132", "observedAt": "2026-10-24T13:58:33+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 20: 14:28Z–14:30Z, validator columns at 52fdbd8b
+
+The glossary's remaining relationships (#569, #549), a MIME parameter on the remaining Word-read parts (#570), and numbering and theme typed by the generic Default (#571). The glossary specimens are built as in session 19: the minimal package plus `word/glossary/document.xml`, reached through a main-document `glossaryDocument` relationship and referencing no story, whose own relationships part relates one part. Each content-type specimen is the minimal package plus one part related from the main document, used where the type is lazy, and typed by its `Override`, or by the generic Default when it has none.
+
+| Run    | Observed  | Specimen                                            | Issue             | Shape                                                                                                                                                 | SHA-256 (first 16) | Word           | word-valid at 52fdbd8b | strict at 52fdbd8b                                                                                                                                          |
+| ------ | --------- | --------------------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `s20a` | 14:28:52Z | `s20a-control-minimal`                              | control           | —                                                                                                                                                     | `1020f1a7be8c2fec` | clean-open     | valid                  | valid                                                                                                                                                       |
+| `s20a` | 14:28:52Z | `glossary-customxml-malformed`                      | #562              | a reached glossary (no story references) whose own `.rels` relates `customXml/item1.xml` (`customXml`, target `../../customXml/item1.xml`), truncated | `374169fe30287850` | clean-open     | valid                  | invalid (`xml-syntax@customXml/item1.xml`, `paraid-missing-element@word/glossary/document.xml`)                                                             |
+| `s20a` | 14:28:52Z | `glossary-customxml-wellformed-control`             | #562              | a reached glossary (no story references) whose own `.rels` relates `customXml/item1.xml` (`customXml`, target `../../customXml/item1.xml`), `<root/>` | `a74f988adc46863b` | clean-open     | valid                  | invalid (`paraid-missing-element@word/glossary/document.xml`)                                                                                               |
+| `s20a` | 14:28:49Z | `glossary-theme-malformed`                          | #562              | a reached glossary (no story references) whose own `.rels` relates `word/glossary/theme/theme1.xml` (`theme`), a Word theme unclosed                  | `d340bf57cba7d2b6` | repair-warning | valid                  | invalid (`xml-syntax@word/glossary/theme/theme1.xml`, `paraid-missing-element@word/glossary/document.xml`)                                                  |
+| `s20a` | 14:28:52Z | `glossary-theme-wellformed-control`                 | #562              | a reached glossary (no story references) whose own `.rels` relates `word/glossary/theme/theme1.xml` (`theme`), a Word theme well formed               | `6e7fcd6ed1824423` | clean-open     | valid                  | invalid (`paraid-missing-element@word/glossary/document.xml`)                                                                                               |
+| `s20a` | 14:28:52Z | `glossary-nested-glossary-malformed`                | #562              | a reached glossary (no story references) whose own `.rels` relates `word/glossary/glossary2.xml` (`glossaryDocument`), unclosed                       | `d826f13689630eb2` | clean-open     | valid                  | invalid (`xml-syntax@word/glossary/glossary2.xml`, `paraid-missing-element@word/glossary/document.xml`)                                                     |
+| `s20a` | 14:28:52Z | `glossary-nested-glossary-wellformed-control`       | #562              | a reached glossary (no story references) whose own `.rels` relates `word/glossary/glossary2.xml` (`glossaryDocument`), well formed                    | `283ec3b603e59fdd` | clean-open     | valid                  | invalid (`paraid-missing-element@word/glossary/document.xml`)                                                                                               |
+| `s20a` | 14:28:52Z | `s20a-control-minimal-end`                          | control           | —                                                                                                                                                     | `1020f1a7be8c2fec` | clean-open     | valid                  | valid                                                                                                                                                       |
+| `s20b` | 14:29:39Z | `s20b-control-minimal`                              | control           | —                                                                                                                                                     | `c581427289561aaa` | clean-open     | valid                  | valid                                                                                                                                                       |
+| `s20b` | 14:29:34Z | `numbering-override-charset`                        | #550              | `word/numbering.xml` related, its `Override` the numbering type plus `; charset=utf-8`                                                                | `130153d7b555e024` | repair-warning | valid                  | invalid (`word-part-content-type-inexact@word/numbering.xml`)                                                                                               |
+| `s20b` | 14:29:39Z | `theme-override-charset`                            | #550              | `word/theme/theme1.xml` related, its `Override` the theme type plus `; charset=utf-8`                                                                 | `aeeb606aa7e7a462` | repair-warning | valid                  | valid                                                                                                                                                       |
+| `s20b` | 14:29:39Z | `glossary-override-charset`                         | #550              | `word/glossary/document.xml` related, its `Override` the glossary document type plus `; charset=utf-8`                                                | `1eff4a90ddbea25e` | clean-open     | valid                  | invalid (`word-part-content-type-inexact@word/glossary/document.xml`, `paraid-missing-element@word/glossary/document.xml`)                                  |
+| `s20b` | 14:29:25Z | `footer-override-charset`                           | #550              | `word/footer9.xml` related and referenced from the body `w:sectPr`, its `Override` the footer type plus `; charset=utf-8`                             | `c5675669b5895890` | repair-warning | valid                  | invalid (`word-part-content-type-inexact@word/footer9.xml`, `paraid-missing-element@word/footer9.xml`)                                                      |
+| `s20b` | 14:29:30Z | `footnotes-override-charset`                        | #550              | `word/footnotes.xml` related and referenced (`w:footnoteReference`), its `Override` the footnotes type plus `; charset=utf-8`                         | `d17691b311cf5133` | repair-warning | valid                  | invalid (`word-part-content-type-inexact@word/footnotes.xml`, `paraid-missing-element@word/footnotes.xml`)                                                  |
+| `s20b` | 14:29:21Z | `endnotes-override-charset`                         | #550              | `word/endnotes.xml` related and referenced (`w:endnoteReference`), its `Override` the endnotes type plus `; charset=utf-8`                            | `f848c4a5da569833` | repair-warning | valid                  | invalid (`word-part-content-type-inexact@word/endnotes.xml`, `paraid-missing-element@word/endnotes.xml`)                                                    |
+| `s20b` | 14:29:39Z | `s20b-control-minimal-end`                          | control           | —                                                                                                                                                     | `c581427289561aaa` | clean-open     | valid                  | valid                                                                                                                                                       |
+| `s20c` | 14:30:09Z | `s20c-control-minimal`                              | control           | —                                                                                                                                                     | `c581427289561aaa` | clean-open     | valid                  | valid                                                                                                                                                       |
+| `s20c` | 14:30:00Z | `comments-override-charset`                         | #550              | `word/comments.xml` related and referenced (`w:commentReference`), its `Override` the comments type plus `; charset=utf-8`                            | `937c2eff89592e7d` | repair-warning | valid                  | invalid (`word-part-content-type-inexact@word/comments.xml`, `comment-thread-count-mismatch@word/document.xml`, `paraid-missing-element@word/comments.xml`) |
+| `s20c` | 14:30:09Z | `glossary-footnotes-related-unreferenced-malformed` | #549              | a reached glossary (no story references) whose own `.rels` relates `word/glossary/footnotes.xml` (`footnotes`), not referenced, unclosed              | `053af8bdb0747097` | clean-open     | valid                  | invalid (`xml-syntax@word/glossary/footnotes.xml`, `paraid-missing-element@word/glossary/document.xml`)                                                     |
+| `s20c` | 14:30:09Z | `glossary-endnotes-related-unreferenced-malformed`  | #549              | a reached glossary (no story references) whose own `.rels` relates `word/glossary/endnotes.xml` (`endnotes`), not referenced, unclosed                | `a02919bf95888214` | clean-open     | valid                  | invalid (`xml-syntax@word/glossary/endnotes.xml`, `paraid-missing-element@word/glossary/document.xml`)                                                      |
+| `s20c` | 14:30:09Z | `glossary-comments-related-unreferenced-malformed`  | #549              | a reached glossary (no story references) whose own `.rels` relates `word/glossary/comments.xml` (`comments`), not referenced, unclosed                | `abc9dd306767c4af` | clean-open     | valid                  | invalid (`xml-syntax@word/glossary/comments.xml`, `paraid-missing-element@word/glossary/document.xml`)                                                      |
+| `s20c` | 14:30:04Z | `numbering-default-generic`                         | #432              | `word/numbering.xml` related, no `Override`: typed by `Default Extension="xml" ContentType="application/xml"`                                         | `62e667ff418ada7f` | repair-warning | valid                  | invalid (`word-part-content-type-generic@word/numbering.xml`)                                                                                               |
+| `s20c` | 14:30:08Z | `theme-default-generic`                             | #432              | `word/theme/theme1.xml` related, no `Override`: typed by `Default Extension="xml" ContentType="application/xml"`                                      | `1d1542b626811c84` | repair-warning | valid                  | invalid (`ct-undeclared-part@word/theme/theme1.xml`)                                                                                                        |
+| `s20c` | 14:30:09Z | `s20c-control-minimal-end`                          | control           | —                                                                                                                                                     | `c581427289561aaa` | clean-open     | valid                  | valid                                                                                                                                                       |
+| `s20d` | 14:30:23Z | `s20d-control-minimal`                              | control           | —                                                                                                                                                     | `30b8f1c2ce0a79f8` | clean-open     | valid                  | valid                                                                                                                                                       |
+| `s20d` | 14:30:23Z | `numbering-override-exact-control`                  | #550 #432 control | `word/numbering.xml` related, its `Override` the exact numbering type                                                                                 | `4c23ed6449caea9d` | clean-open     | valid                  | valid                                                                                                                                                       |
+| `s20d` | 14:30:23Z | `theme-override-exact-control`                      | #550 #432 control | `word/theme/theme1.xml` related, its `Override` the exact theme type                                                                                  | `57705296e7f9381b` | clean-open     | valid                  | valid                                                                                                                                                       |
+| `s20d` | 14:30:23Z | `glossary-override-exact-control`                   | #550 control      | `word/glossary/document.xml` related, its `Override` the exact glossary document type                                                                 | `5d3be5b7d10210ca` | clean-open     | valid                  | invalid (`paraid-missing-element@word/glossary/document.xml`)                                                                                               |
+| `s20d` | 14:30:23Z | `footer-override-exact-control`                     | #550 control      | `word/footer9.xml` related and referenced from the body `w:sectPr`, its `Override` the exact footer type                                              | `1600256784ae396a` | clean-open     | valid                  | invalid (`paraid-missing-element@word/footer9.xml`)                                                                                                         |
+| `s20d` | 14:30:23Z | `footnotes-override-exact-control`                  | #550 control      | `word/footnotes.xml` related and referenced (`w:footnoteReference`), its `Override` the exact footnotes type                                          | `e4bbe5bdce633dc1` | clean-open     | valid                  | invalid (`paraid-missing-element@word/footnotes.xml`)                                                                                                       |
+| `s20d` | 14:30:23Z | `endnotes-override-exact-control`                   | #550 control      | `word/endnotes.xml` related and referenced (`w:endnoteReference`), its `Override` the exact endnotes type                                             | `059d4d8947301578` | clean-open     | valid                  | invalid (`paraid-missing-element@word/endnotes.xml`)                                                                                                        |
+| `s20d` | 14:30:23Z | `comments-override-exact-control`                   | #550 control      | `word/comments.xml` related and referenced (`w:commentReference`), its `Override` the exact comments type                                             | `d9fdd2fe5ef39b38` | clean-open     | valid                  | invalid (`comment-thread-count-mismatch@word/document.xml`, `paraid-missing-element@word/comments.xml`)                                                     |
+
+The `s20a` controls are byte-identical, and so are the `s20b` and `s20c` controls.
+
+<details><summary>Raw records, session 20</summary>
+
+```jsonl
+{"run": "s20a", "name": "s20a-control-minimal", "sha256": "1020f1a7be8c2fecd2e6428df8756b987230ed8219fe970e738b41ed147892fa", "observedAt": "2026-10-24T14:28:52+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s20a", "name": "glossary-customxml-malformed", "sha256": "374169fe302878502fcdcaf57f993a1f1dcd0a967953c8097aa952b5c680866e", "observedAt": "2026-10-24T14:28:52+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s20a", "name": "glossary-customxml-wellformed-control", "sha256": "a74f988adc46863b6e34d1af3f0acb91bbb0d6c4130bef75d99e970b65566539", "observedAt": "2026-10-24T14:28:52+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s20a", "name": "glossary-theme-malformed", "sha256": "d340bf57cba7d2b6a1811555eb5b5f11fe5f6d35a057306c8baa3cea3167a2bd", "observedAt": "2026-10-24T14:28:49.951Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00004__wfv__glossary-theme-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00004__wfv__glossary-theme-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s20a", "name": "glossary-theme-wellformed-control", "sha256": "6e7fcd6ed1824423c61356b847a709ce9937b72a92f2f72098b2232c0617d709", "observedAt": "2026-10-24T14:28:52+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s20a", "name": "glossary-nested-glossary-malformed", "sha256": "d826f13689630eb2a176ca58cb222e1f743891bef96017bef29c30e7b59fb1b8", "observedAt": "2026-10-24T14:28:52+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s20a", "name": "glossary-nested-glossary-wellformed-control", "sha256": "283ec3b603e59fdd57e5ee088a8206c353e065f89b52f9dd8364db512561cc9f", "observedAt": "2026-10-24T14:28:52+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s20a", "name": "s20a-control-minimal-end", "sha256": "1020f1a7be8c2fecd2e6428df8756b987230ed8219fe970e738b41ed147892fa", "observedAt": "2026-10-24T14:28:52+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s20b", "name": "s20b-control-minimal", "sha256": "c581427289561aaa7e44e315c782466442a3f050bb4f551a83abd192c25678df", "observedAt": "2026-10-24T14:29:39+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s20b", "name": "numbering-override-charset", "sha256": "130153d7b555e02455ba2366c347dda7ec8736ed0c39cd5c74edd7d678b1eea5", "observedAt": "2026-10-24T14:29:34.434Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00004__wfv__numbering-override-charset.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00004__wfv__numbering-override-charset.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s20b", "name": "theme-override-charset", "sha256": "aeeb606aa7e7a462056196944654ec3ad426c0082b75bbeb734de1cc7cf94c95", "observedAt": "2026-10-24T14:29:39.086Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00007__wfv__theme-override-charset.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00007__wfv__theme-override-charset.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s20b", "name": "glossary-override-charset", "sha256": "1eff4a90ddbea25ea5414c64c482b39baf97830dd1faf260c9b9a4fbf8b454e0", "observedAt": "2026-10-24T14:29:39+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s20b", "name": "footer-override-charset", "sha256": "c5675669b58958900c126fab4936241c2de0b3964bcca46a6de013c2c1dbaf5f", "observedAt": "2026-10-24T14:29:25.900Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00001__wfv__footer-override-charset.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00001__wfv__footer-override-charset.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s20b", "name": "footnotes-override-charset", "sha256": "d17691b311cf5133d564abd7d668c2798a51734a420d530ae819505f32fbf863", "observedAt": "2026-10-24T14:29:30.067Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00002__wfv__footnotes-override-charset.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__footnotes-override-charset.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s20b", "name": "endnotes-override-charset", "sha256": "f848c4a5da569833ba17c2c6c90ba8ec1f1620c0cc9b2cafbfa09b6278d3dbc7", "observedAt": "2026-10-24T14:29:21.726Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__endnotes-override-charset.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__endnotes-override-charset.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s20b", "name": "s20b-control-minimal-end", "sha256": "c581427289561aaa7e44e315c782466442a3f050bb4f551a83abd192c25678df", "observedAt": "2026-10-24T14:29:39+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s20c", "name": "s20c-control-minimal", "sha256": "c581427289561aaa7e44e315c782466442a3f050bb4f551a83abd192c25678df", "observedAt": "2026-10-24T14:30:09+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s20c", "name": "comments-override-charset", "sha256": "937c2eff89592e7dfb283fe6d3972e0319df731ba4ea3bd03ba56f7e28d846c5", "observedAt": "2026-10-24T14:30:00.168Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__comments-override-charset.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__comments-override-charset.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s20c", "name": "glossary-footnotes-related-unreferenced-malformed", "sha256": "053af8bdb0747097a7d4ebc79eff3bc9cac7ab82e2d6a0508029324648c3a1fd", "observedAt": "2026-10-24T14:30:09+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s20c", "name": "glossary-endnotes-related-unreferenced-malformed", "sha256": "a02919bf958882149da06eed56b515853cb2415a07e73f23065a32d2b218c2c0", "observedAt": "2026-10-24T14:30:09+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s20c", "name": "glossary-comments-related-unreferenced-malformed", "sha256": "abc9dd306767c4af0342ac55ef9f1fe2824f7f0da22a8102a606f31df22527e0", "observedAt": "2026-10-24T14:30:09+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s20c", "name": "numbering-default-generic", "sha256": "62e667ff418ada7fbc6868f20eab666b0605bf9af568137e4fafbd1489663f3f", "observedAt": "2026-10-24T14:30:04.550Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00004__wfv__numbering-default-generic.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00004__wfv__numbering-default-generic.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s20c", "name": "theme-default-generic", "sha256": "1d1542b626811c84fcb9155b2784c3fecebfe2d95c836a0e938f9e0dec0ec622", "observedAt": "2026-10-24T14:30:08.801Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00007__wfv__theme-default-generic.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00007__wfv__theme-default-generic.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s20c", "name": "s20c-control-minimal-end", "sha256": "c581427289561aaa7e44e315c782466442a3f050bb4f551a83abd192c25678df", "observedAt": "2026-10-24T14:30:09+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s20d", "name": "s20d-control-minimal", "sha256": "30b8f1c2ce0a79f8f411a537a0ea5e79f79890c1126672791e6ca706b672cb72", "observedAt": "2026-10-24T14:30:23+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s20d", "name": "numbering-override-exact-control", "sha256": "4c23ed6449caea9de1b7d168cc7f7d51488a28530882eb562ade044d4de439cd", "observedAt": "2026-10-24T14:30:23+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s20d", "name": "theme-override-exact-control", "sha256": "57705296e7f9381bda6e5c35ee470e554b827c0fb6a32456af1c3fe5af2bae06", "observedAt": "2026-10-24T14:30:23+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s20d", "name": "glossary-override-exact-control", "sha256": "5d3be5b7d10210ca687a89b9fe6456ed8d3b8ffab1fbe52d305ba9c847e7804d", "observedAt": "2026-10-24T14:30:23+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s20d", "name": "footer-override-exact-control", "sha256": "1600256784ae396aedef701cce4a3c825c18ae82840576385045f22df7e0b496", "observedAt": "2026-10-24T14:30:23+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s20d", "name": "footnotes-override-exact-control", "sha256": "e4bbe5bdce633dc17919d9f7f0fd604a3a3d53584c1a9ea7a95c407036104425", "observedAt": "2026-10-24T14:30:23+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s20d", "name": "endnotes-override-exact-control", "sha256": "059d4d894730157852c96ea91d6bd3808cfe7dbf0e1338429e281ead28a93a5b", "observedAt": "2026-10-24T14:30:23+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s20d", "name": "comments-override-exact-control", "sha256": "d9fdd2fe5ef39b386c9dd2c1f94ad64093cc5fb29a32342aa2d634873f1bba1a", "observedAt": "2026-10-24T14:30:23+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 ```
 
 </details>
@@ -3798,6 +3884,282 @@ const specimens: [string, string, () => Promise<Uint8Array> | Uint8Array][] = [
     ["glossary-fonttable-wellformed-control", "#549 eager", () => glossaryWithEager("fontTable", false)],
     ["glossary-websettings-wellformed-control", "#549 eager", () => glossaryWithEager("webSettings", false)],
     ["s19b-control-minimal-end", "control", () => buildDocx(P)],
+];
+const only = new Set((process.env.ONLY ?? "").split(",").filter(Boolean));
+
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    if (only.size > 0 && !only.has(name)) continue;
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        const r = await validate(path.join(dir, file), { profile });
+        return {
+            valid: r.valid,
+            errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+        };
+    };
+    const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid}`,
+    );
+}
+```
+
+Session 20's builder (`s20a`–`s20d`) is another standalone script, run the same way:
+
+```ts
+// Session 20 (2026-10-24): the "still to be observed" items of docs/plans/evidence/word-probes-2026-10-24.md that the
+// current lanes leave open.
+// s20a (#562): customXml, theme and a nested glossaryDocument related from a reached glossary, malformed and well formed.
+// s20b (#550): a parameterized content type (`; charset=utf-8`) on numbering, theme, glossary, footer, footnotes, endnotes.
+// s20c (#550, #549, #432): the same on comments; footnotes/endnotes/comments a glossary relates but does not reference,
+//       malformed; numbering and theme typed by the generic Default.
+// s20d: the s20b/s20c controls — each part with its exact type.
+// The well-formed theme is word/theme/theme1.xml of tests/fixtures/working/package.word-anchor-open-repaired.docx
+// (copied to s20-theme1.xml; the fixture is read, not modified).
+// Run from the stack worktree root as a copy: BUILD_DIR=<chunk>/src [ONLY=a,b] pnpm exec tsx s20builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const THEME_TYPE = "application/vnd.openxmlformats-officedocument.theme+xml";
+const CHARSET = "; charset=utf-8";
+const P = MINIMAL_PARTS as Record<string, string>;
+const CT = P["[Content_Types].xml"];
+const DOC = P["word/document.xml"];
+const DOC_RELS = P["word/_rels/document.xml.rels"];
+const THEME = readFileSync("/Users/arthrod/temp/T/wfv-scratch/word-probes/s20-theme1.xml", "utf8");
+/** Well formed up to a missing end of the root element: namespaces stay declared, the part does not parse. */
+const unclosed = (xml: string) => xml.slice(0, xml.lastIndexOf("</"));
+const ct = (extra: string) => CT.replace("</Types>", `${extra}</Types>`);
+const rels = (extra: string) => DOC_RELS.replace("</Relationships>", `${extra}</Relationships>`);
+const relsPart = (body: string) =>
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${body}</Relationships>`;
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (!text.includes(from)) throw new Error(`missing ${from}`);
+    return text.replace(from, to);
+};
+
+const FOOTER = `<w:ftr xmlns:w="${W}"><w:p><w:r><w:t>Footer</w:t></w:r></w:p></w:ftr>`;
+const notes = (kind: "footnote" | "endnote") =>
+    `<w:${kind}s xmlns:w="${W}"><w:${kind} w:type="separator" w:id="-1"><w:p><w:r><w:separator/></w:r></w:p></w:${kind}>` +
+    `<w:${kind} w:type="continuationSeparator" w:id="0"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:${kind}>` +
+    `<w:${kind} w:id="1"><w:p><w:r><w:t>Note</w:t></w:r></w:p></w:${kind}></w:${kind}s>`;
+const FOOTNOTES = notes("footnote");
+const ENDNOTES = notes("endnote");
+const COMMENTS = `<w:comments xmlns:w="${W}"><w:comment w:id="0" w:author="A" w:initials="A"><w:p><w:r><w:t>Comment</w:t></w:r></w:p></w:comment></w:comments>`;
+const NUMBERING =
+    `<w:numbering xmlns:w="${W}"><w:abstractNum w:abstractNumId="0"><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="decimal"/>` +
+    `<w:lvlText w:val="%1."/></w:lvl></w:abstractNum><w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num></w:numbering>`;
+const glossary = (body = "") =>
+    `<w:glossaryDocument xmlns:w="${W}" xmlns:r="${REL}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+    `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+    `<w:docPartBody><w:p><w:r><w:t>Part</w:t></w:r>${body}</w:p></w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`;
+const GLOSSARY_TYPE = `${WML}.document.glossary+xml`;
+
+/** The minimal package plus a reached glossary whose own relationships part relates `segment` -> `target` (`stored`). */
+const glossaryRelating = (segment: string, target: string, stored: string, xml: string, override: string) =>
+    buildDocx({
+        ...P,
+        "word/glossary/document.xml": glossary(),
+        "word/glossary/_rels/document.xml.rels": relsPart(`<Relationship Id="rIdE" Type="${REL}/${segment}" Target="${target}"/>`),
+        [stored]: xml,
+        "word/_rels/document.xml.rels": rels(`<Relationship Id="rIdG" Type="${REL}/glossaryDocument" Target="glossary/document.xml"/>`),
+        "[Content_Types].xml": ct(`<Override PartName="/word/glossary/document.xml" ContentType="${GLOSSARY_TYPE}"/>${override}`),
+    });
+const ov = (part: string, type: string) => `<Override PartName="/${part}" ContentType="${type}"/>`;
+
+/** The main document with `r` declared, `run` added after the Hello run, and `sectPr` children prepended. */
+const docWith = (run: string, sect = "") =>
+    replaceOnce(
+        replaceOnce(
+            replaceOnce(DOC, `<w:document xmlns:w="${W}"`, `<w:document xmlns:w="${W}" xmlns:r="${REL}"`),
+            "<w:t>Hello</w:t></w:r>",
+            `<w:t>Hello</w:t></w:r>${run}`,
+        ),
+        "<w:sectPr>",
+        `<w:sectPr>${sect}`,
+    );
+/** A part the main document relates (and uses, through `doc`), typed by an Override with `type`, or by the Default when `type` is undefined. */
+const mainPart = (o: { segment: string; file: string; xml: string; type: string | undefined; doc?: string }) =>
+    buildDocx({
+        ...P,
+        "word/document.xml": o.doc ?? DOC,
+        [`word/${o.file}`]: o.xml,
+        "word/_rels/document.xml.rels": rels(`<Relationship Id="rIdX" Type="${REL}/${o.segment}" Target="${o.file}"/>`),
+        "[Content_Types].xml": o.type === undefined ? CT : ct(ov(`word/${o.file}`, o.type)),
+    });
+const USED = {
+    numbering: { segment: "numbering", file: "numbering.xml", xml: NUMBERING, type: `${WML}.numbering+xml` },
+    theme: { segment: "theme", file: "theme/theme1.xml", xml: THEME, type: THEME_TYPE },
+    glossary: { segment: "glossaryDocument", file: "glossary/document.xml", xml: glossary(), type: GLOSSARY_TYPE },
+    footer: {
+        segment: "footer",
+        file: "footer9.xml",
+        xml: FOOTER,
+        type: `${WML}.footer+xml`,
+        doc: docWith("", `<w:footerReference w:type="default" r:id="rIdX"/>`),
+    },
+    footnotes: {
+        segment: "footnotes",
+        file: "footnotes.xml",
+        xml: FOOTNOTES,
+        type: `${WML}.footnotes+xml`,
+        doc: docWith(`<w:r><w:footnoteReference w:id="1"/></w:r>`),
+    },
+    endnotes: {
+        segment: "endnotes",
+        file: "endnotes.xml",
+        xml: ENDNOTES,
+        type: `${WML}.endnotes+xml`,
+        doc: docWith(`<w:r><w:endnoteReference w:id="1"/></w:r>`),
+    },
+    comments: {
+        segment: "comments",
+        file: "comments.xml",
+        xml: COMMENTS,
+        type: `${WML}.comments+xml`,
+        doc: docWith(`<w:r><w:commentReference w:id="0"/></w:r>`),
+    },
+} as const;
+type Used = keyof typeof USED;
+const charset = (k: Used) => mainPart({ ...USED[k], type: USED[k].type + CHARSET });
+const exact = (k: Used) => mainPart({ ...USED[k] });
+const generic = (k: Used) => mainPart({ ...USED[k], type: undefined });
+
+const specimens: [string, string, () => Promise<Uint8Array> | Uint8Array][] = [
+    // s20a — #562: the glossary's unobserved eager relationships.
+    ["s20a-control-minimal", "control", () => buildDocx(P)],
+    [
+        "glossary-customxml-malformed",
+        "#562",
+        () => glossaryRelating("customXml", "../../customXml/item1.xml", "customXml/item1.xml", unclosed(P["word/styles.xml"]), ""),
+    ],
+    [
+        "glossary-customxml-wellformed-control",
+        "#562",
+        () => glossaryRelating("customXml", "../../customXml/item1.xml", "customXml/item1.xml", `<root/>`, ""),
+    ],
+    [
+        "glossary-theme-malformed",
+        "#562",
+        () =>
+            glossaryRelating(
+                "theme",
+                "theme/theme1.xml",
+                "word/glossary/theme/theme1.xml",
+                unclosed(THEME),
+                ov("word/glossary/theme/theme1.xml", THEME_TYPE),
+            ),
+    ],
+    [
+        "glossary-theme-wellformed-control",
+        "#562",
+        () =>
+            glossaryRelating(
+                "theme",
+                "theme/theme1.xml",
+                "word/glossary/theme/theme1.xml",
+                THEME,
+                ov("word/glossary/theme/theme1.xml", THEME_TYPE),
+            ),
+    ],
+    [
+        "glossary-nested-glossary-malformed",
+        "#562",
+        () =>
+            glossaryRelating(
+                "glossaryDocument",
+                "glossary2.xml",
+                "word/glossary/glossary2.xml",
+                unclosed(glossary()),
+                ov("word/glossary/glossary2.xml", GLOSSARY_TYPE),
+            ),
+    ],
+    [
+        "glossary-nested-glossary-wellformed-control",
+        "#562",
+        () =>
+            glossaryRelating(
+                "glossaryDocument",
+                "glossary2.xml",
+                "word/glossary/glossary2.xml",
+                glossary(),
+                ov("word/glossary/glossary2.xml", GLOSSARY_TYPE),
+            ),
+    ],
+    ["s20a-control-minimal-end", "control", () => buildDocx(P)],
+    // s20b — #550: a MIME parameter on the remaining Word-read part types.
+    ["s20b-control-minimal", "control", () => buildDocx(P)],
+    ["numbering-override-charset", "#550", () => charset("numbering")],
+    ["theme-override-charset", "#550", () => charset("theme")],
+    ["glossary-override-charset", "#550", () => charset("glossary")],
+    ["footer-override-charset", "#550", () => charset("footer")],
+    ["footnotes-override-charset", "#550", () => charset("footnotes")],
+    ["endnotes-override-charset", "#550", () => charset("endnotes")],
+    ["s20b-control-minimal-end", "control", () => buildDocx(P)],
+    // s20c — #550 comments; #549 stories a glossary relates but does not reference; #432 generic Default.
+    ["s20c-control-minimal", "control", () => buildDocx(P)],
+    ["comments-override-charset", "#550", () => charset("comments")],
+    [
+        "glossary-footnotes-related-unreferenced-malformed",
+        "#549",
+        () =>
+            glossaryRelating(
+                "footnotes",
+                "footnotes.xml",
+                "word/glossary/footnotes.xml",
+                unclosed(FOOTNOTES),
+                ov("word/glossary/footnotes.xml", `${WML}.footnotes+xml`),
+            ),
+    ],
+    [
+        "glossary-endnotes-related-unreferenced-malformed",
+        "#549",
+        () =>
+            glossaryRelating(
+                "endnotes",
+                "endnotes.xml",
+                "word/glossary/endnotes.xml",
+                unclosed(ENDNOTES),
+                ov("word/glossary/endnotes.xml", `${WML}.endnotes+xml`),
+            ),
+    ],
+    [
+        "glossary-comments-related-unreferenced-malformed",
+        "#549",
+        () =>
+            glossaryRelating(
+                "comments",
+                "comments.xml",
+                "word/glossary/comments.xml",
+                unclosed(COMMENTS),
+                ov("word/glossary/comments.xml", `${WML}.comments+xml`),
+            ),
+    ],
+    ["numbering-default-generic", "#432", () => generic("numbering")],
+    ["theme-default-generic", "#432", () => generic("theme")],
+    ["s20c-control-minimal-end", "control", () => buildDocx(P)],
+    // s20d — the exact-type controls of s20b and s20c.
+    ["s20d-control-minimal", "control", () => buildDocx(P)],
+    ["numbering-override-exact-control", "#550 #432 control", () => exact("numbering")],
+    ["theme-override-exact-control", "#550 #432 control", () => exact("theme")],
+    ["glossary-override-exact-control", "#550 control", () => exact("glossary")],
+    ["footer-override-exact-control", "#550 control", () => exact("footer")],
+    ["footnotes-override-exact-control", "#550 control", () => exact("footnotes")],
+    ["endnotes-override-exact-control", "#550 control", () => exact("endnotes")],
+    ["comments-override-exact-control", "#550 control", () => exact("comments")],
 ];
 const only = new Set((process.env.ONLY ?? "").split(",").filter(Boolean));
 
