@@ -399,10 +399,16 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     /**
      * Cached parse of `word/document.xml` from the original `.docx` zip.
      * `null` means "not yet attempted"; `false` means "attempted and failed,
-     * don't try again".
+     * don't try again". Forgotten with the archive it comes from (#503).
      */
     private originalDocumentRoot: Element | null = null;
     private originalDocumentRootFailed = false;
+
+    protected override forgetOriginal(): void {
+        super.forgetOriginal();
+        this.originalDocumentRoot = null;
+        this.originalDocumentRootFailed = false;
+    }
 
     /**
      * The package as the named checks see it, built once per `validate()` run
@@ -429,7 +435,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         this.inRun = true;
         this.runContext = undefined;
         try {
-            return await this.runEveryCheck();
+            return await this.withinBaselineRun(() => this.runEveryCheck());
         } finally {
             this.inRun = false;
             this.runContext = undefined;
@@ -1363,7 +1369,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         }
         try {
             // Shares the archive `_getOriginalFileErrors` memoizes: one read
-            // and load per validator instead of one per caller (#481).
+            // and load per run instead of one per caller (#481, #503).
             const zip = await this._loadOriginalArchive();
             const entry = zip?.file("word/document.xml");
             if (!entry) {

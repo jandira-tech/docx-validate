@@ -1384,6 +1384,7 @@ export class BaseSchemaValidator {
     // ----- XSD validation -----------------------------------------------------
 
     async validateAgainstXsd(): Promise<ValidationResult> {
+        if (!this.baselineRunActive) this.forgetOriginal();
         const issues: ValidationIssue[] = [];
         let strictSkipped = false;
         this.xsdWalk.started = true;
@@ -1876,15 +1877,40 @@ export class BaseSchemaValidator {
     private mainDocumentParts: ReadonlySet<string> | undefined;
     /** See {@link _loadOriginalArchive}. */
     private originalArchivePromise: Promise<JSZip | null> | undefined;
+    /** True while `validate()` runs; see {@link withinBaselineRun}. */
+    private baselineRunActive = false;
 
     /**
-     * The `--original` archive, read from disk and loaded once per validator —
-     * baseline subtraction consults it for every XSD-failed part, and each call
-     * otherwise re-reads and re-parses the archive (#481).
+     * Run `validate()`'s checks so they share one `--original` load, starting
+     * from the `--original` as it is now: a re-run on this validator never
+     * subtracts the previous run's baseline (#503).
+     */
+    protected async withinBaselineRun<T>(run: () => Promise<T>): Promise<T> {
+        this.forgetOriginal();
+        this.baselineRunActive = true;
+        try {
+            return await run();
+        } finally {
+            this.baselineRunActive = false;
+        }
+    }
+
+    /** Drop what was read from the `--original`, so the next use reads it again (#503). */
+    protected forgetOriginal(): void {
+        this.originalArchivePromise = undefined;
+    }
+
+    /**
+     * The `--original` archive, read from disk and loaded once per
+     * `validate()` run — baseline subtraction consults it for every XSD-failed
+     * part, and each call otherwise re-reads and re-parses the archive (#481).
+     * A direct `validateAgainstXsd()` call outside a run starts from the
+     * `--original` as it is then (#503).
      *
      * A failed read resolves to `null` (the caller's empty result), exactly as
      * before. A load JSZip refuses still rejects, so the error surfaces where it
-     * did before — and the shared rejection replays it to every caller.
+     * did before — and the shared rejection replays it to every caller in the
+     * run.
      */
     protected _loadOriginalArchive(): Promise<JSZip | null> {
         this.originalArchivePromise ??= (async () => {
