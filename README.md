@@ -216,8 +216,9 @@ formats other than their default `.docx` (for example, `.pptx` or `.docm`).
   named checks for another format are configuration errors.
 - A partial run applies its profile as a full run does, so it never fails a package
   the full run passes. `lenient` runs neither the Word rules nor the ZIP-envelope
-  checks: naming one of them, or only groups made of them, is a configuration
-  error. Under `word-valid`, an error Word tolerates is reported as a warning.
+  checks: only archive-only checks and Word rules are refused — naming one, or
+  only groups made of them, is a configuration error. Under `word-valid`, an
+  error Word tolerates is reported as a warning.
 - `--list-checks` lists every registered id, group, format, and description without
   reading a file or starting XML/XSD engines. `--help` also needs no engine startup.
 - `--strict` / `{ strict: true }` is shorthand for `profile: "strict"`. Strict
@@ -272,7 +273,9 @@ equivalent group under OPC [M1.12], listing every stored spelling. Strict and
 word-valid (DOCX/DOCM) report a blocking error: Word 16.115 offers to recover every
 duplicate probed, even when both spellings hold identical bytes ([#351](https://github.com/jandira-tech/docx-validate/issues/351)).
 Lenient, and word-valid for PPTX/XLSX, report a warning. The existing entry choice
-is unchanged.
+is unchanged: two entries stored under the identical spelling report the same
+finding, naming the spelling once per entry (Word offers to recover these too),
+and the package view reads the last stored entry (#411).
 
 `opc-part-name-escaped-unreserved` uses the same formats, package-group selection,
 pre-extraction timing, directory support, and severity policy. It reports one
@@ -546,7 +549,8 @@ interface ValidationResult {
 
 `ValidationMetadata` has optional `profile`, `executedChecks`, `omittedChecks`,
 `schemaCompleted`, and `wordVerification` fields. `executedChecks` reports the
-registry ids a complete run executed (#319): lenient lists `xml-syntax`; Word-valid
+registry ids a complete run executed (#319): lenient lists `opc-equivalent-part-names`
+and `opc-part-name-escaped-unreserved` first, then `xml-syntax` and the rest; Word-valid
 and strict add the ZIP-envelope checks for a packed file and every Word rule whose
 prerequisites passed. A partial run lists the selected checks that ran, so an
 archive-only check is not listed for an unpacked directory. An archive that does

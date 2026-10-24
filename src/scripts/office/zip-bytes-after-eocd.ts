@@ -28,36 +28,19 @@
  * present is not that defect.
  */
 
-const EOCD_SIGNATURE = 0x06054b50;
-const EOCD_BYTES = Buffer.from([0x50, 0x4b, 0x05, 0x06]);
-const CENTRAL_DIRECTORY_SIGNATURE = 0x02014b50;
-const ZIP64_LOCATOR_SIGNATURE = 0x07064b50;
-const EOCD_FIXED_LENGTH = 22;
-const ZIP64_LOCATOR_LENGTH = 20;
-const MAX_COMMENT_LENGTH = 0xffff;
-const ZIP64_OFFSET = 0xffffffff;
-
-const readU16 = (buf: Uint8Array, offset: number): number => buf[offset]! | (buf[offset + 1]! << 8);
-
-const readU32 = (buf: Uint8Array, offset: number): number =>
-    (buf[offset]! | (buf[offset + 1]! << 8) | (buf[offset + 2]! << 16) | (buf[offset + 3]! << 24)) >>> 0;
-
-const hasSignature = (buf: Uint8Array, offset: number, signature: number): boolean => {
-    if (offset < 0 || offset + 4 > buf.length) return false;
-    return readU32(buf, offset) === signature;
-};
-
-const isStructuralEocd = (buf: Uint8Array, offset: number): boolean => {
-    const centralDirectoryOffset = readU32(buf, offset + 16);
-    if (hasSignature(buf, centralDirectoryOffset, CENTRAL_DIRECTORY_SIGNATURE)) return true;
-    const centralDirectorySize = readU32(buf, offset + 12);
-    const entryCount = readU16(buf, offset + 10);
-    if (centralDirectorySize === 0 && entryCount === 0 && centralDirectoryOffset === offset) return true;
-    if (centralDirectoryOffset === ZIP64_OFFSET) {
-        return hasSignature(buf, offset - ZIP64_LOCATOR_LENGTH, ZIP64_LOCATOR_SIGNATURE);
-    }
-    return false;
-};
+import {
+    EOCD_BYTES,
+    EOCD_FIXED_LENGTH,
+    EOCD_SIGNATURE,
+    hasSignature,
+    isStructuralEocd,
+    MAX_COMMENT_LENGTH,
+    readU16,
+    readU32,
+    ZIP64_LOCATOR_LENGTH,
+    ZIP64_LOCATOR_SIGNATURE,
+    ZIP64_OFFSET,
+} from "../../lib/zip-central-directory";
 
 export type ZipEocdCommentOverrun = {
     readonly declared: number;
