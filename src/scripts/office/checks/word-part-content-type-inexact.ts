@@ -29,8 +29,24 @@
  * (#570). Session 21 also observed a trailing space refused on the six
  * parts session 20 added, as session 17 did on styles. A parameterized
  * glossaryDocument type opens clean (session 20), so it stays silent under
- * word-valid. Sessions 20 and 21 are in
+ * word-valid. Sessions 20–22 are in
  * docs/plans/evidence/word-probes-2026-10-24.md.
+ *
+ * A reached glossary document is a second story root (#549), and word-valid
+ * judges the parts its own relationships part names too — but only the
+ * segments the probes observed: its styles part, eagerly parsed like the
+ * main document's (#562, session 19), so a relationship is enough (session
+ * 21, #579), and a header its `w:headerReference` uses, gated by
+ * `wordReadParts` exactly as the main document's header is (session 22).
+ * The glossary's settings, fontTable, webSettings, numbering and theme
+ * relationships were not probed for an inexact type and stay silent under
+ * word-valid; strict judges every Part 1 WordprocessingML relationship —
+ * and theme — on the glossary too, citing clause 11.3 for the unobserved
+ * WordprocessingML segments (the theme, a DrawingML part, cites no clause),
+ * which keeps strict a superset (#579). The finding names the
+ * relationship that reached the part — the glossary's — and a part the
+ * main document and the glossary both relate is reported once, under the
+ * main document's entry.
  *
  * Strict justifies the same defect by the spec — ECMA-376 Part 1 (4th
  * edition), clause 11.3, gives every WordprocessingML part its own content
@@ -72,7 +88,7 @@ import {
 } from "../../../lib/content-types";
 import type { ValidationIssue } from "../../../lib/types";
 import type { ValidationContext } from "../../../lib/validation-context";
-import { wordReadParts, wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
+import { glossaryTypedRelationshipTargets, wordReadParts, wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
 import {
     EXPECTED_CONTENT_TYPES,
     MAIN_DOCUMENT_CONTENT_TYPES,
@@ -118,12 +134,25 @@ const LAZY_OBSERVED_SEGMENTS: ReadonlySet<string> = new Set(["header", "footer",
 /** The segments a strict run judges: the probed set plus every other Part 1 WordprocessingML part type (#506). */
 const SPEC_SEGMENTS: ReadonlySet<string> = new Set([...OBSERVED_SEGMENTS, ...SPEC_ONLY_CONTENT_TYPES.keys()]);
 
+/**
+ * The segments a reached glossary's relationships were probed on (#579):
+ * its styles part — eagerly parsed (#562, session 19), so a relationship
+ * is enough (session 21) — and a header it references (session 22), gated
+ * by `wordReadParts` as a lazy segment is. The other glossary-eager
+ * segments were not probed for an inexact type, so they stay silent under
+ * word-valid.
+ */
+const GLOSSARY_OBSERVED_SEGMENTS: ReadonlySet<string> = new Set(["styles", "header"]);
+
+/** The glossary segments a strict run judges by the spec: every Part 1 WordprocessingML part type plus theme (#579). */
+const GLOSSARY_SPEC_SEGMENTS: ReadonlySet<string> = new Set([...SPEC_SEGMENTS].filter((segment) => segment !== OFFICE_DOCUMENT_SEGMENT));
+
 /** The content type a segment's part needs, `undefined` for the multi-typed main document. */
 const expectedContentTypeFor = (segment: string): string | undefined =>
     segment === "theme" ? THEME_CONTENT_TYPE : (EXPECTED_CONTENT_TYPES.get(segment) ?? SPEC_ONLY_CONTENT_TYPES.get(segment));
 
-/** What the part needs, named for the finding's message. */
-const expectedText = (segment: string, source: "override" | "default"): string => {
+/** What the part needs, named for the finding's message; `observed` names whether the segment+source pair was probed (#579). */
+const expectedText = (segment: string, source: "override" | "default", observed: boolean): string => {
     if (segment === OFFICE_DOCUMENT_SEGMENT) {
         const list = MAIN_DOCUMENT_CONTENT_TYPES.map((type) => `"${type}"`);
         const types = `${list.slice(0, -1).join(", ")} or ${list[list.length - 1]}`;
@@ -132,12 +161,17 @@ const expectedText = (segment: string, source: "override" | "default"): string =
             : `its content type must be exactly one of the Word main-document content types — ${types}`;
     }
     const expected = expectedContentTypeFor(segment)!;
-    if (OBSERVED_SEGMENTS.has(segment)) {
+    if (observed) {
         return source === "default" ? `it needs its own Override "${expected}" exactly` : `its Override should carry "${expected}" exactly`;
     }
     // A spec-only segment has no Word observation, so its finding cites
-    // clause 11.3, as the generic check's do (#506).
-    const clause = `, the content type ECMA-376 Part 1 (4th edition), clause 11.3 assigns the ${segment} part`;
+    // clause 11.3, as the generic check's do (#506). A reached glossary's
+    // theme is spec-only too (#579), but the theme is a DrawingML part, not
+    // a WordprocessingML one, so it names its own content type and no clause.
+    const clause =
+        segment === "theme"
+            ? ", the theme part's own content type"
+            : `, the content type ECMA-376 Part 1 (4th edition), clause 11.3 assigns the ${segment} part`;
     return source === "default" ? `it needs its own Override "${expected}"${clause}` : `its Override should carry "${expected}"${clause}`;
 };
 
@@ -177,17 +211,33 @@ export const wordPartContentTypeInexactFindings = async (
     const table = parseContentTypes(parsed.document);
 
     const targets = await wordTypedRelationshipTargets(ctx, scope === "spec" ? SPEC_SEGMENTS : OBSERVED_SEGMENTS);
+    // A reached glossary is a second story root (#549), so its own
+    // relationships name parts this check judges too: its styles and a
+    // header it references under the observed scope (#579, sessions 21 and
+    // 22), every Part 1 WordprocessingML type and theme under the spec
+    // scope. A part the main document already named keeps the main
+    // document's entry — one finding per part.
+    const glossaryTargets = await glossaryTypedRelationshipTargets(
+        ctx,
+        scope === "spec" ? GLOSSARY_SPEC_SEGMENTS : GLOSSARY_OBSERVED_SEGMENTS,
+    );
+    const named = new Set(targets.map((target) => canonicalPartName(target.part)));
+    const merged = [...targets, ...glossaryTargets.filter((target) => !named.has(canonicalPartName(target.part)))];
     // Headers, footers, comments, footnotes and endnotes are parsed lazily
     // — only when the document uses them (#516); session 20's specimens
     // reference theirs (#570) — so under the observed scope `wordReadParts`
     // gates the lazy targets the reachability walk named, the same usage
-    // decision the XML diagnostics make. Strict judges every relationship
-    // by the spec, referenced or not.
+    // decision the XML diagnostics make, and the glossary's targets too:
+    // its styles part is eagerly parsed (always read) while its header is
+    // lazy like the main document's (#579). Strict judges every
+    // relationship by the spec, referenced or not.
     const read =
-        scope === "observed" && targets.some((target) => LAZY_OBSERVED_SEGMENTS.has(target.segment)) ? await wordReadParts(ctx) : undefined;
+        scope === "observed" && merged.some((target) => target.via === "glossary" || LAZY_OBSERVED_SEGMENTS.has(target.segment))
+            ? await wordReadParts(ctx)
+            : undefined;
     const findings: WordInexactContentTypeFinding[] = [];
-    for (const { part, segment } of targets) {
-        if (read !== undefined && LAZY_OBSERVED_SEGMENTS.has(segment) && !read.has(canonicalPartName(part))) {
+    for (const { part, segment, via } of merged) {
+        if (read !== undefined && (via === "glossary" || LAZY_OBSERVED_SEGMENTS.has(segment)) && !read.has(canonicalPartName(part))) {
             continue;
         }
         const resolved = resolveContentType(table, part);
@@ -209,14 +259,24 @@ export const wordPartContentTypeInexactFindings = async (
         if (!expected.some((type) => mediaType === asciiLowercase(type))) {
             continue;
         }
+        // The message names the relationship that reached the part — the
+        // glossary's for a part its own relationships part names (#579).
         const by =
-            segment === OFFICE_DOCUMENT_SEGMENT ? "the package officeDocument relationship" : `the main document's ${segment} relationship`;
+            via === "glossary"
+                ? `the glossary's ${segment} relationship`
+                : segment === OFFICE_DOCUMENT_SEGMENT
+                  ? "the package officeDocument relationship"
+                  : `the main document's ${segment} relationship`;
+        // The observed pairs are the main-document probes plus the
+        // glossary's probed styles and referenced header (#579); every
+        // other glossary segment is spec-only.
+        const observed = via === "glossary" ? GLOSSARY_OBSERVED_SEGMENTS.has(segment) : OBSERVED_SEGMENTS.has(segment);
         const resolvedText =
             resolved.source === "default"
                 ? `resolves only through the Default for extension "${partExtension(part)}" to "${declared}"`
                 : `is typed "${declared}" by an Override`;
         // Word recovery was observed only for the probed parts (#506).
-        const verdict = OBSERVED_SEGMENTS.has(segment) ? " Word 16.115 offers to recover the package." : "";
+        const verdict = observed ? " Word 16.115 offers to recover the package." : "";
         findings.push({
             segment,
             source: resolved.source,
@@ -224,7 +284,7 @@ export const wordPartContentTypeInexactFindings = async (
                 severity: "error",
                 code: WORD_PART_CONTENT_TYPE_INEXACT,
                 path: part,
-                message: `${part}, named by ${by}, ${resolvedText}; ${expectedText(segment, resolved.source)}.${verdict}`,
+                message: `${part}, named by ${by}, ${resolvedText}; ${expectedText(segment, resolved.source, observed)}.${verdict}`,
             },
         });
     }

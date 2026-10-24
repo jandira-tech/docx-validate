@@ -596,7 +596,20 @@ Session 21 observed a trailing space refused on the same parts, and a
 related but unused footer, footnotes, endnotes, comments or header part
 with a parameter opening clean
 ([#570](https://github.com/jandira-tech/docx-validate/issues/570); sessions
-20 and 21 in `docs/plans/evidence/word-probes-2026-10-24.md`). Strict
+20 and 21 in `docs/plans/evidence/word-probes-2026-10-24.md`). Sessions 21
+and 22 probed the parts a reached glossary's own relationships part names:
+an inexact Override on its styles part — eagerly parsed, so related is
+enough — and on a header its `w:headerReference` uses gets the repair
+warning, and the finding names the glossary's relationship, not the main
+document's
+([#579](https://github.com/jandira-tech/docx-validate/issues/579)). The
+glossary's settings, fontTable, webSettings, numbering and theme were not
+probed for an inexact type and stay silent under word-valid; strict judges
+every Part 1 WordprocessingML relationship — and theme — on the glossary
+too, citing clause 11.3 for the unprobed WordprocessingML segments; the
+theme, a DrawingML part, cites no clause. A part the main document
+and the glossary both relate is reported once, under the main document's
+entry. Strict
 judges the same probed set — theme included, though it is a DrawingML part,
 not a clause-11.3 one — plus the unprobed Part 1 WordprocessingML
 glossaryDocument type, citing the content type ECMA-376 Part 1
