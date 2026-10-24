@@ -20,6 +20,7 @@ import { ModeConflictError } from "../src/lib/mode-policy";
 import { withTempDir } from "../src/lib/run-cli";
 import type { ValidationIssue } from "../src/lib/types";
 import { ValidationContext } from "../src/lib/validation-context";
+import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
 import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
@@ -235,6 +236,7 @@ const declaringEncoding = (encoding: string): Readonly<Record<string, string>> =
     "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace('encoding="UTF-8"', `encoding="${encoding}"`),
 });
 // The comments part named with an escaped `x` in its extension (review Q).
+
 const ESCAPED_COMMENT_PARTS: Readonly<Record<string, string>> = {
     ...Object.fromEntries(Object.entries(COMMENT_PARTS).filter(([name]) => name !== "word/comments.xml")),
     "word/comments.%78ml": "<w:comments",
@@ -263,6 +265,167 @@ const unpacked = (dir: string, name: string, parts: Readonly<Record<string, stri
 };
 
 const trailingBytes = async (): Promise<Buffer> => Buffer.concat([await buildDocx(), Buffer.from("trailing junk")]);
+
+describe("a partial run of a refused package view still runs the stored-name checks (#420)", { timeout: 120_000 }, () => {
+    // A stored name that places no part refuses the package view (#378), but
+    // the stored-name checks (#351, #408) read only the names — the full run
+    // reports them before extraction, and a partial run that selects them must
+    // report the same findings.
+    const STORED_NAME_CHECKS = ["opc-equivalent-part-names", "opc-part-name-escaped-unreserved"] as const;
+    const SELECTIONS = [
+        { checks: ["opc-equivalent-part-names"] },
+        { checks: ["opc-part-name-escaped-unreserved"] },
+        { checks: [...STORED_NAME_CHECKS] },
+        { checks: ["package"] },
+        { quick: true },
+    ] as const;
+    const APPLICABLE = createDefaultCheckRegistry()
+        .list("docx")
+        .map((definition) => definition.id);
+
+    const rawPackage = (entries: readonly { name: string; content?: string }[], drop?: string): Buffer =>
+        buildRawZip([
+            ...Object.entries(MINIMAL_PARTS)
+                .filter(([part]) => part !== drop)
+                .map(([part, text]) => ({ name: part, content: text })),
+            ...entries,
+        ]);
+
+    /** The stored-name check ids a selection names — directly or via the package group / quick preset. */
+    const selectedStoredNameChecks = (selection: (typeof SELECTIONS)[number]): readonly string[] =>
+        STORED_NAME_CHECKS.filter((id) => !("checks" in selection) || selection.checks.some((name) => name === id || name === "package"));
+
+    const SPECIMENS: readonly {
+        readonly name: string;
+        readonly code: string;
+        readonly drop?: string;
+        readonly entries: readonly { readonly name: string; readonly content: string }[];
+    }[] = [
+        {
+            name: "escaped-dotdot",
+            code: "opc-part-name-escaped-unreserved",
+            entries: [
+                { name: "word/%78tra.xml", content: "<x/>" },
+                { name: "word/a/../b.xml", content: "<x/>" },
+            ],
+        },
+        {
+            name: "escaped-slash",
+            code: "opc-part-name-escaped-unreserved",
+            entries: [
+                { name: "word/%78tra.xml", content: "<x/>" },
+                { name: "/abs.xml", content: "<x/>" },
+            ],
+        },
+        {
+            name: "equivalent-dotdot",
+            code: "opc-equivalent-part-names",
+            entries: [
+                { name: "word/a/../b.xml", content: "<x/>" },
+                { name: "word/STYLES.xml", content: MINIMAL_PARTS["word/styles.xml"]! },
+            ],
+        },
+        {
+            name: "identical-dotdot",
+            code: "opc-equivalent-part-names",
+            drop: "word/document.xml",
+            entries: [
+                { name: "word/document.xml", content: MINIMAL_PARTS["word/document.xml"]! },
+                { name: "word/document.xml", content: "<x/>" },
+                { name: "word/a/../b.xml", content: "<x/>" },
+            ],
+        },
+    ] as const;
+
+    describe.each(SPECIMENS)("$name", ({ name, code, drop, entries }) => {
+        it.each(["word-valid", "lenient"] as const)(
+            "reports the stored-name findings and the extract failure as the full %s run does",
+            async (profile) => {
+                await withTempDir(async (dir) => {
+                    const file = await specimen(dir, `${name}.docx`, rawPackage(entries, drop));
+                    const full = await validate(file, { profile });
+                    const findings = full.issues.filter((issue) => issue.code === code);
+                    const failure = full.issues.find((issue) => issue.code === "package-extract-failed");
+
+                    expect(findings.length, `${name}: full run reports the stored-name finding`).toBeGreaterThan(0);
+                    expect(failure, `${name}: full run reports the refused package view`).toBeDefined();
+                    for (const selection of SELECTIONS) {
+                        const partial = await validate(file, { profile, ...selection });
+                        const tag = `${name} ${profile} ${JSON.stringify(selection)}`;
+
+                        // The stored-name checks the selection names report
+                        // exactly what the full run reports: code, path,
+                        // message and severity.
+                        const named = selectedStoredNameChecks(selection);
+                        expect(
+                            partial.issues.filter((issue) => named.includes(issue.code ?? "")),
+                            tag,
+                        ).toEqual(full.issues.filter((issue) => named.includes(issue.code ?? "")));
+                        expect(partial.issues.find((issue) => issue.code === "package-extract-failed")?.message, tag).toBe(
+                            failure!.message,
+                        );
+                        // A selected id is never in neither list (#420): every
+                        // applicable check is either executed or omitted.
+                        expect(
+                            new Set([...(partial.metadata?.executedChecks ?? []), ...(partial.metadata?.omittedChecks ?? [])]),
+                            tag,
+                        ).toEqual(new Set(APPLICABLE));
+                        if (full.valid) expect(partial.valid, tag).toBe(true);
+                        expect(errorPairs(full.issues), tag).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
+                    }
+                });
+            },
+        );
+    });
+
+    it.each(["word-valid", "lenient"] as const)(
+        "lists every stored-name check as executed under %s when the selection names it",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                const file = await specimen(dir, "executed.docx", rawPackage([{ name: "word/a/../b.xml", content: "<x/>" }]));
+                for (const selection of SELECTIONS) {
+                    const partial = await validate(file, { profile, ...selection });
+                    const tag = `${profile} ${JSON.stringify(selection)}`;
+                    const named = selectedStoredNameChecks(selection);
+                    expect(partial.metadata?.executedChecks, tag).toEqual(expect.arrayContaining([...named]));
+                    // A stored-name check the selection did not name stays unrun.
+                    expect(
+                        STORED_NAME_CHECKS.filter((id) => !named.includes(id) && (partial.metadata?.executedChecks ?? []).includes(id)),
+                        tag,
+                    ).toEqual([]);
+                }
+            });
+        },
+    );
+
+    it.each(["word-valid", "lenient", "strict"] as const)(
+        "the full %s run diagnoses exactly the checks flagged as needing only stored names",
+        async (profile) => {
+            // One flag decides both paths, so a check cannot run on a refused
+            // view in a partial run and be skipped by the full run, or the reverse.
+            const registry = createDefaultCheckRegistry();
+            const flagged = registry
+                .list("docx")
+                .filter((definition) => definition.storedNamesOnly === true)
+                .map((definition) => definition.id);
+            const envelope = new Set(
+                registry
+                    .list("docx")
+                    .filter((definition) => definition.archiveOnly === true)
+                    .map((definition) => definition.id),
+            );
+            await withTempDir(async (dir) => {
+                const file = await specimen(dir, "flagged.docx", rawPackage([{ name: "word/a/../b.xml", content: "<x/>" }]));
+                const full = await validate(file, { profile });
+                expect(full.issues.some((issue) => issue.code === "package-extract-failed")).toBe(true);
+                expect((full.metadata?.executedChecks ?? []).filter((id) => !envelope.has(id)).sort()).toEqual(
+                    [...STORED_NAME_CHECKS].sort(),
+                );
+                expect([...flagged].sort()).toEqual([...STORED_NAME_CHECKS].sort());
+            });
+        },
+    );
+});
 
 describe("a partial run applies its profile's policy (#381)", { timeout: 120_000 }, () => {
     it("lenient quick runs no Word rule, as full lenient does not", async () => {

@@ -50,9 +50,16 @@ export type XmlPart = { readonly ok: true; readonly document: Document } | { rea
  * the extraction failure, not the open failure (#413).
  */
 export class PackageViewError extends Error {
-    public constructor(message: string, options?: ErrorOptions) {
+    /**
+     * The archive's stored file-entry names, read before the view was
+     * refused, so the checks that need only them can still run (#420).
+     */
+    public readonly storedNames: readonly string[];
+
+    public constructor(message: string, options?: ErrorOptions & { readonly storedNames?: readonly string[] }) {
         super(message, options);
         this.name = "PackageViewError";
+        this.storedNames = options?.storedNames ?? [];
     }
 }
 
@@ -222,9 +229,12 @@ export class ValidationContext {
      */
     public static async fromArchive(bytes: Uint8Array): Promise<ValidationContext> {
         const zip = await JSZip.loadAsync(bytes);
+        // The stored names survive a refused package view, so the checks that
+        // need only them can run on the thrown error's copy (#420).
+        let stored: readonly string[] = [];
         try {
             const files = Object.values(zip.files).filter((entry) => !entry.dir);
-            const stored = archiveStoredNames(bytes, files);
+            stored = archiveStoredNames(bytes, files);
             assertPlaceableNames(stored);
             const kept = indexByPartName(files.map((entry) => [entry.name, entry] as const));
             const parts = new Map<string, PartContent>();
@@ -241,7 +251,7 @@ export class ValidationContext {
             );
             return new ValidationContext(parts, { source: "archive", archiveBytes: bytes }, stored);
         } catch (err) {
-            throw new PackageViewError(err instanceof Error ? err.message : String(err), { cause: err });
+            throw new PackageViewError(err instanceof Error ? err.message : String(err), { cause: err, storedNames: stored });
         }
     }
 
@@ -388,5 +398,14 @@ export class ValidationContext {
     /** How many times `part` was parsed as XML. Diagnostics for cache tests. */
     public parseCount(part: string): number {
         return this.parses.get(normalizePartName(part)) ?? 0;
+    }
+
+    /**
+     * A context with no parts that still carries the stored entry names — for
+     * an archive whose package view was refused, so the checks that need only
+     * the names run on the same list a full run diagnoses (#420).
+     */
+    public static fromStoredNames(storedNames: readonly string[], opts: ValidationContextOptions = {}): ValidationContext {
+        return new ValidationContext(new Map(), opts, storedNames);
     }
 }
