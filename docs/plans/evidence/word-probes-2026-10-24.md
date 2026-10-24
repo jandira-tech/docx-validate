@@ -4082,11 +4082,12 @@ Session 20's builder (`s20a`–`s20d`) is another standalone script, run the sam
 //       malformed; numbering and theme typed by the generic Default.
 // s20d: the s20b/s20c controls — each part with its exact type.
 // The well-formed theme is word/theme/theme1.xml of tests/fixtures/working/package.word-anchor-open-repaired.docx
-// (copied to s20-theme1.xml; the fixture is read, not modified).
+// (read from the fixture byte for byte, below; the fixture is not modified).
 // Run from the stack worktree root as a copy: BUILD_DIR=<chunk>/src [ONLY=a,b] pnpm exec tsx s20builder.tmp.mts
 import { createHash } from "node:crypto";
 import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import JSZip from "jszip";
 import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
 import { validate } from "./src/scripts/office/validate";
 
@@ -4099,7 +4100,9 @@ const P = MINIMAL_PARTS as Record<string, string>;
 const CT = P["[Content_Types].xml"];
 const DOC = P["word/document.xml"];
 const DOC_RELS = P["word/_rels/document.xml.rels"];
-const THEME = readFileSync("/Users/arthrod/temp/T/wfv-scratch/word-probes/s20-theme1.xml", "utf8");
+// The probed theme: `word/theme/theme1.xml` of a checked-in fixture, byte for byte (the CRLF after its XML declaration included).
+const THEME_FIXTURE = await JSZip.loadAsync(readFileSync("tests/fixtures/working/package.word-anchor-open-repaired.docx"));
+const THEME = await THEME_FIXTURE.file("word/theme/theme1.xml")!.async("string");
 /** Well formed up to a missing end of the root element: namespaces stay declared, the part does not parse. */
 const unclosed = (xml: string) => xml.slice(0, xml.lastIndexOf("</"));
 const ct = (extra: string) => CT.replace("</Types>", `${extra}</Types>`);
@@ -4360,6 +4363,7 @@ Session 21's builder (`s21a`–`s21b`) is another standalone script, run the sam
 import { createHash } from "node:crypto";
 import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import JSZip from "jszip";
 import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
 import { validate } from "./src/scripts/office/validate";
 
@@ -4372,7 +4376,9 @@ const P = MINIMAL_PARTS as Record<string, string>;
 const CT = P["[Content_Types].xml"];
 const DOC = P["word/document.xml"];
 const DOC_RELS = P["word/_rels/document.xml.rels"];
-const THEME = readFileSync("/Users/arthrod/temp/T/wfv-scratch/word-probes/s20-theme1.xml", "utf8");
+// The probed theme: `word/theme/theme1.xml` of a checked-in fixture, byte for byte (the CRLF after its XML declaration included).
+const THEME_FIXTURE = await JSZip.loadAsync(readFileSync("tests/fixtures/working/package.word-anchor-open-repaired.docx"));
+const THEME = await THEME_FIXTURE.file("word/theme/theme1.xml")!.async("string");
 /** Well formed up to a missing end of the root element: namespaces stay declared, the part does not parse. */
 const unclosed = (xml: string) => xml.slice(0, xml.lastIndexOf("</"));
 const ct = (extra: string) => CT.replace("</Types>", `${extra}</Types>`);
@@ -4559,6 +4565,7 @@ Session 22's builder (`s22a`–`s22b`) is another standalone script, run the sam
 import { createHash } from "node:crypto";
 import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import JSZip from "jszip";
 import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
 import { validate } from "./src/scripts/office/validate";
 
@@ -4571,7 +4578,9 @@ const P = MINIMAL_PARTS as Record<string, string>;
 const CT = P["[Content_Types].xml"];
 const DOC = P["word/document.xml"];
 const DOC_RELS = P["word/_rels/document.xml.rels"];
-const THEME = readFileSync("/Users/arthrod/temp/T/wfv-scratch/word-probes/s20-theme1.xml", "utf8");
+// The probed theme: `word/theme/theme1.xml` of a checked-in fixture, byte for byte (the CRLF after its XML declaration included).
+const THEME_FIXTURE = await JSZip.loadAsync(readFileSync("tests/fixtures/working/package.word-anchor-open-repaired.docx"));
+const THEME = await THEME_FIXTURE.file("word/theme/theme1.xml")!.async("string");
 /** Well formed up to a missing end of the root element: namespaces stay declared, the part does not parse. */
 const unclosed = (xml: string) => xml.slice(0, xml.lastIndexOf("</"));
 const ct = (extra: string) => CT.replace("</Types>", `${extra}</Types>`);
@@ -4773,6 +4782,7 @@ Session 23's builder (`s23a`–`s23b`) is another standalone script, run the sam
 import { createHash } from "node:crypto";
 import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import JSZip from "jszip";
 import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
 import { validate } from "./src/scripts/office/validate";
 
@@ -4784,7 +4794,9 @@ const CHARSET = "; charset=utf-8";
 const P = MINIMAL_PARTS as Record<string, string>;
 const CT = P["[Content_Types].xml"];
 const DOC_RELS = P["word/_rels/document.xml.rels"];
-const THEME = readFileSync("/Users/arthrod/temp/T/wfv-scratch/word-probes/s20-theme1.xml", "utf8");
+// The probed theme: `word/theme/theme1.xml` of a checked-in fixture, byte for byte (the CRLF after its XML declaration included).
+const THEME_FIXTURE = await JSZip.loadAsync(readFileSync("tests/fixtures/working/package.word-anchor-open-repaired.docx"));
+const THEME = await THEME_FIXTURE.file("word/theme/theme1.xml")!.async("string");
 const ct = (extra: string) => CT.replace("</Types>", `${extra}</Types>`);
 const rels = (extra: string) => DOC_RELS.replace("</Relationships>", `${extra}</Relationships>`);
 const relsPart = (body: string) =>
