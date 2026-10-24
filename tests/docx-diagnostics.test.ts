@@ -233,3 +233,17 @@ describe("docx diagnostics", () => {
         expect(issues[1].message).toContain("add xml:space='preserve'");
     });
 });
+
+it.each(["[CONTENT_TYPES].XML", "[content_types].xml"])("inventories declarations in stored stream %s (#396)", async (name) => {
+    await withTempDir(async (dir) => {
+        await writeXml(
+            path.join(dir, name),
+            `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Override PartName="/word/x.xml" ContentType="application/xml"/><Default Extension="bin" ContentType="application/octet-stream"/></Types>`,
+        );
+        const inventory = await collectDocxSemanticInventory(dir);
+        expect([...inventory.counters.values()].filter((counter) => counter.category === "content type")).toEqual([
+            expect.objectContaining({ path: name, label: "default 'application/octet-stream'", count: 1 }),
+            expect.objectContaining({ path: name, label: "override 'application/xml'", count: 1 }),
+        ]);
+    });
+});

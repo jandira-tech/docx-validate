@@ -1335,3 +1335,51 @@ describe("OPC-equivalent content-type relationship skip (#398)", () => {
         });
     });
 });
+
+describe("content-types stream directory lookup (#396)", () => {
+    it("reads the stored uppercase stream and excludes it from part coverage", async () => {
+        await withTempDir(async (dir) => {
+            const name = "[CONTENT_TYPES].XML";
+            const xml = `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>`;
+            await writeFile(path.join(dir, name), xml);
+            const result = await new HarnessValidator({ unpackedDir: dir }).validateContentTypes();
+            expect(result.issues).toEqual([]);
+            expect(result.valid).toBe(true);
+            expect(await fs.readdir(dir)).toEqual([name]);
+            expect(await fs.readFile(path.join(dir, name), "utf8")).toBe(xml);
+        });
+    });
+
+    it("reports ct-parse with the stored uppercase stream name", async () => {
+        await withTempDir(async (dir) => {
+            const name = "[CONTENT_TYPES].XML";
+            await writeFile(path.join(dir, name), "<broken");
+            const result = await new HarnessValidator({ unpackedDir: dir }).validateContentTypes();
+            expect(result.issues).toEqual([expect.objectContaining({ code: "ct-parse", path: name })]);
+            expect(result.issues[0].message).toContain(name);
+            expect(await fs.readFile(path.join(dir, name), "utf8")).toBe("<broken");
+        });
+    });
+
+    it("does not skip the percent-escaped part in coverage", async () => {
+        await withTempDir(async (dir) => {
+            await writeFile(
+                path.join(dir, "[CONTENT_TYPES].XML"),
+                `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>`,
+            );
+            await writeFile(path.join(dir, "%5BContent_Types%5D.xml"), "<x/>");
+            const result = await new HarnessValidator({ unpackedDir: dir }).validateContentTypes();
+            expect(result.issues).toEqual([expect.objectContaining({ code: "ct-uncovered-part", path: "%5BContent_Types%5D.xml" })]);
+        });
+    });
+
+    it("does not classify the uppercase stream as an unreferenced part", async () => {
+        await withTempDir(async (dir) => {
+            await writeFile(path.join(dir, "[CONTENT_TYPES].XML"), MINIMAL_PARTS["[Content_Types].xml"]);
+            await writeFile(path.join(dir, "_rels/.rels"), MINIMAL_PARTS["_rels/.rels"]);
+            await writeFile(path.join(dir, "word/document.xml"), MINIMAL_PARTS["word/document.xml"]);
+            const result = await new HarnessValidator({ unpackedDir: dir }).validateFileReferences();
+            expect(result.issues.filter((issue) => issue.code === "rels-unreferenced")).toEqual([]);
+        });
+    });
+});

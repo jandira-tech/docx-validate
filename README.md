@@ -308,6 +308,10 @@ the content-types stream; `word/` is matched as OPC compares part names, so
 loaded or expanded; XSD imports resolve through allowed local schema roots.
 Validation leaves source bytes unchanged unless you request `autoRepair`.
 
+Content-type checks, XSD dispatch, and semantic diagnostics find the ZIP stream
+ASCII case-insensitively and retain its stored name in findings. Stream lookup does
+not decode percent escapes: `%5BContent_Types%5D.xml` is an ordinary part, not the
+content-types stream ([#396](https://github.com/jandira-tech/docx-validate/issues/396)).
 Content-type coverage resolves an exact `Override` before an extension `Default`.
 An image covered only by `Override` needs no matching `Default`. Part-name
 comparison is ASCII case-insensitive and decodes unreserved percent escapes;

@@ -56,3 +56,24 @@ it("checks default extensions and leaves nonmatching/absent types alone", async 
         },
     ]);
 });
+
+it.each(["[CONTENT_TYPES].XML", "[content_types].xml"])("finds invalid types in stored stream %s (#396)", async (name) => {
+    const ctx = ValidationContext.fromEntries({
+        [name]: `<Types xmlns="${CT}"><Override PartName="/word/x.xml" ContentType="invalid-type"/></Types>`,
+    });
+    expect(await wordContentTypeInvalidCheck.run(ctx)).toEqual([
+        {
+            severity: "error",
+            code: "word-content-type-invalid",
+            path: name,
+            message: "Microsoft Word refuses content type 'invalid-type' for /word/x.xml",
+        },
+    ]);
+});
+
+it("does not read a percent-escaped name as the stream (#396)", async () => {
+    const ctx = ValidationContext.fromEntries({
+        "%5BContent_Types%5D.xml": `<Types xmlns="${CT}"><Override PartName="/word/x.xml" ContentType="invalid-type"/></Types>`,
+    });
+    expect(await wordContentTypeInvalidCheck.run(ctx)).toEqual([]);
+});
