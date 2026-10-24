@@ -278,7 +278,8 @@ describe("partNameViolation: ECMA-376 Part 2, 4th edition §9.1.1.1 (#455)", () 
         "/word/x\u{F900}y.xml", // %xF900-FDCF (CJK ideographs)
         "/word/x\u{FFEF}y.xml", // top of %xFDF0-FFEF
         "/word/x\u{10000}y.xml", // %x10000-1FFFD, astral: two UTF-16 code units
-        "/word/x\u{EFFFD}y.xml", // top of %xE0000-EFFFD
+        "/word/x\u{E1000}y.xml", // %xE1000-EFFFD: the last block starts at E1000 (#522)
+        "/word/x\u{EFFFD}y.xml", // top of %xE1000-EFFFD
         "/word/cafe\u0301.xml", // a combining mark (U+0301) is ucschar too
         "/word/%E9-é.xml", // a malformed UTF-8 escape is pct-encoded data, not an encoded iunreserved
     ])("%s names a part: a valid Part IRI or Part URI", (name) => {
@@ -294,10 +295,20 @@ describe("partNameViolation: ECMA-376 Part 2, 4th edition §9.1.1.1 (#455)", () 
         ["/word/cafe%CC%81-é.xml", M1_8_RULE], // the combining acute is iunreserved too
         // An ASCII unreserved escape is iunreserved, so both forms refuse it.
         ["/word/n%6F-é.xml", M1_8_RULE],
+        // A malformed, overlong or truncated escape is pct-encoded octets, not
+        // an encoded character: the scan resynchronizes at the next octet, so
+        // the é that follows it is still seen (#523).
+        ["/ppt/x%E9%C3%A9-é.xml", M1_8_RULE], // a lone continuation byte
+        ["/ppt/x%C0%AF%C3%A9-é.xml", M1_8_RULE], // an overlong lead
+        ["/ppt/x%C3%C3%A9-é.xml", M1_8_RULE], // a truncated sequence
         // A literal non-ASCII character that is not ucschar is in neither grammar.
         ["/word/x\u{0080}y.xml", PCHAR_RULE], // C1 control
         ["/word/x\u{009F}y.xml", PCHAR_RULE], // top of the C1 range, just below ucschar
         ["/word/x\u{E000}y.xml", PCHAR_RULE], // private use is not ucschar
+        // RFC 3987 §2.2 ends ucschar with %xE1000-EFFFD, so the head of the
+        // last block is excluded (#522).
+        ["/word/x\u{E0000}y.xml", PCHAR_RULE], // U+E0000: before %xE1000-EFFFD
+        ["/word/x\u{E0FFF}y.xml", PCHAR_RULE], // U+E0FFF: the excluded head of the last block
         ["/word/x\u{F8FF}y.xml", PCHAR_RULE], // top of the private-use area
         ["/word/x\u{FFFD}y.xml", PCHAR_RULE], // replacement character
         ["/word/x\u{FFFE}y.xml", PCHAR_RULE], // noncharacters are not ucschar
