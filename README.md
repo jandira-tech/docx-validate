@@ -154,7 +154,7 @@ const result = await validate("./contract.docx", { profile: "word-valid" });
 console.log(result.xsdWalk); // { started, parts, eligible }
 ```
 
-A blocking non-XSD check can return before XSD starts; otherwise Word-valid stops at the first surfaced blocking schema error. Lenient and strict still complete their XSD walks. The trace reports engine work, not a Microsoft Word invocation. Strict OOXML parts skip the bundled Transitional schemas while eligible Transitional parts still run.
+A blocking non-XSD check can return before XSD starts; otherwise Word-valid stops at the first surfaced blocking schema error. Lenient and strict still complete their XSD walks. The trace reports engine work, not a Microsoft Word invocation. Under `strict`, ISO Strict OOXML parts are validated against the bundled Strict schemas (`schemas/iso-strict/`); lenient and Word-valid skip them with an info-level `xsd-strict-skipped` while eligible Transitional parts still run.
 
 ### Compose individual checks with the validator classes
 

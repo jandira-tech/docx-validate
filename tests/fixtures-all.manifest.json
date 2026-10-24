@@ -3796,8 +3796,8 @@
         {
             "relativePath": "external/open-xml-sdk/Strict01.docx",
             "strict": {
-                "valid": true,
-                "errorCodes": []
+                "valid": false,
+                "errorCodes": ["xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": true,
@@ -7508,8 +7508,8 @@
         {
             "relativePath": "working/word-clean-strict01.docx",
             "strict": {
-                "valid": true,
-                "errorCodes": []
+                "valid": false,
+                "errorCodes": ["xsd-error", "xsd-summary"]
             },
             "lenient": {
                 "valid": true,

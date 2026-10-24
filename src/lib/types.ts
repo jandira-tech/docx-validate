@@ -57,7 +57,8 @@ export type ValidationResult = {
  *
  * `started` is true once `validateAgainstXsd` is entered. `parts` are the
  * relative paths sent to the engine. `eligible` is how many parts a full
- * walk would send (a schema is mapped and the root is not Strict OOXML).
+ * walk would send (a schema is mapped for the part's conformance class; a
+ * Strict root counts only under the strict profile).
  */
 export type XsdWalkTrace = {
     started: boolean;

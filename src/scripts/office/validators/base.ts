@@ -44,7 +44,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { parseContentTypes, partExtension, resolveContentType } from "../../../lib/content-types";
-import { applyMarkupCompatibility, UNDERSTOOD_NAMESPACES } from "../../../lib/markup-compatibility";
+import { applyMarkupCompatibility, STRICT_UNDERSTOOD_NAMESPACES, UNDERSTOOD_NAMESPACES } from "../../../lib/markup-compatibility";
 import { withTempDir } from "../../../lib/run-cli";
 import type { Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
 import { DEFAULT_PROFILE, NS, OK_RESULT } from "../../../lib/types";
@@ -87,23 +87,48 @@ const SCHEMA_NAMESPACE_CAPABILITIES: Readonly<Record<string, string>> = {
     "wml-cid-2016.xsd": NS.W16CID,
 };
 
+/**
+ * Directory inside `schemas/` holding the bundled ISO/IEC 29500 Strict
+ * conformance-class schemas (see `schemas/SOURCES.md`).
+ */
+const STRICT_SCHEMA_DIR = "iso-strict";
+
+/**
+ * Subset of {@link SCHEMA_MAPPINGS} keys that have a Strict-conformance
+ * schema under {@link STRICT_SCHEMA_DIR}. OPC parts (`[Content_Types].xml`,
+ * `.rels`, `docProps/core.xml`, digital signatures) share one namespace across
+ * both conformance classes and always resolve to the OPC schemas; Microsoft
+ * extension parts (`commentsExtended.xml`, `people.xml`, …) keep their
+ * `microsoft/` schemas. A Strict part whose key is absent here has no
+ * applicable schema — it is skipped exactly like an unmapped Transitional
+ * part.
+ */
+const STRICT_SCHEMA_MAPPINGS: Record<string, string> = {
+    word: `${STRICT_SCHEMA_DIR}/wml.xsd`,
+    ppt: `${STRICT_SCHEMA_DIR}/pml.xsd`,
+    xl: `${STRICT_SCHEMA_DIR}/sml.xsd`,
+    "app.xml": `${STRICT_SCHEMA_DIR}/shared-documentPropertiesExtended.xsd`,
+    "custom.xml": `${STRICT_SCHEMA_DIR}/shared-documentPropertiesCustom.xsd`,
+    chart: `${STRICT_SCHEMA_DIR}/dml-chart.xsd`,
+    theme: `${STRICT_SCHEMA_DIR}/dml-main.xsd`,
+    drawing: `${STRICT_SCHEMA_DIR}/dml-main.xsd`,
+    "bibliography.xml": `${STRICT_SCHEMA_DIR}/shared-bibliography.xsd`,
+    "additionalCharacteristics.xml": `${STRICT_SCHEMA_DIR}/shared-additionalCharacteristics.xsd`,
+    itemProps: `${STRICT_SCHEMA_DIR}/shared-customXmlDataProperties.xsd`,
+};
+
 const IGNORED_VALIDATION_ERRORS: readonly string[] = [
+    // Inherited from the Python validator with no recorded reason or
+    // fixture; it hides every engine message that mentions the element.
+    // Lenient and word-valid keep it for compatibility. Strict never
+    // consults this list: its validity rests on unsuppressed schema issues.
     "hyphenationZone",
-    "purl.org/dc/terms",
-    // opc-coreProperties.xsd imports the Dublin Core schema from a remote
-    // HTTP URL that is not (and should not be) bundled; libxml2-wasm reports
-    // the failed fetch with the dublincore.org host in the message. Python's
-    // lxml hit the same wall with the purl.org/dc/terms namespace — both
-    // strings are filtered so the docProps/core.xml false-positive stays
-    // suppressed (AGENTS.md behavioural note 4).
-    "dublincore.org",
-    // Legacy defence from the libxmljs2 era, kept because the filter is
-    // engine-agnostic string matching: libxmljs2 swallowed schema-load
-    // failures into one opaque "Invalid XSD schema" error. libxml2-wasm
-    // surfaces load failures as explicit `xsd-schema-load-failed` issues, so
-    // this string should no longer occur — but a schema regression would
-    // otherwise resurrect the false-positive this list exists to suppress.
-    "Invalid XSD schema",
+    // opc-coreProperties.xsd's Dublin Core imports resolve to the bundled
+    // schemas/dublincore/ copies (SOURCES.md), so the libxmljs2-era
+    // suppressions for the missing remote import ("purl.org/dc/terms",
+    // "dublincore.org", "Invalid XSD schema") are gone — schema-load
+    // failures must surface as xsd-schema-load-failed, never a suppressed
+    // pass.
 ];
 
 const UNIQUE_ID_REQUIREMENTS: Record<string, [attr: string, scope: "file" | "global"]> = {
@@ -138,13 +163,10 @@ const MAIN_CONTENT_FOLDERS = new Set(["word", "ppt", "xl"]);
  * `schemas.openxmlformats.org/…` prefix. Any root element namespace that
  * starts with this prefix belongs to the Strict conformance class.
  *
- * The XSD schemas bundled with this validator are Transitional-only, so Strict
- * files cannot be validated against them — `validateAgainstXsd` detects these
- * via `_isStrictXmlFile` and emits an info-level `xsd-strict-skipped` issue
- * instead of false-positive xsd-* errors.
- *
- * See PORT_NOTES.md § "ISO OOXML Strict XSD validation" for rationale.
- * Adding full Strict schema support is tracked as a future improvement.
+ * The bundled `iso-strict/` schemas cover these namespaces. Under
+ * `profile: "strict"` `validateAgainstXsd` validates Strict parts against
+ * them (namespace + part identity dispatch); lenient and word-valid keep
+ * the historical info-level `xsd-strict-skipped` skip.
  */
 const STRICT_OOXML_NS_PREFIX = "http://purl.oclc.org/ooxml/";
 
@@ -270,6 +292,21 @@ export interface XsdValidationOutcome {
     errors: Set<string>;
     /** Compatibility diagnostics keep their own stable codes, independent of XSD messages. */
     issues?: ValidationIssue[];
+    /**
+     * Structured engine findings for the part, one entry per error
+     * occurrence with `line` when libxml2 reports it. Populated by
+     * `_validateSingleFileXsd` on failure. The `strict` profile emits these
+     * verbatim (deduplicated message strings would collapse repeated
+     * identical defects onto one report and lose their locations).
+     */
+    schemaIssues?: ValidationIssue[];
+    /**
+     * True when the XML sent to the engine differs from the part bytes
+     * (template-tag stripping, the markup-compatibility view, or
+     * re-serialization). Reported `line` values then refer to the
+     * transformed view, not the source part.
+     */
+    transformedView?: boolean;
 }
 
 export class BaseSchemaValidator {
@@ -1182,7 +1219,11 @@ export class BaseSchemaValidator {
         };
 
         const countEligible = (xmlFile: string): boolean => {
-            if (this._isStrictXmlFile(xmlFile)) {
+            // Strict-conformance parts are only skipped outside the strict
+            // profile: lenient and word-valid keep the documented
+            // `xsd-strict-skipped` info issue, while `strict` schema-validates
+            // them against the bundled iso-strict schemas.
+            if (this._isStrictXmlFile(xmlFile) && this.profile !== "strict") {
                 noteStrict();
                 return false;
             }
@@ -1209,17 +1250,38 @@ export class BaseSchemaValidator {
                 path: rel,
                 code: "xsd-summary",
             });
-            const list = this.xsdErrorsToReport(rel, outcome.errors);
-            for (const e of list) {
-                const truncated = e.length > 250 ? `${e.slice(0, 250)}...` : e;
-                issues.push({
-                    severity: "error",
-                    message: `  - ${truncated}`,
-                    path: rel,
-                    code: "xsd-error",
-                });
+            if (this.profile === "strict") {
+                // One issue per occurrence, with the engine's own line and
+                // code preserved. When preprocessing rewrote the XML the
+                // reported line belongs to the transformed view, not the
+                // source part — say so instead of inventing source lines.
+                for (const issue of outcome.schemaIssues ?? []) {
+                    const message = issue.message.trim();
+                    const truncated = message.length > 250 ? `${message.slice(0, 250)}...` : message;
+                    const suffix =
+                        outcome.transformedView && issue.line !== undefined ? " (line refers to the preprocessed validation view)" : "";
+                    issues.push({
+                        severity: "error",
+                        message: `  - ${truncated}${suffix}`,
+                        path: rel,
+                        ...(issue.line !== undefined ? { line: issue.line } : {}),
+                        code: !issue.code || issue.code === "xsd-validation-failed" ? "xsd-error" : issue.code,
+                    });
+                }
+                if (!this.shouldStopXsdWalk(rel, outcome.errors)) continue;
+            } else {
+                const list = this.xsdErrorsToReport(rel, outcome.errors);
+                for (const e of list) {
+                    const truncated = e.length > 250 ? `${e.slice(0, 250)}...` : e;
+                    issues.push({
+                        severity: "error",
+                        message: `  - ${truncated}`,
+                        path: rel,
+                        code: "xsd-error",
+                    });
+                }
+                if (!this.shouldStopXsdWalk(rel, outcome.errors)) continue;
             }
-            if (!this.shouldStopXsdWalk(rel, outcome.errors)) continue;
 
             for (let j = i + 1; j < files.length; j += 1) {
                 const rest = files[j];
@@ -1239,6 +1301,14 @@ export class BaseSchemaValidator {
      * XSD checks that only apply to Transitional documents.
      */
     protected _isStrictXmlFile(xmlFile: string): boolean {
+        const cached = this.strictRootCache.get(xmlFile);
+        if (cached !== undefined) return cached;
+        const strict = this.detectStrictRoot(xmlFile);
+        this.strictRootCache.set(xmlFile, strict);
+        return strict;
+    }
+
+    private detectStrictRoot(xmlFile: string): boolean {
         try {
             const content = readFileSync(xmlFile, "utf-8");
             const dom = parseXml(content);
@@ -1260,6 +1330,25 @@ export class BaseSchemaValidator {
             return single;
         }
 
+        if (this.profile === "strict") {
+            // Every structured finding survives — no baseline subtraction, no
+            // message suppression, no dedup of repeated messages — so repeated
+            // identical defects keep their own location.
+            const schemaIssues = single.schemaIssues ?? [];
+            if (schemaIssues.length === 0) {
+                return { ...single, valid: true, errors: new Set(), schemaIssues: [] };
+            }
+            return {
+                ...single,
+                valid: false,
+                errors: new Set(schemaIssues.map((issue) => issue.message.trim())),
+                schemaIssues,
+            };
+        }
+
+        // Baseline subtraction diffs the modified part against --original so
+        // migrations don't fail on pre-existing defects; lenient/word-valid
+        // keep the diff.
         const originalErrors = await this._getOriginalFileErrors(xmlFile);
         const newErrors = new Set<string>();
         for (const e of single.errors) {
@@ -1317,6 +1406,7 @@ export class BaseSchemaValidator {
             if (compatibilityIssues.some((issue) => issue.code === "mce-root-ignored")) {
                 return { valid: true, errors: new Set(), issues: compatibilityIssues };
             }
+            const transformedView = cleanedString !== xmlContent;
 
             const validator = await this._getXsdValidator();
             const issues = await validator.validate(cleanedString, schemaPath);
@@ -1326,16 +1416,31 @@ export class BaseSchemaValidator {
             // IGNORED_VALIDATION_ERRORS in `validateFileAgainstXsd`.
             const errorIssues = issues.filter((i) => i.severity === "error");
             if (errorIssues.length === 0) {
-                return { valid: true, errors: new Set(), ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}) };
+                return {
+                    valid: true,
+                    errors: new Set(),
+                    ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}),
+                };
             }
             const errors = new Set<string>();
             for (const issue of errorIssues) {
                 errors.add(issue.message.trim());
             }
-            return { valid: false, errors, ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}) };
+            return {
+                valid: false,
+                errors,
+                schemaIssues: errorIssues,
+                transformedView,
+                ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}),
+            };
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
-            return { valid: false, errors: new Set([message]), ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}) };
+            return {
+                valid: false,
+                errors: new Set([message]),
+                schemaIssues: [{ severity: "error", message }],
+                ...(compatibilityIssues.length ? { issues: compatibilityIssues } : {}),
+            };
         }
     }
 
@@ -1371,7 +1476,12 @@ export class BaseSchemaValidator {
         const firstSegment = rel.split(/[\\/]/)[0];
         if (MAIN_CONTENT_FOLDERS.has(firstSegment)) {
             const schemaNamespace = SCHEMA_NAMESPACE_CAPABILITIES[path.basename(this._getSchemaPath(xmlFile) ?? "")];
-            const understood = schemaNamespace ? new Set([...UNDERSTOOD_NAMESPACES, schemaNamespace]) : UNDERSTOOD_NAMESPACES;
+            // A Strict part understands the purl.oclc.org counterparts of the
+            // Transitional namespaces its iso-strict schema validates.
+            const baseUnderstood = dom.documentElement?.namespaceURI?.startsWith(STRICT_OOXML_NS_PREFIX)
+                ? STRICT_UNDERSTOOD_NAMESPACES
+                : UNDERSTOOD_NAMESPACES;
+            const understood = schemaNamespace ? new Set([...baseUnderstood, schemaNamespace]) : baseUnderstood;
             const compatible = applyMarkupCompatibility(dom, { understood });
             issues.push(
                 ...compatible.issues.map((issue) => ({
@@ -1387,28 +1497,49 @@ export class BaseSchemaValidator {
     }
 
     protected _getSchemaPath(xmlFile: string): string | null {
+        const key = this._schemaMappingKey(xmlFile);
+        if (!key) return null;
+        // Dispatch by namespace AND part identity: a Strict-conformance root
+        // resolves to the iso-strict schema for the same key when one exists.
+        // Keys without a Strict schema (OPC parts, Microsoft extensions,
+        // customXml itemProps is mapped — see STRICT_SCHEMA_MAPPINGS) fall
+        // through to null so unmapped Strict parts keep the usual skip.
+        if (this._isStrictXmlFile(xmlFile)) {
+            const strictMapping = STRICT_SCHEMA_MAPPINGS[key];
+            if (!strictMapping) return null;
+            return path.join(this.schemasDir, strictMapping);
+        }
+        return path.join(this.schemasDir, SCHEMA_MAPPINGS[key]);
+    }
+
+    /**
+     * Part-identity lookup — the {@link SCHEMA_MAPPINGS} key this XML part
+     * maps to, independent of conformance class. Mirrors the pre-strict
+     * `_getSchemaPath` heuristics exactly.
+     */
+    protected _schemaMappingKey(xmlFile: string): string | null {
         const base = path.basename(xmlFile);
         if (SCHEMA_MAPPINGS[base]) {
-            return path.join(this.schemasDir, SCHEMA_MAPPINGS[base]);
+            return base;
         }
         if (xmlFile.endsWith(".rels")) {
-            return path.join(this.schemasDir, SCHEMA_MAPPINGS[".rels"]);
+            return ".rels";
         }
         if (xmlFile.includes("charts/") && base.startsWith("chart")) {
-            return path.join(this.schemasDir, SCHEMA_MAPPINGS["chart"]);
+            return "chart";
         }
         if (xmlFile.includes("theme/") && base.startsWith("theme")) {
-            return path.join(this.schemasDir, SCHEMA_MAPPINGS["theme"]);
+            return "theme";
         }
         if (xmlFile.includes("customXml/") && base.startsWith("itemProps") && base.endsWith(".xml")) {
-            return path.join(this.schemasDir, SCHEMA_MAPPINGS["itemProps"]);
+            return "itemProps";
         }
         if (xmlFile.includes("_xmlsignatures/") && base.startsWith("sig") && base.endsWith(".xml")) {
-            return path.join(this.schemasDir, SCHEMA_MAPPINGS["sig"]);
+            return "sig";
         }
         const parentName = path.basename(path.dirname(xmlFile));
         if (MAIN_CONTENT_FOLDERS.has(parentName) && SCHEMA_MAPPINGS[parentName]) {
-            return path.join(this.schemasDir, SCHEMA_MAPPINGS[parentName]);
+            return parentName;
         }
         return null;
     }
@@ -1453,6 +1584,9 @@ export class BaseSchemaValidator {
     protected relPath(absPath: string): string {
         return path.relative(this.unpackedDir, absPath) || path.basename(absPath);
     }
+
+    /** Per-file memo for {@link _isStrictXmlFile} — root-namespace sniffing would otherwise re-read each part for eligibility, schema dispatch, and preprocessing. */
+    private readonly strictRootCache = new Map<string, boolean>();
 }
 
 // ===== module-level helpers ===================================================

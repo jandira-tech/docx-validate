@@ -24,12 +24,50 @@ export const UNDERSTOOD_NAMESPACES: ReadonlySet<string> = new Set([
     NS.MC,
 ]);
 
+// ISO/IEC 29500 Strict moves each Transitional OOXML namespace under
+// purl.oclc.org/ooxml/ (the targetNamespace of each schemas/iso-strict/*.xsd);
+// markup compatibility and xml: keep one URI in both conformance classes.
+// Transitional URIs stay understood so mixed content reaches the Strict XSD
+// instead of being dropped as ignorable.
+export const STRICT_UNDERSTOOD_NAMESPACES: ReadonlySet<string> = new Set([
+    ...UNDERSTOOD_NAMESPACES,
+    "http://purl.oclc.org/ooxml/officeDocument/math",
+    "http://purl.oclc.org/ooxml/officeDocument/relationships",
+    "http://purl.oclc.org/ooxml/schemaLibrary/main",
+    "http://purl.oclc.org/ooxml/drawingml/main",
+    "http://purl.oclc.org/ooxml/drawingml/chart",
+    "http://purl.oclc.org/ooxml/drawingml/chartDrawing",
+    "http://purl.oclc.org/ooxml/drawingml/diagram",
+    "http://purl.oclc.org/ooxml/drawingml/picture",
+    "http://purl.oclc.org/ooxml/drawingml/spreadsheetDrawing",
+    "http://purl.oclc.org/ooxml/drawingml/wordprocessingDrawing",
+    "http://purl.oclc.org/ooxml/wordprocessingml/main",
+    "http://purl.oclc.org/ooxml/presentationml/main",
+    "http://purl.oclc.org/ooxml/spreadsheetml/main",
+    "http://purl.oclc.org/ooxml/officeDocument/sharedTypes",
+]);
+
 // ISO-IEC29500-4_2016/dml-chart.xsd:30 and sml.xsd:232 CT_Extension
 // require one lax xsd:any child. dml-main.xsd:183 CT_OfficeArtExtension
 // and pml.xsd:761 CT_Extension allow zero or more lax xsd:any children.
 // In these slots preserve the foreign payload for the schema's lax verdict.
-const EXTENSION_NAMESPACES = new Set(["http://schemas.openxmlformats.org/drawingml/2006/chart", NS.A, NS.P, NS.S]);
-type Context = { ignorable: ReadonlySet<string>; processContent: ReadonlySet<string>; extensionPayload: boolean };
+// The Strict schemas declare the same slots (iso-strict/dml-chart.xsd:29,
+// sml.xsd:224, dml-main.xsd:181, pml.xsd:759).
+const EXTENSION_NAMESPACES = new Set([
+    "http://schemas.openxmlformats.org/drawingml/2006/chart",
+    NS.A,
+    NS.P,
+    NS.S,
+    "http://purl.oclc.org/ooxml/drawingml/chart",
+    "http://purl.oclc.org/ooxml/drawingml/main",
+    "http://purl.oclc.org/ooxml/presentationml/main",
+    "http://purl.oclc.org/ooxml/spreadsheetml/main",
+]);
+type Context = {
+    ignorable: ReadonlySet<string>;
+    processContent: ReadonlySet<string>;
+    extensionPayload: boolean;
+};
 const tokens = (value: string): string[] => value.trim().split(/\s+/).filter(Boolean);
 const children = (element: Element): Element[] => Array.from(element.childNodes).filter((node) => node.nodeType === 1) as Element[];
 const namespaceUri = (element: Element, prefix: string): string | null => (prefix === "xml" ? NS.XML : element.lookupNamespaceURI(prefix));
@@ -69,7 +107,11 @@ export const applyMarkupCompatibility = (
         for (const prefix of tokens(element.getAttributeNS(NS.MC, "MustUnderstand") || "")) {
             const uri = namespaceUri(element, prefix);
             if (!uri || !opts.understood.has(uri)) {
-                issues.push({ severity: "error", code: "mce-must-understand", message: `Required namespace is not understood: ${prefix}` });
+                issues.push({
+                    severity: "error",
+                    code: "mce-must-understand",
+                    message: `Required namespace is not understood: ${prefix}`,
+                });
             }
         }
         const context = {
@@ -171,7 +213,11 @@ export const applyMarkupCompatibility = (
         }
     };
     if (document.documentElement) {
-        visit(document.documentElement, { ignorable: new Set(), processContent: new Set(), extensionPayload: false });
+        visit(document.documentElement, {
+            ignorable: new Set(),
+            processContent: new Set(),
+            extensionPayload: false,
+        });
     }
     if (source.documentElement && !document.documentElement) {
         // The whole part is ignorable content: there is nothing left for a
