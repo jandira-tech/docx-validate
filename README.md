@@ -301,10 +301,12 @@ Diagnostics use `xml-syntax`, `xml-undeclared-prefix`, and `xml-encoding`, with 
 part name and available 1-based line/column. Every part whose extension is `.xml` or
 `.rels` as OPC compares part names (any case, `word/COMMENTS.XML`; escaped,
 `word/comments.%78ml`) is checked, by full and partial runs alike
-([#390](https://github.com/jandira-tech/docx-validate/issues/390)). Word-valid blocks on a malformed part under `word/` or on
-the content-types stream; `word/` is matched as OPC compares part names, so
-`WORD/document.xml` counts, and the stream is matched in any case
-(`[CONTENT_TYPES].XML`), as System.IO.Packaging finds it ([#392](https://github.com/jandira-tech/docx-validate/issues/392)). External entities are not
+([#390](https://github.com/jandira-tech/docx-validate/issues/390)). Word-valid blocks on a malformed part under `word/`, on
+the content-types stream, or on the package relationships part `_rels/.rels`;
+`word/` is matched as OPC compares part names, so `WORD/document.xml` counts, and
+the stream is matched in any case (`[CONTENT_TYPES].XML`), as System.IO.Packaging
+finds it ([#392](https://github.com/jandira-tech/docx-validate/issues/392)). Word 16.115 offers to recover a package whose `_rels/.rels`
+is zero bytes, truncated, or uses an undeclared prefix ([#388](https://github.com/jandira-tech/docx-validate/issues/388)). External entities are not
 loaded or expanded; XSD imports resolve through allowed local schema roots.
 Validation leaves source bytes unchanged unless you request `autoRepair`.
 
@@ -344,8 +346,8 @@ targets a part in the package (an empty ZIP, a package of only `[Content_Types].
 or only core properties). ECMA-376 requires the main document part. Strict fails on
 it; full and quick Word-valid report a warning until a real-Word observation shows
 Word refusing such a package; lenient runs no Word rule (#380). An `_rels/.rels`
-that does not parse is left to `xml-syntax`, which Word-valid reports as a warning
-outside `word/` until Word evidence decides otherwise (#388).
+that does not parse is left to `xml-syntax`, which Word-valid reports as a blocking
+error, because Word offers to recover such a package (#388).
 
 `word-markup-compatibility` reports processor errors for XML parts under `word/`.
 Root validation, the processor, and the schema walk use these stable codes:
