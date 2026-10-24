@@ -203,6 +203,10 @@ formats other than their default `.docx` (for example, `.pptx` or `.docm`).
 - `--checks tables,word-run-misplaced` / `{ checks: ["tables", "word-run-misplaced"] }`
   selects check ids or group names, plus prerequisites. Unknown ids and explicitly
   named checks for another format are configuration errors.
+- A partial run applies its profile as a full run does, so it never fails a package
+  the full run passes. `lenient` runs neither the Word rules nor the ZIP-envelope
+  checks: naming one of them, or only groups made of them, is a configuration
+  error. Under `word-valid`, an error Word tolerates is reported as a warning.
 - `--list-checks` lists every registered id, group, format, and description without
   reading a file or starting XML/XSD engines. `--help` also needs no engine startup.
 - `--strict` / `{ strict: true }` is shorthand for `profile: "strict"`. Strict

@@ -168,11 +168,21 @@ describe("validate CLI: quick mode output", { timeout: 120_000 }, () => {
     it("names no redlining validation for a PPTX run given --original (#353)", async () => {
         const run = await withTempDir(async (dir) => {
             const file = await uuidDefectPptx(dir);
-            return capture([file, "--checks", "package", "--original", file]);
+            // A PPTX defaults to lenient, which runs no ZIP-envelope check, so
+            // the selection is a group lenient runs (#381).
+            return capture([file, "--checks", "xml", "--original", file]);
         });
 
         expect(run.stdout).toContain("Also not run: the PPTX validator's own rules and its schema walk.\n");
         expect(run.stdout).not.toContain("redlining");
+    });
+
+    it("refuses a selection its profile never runs, instead of passing it unchecked (#381)", async () => {
+        const run = await withTempDir(async (dir) => capture([await uuidDefectPptx(dir), "--checks", "package"]));
+
+        expect(run.code).toBe(1);
+        expect(run.stderr).toContain("No check in package runs under profile 'lenient'");
+        expect(run.stdout).not.toContain("Selected checks passed");
     });
 
     it("exits 1 and reports the defect when a selected check fails", async () => {
