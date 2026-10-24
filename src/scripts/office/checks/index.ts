@@ -29,6 +29,25 @@ import { wordSectionPropertiesMisplacedCheck } from "./word-section-properties";
 import { wordTablePropertiesMisplacedCheck } from "./word-table-properties";
 import { wordLinkWithoutNamespaceCheck, wordUnknownElementCheck } from "./word-unknown-elements";
 import { wordMarkupCompatibilityCheck } from "./word-markup-compatibility";
+import { wordContentTypeInvalidCheck } from "./word-content-types";
+import { wordDrawingScalarWhitespaceCheck, wordDrawingArcRadiusCheck, wordDrawingExtentNegativeCheck } from "./word-drawing-values";
+import { wordEmptyDrawingCheck, wordAnchorMissingAttributeCheck, wordPositionOffsetAndAlignCheck } from "./word-drawing-anchors";
+import { wordCellEndsWithTableCheck } from "./word-cell-ending";
+import { wordTextboxDeletedTextCheck, wordMoveFromDeletedTextCheck } from "./word-deleted-text";
+import { wordTextContainsParagraphCheck } from "./word-text-paragraph";
+import { wordHyperlinkRelationshipCheck } from "./word-hyperlink";
+import {
+    wordDuplicateThemeRelationshipCheck,
+    wordDuplicateFontTableRelationshipCheck,
+    wordDuplicateWebSettingsRelationshipCheck,
+    wordDuplicateSettingsRelationshipCheck,
+} from "./word-duplicate-relationships";
+import { wordChoiceRequiresUndeclaredCheck } from "./word-choice-requires";
+import { wordSdtIdEmptyCheck } from "./word-sdt-id";
+import { wordAttachedToolbarUtf8Check } from "./word-attached-toolbar";
+import { wordNumberingPictureBulletCheck } from "./word-numbering-picture-bullet";
+import { wordFootnoteReferenceMissingCheck } from "./word-footnote-reference";
+import { wordMathParseCheck, wordMathSpreBodyCheck } from "./word-body-math";
 import { xmlSyntaxCheck } from "./xml";
 
 /**
@@ -60,14 +79,32 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordUnknownElementCheck,
     wordLinkWithoutNamespaceCheck,
     wordMarkupCompatibilityCheck,
+    wordRowWithoutCellCheck,
+    wordMathParseCheck,
+    wordMathSpreBodyCheck,
+    wordFootnoteReferenceMissingCheck,
+    wordNumberingPictureBulletCheck,
+    wordAttachedToolbarUtf8Check,
+    wordSdtIdEmptyCheck,
+    wordChoiceRequiresUndeclaredCheck,
+    wordDuplicateThemeRelationshipCheck,
+    wordDuplicateFontTableRelationshipCheck,
+    wordDuplicateWebSettingsRelationshipCheck,
+    wordDuplicateSettingsRelationshipCheck,
+    wordHyperlinkRelationshipCheck,
+    wordTextContainsParagraphCheck,
+    wordTextboxDeletedTextCheck,
+    wordMoveFromDeletedTextCheck,
+    wordCellEndsWithTableCheck,
+    wordEmptyDrawingCheck,
+    wordAnchorMissingAttributeCheck,
+    wordPositionOffsetAndAlignCheck,
+    wordDrawingScalarWhitespaceCheck,
+    wordDrawingArcRadiusCheck,
+    wordDrawingExtentNegativeCheck,
+    wordContentTypeInvalidCheck,
 ];
 
 export function createDefaultCheckRegistry(): CheckRegistry {
-    return new CheckRegistry([
-        zipBytesAfterEocdCheck,
-        zipEocdCommentOverrunCheck,
-        xmlSyntaxCheck,
-        wordRowWithoutCellCheck,
-        ...WORD_RULE_CHECKS,
-    ]);
+    return new CheckRegistry([zipBytesAfterEocdCheck, zipEocdCommentOverrunCheck, xmlSyntaxCheck, ...WORD_RULE_CHECKS]);
 }
