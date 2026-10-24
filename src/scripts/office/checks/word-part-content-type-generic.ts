@@ -30,6 +30,10 @@
  * s20d of session 20 in docs/plans/evidence/word-probes-2026-10-24.md,
  * #571). Other generic spellings for these two parts are inference from
  * the same resolution; customXml stays outside this check.
+ * Session 23 observes the same Default-typed theme defect when only a
+ * reached glossary relates the theme (#595), with an exact-Override clean
+ * control. Only theme is in the glossary's generic-type observed scope;
+ * other generic spellings there remain inference from resolution.
  *
  * Session 16 widened the comparison itself: the check judges the media
  * type — everything before the first `;`, ASCII-lowercased — so a
@@ -89,7 +93,7 @@ import {
 import type { ValidationIssue } from "../../../lib/types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import type { WordTypedTarget } from "../../../lib/word-read-parts";
-import { wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
+import { glossaryTypedRelationshipTargets, wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
 
 export const WORD_PART_CONTENT_TYPE_GENERIC = "word-part-content-type-generic";
 
@@ -228,12 +232,15 @@ export const wordPartContentTypeGenericFindings = async (
 
     const findings: WordGenericContentTypeFinding[] = [];
     const targets = await wordTypedRelationshipTargets(ctx, scope === "spec" ? SPEC_SEGMENTS : OBSERVED_SEGMENTS);
+    // Session 23 observed the reached glossary's generic-Default theme
+    // trigger recovery (#595). No other glossary segment is observed here.
+    const glossaryTargets = await glossaryTypedRelationshipTargets(ctx, new Set(["theme"]));
     // One finding per part. A part reached through two relationship types
     // keeps every segment (#593); the message names the segment
     // `REPORTING_SEGMENT_ORDER` ranks first, deterministically, so the
     // relationships part's own order decides nothing.
     const byPart = new Map<string, WordTypedTarget[]>();
-    for (const target of targets) {
+    for (const target of [...targets, ...glossaryTargets]) {
         const canonical = canonicalPartName(target.part);
         const candidates = byPart.get(canonical) ?? [];
         candidates.push(target);
@@ -249,9 +256,11 @@ export const wordPartContentTypeGenericFindings = async (
         if (resolved === null || !GENERIC_CONTENT_TYPES.has(contentTypeMediaType(resolved.contentType))) {
             continue;
         }
-        const { segment } = candidates.reduce((best, candidate) => (rank(candidate.segment) < rank(best.segment) ? candidate : best));
+        const { segment, via } = candidates.reduce((best, candidate) => (rank(candidate.segment) < rank(best.segment) ? candidate : best));
         const by =
-            segment === OFFICE_DOCUMENT_SEGMENT ? "the package officeDocument relationship" : `the main document's ${segment} relationship`;
+            segment === OFFICE_DOCUMENT_SEGMENT
+                ? "the package officeDocument relationship"
+                : `the ${via === "glossary" ? "glossary" : "main document"}'s ${segment} relationship`;
         const contentType = asciiLowercase(resolved.contentType);
         const resolvedText =
             resolved.source === "default"

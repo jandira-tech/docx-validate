@@ -41,6 +41,13 @@ import { wordPartContentTypeInexactFindings } from "../src/scripts/office/checks
 import { validate } from "../src/scripts/office/validate";
 import { isWordBlockingIssue } from "../src/scripts/office/validators/word-blocking";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+import {
+    GLOSSARY_THEME_PART,
+    glossaryThemeParts,
+    GLOSSARY_STORY_SEGMENTS,
+    glossaryStoryPart,
+    glossaryStoryParts,
+} from "./support/glossary-content-type-specimens";
 
 import { GENERIC_NUMBERING_THEME_SPECIMENS, genericNumberingThemeParts } from "./support/generic-numbering-theme-specimens";
 
@@ -1958,4 +1965,95 @@ describe("a theme part reached by an unreferenced footer relationship too (#593,
             }
         });
     }, 60_000);
+});
+
+// Session 23 (s23a), committed Word evidence: generic Default repairs, exact Override opens clean.
+describe("reached glossary generic theme (#595)", () => {
+    it.each([undefined, "theme-first", "footer-first"] as const)(
+        "reports once, naming the glossary's theme relationship (%s)",
+        async (order) => {
+            const ctx = ValidationContext.fromEntries(glossaryThemeParts(false, order));
+            for (const scope of ["observed", "spec"] as const) {
+                const found = await wordPartContentTypeGenericFindings(ctx, scope);
+                expect(found).toHaveLength(1);
+                expect(found[0]?.issue).toMatchObject({ code: ID, severity: "error", path: GLOSSARY_THEME_PART });
+                expect(found[0]?.issue.message).toContain("named by the glossary's theme relationship");
+                expect(found[0]?.issue.message).toContain('Default for extension "xml" to "application/xml"');
+                expect(isWordBlockingIssue(found[0]!.issue)).toBe(true);
+            }
+            expect(await diagnose(ValidationContext.fromEntries(glossaryThemeParts(true, order)))).toEqual([]);
+        },
+    );
+
+    it("keeps other glossary generic relationships outside the observed scope", async () => {
+        for (const segment of [
+            "styles",
+            "settings",
+            "fontTable",
+            "webSettings",
+            "numbering",
+            "header",
+            "footer",
+            "footnotes",
+            "endnotes",
+            "comments",
+        ]) {
+            const parts = glossaryThemeParts();
+            parts["word/glossary/_rels/document.xml.rels"] = parts["word/glossary/_rels/document.xml.rels"]!.replace(
+                '/theme"',
+                `/${segment}"`,
+            );
+            expect(await diagnose(ValidationContext.fromEntries(parts)), segment).toEqual([]);
+        }
+    });
+
+    it("ignores a theme in an unreached glossary", async () => {
+        const parts = glossaryThemeParts();
+        parts["word/_rels/document.xml.rels"] = MINIMAL_PARTS["word/_rels/document.xml.rels"]!;
+        expect(await diagnose(ValidationContext.fromEntries(parts))).toEqual([]);
+    });
+});
+
+// Session 23's s23a/s23b builder and exact-type controls (#596).
+describe("reached glossary referenced story inexact types (#596)", () => {
+    it.each(GLOSSARY_STORY_SEGMENTS)(
+        "judges the referenced %s with glossary attribution and keeps the exact control silent",
+        async (segment) => {
+            const part = glossaryStoryPart(segment);
+            for (const scope of ["observed", "spec"] as const) {
+                const found = await wordPartContentTypeInexactFindings(ValidationContext.fromEntries(glossaryStoryParts(segment)), scope);
+                expect(found).toHaveLength(1);
+                expect(found[0]?.issue).toMatchObject({ code: "word-part-content-type-inexact", severity: "error", path: part });
+                expect(found[0]?.issue.message).toContain(`named by the glossary's ${segment} relationship`);
+                expect(found[0]?.issue.message).toContain("Word 16.115 offers to recover the package.");
+                expect(isWordBlockingIssue(found[0]!.issue)).toBe(true);
+                expect(
+                    await wordPartContentTypeInexactFindings(ValidationContext.fromEntries(glossaryStoryParts(segment, true)), scope),
+                ).toEqual([]);
+            }
+        },
+    );
+
+    it.each(GLOSSARY_STORY_SEGMENTS)(
+        "leaves an unreferenced %s silent in word-valid; strict uses spec text without a Word claim (#589)",
+        async (segment) => {
+            const ctx = ValidationContext.fromEntries(glossaryStoryParts(segment, false, false));
+            expect(await wordPartContentTypeInexactFindings(ctx)).toEqual([]);
+            const strict = await wordPartContentTypeInexactFindings(ctx, "spec");
+            expect(strict).toHaveLength(1);
+            expect(strict[0]?.issue.message).toContain(`clause 11.3 assigns the ${segment} part`);
+            expect(strict[0]?.issue.message).not.toContain("Word 16.115");
+        },
+    );
+
+    it.each(["story-first", "header-first"] as const)("judges both relationship types on the glossary footer (%s, #593)", async (order) => {
+        const ctx = ValidationContext.fromEntries(glossaryStoryParts("footer", false, true, order));
+        for (const scope of ["observed", "spec"] as const) {
+            const found = await wordPartContentTypeInexactFindings(ctx, scope);
+            expect(found).toHaveLength(1);
+            expect(found[0]?.segment).toBe("footer");
+            expect(found[0]?.issue.message).toContain("named by the glossary's footer relationship");
+            expect(found[0]?.issue.message).toContain("Word 16.115 offers to recover the package.");
+        }
+    });
 });
