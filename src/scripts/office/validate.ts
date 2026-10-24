@@ -259,14 +259,20 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     // The package view could not be staged (a ZIP that failed extraction, or
     // a directory file that could not be read into it): a structured issue,
     // never a throw — `validate()` must NEVER throw here.
+    //
+    // `extra` holds the findings the archive still offers when the staging
+    // failed after the archive opened (#454): they are merged into the
+    // failure, so a partial run of the same package reports nothing the full
+    // run does not (#381).
     const stagingFailed = (
         envelope: { issues: ValidationResult["issues"]; executed: readonly string[] },
         err: unknown,
+        extra: { issues: readonly ValidationIssue[]; executed: readonly string[] } = EMPTY_FINDINGS,
     ): ValidateRunResult => {
         const detail = err instanceof Error ? err.message : String(err);
         return {
             valid: false,
-            issues: [...envelope.issues, packageExtractFailedIssue(target, detail)],
+            issues: [...envelope.issues, ...extra.issues, packageExtractFailedIssue(target, detail)],
             repairs: 0,
             suffix: dispatchSuffix,
             xsdWalk: xsdWalkNotStarted(),
@@ -274,7 +280,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
             // so its checks ran (CodeRabbit on #335).
             metadata: {
                 profile,
-                executedChecks: orderedExecutedChecks(format, envelope.executed),
+                executedChecks: orderedExecutedChecks(format, [...envelope.executed, ...extra.executed]),
                 omittedChecks: [],
                 schemaCompleted: false,
             },
@@ -290,12 +296,15 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         zip: JSZip,
         envelope: { issues: ValidationResult["issues"]; executed: readonly string[] },
         sources?: ReadonlyMap<string, string>,
+        // The findings to merge into a staging failure: what the archive
+        // still holds after the extraction failed (#454).
+        onExtractFailure?: (err: unknown) => Promise<{ issues: readonly ValidationIssue[]; executed: readonly string[] }>,
     ): Promise<ValidateRunResult> =>
         withTempDir(async (tempDir) => {
             try {
                 await extractPackageParts(zip, tempDir);
             } catch (err) {
-                return stagingFailed(envelope, err);
+                return stagingFailed(envelope, err, onExtractFailure ? await onExtractFailure(err) : undefined);
             }
             // Write-back findings; a staged-directory repair the source cannot
             // absorb is an error — the caller asked for a repair it did not
@@ -415,7 +424,11 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         } catch (err) {
             return finish(stagingFailed(named, err));
         }
-        return finish(await runStaged(zip, named));
+        // The extraction can fail after the archive opened: the host
+        // filesystem cannot hold two parts under one name (#373). The archive
+        // still reads, so the findings a partial run computes on it belong in
+        // the staging failure (#454).
+        return finish(await runStaged(zip, named, undefined, () => archiveFindings(buf, format, profile, registry)));
     }
 
     const dir = path.resolve(target);
@@ -595,6 +608,82 @@ function findingsUnderProfile(
                   ),
         )
         .map(advisory);
+}
+
+/**
+ * The findings a partial run of the same format reads from the archive, for
+ * a full run whose extraction failed (#454).
+ *
+ * The archive opened, so its package view is readable in memory even when the
+ * host filesystem cannot hold it: the checks a partial run runs read those
+ * parts, so their findings belong in the staging failure. Without them the
+ * partial run reports errors the full run never computed, and the partial
+ * errors are not a subset of the full ones (#381).
+ *
+ * The machinery is the one a partial run uses: the registry's checks for the
+ * format, the profile's policy on their findings, and lenient's stop at the
+ * first malformed part.
+ */
+async function archiveFindings(
+    bytes: Uint8Array,
+    format: PackageFormat,
+    profile: Profile,
+    registry: CheckRegistry,
+): Promise<{ issues: readonly ValidationIssue[]; executed: readonly string[] }> {
+    const opened = await contextFromArchive(bytes);
+    // An archive that does not open, or whose package view is refused, holds
+    // no part: the full run reports that failure alone (#413).
+    if (opened.openError !== undefined) return EMPTY_FINDINGS;
+    const select = stagingFallbackSelection(registry, format, profile);
+    if (select.length === 0) return EMPTY_FINDINGS;
+    try {
+        const run = await runChecks(opened.context, registry, {
+            format,
+            select,
+            // A full lenient run stops at its first malformed part, so the
+            // merged run stops where xml-syntax fails (#391).
+            ...(profile === "lenient" ? { haltAfterFailing: XML_SYNTAX_CHECK_ID } : {}),
+        });
+        const malformed = new Set(
+            run.outcomes
+                .filter((outcome) => outcome.id === XML_SYNTAX_CHECK_ID)
+                .flatMap((outcome) => outcome.issues)
+                .flatMap((issue) => (issue.severity === "error" && issue.path !== undefined ? [issue.path] : [])),
+        );
+        const outcomes = run.outcomes.map((outcome) =>
+            registry.get(outcome.id)?.reportsParseFailures
+                ? { ...outcome, issues: withoutConsequentialParseFailures(outcome.issues, malformed) }
+                : outcome,
+        );
+        const issues = findingsUnderProfile(
+            { ...run, outcomes, issues: outcomes.flatMap((outcome) => outcome.issues) },
+            registry,
+            format,
+            profile,
+            profile === "word-valid" && format === "docx" ? await propertiesParts(opened.context) : new Set(),
+        );
+        return { issues, executed: [...run.executed] };
+    } catch {
+        // The staging failure is the verdict. A merged run that cannot start
+        // adds nothing to it, and never throws out of `validate()`.
+        return EMPTY_FINDINGS;
+    }
+}
+
+/**
+ * The checks a staging failure still runs: every check registered for the
+ * format, minus the ones the full run already ran — the ZIP-envelope checks
+ * and the stored-name checks — and the ones the profile never runs, so
+ * nothing is reported twice.
+ */
+function stagingFallbackSelection(registry: CheckRegistry, format: PackageFormat, profile: Profile): readonly string[] {
+    const outside = checksOutsideProfile(registry, profile);
+    return registry
+        .list(format)
+        .filter((definition) => !outside.has(definition.id))
+        .filter((definition) => definition.archiveOnly !== true)
+        .filter((definition) => definition.storedNamesOnly !== true)
+        .map((definition) => definition.id);
 }
 
 /**
@@ -789,6 +878,9 @@ async function storedNamesRun(
 
 /** An envelope run that never happened: no findings, no executed checks. */
 const EMPTY_ENVELOPE_RUN: { issues: ValidationResult["issues"]; executed: readonly string[] } = { issues: [], executed: [] };
+
+/** Findings a staging failure has none of: the archive offered nothing more. */
+const EMPTY_FINDINGS: { issues: readonly ValidationIssue[]; executed: readonly string[] } = { issues: [], executed: [] };
 
 interface ValidatorRunner {
     repair(): Promise<number>;
