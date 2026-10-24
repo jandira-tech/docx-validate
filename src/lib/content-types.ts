@@ -148,6 +148,23 @@ const isPcharOrSlash = (code: number): boolean =>
     code === 0x3d /* = */ ||
     code === 0x40; /* @ */
 
+/**
+ * RFC 3987 `ucschar`: the code-point ranges an IRI allows beyond ASCII
+ * (`%xA0-D7FF / %xF900-FDCF / %xFDF0-FFEF` and each `%x10000-1FFFD` …
+ * `%xE0000-EFFFD` block). C1 controls, the surrogate and private-use
+ * blocks, and the noncharacters RFC 3987 excludes stay out.
+ */
+const isUcschar = (codePoint: number): boolean =>
+    (codePoint >= 0xa0 && codePoint <= 0xd7ff) ||
+    (codePoint >= 0xf900 && codePoint <= 0xfdcf) ||
+    (codePoint >= 0xfdf0 && codePoint <= 0xffef) ||
+    // Each astral block is n0000–nFFFD for n = 1…E: within 0x10000–0xEFFFD,
+    // that is exactly a low half of at most 0xFFFD.
+    (codePoint >= 0x10000 && codePoint <= 0xefffd && codePoint % 0x10000 <= 0xfffd);
+
+/** RFC 3987 `iunreserved`: ALPHA / DIGIT / "-" / "." / "_" / "~" / ucschar. */
+const isIunreserved = (codePoint: number): boolean => isUnreservedAscii(codePoint) || isUcschar(codePoint);
+
 const UPPER_HEX = "0123456789ABCDEF";
 const encodeOctet = (byte: number): string => `%${UPPER_HEX[Math.floor(byte / 16)]}${UPPER_HEX[byte % 16]}`;
 
@@ -309,14 +326,28 @@ export const partExtension = (partPath: string): string => {
 export const PART_NAME_FOLDER_SEGMENT_DOT = "must not have a folder segment ending with '.'";
 
 /**
- * Why a part name is not a valid OPC part name (ECMA-376 Part 2 §6.2.2.2,
- * [M1.1]–[M1.10]), or `undefined` when it names one.
+ * Why a part name is not a valid OPC part name (ECMA-376 Part 2, 4th
+ * edition (2012), §9.1.1.1, [M1.1]–[M1.10]), or `undefined` when it names one.
+ *
+ * A part name shall be an IRI and shall be encoded as either a Part URI
+ * (§9.1.1.1.2: `segment = 1*( pchar )`, RFC 3986) or a Part IRI
+ * (§9.1.1.1.1: `isegment = 1*( ipchar )`, RFC 3987, which allows a literal
+ * `ucschar`). A name is valid when it is either, so `/word/café.xml` (a
+ * Part IRI) and `/word/caf%C3%A9.xml` (a Part URI) both pass, while a mixed
+ * spelling like `/word/caf%C3%A9-é.xml` fails both: its literal `ucschar`
+ * leaves only the Part IRI form, whose [M1.8] forbids percent-encoded
+ * `iunreserved` characters. A literal non-ASCII character that is not
+ * `ucschar` (a C1 control, private use, a noncharacter) is in neither
+ * grammar. Strict validation follows this 4th edition, the edition of the
+ * bundled `schemas/ecma/fourth-edition/` OPC schemas; the 5th edition
+ * (§6.2.2.2) keeps only the IRI form and forbids `%C3%A9` instead.
  *
  * A part name is a path: it starts with `/`, its segments are neither empty
  * nor made only of dots ([M1.10]), it ends with no separator and no segment
- * ends with a dot, it carries no query, fragment or backslash, and every character in it
- * is an RFC 3986 `pchar` or a percent-escape. A percent-escaped separator
- * ([M1.7]) or unreserved character ([M1.8]) is forbidden too.
+ * ends with a dot, it carries no query, fragment or backslash, and every
+ * character in it is an RFC 3986 `pchar`, an RFC 3987 `ipchar`, or a
+ * percent-escape. A percent-escaped separator ([M1.7]) or unreserved
+ * character ([M1.8]) is forbidden too.
  *
  * A folder segment ending with a dot ({@link PART_NAME_FOLDER_SEGMENT_DOT}) is
  * judged last, and a segment made only of dots never reaches it (#453). Word 16.115 opens such a name clean while it refuses every
@@ -359,7 +390,15 @@ export const partNameViolation = (partName: string): string | undefined => {
         return "must not percent-encode an unreserved character (OPC [M1.8])";
     }
     if (hasNonPcharCharacter(partName)) {
-        return "must contain only RFC 3986 pchar characters";
+        // Not a Part URI (§9.1.1.1.2). The name can still be a Part IRI
+        // (§9.1.1.1.1): every character an RFC 3987 `ipchar` allows — a
+        // literal `ucschar` — with [M1.8] reading "iunreserved" there.
+        if (hasNonIpcharCharacter(partName)) {
+            return "must contain only RFC 3986 pchar characters";
+        }
+        if (hasEscapedIunreservedCharacter(partName)) {
+            return "must not percent-encode an unreserved character (OPC [M1.8])";
+        }
     }
     if (segments.slice(0, -1).some((segment) => segment.endsWith("."))) {
         return PART_NAME_FOLDER_SEGMENT_DOT;
@@ -391,6 +430,115 @@ const hasNonPcharCharacter = (name: string): boolean => {
         index += 1;
     }
     return false;
+};
+
+/**
+ * Whether a name holds a code point outside the RFC 3987 `ipchar` set
+ * (`pchar` widened by `ucschar`), the Part IRI grammar of ECMA-376 Part 2
+ * §9.1.1.1.1. Called only for names already outside the Part URI grammar,
+ * so the answer decides whether the name can be a Part IRI at all.
+ */
+const hasNonIpcharCharacter = (name: string): boolean => {
+    let index = 0;
+    while (index < name.length) {
+        const codePoint = name.codePointAt(index)!;
+        if (codePoint === 0x25 /* % */) {
+            const high = hexValue(name.charCodeAt(index + 1));
+            const low = hexValue(name.charCodeAt(index + 2));
+            if (high >= 0 && low >= 0) {
+                index += 3;
+                continue;
+            }
+            return true;
+        }
+        if (!isPcharOrSlash(codePoint) && !isUcschar(codePoint)) {
+            return true;
+        }
+        index += String.fromCodePoint(codePoint).length;
+    }
+    return false;
+};
+
+/**
+ * Decode one UTF-8 code point from `bytes` at `offset`, with its byte
+ * length, or `undefined` when the sequence is malformed (an ASCII byte in
+ * a multi-byte position, a truncated or overlong sequence, a surrogate, or
+ * a value above U+10FFFF). WHATWG replacement never applies: [M1.8] asks
+ * what character the octets encode, not what a decoder would display.
+ */
+const decodeUtf8CodePoint = (bytes: readonly number[], offset: number): { codePoint: number; length: number } | undefined => {
+    const lead = bytes[offset]!;
+    if (lead < 0x80) {
+        return { codePoint: lead, length: 1 };
+    }
+    let length = 0;
+    let minimum = 0;
+    let codePoint = 0;
+    if (lead >= 0xc2 && lead <= 0xdf) {
+        length = 2;
+        minimum = 0x80;
+        codePoint = lead - 0xc0; // the lead's low 5 bits
+    } else if (lead >= 0xe0 && lead <= 0xef) {
+        length = 3;
+        minimum = 0x800;
+        codePoint = lead - 0xe0; // the lead's low 4 bits
+    } else if (lead >= 0xf0 && lead <= 0xf4) {
+        length = 4;
+        minimum = 0x10000;
+        codePoint = lead - 0xf0; // the lead's low 3 bits
+    } else {
+        return undefined; // a continuation byte, or an overlong lead (C0/C1)
+    }
+    for (let index = 1; index < length; index += 1) {
+        const continuation = bytes[offset + index];
+        if (continuation === undefined || continuation < 0x80 || continuation > 0xbf) {
+            return undefined;
+        }
+        codePoint = codePoint * 0x40 + (continuation - 0x80);
+    }
+    if (codePoint < minimum || codePoint > 0x10ffff || (codePoint >= 0xd800 && codePoint <= 0xdfff)) {
+        return undefined;
+    }
+    return { codePoint, length };
+};
+
+/**
+ * OPC [M1.8] for the Part IRI form (§9.1.1.1.1): an isegment shall not
+ * percent-encode an RFC 3987 `iunreserved` character. A percent-encoded
+ * sequence counts when its octets decode, as UTF-8, to one: `%C3%A9` encodes
+ * `é`. Malformed UTF-8 escapes (a lone `%E9`, an overlong `%C0%AF`) are
+ * pct-encoded octets, not encoded `iunreserved` characters, and a run that
+ * decodes past a non-`iunreserved` character (`%20%C3%A9`) still encodes the
+ * `é`, so the scan decodes one code point at a time.
+ */
+const hasEscapedIunreservedCharacter = (name: string): boolean => {
+    const bytes: number[] = [];
+    const flush = (): boolean => {
+        let offset = 0;
+        while (offset < bytes.length) {
+            const decoded = decodeUtf8CodePoint(bytes, offset);
+            if (decoded === undefined) {
+                break;
+            }
+            if (isIunreserved(decoded.codePoint)) {
+                return true;
+            }
+            offset += decoded.length;
+        }
+        bytes.length = 0;
+        return false;
+    };
+    for (let index = 0; index < name.length; index += 1) {
+        if (name[index] === "%" && /^[0-9a-f]{2}$/i.test(name.slice(index + 1, index + 3))) {
+            bytes.push(Number.parseInt(name.slice(index + 1, index + 3), 16));
+            index += 2;
+            continue;
+        }
+        if (flush()) {
+            return true;
+        }
+    }
+    return flush();
 };
 
 /** Extract the declarations from a parsed [Content_Types].xml document. */

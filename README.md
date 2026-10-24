@@ -349,11 +349,14 @@ only defect is its name. Hex is case-insensitive and whole
 triplets are consumed: `%2521` stays clean, as do `%20`, `%26`, `%3A`, `%5B`,
 `%7F`, and a literal `!`. Unreserved escapes keep their existing M1.8 finding.
 
-`ct-override-partname-word-refused` applies the same escaped-mark and high-octet
-rules to every Override PartName, even when no part is stored under that name.
-It reports one finding per declaration at the stored content-types stream,
-quoting the PartName. Literal non-ASCII PartNames already fail
-`ct-override-partname-invalid` and are not reported twice. A spelling containing
+`ct-override-partname-word-refused` applies the same escaped-mark, high-octet
+and literal non-ASCII rules to every Override PartName, even when no part is
+stored under that name. It reports one finding per declaration at the stored
+content-types stream, quoting the PartName. A literal non-ASCII PartName is
+reported here exactly when the §9.1.1.1 grammar accepts it — a literal
+`ucschar` Part IRI such as `/word/café.xml` passes `ct-override-partname-invalid`
+(#455), so only this check names Word's refusal — and never repeats the grammar
+finding a name outside both forms already has. A spelling containing
 both `%41` and `%21` reports both applicable codes once.
 
 Both checks are errors for DOCX/DOCM under word-valid and strict (strict includes
@@ -397,12 +400,25 @@ diagnostics without duplicate findings. Strict continues to reject partial selec
 full XLSX validation remains unsupported.
 
 `ct-override-partname-invalid` reports every `Override` whose `PartName` is not
-a valid OPC part name (ECMA-376 Part 2 §6.2.2.2): a name that does not start
+a valid OPC part name (ECMA-376 Part 2, 4th edition (2012), §9.1.1.1, the
+edition of the bundled `schemas/ecma/fourth-edition/` OPC schemas, which strict
+follows): a part name shall be an IRI and shall be encoded as either a Part URI
+(§9.1.1.1.2: `segment = 1*( pchar )`, RFC 3986) or a Part IRI (§9.1.1.1.1:
+`isegment = 1*( ipchar )`, RFC 3987, which allows a literal `ucschar`), so a name
+that does not start
 with `/`, holds an empty, a `.`/`..` or a dot-only (`...`) segment, ends with
 `/` or `.`, has a folder segment ending with `.`, carries a `?`, a `#` or a `\`, percent-encodes a
-separator (OPC [M1.7]) or an unreserved character (OPC [M1.8]), or holds a
-character outside the RFC 3986 `pchar` set. Such a PartName names no part, so
-the declaration is malformed whatever its content type. Resolution is
+separator (OPC [M1.7]), an unreserved character (OPC [M1.8]) or — once a literal
+`ucschar` leaves only the Part IRI form — an `iunreserved` character (OPC
+[M1.8]), or holds a character in neither the RFC 3986 `pchar` nor the RFC 3987
+`ipchar` set, is reported. `/word/café.xml` (a Part IRI) and
+`/word/caf%C3%A9.xml` (a Part URI, ECMA-376 Example 9–1) are therefore valid,
+while `/word/caf%C3%A9-é.xml` is neither, and a literal non-ASCII character that
+is not `ucschar` (a C1 control, private use, a noncharacter) is in neither
+grammar ([#455](https://github.com/jandira-tech/docx-validate/issues/455)). A
+literal `ucschar` the grammar accepts stays refused by Word, which
+`ct-override-partname-word-refused` reports (#451). Such a PartName names no
+part, so the declaration is malformed whatever its content type. Resolution is
 unchanged: content types are still resolved through the canonical spelling, so
 a malformed PartName can still resolve a stored part, as `word/document.xml`
 without its leading slash resolves the main document, while a PartName with a

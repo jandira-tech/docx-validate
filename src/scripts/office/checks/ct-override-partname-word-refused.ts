@@ -14,11 +14,15 @@ export const CT_OVERRIDE_PARTNAME_WORD_REFUSED = "ct-override-partname-word-refu
  * in DOCX packages only, the format every probe used:
  * docs/plans/evidence/word-probes-2026-10-24.md, sessions 6–12, so the
  * message names that scope instead of claiming recovery for the package at
- * hand, which for PPTX/XLSX Word cannot even open (#473).
- * Literal non-ASCII already has an OPC grammar finding, so never repeat it.
- * The stream is judged after Markup Compatibility processing (OPC [M1.19]),
- * as `ct-override-partname-invalid` reads it: an `Override` in an ignored
- * branch is not judged, and `ct-markup-compatibility` reports the markup (#459).
+ * hand, which for PPTX/XLSX Word cannot even open (#473). Literal non-ASCII
+ * is reported here exactly when the part-name grammar (ECMA-376 Part 2, 4th
+ * edition, §9.1.1.1) accepts the name — a literal `ucschar` Part IRI passes
+ * it, so only this check reports Word's refusal (#455) — and never repeats
+ * the grammar finding a name outside both the Part URI and Part IRI forms
+ * already has. The stream is judged after Markup Compatibility processing
+ * (OPC [M1.19]), as `ct-override-partname-invalid` reads it: an `Override` in
+ * an ignored branch is not judged, and `ct-markup-compatibility` reports the
+ * markup (#459).
  */
 export const ctOverridePartnameWordRefusedCheck: CheckDefinition = {
     id: CT_OVERRIDE_PARTNAME_WORD_REFUSED,

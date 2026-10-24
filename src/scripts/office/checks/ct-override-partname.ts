@@ -17,8 +17,15 @@ export const CT_OVERRIDE_PARTNAME_INVALID = "ct-override-partname-invalid";
 
 /**
  * Report every `Override` whose `PartName` is not a valid OPC part name
- * (ECMA-376 Part 2 §6.2.2.2). Such a PartName names no part, so the
- * declaration is malformed whatever its content type. Resolution is unchanged:
+ * (ECMA-376 Part 2, 4th edition (2012), §9.1.1.1). A part name shall be an
+ * IRI and shall be encoded as either a Part URI (§9.1.1.1.2, RFC 3986
+ * `pchar`) or a Part IRI (§9.1.1.1.1, RFC 3987 `ipchar`, which allows a
+ * literal `ucschar`), so `/word/café.xml` and `/word/caf%C3%A9.xml` are both
+ * valid while the mixed `/word/caf%C3%A9-é.xml` is neither — [M1.8] forbids
+ * percent-encoded `iunreserved` characters in an IRI-only name. Strict
+ * follows this 4th edition, the edition of the bundled
+ * `schemas/ecma/fourth-edition/` OPC schemas. Such a PartName names no part,
+ * so the declaration is malformed whatever its content type. Resolution is unchanged:
  * `parseContentTypes` still keys each PartName by its canonical spelling, so a
  * malformed one can still resolve a stored part (#457).
  * System.IO.Packaging is no reference here: `GetNormalizedPartUri` (.NET 10)
@@ -30,7 +37,10 @@ export const CT_OVERRIDE_PARTNAME_INVALID = "ct-override-partname-invalid";
  * reports it as an error, and lenient and the unobserved PPTX/XLSX warn. A
  * folder segment ending with `.` that holds another character is the
  * exception: Word opens it clean, so word-valid warns on it (#450). A dot-only
- * folder segment is refused, and reported under its own rule (#453).
+ * folder segment is refused, and reported under its own rule (#453). A
+ * literal `ucschar` the grammar accepts is out of this check's scope: Word
+ * still refuses the spelling, which `ct-override-partname-word-refused`
+ * reports (#451, #455).
  *
  * The stream is judged after Markup Compatibility processing (OPC [M1.19],
  * as `word-content-type-invalid` already reads it), so an `Override` in an
@@ -42,7 +52,7 @@ export const CT_OVERRIDE_PARTNAME_INVALID = "ct-override-partname-invalid";
  */
 export const ctOverridePartnameInvalidCheck: CheckDefinition = {
     id: CT_OVERRIDE_PARTNAME_INVALID,
-    description: "Override PartNames are valid OPC part names (ECMA-376 Part 2 §6.2.2.2).",
+    description: "Override PartNames are valid OPC part names (ECMA-376 Part 2, 4th edition, §9.1.1.1: a Part URI or a Part IRI).",
     groups: ["content-types"],
     formats: ["docx", "pptx", "xlsx"],
     requires: ["xml-syntax"],
