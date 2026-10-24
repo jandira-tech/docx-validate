@@ -93,6 +93,7 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
         // A quick run reports its own selection; the full-run disclosure
         // change must not add the Word rules it never selected.
         expect(result.metadata?.executedChecks).toContain("word-row-without-cell");
+        expect(result.metadata?.executedChecks).toContain("word-main-document-part");
         expect(result.metadata?.executedChecks).not.toContain("word-shading-color");
         expect(result.metadata?.executedChecks).not.toContain("word-link-without-namespace");
     });
