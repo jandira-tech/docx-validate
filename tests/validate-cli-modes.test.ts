@@ -104,6 +104,7 @@ describe("validate CLI: named checks", { timeout: 120_000 }, () => {
         expect(run.code).toBe(0);
         expect(run.stdout).toContain("xml-syntax");
         expect(run.stdout).toContain("word-row-without-cell");
+        expect(run.stdout).toContain("word-document-root");
         expect(run.stdout).toMatch(/groups/i);
         expect(run.stdout).toMatch(/formats/i);
         expect(run.stdout).toMatch(/Every XML part of the package is well-formed/);

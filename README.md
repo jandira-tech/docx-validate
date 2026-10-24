@@ -255,7 +255,7 @@ XML prerequisite. All `word-*` checks apply to DOCX/DOCM only.
 | `relationships`           | `word-duplicate-theme-relationship`, `word-duplicate-font-table-relationship`, `word-duplicate-web-settings-relationship`, `word-duplicate-settings-relationship`, `word-hyperlink-relationship`                                                                                                                                                    |
 | `tracked-changes`         | `word-textbox-deleted-text`, `word-move-from-deleted-text`                                                                                                                                                                                                                                                                                          |
 | `settings`                | `word-custom-property-filetime-empty`, `word-attached-toolbar-utf8`                                                                                                                                                                                                                                                                                 |
-| `xml`                     | `word-markup-compatibility`, `word-choice-requires-undeclared`                                                                                                                                                                                                                                                                                      |
+| `xml`                     | `word-markup-compatibility`, `word-document-root`, `word-choice-requires-undeclared`                                                                                                                                                                                                                                                                |
 | `schema`                  | `word-unknown-element`, `word-link-without-namespace`                                                                                                                                                                                                                                                                                               |
 
 The `schema` group contains structural checks, not an XSD walk. `comments` is a
@@ -295,17 +295,24 @@ namespaces. Extension payloads in DrawingML/chart/presentation/spreadsheet `ext`
 slots survive for lax schema validation; genuinely empty required extensions
 still fail their schemas.
 
+`word-document-root` resolves the main part through the package's `officeDocument`
+relationship and requires an effective `document` root in the Transitional or
+Strict WordprocessingML namespace. A foreign root makes Word refuse to open the
+file; an ignored root makes Word silently drop all content. Both are blocking
+errors in Word-valid and strict, and the check is included in the quick preset.
+
 `word-markup-compatibility` reports processor errors for XML parts under `word/`.
-The processor and schema walk use these stable codes:
+Root validation, the processor, and the schema walk use these stable codes:
 
 | Code                          | Meaning and profile behavior                                                                                                                                                              |
 | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `word-document-root`          | The main part has a foreign or missing effective root: Word refuses to open it or silently drops all content. Blocking in Word-valid and strict.                                          |
 | `mce-malformed`               | Invalid compatibility structure, such as AlternateContent without a Choice. Blocking in Word-valid and strict.                                                                            |
 | `mce-must-understand`         | A declared required namespace is not understood by the selected view. Blocking in Word-valid and strict; Word and schema capabilities can differ.                                         |
 | `mce-unbound-prefix`          | A directive names an unbound prefix. Error in lenient/strict schema processing; warning in full Word-valid. A repeated root Ignorable finding is retained once as `ignorable-undeclared`. |
 | `mce-invalid-token`           | An invalid ProcessContent QName. Error in lenient/strict schema processing; warning in full Word-valid.                                                                                   |
 | `mce-root-ignored`            | An ignorable root disappears from the schema view. Informational for non-main parts; not emitted by the full Word-valid path.                                                             |
-| `mce-main-root-ignored`       | The required main document root disappears from the schema view. Error in lenient/strict; not emitted by the full Word-valid path, which does not yet catch this case (#317).             |
+| `mce-main-root-ignored`       | The required main document root disappears from the schema view. Error in lenient/strict; the Word view reports `word-document-root` for a missing main root.                             |
 | `mce-extension-not-ignorable` | Office extension attributes lack an Ignorable declaration and are removed from the schema view. Warning from schema preprocessing; not emitted by the full Word-valid path.               |
 
 Strict bundles both Transitional and ISO Strict schema trees, with local Dublin
