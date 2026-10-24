@@ -141,7 +141,7 @@ const OBSERVED_SEGMENTS: ReadonlySet<string> = new Set([
 ]);
 
 /** The lazily parsed observed segments: judged under the observed scope only when the document uses them (#516, #570). */
-const LAZY_OBSERVED_SEGMENTS: ReadonlySet<string> = new Set(["header", "footer", "comments", "footnotes", "endnotes"]);
+export const LAZY_OBSERVED_SEGMENTS: ReadonlySet<string> = new Set(["header", "footer", "comments", "footnotes", "endnotes"]);
 
 /** The segments a strict run judges: the probed set plus every other Part 1 WordprocessingML part type (#506). */
 export const SPEC_SEGMENTS: ReadonlySet<string> = new Set([...OBSERVED_SEGMENTS, ...SPEC_ONLY_CONTENT_TYPES.keys()]);
@@ -292,7 +292,22 @@ export const wordPartContentTypeInexactFindings = async (
         // generic check's class or no known defect at all; this check never
         // double-reports.
         const mediaType = contentTypeMediaType(declared);
-        const matching = entries.filter(({ segment }) =>
+        // A lazily parsed candidate its story root does not read through
+        // that segment is not Word's finding, and cannot hide a read one
+        // (#593); `readKeys === undefined` (usage undecidable, #536) counts
+        // as read.
+        const isRead = ({ segment, via }: (typeof entries)[number]): boolean =>
+            !(
+                (via === "glossary" || LAZY_OBSERVED_SEGMENTS.has(segment)) &&
+                readKeys !== undefined &&
+                !readKeys.has(`${via ?? "main"}\n${canonical}\n${segment}`)
+            );
+        // A part read through another story-reference segment is a mismatch,
+        // even when an unused relationship matches this inexact media type
+        // (#607). Eager relationships keep their existing spec scope.
+        const readEntries = entries.filter((entry) => LAZY_OBSERVED_SEGMENTS.has(entry.segment) && isRead(entry));
+        const judged = readEntries.length > 0 ? readEntries : entries;
+        const matching = judged.filter(({ segment }) =>
             expectedContentTypesFor(segment).some((type) => mediaType === asciiLowercase(type)),
         );
         if (matching.length === 0) {
@@ -309,16 +324,6 @@ export const wordPartContentTypeInexactFindings = async (
         ) {
             continue;
         }
-        // A lazily parsed candidate its story root does not read through
-        // that segment is not Word's finding, and cannot hide a read one
-        // (#593); `readKeys === undefined` (usage undecidable, #536) counts
-        // as read.
-        const isRead = ({ segment, via }: (typeof matching)[number]): boolean =>
-            !(
-                (via === "glossary" || LAZY_OBSERVED_SEGMENTS.has(segment)) &&
-                readKeys !== undefined &&
-                !readKeys.has(`${via ?? "main"}\n${canonical}\n${segment}`)
-            );
         // The observed pairs are the main-document probes plus the
         // glossary's probed styles and referenced stories (#579, #596); every
         // other glossary segment is spec-only.

@@ -588,29 +588,41 @@ reports a warning. Full,
 quick and named runs agree.
 
 `word-part-content-type-mismatch` reports a related part whose declared media
-type matches none of the relationship types reaching it, but is another
+type matches none of the judged relationship segments, but is another
 part's expected type in the shared Word type map
 ([#600](https://github.com/jandira-tech/docx-validate/issues/600)). Media types
 are trimmed, compared ASCII case-insensitively, and stripped of parameters.
 Generic XML, an inexact spelling of the part's own media type, and unknown
 types such as `image/png` stay outside this check, so the generic, inexact
-and mismatch checks are disjoint. A matching relationship exempts the part
-even when that relationship is unused.
+and mismatch checks are disjoint. A part read through story references is judged against the segments
+those references use. An unused matching relationship does
+not exempt it; a match through either of two used references still does.
+Unread parts are judged against all reaching segments under strict (#607).
 
 Word-valid reports only read header/footer swaps: a referenced footer typed
 `…header+xml`, or a referenced header typed `…footer+xml`, from the main
 document or a reached glossary. Session 24 observed Word 16.115 offer recovery
 for the main document's header and footer swaps and the glossary footer swap,
 including `…header+xml; charset=utf-8`; their exact-type controls and the
-minimal package opened clean. The finding names the relationship, declared
+minimal package opened clean. Session 26 observed recovery for the glossary
+header typed `…footer+xml` and for a read footer typed `…header+xml` despite
+an unused header relationship to it; the latter's `…footer+xml` control
+opened clean. The recovery sentence cites session 24 for the main header,
+main footer and glossary footer swaps, and session 26 for the glossary
+header swap (#610). The finding names the relationship, declared
 type and expected type, errors and blocks Word-valid; lenient warns. Unread
 stories, a footer typed `…styles+xml`, and comments/footnotes/endnotes typed
 with each other's types stay silent under Word-valid until probed.
 
 Strict judges every related part in the shared map, read or unread, citing
 ECMA-376 Part 1 (4th edition), clause 11.3's content-type assignments (theme
-is DrawingML and cites clause 14.2.7). Only a read header/footer swap carries
-the Word recovery sentence. Full, quick and named selections agree (#381).
+is DrawingML and cites clause 14.2.7). The main document is named the Main
+Document part and cites clause 11.3.10 (#609). Candidate relationships are
+ranked in the same fixed order as the generic check, so relationship entry
+order does not change the reported segment or clause (#608). Only an
+observed read header/footer swap carries the Word recovery sentence;
+unobserved shapes keep spec wording. Full, quick and named selections agree
+(#381).
 
 `word-part-content-type-inexact` — renamed from
 `word-part-content-type-parameter` for

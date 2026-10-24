@@ -168,7 +168,7 @@ const SPEC_SEGMENTS: ReadonlySet<string> = new Set([...OBSERVED_SEGMENTS, ...SPE
  * message. Segments outside the scope requested cannot appear; an
  * unlisted segment ranks last.
  */
-const REPORTING_SEGMENT_ORDER: readonly string[] = [...SPEC_SEGMENTS];
+export const REPORTING_SEGMENT_ORDER: readonly string[] = [...SPEC_SEGMENTS];
 
 /** What the part needs, named for the finding's message. */
 const expectedContentTypeText = (segment: string, source: "override" | "default"): string => {

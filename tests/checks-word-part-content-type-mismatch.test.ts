@@ -10,10 +10,18 @@ import { validate } from "../src/scripts/office/validate";
 import { describe, expect, it } from "vitest";
 import { ValidationContext } from "../src/lib/validation-context";
 import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
+import { wordPartContentTypeMismatchFindings } from "../src/scripts/office/checks/word-part-content-type-mismatch";
+import { wordPartContentTypeInexactFindings } from "../src/scripts/office/checks/word-part-content-type-inexact";
+import { wordPartContentTypeGenericFindings } from "../src/scripts/office/checks/word-part-content-type-generic";
 import { isWordBlockingIssue } from "../src/scripts/office/validators/word-blocking";
 import { glossaryStoryParts } from "./support/glossary-content-type-specimens";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
-import { MISMATCH_STORY_CASES, storyContentType, storyContentTypeParts } from "./support/story-content-type-specimens";
+import {
+    footerWithHeaderRelationship,
+    MISMATCH_STORY_CASES,
+    storyContentType,
+    storyContentTypeParts,
+} from "./support/story-content-type-specimens";
 
 const ID = "word-part-content-type-mismatch";
 const diagnose = async (parts: Record<string, string>) =>
@@ -62,15 +70,52 @@ describe("story content type mismatch (#600, session 24)", () => {
         }
     });
 
-    it.each([true, false])("accepts any matching reaching type (header first: %s)", async (headerFirst) => {
-        const parts = storyContentTypeParts("footer");
-        const rels = parts["word/_rels/document.xml.rels"]!;
-        const header =
-            '<Relationship Id="rIdH" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="footer9.xml"/>';
-        parts["word/_rels/document.xml.rels"] = headerFirst
-            ? rels.replace('<Relationship Id="rIdX"', `${header}<Relationship Id="rIdX"`)
-            : rels.replace("</Relationships>", `${header}</Relationships>`);
-        expect(await diagnose(parts)).toEqual([]);
+    it.each([true, false])(
+        "accepts a matching type when both footer and header references are USED (header first: %s)",
+        async (headerFirst) => {
+            const parts = footerWithHeaderRelationship(storyContentType("header"), true, headerFirst);
+            expect(await diagnose(parts)).toEqual([]);
+            expect(await wordPartContentTypeMismatchFindings(ValidationContext.fromEntries(parts), "spec")).toEqual([]);
+        },
+    );
+
+    it.each([true, false])(
+        "rejects a read footer despite an UNUSED matching header relationship (header first: %s) (#607)",
+        async (headerFirst) => {
+            const found = await diagnose(footerWithHeaderRelationship(storyContentType("header"), false, headerFirst));
+            expect(found).toHaveLength(1);
+            expect(found[0]).toMatchObject({ code: ID, severity: "error", path: "word/footer9.xml" });
+            expect(found[0]?.message).toContain("the main document's footer relationship");
+            expect(found[0]?.message).toContain("Word 16.115 offers to recover the package (session 24).");
+            expect(await diagnose(footerWithHeaderRelationship(storyContentType("footer"), false, headerFirst))).toEqual([]);
+        },
+    );
+
+    it("keeps competing unused types disjoint under observed and spec scopes (#607)", async () => {
+        for (const scope of ["observed", "spec"] as const) {
+            for (const [declared, expected] of [
+                ["application/xml", scope === "spec" ? "word-part-content-type-generic" : undefined],
+                [storyContentType("footer") + "; charset=utf-8", "word-part-content-type-inexact"],
+                [storyContentType("header"), ID],
+                [storyContentType("header") + "; charset=utf-8", ID],
+                [storyContentType("footer"), undefined],
+            ] as const) {
+                const ctx = ValidationContext.fromEntries(footerWithHeaderRelationship(declared));
+                const findings = (
+                    await Promise.all([
+                        wordPartContentTypeGenericFindings(ctx, scope),
+                        wordPartContentTypeInexactFindings(ctx, scope),
+                        wordPartContentTypeMismatchFindings(ctx, scope),
+                    ])
+                )
+                    .flat()
+                    .filter(({ issue }) => issue.path === "word/footer9.xml");
+                expect(
+                    findings.map(({ issue }) => issue.code),
+                    `${scope}: ${declared}`,
+                ).toEqual(expected === undefined ? [] : [expected]);
+            }
+        }
     });
 
     it("keeps generic, inexact and mismatch findings disjoint", async () => {
@@ -223,3 +268,86 @@ it("strict judges every mapped related type on the main document and glossary", 
         }
     });
 }, 60_000);
+
+// File-backed profile checks are integration tests; the regressions above use in-memory package entries.
+it("full, quick and named runs reject the unused-header exemption and accept its footer control (#607)", async () => {
+    await withTempDir(async (dir) => {
+        const file = path.join(dir, "unused-header.docx");
+        for (const declared of [storyContentType("header"), storyContentType("footer")]) {
+            writeFileSync(file, await buildDocx(footerWithHeaderRelationship(declared)));
+            const full = await validate(file);
+            const found = full.issues.filter(({ code }) => code === ID);
+            expect(full.valid).toBe(declared === storyContentType("footer"));
+            expect(found).toHaveLength(declared === storyContentType("header") ? 1 : 0);
+            for (const selection of [{ quick: true }, { checks: [ID] }, { checks: ["content-types"] }]) {
+                const partial = await validate(file, selection);
+                expect(partial.valid).toBe(full.valid);
+                expect(partial.issues.filter(({ code }) => code === ID)).toEqual(found);
+            }
+            const strict = await validate(file, { profile: "strict" });
+            expect(strict.issues.filter(({ code }) => code === ID)).toHaveLength(found.length);
+            if (!full.valid) expect(strict.valid).toBe(false);
+        }
+    });
+}, 60_000);
+
+it.each([
+    { segment: "theme", clause: "14.2.7" },
+    { segment: "header", clause: "11.3" },
+])(
+    "strict mismatch issues rank $segment before footer regardless of relationship order (#608)",
+    async ({ segment, clause }) => {
+        await withTempDir(async (dir) => {
+            const issues = [];
+            for (const otherFirst of [true, false]) {
+                const parts = storyContentTypeParts("footer", storyContentType("styles"), "main", false);
+                const rels = parts["word/_rels/document.xml.rels"]!;
+                const other = `<Relationship Id="rIdT" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/${segment}" Target="footer9.xml"/>`;
+                parts["word/_rels/document.xml.rels"] = otherFirst
+                    ? rels.replace('<Relationship Id="rIdX"', `${other}<Relationship Id="rIdX"`)
+                    : rels.replace("</Relationships>", `${other}</Relationships>`);
+                const file = path.join(dir, "ranked.docx");
+                writeFileSync(file, await buildDocx(parts));
+                issues.push((await validate(file, { profile: "strict" })).issues.filter(({ code }) => code === ID));
+            }
+            expect(issues[0]).toHaveLength(1);
+            expect(issues[1]).toEqual(issues[0]);
+            expect(issues[0]?.[0]).toMatchObject({ code: ID, path: "word/footer9.xml" });
+            expect(issues[0]?.[0]?.message).toContain(`the main document's ${segment} relationship`);
+            expect(issues[0]?.[0]?.message).toContain(`clause ${clause}`);
+            expect(issues[0]?.[0]?.message).not.toContain("Word 16.115");
+        });
+    },
+    60_000,
+);
+
+it("strict names the Main Document part and its clause 11.3.10 (#609)", async () => {
+    const parts = {
+        ...MINIMAL_PARTS,
+        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(storyContentType("document.main"), storyContentType("styles")),
+    };
+    const found = await wordPartContentTypeMismatchFindings(ValidationContext.fromEntries(parts), "spec");
+    expect(found).toHaveLength(1);
+    expect(found[0]?.issue).toMatchObject({ code: ID, path: "word/document.xml" });
+    expect(found[0]?.issue.message).toContain("the package officeDocument relationship");
+    expect(found[0]?.issue.message).toContain("Main Document part");
+    expect(found[0]?.issue.message).toContain("clause 11.3.10");
+    expect(found[0]?.issue.message).not.toContain("officeDocument part");
+});
+
+it.each([
+    { segment: "footer", via: "main", session: 24 },
+    { segment: "header", via: "main", session: 24 },
+    { segment: "footer", via: "glossary", session: 24 },
+    { segment: "header", via: "glossary", session: 26 },
+] as const)("attributes the $via $segment swap to session $session (#610)", async ({ segment, via, session }) => {
+    for (const scope of ["observed", "spec"] as const) {
+        const found = await wordPartContentTypeMismatchFindings(
+            ValidationContext.fromEntries(storyContentTypeParts(segment, undefined, via)),
+            scope,
+        );
+        expect(found).toHaveLength(1);
+        expect(found[0]?.issue.message).toContain(`Word 16.115 offers to recover the package (session ${session}).`);
+        expect(found[0]?.issue.message).not.toContain(`session ${session === 24 ? 26 : 24}`);
+    }
+});
