@@ -6,11 +6,11 @@
  *   1. the specimen's sha256 against the manifest row — a changed file
  *      invalidates the lane's historical Word observation, so it must fail
  *      loudly instead of silently re-basing;
- *   2. `validate()` validity under the `lenient` and `strict` profiles
- *      (word-valid is deliberately NOT pinned: Task 10 flips the default and
- *      Task 7 changes word-valid semantics; the orchestrator adds that
- *      column later);
- *   3. the exact set of `word-*` advisory codes present under `strict`.
+ *   2. `validate()` validity under the `lenient` and `strict` profiles;
+ *   3. the exact set of `word-*` advisory codes present under `strict`;
+ *   4. word-valid validity against real Microsoft Word: the expectation is
+ *      the hash-bound observation in word-observations.json (Word 16.115,
+ *      probed with `verifyInWord`), never the validator's own output.
  *
  * Expected values were derived from the specimens' XML and GitHub issues
  * #208–#263 (one issue per finding; the derivation is cited per row), never
@@ -40,6 +40,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
+import { classifyWordOutcome } from "../src/lib/word-provenance";
 import { validate } from "../src/scripts/office/validate";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -69,6 +70,18 @@ const parseCsvRow = (line: string): string[] => {
     fields.push(current);
     return fields;
 };
+
+interface WordObservation {
+    file: string;
+    outcome: string;
+    observedAt: string;
+    wordVersion: string;
+}
+
+/** Real Word observations keyed by sha256 (see the lane README). */
+const wordObservations = (): Readonly<Record<string, WordObservation>> =>
+    (JSON.parse(readFileSync(path.join(LANE, "word-observations.json"), "utf-8")) as { observations: Record<string, WordObservation> })
+        .observations;
 
 interface LaneRow {
     kindId: string;
@@ -179,6 +192,21 @@ const stem = (file: string): string => file.replace(/\.redline\.docx$/, "");
 describe("jubarte 0.13.0 lane integration (manifest.csv)", { timeout: 120_000 }, () => {
     const rows = laneRows();
 
+    const observations = wordObservations();
+
+    it("binds a real Word observation to every distinct specimen", () => {
+        const hashes = new Set(rows.map((row) => row.sha256));
+        expect(hashes.size).toBe(16);
+        for (const hash of hashes) {
+            const observation = observations[hash];
+            expect(observation, `no Word observation bound to ${hash}`).toBeDefined();
+            // A timeout or unknown outcome is no verdict; it must not pin one (#330).
+            expect(classifyWordOutcome(observation?.outcome ?? "unknown"), `${observation?.file}: ${observation?.outcome}`).not.toBe(
+                "unattributable",
+            );
+        }
+    });
+
     it("manifest.csv lists all 24 specimens with derived expectations", () => {
         expect(rows).toHaveLength(24);
         for (const row of rows) {
@@ -190,7 +218,7 @@ describe("jubarte 0.13.0 lane integration (manifest.csv)", { timeout: 120_000 },
         const file = row.file;
         const expected = EXPECTED[stem(file)]!;
         it(
-            `${file} (${row.kindId}): sha256 pinned, lenient/strict validity and strict word-* advisories`,
+            `${file} (${row.kindId}): sha256 pinned, lenient/strict validity, strict word-* advisories, word-valid vs Word`,
             { timeout: 60_000 },
             async () => {
                 // 1. Hash pin — a changed specimen invalidates the lane's Word
@@ -212,6 +240,14 @@ describe("jubarte 0.13.0 lane integration (manifest.csv)", { timeout: 120_000 },
                     new Set(strict.issues.map((issue) => issue.code ?? "").filter((code) => code.startsWith("word-"))),
                 ).sort();
                 expect(wordCodes, `${file} strict word-* advisory set (derived)`).toEqual([...expected.wordCodes].sort());
+
+                // 4. Word-valid agrees with Word itself on these exact bytes.
+                const observation = observations[sha256];
+                expect(observation, `${file} has no Word observation for its bytes`).toBeDefined();
+                const wordValid = await validate(path.join(LANE, file), { profile: "word-valid" });
+                expect(wordValid.valid, `${file} word-valid vs Word ${observation?.wordVersion}: ${observation?.outcome}`).toBe(
+                    classifyWordOutcome(observation?.outcome ?? "unknown") === "clean",
+                );
             },
         );
     }
