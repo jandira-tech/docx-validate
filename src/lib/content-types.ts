@@ -238,6 +238,16 @@ export const resolvePartName = (names: readonly string[], partName: string): str
 export const normalizePartName = (partName: string): string => asciiLowercase(decodePercentEscapes(partName).replace(/^\/+/, ""));
 
 /**
+ * Whether a part is a relationships part: its OPC-canonical name
+ * ({@link canonicalPartName}: ASCII case folded, escapes of unreserved
+ * characters decoded) ends in `.rels`, so `_RELS/.RELS` and
+ * `word/_rels/document.xml.%72els` are relationships parts. Every
+ * relationships pass and the XSD walk test parts with it, so they judge
+ * the same parts (#346, #364, #398).
+ */
+export const isRelationshipsPartName = (partName: string): boolean => canonicalPartName(partName).endsWith(".rels");
+
+/**
  * OPC extension of a part name: the substring after the last dot of the
  * final segment, ASCII-lowercased — `_rels/.rels` has extension "rels"
  * (unlike POSIX `path.extname`, which returns "" for dotfiles). Returns ""

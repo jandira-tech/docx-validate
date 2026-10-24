@@ -49,7 +49,7 @@
 import { default as JSZip } from "jszip";
 import { promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
-import { resolvePartName } from "../../../lib/content-types";
+import { isRelationshipsPartName, resolvePartName } from "../../../lib/content-types";
 import { nextSecureLongHexNumber } from "../../../lib/secure-id";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { withoutConsequentialParseFailures } from "../../../lib/parse-failures";
@@ -67,7 +67,6 @@ import {
     BaseSchemaValidator,
     collectDeclaredPrefixes,
     containRelationshipTarget,
-    isRelationshipsPartName,
     PACKAGE_RELATIONSHIPS_NAMESPACE,
     packageEntries,
     withoutRestatedIgnorablePrefixes,
@@ -1663,7 +1662,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     async validateRelationshipIdStability(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
         for (const xmlFile of this.xmlFiles) {
-            if (!xmlFile.endsWith(".rels")) continue;
+            if (!isRelationshipsPartName(this.entryName(xmlFile))) continue;
             let dom: Document;
             try {
                 dom = parseXmlBytes(await fs.readFile(xmlFile));

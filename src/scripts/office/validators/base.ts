@@ -43,7 +43,14 @@ import { existsSync, promises as fs, readdirSync, readFileSync, realpathSync, st
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { findEquivalentPart, parseContentTypes, partExtension, resolveContentType, resolvePartName } from "../../../lib/content-types";
+import {
+    findEquivalentPart,
+    isRelationshipsPartName,
+    parseContentTypes,
+    partExtension,
+    resolveContentType,
+    resolvePartName,
+} from "../../../lib/content-types";
 import { applyMarkupCompatibility, STRICT_UNDERSTOOD_NAMESPACES, UNDERSTOOD_NAMESPACES } from "../../../lib/markup-compatibility";
 import { withTempDir } from "../../../lib/run-cli";
 import { indexByPartName } from "../../../lib/validation-context";
@@ -409,7 +416,7 @@ export class BaseSchemaValidator {
         this.originalFile = opts.originalFile ? path.resolve(opts.originalFile) : null;
         this.verbose = opts.verbose ?? false;
         this.schemasDir = opts.schemasDir ?? defaultSchemasDir();
-        this.xmlFiles = [...packageEntries(this.unpackedDir, [".xml", ".rels"]).values()];
+        this.xmlFiles = [...packageEntries(this.unpackedDir)].flatMap(([name, file]) => (isXmlPartName(name) ? [file] : []));
         this.profile = opts.profile ?? DEFAULT_PROFILE;
         this.xsdValidatorRef = opts.xsdValidator;
     }
@@ -493,7 +500,7 @@ export class BaseSchemaValidator {
         const issues: ValidationIssue[] = [];
         const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
         for (const xmlFile of this.xmlFiles) {
-            if (!xmlFile.endsWith(".rels")) continue;
+            if (!isRelationshipsPartName(this.entryName(xmlFile))) continue;
             let dom: Document;
             try {
                 dom = parseXmlBytes(await fs.readFile(xmlFile));
@@ -913,7 +920,7 @@ export class BaseSchemaValidator {
 
     async validateRelationshipElements(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const relsFiles = [...packageEntries(this.unpackedDir, [".rels"]).values()];
+        const relsFiles = [...packageEntries(this.unpackedDir)].flatMap(([name, file]) => (isRelationshipsPartName(name) ? [file] : []));
 
         for (const relsFile of relsFiles) {
             let dom: Document;
@@ -977,7 +984,7 @@ export class BaseSchemaValidator {
         const issues: ValidationIssue[] = [];
 
         for (const xmlFile of this.xmlFiles) {
-            if (xmlFile.endsWith(".rels")) continue;
+            if (isRelationshipsPartName(this.entryName(xmlFile))) continue;
 
             const relsDir = path.join(path.dirname(xmlFile), "_rels");
             const relsFile = path.join(relsDir, `${path.basename(xmlFile)}.rels`);
@@ -1188,7 +1195,7 @@ export class BaseSchemaValidator {
 
         for (const xmlFile of this.xmlFiles) {
             const pathStr = this.relPath(xmlFile).replace(/\\/g, "/");
-            if ([".rels", "[Content_Types]", "docProps/", "_rels/"].some((s) => pathStr.includes(s))) {
+            if (isRelationshipsPartName(pathStr) || ["[Content_Types]", "docProps/", "_rels/"].some((s) => pathStr.includes(s))) {
                 continue;
             }
 
@@ -1213,7 +1220,7 @@ export class BaseSchemaValidator {
 
         for (const filePath of allFiles) {
             const ext = path.extname(filePath).toLowerCase();
-            if (ext === ".xml" || ext === ".rels") continue;
+            if (ext === ".xml" || isRelationshipsPartName(this.entryName(filePath))) continue;
             if (path.basename(filePath) === "[Content_Types].xml") continue;
             const parts = filePath.split(path.sep);
             if (parts.includes("_rels") || parts.includes("docProps")) continue;
@@ -1700,7 +1707,7 @@ export class BaseSchemaValidator {
         if (mapped !== undefined) {
             return mapped;
         }
-        if (name.endsWith(".rels")) {
+        if (isRelationshipsPartName(name)) {
             return ".rels";
         }
         if (name.includes("charts/") && base.startsWith("chart")) {
@@ -1770,13 +1777,6 @@ export class BaseSchemaValidator {
 }
 
 // ===== module-level helpers ===================================================
-
-/**
- * Whether a part is a relationships part: its extension is `.rels` in any
- * case, as OPC compares part names ASCII case-insensitively, so
- * `_RELS/.RELS` holds the package relationships (#346, #364).
- */
-export const isRelationshipsPartName = (partName: string): boolean => /\.rels$/i.test(partName);
 
 /**
  * The files of `dir` by part name. Of several files naming one part
