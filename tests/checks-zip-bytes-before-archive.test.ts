@@ -185,6 +185,73 @@ describe("bytes before the ZIP archive (#464)", { timeout: 300_000 }, () => {
         });
     });
 
+    // Review of layer 112 (#566): a small negative resolved compressed size
+    // — a ZIP64 0x0001 extra resolving to -8, or the 32-bit field 0xFFFFFFF8,
+    // which `readInt(4)` reads as -8 — shortens `readLocalPart`'s combined
+    // local-part end, so a local name and extra field ending up to |size|
+    // bytes past the buffer passed the single bound. JSZip bounds the name
+    // (`readData(fileNameLength)`) and the extra field
+    // (`skip(localExtraFieldsLength)`) on their own reads, so it throws; the
+    // package never opens, and no prefix may be claimed for it.
+    it("does not report a prefix whose local name/extra overrun a small negative size masks (#566)", async () => {
+        await withTempDir(async (dir) => {
+            const entries = Object.entries(MINIMAL_PARTS).map(([name, content]) => ({ name, content }));
+            const cdOf = (bytes: Buffer): number => bytes.readUInt32LE(bytes.length - 22 + 16);
+            // As the #555 specimen: [uncompressed = the real
+            // size][compressed = -8] resolved from a 0x0001 extra.
+            const zip64Resolved = (bytes: Buffer): Buffer => {
+                const cd = cdOf(bytes);
+                const field = Buffer.alloc(20);
+                field.writeUInt16LE(0x0001, 0);
+                field.writeUInt16LE(16, 2);
+                field.writeBigUInt64LE(BigInt(bytes.readUInt32LE(cd + 24)), 4);
+                field.writeBigUInt64LE(0xfffffffffffffff8n, 12);
+                const insert = cd + 46 + bytes.readUInt16LE(cd + 28);
+                const grown = Buffer.concat([bytes.subarray(0, insert), field, bytes.subarray(insert)]);
+                grown.writeUInt32LE(0xffffffff, cd + 20);
+                grown.writeUInt32LE(0xffffffff, cd + 24);
+                grown.writeUInt16LE(grown.readUInt16LE(cd + 30) + field.length, cd + 30);
+                const eocd = grown.length - 22;
+                grown.writeUInt32LE(grown.readUInt32LE(eocd + 12) + field.length, eocd + 12);
+                return grown;
+            };
+            const base32 = buildRawZip(entries);
+            base32.writeUInt32LE(0xfffffff8, cdOf(base32) + 20);
+            const specimens = [
+                ["32-bit-field", base32],
+                ["zip64-resolved", zip64Resolved(buildRawZip(entries))],
+            ] as const;
+            for (const [label, specimen] of specimens) {
+                const prefixed = Buffer.concat([Buffer.alloc(64, 0x41), specimen]);
+                // The first record's local header sits at archive offset 0
+                // — buffer offset 64 — and its declared extra length ends
+                // the local name and extra field 4 bytes past the buffer.
+                const nameLength = prefixed.readUInt16LE(64 + 26);
+                prefixed.writeUInt16LE(prefixed.length + 4 - (64 + 30 + nameLength), 64 + 28);
+                const file = path.join(dir, `masked-overrun-${label}.docx`);
+                writeFileSync(file, prefixed);
+                for (const mode of [{}, { quick: true }, { checks: [ID] }, { checks: ["package"] }] as const) {
+                    const result = await validate(file, { profile: "word-valid", ...mode });
+                    const tag = `${label} ${JSON.stringify(mode)}`;
+                    expect(result.valid, tag).toBe(false);
+                    expect(
+                        result.issues.some((issue) => issue.code === "package-open-failed"),
+                        tag,
+                    ).toBe(true);
+                    expect(findings(result.issues), tag).toEqual([]);
+                }
+                for (const profile of ["strict", "lenient"] as const) {
+                    const result = await validate(file, { profile });
+                    const tag = `${label} ${profile}`;
+                    expect(result.valid, tag).toBe(false);
+                    expect(errorCodes(result.issues), tag).toEqual(["package-open-failed"]);
+                    expect(findings(result.issues), tag).toEqual([]);
+                }
+                expect(readFileSync(file)).toEqual(prefixed);
+            }
+        });
+    });
+
     // A saturated local-header offset whose 0x0001 extra field carries the
     // real value is the legal ZIP64 spelling JSZip reads, not a prefix (#490).
     it("does not report a clean package whose records use the ZIP64-extra offset spelling", async () => {
