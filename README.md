@@ -1055,7 +1055,11 @@ never opened, so it cannot hang the run. A subdirectory the walk cannot list
 fails the same way, naming the directory — every stored file under it would
 otherwise vanish with it, leaving the run to judge the parts it can still see
 ([#543](https://github.com/jandira-tech/docx-validate/issues/543); the input
-directory itself is named `.`). A symlink loop — a directory link whose target
+directory itself is named `.`). A directory is no stored file entry, so it
+contributes no name to the package view: it is named only in the
+`package-extract-failed` detail, and the stored-name checks never judge a
+name no package holds
+([#573](https://github.com/jandira-tech/docx-validate/issues/573)). A symlink loop — a directory link whose target
 is already on the path into it, or a link chain that never resolves — is
 reported as `a symbolic link loop` at the link's stored name (`word/self`),
 not as a broken link under a synthetic multi-level path

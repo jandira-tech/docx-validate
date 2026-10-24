@@ -3060,6 +3060,105 @@ describe.skipIf(process.platform === "win32")("directory package staging (#374)"
         60_000,
     );
 
+    it.skipIf(runsAsRoot).each(["strict", "word-valid", "lenient"] as const)(
+        "does not judge an unreadable directory as a stored part name (%s, #573)",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                for (const name of ["docu%6Dent", "café"]) {
+                    const input = await writeDirectory(path.join(dir, `input-${name}.docx`), MINIMAL_PARTS, false);
+                    const unreadable = path.join(input, "word", name);
+                    await fs.mkdir(unreadable, { recursive: true });
+                    await fs.writeFile(path.join(unreadable, "x.xml"), "<x/>");
+                    await fs.chmod(unreadable, 0o000);
+                    let result: Awaited<ReturnType<typeof validate>>;
+                    try {
+                        result = await validateResolves(input, { profile });
+                    } finally {
+                        await fs.chmod(unreadable, 0o755);
+                    }
+                    expect(result.valid).toBe(false);
+                    // The one refusal, and no stored-name finding about a name
+                    // no package holds.
+                    expect(result.issues).toEqual([
+                        expect.objectContaining({
+                            severity: "error",
+                            code: "package-extract-failed",
+                            message: expect.stringContaining(`Cannot read word/${name}: an unreadable directory`),
+                        }),
+                    ]);
+                    expect(result.issues.map((issue) => issue.code)).not.toContain("opc-part-name-escaped-unreserved");
+                    expect(result.issues.map((issue) => issue.code)).not.toContain("opc-part-name-word-refused");
+                    expect(result.xsdWalk.started).toBe(false);
+                    expect(result.metadata?.schemaCompleted).toBe(false);
+                    expect(result.repairs).toBe(0);
+                }
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(runsAsRoot)(
+        "still judges the files under a readable directory with the same name (#573)",
+        async () => {
+            await withTempDir(async (dir) => {
+                // The control: the same stored spelling, readable, is a
+                // stored file-entry name and is judged as one.
+                const input = await writeDirectory(path.join(dir, "input.docx"), MINIMAL_PARTS, false);
+                const readable = path.join(input, "word", "docu%6Dent");
+                await fs.mkdir(readable, { recursive: true });
+                await fs.writeFile(path.join(readable, "x.xml"), "<x/>");
+                const result = await validateResolves(input, { profile: "word-valid" });
+                expect(result.issues).toEqual(
+                    expect.arrayContaining([
+                        expect.objectContaining({
+                            severity: "error",
+                            code: "opc-part-name-escaped-unreserved",
+                            path: "word/docu%6Dent/x.xml",
+                        }),
+                    ]),
+                );
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(runsAsRoot)(
+        "quick and named partial runs report the unreadable directory, never more than the full run (#573, #381)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const input = await writeDirectory(path.join(dir, "input.docx"), MINIMAL_PARTS, false);
+                const unreadable = path.join(input, "word", "café");
+                await fs.mkdir(unreadable, { recursive: true });
+                await fs.writeFile(path.join(unreadable, "x.xml"), "<x/>");
+                await fs.chmod(unreadable, 0o000);
+                try {
+                    const full = await validateResolves(input, { profile: "word-valid" });
+                    expect(full.valid).toBe(false);
+                    const errors = (result: Awaited<ReturnType<typeof validate>>) =>
+                        new Set(result.issues.filter((i) => i.severity === "error").map((i) => `${i.code}@${i.path ?? ""}`));
+                    for (const selection of [{ quick: true }, { checks: ["xml-syntax"] }, { checks: ["package"] }]) {
+                        const partial = await validateResolves(input, { profile: "word-valid", ...selection });
+                        expect(partial.valid).toBe(false);
+                        // The one refusal: a partial run judges no stored name
+                        // the unreadable directory contributed (#573).
+                        expect(partial.issues).toEqual([
+                            expect.objectContaining({
+                                severity: "error",
+                                code: "package-extract-failed",
+                                message: expect.stringContaining("Cannot read word/café: an unreadable directory"),
+                            }),
+                        ]);
+                        // #381: a partial run never reports an error the full run does not.
+                        for (const error of errors(partial)) expect(errors(full)).toContain(error);
+                    }
+                } finally {
+                    await fs.chmod(unreadable, 0o755);
+                }
+            });
+        },
+        60_000,
+    );
+
     it.skipIf(runsAsRoot)(
         "reports a failed auto-repair write-back, keeps repairing the remaining files, and leaves the read-only source untouched (#412)",
         async () => {

@@ -39,6 +39,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- An unreadable directory is no longer judged as a stored part name ([#573](https://github.com/jandira-tech/docx-validate/issues/573)). The walk's refusal entries now say what the entry is, and a directory — the input directory itself, a subdirectory the walk cannot list, or a link that resolves to a directory — contributes no stored file-entry name to the package view. It is named only in the `package-extract-failed` detail, so the stored-name checks no longer report `opc-part-name-escaped-unreserved` or `opc-part-name-word-refused` (a claim about Word's recovery of a spelling) for a name that is in no package Word would see. An unreadable file keeps its #426 stored name, and a readable directory with the same name still lets its files be judged.
+
 - Target access failures such as `EACCES` and `ELOOP` now name the system error instead of claiming the target does not exist. `ENOENT` and `ENOTDIR` keep the missing-target error; the CLI still prints one line and exits 1 ([#574](https://github.com/jandira-tech/docx-validate/issues/574)).
 
 - Direct DOCX and PPTX validators retain `validate()`'s stored-name findings beside `package-extract-failed` for both refused stored names and directory walk refusals, under every profile, and record those checks in `executedChecks` as `validate()` does ([#572](https://github.com/jandira-tech/docx-validate/issues/572)).

@@ -65,14 +65,18 @@ export function packageExtractFailedIssue(target: string, detail: string): Valid
  * `unreadableStoredEntries` (#426) names stored entries that can never yield
  * part bytes — a broken symbolic link, a FIFO. They stay in the context as
  * names without content, so the stored-names checks still see every name;
- * the run that could not read them fails before any check reads a part.
+ * the run that could not read them fails before any check reads a part. A
+ * directory is no stored file entry (#573): it contributes no name to the
+ * context, so the stored-name checks never judge a name no package holds.
  */
 export function contextFromDirectory(dir: string, unreadableStoredEntries: readonly UnreadableEntry[] = []): ValidationContext {
     const entries = walkFiles(dir).map((file) => [path.relative(dir, file).split(path.sep).join("/"), () => readFileSync(file)] as const);
     const unreadable = unreadableStoredEntries.flatMap((entry) => {
         // An unreadable directory names every stored file under it, but the
         // input directory itself names no stored entry (#543): it stays out
-        // of the context, while the run still fails on it.
+        // of the context, while the run still fails on it. A directory is no
+        // stored file entry at all (#573), so it names nothing here.
+        if (entry.kind === "directory") return [];
         const name = path.relative(dir, entry.file).split(path.sep).join("/");
         return name === "" ? [] : ([[name, "" as const]] as const);
     });

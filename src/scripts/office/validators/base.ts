@@ -1961,9 +1961,17 @@ export interface UnreadableEntry {
     /** Absolute path of the stored entry. */
     file: string;
     /** Why it cannot be read: `"a broken symbolic link"`, `"not a regular file"`,
-     * `"a symbolic link loop"`, or `"an unreadable directory (…)"` for a
-     * directory the walk cannot list (#543, #546). */
+     * `"a symbolic link loop"`, `"a symbolic link outside the input directory"`,
+     * or `"an unreadable directory (…)"` for a directory the walk cannot list
+     * (#543, #546, #576). */
     reason: string;
+    /**
+     * What the entry is. A directory names no stored file entry, so it
+     * contributes no name to the package view and the stored-name checks
+     * never judge a name no package holds (#573); a file keeps its stored
+     * name (#426).
+     */
+    kind: "file" | "directory";
 }
 
 /** The device/inode identity of a directory on the walk's current path (#546). */
@@ -2020,6 +2028,7 @@ export function walkDirectory(
             // can still see.
             unreadable.push({
                 file: current.dir,
+                kind: "directory",
                 reason: `an unreadable directory (${(err as NodeJS.ErrnoException).code ?? "error"})`,
             });
             continue;
@@ -2043,7 +2052,7 @@ export function walkDirectory(
                 let reason: string;
                 if (!listed.isSymbolicLink()) reason = `unreadable (${code ?? "error"})`;
                 else reason = code === "ELOOP" ? "a symbolic link loop" : "a broken symbolic link";
-                unreadable.push({ file: full, reason });
+                unreadable.push({ file: full, kind: "file", reason });
                 continue;
             }
             if (st.isDirectory()) {
@@ -2052,7 +2061,7 @@ export function walkDirectory(
                 // path can only be reached through a symlink loop: report the
                 // link as stored instead of re-listing the tree under it (#546).
                 if (current.ancestors.has(identity)) {
-                    unreadable.push({ file: full, reason: "a symbolic link loop" });
+                    unreadable.push({ file: full, kind: "directory", reason: "a symbolic link loop" });
                     continue;
                 }
                 const ancestors = new Set(current.ancestors);
@@ -2064,7 +2073,7 @@ export function walkDirectory(
                     files.push(full);
                 }
             } else {
-                unreadable.push({ file: full, reason: "not a regular file" });
+                unreadable.push({ file: full, kind: "file", reason: "not a regular file" });
             }
         }
     }
