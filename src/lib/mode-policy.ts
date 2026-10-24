@@ -37,7 +37,7 @@
  * complete, so it cannot be combined with partial check selection.
  */
 
-import { DEFAULT_PROFILE, type PackageFormat, type Profile } from "./types";
+import { DEFAULT_PROFILE, type PackageFormat, type Profile, type ValidationIssue } from "./types";
 
 /**
  * The groups `--quick` runs: package integrity, XML syntax, content types,
@@ -109,6 +109,14 @@ export const defaultProfileForFormat = (format: PackageFormat): Profile => (form
  */
 export const opcNameIssueSeverity = (profile: Profile, format: PackageFormat): "error" | "warning" =>
     profile === "strict" || (profile === "word-valid" && format === "docx") ? "error" : "warning";
+
+/**
+ * Promotions applied by full format validators to registry findings. A full
+ * run that cannot stage the archive must apply these too (#475). Strict
+ * rejects partial selection; the registry itself keeps this soft rule advisory.
+ */
+export const promoteFullCheckIssue = (issue: ValidationIssue, profile: Profile, format: PackageFormat): ValidationIssue =>
+    format === "docx" && profile === "strict" && issue.code === "comment-thread-paraid-missing" ? { ...issue, severity: "error" } : issue;
 
 /**
  * True when the request asks for part of the check set rather than all of it.
