@@ -1613,6 +1613,102 @@ describe("canonical paths ignore how the input root is spelled (#576, #587)", ()
     );
 });
 
+// The lexical layer judged the spellings as passed, so on a case-insensitive
+// volume an in-root target spelled as `realpath(3)` spells it — not as the
+// root is spelled — read as an escape; containment is decided by canonical
+// paths, not by spelling (#594).
+describe("containment is decided by canonical paths, not by spelling (#594)", () => {
+    /** An input root named `pkg-crt.docx` on disk holding `word/document.xml`, beside an `other.docx` holding the same part. */
+    const rootWithRespellableName = async (dir: string): Promise<string> => {
+        const root = path.join(dir, "pkg-crt.docx");
+        await fs.mkdir(path.join(root, "word"), { recursive: true });
+        await fs.writeFile(path.join(root, "word", "document.xml"), "<w/>");
+        const other = path.join(dir, "other.docx");
+        await fs.mkdir(path.join(other, "word"), { recursive: true });
+        await fs.writeFile(path.join(other, "word", "document.xml"), "<w/>");
+        return root;
+    };
+
+    it.skipIf(process.platform === "win32")(
+        "keeps an in-root target contained when it is spelled in its on-disk case under a root spelled in another case (#594)",
+        async ({ skip }) => {
+            await withTempDir(async (dir) => {
+                const root = await rootWithRespellableName(dir);
+                const respelled = await respelledRoot(root);
+                if (respelled === undefined) return skip();
+                const onDisk = path.join(root, "word", "document.xml");
+                expect(containRelationshipTarget(respelled, onDisk)).toBe(onDisk);
+                expect(containRelationshipTarget(root, onDisk)).toBe(onDisk);
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "keeps a target that is outside the root under both spellings escaped (#594)",
+        async ({ skip }) => {
+            await withTempDir(async (dir) => {
+                const root = await rootWithRespellableName(dir);
+                const respelled = await respelledRoot(root);
+                if (respelled === undefined) return skip();
+                const outside = path.join(dir, "other.docx", "word", "document.xml");
+                expect(containRelationshipTarget(respelled, outside)).toBeNull();
+                expect(containRelationshipTarget(root, outside)).toBeNull();
+            });
+        },
+        60_000,
+    );
+
+    it("keeps a lexical .. escape to a non-existent path escaped (#594)", async () => {
+        await withTempDir(async (dir) => {
+            const root = path.join(dir, "input.docx");
+            await fs.mkdir(path.join(root, "word"), { recursive: true });
+            await fs.writeFile(path.join(root, "word", "document.xml"), "<w/>");
+            expect(containRelationshipTarget(root, path.join(root, "..", "no-such-file-outside.docx"))).toBeNull();
+        });
+    }, 60_000);
+
+    it.skipIf(process.platform === "win32")(
+        "keeps a symlink inside the root pointing outward escaped (#594)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = path.join(dir, "input.docx");
+                await fs.mkdir(path.join(root, "word"), { recursive: true });
+                await fs.writeFile(path.join(root, "word", "document.xml"), "<w/>");
+                await fs.mkdir(path.join(dir, "outside"), { recursive: true });
+                await fs.writeFile(path.join(dir, "outside", "secret.txt"), "secret");
+                await fs.symlink(path.join(dir, "outside"), path.join(root, "word", "out"));
+                expect(containRelationshipTarget(root, path.join(root, "word", "out", "secret.txt"))).toBeNull();
+            });
+        },
+        60_000,
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "lets the lexical verdict decide when the root itself cannot be canonicalized, failing closed for an escape (#594)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = path.join(dir, "input.docx");
+                await fs.mkdir(path.join(root, "word"), { recursive: true });
+                await fs.writeFile(path.join(root, "word", "document.xml"), "<w/>");
+                const native = realpathSync.native;
+                const spy = vi.spyOn(realpathSync, "native").mockImplementation(((target: PathLike, options?: never) => {
+                    if (String(target) === root) throw Object.assign(new Error(`EACCES: realpath '${root}'`), { code: "EACCES" });
+                    return native(target, options);
+                }) as typeof realpathSync.native);
+                try {
+                    const inside = path.join(root, "word", "document.xml");
+                    expect(containRelationshipTarget(root, inside)).toBe(inside);
+                    expect(containRelationshipTarget(root, path.join(root, "..", "sibling.docx"))).toBeNull();
+                } finally {
+                    spy.mockRestore();
+                }
+            });
+        },
+        60_000,
+    );
+});
+
 // realpath(3) can fail where listing the directory still works; a bound that
 // cannot be computed must refuse, never let the walk run unbounded (#576).
 describe("the walk fails closed when a canonical path cannot be resolved (#576)", () => {
