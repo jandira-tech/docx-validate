@@ -133,6 +133,58 @@ describe("bytes before the ZIP archive (#464)", { timeout: 300_000 }, () => {
         });
     });
 
+    // Review AT F1 (#555): a central compressed size JSZip reads as negative
+    // — the 32-bit field 0x80000000, or a ZIP64 0x0001 extra resolving below
+    // zero — drives `readLocalPart`'s final read below zero (`checkIndex`'s
+    // `newIndex < 0` arm), so the package never opens and no prefix may be
+    // claimed for it, in full and partial runs alike.
+    it("does not report a prefix whose central compressed size reads negative (#555)", async () => {
+        await withTempDir(async (dir) => {
+            const entries = Object.entries(MINIMAL_PARTS).map(([name, content]) => ({ name, content }));
+            const cdOf = (bytes: Buffer): number => bytes.readUInt32LE(bytes.length - 22 + 16);
+            // Saturate the first record's size fields and resolve them from a
+            // 0x0001 extra: [uncompressed = the real size][compressed = 0x80000000].
+            const zip64Resolved = (bytes: Buffer): Buffer => {
+                const cd = cdOf(bytes);
+                const field = Buffer.alloc(20);
+                field.writeUInt16LE(0x0001, 0);
+                field.writeUInt16LE(16, 2);
+                field.writeBigUInt64LE(BigInt(bytes.readUInt32LE(cd + 24)), 4);
+                field.writeBigUInt64LE(0xffffffff80000000n, 12);
+                const insert = cd + 46 + bytes.readUInt16LE(cd + 28);
+                const grown = Buffer.concat([bytes.subarray(0, insert), field, bytes.subarray(insert)]);
+                grown.writeUInt32LE(0xffffffff, cd + 20);
+                grown.writeUInt32LE(0xffffffff, cd + 24);
+                grown.writeUInt16LE(grown.readUInt16LE(cd + 30) + field.length, cd + 30);
+                const eocd = grown.length - 22;
+                grown.writeUInt32LE(grown.readUInt32LE(eocd + 12) + field.length, eocd + 12);
+                return grown;
+            };
+            const base32 = buildRawZip(entries);
+            base32.writeUInt32LE(0x80000000, cdOf(base32) + 20);
+            const specimens = [
+                ["32-bit-field", base32],
+                ["zip64-resolved", zip64Resolved(buildRawZip(entries))],
+            ] as const;
+            for (const [label, specimen] of specimens) {
+                const bytes = Buffer.concat([Buffer.alloc(64, 0x41), specimen]);
+                const file = path.join(dir, `negative-compressed-${label}.docx`);
+                writeFileSync(file, bytes);
+                for (const mode of [{}, { quick: true }, { checks: [ID] }, { checks: ["package"] }] as const) {
+                    const result = await validate(file, { profile: "word-valid", ...mode });
+                    const tag = `${label} ${JSON.stringify(mode)}`;
+                    expect(result.valid, tag).toBe(false);
+                    expect(
+                        result.issues.some((issue) => issue.code === "package-open-failed"),
+                        tag,
+                    ).toBe(true);
+                    expect(findings(result.issues), tag).toEqual([]);
+                }
+                expect(readFileSync(file)).toEqual(bytes);
+            }
+        });
+    });
+
     // A saturated local-header offset whose 0x0001 extra field carries the
     // real value is the legal ZIP64 spelling JSZip reads, not a prefix (#490).
     it("does not report a clean package whose records use the ZIP64-extra offset spelling", async () => {
