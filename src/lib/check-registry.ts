@@ -25,28 +25,13 @@
 import type { PackageFormat, ValidationIssue } from "./types";
 import type { ValidationContext } from "./validation-context";
 
-/** Named groups used by `--checks` and `--list-checks`. */
-export type CheckGroup =
-    | "package"
-    | "xml"
-    | "content-types"
-    | "relationships"
-    | "tables"
-    | "drawings"
-    | "story"
-    | "comments"
-    | "tracked-changes"
-    | "math"
-    | "settings"
-    | "schema";
-
 /**
- * Every declared group name. A group with no registered check yet is still a
- * known name: resolving it selects nothing instead of raising
- * {@link UnknownCheckError}, so a preset can name a whole family (say
- * `content-types`) before its checks land in the registry.
+ * Every declared group name, used by `--checks` and `--list-checks`. A group
+ * with no registered check yet is still a known name: resolving it selects
+ * nothing instead of raising {@link UnknownCheckError}, so a preset can name a
+ * whole family (say `content-types`) before its checks land in the registry.
  */
-export const CHECK_GROUPS: readonly CheckGroup[] = [
+export const CHECK_GROUPS = [
     "package",
     "xml",
     "content-types",
@@ -59,7 +44,10 @@ export const CHECK_GROUPS: readonly CheckGroup[] = [
     "math",
     "settings",
     "schema",
-];
+] as const;
+
+/** A named check group. Derived from {@link CHECK_GROUPS}, so the list and the type cannot drift. */
+export type CheckGroup = (typeof CHECK_GROUPS)[number];
 
 export type CheckDefinition = {
     readonly id: string;
