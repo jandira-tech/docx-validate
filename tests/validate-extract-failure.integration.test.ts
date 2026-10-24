@@ -357,3 +357,128 @@ describe("portable extraction failures (#475, #476)", { timeout: 120_000 }, () =
         });
     });
 });
+
+describe("math parse diagnostics agree across validation paths (#500)", { timeout: 120_000 }, () => {
+    describe.each(["docx", "docm"] as const)("%s", (suffix) => {
+        it.each(PROFILES)("keeps the positioned parser findings under %s", async (profile) => {
+            await withTempDir(async (dir) => {
+                const findings = new Map<boolean, ValidationIssue[]>();
+                for (const unstageable of [false, true]) {
+                    const bytes = buildRawZip([
+                        ...Object.entries({ ...MINIMAL_PARTS, "word/document.xml": "<w:document" }).map(([name, content]) => ({
+                            name,
+                            content,
+                        })),
+                        ...(unstageable ? [{ name: "word", content: "file blocks word directory" }] : []),
+                    ]);
+                    const file = path.join(dir, `${unstageable}.${suffix}`);
+                    writeFileSync(file, bytes);
+                    const full = await validate(file, { profile });
+                    const tag = `${suffix} ${profile} ${unstageable}`;
+                    expect(
+                        full.issues.some((issue) => issue.code === "package-extract-failed"),
+                        tag,
+                    ).toBe(unstageable);
+                    findings.set(
+                        unstageable,
+                        full.issues.filter((issue) => issue.code?.startsWith("xml-") || issue.code === "word-math-parse"),
+                    );
+                    if (profile !== "strict") {
+                        const checks = profile === "lenient" ? ["xml-syntax"] : ["word-math-parse"];
+                        const partial = await validate(file, { profile, checks });
+                        if (full.valid) expect(partial.valid, tag).toBe(true);
+                        expect.soft(errorPairs(full.issues), tag).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
+                    }
+                    expect(readFileSync(file)).toEqual(bytes);
+                }
+                expect(findings.get(false)).toEqual([
+                    expect.objectContaining({ code: "xml-undeclared-prefix", path: "word/document.xml", severity: "error", line: 1 }),
+                    expect.objectContaining({ code: "xml-syntax", path: "word/document.xml", severity: "error", line: 1 }),
+                ]);
+                expect(findings.get(true)).toEqual(findings.get(false));
+            });
+        });
+
+        it.each(["word-valid", "lenient"] as const)("keeps valid full and partial controls valid under %s", async (profile) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, `valid.${suffix}`);
+                writeFileSync(file, buildRawZip(Object.entries(MINIMAL_PARTS).map(([name, content]) => ({ name, content }))));
+                const full = await validate(file, { profile });
+                const checks = profile === "lenient" ? ["xml-syntax"] : ["word-math-parse"];
+                const partial = await validate(file, { profile, checks });
+                expect(full.valid).toBe(true);
+                expect(partial.valid).toBe(true);
+                expect(errorPairs(full.issues)).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
+            });
+        });
+    });
+});
+
+describe("root Ignorable diagnostic identity survives staging failures (#499)", { timeout: 120_000 }, () => {
+    const document = MINIMAL_PARTS["word/document.xml"]!;
+    const specimens = [
+        { name: "root", xml: document.replace('mc:Ignorable="w14"', 'mc:Ignorable="w14 ghost"'), codes: ["ignorable-undeclared"] },
+        { name: "descendant", xml: document.replace("<w:body>", '<w:body mc:Ignorable="ghost">'), codes: ["mce-unbound-prefix"] },
+        {
+            name: "root-and-descendant",
+            xml: document.replace('mc:Ignorable="w14"', 'mc:Ignorable="w14 ghost"').replace("<w:body>", '<w:body mc:Ignorable="ghost">'),
+            codes: ["ignorable-undeclared", "mce-unbound-prefix"],
+        },
+        {
+            name: "bound-only-on-descendant",
+            xml: document
+                .replace('mc:Ignorable="w14"', 'mc:Ignorable="w14 ghost"')
+                .replace("<w:body>", '<w:body xmlns:ghost="urn:future">'),
+            codes: ["mce-unbound-prefix"],
+        },
+    ];
+    const namespaceFindings = (issues: readonly ValidationIssue[]) =>
+        issues.filter((issue) => issue.code === "ignorable-undeclared" || issue.code === "mce-unbound-prefix");
+
+    describe.each(["docx", "docm"] as const)("%s", (suffix) => {
+        describe.each(specimens)("$name", ({ name, xml, codes }) => {
+            it.each(PROFILES)("preserves namespace findings under %s", async (profile) => {
+                await withTempDir(async (dir) => {
+                    const found = new Map<boolean, ValidationIssue[]>();
+                    for (const unstageable of [false, true]) {
+                        const bytes = buildRawZip([
+                            ...Object.entries({ ...MINIMAL_PARTS, "word/document.xml": xml }).map(([name, content]) => ({ name, content })),
+                            ...(unstageable ? [{ name: "word", content: "file blocks word directory" }] : []),
+                        ]);
+                        const file = path.join(dir, `${unstageable}.${suffix}`);
+                        writeFileSync(file, bytes);
+                        const full = await validate(file, { profile });
+                        const tag = `${suffix} ${profile} ${name} ${unstageable}`;
+                        expect(
+                            full.issues.some((issue) => issue.code === "package-extract-failed"),
+                            tag,
+                        ).toBe(unstageable);
+                        found.set(unstageable, namespaceFindings(full.issues));
+                        if (profile !== "strict") {
+                            const checks = profile === "lenient" ? ["xml-syntax"] : ["word-markup-compatibility"];
+                            const partial = await validate(file, { profile, checks });
+                            if (full.valid) expect.soft(partial.valid, tag).toBe(true);
+                            expect.soft(errorPairs(full.issues), tag).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
+                            if (profile === "word-valid") {
+                                expect.soft(namespaceFindings(partial.issues), `${tag} partial`).toEqual(found.get(false));
+                            }
+                        }
+                        expect(readFileSync(file)).toEqual(bytes);
+                    }
+                    // Lenient does not run the registered Word rule in the fallback.
+                    if (profile === "lenient") return;
+                    expect(found.get(false)).toEqual(
+                        codes.map((code) =>
+                            expect.objectContaining({
+                                code,
+                                path: "word/document.xml",
+                                severity: profile === "strict" ? "error" : "warning",
+                            }),
+                        ),
+                    );
+                    expect(found.get(true)).toEqual(found.get(false));
+                });
+            });
+        });
+    });
+});

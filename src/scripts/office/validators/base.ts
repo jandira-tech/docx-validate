@@ -738,25 +738,7 @@ export class BaseSchemaValidator {
             const root = dom.documentElement;
             if (!root) continue;
 
-            const declared = collectDeclaredPrefixes(root);
-
-            const attrs = root.attributes;
-            for (let i = 0; i < attrs.length; i += 1) {
-                const attr = attrs[i];
-                if (!attr) continue;
-                if (!attr.name.endsWith("Ignorable")) continue;
-                const tokens = attr.value.split(/\s+/).filter(Boolean);
-                for (const ns of tokens) {
-                    if (!declared.has(ns)) {
-                        issues.push({
-                            severity: "error",
-                            message: `Namespace '${ns}' in Ignorable but not declared`,
-                            path: this.relPath(xmlFile),
-                            code: "ignorable-undeclared",
-                        });
-                    }
-                }
-            }
+            issues.push(...rootIgnorableIssues(root, this.relPath(xmlFile)));
         }
         return finalize(issues);
     }
@@ -2016,6 +1998,31 @@ export function collectDeclaredPrefixes(root: Element): Set<string> {
         }
     }
     return declared;
+}
+
+/** Root-prefix diagnosis shared by staged, archive-backed and partial runs (#499). */
+export function rootIgnorableIssues(root: Element, part: string): ValidationIssue[] {
+    const issues: ValidationIssue[] = [];
+    const declared = collectDeclaredPrefixes(root);
+
+    const attrs = root.attributes;
+    for (let i = 0; i < attrs.length; i += 1) {
+        const attr = attrs[i];
+        if (!attr) continue;
+        if (!attr.name.endsWith("Ignorable")) continue;
+        const tokens = attr.value.split(/\s+/).filter(Boolean);
+        for (const ns of tokens) {
+            if (!declared.has(ns)) {
+                issues.push({
+                    severity: "error",
+                    message: `Namespace '${ns}' in Ignorable but not declared`,
+                    path: part,
+                    code: "ignorable-undeclared",
+                });
+            }
+        }
+    }
+    return issues;
 }
 
 const IGNORABLE_UNDECLARED_MESSAGE = /^Namespace '(.+)' in Ignorable but not declared$/;
