@@ -904,7 +904,8 @@ session 4), beside a clean control (`f67e18fa7a50dae1`).
 
 `word-header-footer-relationship` requires every `w:headerReference` and
 `w:footerReference` in a story root's `w:sectPr` to name a relationship whose
-Type ends in `/header` or `/footer` as the reference needs. The story roots are
+Type is exactly the Transitional or the ISO Strict header (respectively
+footer) relationship URI. The story roots are
 every main document and every glossary a main-document `glossaryDocument`
 relationship reaches, and the reference resolves in that part's own
 relationships part, in either relationship namespace. Word 16.115 offers
@@ -912,12 +913,18 @@ recovery for every refused shape probed: header→footer and footer→header
 relationships in the main document's body `w:sectPr` (whether the target's
 root was `w:hdr` or `w:ftr`, typed with the other story's content type, a
 parameterized footer type, or styles), both mirrors from a reached glossary's
-`w:docPartBody` `w:sectPr`, and a `w:headerReference` naming the main
-document's own styles relationship. A matching reference and relationship
-opens clean even when the target's root element is the other story's, so the
-check judges the relationship Type alone
-([#606](https://github.com/jandira-tech/docx-validate/issues/606); session 26,
-chunks s26a/s26b/s26c, in `docs/plans/evidence/word-probes-2026-10-24.md`).
+`w:docPartBody` `w:sectPr`, a `w:headerReference` naming the main
+document's own styles relationship, and every other Type tried in place of
+the two accepted URIs — `http://example.com/header`,
+`…/relationships/custom/header`, `…/relationships/HEADER`, the URI padded
+with spaces, wrapped in tab and newline character references, and the bare
+`header`, the footer pair likewise (#613). A matching reference and
+relationship opens clean even when the target's root element is the other
+story's, so the check judges the relationship Type alone
+([#606](https://github.com/jandira-tech/docx-validate/issues/606),
+[#613](https://github.com/jandira-tech/docx-validate/issues/613); sessions 26
+and 27, chunks s26a/s26b/s26c and s27a/s27b/s27c, in
+`docs/plans/evidence/word-probes-2026-10-24.md`).
 A reference whose `r:id` names no Relationship stays `rels-id-missing`'s
 finding. The finding is an error under strict and Word-blocking under
 word-valid for DOCX/DOCM; lenient runs no Word rule. In a full word-valid or

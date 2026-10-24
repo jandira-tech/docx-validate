@@ -6,16 +6,23 @@
 /**
  * A `w:headerReference` or `w:footerReference` in the main document's body
  * `w:sectPr`, or in a reached glossary's `w:docPartBody` `w:sectPr`, whose
- * `r:id` names a relationship whose Type does not end in `/header` or
- * `/footer` as the reference needs makes Word 16.115 offer to recover the
- * file (#606; session 26, chunks s26a/s26b/s26c, in
+ * `r:id` names a relationship whose Type is not exactly the Transitional or
+ * the ISO Strict header (respectively footer) relationship URI makes Word
+ * 16.115 offer to recover the file (#606, #613; sessions 26 and 27 — chunks
+ * s26a/s26b/s26c, s27a/s27b/s27c — in
  * docs/plans/evidence/word-probes-2026-10-24.md). Word refused header→footer
  * and footer→header whether the target's root was `w:hdr` or `w:ftr` and
  * whatever its declared content type, refused both mirrors from a reached
  * glossary, and refused a reference to an unrelated type (`styles`); a
  * matching reference and relationship opens clean even when the target's
- * root element is the other story's. The relationship's type decides, so
- * this check judges the Type alone and never resolves the target.
+ * root element is the other story's. Session 27 pinned the accepted Types to
+ * exactly two per element, byte for byte: the Transitional and ISO Strict
+ * URIs below open clean, while `http://example.com/header`,
+ * `…/relationships/custom/header`, `…/relationships/HEADER`, the URI padded
+ * with spaces, the URI wrapped in tab and newline character references, and
+ * the bare `header` are all refused (the footer pair likewise). The
+ * relationship's type decides, so this check judges the Type alone and never
+ * resolves the target.
  *
  * A reference whose `r:id` names no Relationship stays `rels-id-missing`'s
  * finding. In a full word-valid or strict run each element this check
@@ -46,6 +53,17 @@ const REFERENCES: readonly { readonly localName: "headerReference" | "footerRefe
     { localName: "headerReference", expected: "header" },
     { localName: "footerReference", expected: "footer" },
 ];
+
+/**
+ * Session 27 (#613): the only relationship Types Word 16.115 accepts for each
+ * reference, byte for byte — the Transitional URI first, then its ISO Strict
+ * counterpart. Every other Type is refused, `…/custom/header`,
+ * `http://example.com/header` and `…/HEADER` included.
+ */
+const ACCEPTED_RELATIONSHIP_TYPES: Readonly<Record<"header" | "footer", readonly [string, string]>> = {
+    header: [`${OFFICE_RELATIONSHIPS_NAMESPACE}/header`, "http://purl.oclc.org/ooxml/officeDocument/relationships/header"],
+    footer: [`${OFFICE_RELATIONSHIPS_NAMESPACE}/footer`, "http://purl.oclc.org/ooxml/officeDocument/relationships/footer"],
+};
 
 /**
  * Each relationship id the part's own sidecar names, with its Type. An
@@ -122,14 +140,15 @@ export const wordHeaderFooterRelationshipCheck: CheckDefinition = {
                         if (type === undefined) {
                             continue;
                         }
-                        if (type.endsWith(`/${expected}`)) {
+                        const [transitionalType, strictType] = ACCEPTED_RELATIONSHIP_TYPES[expected];
+                        if (type === transitionalType || type === strictType) {
                             continue;
                         }
                         issues.push({
                             severity: "error",
                             message:
                                 `<w:${localName}> r:id="${rid}" names Relationship '${rid}' of Type '${type || "(none)"}'; ` +
-                                `a w:${localName} needs a Relationship whose Type ends in /${expected}. ` +
+                                `a w:${localName} needs a Relationship of Type ${transitionalType} (or the ISO Strict ${strictType}). ` +
                                 "Microsoft Word offers to recover the file. Point the r:id at such a Relationship, or retype that Relationship.",
                             path: root.part,
                             code: WORD_HEADER_FOOTER_RELATIONSHIP,

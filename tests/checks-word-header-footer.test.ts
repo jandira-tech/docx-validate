@@ -4,13 +4,16 @@
  */
 
 /**
- * `word-header-footer-relationship` (#606): a `w:headerReference` or
+ * `word-header-footer-relationship` (#606, #613): a `w:headerReference` or
  * `w:footerReference` in the main document's body sectPr, or in a reached
  * glossary's docPartBody sectPr, whose `r:id` names a relationship whose Type
- * does not end in `/header` / `/footer` makes Word 16.115 offer recovery
- * (session 26 — chunks s26a, s26b, s26c — in
- * docs/plans/evidence/word-probes-2026-10-24.md). Every specimen below copies
- * the exact shape of the session 26 builders.
+ * is not exactly the Transitional or the ISO Strict `header` (respectively
+ * `footer`) relationship URI makes Word 16.115 offer recovery (sessions 26
+ * and 27 — chunks s26a/s26b/s26c and s27a/s27b/s27c — in
+ * docs/plans/evidence/word-probes-2026-10-24.md). Every session 26 specimen
+ * below copies the exact shape of the session 26 builders; every session 27
+ * specimen takes the clean session 26 shape and replaces only the
+ * relationship Type.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -311,6 +314,173 @@ describe("word-header-footer-relationship (#606, Word 16.115 session 26)", { tim
     });
 });
 
+const STRICT_REL = "http://purl.oclc.org/ooxml/officeDocument/relationships";
+
+/**
+ * Session 27's #613 shape: the clean session 26 shape with only the
+ * relationship Type replaced. `typeSource` is written verbatim into the
+ * sidecar — character references like `&#xA;` survive attribute-value
+ * normalization — and `parsedType` is the attribute value the check reads and
+ * the finding message names.
+ */
+interface RelTypeSpecimen {
+    readonly name: string;
+    readonly reference: "headerReference" | "footerReference";
+    readonly typeSource: string;
+    readonly parsedType: string;
+}
+
+const relTypeSpecimenParts = (specimen: RelTypeSpecimen): Record<string, string> => {
+    const segment = specimen.reference === "headerReference" ? "header" : "footer";
+    const parts = storyReferenceParts(
+        specimen.reference,
+        segment,
+        `${segment}9.xml`,
+        segment === "header" ? STORY_HEADER_XML : STORY_FOOTER_XML,
+        storyContentType(segment),
+    );
+    parts["word/_rels/document.xml.rels"] = parts["word/_rels/document.xml.rels"]!.replace(
+        `Type="${REL}/${segment}"`,
+        `Type="${specimen.typeSource}"`,
+    );
+    return parts;
+};
+
+/**
+ * Session 27's #613 refused Types (repair-warning in Word 16.115): the four
+ * the old ends-in test wrongly passed, then the five it already refused.
+ */
+const REFUSED_TYPES: readonly RelTypeSpecimen[] = [
+    {
+        name: "headerref-header-rel-type-example-com",
+        reference: "headerReference",
+        typeSource: "http://example.com/header",
+        parsedType: "http://example.com/header",
+    },
+    {
+        name: "headerref-header-rel-type-custom-header",
+        reference: "headerReference",
+        typeSource: `${REL}/custom/header`,
+        parsedType: `${REL}/custom/header`,
+    },
+    {
+        name: "footerref-footer-rel-type-example-com",
+        reference: "footerReference",
+        typeSource: "http://example.com/footer",
+        parsedType: "http://example.com/footer",
+    },
+    {
+        name: "footerref-footer-rel-type-custom-footer",
+        reference: "footerReference",
+        typeSource: `${REL}/custom/footer`,
+        parsedType: `${REL}/custom/footer`,
+    },
+    {
+        name: "headerref-header-rel-type-upper",
+        reference: "headerReference",
+        typeSource: `${REL}/HEADER`,
+        parsedType: `${REL}/HEADER`,
+    },
+    {
+        name: "footerref-footer-rel-type-upper",
+        reference: "footerReference",
+        typeSource: `${REL}/FOOTER`,
+        parsedType: `${REL}/FOOTER`,
+    },
+    {
+        name: "headerref-header-rel-type-padded",
+        reference: "headerReference",
+        typeSource: ` ${REL}/header `,
+        parsedType: ` ${REL}/header `,
+    },
+    {
+        name: "headerref-header-rel-type-tab-newline",
+        reference: "headerReference",
+        typeSource: `&#x9;${REL}/header&#xA;`,
+        parsedType: `\t${REL}/header\n`,
+    },
+    {
+        name: "headerref-header-rel-type-bare",
+        reference: "headerReference",
+        typeSource: "header",
+        parsedType: "header",
+    },
+];
+
+/** Session 27's #613 controls (clean-open in Word 16.115): the only accepted Types, byte for byte. */
+const CLEAN_TYPES: readonly RelTypeSpecimen[] = [
+    {
+        name: "headerref-header-rel-type-strict-uri",
+        reference: "headerReference",
+        typeSource: `${STRICT_REL}/header`,
+        parsedType: `${STRICT_REL}/header`,
+    },
+    {
+        name: "footerref-footer-rel-type-strict-uri",
+        reference: "footerReference",
+        typeSource: `${STRICT_REL}/footer`,
+        parsedType: `${STRICT_REL}/footer`,
+    },
+    {
+        name: "headerref-header-rel-type-transitional-uri",
+        reference: "headerReference",
+        typeSource: `${REL}/header`,
+        parsedType: `${REL}/header`,
+    },
+    {
+        name: "footerref-footer-rel-type-transitional-uri",
+        reference: "footerReference",
+        typeSource: `${REL}/footer`,
+        parsedType: `${REL}/footer`,
+    },
+];
+
+describe(
+    "word-header-footer-relationship accepts exactly two Types per reference (#613, Word 16.115 session 27)",
+    { timeout: 240_000 },
+    () => {
+        describe.each(REFUSED_TYPES)("refused Type specimen %s", (specimen) => {
+            it("word-valid fails with exactly one Word-blocking error naming element, r:id and Type", async () => {
+                await withTempDir(async (dir) => {
+                    const file = path.join(dir, `${specimen.name}.docx`);
+                    writeFileSync(file, await buildDocx(relTypeSpecimenParts(specimen)));
+                    const result = await validate(file, { profile: "word-valid" });
+                    const found = result.issues.filter((issue) => issue.code === CODE);
+                    expect(result.valid).toBe(false);
+                    expect(found).toHaveLength(1);
+                    expect(found[0]?.severity).toBe("error");
+                    expect(found[0]?.path).toBe("word/document.xml");
+                    expect(found[0]?.message).toContain(`<w:${specimen.reference}>`);
+                    expect(found[0]?.message).toContain("rIdX");
+                    expect(found[0]?.message).toContain(specimen.parsedType);
+                });
+            });
+
+            it("strict reports the new code too (strict ⊇ word-valid)", async () => {
+                await withTempDir(async (dir) => {
+                    const file = path.join(dir, `${specimen.name}.docx`);
+                    writeFileSync(file, await buildDocx(relTypeSpecimenParts(specimen)));
+                    const strict = await validate(file, { profile: "strict" });
+                    expect(strict.valid).toBe(false);
+                    expect(strict.issues.some((issue) => issue.code === CODE && issue.path === "word/document.xml")).toBe(true);
+                });
+            });
+        });
+
+        describe.each(CLEAN_TYPES)("clean Type specimen %s", (specimen) => {
+            it("word-valid passes with no new finding", async () => {
+                await withTempDir(async (dir) => {
+                    const file = path.join(dir, `${specimen.name}.docx`);
+                    writeFileSync(file, await buildDocx(relTypeSpecimenParts(specimen)));
+                    const result = await validate(file, { profile: "word-valid" });
+                    expect(result.valid).toBe(true);
+                    expect(result.issues.filter((issue) => issue.code === CODE)).toEqual([]);
+                });
+            });
+        });
+    },
+);
+
 /** A package whose main document is `word/document.xml`, with the given body and sidecar relationships. */
 const mainPackage = (body: string, docRels: string): Record<string, string> => ({
     "_rels/.rels": rels(`<Relationship Id="rId1" Type="${R}/officeDocument" Target="word/document.xml"/>`),
@@ -333,7 +503,8 @@ describe("word-header-footer-relationship check runner", () => {
                 path: "word/document.xml",
                 message:
                     `<w:headerReference> r:id="rIdH" names Relationship 'rIdH' of Type '${R}/footer'; ` +
-                    "a w:headerReference needs a Relationship whose Type ends in /header. " +
+                    `a w:headerReference needs a Relationship of Type ${R}/header ` +
+                    `(or the ISO Strict ${STRICT_REL}/header). ` +
                     "Microsoft Word offers to recover the file. Point the r:id at such a Relationship, or retype that Relationship.",
             },
         ]);
@@ -533,7 +704,8 @@ describe("#612: rels-id-mismatch reports every mismatch; full runs deduplicate",
             path: part,
             message:
                 `<w:${localName}> r:id="${rid}" names Relationship '${rid}' of Type '${R}/styles'; ` +
-                `a w:${localName} needs a Relationship whose Type ends in /${localName === "headerReference" ? "header" : "footer"}. ` +
+                `a w:${localName} needs a Relationship of Type ${R}/${localName === "headerReference" ? "header" : "footer"} ` +
+                `(or the ISO Strict ${STRICT_REL}/${localName === "headerReference" ? "header" : "footer"}). ` +
                 "Microsoft Word offers to recover the file. Point the r:id at such a Relationship, or retype that Relationship.",
         });
 
