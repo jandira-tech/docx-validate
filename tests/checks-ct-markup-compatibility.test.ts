@@ -181,6 +181,29 @@ describe("ct-markup-compatibility", () => {
         expect(await diagnose(ctx)).toEqual([found("mc:Ignorable attribute on <Types>", "mc:Ignorable attribute on <Override>")]);
     });
 
+    it("lists an MC element before its own MC attribute, in document order (#526)", async () => {
+        // DOM document order puts an element before its own attributes:
+        // Node.compareDocumentPosition() reports FOLLOWING | CONTAINED_BY
+        // (20) for an attribute against the element that owns it.
+        const ctx = ValidationContext.fromEntries(
+            withContentTypes(
+                MINIMAL_PARTS,
+                `${MC_DECL} mc:Ignorable="x"`,
+                `<mc:AlternateContent><mc:Choice Requires="x" mc:MustUnderstand="x"><x:Foo/></mc:Choice><mc:Fallback/></mc:AlternateContent>`,
+            ),
+        );
+        expect(await diagnose(ctx)).toEqual([
+            found(
+                "mc:Ignorable attribute on <Types>",
+                "<mc:AlternateContent> element",
+                "<mc:Choice> element",
+                "mc:MustUnderstand attribute on <mc:Choice>",
+                'element <x:Foo> in the ignorable namespace "urn:x:unknown"',
+                "<mc:Fallback> element",
+            ),
+        ]);
+    });
+
     it("reports mc:MustUnderstand and mc:ProcessContent attributes", async () => {
         const ctx = ValidationContext.fromEntries(
             withContentTypes(MINIMAL_PARTS, `${MC_DECL} mc:MustUnderstand="x" mc:ProcessContent="x:Foo"`, ""),

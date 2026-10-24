@@ -149,18 +149,27 @@ const isPcharOrSlash = (code: number): boolean =>
     code === 0x40; /* @ */
 
 /**
- * RFC 3987 `ucschar`: the code-point ranges an IRI allows beyond ASCII
- * (`%xA0-D7FF / %xF900-FDCF / %xFDF0-FFEF` and each `%x10000-1FFFD` …
- * `%xE0000-EFFFD` block). C1 controls, the surrogate and private-use
- * blocks, and the noncharacters RFC 3987 excludes stay out.
+ * RFC 3987 §2.2 `ucschar`:
+ *
+ *     ucschar = %xA0-D7FF / %xF900-FDCF / %xFDF0-FFEF
+ *               / %x10000-1FFFD / %x20000-2FFFD / %x30000-3FFFD / %x40000-4FFFD
+ *               / %x50000-5FFFD / %x60000-6FFFD / %x70000-7FFFD / %x80000-8FFFD
+ *               / %x90000-9FFFD / %xA0000-AFFFD / %xB0000-BFFFD / %xC0000-CFFFD
+ *               / %xD0000-DFFFD / %xE1000-EFFFD
+ *
+ * The last block starts at E1000, so `U+E0000..U+E0FFF` is no `ucschar`
+ * (#522). C1 controls, the surrogate blocks, the noncharacters and the BMP
+ * private-use area stay out.
  */
 const isUcschar = (codePoint: number): boolean =>
     (codePoint >= 0xa0 && codePoint <= 0xd7ff) ||
     (codePoint >= 0xf900 && codePoint <= 0xfdcf) ||
     (codePoint >= 0xfdf0 && codePoint <= 0xffef) ||
-    // Each astral block is n0000–nFFFD for n = 1…E: within 0x10000–0xEFFFD,
-    // that is exactly a low half of at most 0xFFFD.
-    (codePoint >= 0x10000 && codePoint <= 0xefffd && codePoint % 0x10000 <= 0xfffd);
+    // Each astral block is n0000–nFFFD for n = 1…D: within 0x10000–0xDFFFD,
+    // that is exactly a low half of at most 0xFFFD. The last block is
+    // E1000–EFFFD, so it starts 0x1000 code points higher than the others.
+    (codePoint >= 0x10000 && codePoint <= 0xdfffd && codePoint % 0x10000 <= 0xfffd) ||
+    (codePoint >= 0xe1000 && codePoint <= 0xefffd);
 
 /** RFC 3987 `iunreserved`: ALPHA / DIGIT / "-" / "." / "_" / "~" / ucschar. */
 const isIunreserved = (codePoint: number): boolean => isUnreservedAscii(codePoint) || isUcschar(codePoint);
@@ -509,7 +518,9 @@ const decodeUtf8CodePoint = (bytes: readonly number[], offset: number): { codePo
  * `é`. Malformed UTF-8 escapes (a lone `%E9`, an overlong `%C0%AF`) are
  * pct-encoded octets, not encoded `iunreserved` characters, and a run that
  * decodes past a non-`iunreserved` character (`%20%C3%A9`) still encodes the
- * `é`, so the scan decodes one code point at a time.
+ * `é`, so the scan decodes one code point at a time. A malformed sequence
+ * consumes one octet and the scan resynchronizes at the next, so a valid
+ * sequence behind it (`%E9%C3%A9`) is still seen (#523).
  */
 const hasEscapedIunreservedCharacter = (name: string): boolean => {
     const bytes: number[] = [];
@@ -518,7 +529,10 @@ const hasEscapedIunreservedCharacter = (name: string): boolean => {
         while (offset < bytes.length) {
             const decoded = decodeUtf8CodePoint(bytes, offset);
             if (decoded === undefined) {
-                break;
+                // Pct-encoded octets, not an encoded character: consume one
+                // octet and decode from the next.
+                offset += 1;
+                continue;
             }
             if (isIunreserved(decoded.codePoint)) {
                 return true;

@@ -430,7 +430,16 @@ separator (OPC [M1.7]), an unreserved character (OPC [M1.8]) or — once a liter
 `/word/caf%C3%A9.xml` (a Part URI, ECMA-376 Example 9–1) are therefore valid,
 while `/word/caf%C3%A9-é.xml` is neither, and a literal non-ASCII character that
 is not `ucschar` (a C1 control, private use, a noncharacter) is in neither
-grammar ([#455](https://github.com/jandira-tech/docx-validate/issues/455)). A
+grammar ([#455](https://github.com/jandira-tech/docx-validate/issues/455)). The
+`ucschar` set is RFC 3987 §2.2's: `%xA0-D7FF`, `%xF900-FDCF`, `%xFDF0-FFEF`,
+each astral block `%x10000-1FFFD` … `%xD0000-DFFFD`, and the last one,
+`%xE1000-EFFFD` — so `U+E0000..U+E0FFF` is in neither grammar and is reported,
+while `U+E1000` and `U+EFFFD` are valid
+([#522](https://github.com/jandira-tech/docx-validate/issues/522)). A
+percent-escape run that does not decode as UTF-8 (a lone `%E9`, an overlong
+`%C0%AF`) is pct-encoded octets rather than an encoded character, and the scan
+resynchronizes at the next octet, so the `%C3%A9` behind one still encodes an
+`iunreserved` character and is reported ([#523](https://github.com/jandira-tech/docx-validate/issues/523)). A
 literal `ucschar` the grammar accepts stays refused by Word, which
 `ct-override-partname-word-refused` reports (#451). Such a PartName names no
 part, so the declaration is malformed whatever its content type. Resolution is
@@ -465,8 +474,9 @@ uses Markup Compatibility: an attribute in the MC namespace (`mc:Ignorable`,
 (`mc:AlternateContent` and its branches), or an element or attribute in a
 namespace an `mc:Ignorable` lists. A bare `xmlns:mc` declaration that nothing
 uses is not reported. The message lists every such element and attribute once
-per occurrence, in document order
-([#495](https://github.com/jandira-tech/docx-validate/issues/495)). Microsoft
+per occurrence, in document order — an element before its own attributes
+([#495](https://github.com/jandira-tech/docx-validate/issues/495),
+[#526](https://github.com/jandira-tech/docx-validate/issues/526)). Microsoft
 Word 16.115 does not process Markup
 Compatibility in this stream: it offers recovery for every shape probed — an
 `mc:Ignorable` attribute, an ignored foreign element, and an AlternateContent
