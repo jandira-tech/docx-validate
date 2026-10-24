@@ -89,6 +89,7 @@ import { propertiesParts } from "../../lib/properties-parts";
 import { CT_DUPLICATE_DECLARATION } from "../../lib/content-types";
 import { isWordBlockingIssue } from "./validators/word-blocking";
 import { explainWordError } from "./validators/word-error-explanations";
+import { loadCentralNamedArchive } from "../../lib/zip-central-names";
 
 const SUPPORTED_SUFFIXES = new Set([".docm", ".docx", ".pptx", ".xlsx"]);
 
@@ -367,7 +368,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         const envelope = runsWordPackageChecks(profile) ? await zipEnvelopeRun(buf, dispatchSuffix) : EMPTY_ENVELOPE_RUN;
         let zip: JSZip;
         try {
-            zip = await JSZip.loadAsync(buf);
+            zip = await loadCentralNamedArchive(buf);
         } catch (err) {
             // The file is not a readable OPC (zip) package: encrypted OOXML
             // (a CFB/OLE compound file), or a truncated/corrupted archive.

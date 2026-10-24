@@ -133,9 +133,59 @@ export type ZipStoredEntry = {
  * `undefined` when the envelope or directory cannot be read. The entry count
  * and declared size must match what the walk finds — a directory that lies is
  * not read at all.
+ */
+export const zipCentralDirectoryEntries = (buf: Uint8Array): readonly ZipStoredEntry[] | undefined =>
+    readCentralDirectoryView(buf)?.records.map((record) => ({ name: record.name, directory: record.directory }));
+
+/** One central-directory record's stored fields, with its raw byte spans. */
+export type ZipCentralRecord = {
+    /** The item's stored name, decoded as {@link zipCentralDirectoryEntries} does. */
+    readonly name: string;
+    /** The name's raw bytes between the fixed record header and the extra field. */
+    readonly nameBytes: Uint8Array;
+    /** The extra-field bytes stored in this record. */
+    readonly extraBytes: Uint8Array;
+    /** The comment bytes stored in this record. */
+    readonly commentBytes: Uint8Array;
+    /** The record's offset in the buffer (its signature). */
+    readonly recordOffset: number;
+    /** The local header offset as stored: relative to the archive, so add the view's `zero`. */
+    readonly localHeaderOffset: number;
+    /** The compressed size the record stores. */
+    readonly compressedSize: number;
+    /** The disk the record says the entry starts on: 0 for a one-file archive. */
+    readonly diskNumberStart: number;
+    /** A folder entry: a trailing `/` or the MS-DOS directory attribute, as JSZip marks `dir`. */
+    readonly directory: boolean;
+};
+
+/** The archive's central directory and EOCD, located and walked. */
+export type CentralDirectoryView = {
+    readonly records: readonly ZipCentralRecord[];
+    /** The end-of-central-directory record's offset. */
+    readonly eocdOffset: number;
+    /** One past the EOCD's declared comment — past the buffer when it overruns it. */
+    readonly eocdEnd: number;
+    /** Where the central directory starts in the buffer. */
+    readonly cdOffset: number;
+    /** One past the central directory. */
+    readonly cdEnd: number;
+    /**
+     * The bytes before the archive, which every stored offset is relative to:
+     * JSZip's `reader.zero`. Zero unless something was prepended.
+     */
+    readonly zero: number;
+    /** The directory was reached through ZIP64 structures. */
+    readonly zip64: boolean;
+};
+
+/**
+ * The central directory's records, in order, duplicates kept, plus the
+ * envelope positions a rewrite needs — or `undefined` under the same
+ * conditions {@link zipCentralDirectoryEntries} reports none.
  *
  * The directory is the one JSZip reads (`zipEntries.js` `readEndOfCentral`),
- * so the names describe the archive the loaded view holds (#462): the record
+ * so the records describe the archive the loaded view holds (#462): the record
  * is the last EOCD signature, and the bytes before the archive — the record's
  * offset minus where its directory says it should sit — rebase every offset
  * (`reader.zero`). A prepended archive is skipped, a fake signature behind the
@@ -144,7 +194,7 @@ export type ZipStoredEntry = {
  * last locator, its record or else the last ZIP64 record, and an expected
  * position that counts the locator and the ZIP64 record.
  */
-export const zipCentralDirectoryEntries = (buf: Uint8Array): readonly ZipStoredEntry[] | undefined => {
+export const readCentralDirectoryView = (buf: Uint8Array): CentralDirectoryView | undefined => {
     const eocd = lastSignatureOffset(buf, EOCD_SIGNATURE);
     if (eocd === undefined || eocd + EOCD_FIXED_LENGTH > buf.length) {
         return undefined;
@@ -184,11 +234,12 @@ export const zipCentralDirectoryEntries = (buf: Uint8Array): readonly ZipStoredE
         return undefined;
     }
     offset += zero;
+    const cdOffset = offset;
     const end = offset + size;
     if (end > buf.length || end > eocd) {
         return undefined;
     }
-    const entries: ZipStoredEntry[] = [];
+    const records: ZipCentralRecord[] = [];
     while (offset + CENTRAL_HEADER_FIXED_LENGTH <= end) {
         if (!hasSignature(buf, offset, CENTRAL_DIRECTORY_SIGNATURE)) {
             return undefined;
@@ -198,18 +249,38 @@ export const zipCentralDirectoryEntries = (buf: Uint8Array): readonly ZipStoredE
         const extraLength = readU16(buf, offset + 30);
         const commentLength = readU16(buf, offset + 32);
         const attributes = readU32(buf, offset + 38);
-        const nameEnd = offset + CENTRAL_HEADER_FIXED_LENGTH + nameLength;
-        if (nameEnd > end) {
+        const nameStart = offset + CENTRAL_HEADER_FIXED_LENGTH;
+        const nameEnd = nameStart + nameLength;
+        const recordEnd = nameEnd + extraLength + commentLength;
+        if (recordEnd > end) {
             return undefined;
         }
-        const name = decodeName(buf, offset + CENTRAL_HEADER_FIXED_LENGTH, nameLength, flags);
-        // A folder entry ends in `/` or sets the MS-DOS directory bit, as
-        // JSZip marks `dir`.
-        entries.push({ name, directory: name.endsWith("/") || attributes % 0x20 >= DOS_DIRECTORY_ATTRIBUTE });
-        offset = nameEnd + extraLength + commentLength;
+        const name = decodeName(buf, nameStart, nameLength, flags);
+        records.push({
+            name,
+            nameBytes: buf.subarray(nameStart, nameEnd),
+            extraBytes: buf.subarray(nameEnd, nameEnd + extraLength),
+            commentBytes: buf.subarray(nameEnd + extraLength, recordEnd),
+            recordOffset: offset,
+            localHeaderOffset: readU32(buf, offset + 42),
+            compressedSize: readU32(buf, offset + 20),
+            diskNumberStart: readU16(buf, offset + 34),
+            // A folder entry ends in `/` or sets the MS-DOS directory bit, as
+            // JSZip marks `dir`.
+            directory: name.endsWith("/") || attributes % 0x20 >= DOS_DIRECTORY_ATTRIBUTE,
+        });
+        offset = recordEnd;
     }
-    if (offset !== end || entries.length !== count) {
+    if (offset !== end || records.length !== count) {
         return undefined;
     }
-    return entries;
+    return {
+        records,
+        eocdOffset: eocd,
+        eocdEnd: eocd + EOCD_FIXED_LENGTH + readU16(buf, eocd + 20),
+        cdOffset,
+        cdEnd: end,
+        zero,
+        zip64,
+    };
 };

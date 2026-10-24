@@ -26,11 +26,36 @@ const crc32 = (data: Uint8Array): number => {
     return (c ^ 0xffffffff) >>> 0;
 };
 
+/**
+ * The Info-ZIP unicode-path extra field (0x7075): version 1, the CRC-32 of
+ * the local header's name bytes, then the UTF-8 unicode name. JSZip honours
+ * the central record's field when its CRC matches the local name it read, and
+ * prefers it over that name; Word ignores it (#445).
+ */
+const unicodePathField = (localNameBytes: Uint8Array, unicodeName: string): Uint8Array => {
+    const name = encoder.encode(unicodeName);
+    const field = Buffer.alloc(9 + name.length);
+    field.writeUInt16LE(0x7075, 0);
+    field.writeUInt16LE(5 + name.length, 2);
+    field.writeUInt8(1, 4);
+    field.writeUInt32LE(crc32(localNameBytes), 5);
+    name.forEach((byte, i) => {
+        field.writeUInt8(byte, 9 + i);
+    });
+    return field;
+};
+
 export interface RawZipEntry {
-    /** The item name, stored verbatim (UTF-8 encoded, or `nameBytes` raw). */
+    /** The item's central-directory name, stored verbatim (UTF-8 encoded, or `nameBytes` raw). */
     readonly name: string;
     /** Overrides the UTF-8 encoding of `name`, e.g. for CP437 specimens. */
     readonly nameBytes?: Uint8Array;
+    /** Local-header name; defaults to the central name. Real archivers can store a different name here, and Word reads only the central one (#445). */
+    readonly localName?: string;
+    /** Overrides the UTF-8 encoding of `localName`. */
+    readonly localNameBytes?: Uint8Array;
+    /** Writes an Info-ZIP unicode-path extra field (0x7075) naming this unicode path, in both the local and the central record. */
+    readonly unicodePath?: string;
     readonly content?: string | Uint8Array;
     /** Set general-purpose bit 11, marking `name` as UTF-8. */
     readonly utf8?: boolean;
@@ -52,10 +77,12 @@ export const buildRawZip = (entries: readonly RawZipEntry[], options: { readonly
     let offset = 0;
     for (const entry of entries) {
         const nameBytes = entry.nameBytes ?? encoder.encode(entry.name);
+        const localNameBytes = entry.localNameBytes ?? (entry.localName !== undefined ? encoder.encode(entry.localName) : nameBytes);
         const data = typeof entry.content === "string" ? encoder.encode(entry.content) : (entry.content ?? new Uint8Array());
         const crc = crc32(data);
         const flags = entry.utf8 === true ? 0x0800 : 0;
         const attributes = entry.directory === true ? 0x10 : 0;
+        const unicodePath = entry.unicodePath === undefined ? new Uint8Array() : unicodePathField(localNameBytes, entry.unicodePath);
 
         const lh = Buffer.alloc(30);
         lh.writeUInt32LE(0x04034b50, 0);
@@ -64,8 +91,9 @@ export const buildRawZip = (entries: readonly RawZipEntry[], options: { readonly
         lh.writeUInt32LE(crc, 14);
         lh.writeUInt32LE(data.length, 18);
         lh.writeUInt32LE(data.length, 22);
-        lh.writeUInt16LE(nameBytes.length, 26);
-        local.push(lh, Buffer.from(nameBytes), Buffer.from(data));
+        lh.writeUInt16LE(localNameBytes.length, 26);
+        lh.writeUInt16LE(unicodePath.length, 28);
+        local.push(lh, Buffer.from(localNameBytes), Buffer.from(unicodePath), Buffer.from(data));
 
         const ch = Buffer.alloc(46);
         ch.writeUInt32LE(0x02014b50, 0);
@@ -76,11 +104,12 @@ export const buildRawZip = (entries: readonly RawZipEntry[], options: { readonly
         ch.writeUInt32LE(data.length, 20);
         ch.writeUInt32LE(data.length, 24);
         ch.writeUInt16LE(nameBytes.length, 28);
+        ch.writeUInt16LE(unicodePath.length, 30);
         ch.writeUInt32LE(attributes, 38);
         ch.writeUInt32LE(offset, 42);
-        central.push(ch, Buffer.from(nameBytes));
+        central.push(ch, Buffer.from(nameBytes), Buffer.from(unicodePath));
 
-        offset += 30 + nameBytes.length + data.length;
+        offset += 30 + localNameBytes.length + unicodePath.length + data.length;
     }
     const cd = Buffer.concat(central);
     const zip64 = options.zip64 === true;

@@ -27,12 +27,13 @@
  * pass lazy loaders (see `scripts/office/package-context.ts`).
  */
 
-import JSZip from "jszip";
+import type JSZip from "jszip";
 
 import { applyMarkupCompatibility, WORD_UNDERSTOOD_NAMESPACES } from "./markup-compatibility";
 import { zipCentralDirectoryEntries } from "./zip-central-directory";
 import type { ValidationIssue } from "./types";
 import { decodeXmlBytes, parseXml } from "./xml-helpers";
+import { loadCentralNamedArchive } from "./zip-central-names";
 
 /** Where the package came from. Archive-only checks need `"archive"`. */
 export type PackageSource = "archive" | "directory" | "memory";
@@ -228,7 +229,7 @@ export class ValidationContext {
      * archives extraction refuses, so callers report the same failure.
      */
     public static async fromArchive(bytes: Uint8Array): Promise<ValidationContext> {
-        const zip = await JSZip.loadAsync(bytes);
+        const zip = await loadCentralNamedArchive(bytes);
         // The stored names survive a refused package view, so the checks that
         // need only them can run on the thrown error's copy (#420).
         let stored: readonly string[] = [];

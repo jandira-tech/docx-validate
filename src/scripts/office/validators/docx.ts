@@ -46,7 +46,6 @@
  * see `lib/xml-helpers.ts` for the convention.
  */
 
-import { default as JSZip } from "jszip";
 import { promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
 import { isRelationshipsPartName, resolvePartName } from "../../../lib/content-types";
@@ -78,6 +77,7 @@ import type { ValidationContext } from "../../../lib/validation-context";
 import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "../checks/index";
 import { contextFromDirectory } from "../package-context";
 import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
+import { loadCentralNamedArchive } from "../../../lib/zip-central-names";
 
 export { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
 /** OpenXmlPowerTools DocumentBuilder Insert — `PtOpenXml.ptOpenXml` in PtOpenXmlUtil.cs */
@@ -1336,7 +1336,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         }
         try {
             const buf = await fs.readFile(this.originalFile);
-            const zip = await JSZip.loadAsync(buf);
+            const zip = await loadCentralNamedArchive(buf);
             const entry = zip.file("word/document.xml");
             if (!entry) {
                 this.originalDocumentRootFailed = true;
