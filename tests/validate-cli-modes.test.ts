@@ -25,6 +25,7 @@ import { ModeConflictError } from "../src/lib/mode-policy";
 import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
 import { runValidateFromArgv, validate, type ValidateOptions } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+import { buildPptx, MINIMAL_PPTX_PARTS } from "./support/minimal-pptx";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const BROKEN = path.join(HERE, "fixtures", "broken");
@@ -64,6 +65,70 @@ const controlDocx = async (dir: string): Promise<string> => {
     return file;
 };
 
+/**
+ * A PPTX whose only defect is a UUID-shaped shape id with non-hex characters.
+ * The PPTX validator's own rules reject it; no registered check covers it.
+ */
+const uuidDefectPptx = async (dir: string): Promise<string> => {
+    const slide = MINIMAL_PPTX_PARTS["ppt/slides/slide1.xml"];
+    const broken = slide.replace('<p:cNvPr id="1" name=""/>', '<p:cNvPr id="zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz" name=""/>');
+    expect(broken).not.toBe(slide);
+    const file = path.join(dir, "deck.pptx");
+    writeFileSync(file, await buildPptx({ ...MINIMAL_PPTX_PARTS, "ppt/slides/slide1.xml": broken }));
+    return file;
+};
+
+describe("validate CLI: a partial run that omits no registered check (#339)", { timeout: 120_000 }, () => {
+    it("keeps the complete-pass line for a full run of a clean deck", async () => {
+        const run = await withTempDir(async (dir) => {
+            const file = path.join(dir, "deck.pptx");
+            writeFileSync(file, await buildPptx());
+            return capture([file]);
+        });
+
+        expect(run.stderr).toBe("");
+        expect(run.stdout).toContain("All validations PASSED!");
+        expect(run.code).toBe(0);
+    });
+
+    it("rejects the defect in a full run", async () => {
+        const run = await withTempDir(async (dir) => capture([await uuidDefectPptx(dir)]));
+
+        expect(run.stderr).toContain("zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
+        expect(run.code).toBe(1);
+    });
+
+    // The PPTX registry holds only the envelope and XML syntax checks, so a
+    // partial run omits no registered id while skipping the PPTX validator's
+    // own rules and the schema walk: it must still not claim a complete pass.
+    // The PPTX validator walks its schemas under word-valid too, so a partial
+    // run under it skips that walk as well (#341).
+    it.each([[["--quick"]], [["--checks", "package,xml"]], [["--quick", "--profile", "word-valid"]]])(
+        "%j says only the selected checks passed",
+        async (args) => {
+            const run = await withTempDir(async (dir) => capture([await uuidDefectPptx(dir), ...args]));
+
+            expect(run.stdout).toContain("Selected checks passed");
+            expect(run.stdout).not.toMatch(/all validations pass/i);
+            expect(run.stdout).toContain("Also not run: the PPTX validator's own rules and its schema walk.");
+            expect(run.code).toBe(0);
+        },
+    );
+
+    it("names no format validator for a format that has none", async () => {
+        const run = await withTempDir(async (dir) => {
+            const file = path.join(dir, "book.xlsx");
+            writeFileSync(file, await buildDocx({ "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"] }));
+            return capture([file, "--quick"]);
+        });
+
+        expect(run.stdout).toContain("Selected checks passed");
+        expect(run.stdout).not.toMatch(/all validations pass/i);
+        expect(run.stdout).toContain("Also not run: everything outside the selected checks.");
+        expect(run.code).toBe(0);
+    });
+});
+
 describe("validate CLI: quick mode output", { timeout: 120_000 }, () => {
     it("names the omitted checks and never claims every validation passed", async () => {
         const run = await withTempDir(async (dir) => capture([await controlDocx(dir), "--quick"]));
@@ -73,6 +138,16 @@ describe("validate CLI: quick mode output", { timeout: 120_000 }, () => {
         expect(run.stdout).toMatch(/omitted/i);
         // A quick run must say which checks it left out, by id.
         expect(run.stdout).toContain("word-shading-color");
+        // Word-valid walks no schema, so only the validator's own rules are left out (#339).
+        expect(run.stdout).toContain("Also not run: the DOCX validator's own rules.\n");
+        expect(run.code).toBe(0);
+    });
+
+    it("discloses the skipped schema walk under a profile that walks schemas (#339)", async () => {
+        const run = await withTempDir(async (dir) => capture([await controlDocx(dir), "--quick", "--profile", "lenient"]));
+
+        expect(run.stdout).toContain("Selected checks passed");
+        expect(run.stdout).toContain("Also not run: the DOCX validator's own rules and its schema walk.");
         expect(run.code).toBe(0);
     });
 
@@ -184,6 +259,43 @@ describe("validate CLI: rejected invocations", { timeout: 120_000 }, () => {
             expect(run.code).toBe(0);
             expect(run.stdout).toContain("All validations PASSED!");
             expect(run.stderr).toBe("");
+        } finally {
+            probe.mockRestore();
+        }
+    });
+
+    it("probes the XSD engine for a word-valid PPTX run, which walks schemas (#341)", async () => {
+        const probe = vi
+            .spyOn(BaseSchemaValidator, "assertXsdValidationAvailable")
+            .mockRejectedValue(new Error("XSD engine unavailable (libxml2-wasm): boom"));
+        try {
+            const run = await withTempDir(async (dir) => {
+                const file = path.join(dir, "deck.pptx");
+                writeFileSync(file, await buildPptx());
+                return capture([file, "--profile", "word-valid"]);
+            });
+            expect(run.code).toBe(1);
+            expect(run.stderr.trim()).toBe("XSD engine unavailable (libxml2-wasm): boom");
+        } finally {
+            probe.mockRestore();
+        }
+    });
+
+    it("never probes the XSD engine for an XLSX run, which compiles no schema (#341)", async () => {
+        const probe = vi
+            .spyOn(BaseSchemaValidator, "assertXsdValidationAvailable")
+            .mockRejectedValue(new Error("XSD engine unavailable (libxml2-wasm): boom"));
+        try {
+            const run = await withTempDir(async (dir) => {
+                const file = path.join(dir, "book.xlsx");
+                writeFileSync(file, await buildDocx({ "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"] }));
+                return capture([file]);
+            });
+            expect(probe).not.toHaveBeenCalled();
+            // The run itself still answers: no validator exists for the format.
+            expect(run.stderr).toContain("Unsupported file type: .xlsx");
+            expect(run.stderr).not.toContain("XSD engine unavailable");
+            expect(run.code).toBe(1);
         } finally {
             probe.mockRestore();
         }
