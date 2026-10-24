@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, promises as fsPromises, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import JSZip from "jszip";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
 import { extractPackageParts, resolveSafeZipEntry } from "../src/lib/zip-path";
@@ -147,6 +147,35 @@ describe("extractPackageParts", () => {
         });
     });
 
+    it("walks its output with no readdir feature newer than Node 20.0", async () => {
+        // `recursive` arrived in Node 20.1 and `Dirent.parentPath` in 20.12;
+        // the package supports Node 20 (CodeRabbit on #379).
+        const readdir = fsPromises.readdir.bind(fsPromises);
+        const spy = vi.spyOn(fsPromises, "readdir").mockImplementation((async (dir: string, options?: { recursive?: boolean }) => {
+            if (options?.recursive === true) {
+                throw new Error("readdir: recursive needs Node 20.1");
+            }
+            const entries = await readdir(dir, { withFileTypes: true });
+            return entries.map((entry) => Object.defineProperty(entry, "parentPath", { value: undefined }));
+        }) as unknown as typeof fsPromises.readdir);
+        try {
+            await withTempDir(async (dir) => {
+                const out = path.join(dir, "out");
+                await extractPackageParts(
+                    await zipOf([
+                        ["word/document.xml", "<d/>"],
+                        ["word/_rels/document.xml.rels", "<r/>"],
+                    ]),
+                    out,
+                );
+                expect(readFileSync(path.join(out, "word", "_rels", "document.xml.rels"), "utf8")).toBe("<r/>");
+            });
+            expect(spy).toHaveBeenCalled();
+        } finally {
+            spy.mockRestore();
+        }
+    });
+
     it("passes on any other write failure unchanged", async () => {
         await withTempDir(async (dir) => {
             // No common filesystem takes a 300-character file name.
@@ -156,18 +185,39 @@ describe("extractPackageParts", () => {
         });
     });
 
-    it("writes parts whose folders differ only in case (#373)", async () => {
+    it.each([
+        ["case", "word", "WORD"],
+        ["Unicode normalization", "caf\u00e9", "cafe\u0301"],
+    ])("never renames a part through a folder this filesystem folds (%s, #376)", async (_relation, first, second) => {
         await withTempDir(async (dir) => {
             const out = path.join(dir, "out");
-            await extractPackageParts(
+            const merges = holdsAsOne(dir, first, second);
+            const extraction = extractPackageParts(
                 await zipOf([
-                    ["word/document.xml", "<d/>"],
-                    ["WORD/styles.xml", "<s/>"],
+                    [`${first}/a.xml`, "<a/>"],
+                    [`${second}/b.xml`, "<b/>"],
                 ]),
                 out,
             );
-            expect(readFileSync(path.join(out, "WORD", "styles.xml"), "utf8")).toBe("<s/>");
-            expect(readFileSync(path.join(out, "word", "document.xml"), "utf8")).toBe("<d/>");
+            if (merges) {
+                await expect(extraction).rejects.toThrow(/under another name/);
+            } else {
+                await extraction;
+                expect(filesUnder(out)).toEqual([`${first}/a.xml`, `${second}/b.xml`].sort());
+            }
         });
     });
+
+    it.each(["/../word/document.xml", "./word/x.xml", "word/./x.xml", "word//x.xml", "docProps\\nested\\..\\custom.xml"])(
+        "refuses the stored item name %j, which JSZip or extraction would rename (#378)",
+        async (name) => {
+            await withTempDir(async (dir) => {
+                const zip = await zipOf([
+                    ["word/styles.xml", "<s/>"],
+                    [name, "<x/>"],
+                ]);
+                await expect(extractPackageParts(zip, path.join(dir, "out"))).rejects.toThrow(/names no package part/);
+            });
+        },
+    );
 });
