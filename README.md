@@ -618,6 +618,11 @@ Root validation, the processor, and the schema walk use these stable codes:
 | `mce-main-root-ignored`       | The required main document root disappears from the schema view. Error in lenient/strict; the Word view reports `word-document-root` for a missing main root.                             |
 | `mce-extension-not-ignorable` | Office extension attributes lack an Ignorable declaration and are removed from the schema view. Warning from schema preprocessing; not emitted by the full Word-valid path.               |
 
+Under Word-valid and strict, full DOCX/DOCM runs retain root Ignorable findings
+once as `ignorable-undeclared` even when staging fails. Named Word-valid runs
+share that identity, severity and count. Descendant-only findings keep
+`mce-unbound-prefix` ([#499](https://github.com/jandira-tech/docx-validate/issues/499)).
+
 Strict bundles both Transitional and ISO Strict schema trees, with local Dublin
 Core imports. Strict does not subtract errors shared with `original` or suppress
 messages in `IGNORED_VALIDATION_ERRORS`; only lenient retains those XSD behaviors.

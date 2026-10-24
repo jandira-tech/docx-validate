@@ -33,6 +33,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Preserve root `mc:Ignorable` namespace findings as `ignorable-undeclared` in DOCX/DOCM named runs and staging-failure fallback, with the full run's severity and count. Descendant-only `mce-unbound-prefix` findings retain their identity ([#499](https://github.com/jandira-tech/docx-validate/issues/499)).
+
 - Suppress consequential `word-math-parse` findings in named DOCX/DOCM runs and full runs whose archive cannot be staged, preserving the full validator's positioned XML diagnostics ([#500](https://github.com/jandira-tech/docx-validate/issues/500)).
 
 - The `--original` baseline archive is read from disk and loaded once per validator instead of once per XSD-failed part: `BaseSchemaValidator` memoizes the read bytes' `loadCentralNamedArchive` result, and the DOCX original-document root shares it. A failed read still yields the empty error set and a load JSZip refuses still rejects — the shared rejection replays it to every part, so baseline-subtracted findings are unchanged ([#481](https://github.com/jandira-tech/docx-validate/issues/481)).

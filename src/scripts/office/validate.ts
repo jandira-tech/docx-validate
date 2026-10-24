@@ -83,7 +83,7 @@ import { CT_OVERRIDE_PARTNAME_INVALID } from "./checks/ct-override-partname";
 import { CT_MARKUP_COMPATIBILITY } from "./checks/ct-markup-compatibility";
 import { WORD_PART_CONTENT_TYPE_GENERIC } from "./checks/word-part-content-type-generic";
 import { contextFromArchive, contextFromDirectory } from "./package-context";
-import { BaseSchemaValidator, walkFiles } from "./validators/base";
+import { BaseSchemaValidator, rootIgnorableIssues, walkFiles, withoutRestatedIgnorablePrefixes } from "./validators/base";
 import { DOCXSchemaValidator } from "./validators/docx";
 import { buildRepairPlanIssues, collectDocxSemanticInventory, compareDocxSemanticInventories } from "./validators/docx-diagnostics";
 import { PPTXSchemaValidator } from "./validators/pptx";
@@ -602,7 +602,22 @@ function findingsUnderProfile(
     profile: Profile,
     properties: ReadonlySet<string>,
     wordRead: ReadonlySet<string> = new Set(),
+    context?: ValidationContext,
 ): ValidationIssue[] {
+    // Full DOCX validation diagnoses root Ignorable prefixes before dropping
+    // their MC restatements. Apply those same two steps only when the selected
+    // Word compatibility check ran; descendant-only findings remain distinct (#499).
+    const outcomes = run.outcomes.map((outcome) => {
+        if (outcome.id !== "word-markup-compatibility" || !context || !run.executed.includes(outcome.id)) return outcome;
+        const roots = context.partNames
+            .filter((name) => /^word\/.+\.xml$/i.test(name))
+            .flatMap((name) => {
+                const parsed = context.xml(name);
+                const root = parsed?.ok ? parsed.document.documentElement : undefined;
+                return root ? rootIgnorableIssues(root, name) : [];
+            });
+        return { ...outcome, issues: withoutRestatedIgnorablePrefixes({ valid: run.valid, issues: [...roots, ...outcome.issues] }).issues };
+    });
     // Equivalent names, escaped unreserved characters, escaped separators and
     // malformed Override PartNames are Word-blocking for DOCX/DOCM (#351, #408,
     // #436, #414), and so are two entries under the identical spelling, for
@@ -616,8 +631,8 @@ function findingsUnderProfile(
             : issue.code !== undefined && ADVISORY_CODES.has(issue.code) && opcNameIssueSeverity(profile, format) === "warning"
               ? { ...issue, severity: "warning" }
               : promoteFullCheckIssue(issue, profile, format);
-    if (profile !== "word-valid" || format !== "docx") return run.issues.map(advisory);
-    return run.outcomes
+    if (profile !== "word-valid" || format !== "docx") return outcomes.flatMap((outcome) => outcome.issues).map(advisory);
+    return outcomes
         .flatMap((outcome) =>
             registry.get(outcome.id)?.archiveOnly === true
                 ? outcome.issues
@@ -688,6 +703,7 @@ async function archiveFindings(
             profile,
             properties,
             read,
+            opened.context,
         );
         return { issues, executed: [...run.executed] };
     } catch {
@@ -813,6 +829,7 @@ async function runSelectedChecks(
         mode.profile,
         properties,
         read,
+        opened.context,
     );
     return {
         valid: issues.every((issue) => issue.severity !== "error"),
