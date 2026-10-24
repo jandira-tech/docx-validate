@@ -77,7 +77,19 @@ describe("isWordBlockingIssue", () => {
 
     it.each([
         ["word/document.xml", true],
+        // OPC part names compare ASCII case-insensitively, with escapes of
+        // unreserved characters decoded: these all name a part under word/ (#392).
+        ["WORD/document.xml", true],
+        ["Word/Comments.XML", true],
+        ["%77ord/document.xml", true],
+        ["wordy/document.xml", false],
+        ["DOCPROPS/APP.XML", false],
         ["[Content_Types].xml", true],
+        // The content-types stream is a ZIP item, matched as System.IO.Packaging
+        // matches it: ASCII case-insensitively, with no escape decoding (review Q).
+        ["[CONTENT_TYPES].XML", true],
+        ["[content_types].xml", true],
+        ["%5BContent_Types%5D.xml", false],
         ["docProps/app.xml", false],
         [undefined, false],
     ] as const)("judges xml-syntax and xml-undeclared-prefix in %s as blocking: %s", (path, blocking) => {
