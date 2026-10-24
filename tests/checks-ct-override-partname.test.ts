@@ -22,9 +22,11 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { parseContentTypes, resolveContentType } from "../src/lib/content-types";
 import { withTempDir } from "../src/lib/run-cli";
 import type { ValidationIssue } from "../src/lib/types";
 import { ValidationContext } from "../src/lib/validation-context";
+import { parseXml } from "../src/lib/xml-helpers";
 import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
 import { validate } from "../src/scripts/office/validate";
 import { isWordBlockingIssue } from "../src/scripts/office/validators/word-blocking";
@@ -201,6 +203,25 @@ describe("ct-override-partname-invalid", () => {
         expect(trailingDot).toBeDefined();
         expect(isWordBlockingIssue(folderDot!, new Set())).toBe(false);
         expect(isWordBlockingIssue(trailingDot!, new Set())).toBe(true);
+    });
+
+    it("leaves resolution unchanged: a malformed PartName can still resolve a stored part (#457)", async () => {
+        // The finding is reported, but content types are still keyed by the
+        // canonical spelling, which supplies the leading slash.
+        const parts = {
+            ...MINIMAL_PARTS,
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                'PartName="/word/document.xml"',
+                'PartName="word/document.xml"',
+            ),
+        };
+        expect(await diagnose(ValidationContext.fromEntries(parts))).toEqual([
+            expected("word/document.xml", "must start with '/'", "error"),
+        ]);
+        expect(resolveContentType(parseContentTypes(parseXml(parts["[Content_Types].xml"])), "word/document.xml")).toEqual({
+            contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml",
+            source: "override",
+        });
     });
 
     it("judges a finding by the rule it breaks, not by the PartName it quotes", async () => {
@@ -412,7 +433,7 @@ describe.each(["docx", "docm"] as const)("ct-override-partname-invalid in a %s p
         });
     });
 
-    it("does not resolve a malformed PartName onto a stored part", async () => {
+    it("does not resolve a PartName with a dot segment onto a stored part", async () => {
         // "/word/../word/document.xml" resolves to the stored main document
         // part under dot-segment resolution, but a malformed part name names
         // no part: the stored part keeps its own Override (#414).

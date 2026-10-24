@@ -18,8 +18,9 @@ export const CT_OVERRIDE_PARTNAME_INVALID = "ct-override-partname-invalid";
 /**
  * Report every `Override` whose `PartName` is not a valid OPC part name
  * (ECMA-376 Part 2 §6.2.2.2). Such a PartName names no part, so the
- * declaration is malformed whatever its content type, and the resolution is
- * left untouched: the PartName is never mapped onto a stored part.
+ * declaration is malformed whatever its content type. Resolution is unchanged:
+ * `parseContentTypes` still keys each PartName by its canonical spelling, so a
+ * malformed one can still resolve a stored part (#457).
  * System.IO.Packaging is no reference here: `GetNormalizedPartUri` (.NET 10)
  * accepts an empty segment, `%2F`, a segment ending with `.`, `[` and `]`.
  *

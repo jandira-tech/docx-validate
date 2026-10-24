@@ -265,8 +265,8 @@ The complete named check catalogue is below. Each Word check except
 `zip-bytes-after-eocd`, `zip-eocd-comment-overrun`, `opc-equivalent-part-names`,
 `opc-part-name-escaped-unreserved`, and `opc-part-name-escaped-slash`; `xml-syntax` is the shared
 XML prerequisite. All `word-*` checks apply to DOCX/DOCM only.
-`ct-override-partname-invalid` is the one content-types check that applies to
-every package format.
+`ct-duplicate-declaration` and `ct-override-partname-invalid` apply to every
+package format; `word-content-type-invalid` applies to DOCX/DOCM only.
 
 `opc-equivalent-part-names` applies to DOCX/DOCM, PPTX, and XLSX package selections,
 including the `package` quick group. It reads stored ZIP item names before full-run
@@ -334,8 +334,12 @@ with `/`, holds an empty, a `.`/`..` or a dot-only (`...`) segment, ends with
 `/` or `.`, has a folder segment ending with `.`, carries a `?`, a `#` or a `\`, percent-encodes a
 separator (OPC [M1.7]) or an unreserved character (OPC [M1.8]), or holds a
 character outside the RFC 3986 `pchar` set. Such a PartName names no part, so
-the declaration is malformed whatever its content type, and the resolution is
-left untouched: the PartName is never mapped onto a stored part. One finding is
+the declaration is malformed whatever its content type. Resolution is
+unchanged: content types are still resolved through the canonical spelling, so
+a malformed PartName can still resolve a stored part, as `word/document.xml`
+without its leading slash resolves the main document, while a PartName with a
+dot segment resolves nothing
+([#457](https://github.com/jandira-tech/docx-validate/issues/457)). One finding is
 reported per offending Override, at the stored content-types stream, quoting
 the PartName and naming the rule it breaks; a folder segment ending with `.` is
 named only when no other rule is broken. An `Override` without a `PartName` is
