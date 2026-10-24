@@ -19,7 +19,7 @@
  * Later filesystem failures still merge readable archive findings (#454).
  */
 
-import { chmodSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import { describe, expect, it, vi } from "vitest";
@@ -123,6 +123,47 @@ describe.skipIf(process.platform === "win32")("direct validators return director
             },
             60_000,
         );
+
+        describe.each([
+            ["dangling symlink", "Cannot read word/dangling.xml: a broken symbolic link"],
+            ["unreadable subdirectory", "Cannot read customXml: an unreadable directory (EACCES)"],
+            ["symlink loop", "Cannot read word/self: a symbolic link loop"],
+        ])("%s (#557)", (defect, detail) => {
+            it.skipIf(defect === "unreadable subdirectory" && process.getuid?.() === 0).each(PROFILES)(
+                "returns exactly the wrapper's issues before checks under %s",
+                async (profile) => {
+                    await withTempDir(async (dir) => {
+                        const root = path.join(dir, `input.${suffix}`);
+                        for (const [name, content] of Object.entries(MINIMAL_PARTS)) {
+                            mkdirSync(path.dirname(path.join(root, name)), { recursive: true });
+                            writeFileSync(path.join(root, name), content);
+                        }
+                        const customXml = path.join(root, "customXml");
+                        if (defect === "dangling symlink") symlinkSync("nowhere.xml", path.join(root, "word/dangling.xml"));
+                        else if (defect === "symlink loop") symlinkSync(".", path.join(root, "word/self"));
+                        else {
+                            mkdirSync(customXml);
+                            writeFileSync(path.join(customXml, "item.xml"), "<x/>");
+                            chmodSync(customXml, 0o000);
+                        }
+                        try {
+                            const full = await validate(root, { profile });
+                            expect(full.valid).toBe(false);
+                            expect(full.issues).toEqual([
+                                { code: "package-extract-failed", severity: "error", message: `Cannot extract ${root}: ${detail}` },
+                            ]);
+                            const direct = new Validator({ unpackedDir: root, profile });
+                            await expect(direct.validate()).resolves.toEqual({ valid: false, issues: full.issues });
+                            expect(direct.executedChecks).toEqual([]);
+                            expect(direct.xsdWalk.started).toBe(false);
+                        } finally {
+                            if (defect === "unreadable subdirectory") chmodSync(customXml, 0o755);
+                        }
+                    });
+                },
+                60_000,
+            );
+        });
 
         it("propagates programming errors while building the context", async () => {
             await withTempDir(async (dir) => {

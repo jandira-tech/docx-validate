@@ -14,7 +14,7 @@
  */
 
 import { execFile } from "node:child_process";
-import { chmodSync, existsSync, mkdirSync, promises as fs, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, promises as fs, symlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -2825,6 +2825,59 @@ describe.skipIf(process.platform === "win32")("validation contract: direct direc
         },
         60_000,
     );
+});
+
+describe.skipIf(process.platform === "win32")("validation contract: direct walk refusals (#557, #381)", () => {
+    describe.each([
+        ["docx", DOCXSchemaValidator],
+        ["pptx", PPTXSchemaValidator],
+    ] as const)("%s", (suffix, Validator) => {
+        for (const defect of ["dangling symlink", "unreadable subdirectory", "symlink loop"]) {
+            it.skipIf(defect === "unreadable subdirectory" && process.getuid?.() === 0)(
+                `${defect} agrees across direct, full, strict and partial runs`,
+                async () => {
+                    await withTempDir(async (dir) => {
+                        const root = path.join(dir, `input.${suffix}`);
+                        for (const [name, content] of Object.entries(MINIMAL_PARTS)) {
+                            mkdirSync(path.dirname(path.join(root, name)), { recursive: true });
+                            writeFileSync(path.join(root, name), content);
+                        }
+                        const customXml = path.join(root, "customXml");
+                        if (defect === "dangling symlink") symlinkSync("nowhere.xml", path.join(root, "word/dangling.xml"));
+                        else if (defect === "symlink loop") symlinkSync(".", path.join(root, "word/self"));
+                        else {
+                            mkdirSync(customXml);
+                            writeFileSync(path.join(customXml, "item.xml"), "<x/>");
+                            chmodSync(customXml, 0o000);
+                        }
+                        try {
+                            const word = await validate(root, { profile: "word-valid" });
+                            expect(word.valid).toBe(false);
+                            expect(word.issues).toEqual([expect.objectContaining({ code: "package-extract-failed", severity: "error" })]);
+                            for (const profile of ["word-valid", "strict", "lenient"] as const) {
+                                const full = await validate(root, { profile });
+                                expect(full.valid, profile).toBe(false);
+                                expect(full.issues, profile).toEqual(word.issues);
+                                await expect(new Validator({ unpackedDir: root, profile }).validate()).resolves.toEqual({
+                                    valid: false,
+                                    issues: full.issues,
+                                });
+                                if (profile === "strict") continue; // Strict rejects partial selectors.
+                                for (const selection of [{ quick: true }, { checks: ["xml-syntax"] }, { checks: ["package"] }]) {
+                                    const partial = await validate(root, { profile, ...selection });
+                                    expect(partial.valid).toBe(false);
+                                    expect(partial.issues).toEqual(full.issues);
+                                }
+                            }
+                        } finally {
+                            if (defect === "unreadable subdirectory") chmodSync(customXml, 0o755);
+                        }
+                    });
+                },
+                60_000,
+            );
+        }
+    });
 });
 
 describe("validation contract: portable collisions include strict (#441)", () => {
