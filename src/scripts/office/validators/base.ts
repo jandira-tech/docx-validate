@@ -283,8 +283,12 @@ export function defaultSchemasDir(): string {
  * 2. Symlinks: a purely lexical check is defeated by a symlink inside the
  *    unpacked tree pointing outward (`link/secret` where `link` → `/etc`).
  *    The deepest EXISTING ancestor of the target is resolved with
- *    `realpathSync` and re-checked; non-existent trailing components cannot
- *    change the verdict (callers report missing targets as broken anyway).
+ *    `realpathSync.native` and re-checked; non-existent trailing components
+ *    cannot change the verdict (callers report missing targets as broken
+ *    anyway). The root and the probe both take `realpath(3)`'s on-disk case:
+ *    Node's JS `realpathSync` keeps the case a path is written in, so on a
+ *    case-insensitive volume a root spelled in another case than an in-root
+ *    link's absolute target would read as an escape (#587).
  *
  * Returns the original resolved path when contained, `null` on escape.
  * Not race-resistant across the check and a later open — acceptable for a
@@ -299,7 +303,7 @@ export function containRelationshipTarget(unpackedDir: string, resolvedPath: str
 
     let realRoot = root;
     try {
-        realRoot = realpathSync(root);
+        realRoot = realpathSync.native(root);
     } catch {
         // Root itself unreachable — the lexical verdict stands.
         return target;
@@ -308,7 +312,7 @@ export function containRelationshipTarget(unpackedDir: string, resolvedPath: str
     for (;;) {
         let real: string | null = null;
         try {
-            real = realpathSync(probe);
+            real = realpathSync.native(probe);
         } catch {
             real = null;
         }
@@ -1961,13 +1965,48 @@ export interface UnreadableEntry {
     /** Absolute path of the stored entry. */
     file: string;
     /** Why it cannot be read: `"a broken symbolic link"`, `"not a regular file"`,
-     * `"a symbolic link loop"`, or `"an unreadable directory (…)"` for a
-     * directory the walk cannot list (#543, #546). */
+     * `"a symbolic link loop"`, `"a symbolic link outside the input directory"`,
+     * `"a symbolic link the walk cannot resolve (…)"`, or `"an unreadable
+     * directory (…)"` for a directory the walk cannot list or an input root
+     * it cannot canonicalize (#543, #546, #576). */
     reason: string;
+    /**
+     * What the entry is. A directory names no stored file entry, so it
+     * contributes no name to the package view and the stored-name checks
+     * never judge a name no package holds (#573); a file keeps its stored
+     * name (#426).
+     */
+    kind: "file" | "directory";
 }
 
 /** The device/inode identity of a directory on the walk's current path (#546). */
 const directoryIdentity = (st: Stats): string => `${st.dev}:${st.ino}`;
+
+/**
+ * The canonical path of `target`, or the error code resolving it failed
+ * with. The canonical path is what decides whether a link leaves the input
+ * root (#576): a lexical path cannot tell, since the link's own spelling
+ * stays inside the root. `realpath(3)` returns the on-disk case; Node's JS
+ * `realpathSync` keeps the case a path is written in, so on a
+ * case-insensitive volume a root spelled in another case than a link's
+ * absolute target would read that link as leaving the root.
+ */
+function canonicalPath(target: string): { readonly path: string } | { readonly code: string } {
+    try {
+        return { path: realpathSync.native(target) };
+    } catch (err) {
+        return { code: (err as NodeJS.ErrnoException).code ?? "error" };
+    }
+}
+
+/** Whether the canonical path `resolved` lies inside the canonical `root`. */
+function isInsideRoot(root: string, resolved: string): boolean {
+    const relative = path.relative(root, resolved);
+    if (relative === "") return true;
+    if (path.isAbsolute(relative)) return false;
+    // A sibling named "..foo" is inside; a parent named ".." is not.
+    return relative !== ".." && !relative.startsWith(`..${path.sep}`);
+}
 
 /**
  * Walk `dir` recursively the way {@link walkFiles} does, without dropping
@@ -1984,7 +2023,11 @@ const directoryIdentity = (st: Stats): string => `${st.dev}:${st.ino}`;
  * loop"` at the link's stored name, so the walk stops there instead of
  * descending until the kernel's symlink budget runs out (#546); an `ELOOP`
  * from resolving a symlink (a chain that loops without reaching a
- * directory) is never labelled a broken link. `holdsHardLinks` marks a
+ * directory) is never labelled a broken link. A link whose target resolves
+ * outside the input root is not followed at all: it is reported as `"a
+ * symbolic link outside the input directory"` at the link's stored name, so
+ * foreign files never become package parts and a link to an ancestor of the
+ * root is named at the link itself (#576). `holdsHardLinks` marks a
  * regular file with more than one directory entry, whose write-back must
  * not modify an unnamed alias (#545). `files` is exactly what `walkFiles`
  * returns.
@@ -2006,7 +2049,16 @@ export function walkDirectory(
     } catch {
         // readdirSync below reports the unreadable input directory (#543).
     }
-    const stack: { dir: string; ancestors: ReadonlySet<string> }[] = [{ dir, ancestors: rootAncestors }];
+    // The input root's canonical path bounds the walk: a link whose target
+    // resolves outside it is not followed (#576). A root that cannot be
+    // canonicalized cannot bound anything, so the walk fails closed: it
+    // refuses the input directory and lists nothing.
+    const root = canonicalPath(dir);
+    const rootReal = "path" in root ? root.path : undefined;
+    if ("code" in root) {
+        unreadable.push({ file: dir, kind: "directory", reason: `an unreadable directory (${root.code})` });
+    }
+    const stack: { dir: string; ancestors: ReadonlySet<string> }[] = rootReal === undefined ? [] : [{ dir, ancestors: rootAncestors }];
     while (stack.length > 0) {
         const current = stack.pop();
         if (current === undefined) break;
@@ -2020,6 +2072,7 @@ export function walkDirectory(
             // can still see.
             unreadable.push({
                 file: current.dir,
+                kind: "directory",
                 reason: `an unreadable directory (${(err as NodeJS.ErrnoException).code ?? "error"})`,
             });
             continue;
@@ -2043,8 +2096,33 @@ export function walkDirectory(
                 let reason: string;
                 if (!listed.isSymbolicLink()) reason = `unreadable (${code ?? "error"})`;
                 else reason = code === "ELOOP" ? "a symbolic link loop" : "a broken symbolic link";
-                unreadable.push({ file: full, reason });
+                unreadable.push({ file: full, kind: "file", reason });
                 continue;
+            }
+            // A link out of the input root is not followed: its target is in
+            // no package this input holds, so the walk refuses it at the
+            // link's stored name instead of judging foreign files as parts
+            // (#576).
+            if (listed.isSymbolicLink() && rootReal !== undefined) {
+                const resolved = canonicalPath(full);
+                // A link that cannot be canonicalized cannot be bounded, so
+                // it is refused, never followed (#576).
+                if ("code" in resolved) {
+                    unreadable.push({
+                        file: full,
+                        kind: st.isDirectory() ? "directory" : "file",
+                        reason: `a symbolic link the walk cannot resolve (${resolved.code})`,
+                    });
+                    continue;
+                }
+                if (!isInsideRoot(rootReal, resolved.path)) {
+                    unreadable.push({
+                        file: full,
+                        kind: st.isDirectory() ? "directory" : "file",
+                        reason: "a symbolic link outside the input directory",
+                    });
+                    continue;
+                }
             }
             if (st.isDirectory()) {
                 const identity = directoryIdentity(st);
@@ -2052,7 +2130,7 @@ export function walkDirectory(
                 // path can only be reached through a symlink loop: report the
                 // link as stored instead of re-listing the tree under it (#546).
                 if (current.ancestors.has(identity)) {
-                    unreadable.push({ file: full, reason: "a symbolic link loop" });
+                    unreadable.push({ file: full, kind: "directory", reason: "a symbolic link loop" });
                     continue;
                 }
                 const ancestors = new Set(current.ancestors);
@@ -2064,13 +2142,15 @@ export function walkDirectory(
                     files.push(full);
                 }
             } else {
-                unreadable.push({ file: full, reason: "not a regular file" });
+                unreadable.push({ file: full, kind: "file", reason: "not a regular file" });
             }
         }
     }
     return {
         files: files.sort(),
-        unreadable: unreadable.sort((a, b) => a.file.localeCompare(b.file)),
+        // Code-unit order, as the file list beside it: the host's ICU
+        // collation must never decide the order of the message (#575).
+        unreadable: unreadable.sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : 0)),
         holdsSymlinks,
         holdsHardLinks,
     };
