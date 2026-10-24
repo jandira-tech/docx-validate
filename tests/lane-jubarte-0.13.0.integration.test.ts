@@ -201,10 +201,10 @@ describe("jubarte 0.13.0 lane integration (manifest.csv)", { timeout: 120_000 },
             const observation = observations[hash];
             expect(observation, `no Word observation bound to ${hash}`).toBeDefined();
             // A timeout or unknown outcome is no verdict; it must not pin one (#330).
-            expect(classifyWordOutcome(observation?.outcome ?? "unknown"), `${observation?.file}: ${observation?.outcome}`).not.toBe(
-                "unattributable",
-            );
+            expect(classifyWordOutcome(observation!.outcome), `${observation!.file}: ${observation!.outcome}`).not.toBe("unattributable");
         }
+        // Every observation belongs to a specimen: none is orphaned (Jules on #327).
+        expect(Object.keys(observations).sort(), "an observation is bound to no specimen").toEqual([...hashes].sort());
     });
 
     it("manifest.csv lists all 24 specimens with derived expectations", () => {
@@ -245,8 +245,8 @@ describe("jubarte 0.13.0 lane integration (manifest.csv)", { timeout: 120_000 },
                 const observation = observations[sha256];
                 expect(observation, `${file} has no Word observation for its bytes`).toBeDefined();
                 const wordValid = await validate(path.join(LANE, file), { profile: "word-valid" });
-                expect(wordValid.valid, `${file} word-valid vs Word ${observation?.wordVersion}: ${observation?.outcome}`).toBe(
-                    classifyWordOutcome(observation?.outcome ?? "unknown") === "clean",
+                expect(wordValid.valid, `${file} word-valid vs Word ${observation!.wordVersion}: ${observation!.outcome}`).toBe(
+                    classifyWordOutcome(observation!.outcome) === "clean",
                 );
             },
         );

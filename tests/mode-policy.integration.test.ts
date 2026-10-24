@@ -218,12 +218,17 @@ describe("quick mode runs the common-defect preset and discloses its omissions",
                 [{ checks: ["xml-syntax"] }, []],
                 [{}, envelope],
             ];
+            const control = await quickDocx(dir);
             for (const [opts, executed] of rows) {
                 const result = await validate(file, opts);
                 const label = JSON.stringify(opts);
                 expect(result.valid, label).toBe(false);
                 expect(errorCodes(result.issues), label).toContain("package-open-failed");
                 expect(result.metadata?.executedChecks, label).toEqual(executed);
+                // Omitted means "not selected", as for a package that opens: a
+                // selected check the archive kept from running is not an
+                // omission (Jules on #337).
+                expect(result.metadata?.omittedChecks, label).toEqual((await validate(control, opts)).metadata?.omittedChecks);
             }
         });
     });

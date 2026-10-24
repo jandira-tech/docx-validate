@@ -41,6 +41,9 @@ export const wordAttachedToolbarUtf8Check: CheckDefinition = {
     requires: ["xml-syntax"],
     run: (ctx: ValidationContext): ValidationIssue[] => {
         const issues: ValidationIssue[] = [];
+        // One finding per referenced part, however many toolbarData elements
+        // (in however many parts) name it (Jules on #323).
+        const reported = new Set<string>();
 
         const wordmlNs = "http://schemas.microsoft.com/office/word/2006/wordml";
         const relationshipNamespaces = [OFFICE_RELATIONSHIPS_NAMESPACE, "http://purl.oclc.org/ooxml/officeDocument/relationships"];
@@ -96,7 +99,7 @@ export const wordAttachedToolbarUtf8Check: CheckDefinition = {
                     continue;
                 }
                 const resolved = resolveToolbarTarget(relsFile, target);
-                if (!resolved) {
+                if (!resolved || reported.has(resolved)) {
                     continue;
                 }
                 const bytes = ctx.bytes(resolved);
@@ -115,7 +118,7 @@ export const wordAttachedToolbarUtf8Check: CheckDefinition = {
                     path: resolved,
                     code: "word-attached-toolbar-utf8",
                 });
-                return issues;
+                reported.add(resolved);
             }
         }
 
