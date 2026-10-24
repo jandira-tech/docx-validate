@@ -42,6 +42,8 @@ export const ZIP64_OFFSET = 0xffffffff;
 const ZIP64_EOCD_SIGNATURE = 0x06064b50;
 const ZIP64_EOCD_FIXED_LENGTH = 56;
 const ZIP64_COUNT = 0xffff;
+/** `utils.MAX_VALUE_32BITS`: a saturated 4-byte field as `readJszipInt` reads it. */
+const JSZIP_MAX_32 = -1;
 const CENTRAL_HEADER_FIXED_LENGTH = 46;
 const UTF8_NAME_FLAG = 0x0800;
 const DOS_DIRECTORY_ATTRIBUTE = 0x10;
@@ -51,8 +53,17 @@ export const readU16 = (buf: Uint8Array, offset: number): number => buf[offset]!
 export const readU32 = (buf: Uint8Array, offset: number): number =>
     buf[offset]! + buf[offset + 1]! * 0x100 + buf[offset + 2]! * 0x10000 + buf[offset + 3]! * 0x1000000;
 
-/** Low 8 bytes as a number; only archives whose offsets fit in doubles qualify anyway. */
-const readU64 = (buf: Uint8Array, offset: number): number => readU32(buf, offset) + readU32(buf, offset + 4) * 0x100000000;
+/**
+ * A 4- or 8-byte field as JSZip's `DataReader.readInt` reads it. Its loop
+ * accumulates with a 32-bit `<<`, which keeps the low 32 bits — the first four
+ * bytes, little-endian — as a signed number (`utils.MAX_VALUE_32BITS` is -1).
+ * The central-directory read mirrors this so that it selects and walks the
+ * directory JSZip does, not the one the field's value names (#470).
+ */
+const readJszipInt = (buf: Uint8Array, offset: number): number => {
+    const low = readU32(buf, offset);
+    return low >= 0x80000000 ? low - 0x100000000 : low;
+};
 
 export const hasSignature = (buf: Uint8Array, offset: number, signature: number): boolean => {
     if (offset < 0 || offset + 4 > buf.length) {
@@ -164,7 +175,7 @@ export type CentralDirectoryView = {
     readonly records: readonly ZipCentralRecord[];
     /** The end-of-central-directory record's offset. */
     readonly eocdOffset: number;
-    /** One past the EOCD's declared comment — past the buffer when it overruns it. */
+    /** One past the EOCD's declared comment, which lies within the buffer. */
     readonly eocdEnd: number;
     /** Where the central directory starts in the buffer. */
     readonly cdOffset: number;
@@ -192,53 +203,71 @@ export type CentralDirectoryView = {
  * record yields JSZip's empty directory, and a record whose directory would
  * end past it is refused, as JSZip refuses it. ZIP64 follows JSZip too: the
  * last locator, its record or else the last ZIP64 record, and an expected
- * position that counts the locator and the ZIP64 record.
+ * position that counts the locator and the ZIP64 record. Every 4- and 8-byte
+ * field is read with JSZip's 32-bit arithmetic (`readJszipInt`), and what
+ * JSZip throws on reads as nothing: a negative offset or size, a locator
+ * offset outside the buffer, a multi-disk locator, ZIP64 extensible data, an
+ * EOCD comment past the buffer (#470).
  */
 export const readCentralDirectoryView = (buf: Uint8Array): CentralDirectoryView | undefined => {
     const eocd = lastSignatureOffset(buf, EOCD_SIGNATURE);
-    if (eocd === undefined || eocd + EOCD_FIXED_LENGTH > buf.length) {
+    // JSZip reads the record's comment too, and throws when it runs past the buffer.
+    if (eocd === undefined || eocd + EOCD_FIXED_LENGTH > buf.length || eocd + EOCD_FIXED_LENGTH + readU16(buf, eocd + 20) > buf.length) {
         return undefined;
     }
-    let offset = readU32(buf, eocd + 16);
-    let size = readU32(buf, eocd + 12);
+    let offset = readJszipInt(buf, eocd + 16);
+    let size = readJszipInt(buf, eocd + 12);
     let count = readU16(buf, eocd + 10);
     const zip64 =
         readU16(buf, eocd + 4) === ZIP64_COUNT ||
         readU16(buf, eocd + 6) === ZIP64_COUNT ||
         readU16(buf, eocd + 8) === ZIP64_COUNT ||
         count === ZIP64_COUNT ||
-        size === ZIP64_OFFSET ||
-        offset === ZIP64_OFFSET;
+        size === JSZIP_MAX_32 ||
+        offset === JSZIP_MAX_32;
     // Where the record sits when nothing precedes the archive.
     let expected = offset + size;
     if (zip64) {
         const locator = lastSignatureOffset(buf, ZIP64_LOCATOR_SIGNATURE);
-        if (locator === undefined || locator + ZIP64_LOCATOR_LENGTH > buf.length) {
+        // JSZip refuses a locator that counts more than one disk.
+        if (locator === undefined || locator + ZIP64_LOCATOR_LENGTH > buf.length || readJszipInt(buf, locator + 16) > 1) {
             return undefined;
         }
-        let record: number | undefined = readU64(buf, locator + 8);
+        let record: number | undefined = readJszipInt(buf, locator + 8);
+        // JSZip tests the signature there through `setIndex`, which throws
+        // for an index outside the buffer.
+        if (record < 0 || record + 4 > buf.length) {
+            return undefined;
+        }
         if (!hasSignature(buf, record, ZIP64_EOCD_SIGNATURE)) {
             record = lastSignatureOffset(buf, ZIP64_EOCD_SIGNATURE);
         }
         if (record === undefined || record + ZIP64_EOCD_FIXED_LENGTH > buf.length) {
             return undefined;
         }
-        count = readU64(buf, record + 32);
-        size = readU64(buf, record + 40);
-        offset = readU64(buf, record + 48);
+        const recordSize = readJszipInt(buf, record + 4);
+        // Extensible data past the fixed 44 bytes sends JSZip's reading loop,
+        // which never advances its counter, to the end of the buffer.
+        if (recordSize > ZIP64_EOCD_FIXED_LENGTH - 12) {
+            return undefined;
+        }
+        count = readJszipInt(buf, record + 32);
+        size = readJszipInt(buf, record + 40);
+        offset = readJszipInt(buf, record + 48);
         // The locator, then the ZIP64 record: 12 leading bytes plus its declared size.
-        expected = offset + size + ZIP64_LOCATOR_LENGTH + 12 + readU64(buf, record + 4);
+        expected = offset + size + ZIP64_LOCATOR_LENGTH + 12 + recordSize;
     }
+    // JSZip throws on a negative index; a negative size or count is no
+    // directory it walks either.
     const zero = eocd - expected;
-    if (zero < 0) {
+    if (zero < 0 || offset < 0 || size < 0 || count < 0) {
         return undefined;
     }
     offset += zero;
     const cdOffset = offset;
+    // The directory ends where JSZip expects it, at or before the record:
+    // `end` is `eocd` less the ZIP64 structures between them.
     const end = offset + size;
-    if (end > buf.length || end > eocd) {
-        return undefined;
-    }
     const records: ZipCentralRecord[] = [];
     while (offset + CENTRAL_HEADER_FIXED_LENGTH <= end) {
         if (!hasSignature(buf, offset, CENTRAL_DIRECTORY_SIGNATURE)) {

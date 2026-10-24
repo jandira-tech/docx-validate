@@ -12,6 +12,7 @@ import type { ValidationIssue, ValidationResult } from "../src/lib/types";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { buildRawZip } from "./support/raw-zip";
+import { wrappedLocatorArchive } from "./support/zip64-specimens";
 
 const EQUIVALENT = "opc-equivalent-part-names";
 const ESCAPED = "opc-part-name-escaped-slash";
@@ -155,6 +156,36 @@ describe("stored names come from the archive JSZip loads (#462)", { timeout: 300
                     const partialTag = `${profile} ${JSON.stringify(selection)}`;
                     const partial = await validate(file, { profile, ...selection });
                     expect(withCode(partial.issues, EQUIVALENT), partialTag).toEqual([]);
+                    expectParity(full, partial, partialTag);
+                }
+            }
+            expect(readFileSync(file)).toEqual(bytes);
+        });
+    });
+});
+
+// Review AE: JSZip reads the ZIP64 locator's offset as its low 32 bits, so a
+// locator storing 2^32 selects the record at offset 0, which describes the
+// live package; an exact read would fall back to a later record describing a
+// clean entry alone (#470).
+describe("the ZIP64 record JSZip selects through a wrapped locator offset (#470)", { timeout: 300_000 }, () => {
+    it("reports the escaped slash the loaded package stores", async () => {
+        await withTempDir(async (dir) => {
+            const entries = Object.entries({ ...MINIMAL_PARTS, "word%2Fxtra.xml": "<x/>" }).map(([name, content]) => ({ name, content }));
+            const bytes = wrappedLocatorArchive(entries);
+            const file = path.join(dir, "wrapped.docx");
+            writeFileSync(file, bytes);
+            for (const profile of PROFILES) {
+                const full = await validate(file, { profile });
+                expect(withCode(full.issues, ESCAPED), profile).toEqual([
+                    expect.objectContaining({ code: ESCAPED, severity: profile === "lenient" ? "warning" : "error" }),
+                ]);
+                expect(full.valid, profile).toBe(false);
+                if (profile === "strict") continue;
+                for (const selection of [{ checks: [ESCAPED] }, { checks: ["package"] }, { quick: true }] as const) {
+                    const partialTag = `${profile} ${JSON.stringify(selection)}`;
+                    const partial = await validate(file, { profile, ...selection });
+                    expect(withCode(partial.issues, ESCAPED), partialTag).toEqual(withCode(full.issues, ESCAPED));
                     expectParity(full, partial, partialTag);
                 }
             }

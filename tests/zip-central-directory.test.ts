@@ -10,6 +10,13 @@ import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import JSZip from "jszip";
 
 import { buildRawZip } from "./support/raw-zip";
+import {
+    extensibleDataArchive,
+    multiVolumeArchive,
+    outOfRangeLocatorArchive,
+    wrappedLocatorArchive,
+    wrappedOffsetArchive,
+} from "./support/zip64-specimens";
 
 const names = (bytes: Uint8Array) => zipCentralDirectoryEntries(bytes)?.map((entry) => entry.name);
 
@@ -82,6 +89,47 @@ const fileNames = (bytes: Uint8Array) =>
     zipCentralDirectoryEntries(bytes)
         ?.filter((entry) => !entry.directory)
         .map((entry) => entry.name);
+
+describe("JSZip's 32-bit field arithmetic (#470)", () => {
+    const entries = [
+        { name: "a.xml", content: "<1/>" },
+        { name: "word%2Fxtra.xml", content: "<x/>" },
+    ];
+    const loadedRecords = async (bytes: Uint8Array) => Object.keys((await JSZip.loadAsync(bytes)).files);
+    // The EOCD declares a 10-byte comment the buffer does not hold.
+    const commentOverrun = (zip: Buffer): Buffer => {
+        const copy = Buffer.from(zip);
+        copy.writeUInt16LE(10, copy.length - 2);
+        return copy;
+    };
+
+    it("reads the ZIP64 record at the locator offset JSZip wraps to 32 bits", async () => {
+        const bytes = wrappedLocatorArchive(entries);
+        expect(await loadedRecords(bytes)).toEqual(["a.xml", "word%2Fxtra.xml", "z-clean.xml"]);
+        expect(names(bytes)).toEqual(["a.xml", "word%2Fxtra.xml", "z-clean.xml"]);
+    });
+
+    it("keeps the duplicates of the record JSZip selects", () => {
+        const bytes = wrappedLocatorArchive([...entries, { name: "a.xml", content: "<2/>" }]);
+        expect(names(bytes)).toEqual(["a.xml", "word%2Fxtra.xml", "a.xml", "z-clean.xml"]);
+    });
+
+    it("wraps the ZIP64 record's directory offset as JSZip does", async () => {
+        const bytes = wrappedOffsetArchive(entries);
+        expect(await loadedRecords(bytes)).toEqual(["a.xml", "word%2Fxtra.xml"]);
+        expect(names(bytes)).toEqual(["a.xml", "word%2Fxtra.xml"]);
+    });
+
+    it.each([
+        { name: "a locator offset past the buffer", bytes: outOfRangeLocatorArchive(entries) },
+        { name: "ZIP64 extensible data", bytes: extensibleDataArchive(entries) },
+        { name: "a locator counting two disks", bytes: multiVolumeArchive(entries) },
+        { name: "an EOCD comment running past the buffer", bytes: commentOverrun(buildRawZip(entries)) },
+    ])("reads nothing where JSZip throws: $name", async ({ bytes }) => {
+        await expect(JSZip.loadAsync(bytes)).rejects.toThrow();
+        expect(names(bytes)).toBeUndefined();
+    });
+});
 
 describe("zipCentralDirectoryEntries", () => {
     it("lists a JSZip archive's entries, in central-directory order", async () => {

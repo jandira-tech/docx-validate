@@ -222,7 +222,7 @@ export const centralKeyedArchive = (bytes: Uint8Array): Uint8Array => {
     eocd.writeUInt32LE(outLength - cdOffset, EOCD_CD_SIZE_OFFSET);
     eocd.writeUInt32LE(cdOffset - view.zero, EOCD_CD_OFFSET_OFFSET);
     push(eocd);
-    push(bytes.subarray(Math.min(view.eocdEnd, bytes.length)));
+    push(bytes.subarray(view.eocdEnd));
     return Buffer.concat(parts.map((part) => Buffer.from(part.buffer, part.byteOffset, part.byteLength)));
 };
 
