@@ -82,10 +82,17 @@ export const wordDocumentRootCheck: CheckDefinition = {
  * docs/plans/evidence/word-probes-2026-10-24.md) and for one whose
  * officeDocument relationship is removed (session 4), so `isWordBlockingIssue`
  * makes this finding an error under Word-valid too.
+ *
+ * #515, Word probes session 15 (s15b/s15d): Word 16.115 offers recovery for
+ * two internal officeDocument relationships, whether they name distinct,
+ * well-formed main parts or the same target. An orphan main-typed part alone
+ * opens cleanly. Count relationships, not targets or content-type declarations.
+ * Both Transitional and Strict relationship types identify the main part here;
+ * counting a mixed pair together is an inference, not a probed Word outcome.
  */
 export const wordMainDocumentPartCheck: CheckDefinition = {
     id: "word-main-document-part",
-    description: "The package has an internal officeDocument relationship targeting an existing main document part.",
+    description: "The package has exactly one internal officeDocument relationship targeting an existing main document part.",
     groups: ["relationships"],
     formats: ["docx"],
     requires: ["xml-syntax"],
@@ -104,13 +111,23 @@ export const wordMainDocumentPartCheck: CheckDefinition = {
         const relationships = ctx.xml(relationshipsPart);
         if (!relationships?.ok) return [];
 
-        const hasMainPart = getRelationshipChildren(relationships.document).some((relationship) => {
-            if (
-                relationship.getAttribute("TargetMode") === "External" ||
-                !OFFICE_DOCUMENT_TYPES.has(relationship.getAttribute("Type") ?? "")
-            ) {
-                return false;
-            }
+        const mainRelationships = getRelationshipChildren(relationships.document).filter(
+            (relationship) =>
+                relationship.getAttribute("TargetMode") !== "External" &&
+                OFFICE_DOCUMENT_TYPES.has(relationship.getAttribute("Type") ?? ""),
+        );
+        if (mainRelationships.length > 1) {
+            return [
+                {
+                    code: wordMainDocumentPartCheck.id,
+                    severity: "error",
+                    path: relationshipsPart,
+                    message: `Expected exactly one internal officeDocument relationship, but found ${mainRelationships.length} (Ids: ${mainRelationships.map((relationship) => JSON.stringify(relationship.getAttribute("Id"))).join(", ")}). Microsoft Word offers recovery even when the targets are identical.`,
+                },
+            ];
+        }
+
+        const hasMainPart = mainRelationships.some((relationship) => {
             const part = resolvePartName(ctx.partNames, relationship.getAttribute("Target") ?? "");
             return part !== undefined && ctx.partNames.includes(part);
         });
