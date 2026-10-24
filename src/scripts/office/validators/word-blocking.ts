@@ -30,7 +30,11 @@ const isWordFolderPart = (partName: string | undefined): boolean =>
 const isPackageRelationshipsPart = (partName: string | undefined): boolean =>
     partName !== undefined && canonicalPartName(partName) === "_rels/.rels";
 
-export const isWordBlockingIssue = (issue: ValidationIssue, propertiesParts: ReadonlySet<string> = new Set()): boolean => {
+export const isWordBlockingIssue = (
+    issue: ValidationIssue,
+    propertiesParts: ReadonlySet<string> = new Set(),
+    wordReadParts: ReadonlySet<string> = new Set(),
+): boolean => {
     switch (issue.code) {
         // NB: run-content-misplaced is NOT Word-blocking — a real Word probe
         // (open -g, no focus steal) opens bare <w:tab>/<w:br>/<w:drawing> under
@@ -176,21 +180,28 @@ export const isWordBlockingIssue = (issue: ValidationIssue, propertiesParts: Rea
         case "xml-syntax":
         // An undeclared namespace prefix is the same class of defect as a
         // malformed part — Word reports unreadable content — so it follows
-        // the identical policy: blocking under word/, in the content-types
-        // stream and in the package relationships part (#388).
+        // the identical reachability policy (#437).
         case "xml-undeclared-prefix":
         // A part whose text cannot be decoded is unreadable too: Word 16.115
         // refuses a word/document.xml declaring an unknown encoding and opens
         // the windows-1252 control clean (#397). It also refuses real labels
         // libxml2 cannot decode: macintosh, x-mac-cyrillic, IBM866, UTF-7
-        // (#410). The other paths follow the xml-syntax policy above.
+        // (#410). The other paths follow the xml-syntax policy below.
         case "xml-encoding":
-            // Word also reads the core, extended and custom properties parts a
-            // package relationship names, and offers recovery when one of them
-            // is unreadable (#409).
+            // #437: Word 16.115 reads the parts its relationships reach, not
+            // every part under word/ — an unreferenced truncated word/xtra.xml
+            // opens clean even with its own Override, a related-but-unused
+            // malformed footer, comments or footnotes part opens clean, while
+            // an eagerly parsed part (styles, settings, fontTable, webSettings,
+            // numbering, customXml) and a used lazy one get repair — wherever
+            // they are stored. Unobserved relationship types under word/
+            // (theme, header, chart, …) keep blocking, as before. The
+            // content-types stream, the package relationships part and the
+            // properties parts (#409) always block; a malformed sidecar under
+            // word/ that no relationship-target rule covers now warns.
             return (
                 (issue.path !== undefined && propertiesParts.has(canonicalPartName(issue.path))) ||
-                isWordFolderPart(issue.path) ||
+                (issue.path !== undefined && wordReadParts.has(canonicalPartName(issue.path))) ||
                 isPackageRelationshipsPart(issue.path) ||
                 (issue.path !== undefined && isContentTypesStreamName(issue.path))
             );
