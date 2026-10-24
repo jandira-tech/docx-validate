@@ -86,6 +86,8 @@ These are intentional behaviours of the implementation, documented at the call s
 
 15. **`validate()` exposes `xsdWalk`.** `{ started, parts, eligible }` records the schema walk. Word-valid skips XSD after a blocking non-XSD defect, or stops at the first surfaced blocking schema error. Lenient and strict complete their eligible-part walks. Schema/engine failures stay blocking on Word-valid.
 
+16. **Packaged CLI: `dist/cli.mjs` is the only live shim in the bundle.** `src/cli.ts` is the `docx-validate` bin (package.json `bin`), a second `pack.entry` that calls `runCli(import.meta.url, ...)`. The per-script `runCli` shims stay in `src/scripts/**` for `tsx` execution, but `vp pack`'s `inertCliShimsPlugin` rewrites their metaUrl to a never-matching `file:` URL — bundled modules share one `import.meta.url`, so an unrewritten shim would fire on `node dist/index.mjs` and import (#314). New CLI entry points belong in `pack.entry` + `bin`, never as `runCli` calls the barrel can reach.
+
 ## ISO OOXML Strict XSD validation
 
 ISO OOXML defines two conformance classes: **Transitional** (backward-compatible, widely used) and **Strict** (pure ISO, uses different namespace URIs under `purl.oclc.org/ooxml/` instead of `schemas.openxmlformats.org/…`). Example: Strict WML uses `http://purl.oclc.org/ooxml/wordprocessingml/main` vs Transitional's `http://schemas.openxmlformats.org/wordprocessingml/2006/main`.
