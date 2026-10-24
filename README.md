@@ -920,12 +920,13 @@ check judges the relationship Type alone
 chunks s26a/s26b/s26c, in `docs/plans/evidence/word-probes-2026-10-24.md`).
 A reference whose `r:id` names no Relationship stays `rels-id-missing`'s
 finding. The finding is an error under strict and Word-blocking under
-word-valid for DOCX/DOCM; lenient runs no Word rule. Under word-valid and
-strict this check owns these two elements in the story roots, so
-`rels-id-mismatch` does not repeat the same element there; a glossary no
-main-document relationship reaches keeps its `rels-id-mismatch` under strict
-(Word does not read it, so word-valid stays silent), and lenient keeps every
-mismatch. Full, quick and named Word-valid runs agree (#381).
+word-valid for DOCX/DOCM; lenient runs no Word rule. In a full word-valid or
+strict run `rels-id-mismatch` does not repeat an element this check reported
+— the run drops that duplicate — while `validateAllRelationshipIds()` called
+on its own still reports every mismatch (#612). A glossary no main-document
+relationship reaches keeps its `rels-id-mismatch` under strict (Word does
+not read it, so word-valid stays silent), and lenient keeps every mismatch.
+Full, quick and named Word-valid runs agree (#381).
 
 `word-markup-compatibility` reports processor errors for XML parts under `word/`.
 Root validation, the processor, and the schema walk use these stable codes:

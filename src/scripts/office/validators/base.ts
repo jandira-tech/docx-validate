@@ -56,7 +56,6 @@ import {
     partExtension,
     resolveContentType,
     resolvePartName,
-    canonicalPartName,
 } from "../../../lib/content-types";
 import {
     applyMarkupCompatibility,
@@ -1000,16 +999,18 @@ export class BaseSchemaValidator {
         return finalize(issues);
     }
 
+    /**
+     * Reports every mismatched `r:id` it finds, under every profile: this
+     * method knows nothing about the registered Word checks, so a caller
+     * composing it directly gets the full legacy finding set (#612). A full
+     * `DOCXSchemaValidator.validate()` run hands the story reference
+     * elements its Word rule already reported back to that rule
+     * (`withoutRepeatedHeaderFooterFindings` in docx.ts).
+     */
     async validateAllRelationshipIds(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
         const entries = packageEntries(this.unpackedDir);
         const findPart = equivalentPartLookup([...entries.keys()]);
-        // #606: story roots whose w:headerReference/w:footerReference type
-        // judgment the word-header-footer-relationship check owns under
-        // word-valid and strict, so rels-id-mismatch does not double-report
-        // the same element there. Lenient runs no Word rule and keeps every
-        // mismatch.
-        const headerFooterOwned = this.profile === "lenient" ? undefined : await this.storyReferenceOwnerParts();
 
         for (const xmlFile of this.xmlFiles) {
             const part = this.entryName(xmlFile);
@@ -1118,13 +1119,8 @@ export class BaseSchemaValidator {
                             code: "rels-id-missing",
                         });
                     } else if (attrName === "id" && Object.keys(this.elementRelationshipTypes).length > 0) {
-                        const elemLower = elemName.toLowerCase();
-                        const ownedByWordCheck =
-                            headerFooterOwned !== undefined &&
-                            (elemLower === "headerreference" || elemLower === "footerreference") &&
-                            headerFooterOwned.has(canonicalPartName(part));
                         const expectedType = this._getExpectedRelationshipType(elemName);
-                        if (expectedType && !ownedByWordCheck) {
+                        if (expectedType) {
                             const actualType = ridToType.get(ridAttr) ?? "";
                             if (!actualType.toLowerCase().includes(expectedType)) {
                                 issues.push({
@@ -1143,16 +1139,6 @@ export class BaseSchemaValidator {
         }
 
         return finalize(issues);
-    }
-
-    /**
-     * Canonical part names whose `w:headerReference`/`w:footerReference`
-     * type judgment a registered Word check owns under `word-valid` and
-     * `strict` (#606), or `undefined` when none does. The base validator
-     * owns none; the DOCX validator names its story roots.
-     */
-    protected async storyReferenceOwnerParts(): Promise<ReadonlySet<string> | undefined> {
-        return undefined;
     }
 
     protected _getExpectedRelationshipType(elementName: string): string | null {

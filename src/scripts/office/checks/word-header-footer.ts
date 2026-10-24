@@ -18,11 +18,15 @@
  * this check judges the Type alone and never resolves the target.
  *
  * A reference whose `r:id` names no Relationship stays `rels-id-missing`'s
- * finding. Under word-valid and strict this check owns the two elements in
- * the story roots, so `rels-id-mismatch` steps aside there; in a glossary no
- * main-document relationship reaches, and under lenient, `rels-id-mismatch`
- * keeps them (Word does not read an unreached glossary, so word-valid stays
- * silent there).
+ * finding. In a full word-valid or strict run each element this check
+ * reports yields one finding, this check's: the run drops the matching
+ * `rels-id-mismatch` for it (#612; `withoutRepeatedHeaderFooterFindings` in
+ * validators/docx.ts). Everywhere else `rels-id-mismatch` keeps the element —
+ * a standalone `validateAllRelationshipIds()` call, a foreign-namespace
+ * `x:headerReference` this check does not match, a glossary no
+ * main-document relationship reaches, and lenient, which runs no Word rule
+ * (Word does not read an unreached glossary, so word-valid stays silent
+ * there).
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
