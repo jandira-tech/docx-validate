@@ -14,6 +14,7 @@ import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
 import { validate } from "../src/scripts/office/validate";
 import { isWordBlockingIssue } from "../src/scripts/office/validators/word-blocking";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+import { buildRawZip } from "./support/raw-zip";
 
 const ID = "opc-part-name-escaped-unreserved";
 const findings = (issues: readonly ValidationIssue[]) => issues.filter((issue) => issue.code === ID);
@@ -164,6 +165,31 @@ describe.each(["packed", "directory"] as const)("M1.8 %s integration", { timeout
                 const severity = profile === "strict" || (profile === "word-valid" && extension === "docm") ? "error" : "warning";
                 expect(findings(result.issues)).toEqual([expected(name, severity)]);
                 if (extension === "docm" && profile === "word-valid") expect(result.valid).toBe(false);
+            }
+        });
+    });
+});
+
+describe("an escaped name hidden by ZIP loading (#411)", { timeout: 120_000 }, () => {
+    // Two entries stored under the identical escaped name: JSZip keeps only
+    // the last one, so the stored-name list must come from the central
+    // directory, not the loaded view.
+    it("still reports the name both entries carry, once", async () => {
+        const name = "word/%78tra.xml";
+        const bytes = buildRawZip([
+            ...Object.entries(MINIMAL_PARTS).map(([part, text]) => ({ name: part, content: text })),
+            { name, content: "<a/>" },
+            { name, content: "<b/>" },
+        ]);
+        const ctx = await ValidationContext.fromArchive(bytes);
+        expect(ctx.storedNames.filter((stored) => stored === name)).toHaveLength(2);
+        expect(await diagnose(ctx)).toEqual([expected(name)]);
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "escaped.docx");
+            writeFileSync(file, bytes);
+            for (const profile of ["word-valid", "lenient", "strict"] as const) {
+                const full = await validate(file, { profile });
+                expect(findings(full.issues), profile).toEqual([expected(name, profile === "lenient" ? "warning" : "error")]);
             }
         });
     });

@@ -24,6 +24,7 @@ import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { poisonEntry } from "./support/poison-entry";
+import { buildRawZip } from "./support/raw-zip";
 
 const ROW_WITHOUT_CELL = path.join(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -648,4 +649,94 @@ describe("M1.8 selection parity (#408, #381)", { timeout: 120_000 }, () => {
             }
         });
     });
+});
+
+describe("M1.12 selection parity for entries ZIP loading hides (#411)", { timeout: 120_000 }, () => {
+    // JSZip keeps only the last entry under a given name, so two entries
+    // stored under the identical name need raw archive bytes (JSZip cannot
+    // write them). The stored-name diagnosis must see both anyway.
+    const identical = (first: string, second: string): Buffer =>
+        buildRawZip([
+            ...Object.entries(MINIMAL_PARTS)
+                .filter(([part]) => part !== "word/document.xml")
+                .map(([part, text]) => ({ name: part, content: text })),
+            { name: "word/document.xml", content: first },
+            { name: "word/document.xml", content: second },
+        ]);
+    const identicalFinding = (severity: string) => ({
+        code: "opc-equivalent-part-names",
+        severity,
+        path: "word/document.xml",
+        message:
+            'OPC [M1.12] forbids equivalent stored names: "word/document.xml", "word/document.xml". The last stored entry is the one read.',
+    });
+
+    it.each(["word-valid", "lenient"] as const)("keeps named, package and quick findings equal to full %s findings", async (profile) => {
+        await withTempDir(async (dir) => {
+            const bytes = identical(MINIMAL_PARTS["word/document.xml"]!, MINIMAL_PARTS["word/document.xml"]!.replace(">Hello<", ">Other<"));
+            const file = await specimen(dir, "identical.docx", bytes);
+            const full = await validate(file, { profile });
+            const issues = full.issues.filter((issue) => issue.code === "opc-equivalent-part-names");
+            expect(issues).toEqual([identicalFinding(profile === "lenient" ? "warning" : "error")]);
+            if (profile === "word-valid") expect(full.valid).toBe(false);
+            for (const selection of [{ checks: ["opc-equivalent-part-names"] }, { checks: ["package"] }, { quick: true }] as const) {
+                const partial = await validate(file, { profile, ...selection });
+                const tag = `${profile} ${JSON.stringify(selection)}`;
+                expect(
+                    partial.issues.filter((issue) => issue.code === "opc-equivalent-part-names"),
+                    tag,
+                ).toEqual(issues);
+                if (full.valid) expect(partial.valid, tag).toBe(true);
+                expect(errorPairs(full.issues), tag).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
+            }
+        });
+    });
+
+    // A stored `..` segment names no part (#378). Stored first, JSZip's
+    // resolution hides it behind the later `word/x.xml`; full and partial
+    // runs must report the same extract failure in either order (#413).
+    it.each(["word-valid", "lenient"] as const)(
+        "reports the hidden refused name as the same extract failure in full and partial %s runs, in either order",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                const messages: string[] = [];
+                for (const [order, entries] of [
+                    [
+                        { name: "word/deep/../x.xml", content: "<x/>" },
+                        { name: "word/x.xml", content: "<x/>" },
+                    ],
+                    [
+                        { name: "word/x.xml", content: "<x/>" },
+                        { name: "word/deep/../x.xml", content: "<x/>" },
+                    ],
+                ].entries()) {
+                    const file = await specimen(
+                        dir,
+                        `order-${order}.docx`,
+                        buildRawZip([...Object.entries(MINIMAL_PARTS).map(([part, text]) => ({ name: part, content: text })), ...entries]),
+                    );
+                    const full = await validate(file, { profile });
+                    const fullFailure = full.issues.find((entry) => entry.severity === "error" && entry.code === "package-extract-failed");
+                    expect(fullFailure, `order ${order}`).toBeDefined();
+                    expect(full.valid, `order ${order}`).toBe(false);
+                    for (const selection of [
+                        { checks: ["opc-equivalent-part-names"] },
+                        { checks: ["package"] },
+                        { quick: true },
+                    ] as const) {
+                        const partial = await validate(file, { profile, ...selection });
+                        const tag = `${profile} ${JSON.stringify(selection)} order ${order}`;
+                        expect(partial.valid, tag).toBe(false);
+                        expect(
+                            partial.issues.find((entry) => entry.code === "package-extract-failed")?.message.replace(file, "FILE"),
+                            tag,
+                        ).toBe(fullFailure!.message.replace(file, "FILE"));
+                        expect(errorPairs(full.issues), tag).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
+                    }
+                    messages.push(fullFailure!.message.replace(file, "FILE"));
+                }
+                expect(messages[0]).toBe(messages[1]);
+            });
+        },
+    );
 });

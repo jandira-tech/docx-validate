@@ -15,7 +15,8 @@ export const opcPartNameEscapedUnreservedCheck: CheckDefinition = {
     groups: ["package"],
     formats: ["docx", "pptx", "xlsx"],
     run: (ctx) =>
-        ctx.storedNames.filter(hasEscapedUnreservedCharacter).map((name) => ({
+        // Each distinct stored spelling once: two entries may share a name (#411).
+        [...new Set(ctx.storedNames)].filter(hasEscapedUnreservedCharacter).map((name) => ({
             code: OPC_PART_NAME_ESCAPED_UNRESERVED,
             severity: "error",
             path: name,

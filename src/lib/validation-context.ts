@@ -30,6 +30,7 @@
 import JSZip from "jszip";
 
 import { applyMarkupCompatibility, WORD_UNDERSTOOD_NAMESPACES } from "./markup-compatibility";
+import { zipCentralDirectoryEntries } from "./zip-central-directory";
 import type { ValidationIssue } from "./types";
 import { decodeXmlBytes, parseXml } from "./xml-helpers";
 
@@ -93,18 +94,39 @@ export const entryNameRefusal = (name: string): string | undefined => {
 };
 
 /**
- * Throw for the first entry whose stored name places no part. JSZip has
- * already rewritten some names (`..`, `.`, empty segments, a leading root),
- * so the name as stored in the archive is judged (#378).
+ * Throw for the first stored name that places no part. Given the
+ * central-directory names this also refuses a name the loaded view dropped or
+ * rewrote (#411): two entries under the identical name, or `a/b/../x.xml`
+ * stored before the `a/x.xml` it resolves to.
  */
-export const assertPlaceableEntries = (entries: Iterable<JSZip.JSZipObject>): void => {
-    for (const entry of entries) {
-        const refusal = entryNameRefusal(entry.unsafeOriginalName ?? entry.name);
+export const assertPlaceableNames = (names: Iterable<string>): void => {
+    for (const name of names) {
+        const refusal = entryNameRefusal(name);
         if (refusal !== undefined) {
             throw new Error(refusal);
         }
     }
 };
+
+/**
+ * Throw for the first entry whose stored name places no part. JSZip has
+ * already rewritten some names (`..`, `.`, empty segments, a leading root),
+ * so the name as stored in the archive is judged (#378).
+ */
+export const assertPlaceableEntries = (entries: Iterable<JSZip.JSZipObject>): void => {
+    assertPlaceableNames([...entries].map((entry) => entry.unsafeOriginalName ?? entry.name));
+};
+
+/**
+ * The archive's stored file-entry names: the central directory's, in order
+ * and with duplicates kept, when it parses; the loaded view's
+ * `unsafeOriginalName`s otherwise. A malformed envelope falls back because
+ * the ZIP envelope checks already diagnose it (#411).
+ */
+export const archiveStoredNames = (bytes: Uint8Array, files: readonly JSZip.JSZipObject[]): readonly string[] =>
+    zipCentralDirectoryEntries(bytes)
+        ?.filter((entry) => !entry.directory)
+        .map((entry) => entry.name) ?? files.map((entry) => entry.unsafeOriginalName ?? entry.name);
 
 /**
  * Of two stored names for one part, the one to keep: the name that already is
@@ -138,7 +160,11 @@ export const indexByPartName = <T>(entries: Iterable<readonly [string, T]>): Map
 export class ValidationContext {
     public readonly source: PackageSource;
     public readonly archiveBytes: Uint8Array | undefined;
-    /** Original file item names before normalized indexing drops aliases; sorted and immutable. */
+    /**
+     * Original file item names before normalized indexing drops aliases — for
+     * an archive, the central directory's stored names, including entries the
+     * loaded view dropped or renamed (#411); sorted and immutable.
+     */
     public readonly storedNames: readonly string[];
 
     private readonly parts: ReadonlyMap<string, PartContent>;
@@ -198,7 +224,8 @@ export class ValidationContext {
         const zip = await JSZip.loadAsync(bytes);
         try {
             const files = Object.values(zip.files).filter((entry) => !entry.dir);
-            assertPlaceableEntries(files);
+            const stored = archiveStoredNames(bytes, files);
+            assertPlaceableNames(stored);
             const kept = indexByPartName(files.map((entry) => [entry.name, entry] as const));
             const parts = new Map<string, PartContent>();
             // Every entry is read, as extraction reads it, so an unreadable one
@@ -212,11 +239,7 @@ export class ValidationContext {
                     }
                 }),
             );
-            return new ValidationContext(
-                parts,
-                { source: "archive", archiveBytes: bytes },
-                files.map((entry) => entry.unsafeOriginalName ?? entry.name),
-            );
+            return new ValidationContext(parts, { source: "archive", archiveBytes: bytes }, stored);
         } catch (err) {
             throw new PackageViewError(err instanceof Error ? err.message : String(err), { cause: err });
         }
