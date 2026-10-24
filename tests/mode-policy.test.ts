@@ -16,10 +16,11 @@ import {
     defaultProfileForFormat,
     isPartialRequest,
     ModeConflictError,
+    opcNameIssueSeverity,
     profileWalksSchemas,
+    wordObservedIssueSeverity,
     QUICK_CHECK_GROUPS,
     resolveMode,
-    wordNameIssueSeverity,
     type ModeRequest,
 } from "../src/lib/mode-policy";
 import { CHECK_GROUPS } from "../src/lib/check-registry";
@@ -66,6 +67,32 @@ describe("profileWalksSchemas", () => {
         ["xlsx", "word-valid", false],
     ] as const)("%s under %s: %s", (format, profile, walks) => {
         expect(profileWalksSchemas(format, profile)).toBe(walks);
+    });
+});
+
+describe("wordObservedIssueSeverity (#459)", () => {
+    it.each([
+        // Word 16.115 offers recovery for Markup Compatibility in the
+        // content-types stream (session 14a); strict is the superset.
+        ["docx", "word-valid", "error"],
+        ["docx", "strict", "error"],
+        ["docx", "lenient", "warning"],
+        // Unobserved formats warn even under strict, where the package-name
+        // findings are errors: their schema walk already carries the verdict.
+        ["pptx", "strict", "warning"],
+        ["xlsx", "strict", "warning"],
+        ["pptx", "word-valid", "warning"],
+        ["xlsx", "lenient", "warning"],
+    ] as const)("%s under %s: %s", (format, profile, severity) => {
+        expect(wordObservedIssueSeverity(profile, format)).toBe(severity);
+    });
+
+    it("differs from opcNameIssueSeverity only for the unobserved formats under strict", () => {
+        for (const format of ["docx", "pptx", "xlsx"] as const)
+            for (const profile of ["lenient", "strict", "word-valid"] as const) {
+                const same = wordObservedIssueSeverity(profile, format) === opcNameIssueSeverity(profile, format);
+                expect(same, `${format} ${profile}`).toBe(!(format !== "docx" && profile === "strict"));
+            }
     });
 });
 
@@ -148,13 +175,5 @@ describe("assertModeCoherent", () => {
             expect(err).toBeInstanceOf(ModeConflictError);
             expect((err as Error).name).toBe("ModeConflictError");
         }
-    });
-});
-
-describe("wordNameIssueSeverity", () => {
-    it("errors only for DOCX/DOCM under word-valid and strict, warning for every PPTX/XLSX profile", () => {
-        for (const profile of ["word-valid", "strict", "lenient"] as const)
-            for (const format of ["docx", "pptx", "xlsx"] as const)
-                expect(wordNameIssueSeverity(profile, format)).toBe(format === "docx" && profile !== "lenient" ? "error" : "warning");
     });
 });

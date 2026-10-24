@@ -33,7 +33,10 @@ export const ctDuplicateDeclarationCheck: CheckDefinition = {
     run: (ctx) => {
         const stream = findContentTypesStream(ctx.partNames);
         if (stream === undefined) return [];
-        const parsed = ctx.xml(stream);
+        // Judged after Markup Compatibility processing (OPC [M1.19]), like
+        // word-content-type-invalid: a duplicate in an ignored branch is not
+        // judged; Word refuses the markup itself (#459).
+        const parsed = ctx.effectiveXml(stream);
         return parsed?.ok ? duplicateContentTypeDeclarations(parsed.document, stream) : [];
     },
 };

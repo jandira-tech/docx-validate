@@ -67,6 +67,11 @@ export const isWordBlockingIssue = (issue: ValidationIssue, propertiesParts: Rea
         // Override shapes, including identical, conflicting and case variants;
         // MINIMAL_PARTS opens clean (session 3, word-probes-2026-10-24.md).
         case "ct-duplicate-declaration":
+        // #459: Word 16.115 offers recovery for every Markup Compatibility
+        // usage in the content-types stream — mc:Ignorable, an ignored
+        // element, or AlternateContent in either orientation (session 14a in
+        // docs/plans/evidence/word-probes-2026-10-24.md).
+        case "ct-markup-compatibility":
         // paragraph-sectpr-breaks.docx: empty vt:filetime causes Word unreadable-content recovery; empty lpwstr in complex2.docx opens clean.
         case "word-custom-property-filetime-empty":
         // header-with-rid-no-sidecar.docx: Word open-error with missing wp:extent; the complete scaffold in validators-docx.test.ts opens clean.

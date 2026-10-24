@@ -13,6 +13,9 @@ export const CT_OVERRIDE_PARTNAME_WORD_REFUSED = "ct-override-partname-word-refu
  * Diagnose even Overrides naming no stored part (#451). Word 16.115 evidence:
  * docs/plans/evidence/word-probes-2026-10-24.md, sessions 6–12.
  * Literal non-ASCII already has an OPC grammar finding, so never repeat it.
+ * The stream is judged after Markup Compatibility processing (OPC [M1.19]),
+ * as `ct-override-partname-invalid` reads it: an `Override` in an ignored
+ * branch is not judged, and `ct-markup-compatibility` reports the markup (#459).
  */
 export const ctOverridePartnameWordRefusedCheck: CheckDefinition = {
     id: CT_OVERRIDE_PARTNAME_WORD_REFUSED,
@@ -23,7 +26,7 @@ export const ctOverridePartnameWordRefusedCheck: CheckDefinition = {
     run: (ctx) => {
         const stream = findContentTypesStream(ctx.partNames);
         if (stream === undefined) return [];
-        const parsed = ctx.xml(stream);
+        const parsed = ctx.effectiveXml(stream);
         if (!parsed?.ok) return [];
         return getElementsByTagNameNSAll(parsed.document, CONTENT_TYPES_NAMESPACE, "Override").flatMap((elem) => {
             const partName = elem.getAttribute("PartName") ?? "";
