@@ -415,11 +415,18 @@ errors in Word-valid and strict, and the check is included in the quick preset.
 `word-main-document-part` reports a package that names no main part: `_rels/.rels`
 is missing, or it parses and none of its direct internal `officeDocument` relationships
 targets a part in the package (an empty ZIP, a package of only `[Content_Types].xml`
-or only core properties). ECMA-376 requires the main document part. Strict fails on
-it; full and quick Word-valid report a warning until a real-Word observation shows
-Word refusing such a package; lenient runs no Word rule (#380). An `_rels/.rels`
+or only core properties). ECMA-376 requires the main document part. Word 16.115
+offers to recover an empty archive and a package without `word/document.xml`
+(docs/plans/evidence/word-probes-2026-10-24.md, session 3c), and a package whose
+`officeDocument` relationship is removed (session 4), so the finding is a
+blocking error in Word-valid and strict alike, and the check is included in the
+quick preset; lenient runs no Word rule (#380). An `_rels/.rels`
 that does not parse is left to `xml-syntax`, which Word-valid reports as a blocking
 error, because Word offers to recover such a package (#388).
+
+A package with no `[Content_Types].xml` stream at all is `ct-missing` — Word
+cannot type a single part and 16.115 offers to recover it (same evidence file),
+so that finding is Word-blocking too (#435).
 
 `opc-relationships-structure` requires every relationships part to have a
 `Relationships` root in the package-relationships namespace and only `Relationship`
@@ -618,9 +625,11 @@ not open fails with `package-open-failed` in every mode, and only its envelope
 checks are listed (#332). One that opens but whose package view cannot be read —
 a stored item name that places no part, or an unreadable entry — fails with
 `package-extract-failed`, as the full run's extraction reports it (#413). Its stored
-entry names are still read: selected `opc-equivalent-part-names` and
-`opc-part-name-escaped-unreserved` checks run and report what the full run reports,
-while every other selected check is omitted ([#420](https://github.com/jandira-tech/docx-validate/issues/420)). It is not a
+entry names and archive bytes are still read. Selected `opc-equivalent-part-names`
+and `opc-part-name-escaped-unreserved` checks and selected envelope checks (such as
+`zip-bytes-after-eocd`) run and report what the full run reports. Every other
+selected check needs the package's parts and is listed in `omittedChecks`
+([#420](https://github.com/jandira-tech/docx-validate/issues/420)). It is not a
 per-method execution trace. In the source scheduler, use `runChecks().outcomes`
 for individual
 `passed` / `failed` / `skipped` / `unavailable` statuses. `omittedChecks` names ids

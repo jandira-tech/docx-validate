@@ -77,8 +77,11 @@ export const wordDocumentRootCheck: CheckDefinition = {
 
 /**
  * ECMA-376's Minimal WordprocessingML Document requires package relationships
- * pointing to a main document part (#380). No real-Word observation exists
- * yet, so this spec finding remains advisory under full Word-valid.
+ * pointing to a main document part (#380). Word 16.115 offers recovery for an
+ * empty archive, for a package whose main document part is gone (session 3c in
+ * docs/plans/evidence/word-probes-2026-10-24.md) and for one whose
+ * officeDocument relationship is removed (session 4), so `isWordBlockingIssue`
+ * makes this finding an error under Word-valid too.
  */
 export const wordMainDocumentPartCheck: CheckDefinition = {
     id: "word-main-document-part",
