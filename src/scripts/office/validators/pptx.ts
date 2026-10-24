@@ -57,18 +57,31 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
 
     /**
      * Run the full PPTX check suite. Mirrors `PPTXSchemaValidator.validate()`
-     * in Python — same order, same short-circuit on `validateXml` failure.
+     * in Python — same order, same short-circuit on `validateXml` failure,
+     * except that word-valid and strict still judge the content-types stream.
      */
     async validate(): Promise<ValidationResult> {
         this.resetExecutedChecks();
         const xml = await this.validateXml();
-        if (!xml.valid) {
-            return xml;
-        }
-
         const malformed = new Set(
             xml.issues.flatMap((issue) => (issue.severity === "error" && issue.path !== undefined ? [issue.path] : [])),
         );
+        if (!xml.valid) {
+            // Lenient stops at a malformed part, and so do its partial runs
+            // (#391). Word-valid and strict partial runs still judge the
+            // content-types stream, so the full run reports what they do
+            // rather than dropping it (#456).
+            if (this.profile === "lenient") return xml;
+            const context = contextFromDirectory(this.unpackedDir);
+            return withoutRestatedIgnorablePrefixes(
+                mergeResults(
+                    xml,
+                    await this.validateDuplicateDeclarations(context, malformed),
+                    await this.validateOverridePartNames(context, "pptx", malformed),
+                ),
+            );
+        }
+
         const checks = [
             xml,
             await this.validateNamespaces(),
