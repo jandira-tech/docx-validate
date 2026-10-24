@@ -579,17 +579,25 @@ case and nothing else
 ([#540](https://github.com/jandira-tech/docx-validate/issues/540),
 [#550](https://github.com/jandira-tech/docx-validate/issues/550); probe
 sessions 16–17, 2026-10-24, the table living with issue #550). Scope is the
-parts session 17 observed: the main document — all four Word main-document
-content types
+parts sessions 17 and 20 observed: the main document — all four Word
+main-document content types
 ([#505](https://github.com/jandira-tech/docx-validate/issues/505)) —
-styles, settings, fontTable, webSettings, and a header the main document
-references through `w:headerReference`; a related-but-unused header opens
-clean ([#516](https://github.com/jandira-tech/docx-validate/issues/516)) and
-stays silent. Footer, comments, footnotes, endnotes, numbering, theme and
-glossaryDocument are unprobed for an inexact type and stay silent under
-word-valid; strict instead judges every Part 1 WordprocessingML part type
-the generic check's spec mode does — numbering, footer, endnotes, footnotes,
-comments and glossaryDocument — citing the content type ECMA-376 Part 1
+styles, settings, fontTable, webSettings, a header the main document
+references through `w:headerReference`, a related numbering or theme part
+(both eagerly parsed), and a footer, footnotes, endnotes or comments part
+the document uses; a related-but-unused lazy part opens clean
+([#516](https://github.com/jandira-tech/docx-validate/issues/516)) and
+stays silent. Session 20 probed the types #550 left open: an inexact
+Override gets the repair warning on each of them, while the same spelling
+on a glossaryDocument opens clean and stays silent under word-valid.
+Session 21 observed a trailing space refused on the same parts, and a
+related but unused footer, footnotes, endnotes, comments or header part
+with a parameter opening clean
+([#570](https://github.com/jandira-tech/docx-validate/issues/570); sessions
+20 and 21 in `docs/plans/evidence/word-probes-2026-10-24.md`). Strict
+judges the same probed set — theme included, though it is a DrawingML part,
+not a clause-11.3 one — plus the unprobed Part 1 WordprocessingML
+glossaryDocument type, citing the content type ECMA-376 Part 1
 (4th edition), clause 11.3, assigns
 ([#506](https://github.com/jandira-tech/docx-validate/issues/506)). Lenient
 reports a warning. One finding is reported per part, naming the declared

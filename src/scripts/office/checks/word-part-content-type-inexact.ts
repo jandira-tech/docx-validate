@@ -16,21 +16,34 @@
  * clean, so Word folds ASCII case and nothing else (probe sessions 16 and
  * 17, 2026-10-24; the table lives with issue #550).
  *
- * Scope follows the observation. Word-valid judges the parts session 17
- * probed: the main document — named with all four Word main-document
- * content types, since the check judges the package, not the file name
- * (#505) — styles, settings, fontTable, webSettings, and a header the main
- * document references through `w:headerReference` (a related-but-unused
- * header opens clean, as #516 observed). Footer, comments, footnotes,
- * endnotes, numbering, theme and glossaryDocument stay unprobed for an
- * inexact type and silent under word-valid.
+ * Scope follows the observation. Word-valid judges the parts sessions 17
+ * and 20 probed: the main document — named with all four Word
+ * main-document content types, since the check judges the package, not the
+ * file name (#505) — styles, settings, fontTable, webSettings, a header the
+ * main document references through `w:headerReference`, a related numbering
+ * or theme part (both eagerly parsed, so related is enough), and a footer,
+ * footnotes, endnotes or comments part the document uses, gated as the
+ * header is through `wordReadParts` — a related-but-unused lazy part opens
+ * clean, as #516 observed for the header and session 21 for a footer,
+ * footnotes, endnotes, comments or header part carrying a parameter
+ * (#570). Session 21 also observed a trailing space refused on the six
+ * parts session 20 added, as session 17 did on styles. A parameterized
+ * glossaryDocument type opens clean (session 20), so it stays silent under
+ * word-valid. Sessions 20 and 21 are in
+ * docs/plans/evidence/word-probes-2026-10-24.md.
  *
  * Strict justifies the same defect by the spec — ECMA-376 Part 1 (4th
  * edition), clause 11.3, gives every WordprocessingML part its own content
- * type — so a full strict run also judges the other Part 1 part types a
- * main-document relationship names: numbering, footer, endnotes, footnotes,
- * comments and glossaryDocument, each citing the content type Part 1
- * assigns it (#506), like the generic check's spec mode.
+ * type — so a full strict run also judges the Part 1 part types a
+ * main-document relationship names but no probe has observed, citing the
+ * content type Part 1 assigns them (#506), like the generic check's spec
+ * mode; the header joined the probed set in session 17 and numbering,
+ * footer, endnotes, footnotes and comments in session 20 (#570), so only
+ * glossaryDocument keeps the clause-11.3 wording. Theme is a DrawingML part — its root is the
+ * `a:theme` element dml-main.xsd declares — so it is no clause-11.3 part
+ * either; session 20 observed Word reject its parameterized type, which
+ * puts it in the probed set strict shares, keeping strict a superset of
+ * word-valid (#570).
  *
  * A part whose media type is itself generic XML is the generic check's
  * finding: `word-part-content-type-generic` judges the media type, with
@@ -67,23 +80,47 @@ import {
     SPEC_ONLY_CONTENT_TYPES,
 } from "./word-part-content-type-generic";
 
+/**
+ * The theme part's content type — the DrawingML part whose root element
+ * `a:theme` the bundled dml-main.xsd declares. It sits outside clause
+ * 11.3's WordprocessingML list, so it has no `SPEC_ONLY_CONTENT_TYPES`
+ * entry; session 20 probed it, so it joins the observed set directly (#570).
+ */
+const THEME_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.theme+xml";
+
 export const WORD_PART_CONTENT_TYPE_INEXACT = "word-part-content-type-inexact";
 
 /**
  * The relationship segments the profile-independent probes observed Word
  * refuse an inexact content type on: the main document, styles, settings,
- * fontTable, webSettings, and a header the document references (#550,
- * session 17). `wordReadParts` decides whether the document uses a lazily
- * parsed header, exactly as it does for the XML diagnostics (#516).
+ * fontTable, webSettings, a referenced header (#550, session 17), a related
+ * numbering or theme part, and a footer, footnotes, endnotes or comments
+ * part the document uses (#570, session 20). `wordReadParts` decides
+ * whether the document uses a lazily parsed part, exactly as it does for
+ * the XML diagnostics (#516); numbering and theme are eagerly parsed, so
+ * related is enough.
  */
-const OBSERVED_SEGMENTS: ReadonlySet<string> = new Set([OFFICE_DOCUMENT_SEGMENT, ...EXPECTED_CONTENT_TYPES.keys(), "header"]);
+const OBSERVED_SEGMENTS: ReadonlySet<string> = new Set([
+    OFFICE_DOCUMENT_SEGMENT,
+    ...EXPECTED_CONTENT_TYPES.keys(),
+    "header",
+    "numbering",
+    "theme",
+    "footer",
+    "footnotes",
+    "endnotes",
+    "comments",
+]);
+
+/** The lazily parsed observed segments: judged under the observed scope only when the document uses them (#516, #570). */
+const LAZY_OBSERVED_SEGMENTS: ReadonlySet<string> = new Set(["header", "footer", "comments", "footnotes", "endnotes"]);
 
 /** The segments a strict run judges: the probed set plus every other Part 1 WordprocessingML part type (#506). */
 const SPEC_SEGMENTS: ReadonlySet<string> = new Set([...OBSERVED_SEGMENTS, ...SPEC_ONLY_CONTENT_TYPES.keys()]);
 
 /** The content type a segment's part needs, `undefined` for the multi-typed main document. */
 const expectedContentTypeFor = (segment: string): string | undefined =>
-    EXPECTED_CONTENT_TYPES.get(segment) ?? SPEC_ONLY_CONTENT_TYPES.get(segment);
+    segment === "theme" ? THEME_CONTENT_TYPE : (EXPECTED_CONTENT_TYPES.get(segment) ?? SPEC_ONLY_CONTENT_TYPES.get(segment));
 
 /** What the part needs, named for the finding's message. */
 const expectedText = (segment: string, source: "override" | "default"): string => {
@@ -140,15 +177,17 @@ export const wordPartContentTypeInexactFindings = async (
     const table = parseContentTypes(parsed.document);
 
     const targets = await wordTypedRelationshipTargets(ctx, scope === "spec" ? SPEC_SEGMENTS : OBSERVED_SEGMENTS);
-    // A header is parsed lazily — only when the document uses it (#516), and
-    // session 17's specimen references its header — so under the observed
-    // scope `wordReadParts` gates the header targets the reachability walk
-    // named, the same usage decision the XML diagnostics make. Strict judges
-    // every header relationship by the spec, referenced or not.
-    const read = scope === "observed" && targets.some((target) => target.segment === "header") ? await wordReadParts(ctx) : undefined;
+    // Headers, footers, comments, footnotes and endnotes are parsed lazily
+    // — only when the document uses them (#516); session 20's specimens
+    // reference theirs (#570) — so under the observed scope `wordReadParts`
+    // gates the lazy targets the reachability walk named, the same usage
+    // decision the XML diagnostics make. Strict judges every relationship
+    // by the spec, referenced or not.
+    const read =
+        scope === "observed" && targets.some((target) => LAZY_OBSERVED_SEGMENTS.has(target.segment)) ? await wordReadParts(ctx) : undefined;
     const findings: WordInexactContentTypeFinding[] = [];
     for (const { part, segment } of targets) {
-        if (read !== undefined && segment === "header" && !read.has(canonicalPartName(part))) {
+        if (read !== undefined && LAZY_OBSERVED_SEGMENTS.has(segment) && !read.has(canonicalPartName(part))) {
             continue;
         }
         const resolved = resolveContentType(table, part);

@@ -18,6 +18,7 @@ import { chmodSync, existsSync, mkdirSync, promises as fs, symlinkSync, writeFil
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import JSZip from "jszip";
 import { describe, expect, it, vi } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
@@ -1127,6 +1128,103 @@ describe("validation contract: an inexact content type on a Word-read part (#550
         return specimen(typed.stream, typed.extra, typed.rels);
     };
 
+    // Session 20 (2026-10-24, Word 16.115; sessions 20 and 21 in
+    // docs/plans/evidence/word-probes-2026-10-24.md) probed the part types
+    // #550 left unprobed: a related numbering or theme part and a referenced
+    // footer, footnotes, endnotes or comments part typed `type; charset=utf-8`
+    // get the repair warning, a parameterized glossaryDocument opens clean,
+    // and every exact-type control opens clean (#570). Session 21 observed
+    // a trailing space refused on the same six parts.
+    const WMLT = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+    const THEME_TYPE = "application/vnd.openxmlformats-officedocument.theme+xml";
+
+    /** The well-formed theme part session 20's specimens carry — `word/theme/theme1.xml` of `package.word-anchor-open-repaired.docx`, copied not modified. */
+    let themeXml: string | undefined;
+    const theme = async (): Promise<string> => {
+        if (themeXml === undefined) {
+            const zip = await JSZip.loadAsync(await fs.readFile(path.join(WORKING, "package.word-anchor-open-repaired.docx")));
+            themeXml = await zip.file("word/theme/theme1.xml")!.async("string");
+        }
+        return themeXml;
+    };
+
+    const notesXml = (kind: "footnote" | "endnote"): string =>
+        `<w:${kind}s xmlns:w="${W}"><w:${kind} w:type="separator" w:id="-1"><w:p><w:r><w:separator/></w:r></w:p></w:${kind}>` +
+        `<w:${kind} w:type="continuationSeparator" w:id="0"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:${kind}>` +
+        `<w:${kind} w:id="1"><w:p><w:r><w:t>Note</w:t></w:r></w:p></w:${kind}></w:${kind}s>`;
+    const NUMBERING_XML =
+        `<w:numbering xmlns:w="${W}"><w:abstractNum w:abstractNumId="0"><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="decimal"/>` +
+        `<w:lvlText w:val="%1."/></w:lvl></w:abstractNum><w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num></w:numbering>`;
+    const FOOTER_XML = `<w:ftr xmlns:w="${W}"><w:p><w:r><w:t>Footer</w:t></w:r></w:p></w:ftr>`;
+    const COMMENTS_XML = `<w:comments xmlns:w="${W}"><w:comment w:id="0" w:author="A" w:initials="A"><w:p><w:r><w:t>Comment</w:t></w:r></w:p></w:comment></w:comments>`;
+    const GLOSSARY_XML =
+        `<w:glossaryDocument xmlns:w="${W}" xmlns:r="${R}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+        `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+        `<w:docPartBody><w:p><w:r><w:t>Part</w:t></w:r></w:p></w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`;
+
+    /** The main document with `xmlns:r` declared, `run` appended after the Hello run and `sect` prepended into `w:sectPr` — the s20 builder's `docWith`. */
+    const docUsing = (run: string, sect: string): string =>
+        MINIMAL_PARTS["word/document.xml"]!.replace(`<w:document xmlns:w="${W}"`, `<w:document xmlns:w="${W}" xmlns:r="${R}"`)
+            .replace("<w:t>Hello</w:t></w:r>", `<w:t>Hello</w:t></w:r>${run}`)
+            .replace("<w:sectPr>", `<w:sectPr>${sect}`);
+
+    /** The part shapes session 20's builder produced, keyed by the relationship type's segment. */
+    const S20_PARTS = {
+        numbering: { file: "numbering.xml", type: `${WMLT}.numbering+xml`, xml: (): string => NUMBERING_XML },
+        theme: { file: "theme/theme1.xml", type: THEME_TYPE, xml: theme },
+        glossaryDocument: { file: "glossary/document.xml", type: `${WMLT}.document.glossary+xml`, xml: (): string => GLOSSARY_XML },
+        footer: {
+            file: "footer9.xml",
+            type: `${WMLT}.footer+xml`,
+            xml: (): string => FOOTER_XML,
+            sect: `<w:footerReference w:type="default" r:id="rIdX"/>`,
+        },
+        footnotes: {
+            file: "footnotes.xml",
+            type: `${WMLT}.footnotes+xml`,
+            xml: (): string => notesXml("footnote"),
+            run: `<w:r><w:footnoteReference w:id="1"/></w:r>`,
+        },
+        endnotes: {
+            file: "endnotes.xml",
+            type: `${WMLT}.endnotes+xml`,
+            xml: (): string => notesXml("endnote"),
+            run: `<w:r><w:endnoteReference w:id="1"/></w:r>`,
+        },
+        comments: {
+            file: "comments.xml",
+            type: `${WMLT}.comments+xml`,
+            xml: (): string => COMMENTS_XML,
+            run: `<w:r><w:commentReference w:id="0"/></w:r>`,
+        },
+    } as const;
+    type S20Segment = keyof typeof S20_PARTS;
+
+    /** The parts session 20's `mainPart` added to the minimal package — the related part and, when used, the referencing document. */
+    const s20Parts = async (segment: S20Segment, used = true): Promise<Record<string, string>> => {
+        const spec = S20_PARTS[segment];
+        const run = "run" in spec ? spec.run : "";
+        const sect = "sect" in spec ? spec.sect : "";
+        return {
+            ...(used && (run !== "" || sect !== "") ? { "word/document.xml": docUsing(run, sect) } : {}),
+            [`word/${spec.file}`]: await spec.xml(),
+        };
+    };
+
+    const s20Specimen = async (segment: S20Segment, contentType: string, used = true): Promise<Buffer> =>
+        buildDocx({
+            ...MINIMAL_PARTS,
+            ...(await s20Parts(segment, used)),
+            "word/_rels/document.xml.rels": RELS.replace(
+                "</Relationships>",
+                `<Relationship Id="rIdX" Type="${R}/${segment}" Target="${S20_PARTS[segment].file}"/></Relationships>`,
+            ),
+            "[Content_Types].xml": STREAM.replace(
+                "</Types>",
+                `<Override PartName="/word/${S20_PARTS[segment].file}" ContentType="${contentType}"/></Types>`,
+            ),
+        });
+
     it.each([
         {
             label: "the main part's Override carrying the main type plus `; charset=utf-8`",
@@ -1203,6 +1301,78 @@ describe("validation contract: an inexact content type on a Word-read part (#550
             code: "word-part-content-type-generic",
             part: "word/styles.xml",
         },
+        {
+            label: "the numbering Override carrying the numbering type plus `; charset=utf-8` (s20b)",
+            bytes: s20Specimen("numbering", `${WMLT}.numbering+xml; charset=utf-8`),
+            code: CODE,
+            part: "word/numbering.xml",
+        },
+        {
+            label: "the theme Override carrying the theme type plus `; charset=utf-8` (s20b)",
+            bytes: s20Specimen("theme", `${THEME_TYPE}; charset=utf-8`),
+            code: CODE,
+            part: "word/theme/theme1.xml",
+        },
+        {
+            label: "a referenced footer's Override carrying the footer type plus `; charset=utf-8` (s20b)",
+            bytes: s20Specimen("footer", `${WMLT}.footer+xml; charset=utf-8`),
+            code: CODE,
+            part: "word/footer9.xml",
+        },
+        {
+            label: "a referenced footnotes part's Override carrying the footnotes type plus `; charset=utf-8` (s20b)",
+            bytes: s20Specimen("footnotes", `${WMLT}.footnotes+xml; charset=utf-8`),
+            code: CODE,
+            part: "word/footnotes.xml",
+        },
+        {
+            label: "a referenced endnotes part's Override carrying the endnotes type plus `; charset=utf-8` (s20b)",
+            bytes: s20Specimen("endnotes", `${WMLT}.endnotes+xml; charset=utf-8`),
+            code: CODE,
+            part: "word/endnotes.xml",
+        },
+        {
+            label: "a referenced comments part's Override carrying the comments type plus `; charset=utf-8` (s20c)",
+            bytes: s20Specimen("comments", `${WMLT}.comments+xml; charset=utf-8`),
+            code: CODE,
+            part: "word/comments.xml",
+        },
+        {
+            label: "the numbering Override carrying its own type plus a trailing space (s21a)",
+            bytes: s20Specimen("numbering", `${WMLT}.numbering+xml `),
+            code: CODE,
+            part: "word/numbering.xml",
+        },
+        {
+            label: "the theme Override carrying its own type plus a trailing space (s21a)",
+            bytes: s20Specimen("theme", `${THEME_TYPE} `),
+            code: CODE,
+            part: "word/theme/theme1.xml",
+        },
+        {
+            label: "a referenced footer's Override carrying its own type plus a trailing space (s21a)",
+            bytes: s20Specimen("footer", `${WMLT}.footer+xml `),
+            code: CODE,
+            part: "word/footer9.xml",
+        },
+        {
+            label: "a referenced footnotes part's Override carrying its own type plus a trailing space (s21a)",
+            bytes: s20Specimen("footnotes", `${WMLT}.footnotes+xml `),
+            code: CODE,
+            part: "word/footnotes.xml",
+        },
+        {
+            label: "a referenced endnotes part's Override carrying its own type plus a trailing space (s21a)",
+            bytes: s20Specimen("endnotes", `${WMLT}.endnotes+xml `),
+            code: CODE,
+            part: "word/endnotes.xml",
+        },
+        {
+            label: "a referenced comments part's Override carrying its own type plus a trailing space (s21a)",
+            bytes: s20Specimen("comments", `${WMLT}.comments+xml `),
+            code: CODE,
+            part: "word/comments.xml",
+        },
     ] as const)(
         "word-valid and strict both reject $label",
         async ({ bytes, code, part }) => {
@@ -1242,6 +1412,35 @@ describe("validation contract: an inexact content type on a Word-read part (#550
         }
     }, 60_000);
 
+    it.each(["footer", "footnotes", "endnotes", "comments"] as const)(
+        "keeps a related-but-unused %s part's parameterized Override silent under word-valid while strict still fails it (#516, #570)",
+        async (segment) => {
+            const contentType = `${S20_PARTS[segment].type}; charset=utf-8`;
+            const bytes = await s20Specimen(segment, contentType, false);
+            const wordValid = await validateBytes(bytes, "word-valid");
+            expect(wordValid.issues.filter((issue) => issue.code === CODE)).toEqual([]);
+            expect(wordValid.valid).toBe(true);
+            const strict = await validateBytes(bytes, "strict");
+            expect(strict.issues).toContainEqual(
+                expect.objectContaining({ code: CODE, severity: "error", path: `word/${S20_PARTS[segment].file}` }),
+            );
+            expect(strict.valid).toBe(false);
+        },
+        60_000,
+    );
+
+    it("keeps a parameterized glossaryDocument Override silent under word-valid — session 20 opened it clean — while strict still fails it (#570)", async () => {
+        const bytes = await s20Specimen("glossaryDocument", `${WMLT}.document.glossary+xml; charset=utf-8`);
+        const wordValid = await validateBytes(bytes, "word-valid");
+        expect(wordValid.issues.filter((issue) => issue.code === CODE)).toEqual([]);
+        expect(wordValid.valid).toBe(true);
+        const strict = await validateBytes(bytes, "strict");
+        expect(strict.issues).toContainEqual(
+            expect.objectContaining({ code: CODE, severity: "error", path: "word/glossary/document.xml" }),
+        );
+        expect(strict.valid).toBe(false);
+    }, 60_000);
+
     it("partial runs agree with the full run (#381)", async () => {
         await withTempDir(async (dir) => {
             const code = CODE;
@@ -1252,6 +1451,29 @@ describe("validation contract: an inexact content type on a Word-read part (#550
                     headerInMain(`${HEADER}; charset=utf-8`).stream,
                     headerInMain(`${HEADER}; charset=utf-8`).extra,
                     headerInMain(`${HEADER}`).rels,
+                ],
+                // Session 20's widened scope: an eagerly parsed segment and a
+                // lazily parsed used one must agree in partial runs too (#381, #570).
+                [
+                    "numbering",
+                    STREAM.replace(
+                        "</Types>",
+                        `<Override PartName="/word/numbering.xml" ContentType="${WMLT}.numbering+xml; charset=utf-8"/></Types>`,
+                    ),
+                    await s20Parts("numbering"),
+                    RELS.replace(
+                        "</Relationships>",
+                        `<Relationship Id="rIdX" Type="${R}/numbering" Target="numbering.xml"/></Relationships>`,
+                    ),
+                ],
+                [
+                    "footer",
+                    STREAM.replace(
+                        "</Types>",
+                        `<Override PartName="/word/footer9.xml" ContentType="${WMLT}.footer+xml; charset=utf-8"/></Types>`,
+                    ),
+                    await s20Parts("footer"),
+                    RELS.replace("</Relationships>", `<Relationship Id="rIdX" Type="${R}/footer" Target="footer9.xml"/></Relationships>`),
                 ],
             ];
             for (const [name, stream, extra, rels] of shapes) {
