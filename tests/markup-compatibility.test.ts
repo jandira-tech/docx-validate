@@ -4,7 +4,11 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { applyMarkupCompatibility, UNDERSTOOD_NAMESPACES } from "../src/lib/markup-compatibility";
+import { readdirSync, readFileSync } from "node:fs";
+import path from "node:path";
+
+import { applyMarkupCompatibility, STRICT_UNDERSTOOD_NAMESPACES, UNDERSTOOD_NAMESPACES } from "../src/lib/markup-compatibility";
+import { defaultSchemasDir } from "../src/scripts/office/validators/base";
 import { NS } from "../src/lib/types";
 import { parseXml, serializeXml, getElementsByTagNameAll } from "../src/lib/xml-helpers";
 
@@ -24,7 +28,9 @@ describe("markup compatibility", () => {
             ),
         );
         const before = serializeXml(source);
-        const { document, issues } = applyMarkupCompatibility(source, { understood: UNDERSTOOD_NAMESPACES });
+        const { document, issues } = applyMarkupCompatibility(source, {
+            understood: UNDERSTOOD_NAMESPACES,
+        });
         expect(
             getElementsByTagNameAll(document)
                 .flatMap((node) => Array.from(node.attributes))
@@ -154,6 +160,50 @@ describe("markup compatibility", () => {
             },
         ]);
     });
+    it("retains foreign extension payloads in Strict extension slots", () => {
+        for (const namespace of [
+            "http://purl.oclc.org/ooxml/drawingml/chart",
+            "http://purl.oclc.org/ooxml/drawingml/main",
+            "http://purl.oclc.org/ooxml/presentationml/main",
+            "http://purl.oclc.org/ooxml/spreadsheetml/main",
+        ]) {
+            const { document } = applyMarkupCompatibility(
+                parseXml(
+                    wrap(
+                        `<x:ext xmlns:x="${namespace}" uri="example"><wp14:payload wp14:flag="keep"><wp14:child/></wp14:payload></x:ext>`,
+                        'mc:Ignorable="wp14"',
+                    ),
+                ),
+                { understood: STRICT_UNDERSTOOD_NAMESPACES },
+            );
+            expect(getElementsByTagNameAll(document).map((node) => node.localName)).toEqual(["root", "ext", "payload", "child"]);
+        }
+    });
+    it("understands the Strict counterpart of every understood Transitional OOXML namespace", () => {
+        const strictTargets = new Set(
+            readdirSync(path.join(defaultSchemasDir(), "iso-strict"))
+                .filter((name) => name.endsWith(".xsd"))
+                .map(
+                    (name) =>
+                        /targetNamespace="([^"]+)"/.exec(readFileSync(path.join(defaultSchemasDir(), "iso-strict", name), "utf-8"))?.[1],
+                ),
+        );
+        const strictOnly = [...STRICT_UNDERSTOOD_NAMESPACES].filter((uri) => !UNDERSTOOD_NAMESPACES.has(uri));
+        const transitionalOoxml = [...UNDERSTOOD_NAMESPACES].filter(
+            (uri) => uri.startsWith("http://schemas.openxmlformats.org/") && uri !== NS.MC,
+        );
+        expect(strictOnly).toHaveLength(transitionalOoxml.length);
+        for (const uri of strictOnly) {
+            expect(strictTargets.has(uri)).toBe(true);
+        }
+        for (const uri of UNDERSTOOD_NAMESPACES) {
+            expect(STRICT_UNDERSTOOD_NAMESPACES.has(uri)).toBe(true);
+        }
+        const strictPart = parseXml(
+            `<w:document xmlns:w="http://purl.oclc.org/ooxml/wordprocessingml/main" xmlns:mc="${NS.MC}" mc:MustUnderstand="w"/>`,
+        );
+        expect(applyMarkupCompatibility(strictPart, { understood: STRICT_UNDERSTOOD_NAMESPACES }).issues).toEqual([]);
+    });
     it("retains non-ignorable foreign content and understood namespaces", () => {
         // This control needs a truly unknown URI: Office attributes have their
         // own removal rule, independently covered above. Keep the same QNames.
@@ -182,7 +232,9 @@ describe("markup compatibility", () => {
             const source = parseXml(
                 `<part:root xmlns:part="${namespace}" xmlns:mc="${NS.MC}" mc:Ignorable="part"><part:child/></part:root>`,
             );
-            const { document, issues } = applyMarkupCompatibility(source, { understood: new Set([...UNDERSTOOD_NAMESPACES, namespace]) });
+            const { document, issues } = applyMarkupCompatibility(source, {
+                understood: new Set([...UNDERSTOOD_NAMESPACES, namespace]),
+            });
             expect(getElementsByTagNameAll(document).map((node) => node.localName)).toEqual(["root", "child"]);
             expect(issues).toEqual([]);
         }
