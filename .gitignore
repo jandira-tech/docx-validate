@@ -24,3 +24,4 @@ tests/word-probe-results.jsonl
 # fixture drift survey scratch output
 .drift-run/
 PolyXML/
+.empryo

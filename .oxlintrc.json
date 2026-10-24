@@ -11,7 +11,16 @@
         "builtin": true,
         "es2018": true
     },
-    "ignorePatterns": ["**/vite.config.ts", "**/dist/**", "**/coverage/**", "**/*.js", "eslint.config.ts", "**/demo/**", "**/scripts/**"],
+    "ignorePatterns": [
+        "**/vite.config.ts",
+        "**/dist/**",
+        "**/coverage/**",
+        "**/*.js",
+        "eslint.config.ts",
+        "**/demo/**",
+        "**/scripts/**",
+        "*.tmp.mts"
+    ],
     "rules": {
         "constructor-super": "error",
         "for-direction": "error",
@@ -196,10 +205,6 @@
                 "unicorn/prefer-ternary": "error",
                 "jsdoc-js/check-alignment": "error",
                 "valid-typeof": "off",
-                "functional/immutable-data": "off",
-                "functional/prefer-property-signatures": "error",
-                "functional/no-mixed-types": "off",
-                "functional/prefer-readonly-type": "off",
                 "no-unused-vars": [
                     "error",
                     {
@@ -296,7 +301,6 @@
             },
             "jsPlugins": [
                 "eslint-plugin-prefer-arrow",
-                "eslint-plugin-functional",
                 {
                     "name": "jsdoc-js",
                     "specifier": "eslint-plugin-jsdoc"

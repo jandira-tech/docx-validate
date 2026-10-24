@@ -5,8 +5,8 @@ OOXML validators and redline/comment helpers for `.docx` and `.pptx` files.
 - Repo: `jandira-tech/docx-validate`
 - npm: `docx-validate` (unscoped)
 - Language: TypeScript, ESM only
-- Runtime: Node + Bun
-- Build: `vite-plus`
+- Runtime: Node 26
+- Build: Vite 8 (rolldown) + `rolldown-plugin-dts`
 - Tests: `vitest`
 - Package manager: `pnpm`
 
@@ -100,7 +100,7 @@ The `STRICT_OOXML_NAMESPACES` constant in `validators/base.ts` and the `WORD_STR
 
 - **soffice end-to-end tests are gated on `process.env.SOFFICE_AVAILABLE`.** Both `tests/accept-changes.test.ts` and `tests/soffice.test.ts` skip real-LibreOffice invocations unless that env var is set; CI images typically don't include LibreOffice. Run with `SOFFICE_AVAILABLE=1 pnpm test` locally to exercise them.
 
-- **Three `eslint-plugin-functional` rules are disabled in `.oxlintrc.json`:** `functional/immutable-data`, `functional/no-mixed-types`, `functional/prefer-readonly-type`. All three are type-aware and call `getParserServices()`, but oxlint's JS-plugin runtime hard-codes `parserServices: ObjectFreeze({})` (see `node_modules/oxlint/dist/lint.js:13580`), so they crash the AST walker on any file containing a type alias / interface or an `arr.push(...)` call. `prefer-property-signatures` is the only functional rule left enabled because it's syntactic-only. Re-enable the three when oxlint either provides parser services to JS plugins or honors `requiresTypeChecking: true` for skip.
+- **`eslint-plugin-functional` is dropped.** Under typescript@7 the plugin cannot even load: its `is-immutable-type` → `@typescript-eslint/type-utils` → `ts-api-utils@2.5.0` import chain reads `ts.Intrinsic`, which TS7's experimental JS API does not expose — every `pnpm run lint` died at plugin load. Only `functional/prefer-property-signatures` was still enforcing (the other three rules had long been disabled), and nothing replaces it. Type-aware linting now runs through `oxlint-tsgolint` (the tsgo-backed type checker oxlint requires under TS7). Revisit if `ts-api-utils` 3.x ships a stable TS7-compatible release.
 
 ## Verification
 
@@ -108,7 +108,7 @@ The `STRICT_OOXML_NAMESPACES` constant in `validators/base.ts` and the `WORD_STR
 pnpm install
 pnpm exec tsc --noEmit  # type-check
 pnpm test               # vitest
-pnpm run check          # vite-plus check
+pnpm run check          # tsc + oxlint + oxfmt
 pnpm run build          # produce dist/
 ```
 

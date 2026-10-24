@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /*
  * Copyright 2026 Jandira Technologies, LLC
  *

@@ -12,7 +12,7 @@
 [![tree-shakeable](https://badgen.net/bundlephobia/tree-shaking/docx-validate)](https://bundlephobia.com/package/docx-validate)
 [![dependencies](https://badgen.net/bundlephobia/dependency-count/docx-validate)](https://bundlephobia.com/package/docx-validate)
 [![license](https://badgen.net/badge/license/Apache-2.0/blue)](./LICENSE)
-[![node](https://badgen.net/badge/node/%3E%3D20/green)](./package.json)
+[![node](https://badgen.net/badge/node/%3E%3D26/green)](./package.json)
 [![github](https://badgen.net/badge/icon/jandira-tech%2Fdocx-validate?icon=github&label)](https://github.com/jandira-tech/docx-validate)
 
 OOXML validators and redline/comment helpers for `.docx` and `.pptx` files. XSD-backed, TypeScript, ESM, runs under Node (managed with pnpm) for the neurotic developer.
@@ -25,9 +25,9 @@ OOXML validators and redline/comment helpers for `.docx` and `.pptx` files. XSD-
 ## Install
 
 ```bash
-bun add docx-validate
-# or
 npm install docx-validate
+# or
+pnpm add docx-validate
 ```
 
 ## Layout
@@ -94,7 +94,7 @@ Runtime:
 
 Dev:
 
-- `@types/tmp`, `@types/node`, `typescript`, `vite-plus`, `bumpp`
+- `@types/tmp`, `@types/node`, `typescript`, `vite`, `oxlint`, `oxfmt`, `bumpp`
 
 ## Running CLIs
 
@@ -239,8 +239,8 @@ interface ValidationResult {
 ```bash
 pnpm install
 pnpm test          # vitest
-pnpm run check     # vite-plus check
-pnpm run build     # vite-plus build
+pnpm run check     # tsc + oxlint + oxfmt
+pnpm run build     # vite build
 ```
 
 ## Acknowledgments

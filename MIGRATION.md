@@ -4,6 +4,14 @@ Notes for upgrading between breaking releases of `docx-validate`.
 The project follows [SemVer](https://semver.org/spec/v2.0.0.html); under `0.x`,
 minor versions carry breaking changes.
 
+## 0.52.x → Unreleased
+
+### Node 20 → Node 26
+
+`engines.node` moves from `>=20` to `>=26`. If you run `docx-validate` on Node
+20–24, upgrade your runtime or stay on `0.52.x`. Everything else in this cycle
+is dev-toolchain only (pnpm 12, Vite 8 / rolldown, oxlint + oxfmt, TypeScript 7) and invisible to library consumers — no API changes.
+
 ## 0.51.x → 0.52.0
 
 ### XSD engine: `libxmljs2` → `libxml2-wasm`

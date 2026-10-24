@@ -7,8 +7,7 @@
 // of the library — the PR branch vs its merge base. A drift means a validator
 // changed what it flags.
 //
-// Two subcommands, run under **Node + tsx** (libxmljs2's native addon is built
-// for Node's ABI and crashes under Bun's runtime):
+// Two subcommands, run under **Node + tsx**:
 //
 //   # On each checkout (base + PR): snapshot every fixture's verdict to JSON.
 //   node --import tsx scripts/validate-diff.ts build --out <file.json>

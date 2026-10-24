@@ -15,7 +15,7 @@
  */
 
 // Walk a dir of *.docx, run docx-validate word-valid profile on each.
-// Usage: bun scripts/sweep-word-valid.ts <dir> [--json out.json]
+// Usage: pnpm exec tsx scripts/sweep-word-valid.ts <dir> [--json out.json]
 import * as fs from "node:fs";
 import * as path from "node:path";
 
@@ -87,7 +87,7 @@ export async function sweepWordValid(dir: string, jsonOut = ""): Promise<number>
 
 export async function main(argv: string[] = process.argv.slice(2)): Promise<number> {
     if (argv.length === 0 || !argv[0]) {
-        process.stderr.write("Usage: bun scripts/sweep-word-valid.ts <dir> [--json out.json]\n");
+        process.stderr.write("Usage: pnpm exec tsx scripts/sweep-word-valid.ts <dir> [--json out.json]\n");
         return 1;
     }
     const dir = path.resolve(argv[0]);

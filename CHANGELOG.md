@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **Node 26 is now the minimum runtime** (`engines.node` `>=20` → `>=26`). No API changes.
+- **Dev toolchain: `vite-plus` → Vite 8 (rolldown) + `rolldown-plugin-dts`**; lint and format via oxc (`oxlint --type-aware`, `oxfmt`); TypeScript 7. `pnpm run check` is now `tsc --noEmit && oxlint --type-aware --type-check && oxfmt --check .`.
+- **`eslint-plugin-functional` removed.** It cannot load under TypeScript 7 (its `ts-api-utils@2.5.0` transitive reads `ts.Intrinsic`, absent from TS7's experimental API), which took `pnpm run lint` down entirely. Only `functional/prefer-property-signatures` was still active. Type-aware linting now runs via the `oxlint-tsgolint` package.
+
+### Fixed
+
+- The docs and validator-diff CI workflows install with pnpm but never enabled `actions/setup-node`'s `cache: pnpm`. Both now use the pnpm store cache; the validator-diff job hashes the `baseline/` and `current/` lockfiles, since its path-scoped checkouts leave no root lockfile.
+
 ## [0.52.0] — 2026-10-06
 
 Breaking under `0.x` conventions: the native `libxmljs2` addon is replaced by
@@ -109,7 +119,7 @@ Breaking under `0.x` conventions: the native `libxmljs2` addon is replaced by
   `accept-changes.ts`, so the bundler tree-shakes both files (and
   `SHIM_SOURCE`, `LD_PRELOAD`, `RTLD_NEXT`, `dlsym`, etc.) out of
   `dist/index.mjs`. `grep -E "LD_PRELOAD|SHIM_SOURCE|RTLD_NEXT|dlsym"
-dist/index.mjs` returns zero matches.
+  dist/index.mjs` returns zero matches.
 - Added `SECURITY.md` with the disclosure policy and a detailed
   explanation of the shim pattern, where it lives, and how to verify the
   published bundle is clean.

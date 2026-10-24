@@ -35,7 +35,10 @@ describe("word error explanations", () => {
     });
 });
 
-describe("word error explanations — CLI wiring", () => {
+// Spawns the real CLI via `node --import tsx` (transform + wasm init + full
+// validation), which regularly exceeds vitest's 5s default under parallel
+// load — same 30s budget the word-* subprocess suites use.
+describe("word error explanations — CLI wiring", { timeout: 30000 }, () => {
     it("prints the explanation line under --profile word-valid for a mapped code", async () => {
         const { execFile } = await import("node:child_process");
         const { promisify } = await import("node:util");
