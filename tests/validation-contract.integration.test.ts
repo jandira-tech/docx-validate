@@ -71,6 +71,27 @@ describe("validation contract: strict includes every Word-valid package check", 
     }
 });
 
+describe("validation contract: Word-refused names also fail strict", { timeout: 120000 }, () => {
+    for (const code of ["opc-part-name-word-refused", "ct-override-partname-word-refused"]) {
+        it(`${code} is an error under both profiles`, async () => {
+            const parts = code.startsWith("opc-")
+                ? { ...MINIMAL_PARTS, "word/a%21b.xml": "<x/>" }
+                : {
+                      ...MINIMAL_PARTS,
+                      "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                          "</Types>",
+                          '<Override PartName="/word/a%21b.xml" ContentType="application/xml"/></Types>',
+                      ),
+                  };
+            for (const profile of ["word-valid", "strict"] as const) {
+                const result = await validateBytes(await buildDocx(parts), profile);
+                expect(errorCodes(result.issues).has(code)).toBe(true);
+                expect(result.valid).toBe(false);
+            }
+        });
+    }
+});
+
 /**
  * Every Word-proven rejection rule, with the fixture pair its own suite uses:
  * the specimen Word refuses and the repaired control Word opens.

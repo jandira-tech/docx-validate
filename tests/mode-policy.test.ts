@@ -19,6 +19,7 @@ import {
     profileWalksSchemas,
     QUICK_CHECK_GROUPS,
     resolveMode,
+    wordNameIssueSeverity,
     type ModeRequest,
 } from "../src/lib/mode-policy";
 import { CHECK_GROUPS } from "../src/lib/check-registry";
@@ -147,5 +148,13 @@ describe("assertModeCoherent", () => {
             expect(err).toBeInstanceOf(ModeConflictError);
             expect((err as Error).name).toBe("ModeConflictError");
         }
+    });
+});
+
+describe("wordNameIssueSeverity", () => {
+    it("errors only for DOCX/DOCM under word-valid and strict, warning for every PPTX/XLSX profile", () => {
+        for (const profile of ["word-valid", "strict", "lenient"] as const)
+            for (const format of ["docx", "pptx", "xlsx"] as const)
+                expect(wordNameIssueSeverity(profile, format)).toBe(format === "docx" && profile !== "lenient" ? "error" : "warning");
     });
 });
