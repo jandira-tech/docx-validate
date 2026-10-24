@@ -550,19 +550,19 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     ): Promise<ValidationResult> {
         const view = malformed.size > 0 ? context.withUnparseable(new Map([...malformed].map((part) => [part, "malformed"]))) : context;
         // Strict judges every Part 1 WordprocessingML part type, not only
-        // the probed five (#506); word-valid and lenient keep the probed set.
+        // the observed set (#506); word-valid and lenient keep that set.
         const found = await wordPartContentTypeGenericFindings(view, this.profile === "strict" ? "spec" : "observed");
         const inexact = await wordPartContentTypeInexactFindings(view, this.profile === "strict" ? "spec" : "observed");
         this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_GENERIC);
         this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_INEXACT);
         // The base pass skips non-XML names and docProps/. Suppress a
-        // Default-typed main only if its own path has a replacement error;
+        // Default-typed main or theme only if its own path has a replacement error;
         // otherwise strict must retain the Word-blocking finding (#535).
         const replacements = this.profile === "strict" ? (await contentTypes).issues : [];
         const judged = [...found, ...inexact].filter(
             (finding) =>
                 !(
-                    finding.segment === "officeDocument" &&
+                    (finding.segment === "officeDocument" || finding.segment === "theme") &&
                     finding.source === "default" &&
                     replacements.some(
                         (issue) => issue.code === "ct-undeclared-part" && issue.severity === "error" && issue.path === finding.issue.path,

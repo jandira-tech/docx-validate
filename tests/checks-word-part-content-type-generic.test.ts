@@ -37,6 +37,8 @@ import { validate } from "../src/scripts/office/validate";
 import { isWordBlockingIssue } from "../src/scripts/office/validators/word-blocking";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
+import { GENERIC_NUMBERING_THEME_SPECIMENS, genericNumberingThemeParts } from "./support/generic-numbering-theme-specimens";
+
 import { GENERIC_RENAMED_MAIN_PARTS } from "./support/word-profile-regression-specimens";
 
 const ID = WORD_PART_CONTENT_TYPE_GENERIC;
@@ -222,15 +224,9 @@ describe("word-part-content-type-generic (#432)", () => {
         expect(await diagnose(ValidationContext.fromEntries(parts))).toEqual([]);
     });
 
-    it("stays silent for the unobserved types, until a probe observes them", async () => {
-        // Session 8a observed only the main document, styles, settings,
-        // fontTable and webSettings; numbering and customXml are not reported.
-        const numbering = withDocRel(
-            withoutOverride({ ...MINIMAL_PARTS, "word/numbering.xml": `<w:numbering xmlns:w="${W}"/>` }, "word/numbering.xml"),
-            `${R}/numbering`,
-            "numbering.xml",
-        );
-        expect(await diagnose(ValidationContext.fromEntries(numbering))).toEqual([]);
+    it("stays silent for customXml, whose generic type is outside this check", async () => {
+        const parts = withDocRel({ ...MINIMAL_PARTS, "customXml/item1.xml": "<root/>" }, `${R}/customXml`, "../customXml/item1.xml");
+        expect(await diagnose(ValidationContext.fromEntries(parts))).toEqual([]);
     });
 
     it("reports a part reached through its Strict-conformance relationship type", async () => {
@@ -544,7 +540,6 @@ describe("word-part-content-type-generic on the generic XML spellings (#517)", {
 describe("word-part-content-type-generic under strict covers Part 1 parts (#506)", { timeout: 120_000 }, () => {
     const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
     const SPEC_PARTS = [
-        { segment: "numbering", part: "word/numbering.xml", root: "numbering", contentType: `${WML}.numbering+xml` },
         { segment: "header", part: "word/header1.xml", root: "hdr", contentType: `${WML}.header+xml` },
         { segment: "footer", part: "word/footer1.xml", root: "ftr", contentType: `${WML}.footer+xml` },
     ] as const;
@@ -1115,4 +1110,27 @@ describe("word-part-content-type-inexact (#550)", { timeout: 120_000 }, () => {
             );
         });
     }, 60_000);
+});
+
+describe("numbering and theme generic Default (#571)", () => {
+    it.each(GENERIC_NUMBERING_THEME_SPECIMENS)("reports $segment typed by the generic Default", async (specimen) => {
+        const issues = await diagnose(ValidationContext.fromEntries(genericNumberingThemeParts(specimen)));
+        expect(issues).toEqual([expect.objectContaining({ code: ID, severity: "error", path: specimen.part })]);
+        expect(issues[0]?.message).toContain(`the main document's ${specimen.segment} relationship`);
+        expect(issues[0]?.message).toContain('Default for extension "xml" to "application/xml"');
+        expect(issues[0]?.message).toContain(specimen.contentType);
+        expect(isWordBlockingIssue(issues[0]!, new Set(), new Set())).toBe(true);
+    });
+
+    it.each(GENERIC_NUMBERING_THEME_SPECIMENS)("accepts $segment with its exact Override", async (specimen) => {
+        expect(await diagnose(ValidationContext.fromEntries(genericNumberingThemeParts(specimen, true)))).toEqual([]);
+    });
+
+    it.each(GENERIC_NUMBERING_THEME_SPECIMENS)("does not judge an unrelated $segment part", async (specimen) => {
+        const parts = {
+            ...genericNumberingThemeParts(specimen),
+            "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!,
+        };
+        expect(await diagnose(ValidationContext.fromEntries(parts))).toEqual([]);
+    });
 });
