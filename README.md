@@ -130,8 +130,9 @@ if (!result.valid) {
 }
 ```
 
-Strict profile (flags BOM-prefixed parts and other tolerated-but-non-canonical
-constructs):
+Strict profile (reports tolerated-but-non-canonical constructs such as
+BOM-prefixed parts and Office sequence-order deviations; a BOM is a warning,
+never a failure on its own):
 
 ```ts
 const result = await validate("./contract.docx", { profile: "strict" });

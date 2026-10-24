@@ -3,7 +3,14 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { describe, expect, it } from "vitest";
 
-import { getElementsByTagNameAll, getElementsByTagNameNSAll, parseXml, prettyXml } from "../src/lib/xml-helpers";
+import {
+    decodeXmlBytes,
+    getElementsByTagNameAll,
+    getElementsByTagNameNSAll,
+    parseXml,
+    parseXmlBytes,
+    prettyXml,
+} from "../src/lib/xml-helpers";
 
 const DOC = `<?xml version="1.0"?>
 <pkg:document xmlns:pkg="urn:root" xmlns:pkga="urn:a" xmlns:pkgb="urn:b">
@@ -56,6 +63,98 @@ describe("xml-helpers element collectors", () => {
         expect(as).toHaveLength(2);
         // 3 = x:a + x:b + nested x:a; the starting element itself is excluded.
         expect(getElementsByTagNameAll(aRoot)).toHaveLength(3);
+    });
+});
+
+describe("decodeXmlBytes", () => {
+    /** UTF-16 bytes with (or without) a leading BOM, in the requested endianness. */
+    const utf16 = (text: string, endian: "le" | "be", withBom: boolean): Uint8Array => {
+        const out = new Uint8Array((withBom ? 2 : 0) + text.length * 2);
+        let offset = 0;
+        if (withBom) {
+            out[0] = endian === "le" ? 0xff : 0xfe;
+            out[1] = endian === "le" ? 0xfe : 0xff;
+            offset = 2;
+        }
+        for (let i = 0; i < text.length; i += 1) {
+            out[offset + i * 2] = endian === "le" ? text.charCodeAt(i) & 0xff : text.charCodeAt(i) >> 8;
+            out[offset + i * 2 + 1] = endian === "le" ? text.charCodeAt(i) >> 8 : text.charCodeAt(i) & 0xff;
+        }
+        return out;
+    };
+
+    const utf8 = (text: string): Uint8Array => new TextEncoder().encode(text);
+    const BODY = "<a>café — 日本語</a>";
+
+    it("strips a UTF-8 BOM", () => {
+        expect(decodeXmlBytes(new Uint8Array([0xef, 0xbb, 0xbf, ...utf8(BODY)]))).toBe(BODY);
+    });
+
+    it("decodes UTF-8 without a BOM", () => {
+        expect(decodeXmlBytes(utf8(BODY))).toBe(BODY);
+    });
+
+    it("honours the UTF-16LE BOM", () => {
+        expect(decodeXmlBytes(utf16(BODY, "le", true))).toBe(BODY);
+    });
+
+    it("honours the UTF-16BE BOM", () => {
+        expect(decodeXmlBytes(utf16(BODY, "be", true))).toBe(BODY);
+    });
+
+    it("uses the declared encoding when there is no BOM", () => {
+        expect(decodeXmlBytes(utf16(`<?xml version="1.0" encoding="UTF-16LE"?>${BODY}`, "le", false))).toBe(
+            `<?xml version="1.0" encoding="UTF-16LE"?>${BODY}`,
+        );
+        expect(decodeXmlBytes(utf16(`<?xml version="1.0" encoding="UTF-16BE"?>${BODY}`, "be", false))).toBe(
+            `<?xml version="1.0" encoding="UTF-16BE"?>${BODY}`,
+        );
+    });
+
+    it("sniffs the endianness of a BOM-less UTF-16 entity declaring plain UTF-16", () => {
+        expect(decodeXmlBytes(utf16(`<?xml version="1.0" encoding="UTF-16"?>${BODY}`, "le", false))).toBe(
+            `<?xml version="1.0" encoding="UTF-16"?>${BODY}`,
+        );
+        expect(decodeXmlBytes(utf16(`<?xml version="1.0" encoding="UTF-16"?>${BODY}`, "be", false))).toBe(
+            `<?xml version="1.0" encoding="UTF-16"?>${BODY}`,
+        );
+    });
+
+    it("reads a BOM-less UTF-16 declaration of any length, not just the first 200 bytes", () => {
+        // The declaration may carry arbitrary whitespace (XML 1.0 §2.8, S),
+        // so a fixed byte window can cut the encoding name off.
+        const decl = `<?xml version="1.0"${" ".repeat(70)}encoding="UTF-16"?>`;
+        expect(decodeXmlBytes(utf16(`${decl}${BODY}`, "le", false))).toBe(`${decl}${BODY}`);
+        expect(decodeXmlBytes(utf16(`${decl}${BODY}`, "be", false))).toBe(`${decl}${BODY}`);
+    });
+
+    it("keeps surrogate pairs and NUL-high-byte characters after a BOM-less UTF-16 declaration intact", () => {
+        const text = `<?xml version="1.0" encoding="UTF-16"?><r a="\u{1F600}">\u0100\u4E2D\u{1F600}</r>`;
+        expect(decodeXmlBytes(utf16(text, "le", false))).toBe(text);
+        expect(decodeXmlBytes(utf16(text, "be", false))).toBe(text);
+    });
+
+    it("prefers the BOM over a contradicting declaration", () => {
+        expect(decodeXmlBytes(utf16('<?xml version="1.0" encoding="UTF-16BE"?>' + BODY, "le", true))).toBe(
+            `<?xml version="1.0" encoding="UTF-16BE"?>${BODY}`,
+        );
+    });
+
+    it("falls back to UTF-8 for other declarations and for no declaration at all", () => {
+        expect(decodeXmlBytes(utf8('<?xml version="1.0" encoding="US-ASCII"?><a>ok</a>'))).toBe(
+            '<?xml version="1.0" encoding="US-ASCII"?><a>ok</a>',
+        );
+        expect(decodeXmlBytes(utf8("<a>ok</a>"))).toBe("<a>ok</a>");
+        expect(decodeXmlBytes(utf8("<a>ok</a>"))).not.toBe("");
+    });
+
+    it("returns an empty string for empty input", () => {
+        expect(decodeXmlBytes(new Uint8Array())).toBe("");
+    });
+
+    it("parseXmlBytes builds the DOM from the decoded bytes", () => {
+        const dom = parseXmlBytes(new Uint8Array([0xef, 0xbb, 0xbf, ...utf8(BODY)]));
+        expect(dom.documentElement?.textContent).toBe("café — 日本語");
     });
 });
 

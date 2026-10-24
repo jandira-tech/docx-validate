@@ -29,7 +29,7 @@
 
 import JSZip from "jszip";
 
-import { parseXml } from "./xml-helpers";
+import { decodeXmlBytes, parseXml } from "./xml-helpers";
 
 /** Where the package came from. Archive-only checks need `"archive"`. */
 export type PackageSource = "archive" | "directory" | "memory";
@@ -124,7 +124,7 @@ export class ValidationContext {
         return bytes;
     }
 
-    /** The part decoded as text (BOM and UTF-16 aware). */
+    /** The part decoded as text: byte order mark first, then the XML declaration's encoding. */
     public text(part: string): string | undefined {
         const name = normalizePartName(part);
         const cached = this.textCache.get(name);
@@ -135,7 +135,7 @@ export class ValidationContext {
         if (bytes === undefined) {
             return undefined;
         }
-        const text = decodeText(bytes);
+        const text = decodeXmlBytes(bytes);
         this.textCache.set(name, text);
         return text;
     }
@@ -180,17 +180,3 @@ export class ValidationContext {
         return this.parses.get(normalizePartName(part)) ?? 0;
     }
 }
-
-/**
- * Decode XML bytes by their byte order mark: UTF-8 (BOM optional), UTF-16 LE
- * or BE. The BOM is not part of the returned text.
- */
-const decodeText = (bytes: Uint8Array): string => {
-    if (bytes[0] === 0xff && bytes[1] === 0xfe) {
-        return new TextDecoder("utf-16le").decode(bytes);
-    }
-    if (bytes[0] === 0xfe && bytes[1] === 0xff) {
-        return new TextDecoder("utf-16be").decode(bytes);
-    }
-    return new TextDecoder("utf-8").decode(bytes);
-};

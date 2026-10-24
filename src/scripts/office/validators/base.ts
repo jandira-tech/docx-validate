@@ -47,8 +47,9 @@ import { parseContentTypes, partExtension, resolveContentType } from "../../../l
 import { withTempDir } from "../../../lib/run-cli";
 import type { Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
 import { DEFAULT_PROFILE, OK_RESULT } from "../../../lib/types";
-import { createXsdValidator, type XsdValidator } from "../../../lib/xsd-validator";
+import { allowSchemaResourceRoot, createXsdValidator, type XsdValidator } from "../../../lib/xsd-validator";
 import { getElementsByTagNameNSAll, getElementsByTagNameAll, parseXml, serializeXml } from "../../../lib/xml-helpers";
+import { checkXmlSyntax } from "../../../lib/xml-syntax";
 import { resolveSafeZipEntry } from "../../../lib/zip-path";
 
 /**
@@ -331,6 +332,10 @@ export class BaseSchemaValidator {
         if (this.xsdValidatorRef) {
             return this.xsdValidatorRef;
         }
+        // The engine's file access is restricted to allowed schema roots; a
+        // caller-supplied `schemasDir` must be one of them or its import
+        // closure would be refused.
+        allowSchemaResourceRoot(this.schemasDir);
         if (!this.xsdValidatorPromise) {
             this.xsdValidatorPromise = createXsdValidator();
         }
@@ -340,22 +345,15 @@ export class BaseSchemaValidator {
     }
 
     /**
-     * Strict-profile-only check: every XML part must NOT begin with a UTF-8
-     * BOM (U+FEFF, encoded as bytes EF BB BF). The XML spec permits the BOM
-     * and Microsoft Office routinely emits it; the lenient profile silently
-     * strips it before parsing. Strict callers want to know it's there.
-     *
-     * Severity is profile-aware:
-     *   - `strict`  → reported as `error` (fails the document).
-     *   - `lenient` → reported as `warning` (visible to anyone inspecting
-     *     `result.issues` but does NOT flip `valid` to false).
-     *
-     * The check NEVER becomes a silent no-op — even in lenient mode the
-     * gap is surfaced as a warning so callers can audit it later.
+     * Every XML part should NOT begin with a UTF-8 BOM (U+FEFF, bytes EF BB
+     * BF). XML 1.0 §4.3.3 permits the BOM and Microsoft Office emits it
+     * routinely, so this is reported at `warning` severity under EVERY
+     * profile — it never fails a document on its own. The finding stays
+     * visible in `result.issues` so callers who care about canonical bytes can
+     * audit it.
      */
     async validateNoBom(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
         for (const xmlFile of this.xmlFiles) {
             let bytes: Buffer;
             try {
@@ -365,10 +363,10 @@ export class BaseSchemaValidator {
             }
             if (bytes.length >= 3 && bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf) {
                 issues.push({
-                    severity,
+                    severity: "warning",
                     message:
-                        "XML part begins with a UTF-8 BOM (U+FEFF). Permitted by the XML spec but " +
-                        "non-canonical for OOXML; reported as error under strict, warning under lenient.",
+                        "XML part begins with a UTF-8 BOM (U+FEFF). Permitted by the XML spec (and emitted by Microsoft Office), " +
+                        "so it is reported as a warning under every profile and never fails a document on its own.",
                     path: this.relPath(xmlFile),
                     code: "xml-bom-leading",
                 });
@@ -553,21 +551,31 @@ export class BaseSchemaValidator {
 
     // ----- well-formedness & namespaces ---------------------------------------
 
+    /**
+     * Well-formedness of every XML part, checked on the ORIGINAL BYTES.
+     *
+     * libxml2 parses bytes, so the part's own BOM and `encoding` declaration
+     * decide how it decodes (a UTF-16 part read as a UTF-8 string is garbage)
+     * and every diagnostic carries a 1-based line/column. Parsing runs
+     * WITHOUT `XML_PARSE_RECOVER` so content `@xmldom` silently recovers from
+     * (a bare `&`, an unquoted attribute value) is reported instead of
+     * accepted, and WITH `XML_PARSE_NONET | XML_PARSE_NO_XXE` so external
+     * entities are never fetched. See `src/lib/xml-syntax.ts`.
+     *
+     * Codes: `xml-syntax` (not well-formed), `xml-undeclared-prefix`
+     * (undeclared namespace prefix), `xml-encoding` (declared encoding
+     * unsupported / bytes do not decode in it).
+     */
     async validateXml(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
         for (const xmlFile of this.xmlFiles) {
+            let raw: Buffer;
             try {
-                const content = await fs.readFile(xmlFile, "utf-8");
-                parseXml(content);
-            } catch (err) {
-                const message = err instanceof Error ? err.message : String(err);
-                issues.push({
-                    severity: "error",
-                    message,
-                    path: this.relPath(xmlFile),
-                    code: "xml-syntax",
-                });
+                raw = await fs.readFile(xmlFile);
+            } catch {
+                continue;
             }
+            issues.push(...(await checkXmlSyntax(raw, this.relPath(xmlFile))));
         }
         return finalize(issues);
     }
