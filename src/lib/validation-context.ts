@@ -125,6 +125,8 @@ export const indexByPartName = <T>(entries: Iterable<readonly [string, T]>): Map
 export class ValidationContext {
     public readonly source: PackageSource;
     public readonly archiveBytes: Uint8Array | undefined;
+    /** Original file item names before normalized indexing drops aliases; sorted and immutable. */
+    public readonly storedNames: readonly string[];
 
     private readonly parts: ReadonlyMap<string, PartContent>;
     private readonly names: readonly string[];
@@ -141,10 +143,12 @@ export class ValidationContext {
     private constructor(
         parts: ReadonlyMap<string, PartContent>,
         opts: ValidationContextOptions,
+        storedNames: readonly string[],
         base?: ValidationContext,
         unparseable: ReadonlyMap<string, string> = new Map(),
     ) {
         this.parts = parts;
+        this.storedNames = Object.freeze([...storedNames].sort());
         this.names = [...parts.keys()].sort();
         this.source = opts.source ?? "memory";
         this.archiveBytes = opts.archiveBytes;
@@ -162,8 +166,12 @@ export class ValidationContext {
         entries: Readonly<Record<string, PartContent>> | Iterable<readonly [string, PartContent]>,
         opts: ValidationContextOptions = {},
     ): ValidationContext {
-        const pairs: Iterable<readonly [string, PartContent]> = Symbol.iterator in entries ? entries : Object.entries(entries);
-        return new ValidationContext(indexByPartName(pairs), opts);
+        const pairs = [...(Symbol.iterator in entries ? entries : Object.entries(entries))];
+        return new ValidationContext(
+            indexByPartName(pairs),
+            opts,
+            pairs.map(([name]) => name),
+        );
     }
 
     /**
@@ -187,7 +195,11 @@ export class ValidationContext {
                 }
             }),
         );
-        return new ValidationContext(parts, { source: "archive", archiveBytes: bytes });
+        return new ValidationContext(
+            parts,
+            { source: "archive", archiveBytes: bytes },
+            files.map((entry) => entry.unsafeOriginalName ?? entry.name),
+        );
     }
 
     /** Part names in sorted order, without a leading `/`. */
@@ -281,7 +293,13 @@ export class ValidationContext {
         for (const [part, reason] of parts) {
             unparseable.set(normalizePartName(part), reason);
         }
-        return new ValidationContext(this.parts, { source: this.source, archiveBytes: this.archiveBytes }, this, unparseable);
+        return new ValidationContext(
+            this.parts,
+            { source: this.source, archiveBytes: this.archiveBytes },
+            this.storedNames,
+            this,
+            unparseable,
+        );
     }
 
     /**

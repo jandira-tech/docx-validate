@@ -144,7 +144,7 @@ describe("a partial run applies its profile's policy (#381)", { timeout: 120_000
 
         expect(result.valid).toBe(true);
         expect(result.issues.filter((issue) => issue.code === "word-row-without-cell")).toEqual([]);
-        expect(result.metadata?.executedChecks).toEqual(["xml-syntax"]);
+        expect(result.metadata?.executedChecks).toEqual(["opc-equivalent-part-names", "xml-syntax"]);
         expect(result.metadata?.omittedChecks).toEqual(expect.arrayContaining(["word-row-without-cell", "zip-bytes-after-eocd"]));
         expect(errorCodes((await validate(ROW_WITHOUT_CELL, { profile: "lenient" })).issues)).not.toContain("word-row-without-cell");
     });
@@ -194,7 +194,7 @@ describe("a partial run applies its profile's policy (#381)", { timeout: 120_000
         });
     });
 
-    it.each([[["word-row-without-cell"]], [["xml-syntax", "word-row-without-cell"]], [["package"]], [["tables"]]])(
+    it.each([[["word-row-without-cell"]], [["xml-syntax", "word-row-without-cell"]], [["zip-bytes-after-eocd"]], [["tables"]]])(
         "refuses a lenient run of %j, which names checks lenient never runs",
         async (checks) => {
             const run = validate(ROW_WITHOUT_CELL, { profile: "lenient", checks });

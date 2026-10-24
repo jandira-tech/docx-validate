@@ -65,6 +65,7 @@ import { ValidationContext } from "../../lib/validation-context";
 import { extractPackageParts } from "../../lib/zip-path";
 import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "./checks";
 import { XML_SYNTAX_CHECK_ID } from "./checks/xml";
+import { OPC_EQUIVALENT_PART_NAMES } from "./checks/opc-equivalent-part-names";
 import { contextFromArchive, contextFromDirectory } from "./package-context";
 import { BaseSchemaValidator } from "./validators/base";
 import { DOCXSchemaValidator } from "./validators/docx";
@@ -199,7 +200,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         return finish(await runSelectedChecks(target, targetIsPackedFile, dispatchSuffix, format, mode, registry, selected));
     }
 
-    const runWithUnpacked = async (unpackedDir: string, extraExecuted: readonly string[] = []): Promise<ValidateRunResult> => {
+    const runWithUnpacked = async (unpackedDir: string, extra = EMPTY_ENVELOPE_RUN): Promise<ValidateRunResult> => {
         const subclassResult = await runValidators(unpackedDir, {
             originalFile,
             suffix: dispatchSuffix,
@@ -212,11 +213,13 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         });
         return {
             ...subclassResult,
+            valid: subclassResult.valid && extra.issues.every((issue) => issue.severity !== "error"),
+            issues: [...subclassResult.issues, ...extra.issues],
             suffix: dispatchSuffix,
             metadata: {
                 profile,
                 // Only the checks this run really executed (#319).
-                executedChecks: orderedExecutedChecks(format, [...subclassResult.executedChecks, ...extraExecuted]),
+                executedChecks: orderedExecutedChecks(format, [...subclassResult.executedChecks, ...extra.executed]),
                 omittedChecks: [],
                 schemaCompleted: schemaWalkCompleted(subclassResult.xsdWalk, subclassResult.engineFailures),
             },
@@ -227,8 +230,8 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         return finish(
             await withTempDir(async (tempDir) => {
                 const buf = await fs.readFile(target);
-                const envelope = runsWordPackageChecks(profile) ? await zipEnvelopeRun(buf, dispatchSuffix) : EMPTY_ENVELOPE_RUN;
-                const envelopeIssues: ValidationResult["issues"] = envelope.issues;
+                let envelope = runsWordPackageChecks(profile) ? await zipEnvelopeRun(buf, dispatchSuffix) : EMPTY_ENVELOPE_RUN;
+                const envelopeIssues: ValidationResult["issues"] = [...envelope.issues];
                 let zip: JSZip;
                 try {
                     zip = await JSZip.loadAsync(buf);
@@ -257,6 +260,14 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                         },
                     };
                 }
+                // Diagnose the archive's own names before extraction can reject
+                // case/normalization collisions on the host filesystem (#351).
+                const names = Object.values(zip.files)
+                    .filter((entry) => !entry.dir)
+                    .map((entry) => [entry.unsafeOriginalName ?? entry.name, ""] as const);
+                const diagnostic = await equivalentNamesRun(ValidationContext.fromEntries(names), format, profile);
+                envelopeIssues.push(...diagnostic.issues);
+                envelope = { issues: envelopeIssues, executed: [...envelope.executed, ...diagnostic.executed] };
                 try {
                     await extractAll(zip, tempDir);
                 } catch (err) {
@@ -284,18 +295,13 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                         },
                     };
                 }
-                const unpacked = await runWithUnpacked(tempDir, envelope.executed);
-                if (envelopeIssues.length === 0) return unpacked;
-                return {
-                    ...unpacked,
-                    valid: false,
-                    issues: [...unpacked.issues, ...envelopeIssues],
-                };
+                return runWithUnpacked(tempDir, envelope);
             }),
         );
     }
 
-    return finish(await runWithUnpacked(path.resolve(target)));
+    const dir = path.resolve(target);
+    return finish(await runWithUnpacked(dir, await equivalentNamesRun(contextFromDirectory(dir), format, profile)));
 }
 
 /**
@@ -372,7 +378,7 @@ function orderedExecutedChecks(format: PackageFormat, executed: readonly string[
  */
 function checksOutsideProfile(registry: CheckRegistry, profile: Profile): ReadonlySet<string> {
     if (profile !== "lenient") return new Set();
-    const envelope = registry.list().filter((definition) => (definition.groups as readonly string[]).includes("package"));
+    const envelope = registry.list().filter((definition) => definition.archiveOnly === true);
     return new Set([...WORD_RULE_CHECKS, ...envelope].map((definition) => definition.id));
 }
 
@@ -423,14 +429,23 @@ function selectionUnderProfile(
  * keep their severity (#381).
  */
 function findingsUnderProfile(run: CheckRun, registry: CheckRegistry, format: PackageFormat, profile: Profile): ValidationIssue[] {
-    if (profile !== "word-valid" || format !== "docx") return [...run.issues];
-    return run.outcomes.flatMap((outcome) =>
-        registry.get(outcome.id)?.archiveOnly === true
-            ? outcome.issues
-            : outcome.issues.map((issue): ValidationIssue =>
-                  issue.severity === "error" && !isWordBlockingIssue(issue) ? { ...issue, severity: "warning" } : issue,
-              ),
-    );
+    // Equivalent stored names are Word-blocking for DOCX/DOCM (#351). Lenient
+    // keeps the earlier policy and runs no Word rule, and no PowerPoint or
+    // Excel behaviour has been observed, so those only warn.
+    const advisory = (issue: ValidationIssue): ValidationIssue =>
+        issue.code === OPC_EQUIVALENT_PART_NAMES && (profile === "lenient" || (profile === "word-valid" && format !== "docx"))
+            ? { ...issue, severity: "warning" }
+            : issue;
+    if (profile !== "word-valid" || format !== "docx") return run.issues.map(advisory);
+    return run.outcomes
+        .flatMap((outcome) =>
+            registry.get(outcome.id)?.archiveOnly === true
+                ? outcome.issues
+                : outcome.issues.map((issue): ValidationIssue =>
+                      issue.severity === "error" && !isWordBlockingIssue(issue) ? { ...issue, severity: "warning" } : issue,
+                  ),
+        )
+        .map(advisory);
 }
 
 /**
@@ -566,8 +581,25 @@ async function zipEnvelopeRun(
 ): Promise<{ issues: ValidationResult["issues"]; executed: readonly string[] }> {
     const format: PackageFormat = suffix === ".pptx" ? "pptx" : suffix === ".xlsx" ? "xlsx" : "docx";
     const context = ValidationContext.fromEntries({}, { source: "archive", archiveBytes });
-    const run = await runChecks(context, createDefaultCheckRegistry(), { format, select: ["package"] });
+    const registry = createDefaultCheckRegistry();
+    // Every archive-only package check; the stored-name diagnosis runs separately.
+    const select = registry
+        .list()
+        .filter((definition) => definition.archiveOnly === true)
+        .map((definition) => definition.id);
+    const run = await runChecks(context, registry, { format, select });
     return { issues: [...run.issues], executed: [...run.executed] };
+}
+
+/** Stored-name diagnosis for every full profile, before any XML/extraction gate. */
+async function equivalentNamesRun(
+    context: ValidationContext,
+    format: PackageFormat,
+    profile: Profile,
+): Promise<{ issues: ValidationIssue[]; executed: readonly string[] }> {
+    const registry = createDefaultCheckRegistry();
+    const run = await runChecks(context, registry, { format, select: [OPC_EQUIVALENT_PART_NAMES] });
+    return { issues: findingsUnderProfile(run, registry, format, profile), executed: run.executed };
 }
 
 /** An envelope run that never happened: no findings, no executed checks. */

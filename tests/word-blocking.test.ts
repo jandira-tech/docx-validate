@@ -64,6 +64,8 @@ describe("isWordBlockingIssue", () => {
         "docprops-boolean-invalid",
         "mce-malformed",
         "mce-must-understand",
+        // Word 16.115 offers recovery for every duplicate spelling probed (#351).
+        "opc-equivalent-part-names",
     ])("keeps %s an error wherever it is found", (code) => {
         expect(isWordBlockingIssue(issue(code))).toBe(true);
     });

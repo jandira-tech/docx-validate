@@ -254,11 +254,21 @@ marks archive-only checks `unavailable`; use packed input to check ZIP integrity
 
 The complete named check catalogue is below. Each Word check except
 `word-markup-compatibility` uses its id as its finding code. Package checks are
-`zip-bytes-after-eocd` and `zip-eocd-comment-overrun`; `xml-syntax` is the shared
+`zip-bytes-after-eocd`, `zip-eocd-comment-overrun`, and `opc-equivalent-part-names`; `xml-syntax` is the shared
 XML prerequisite. All `word-*` checks apply to DOCX/DOCM only.
+
+`opc-equivalent-part-names` applies to DOCX/DOCM, PPTX, and XLSX package selections,
+including the `package` quick group. It reads stored ZIP item names before full-run
+extraction, or walked file names for directory inputs, and reports one finding per
+equivalent group under OPC [M1.12], listing every stored spelling. Strict and
+word-valid (DOCX/DOCM) report a blocking error: Word 16.115 offers to recover every
+duplicate probed, even when both spellings hold identical bytes ([#351](https://github.com/jandira-tech/docx-validate/issues/351)).
+Lenient, and word-valid for PPTX/XLSX, report a warning. The existing entry choice
+is unchanged.
 
 | Group                     | Named checks                                                                                                                                                                                                                                                                                                                                        |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `package`                 | `zip-bytes-after-eocd`, `zip-eocd-comment-overrun`, `opc-equivalent-part-names`                                                                                                                                                                                                                                                                     |
 | `math`, `tracked-changes` | `word-math-run-insertion`, `word-math-run-deletion`                                                                                                                                                                                                                                                                                                 |
 | `math`                    | `word-math-parse`, `word-math-spre-body`                                                                                                                                                                                                                                                                                                            |
 | `story`                   | `word-shading-color`, `word-page-margin-attributes`, `word-run-misplaced`, `word-run-properties-misplaced`, `word-underline-misplaced`, `word-paragraph-properties-misplaced`, `word-section-properties-misplaced`, `word-footnote-reference-missing`, `word-numbering-picture-bullet`, `word-sdt-id-empty`, `word-text-contains-paragraph`         |
@@ -318,7 +328,7 @@ not decode percent escapes: `%5BContent_Types%5D.xml` is an ordinary part, not t
 content-types stream ([#396](https://github.com/jandira-tech/docx-validate/issues/396)).
 Of two stored spellings, `[Content_Types].xml` is read, otherwise the first in
 code-unit order, where System.IO.Packaging reads the last in ZIP order; the second
-stream is not reported ([#351](https://github.com/jandira-tech/docx-validate/issues/351)).
+stream is reported by `opc-equivalent-part-names` ([#351](https://github.com/jandira-tech/docx-validate/issues/351)).
 Content-type coverage resolves an exact `Override` before an extension `Default`.
 An image covered only by `Override` needs no matching `Default`. Part-name
 comparison is ASCII case-insensitive and decodes unreserved percent escapes;

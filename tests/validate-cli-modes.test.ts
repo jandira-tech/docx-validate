@@ -178,10 +178,10 @@ describe("validate CLI: quick mode output", { timeout: 120_000 }, () => {
     });
 
     it("refuses a selection its profile never runs, instead of passing it unchecked (#381)", async () => {
-        const run = await withTempDir(async (dir) => capture([await uuidDefectPptx(dir), "--checks", "package"]));
+        const run = await withTempDir(async (dir) => capture([await uuidDefectPptx(dir), "--checks", "zip-bytes-after-eocd"]));
 
         expect(run.code).toBe(1);
-        expect(run.stderr).toContain("No check in package runs under profile 'lenient'");
+        expect(run.stderr).toContain("Cannot run zip-bytes-after-eocd under profile 'lenient'");
         expect(run.stdout).not.toContain("Selected checks passed");
     });
 

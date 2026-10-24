@@ -153,6 +153,8 @@ describe("quick mode runs the common-defect preset and discloses its omissions",
         expect(result.metadata?.executedChecks).toEqual([
             "zip-bytes-after-eocd",
             "zip-eocd-comment-overrun",
+            // The package group's stored-name diagnosis runs in quick too (#351).
+            "opc-equivalent-part-names",
             "xml-syntax",
             "word-grid-column-attributes",
             "word-cell-margin-order",
