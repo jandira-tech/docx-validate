@@ -32,3 +32,8 @@
 
 **Learning:** Parent traversal (`parentNode` loops) for every matched node in a deep document is O(N*D). Combining this with querying all elements leads to huge performance degradation.
 **Action:** Implement an integrated top-down DFS traversal instead of querying all elements and then checking their parent chains. This removes redundant parent tree traversals and prunes excluded subtrees. End-to-end timings can still be dominated by XML parsing and allocation; see `docs/performance/redlining-dfs.md` for mixed local measurements.
+
+## 2026-10-24 - Optimize DOM element collection for exclusion/inclusion rules
+
+**Learning:** When searching for specific tags (like `<w:delText>`) inside specific rare ancestors (like `<w:txbxContent>` or `<w:moveFrom>`), querying the whole document for the target tags and traversing up the `.parentNode` chain is O(N*D).
+**Action:** Always query for the rare ancestor elements first, then extract the target tags from their subtrees. If the ancestors can be nested, deduplicate the targets using a `Set<Node>` to prevent duplicate processing. This provides a measurable speedup for deeply nested or large documents.
