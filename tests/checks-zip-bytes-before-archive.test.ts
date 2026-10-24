@@ -24,7 +24,7 @@ import { withTempDir } from "../src/lib/run-cli";
 import type { ValidationIssue } from "../src/lib/types";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
-import { absoluteOffsetsAfter, buildRawZip } from "./support/raw-zip";
+import { absoluteOffsetsAfter, buildRawZip, saturateLocalHeaderOffsets, truncatedCentralStub } from "./support/raw-zip";
 
 const ID = "zip-bytes-before-archive";
 const AFTER_EOCD = "zip-bytes-after-eocd";
@@ -85,6 +85,50 @@ describe("bytes before the ZIP archive (#464)", { timeout: 300_000 }, () => {
                 expect(result.metadata?.executedChecks, tag).toContain(ID);
             }
             expect(readFileSync(file)).toEqual(bytes);
+        });
+    });
+
+    // A central-directory signature the buffer cuts off inside the record's
+    // fixed header is a package JSZip refuses, not a prefix (#498).
+    it("does not report a package whose truncated central record JSZip refuses", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "truncated-central.docx");
+            writeFileSync(file, truncatedCentralStub(26));
+            for (const mode of [{}, { quick: true }, { checks: [ID] }] as const) {
+                const result = await validate(file, { profile: "word-valid", ...mode });
+                const tag = JSON.stringify(mode);
+                expect(result.valid, tag).toBe(false);
+                expect(
+                    result.issues.some((issue) => issue.code === "package-open-failed"),
+                    tag,
+                ).toBe(true);
+                expect(findings(result.issues), tag).toEqual([]);
+            }
+        });
+    });
+
+    // A saturated local-header offset whose 0x0001 extra field carries the
+    // real value is the legal ZIP64 spelling JSZip reads, not a prefix (#490).
+    it("does not report a clean package whose records use the ZIP64-extra offset spelling", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "zip64-extra.docx");
+            writeFileSync(file, saturateLocalHeaderOffsets(await DOCX()));
+            for (const profile of ["word-valid", "strict"] as const) {
+                const result = await validate(file, { profile });
+                expect(result.valid, profile).toBe(true);
+                expect(findings(result.issues), profile).toEqual([]);
+            }
+        });
+    });
+
+    it("measures a real prefix in front of the ZIP64-extra spelling exactly", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "prefixed-zip64-extra.docx");
+            writeFileSync(file, Buffer.concat([JUNK, saturateLocalHeaderOffsets(await DOCX(), { count: 1 })]));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            expect(errorCodes(result.issues)).toEqual([ID]);
+            expect(findings(result.issues)[0]?.message).toContain(`${JUNK.length} byte(s) precede the ZIP archive`);
         });
     });
 

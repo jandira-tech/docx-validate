@@ -21,9 +21,13 @@
  * `countZipBytesAfterEocd` counts bytes after that record that its comment
  * length does not cover. A comment whose length is stored in the record is
  * not that defect. A later end-of-central-directory record at the end of the
- * file does not hide bytes that follow an earlier record — unless that earlier
- * record is an archive wholly in front of the archive JSZip loads, which is
- * `zip-bytes-before-archive`'s prefix, reported once (#464).
+ * file does not hide bytes that follow an earlier record — unless that
+ * earlier record is an archive wholly in front of the archive JSZip loads,
+ * which is `zip-bytes-before-archive`'s prefix, reported once (#464). The
+ * skip judges the record's fixed extent: a declared comment length that
+ * reaches into the live archive — or past the buffer's end — does not turn
+ * the record into trailing data (#491). Only the loaded archive's record is
+ * a `zip-eocd-comment-overrun` candidate.
  *
  * `zipEocdCommentOverrun` reports a comment length that claims more bytes
  * than remain in the file. Setting the length to the number of bytes actually
@@ -116,13 +120,15 @@ const bytesHiddenByLaterEocd = (buf: Uint8Array): number => {
     const bytes = Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength);
     for (let offset = bytes.indexOf(EOCD_BYTES); offset >= 0 && offset < lastStart; offset = bytes.indexOf(EOCD_BYTES, offset + 1)) {
         if (offset + EOCD_FIXED_LENGTH > buf.length) continue;
-        const end = recordEnd(buf, offset);
-        if (end >= buf.length) continue;
         if (!isStructuralEocd(buf, offset)) continue;
         if (!abutsCentralDirectory(buf, offset)) continue;
         // A record wholly in front of the archive JSZip loads is a prefix, not
-        // hidden trailing data (#464).
-        if (loaded.hasEntries && loaded.start !== undefined && end <= loaded.start) continue;
+        // hidden trailing data — the record's fixed extent decides, not its
+        // declared comment, which may reach past the live archive's start or
+        // the buffer's end (#464, #491).
+        if (loaded.hasEntries && loaded.start !== undefined && offset + EOCD_FIXED_LENGTH <= loaded.start) continue;
+        const end = recordEnd(buf, offset);
+        if (end >= buf.length) continue;
         return buf.length - end;
     }
     return 0;
@@ -152,15 +158,19 @@ export const countZipBytesAfterEocd = (buf: Uint8Array): number => {
         if (readU32(buf, offset) !== EOCD_SIGNATURE) continue;
         const commentLength = readU16(buf, offset + 20);
         const end = offset + EOCD_FIXED_LENGTH + commentLength;
-        if (end > buf.length) continue;
         if (!isStructuralEocd(buf, offset)) continue;
         // A record wholly in front of the archive JSZip loads is a prefix, not
         // this check's record; the trailing data behind the loaded archive is
-        // measured from that archive's own record instead (#464).
-        if (loaded.hasEntries && loaded.start !== undefined && end <= loaded.start) {
+        // measured from that archive's own record instead. The record's fixed
+        // extent decides: a declared comment that reaches into the live
+        // archive — or past the buffer's end — is part of the prefix, never a
+        // count of removable trailing bytes and never an overrun finding
+        // (#464, #491).
+        if (loaded.hasEntries && loaded.start !== undefined && offset + EOCD_FIXED_LENGTH <= loaded.start) {
             skippedPrefixRecord = true;
             continue;
         }
+        if (end > buf.length) continue;
         const trailing = buf.length - end;
         if (trailing > 0) return trailing;
         return bytesHiddenByLaterEocd(buf);
