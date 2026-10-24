@@ -169,3 +169,26 @@ describe.each(["packed", "directory"] as const)("Word-refused Override PartNames
         });
     });
 });
+
+describe("Word-refused Override PartNames: message scope (#473)", { timeout: 120_000 }, () => {
+    it("scopes the recovery claim to a DOCX package for a PPTX finding", async () => {
+        await withTempDir(async (dir) => {
+            const target = path.join(dir, "scope.pptx");
+            writeFileSync(target, await buildDocx(withOverrides(MINIMAL_PPTX_PARTS, ["/ppt/a%21b.xml"])));
+            const found = (await validate(target, { profile: "strict" })).issues.filter((i) => i.code === ID);
+            expect(found).toHaveLength(1);
+            expect(found[0]!.message).toContain("Word 16.115 offers recovery for this spelling in a DOCX package");
+            expect(found[0]!.message).not.toMatch(/offers recovery\.$/);
+        });
+    });
+
+    it("keeps naming the Word 16.115 recovery observation for a DOCX finding", async () => {
+        await withTempDir(async (dir) => {
+            const target = path.join(dir, "scope.docx");
+            writeFileSync(target, await buildDocx(withOverrides(MINIMAL_PARTS, ["/word/a%21b.xml"])));
+            const found = (await validate(target, { profile: "strict" })).issues.filter((i) => i.code === ID);
+            expect(found).toHaveLength(1);
+            expect(found[0]!.message).toMatch(/Word 16\.115 offers recovery/);
+        });
+    });
+});

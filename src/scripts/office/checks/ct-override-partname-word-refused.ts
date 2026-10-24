@@ -10,8 +10,11 @@ import { wordRefusedNameReasons } from "./opc-part-name-word-refused";
 export const CT_OVERRIDE_PARTNAME_WORD_REFUSED = "ct-override-partname-word-refused";
 
 /**
- * Diagnose even Overrides naming no stored part (#451). Word 16.115 evidence:
- * docs/plans/evidence/word-probes-2026-10-24.md, sessions 6–12.
+ * Diagnose even Overrides naming no stored part (#451). Word 16.115 evidence,
+ * in DOCX packages only, the format every probe used:
+ * docs/plans/evidence/word-probes-2026-10-24.md, sessions 6–12, so the
+ * message names that scope instead of claiming recovery for the package at
+ * hand, which for PPTX/XLSX Word cannot even open (#473).
  * Literal non-ASCII already has an OPC grammar finding, so never repeat it.
  * The stream is judged after Markup Compatibility processing (OPC [M1.19]),
  * as `ct-override-partname-invalid` reads it: an `Override` in an ignored
@@ -38,7 +41,7 @@ export const ctOverridePartnameWordRefusedCheck: CheckDefinition = {
                           code: CT_OVERRIDE_PARTNAME_WORD_REFUSED,
                           severity: "error" as const,
                           path: stream,
-                          message: `Override PartName ${JSON.stringify(partName)} contains ${reasons.join("; ")}; Word 16.115 offers recovery.`,
+                          message: `Override PartName ${JSON.stringify(partName)} contains ${reasons.join("; ")}; Word 16.115 offers recovery for this spelling in a DOCX package.`,
                       },
                   ];
         });
