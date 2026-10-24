@@ -36,9 +36,15 @@
  *    relationships when it carries any `w:commentReference` /
  *    `w:footnoteReference` / `w:endnoteReference` — every referenced story
  *    gets repair when malformed, every well-formed control opens clean
- *    (#539 session 16, header; #549 session 17, the rest). A header it
- *    relates but does not reference is not read (clean open), and
- *    references from inside a footnote are not followed (session 16);
+ *    (#539 session 16, header; #549 session 17, the rest). Its `styles`,
+ *    `settings`, `fontTable`, `webSettings` and `numbering` relationships
+ *    are eagerly parsed as a main document's are, even when the glossary
+ *    references no story — every malformed part gets repair, every
+ *    well-formed control opens clean (#562, session 19); `customXml`,
+ *    `theme` and a nested `glossaryDocument` from a glossary stay
+ *    unobserved and unfollowed. A header it relates but does not reference
+ *    is not read (clean open), and references from inside a footnote are
+ *    not followed (session 16);
  *  - a part under `word/` that any relationship of a KNOWN Office type names
  *    with none of the observed types above (people, chart, image, …). These
  *    are unobserved, so they keep the old `word/`-folder behaviour —
@@ -53,7 +59,9 @@
  * session 15 (the main document's own relationships part, #514; header and
  * endnotes lazy, theme and glossaryDocument eager, #516); session 16 (the
  * glossary's header reference, #539); session 17 (the glossary's
- * relationships part and its comments, footnotes and endnotes, #549).
+ * relationships part and its comments, footnotes and endnotes, #549);
+ * session 19 (the glossary's eager styles, settings, fontTable, webSettings
+ * and numbering, #562).
  */
 
 import path from "node:path";
@@ -98,6 +106,15 @@ const EAGER_TYPES: ReadonlySet<string> = new Set([
 
 /** Word parses a part of these types only when the document uses it. */
 const LAZY_TYPES: ReadonlySet<string> = new Set(["footer", "header", "comments", "footnotes", "endnotes"]);
+
+/**
+ * The eagerly parsed types a reached glossary's relationships are observed
+ * to follow (#562, session 19): real Word glossaries carry their own
+ * styles, settings, fontTable and webSettings parts, and a malformed one —
+ * numbering included — gets repair. `customXml`, `theme` and a nested
+ * `glossaryDocument` from a glossary stay unobserved and unfollowed.
+ */
+const GLOSSARY_EAGER_TYPES: ReadonlySet<string> = new Set(["styles", "settings", "fontTable", "webSettings", "numbering"]);
 
 /** Every relationship type whose reachability a probe has observed. */
 const OBSERVED_TYPES: ReadonlySet<string> = new Set([...EAGER_TYPES, ...LAZY_TYPES]);
@@ -315,9 +332,12 @@ export const wordTypedRelationshipTargets = async (
 /**
  * The parts a story root — the main document or a reached glossary document
  * — reads through its own relationships part: the sidecar itself, and each
- * relationship's stored target as `{ part, segment }`. `followEager` adds
- * the targets of eagerly parsed types and is a main-document rule only: an
- * eager relationship from a glossary is unobserved (#549).
+ * relationship's stored target as `{ part, segment }`. `eagerTypes` names
+ * the eagerly parsed segments whose targets are added: `EAGER_TYPES` for a
+ * main document, `GLOSSARY_EAGER_TYPES` for a glossary — a glossary's
+ * `styles`, `settings`, `fontTable`, `webSettings` and `numbering` are
+ * observed (#562, session 19) while its `customXml`, `theme` and
+ * `glossaryDocument` stay unobserved and unfollowed (#549).
  *
  * Lazy usage comes from the effective XML Word consumes, after markup
  * compatibility has selected its branches, but only once the part's bytes
@@ -330,7 +350,7 @@ const storyRootReadParts = async (
     context: ValidationContext,
     reach: PackageReach,
     root: string,
-    followEager: boolean,
+    eagerTypes: ReadonlySet<string>,
 ): Promise<readonly WordTypedTarget[]> => {
     const targets: WordTypedTarget[] = [{ part: root, segment: "officeDocument" }];
     const sidecar = sidecarOf(reach.names, root);
@@ -382,7 +402,7 @@ const storyRootReadParts = async (
             continue;
         }
         if (EAGER_TYPES.has(segment)) {
-            if (followEager) {
+            if (eagerTypes.has(segment)) {
                 targets.push({ part: target, segment });
             }
         } else if (LAZY_TYPES.has(segment) && lazyUsed(segment, relationship.getAttribute("Id") ?? "") !== false) {
@@ -412,7 +432,7 @@ export const wordReadParts = async (context: ValidationContext): Promise<Readonl
     const glossaryParts = new Map<string, string>();
 
     for (const mainPart of reach.mainParts) {
-        for (const { part, segment } of await storyRootReadParts(context, reach, mainPart, true)) {
+        for (const { part, segment } of await storyRootReadParts(context, reach, mainPart, EAGER_TYPES)) {
             parts.add(canonicalPartName(part));
             if (segment === "glossaryDocument") {
                 glossaryParts.set(canonicalPartName(part), part);
@@ -424,13 +444,16 @@ export const wordReadParts = async (context: ValidationContext): Promise<Readonl
     // 17): its own relationships part is read — even when the glossary
     // references nothing (unclosed, zero-byte and unreferenced sidecars all
     // get repair) — and so are the header, footer, comments, footnotes and
-    // endnotes its effective XML uses, as a main document's are. A header it
-    // relates but does not reference is not read (clean open), and
-    // references from inside a footnote are not followed (session 16). A
-    // glossary that fails byte-level XML checks leaves usage unknown, as an
-    // unparseable main does (#536), so its lazy targets stay reached.
+    // endnotes its effective XML uses, as a main document's are, and the
+    // styles, settings, fontTable, webSettings and numbering it relates
+    // eagerly, used or not (#562, session 19) — customXml, theme and a
+    // nested glossaryDocument stay unobserved. A header it relates but
+    // does not reference is not read (clean open), and references from
+    // inside a footnote are not followed (session 16). A glossary that
+    // fails byte-level XML checks leaves usage unknown, as an unparseable
+    // main does (#536), so its lazy targets stay reached.
     for (const glossaryPart of glossaryParts.values()) {
-        for (const { part } of await storyRootReadParts(context, reach, glossaryPart, false)) {
+        for (const { part } of await storyRootReadParts(context, reach, glossaryPart, GLOSSARY_EAGER_TYPES)) {
             parts.add(canonicalPartName(part));
         }
     }

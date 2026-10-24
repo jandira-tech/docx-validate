@@ -209,10 +209,12 @@ export const isWordBlockingIssue = (
             // word/ too — session 15), while an eagerly parsed part (styles,
             // settings, fontTable, webSettings, numbering, customXml, theme,
             // glossaryDocument — #516, session 15) and a used lazy one get
-            // repair — wherever they are stored. A glossary document's own
-            // relationships part reaches the header (and, by inference, the
-            // footer) its `w:*Reference` names (#539, session 16); its other
-            // stories and the sidecar itself are unobserved. Unobserved relationship
+            // repair — wherever they are stored. A reached glossary document
+            // is a second story root: its own relationships part is read
+            // (#549, session 17), the lazy stories its references use are read
+            // (#539, session 16; #549, session 17), and its styles, settings,
+            // fontTable, webSettings and numbering are eagerly parsed (#562,
+            // session 19). Unobserved relationship
             // types under word/ (chart, image, …) keep blocking, as before.
             // The content-types stream, the package relationships part and the
             // properties parts (#409) always block; so does each main
