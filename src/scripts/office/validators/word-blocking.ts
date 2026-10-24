@@ -119,6 +119,14 @@ export const isWordBlockingIssue = (
         case "word-choice-requires-undeclared":
         case "word-text-contains-paragraph":
         case "word-hyperlink-relationship":
+        // Word 16.115 offers recovery for a story sectPr's w:headerReference or
+        // w:footerReference whose r:id names a relationship of another type —
+        // header→footer, footer→header, a reached glossary's references, and an
+        // unrelated type such as styles — while a matching reference and
+        // relationship opens clean even when the target's root element is the
+        // other story's (#606; session 26 in
+        // docs/plans/evidence/word-probes-2026-10-24.md).
+        case "word-header-footer-relationship":
         case "word-duplicate-theme-relationship":
         case "word-duplicate-font-table-relationship":
         case "word-duplicate-web-settings-relationship":

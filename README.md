@@ -402,7 +402,7 @@ names and input bytes unchanged.
 | `tables`                  | `word-grid-column-attributes`, `word-cell-margin-order`, `word-table-properties-required`, `word-table-properties-misplaced`, `word-row-without-cell`, `word-cell-ends-with-table`                                                                                                                                                                  |
 | `drawings`                | `word-textbox-content-namespace`, `word-drawing-extent-missing`, `word-drawing-extent-misplaced`, `word-picture-nvpicpr-missing`, `word-picture-sppr-missing`, `word-empty-drawing`, `word-anchor-missing-attribute`, `word-position-offset-and-align`, `word-drawing-scalar-whitespace`, `word-drawing-arc-radius`, `word-drawing-extent-negative` |
 | `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`, `ct-override-partname-invalid`, `ct-override-partname-word-refused`, `ct-markup-compatibility`, `word-part-content-type-generic`, `word-part-content-type-inexact`, `word-part-content-type-mismatch`                                                                                      |
-| `relationships`           | `word-duplicate-theme-relationship`, `word-duplicate-font-table-relationship`, `word-duplicate-web-settings-relationship`, `word-duplicate-settings-relationship`, `word-hyperlink-relationship`, `word-main-document-part`, `opc-relationships-structure`                                                                                          |
+| `relationships`           | `word-duplicate-theme-relationship`, `word-duplicate-font-table-relationship`, `word-duplicate-web-settings-relationship`, `word-duplicate-settings-relationship`, `word-hyperlink-relationship`, `word-header-footer-relationship`, `word-main-document-part`, `opc-relationships-structure`                                                       |
 | `tracked-changes`         | `word-textbox-deleted-text`, `word-move-from-deleted-text`                                                                                                                                                                                                                                                                                          |
 | `settings`                | `word-custom-property-filetime-empty`, `word-attached-toolbar-utf8`                                                                                                                                                                                                                                                                                 |
 | `xml`                     | `word-markup-compatibility`, `word-document-root`, `word-choice-requires-undeclared`                                                                                                                                                                                                                                                                |
@@ -901,6 +901,31 @@ SHA-256 prefixes from the [recorded Word probes](docs/plans/evidence/word-probes
 the unchanged minimal control (`0160dfc1db4c5ce1`) opened cleanly. A foreign element
 appended to `word/_rels/document.xml.rels` got recovery too (`e7dae629d3e792a1`,
 session 4), beside a clean control (`f67e18fa7a50dae1`).
+
+`word-header-footer-relationship` requires every `w:headerReference` and
+`w:footerReference` in a story root's `w:sectPr` to name a relationship whose
+Type ends in `/header` or `/footer` as the reference needs. The story roots are
+every main document and every glossary a main-document `glossaryDocument`
+relationship reaches, and the reference resolves in that part's own
+relationships part, in either relationship namespace. Word 16.115 offers
+recovery for every refused shape probed: header→footer and footer→header
+relationships in the main document's body `w:sectPr` (whether the target's
+root was `w:hdr` or `w:ftr`, typed with the other story's content type, a
+parameterized footer type, or styles), both mirrors from a reached glossary's
+`w:docPartBody` `w:sectPr`, and a `w:headerReference` naming the main
+document's own styles relationship. A matching reference and relationship
+opens clean even when the target's root element is the other story's, so the
+check judges the relationship Type alone
+([#606](https://github.com/jandira-tech/docx-validate/issues/606); session 26,
+chunks s26a/s26b/s26c, in `docs/plans/evidence/word-probes-2026-10-24.md`).
+A reference whose `r:id` names no Relationship stays `rels-id-missing`'s
+finding. The finding is an error under strict and Word-blocking under
+word-valid for DOCX/DOCM; lenient runs no Word rule. Under word-valid and
+strict this check owns these two elements in the story roots, so
+`rels-id-mismatch` does not repeat the same element there; a glossary no
+main-document relationship reaches keeps its `rels-id-mismatch` under strict
+(Word does not read it, so word-valid stays silent), and lenient keeps every
+mismatch. Full, quick and named Word-valid runs agree (#381).
 
 `word-markup-compatibility` reports processor errors for XML parts under `word/`.
 Root validation, the processor, and the schema walk use these stable codes:

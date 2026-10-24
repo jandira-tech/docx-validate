@@ -37,6 +37,8 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
         "A w:t text run contains a w:p paragraph. Word cannot open the file. Move the paragraph out of the text run.",
     "word-hyperlink-relationship":
         "A w:hyperlink r:id does not reference a Relationship whose Type ends in /hyperlink and whose TargetMode is External. Word offers to recover the file. Add that relationship, or remove the r:id.",
+    "word-header-footer-relationship":
+        "A w:headerReference or w:footerReference names a Relationship whose Type ends in neither /header nor /footer as the reference needs. Word offers to recover the file. Point the r:id at a Relationship of the matching type, or retype that Relationship.",
     "word-duplicate-theme-relationship":
         "A relationships part lists more than one theme. Word offers to recover the file. Keep a single theme relationship.",
     "word-duplicate-font-table-relationship":

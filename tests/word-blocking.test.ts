@@ -80,6 +80,8 @@ describe("isWordBlockingIssue", () => {
         "word-choice-requires-undeclared",
         "word-text-contains-paragraph",
         "word-hyperlink-relationship",
+        // Word 16.115 offers recovery for every story-reference type mismatch probed (#606, session 26).
+        "word-header-footer-relationship",
         "word-duplicate-theme-relationship",
         "word-duplicate-font-table-relationship",
         "word-duplicate-web-settings-relationship",

@@ -48,7 +48,7 @@
 
 import { promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
-import { isRelationshipsPartName, resolvePartName } from "../../../lib/content-types";
+import { isRelationshipsPartName, resolvePartName, canonicalPartName } from "../../../lib/content-types";
 import { opcNameIssueSeverity } from "../../../lib/mode-policy";
 import { nextSecureLongHexNumber } from "../../../lib/secure-id";
 import type { PackageFormat, ValidationIssue, ValidationResult } from "../../../lib/types";
@@ -56,7 +56,7 @@ import { withoutConsequentialParseFailures } from "../../../lib/parse-failures";
 import { mergeResults } from "../../../lib/types";
 import { promoteFullCheckIssue } from "../../../lib/mode-policy";
 import { propertiesParts } from "../../../lib/properties-parts";
-import { wordReadParts } from "../../../lib/word-read-parts";
+import { wordReadParts, wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
 import { isWordBlockingIssue } from "./word-blocking";
 import {
     decodeXmlBytes,
@@ -2733,6 +2733,17 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }
         }
         return out;
+    }
+
+    /**
+     * #606: the story roots the `word-header-footer-relationship` rule
+     * judges — every main document and every reached glossary — computed on
+     * the shared run context, so the rule and `rels-id-mismatch` agree on
+     * one set and one element yields one finding.
+     */
+    protected override async storyReferenceOwnerParts(): Promise<ReadonlySet<string>> {
+        const targets = await wordTypedRelationshipTargets(this.context(), new Set(["officeDocument", "glossaryDocument"]));
+        return new Set(targets.map((target) => canonicalPartName(target.part)));
     }
 }
 
