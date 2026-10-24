@@ -1,14 +1,14 @@
 # Real-Word probes, 2026-10-24
 
-Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, and what session 7 settled for #414, #450 and #451.
+Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, and what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458.
 
 - Word: Microsoft Word for Mac 16.115 (build 16.115.26100424), platform `darwin`.
 - Transport, sessions 1 and 2: `verifyInWord` (`src/lib/word-verifier.ts`). It opens each specimen by path, reads Word's window and dialog state, and never saves.
 - Transport, session 3: `neurotic_docx_bench/scripts/word_pdf.py` in its default batch mode (`--label wfv --no-check-preset`). It stages each file inside Word's container as `NNNNN__wfv__<file>`, opens it, and exports a PDF when Word reads it. When Word shows an alert, it brings Word forward, answers a repair prompt No and then the OK that follows, and logs the alert's words. A file's outcome comes only from an alert that names its staged file, never from timing (`wordpdf_outcomes.py`, reproduced at the end). The specimens' SHA-256 were checked against the files handed to the driver after each run, and no specimen was rebuilt between build and run.
-- Transport, sessions 4–7: the same driver in the same mode, run in the foreground, as its documentation requires. Single-specimen runs are attributed by the same parser. The runner and the helper that copies one specimen into its own run are reproduced at the end.
+- Transport, sessions 4–13: the same driver in the same mode, run in the foreground, as its documentation requires. Single-specimen runs are attributed by the same parser. The runner and the helper that copies one specimen into its own run are reproduced at the end.
 - Outcomes: `clean-open` means Word opened the document with no dialog. `repair-warning` means Word showed "Word found unreadable content … Do you want to recover the contents of this document?". `open-error` means Word showed "Word experienced an error trying to open the file." In session 3, `inconclusive` means Word loaded no document in two passes and no alert named the file. Word stayed alive throughout, and `~/Library/Logs/DiagnosticReports` holds no Word report from any session. In session 3 the driver itself restarted Word after runs of empty loads, as designed.
 - Specimens: built in code from `MINIMAL_PARTS` (`tests/support/minimal-docx.ts`). The `398-dup-theme-*` specimens are built from `tests/fixtures/broken/package.word-duplicate-theme.docx`, which was only read. The probe script that builds, validates and opens them is reproduced at the end of this file. No fixture or manifest was changed.
-- Validator: the `word-valid` and `strict` columns record `validate()` **at probe time**, before the policy changes the probes motivated. They are not current verdicts. Session 1 (02:18Z–02:26Z) ran against `wfv/46-plan-audit` (199c2d5b); session 2 (03:10Z–03:19Z) ran against `wfv/51-directory-staging` (ad072db8). Session 3's columns are `validate()` at `wfv/57-central-directory-names` (ab7f311d), run on the exact files Word was given. The columns for sessions 4–6 are `validate()` at `wfv/62-ct-duplicate-declaration` (3126dcfc). They were recomputed after the sessions on the exact files Word was given, and every SHA-256 was checked against its record. Session 7's columns are `validate()` at `wfv/65-override-partname` before (9960b273) and after (34d0ace3) the #450 fix, recomputed the same way; the verdicts recorded at build time equal the 9960b273 ones.
+- Validator: the `word-valid` and `strict` columns record `validate()` **at probe time**, before the policy changes the probes motivated. They are not current verdicts. Session 1 (02:18Z–02:26Z) ran against `wfv/46-plan-audit` (199c2d5b); session 2 (03:10Z–03:19Z) ran against `wfv/51-directory-staging` (ad072db8). Session 3's columns are `validate()` at `wfv/57-central-directory-names` (ab7f311d), run on the exact files Word was given. The columns for sessions 4–6 are `validate()` at `wfv/62-ct-duplicate-declaration` (3126dcfc). They were recomputed after the sessions on the exact files Word was given, and every SHA-256 was checked against its record. Session 7's columns are `validate()` at `wfv/65-override-partname` before (9960b273) and after (34d0ace3) the #450 fix, recomputed the same way; the verdicts recorded at build time equal the 9960b273 ones. Sessions 8–13's columns are `validate()` at 49922e9a, the commit the specimens were built against, and at `wfv/66-partname-review-fixes` (e08611b1) after the #453 and #458 fixes, recomputed the same way with every SHA-256 checked; the verdicts recorded at build time equal the 49922e9a ones.
 
 ## What the observations decide
 
@@ -89,6 +89,21 @@ Session 7 adds:
 - **#450: a folder segment ending with `.`.** Word opens `/word./nothere.xml` (twice, once in a run of its own), `/word/sub./nothere.xml` and `/x./nothere.xml` clean. Word-valid at 9960b273 fails all four, a false positive. At 34d0ace3 word-valid warns and passes them, and strict still fails them under [M1.9].
 - **#451: a percent-escaped non-ASCII `PartName`.** `/word/caf%C3%A9.xml` is a valid part name, but Word offers recovery, as it does for the non-ASCII stored names of #443. Word-valid and strict pass it.
 
+Sessions 8–13 add:
+
+- **#432: every part typed by the generic Default.** Typed only by `<Default Extension="xml" ContentType="application/xml"/>`, a related settings, fontTable or webSettings part makes Word offer recovery, and so do the main part and styles with their `Override` removed. Each control with the part's proper `Override` opens clean. Word-valid at 49922e9a passes all five; strict fails only the main part.
+- **#443: a non-ASCII name that a relationship targets.** The styles part stored as `word/stylés.sty`, typed by an `sty` `Default`, makes Word offer recovery whether its relationship targets `stylés.sty` or `styl%C3%A9s.sty`. The ASCII `word/styles.sty` control opens clean. The unreferenced stored names `word/caf%C3%A9.xml` and `word/a%80b.xml` make Word offer recovery too (session 12). Word-valid passes all four.
+- **#451 and #408: which percent-escapes Word refuses.** In an `Override` `PartName` and in an unreferenced stored name alike, Word offers recovery for an escape of a character in the RFC 2396 unreserved set, and for any escape of 0x80 or above:
+    - RFC 3986 unreserved: `%41`, `%39`, `%2D`, `%2E`, `%5F`, `%7E`;
+    - the RFC 2396 marks `!`, `'`, `(`, `)`, `*`: `%21`, `%27`, `%28`, `%29`, `%2A` and `%2a`;
+    - 0x80 and above: `%80`, `%FF`, `%E9`.
+
+    It opens clean `%01`, `%7F`, `%22`, `%24`, `%25`, `%26`, `%2B`, `%2C`, `%3A`, `%3B`, `%3C`, `%3D`, `%40`, `%5B` and `%7B` in a `PartName`, `%26`, `%3A`, `%5B` and `%7F` in a stored name, and a literal `!` in both. Word-valid catches only the RFC 3986 part, so it passes the marks and the escapes of 0x80 and above (false negatives).
+
+- **#437: Word parses some related parts at open, and others only when the document uses them.** Malformed, a related settings, fontTable or webSettings part, an unused but related numbering part, and a `customXml` item named by a document `customXml` relationship each make Word offer recovery. A malformed footer referenced from `w:sectPr` makes Word refuse the file, and malformed comments referenced by a comment range make it offer recovery. The same footer, comments or footnotes, related but unused, open clean. Word-valid fails the unused footer (twice), comments (twice) and footnotes, which are false positives, and passes the `customXml` item, a false negative.
+- **#453: dot-only folder segments.** `/word/.../x.xml`, `/word/..../x.xml` and `/.../x.xml` make Word offer recovery, while `/word./x.xml` opens clean again. Word-valid at 49922e9a passes the three, because the #450 tolerance caught them. At e08611b1 they break their own rule ([M1.10]) and fail word-valid.
+- **#458: an `Override` without a usable `PartName`.** Without the attribute, with `PartName=""` and with `PartName="/"`, Word offers recovery, and word-valid fails all three.
+
 ## Not observed
 
 Session 1. Another session began driving Word by 02:28Z: its first log line is at 02:28:14Z, and its map file was written at 02:27:55Z. Its preflight closes every open document, so rows observed from 02:26Z on were not treated as evidence. Session 2 observed all of them again (below).
@@ -105,7 +120,7 @@ Session 3 observed every specimen listed for it after session 2, except as noted
 - Sessions 3b and 3c were started from a background shell. macOS therefore asked for AppleScript automation authorization for the driver's helper processes, and a person granted each prompt by hand. Every alert was read and attributed, so no outcome depends on this, but later sessions run in the foreground, as the driver's documentation requires.
 - No other Word driver ran during sessions 3b (05:02Z–05:18Z) or 3c (05:19Z–05:27Z). Every driver takes the same flock, and the other session's next Word batch began at 05:29Z.
 
-Sessions 4–7 ran in the foreground. Each chunk got one driver run, under `timeout`, with every idle `word_watchdog.sh` paused for that run. Before each single-specimen run, no other `word_pdf` or `word_redline` process was running.
+Sessions 4–13 ran in the foreground. Each chunk got one driver run, under `timeout`, with every idle `word_watchdog.sh` paused for that run. Before each single-specimen run, no other `word_pdf` or `word_redline` process was running.
 
 - `s4b` (06:04Z–06:10Z). Mid-run, Word asked for access to `o11.docx`, a file belonging to the other session that no specimen names. The driver granted 33 such prompts, and `rels-part-level-unknown-sibling` timed out on an AppleEvent. That row was set aside and observed alone in `s4c`. Each other `s4b` row is attributed by an alert or a manifest entry naming its staged file.
 - `s4d` (06:29Z–06:38Z). Four review Y specimens timed out on AppleEvents or loaded no document in two passes. Each was observed alone from 06:51Z to 06:52Z.
@@ -117,13 +132,15 @@ Sessions 4–7 ran in the foreground. Each chunk got one driver run, under `time
     One alert named `414-xml-trailing-slash-missing` (recovery). Every `s5a` row was still set aside, and all six specimens were observed alone between 06:50Z and 07:03Z. After the stop, the other session's driver took the Word lock, and its watchdog dismissed the same Force Quit report.
 
 - `s7` (07:27Z–07:28Z), `s7b` and `s7c` (07:29Z). Nothing was set aside. No `word_watchdog.sh` was running. Before `s7` and `s7b` no other `word_pdf` or `word_redline` process was running, and `s7c` started ten seconds after `s7b` ended, under the same lock.
+- `s8a` (07:47Z–07:48Z), `s8b` (07:48Z), `s9a` (07:50Z), `s9b` (07:51Z), `s10` (07:52Z–07:53Z), `s11` (07:54Z–07:55Z), `s12` (07:58Z–07:59Z) and `s13` (08:04Z). Nothing was set aside, and every row is attributed by an alert or a manifest entry naming its staged file. No `word_watchdog.sh` was running. Each run's preflight found Word not running, launched it, and found no open document (`launched_by_us=True`, `open_documents=0`), so no other session held Word when a run began.
 
 Sessions 4–6 observed `main-relationship-missing` (#380), the #414 `PartName`s with `application/xml`, an escape in a folder segment (#408), a part-level relationships part (#433) and an unreferenced malformed `customXml/item9.xml` (#437). Still to be observed:
 
-- Other parts typed by the generic Default: `settings`, `fontTable`, `numbering`, `theme`, `webSettings`, and the main part (#432).
-- A non-ASCII name that a relationship targets, rather than an unreferenced one (#443).
+- `numbering` and `theme` typed by the generic Default (#432). Sessions 8–13 observed settings, fontTable, webSettings, the main part and styles.
 - A part Word reads, such as the main part, whose local-header name differs from its central-directory name (#411, review Y).
-- A percent-escaped non-ASCII `PartName` spelled `%E9`, and one that names a stored part (#451).
+- A percent-escaped `PartName` that names a stored part (#451). Session 8 observed `%E9` for a missing part.
+- A malformed header or endnotes part, referenced and unused (#437).
+- Markup Compatibility elements or attributes in `[Content_Types].xml` (#459).
 
 ## Observations
 
@@ -575,6 +592,280 @@ Each specimen is `MINIMAL_PARTS` plus one `<Override PartName="…" ContentType=
 {"run": "s7b", "name": "414-xml-folder-dot-missing", "sha256": "4188a0942b9468a498665c7f4f83db655ce9dd4a612e52c5d3357ed267b9eda3", "observedAt": "2026-10-24T07:29:07+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 {"run": "s7c", "name": "414-xml-folder-dot-deep-missing", "sha256": "406bcf83d752f1857c72552d3279a532e2f92a96dbc3c95c8443b264a8bebe56", "observedAt": "2026-10-24T07:29:18+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 {"run": "s7c", "name": "414-xml-folder-dot-root-missing", "sha256": "32dea02fb35b9d4ef8fc067613ce89020e1e98915f3c94101f698afaebf3361c", "observedAt": "2026-10-24T07:29:18+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 8: 07:47Z–07:48Z, validator columns at 49922e9a and e08611b1
+
+`s8a` holds the #432 specimens, each part typed only by the generic `Default` beside a control with the part's `Override`, and the #443 specimens, a styles part stored under an `sty` name and typed by an `sty` `Default`. `s8b` holds three #451 `PartName` escapes and the first #437 specimens: a part a known relationship names, cut short at 60 characters, that the document does not use.
+
+| Run   | Observed  | Specimen                                            | Issue   | Shape                                                                         | SHA-256 (first 16) | Word           | word-valid at 49922e9a                                                              | word-valid at e08611b1                                                              | strict at e08611b1                                                                      |
+| ----- | --------- | --------------------------------------------------- | ------- | ----------------------------------------------------------------------------- | ------------------ | -------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `s8a` | 07:48:13Z | `s8-control-minimal`                                | control | —                                                                             | `46810497bd9460db` | clean-open     | valid                                                                               | valid                                                                               | valid                                                                                   |
+| `s8a` | 07:48:13Z | `432-settings-override-control`                     | #432    | settings, with its Override                                                   | `290495461c6eed03` | clean-open     | valid                                                                               | valid                                                                               | valid                                                                                   |
+| `s8a` | 07:47:43Z | `432-settings-generic-default`                      | #432    | settings, generic Default only                                                | `e6226536abba0b74` | repair-warning | valid                                                                               | valid                                                                               | valid                                                                                   |
+| `s8a` | 07:48:13Z | `432-fonttable-override-control`                    | #432    | fontTable, with its Override                                                  | `b6cf401f8d6d2133` | clean-open     | valid                                                                               | valid                                                                               | valid                                                                                   |
+| `s8a` | 07:47:34Z | `432-fonttable-generic-default`                     | #432    | fontTable, generic Default only                                               | `021808c980c86554` | repair-warning | valid                                                                               | valid                                                                               | valid                                                                                   |
+| `s8a` | 07:48:13Z | `432-websettings-override-control`                  | #432    | webSettings, with its Override                                                | `7a0f93cfbe407a7e` | clean-open     | valid                                                                               | valid                                                                               | valid                                                                                   |
+| `s8a` | 07:47:51Z | `432-websettings-generic-default`                   | #432    | webSettings, generic Default only                                             | `20861cabaa1ee26a` | repair-warning | valid                                                                               | valid                                                                               | valid                                                                                   |
+| `s8a` | 07:47:38Z | `432-main-generic-default`                          | #432    | main part, its Override removed                                               | `19a10f0abd9b3128` | repair-warning | valid                                                                               | valid                                                                               | invalid (`ct-undeclared-part@word/document.xml`)                                        |
+| `s8a` | 07:47:47Z | `432-styles-generic-default-s8`                     | #432    | styles, its Override removed                                                  | `4d0b1c18e4d65438` | repair-warning | valid                                                                               | valid                                                                               | valid                                                                                   |
+| `s8a` | 07:48:13Z | `443-styles-ascii-sty-control`                      | #443    | styles stored as `word/styles.sty`, target `styles.sty`                       | `5550535e47a76b2f` | clean-open     | valid                                                                               | valid                                                                               | valid                                                                                   |
+| `s8a` | 07:48:00Z | `443-styles-nonascii-sty-referenced`                | #443    | styles stored as `word/stylés.sty`, target `stylés.sty`                       | `3ba2d65c5cc7cd40` | repair-warning | valid                                                                               | valid                                                                               | valid                                                                                   |
+| `s8a` | 07:47:56Z | `443-styles-nonascii-sty-referenced-escaped-target` | #443    | styles stored as `word/stylés.sty`, target `styl%C3%A9s.sty`                  | `51112f2aedbeedae` | repair-warning | valid                                                                               | valid                                                                               | valid                                                                                   |
+| `s8a` | 07:48:13Z | `s8-control-minimal-mid`                            | control | —                                                                             | `fedb8376980c5fdd` | clean-open     | valid                                                                               | valid                                                                               | valid                                                                                   |
+| `s8b` | 07:48:40Z | `451-pctE9-missing`                                 | #451    | PartName `/word/caf%E9.xml`                                                   | `fd8f181b1cf4b2a8` | repair-warning | valid                                                                               | valid                                                                               | valid                                                                                   |
+| `s8b` | 07:48:35Z | `451-pct21-missing`                                 | #451    | PartName `/word/a%21b.xml`                                                    | `19c8dcf487abf041` | repair-warning | valid                                                                               | valid                                                                               | valid                                                                                   |
+| `s8b` | 07:48:43Z | `451-pct7F-missing`                                 | #451    | PartName `/word/a%7Fb.xml`                                                    | `6305e7316a2f43bb` | clean-open     | valid                                                                               | valid                                                                               | valid                                                                                   |
+| `s8b` | 07:48:31Z | `437-customxml-rel-malformed`                       | #437    | `customXml/item1.xml` cut short, named by a document `customXml` relationship | `ffe333cc9de1d00c` | repair-warning | valid                                                                               | valid                                                                               | invalid (`xml-undeclared-prefix@customXml/item1.xml`, `xml-syntax@customXml/item1.xml`) |
+| `s8b` | 07:48:43Z | `437-customxml-rel-wellformed-control`              | #437    | `customXml/item1.xml` well formed, same relationship                          | `ff33da2a95a06803` | clean-open     | valid                                                                               | valid                                                                               | valid                                                                                   |
+| `s8b` | 07:48:43Z | `437-footer-rel-unused-malformed`                   | #437    | footer cut short, related, unused                                             | `50441e689e800c2e` | clean-open     | invalid (`xml-syntax@word/footer1.xml`, `xml-undeclared-prefix@word/footer1.xml`)   | invalid (`xml-syntax@word/footer1.xml`, `xml-undeclared-prefix@word/footer1.xml`)   | invalid (`xml-syntax@word/footer1.xml`, `xml-undeclared-prefix@word/footer1.xml`)       |
+| `s8b` | 07:48:43Z | `437-footer-rel-unused-wellformed-control`          | #437    | footer well formed, related, unused                                           | `759e94c307ee14a0` | clean-open     | valid                                                                               | valid                                                                               | invalid (`paraid-missing-element@word/footer1.xml`)                                     |
+| `s8b` | 07:48:43Z | `437-comments-rel-malformed`                        | #437    | comments cut short, related, unused                                           | `41dd8af1033dc543` | clean-open     | invalid (`xml-syntax@word/comments.xml`, `xml-undeclared-prefix@word/comments.xml`) | invalid (`xml-syntax@word/comments.xml`, `xml-undeclared-prefix@word/comments.xml`) | invalid (`xml-syntax@word/comments.xml`, `xml-undeclared-prefix@word/comments.xml`)     |
+| `s8b` | 07:48:43Z | `437-comments-rel-wellformed-control`               | #437    | comments well formed, related, unused                                         | `f9582ed2398ece00` | clean-open     | valid                                                                               | valid                                                                               | valid                                                                                   |
+| `s8b` | 07:48:43Z | `s8-control-minimal-end`                            | control | —                                                                             | `fedb8376980c5fdd` | clean-open     | valid                                                                               | valid                                                                               | valid                                                                                   |
+
+<details><summary>Raw records, session 8</summary>
+
+```jsonl
+{"run": "s8a", "name": "s8-control-minimal", "sha256": "46810497bd9460db5aee8c3e5798ad9866c7e84be42c36cce9c99bc195bbf148", "observedAt": "2026-10-24T07:48:13+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s8a", "name": "432-settings-override-control", "sha256": "290495461c6eed035446c24d6ddd9ba5ecdb96c22cbfca8c4d8d39f8babaee64", "observedAt": "2026-10-24T07:48:13+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s8a", "name": "432-settings-generic-default", "sha256": "e6226536abba0b74f734f95ecaa474a571bb9e4c7900e228aedfe0b37a6b62a5", "observedAt": "2026-10-24T07:47:43.381Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00003__wfv__432-settings-generic-default.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00003__wfv__432-settings-generic-default.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s8a", "name": "432-fonttable-override-control", "sha256": "b6cf401f8d6d2133ed350e314b0ae319d502845f66a3f55f324b74c569b3ec19", "observedAt": "2026-10-24T07:48:13+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s8a", "name": "432-fonttable-generic-default", "sha256": "021808c980c86554535da2c7253c98f83e8bf4fb7839924d4df78bae1e79fe7a", "observedAt": "2026-10-24T07:47:34.165Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__432-fonttable-generic-default.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__432-fonttable-generic-default.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s8a", "name": "432-websettings-override-control", "sha256": "7a0f93cfbe407a7e6700b0c2f604e784b3d24ed243c4cd765d6670ce527127b5", "observedAt": "2026-10-24T07:48:13+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s8a", "name": "432-websettings-generic-default", "sha256": "20861cabaa1ee26a4523e4889562d94cb85627e9526770e5ff7030cc1fe04559", "observedAt": "2026-10-24T07:47:51.831Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00006__wfv__432-websettings-generic-default.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00006__wfv__432-websettings-generic-default.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s8a", "name": "432-main-generic-default", "sha256": "19a10f0abd9b3128a89f08ddb8f40d1e938cdc58e043d75f171aeece959866e9", "observedAt": "2026-10-24T07:47:38.914Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00002__wfv__432-main-generic-default.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__432-main-generic-default.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s8a", "name": "432-styles-generic-default-s8", "sha256": "4d0b1c18e4d65438965b358347925a431d1bb312af666896d931cbe430bd9267", "observedAt": "2026-10-24T07:47:47.616Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00005__wfv__432-styles-generic-default-s8.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00005__wfv__432-styles-generic-default-s8.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s8a", "name": "443-styles-ascii-sty-control", "sha256": "5550535e47a76b2f4dbd8e5c4468a1452f64978d516b44991a5d483062087010", "observedAt": "2026-10-24T07:48:13+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s8a", "name": "443-styles-nonascii-sty-referenced", "sha256": "3ba2d65c5cc7cd40d995a67a6fca06e60afbc604f46e0fa4d85032aef71fc1bc", "observedAt": "2026-10-24T07:48:00.431Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00010__wfv__443-styles-nonascii-sty-referenced.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00010__wfv__443-styles-nonascii-sty-referenced.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s8a", "name": "443-styles-nonascii-sty-referenced-escaped-target", "sha256": "51112f2aedbeedaea3e4cb26d3dd38a6029112677648808ecf750e8bc9ef85eb", "observedAt": "2026-10-24T07:47:56.230Z", "outcome": "repair-warning", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00009__wfv__443-styles-nonascii-sty-referenced-escaped-target.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00009__wfv__443-styles-nonascii-sty-referenced-escaped-targe.... Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00009__wfv__443-styles-nonascii-sty-referenced-escaped-targe.... Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s8a", "name": "s8-control-minimal-mid", "sha256": "fedb8376980c5fdd522371f9b407bc7cc9e9a96461fc2fbc543e5c2dd37ed86b", "observedAt": "2026-10-24T07:48:13+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s8b", "name": "451-pctE9-missing", "sha256": "fd8f181b1cf4b2a8a714c5ba5d200accd46da6e88fd0acdb2490965e5d3c3768", "observedAt": "2026-10-24T07:48:40.047Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00008__wfv__451-pctE9-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00008__wfv__451-pctE9-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s8b", "name": "451-pct21-missing", "sha256": "19c8dcf487abf0417cced1e6ca8776ce9c11e9ede8c5f1f003962bff48505257", "observedAt": "2026-10-24T07:48:35.681Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00006__wfv__451-pct21-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00006__wfv__451-pct21-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s8b", "name": "451-pct7F-missing", "sha256": "6305e7316a2f43bb2e06ba45aaa8ca79345b3ee13ce541c575a3c0658e787141", "observedAt": "2026-10-24T07:48:43+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s8b", "name": "437-customxml-rel-malformed", "sha256": "ffe333cc9de1d00c991a8e5f76d9e6584f260d0e31a0f18db5076d7145187809", "observedAt": "2026-10-24T07:48:31.147Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00002__wfv__437-customxml-rel-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__437-customxml-rel-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s8b", "name": "437-customxml-rel-wellformed-control", "sha256": "ff33da2a95a0680355a68ec07ce28588b1923ddebdc0ef1c93def1714c5f4aa2", "observedAt": "2026-10-24T07:48:43+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s8b", "name": "437-footer-rel-unused-malformed", "sha256": "50441e689e800c2ef635c8e4b7ba0efd1d7881b4b410b5e9794538c07a570e6e", "observedAt": "2026-10-24T07:48:43+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s8b", "name": "437-footer-rel-unused-wellformed-control", "sha256": "759e94c307ee14a034c84687df612be4962cbb46ab474e505b5086dcb86b1606", "observedAt": "2026-10-24T07:48:43+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s8b", "name": "437-comments-rel-malformed", "sha256": "41dd8af1033dc543f488999581b0d112521010e8c09344c20612d9855cd95c8a", "observedAt": "2026-10-24T07:48:43+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s8b", "name": "437-comments-rel-wellformed-control", "sha256": "f9582ed2398ece002cfee15109c7e52f04c2a86af32d202c2fcd2a75440f26c8", "observedAt": "2026-10-24T07:48:43+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s8b", "name": "s8-control-minimal-end", "sha256": "fedb8376980c5fdd522371f9b407bc7cc9e9a96461fc2fbc543e5c2dd37ed86b", "observedAt": "2026-10-24T07:48:43+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 9: 07:50Z–07:51Z, validator columns at 49922e9a and e08611b1
+
+`s9a` refines #437: a part is unclosed (well formed up to the missing end tag of its root), and either the main part uses it (`w:footerReference`, or a comment range with its `w:commentReference`) or only a relationship names it. `s9b` adds `PartName` escapes of characters `pchar` allows or must escape (#451), and the same question for an unreferenced stored name (#408).
+
+| Run   | Observed  | Specimen                                          | Issue   | Shape                                            | SHA-256 (first 16) | Word           | word-valid at 49922e9a                      | word-valid at e08611b1                      | strict at e08611b1                                                                                     |
+| ----- | --------- | ------------------------------------------------- | ------- | ------------------------------------------------ | ------------------ | -------------- | ------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `s9a` | 07:50:46Z | `s9-control-minimal`                              | control | —                                                | `a049b8c3728051a2` | clean-open     | valid                                       | valid                                       | valid                                                                                                  |
+| `s9a` | 07:50:21Z | `437-footer-referenced-malformed`                 | #437    | footer unclosed, referenced from `w:sectPr`      | `1e46f550b21f61e0` | open-error     | invalid (`xml-syntax@word/footer1.xml`)     | invalid (`xml-syntax@word/footer1.xml`)     | invalid (`xml-syntax@word/footer1.xml`)                                                                |
+| `s9a` | 07:50:46Z | `437-footer-referenced-wellformed-control`        | #437    | footer well formed, referenced                   | `ee876d5b9790a599` | clean-open     | valid                                       | valid                                       | invalid (`paraid-missing-element@word/footer1.xml`)                                                    |
+| `s9a` | 07:50:46Z | `437-footer-related-unused-unclosed`              | #437    | footer unclosed, related, unused                 | `27b063df97baf2ed` | clean-open     | invalid (`xml-syntax@word/footer1.xml`)     | invalid (`xml-syntax@word/footer1.xml`)     | invalid (`xml-syntax@word/footer1.xml`)                                                                |
+| `s9a` | 07:50:10Z | `437-comments-referenced-malformed`               | #437    | comments unclosed, referenced by a comment range | `bb4e04eee5069bca` | repair-warning | invalid (`xml-syntax@word/comments.xml`)    | invalid (`xml-syntax@word/comments.xml`)    | invalid (`xml-syntax@word/comments.xml`)                                                               |
+| `s9a` | 07:50:46Z | `437-comments-referenced-wellformed-control`      | #437    | comments well formed, referenced                 | `523a442c9bbea652` | clean-open     | valid                                       | valid                                       | invalid (`paraid-missing-element@word/comments.xml`)                                                   |
+| `s9a` | 07:50:46Z | `437-comments-related-unused-unclosed`            | #437    | comments unclosed, related, unused               | `7925f9c273890a4a` | clean-open     | invalid (`xml-syntax@word/comments.xml`)    | invalid (`xml-syntax@word/comments.xml`)    | invalid (`xml-syntax@word/comments.xml`)                                                               |
+| `s9a` | 07:50:29Z | `437-settings-malformed`                          | #437    | settings unclosed, related                       | `79463625b6d8de3e` | repair-warning | invalid (`xml-syntax@word/settings.xml`)    | invalid (`xml-syntax@word/settings.xml`)    | invalid (`xml-syntax@word/settings.xml`)                                                               |
+| `s9a` | 07:50:16Z | `437-fonttable-malformed`                         | #437    | fontTable unclosed, related                      | `5307f68df2dfc6ff` | repair-warning | invalid (`xml-syntax@word/fontTable.xml`)   | invalid (`xml-syntax@word/fontTable.xml`)   | invalid (`xml-syntax@word/fontTable.xml`)                                                              |
+| `s9a` | 07:50:34Z | `437-websettings-malformed`                       | #437    | webSettings unclosed, related                    | `aebc2cbcc8962a91` | repair-warning | invalid (`xml-syntax@word/webSettings.xml`) | invalid (`xml-syntax@word/webSettings.xml`) | invalid (`xml-syntax@word/webSettings.xml`)                                                            |
+| `s9a` | 07:50:25Z | `437-numbering-related-unused-malformed`          | #437    | numbering unclosed, related, unused              | `23061d78523eb59d` | repair-warning | invalid (`xml-syntax@word/numbering.xml`)   | invalid (`xml-syntax@word/numbering.xml`)   | invalid (`xml-syntax@word/numbering.xml`)                                                              |
+| `s9a` | 07:50:46Z | `437-footnotes-related-unused-malformed`          | #437    | footnotes unclosed, related, unused              | `463f0a0a4d19dd12` | clean-open     | invalid (`xml-syntax@word/footnotes.xml`)   | invalid (`xml-syntax@word/footnotes.xml`)   | invalid (`xml-syntax@word/footnotes.xml`)                                                              |
+| `s9a` | 07:50:46Z | `437-footnotes-related-unused-wellformed-control` | #437    | footnotes well formed, related, unused           | `d3ba5608b0635adc` | clean-open     | valid                                       | valid                                       | invalid (`paraid-missing-element@word/footnotes.xml`)                                                  |
+| `s9a` | 07:50:46Z | `s9-control-minimal-mid`                          | control | —                                                | `28099e0b39b20885` | clean-open     | valid                                       | valid                                       | valid                                                                                                  |
+| `s9b` | 07:51:21Z | `451-pct3A-missing`                               | #451    | PartName `/word/a%3Ab.xml`                       | `b8833b6534ef77a9` | clean-open     | valid                                       | valid                                       | valid                                                                                                  |
+| `s9b` | 07:51:21Z | `451-pct40-missing`                               | #451    | PartName `/word/a%40b.xml`                       | `37e8941c0b1c5787` | clean-open     | valid                                       | valid                                       | valid                                                                                                  |
+| `s9b` | 07:51:21Z | `451-pct24-missing`                               | #451    | PartName `/word/a%24b.xml`                       | `868d63304b00a462` | clean-open     | valid                                       | valid                                       | valid                                                                                                  |
+| `s9b` | 07:51:21Z | `451-pct3D-missing`                               | #451    | PartName `/word/a%3Db.xml`                       | `16dec5471b55d0ed` | clean-open     | valid                                       | valid                                       | valid                                                                                                  |
+| `s9b` | 07:51:21Z | `451-pct2C-missing`                               | #451    | PartName `/word/a%2Cb.xml`                       | `5d1b5e338a4fbecd` | clean-open     | valid                                       | valid                                       | valid                                                                                                  |
+| `s9b` | 07:51:21Z | `451-pct25-missing`                               | #451    | PartName `/word/a%25b.xml`                       | `51c3acf6af880f11` | clean-open     | valid                                       | valid                                       | valid                                                                                                  |
+| `s9b` | 07:51:21Z | `451-pct22-missing`                               | #451    | PartName `/word/a%22b.xml`                       | `d35fc880d0ba3c1b` | clean-open     | valid                                       | valid                                       | valid                                                                                                  |
+| `s9b` | 07:51:21Z | `451-pct5B-missing`                               | #451    | PartName `/word/a%5Bb.xml`                       | `e5e0010392c4f809` | clean-open     | valid                                       | valid                                       | valid                                                                                                  |
+| `s9b` | 07:51:21Z | `451-pct7B-missing`                               | #451    | PartName `/word/a%7Bb.xml`                       | `606bf8dca7a22857` | clean-open     | valid                                       | valid                                       | valid                                                                                                  |
+| `s9b` | 07:51:21Z | `451-pct3C-missing`                               | #451    | PartName `/word/a%3Cb.xml`                       | `8011b9817ba01cce` | clean-open     | valid                                       | valid                                       | valid                                                                                                  |
+| `s9b` | 07:51:15Z | `408-stored-pct21-unreferenced`                   | #408    | stored `word/a%21b.xml`                          | `aa0376d091e0f36a` | repair-warning | valid                                       | valid                                       | invalid (`rels-unreferenced@word/a%21b.xml`, `xsd-summary@word/a%21b.xml`, `xsd-error@word/a%21b.xml`) |
+| `s9b` | 07:51:21Z | `408-stored-pct3A-unreferenced`                   | #408    | stored `word/a%3Ab.xml`                          | `0f5952f7a66211a7` | clean-open     | valid                                       | valid                                       | invalid (`rels-unreferenced@word/a%3Ab.xml`, `xsd-summary@word/a%3Ab.xml`, `xsd-error@word/a%3Ab.xml`) |
+| `s9b` | 07:51:21Z | `408-stored-pct5B-unreferenced`                   | #408    | stored `word/a%5Bb.xml`                          | `b7ab9026872731e4` | clean-open     | valid                                       | valid                                       | invalid (`rels-unreferenced@word/a%5Bb.xml`, `xsd-summary@word/a%5Bb.xml`, `xsd-error@word/a%5Bb.xml`) |
+| `s9b` | 07:51:21Z | `408-stored-pct7F-unreferenced`                   | #408    | stored `word/a%7Fb.xml`                          | `60745fbbf35bbb56` | clean-open     | valid                                       | valid                                       | invalid (`rels-unreferenced@word/a%7Fb.xml`, `xsd-summary@word/a%7Fb.xml`, `xsd-error@word/a%7Fb.xml`) |
+| `s9b` | 07:51:21Z | `s9-control-minimal-end`                          | control | —                                                | `405ce71c9287e93e` | clean-open     | valid                                       | valid                                       | valid                                                                                                  |
+
+<details><summary>Raw records, session 9</summary>
+
+```jsonl
+{"run": "s9a", "name": "s9-control-minimal", "sha256": "a049b8c3728051a2f064591c5af56c4d36aa697af451509cbedef805848eda81", "observedAt": "2026-10-24T07:50:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s9a", "name": "437-footer-referenced-malformed", "sha256": "1e46f550b21f61e0cb31edeaa6f3e57783d190137c28221258b519dfe316246e", "observedAt": "2026-10-24T07:50:21.332Z", "outcome": "open-error", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00004__wfv__437-footer-referenced-malformed.docx; refusing to guess", "dialogs": ["'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permissions for the document or drive.\\n* Make sure there is sufficient free memory and disk space.\\n* Open the file with the Text Recovery conver", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s9a", "name": "437-footer-referenced-wellformed-control", "sha256": "ee876d5b9790a599005ebb9b0d6fdd684a7c142107f16b670c08c5b6565e9bfd", "observedAt": "2026-10-24T07:50:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s9a", "name": "437-footer-related-unused-unclosed", "sha256": "27b063df97baf2ed8174636ca41601f7dc3499bed0ad0da5b835194eef5a65c4", "observedAt": "2026-10-24T07:50:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s9a", "name": "437-comments-referenced-malformed", "sha256": "bb4e04eee5069bca6e06ef8245fdb29a491cadb7391ec960b5cb54e2bae298ed", "observedAt": "2026-10-24T07:50:10.747Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__437-comments-referenced-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__437-comments-referenced-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s9a", "name": "437-comments-referenced-wellformed-control", "sha256": "523a442c9bbea652b31b36c8519336e450c6b2e12f3b2fd95bcd9bcda25f7ab9", "observedAt": "2026-10-24T07:50:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s9a", "name": "437-comments-related-unused-unclosed", "sha256": "7925f9c273890a4ac2a3e735f8e9e3444a952159c4e240855bdfdaf3aeaf821b", "observedAt": "2026-10-24T07:50:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s9a", "name": "437-settings-malformed", "sha256": "79463625b6d8de3e03a087d7c21882e1c49db24f51ca54c72b52729d5a2357a7", "observedAt": "2026-10-24T07:50:29.882Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00010__wfv__437-settings-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00010__wfv__437-settings-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s9a", "name": "437-fonttable-malformed", "sha256": "5307f68df2dfc6ffa44c8f2a46a09ffe9476a439fd159d36a2d0ff5c4d68f69c", "observedAt": "2026-10-24T07:50:16.897Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00003__wfv__437-fonttable-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00003__wfv__437-fonttable-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s9a", "name": "437-websettings-malformed", "sha256": "aebc2cbcc8962a91c406b93c5d2aa7d5c3bf53753deadc92282b5e642b806d25", "observedAt": "2026-10-24T07:50:34.730Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00011__wfv__437-websettings-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00011__wfv__437-websettings-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s9a", "name": "437-numbering-related-unused-malformed", "sha256": "23061d78523eb59d9997f37f2f45d702147304affcb4de73ea5cf55629d320a8", "observedAt": "2026-10-24T07:50:25.632Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00009__wfv__437-numbering-related-unused-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00009__wfv__437-numbering-related-unused-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s9a", "name": "437-footnotes-related-unused-malformed", "sha256": "463f0a0a4d19dd12ffbf11bb668a9d4a69fa59ce5ea6186c602558f42f785eaf", "observedAt": "2026-10-24T07:50:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s9a", "name": "437-footnotes-related-unused-wellformed-control", "sha256": "d3ba5608b0635adc786de053283435bb674aa2186a873d09248b0ae8c6c8575c", "observedAt": "2026-10-24T07:50:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s9a", "name": "s9-control-minimal-mid", "sha256": "28099e0b39b20885ee1bb1de1df4f33e5b63f99e2eca6e9fc76714296daad1c3", "observedAt": "2026-10-24T07:50:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s9b", "name": "451-pct3A-missing", "sha256": "b8833b6534ef77a9d03c2a2880ee1381a68812278c99936e19845a3dea5f4b8a", "observedAt": "2026-10-24T07:51:21+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s9b", "name": "451-pct40-missing", "sha256": "37e8941c0b1c57879cab8062126b5c57ba2b55990ec9bc5ec663abbb2a37cf8d", "observedAt": "2026-10-24T07:51:21+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s9b", "name": "451-pct24-missing", "sha256": "868d63304b00a462ca4fe400bb5d9c21d57e07c5b4eb9ac6138ca7676051e0cb", "observedAt": "2026-10-24T07:51:21+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s9b", "name": "451-pct3D-missing", "sha256": "16dec5471b55d0ed3eb41c2a96464a3f19fa49232c0325af641aafafdbca72f5", "observedAt": "2026-10-24T07:51:21+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s9b", "name": "451-pct2C-missing", "sha256": "5d1b5e338a4fbecd81f79071fe45ef528be93c9e73ef8b0b8128fe5ede9d9229", "observedAt": "2026-10-24T07:51:21+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s9b", "name": "451-pct25-missing", "sha256": "51c3acf6af880f11aef14505bf1d03e62863dfed7c47ab2a64497e74420e8619", "observedAt": "2026-10-24T07:51:21+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s9b", "name": "451-pct22-missing", "sha256": "d35fc880d0ba3c1b5e461a76a9a1096ff76210a45de2390c908a1ed5f0a39236", "observedAt": "2026-10-24T07:51:21+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s9b", "name": "451-pct5B-missing", "sha256": "e5e0010392c4f8095a8b3df51630151ff96167a76e106bc799dff88ae0deb302", "observedAt": "2026-10-24T07:51:21+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s9b", "name": "451-pct7B-missing", "sha256": "606bf8dca7a228578a8d5cebc8f571b3122c5b07f34d9fc846e81d6d9a9d159f", "observedAt": "2026-10-24T07:51:21+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s9b", "name": "451-pct3C-missing", "sha256": "8011b9817ba01ccee58ba4b2325d0bbcb35aa282131b0fddc2acd3b8a1fac240", "observedAt": "2026-10-24T07:51:21+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s9b", "name": "408-stored-pct21-unreferenced", "sha256": "aa0376d091e0f36a1f3869fc0cb9d5b978b2f660cf85c09dda32726fad5287b2", "observedAt": "2026-10-24T07:51:15.147Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__408-stored-pct21-unreferenced.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__408-stored-pct21-unreferenced.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s9b", "name": "408-stored-pct3A-unreferenced", "sha256": "0f5952f7a66211a71c1629cc7c05f442c7c12aad139dc125756bb7c62c211cd8", "observedAt": "2026-10-24T07:51:21+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s9b", "name": "408-stored-pct5B-unreferenced", "sha256": "b7ab9026872731e423d71f21990d1f079e2f79a04575c5e0f67ce56f1d8aa7a7", "observedAt": "2026-10-24T07:51:21+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s9b", "name": "408-stored-pct7F-unreferenced", "sha256": "60745fbbf35bbb56fff9afd8c578056d80fdf5aa11c913060876ec5e005ff287", "observedAt": "2026-10-24T07:51:21+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s9b", "name": "s9-control-minimal-end", "sha256": "405ce71c9287e93e80c95bc6708872c8decfe8d2d4f8392db17058a1182520ba", "observedAt": "2026-10-24T07:51:21+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 10: 07:53Z–07:53Z, validator columns at 49922e9a and e08611b1
+
+A literal `!` in a `PartName` and in a stored name, and the remaining sub-delim escapes in a `PartName` (#451, #408).
+
+| Run   | Observed  | Specimen                               | Issue   | Shape                      | SHA-256 (first 16) | Word           | word-valid at 49922e9a | word-valid at e08611b1 | strict at e08611b1                                                                               |
+| ----- | --------- | -------------------------------------- | ------- | -------------------------- | ------------------ | -------------- | ---------------------- | ---------------------- | ------------------------------------------------------------------------------------------------ |
+| `s10` | 07:53:28Z | `s10-control-minimal`                  | control | —                          | `c7732ed7987bc4a0` | clean-open     | valid                  | valid                  | valid                                                                                            |
+| `s10` | 07:53:28Z | `451-literal-bang-missing`             | #451    | PartName `/word/a!b.xml`   | `dd1e3ac69b023367` | clean-open     | valid                  | valid                  | valid                                                                                            |
+| `s10` | 07:53:28Z | `408-stored-literal-bang-unreferenced` | #408    | stored `word/a!b.xml`      | `ce1b1521753d2a06` | clean-open     | valid                  | valid                  | invalid (`rels-unreferenced@word/a!b.xml`, `xsd-summary@word/a!b.xml`, `xsd-error@word/a!b.xml`) |
+| `s10` | 07:53:28Z | `451-pct26-missing`                    | #451    | PartName `/word/a%26b.xml` | `e436858beeb2969a` | clean-open     | valid                  | valid                  | valid                                                                                            |
+| `s10` | 07:53:12Z | `451-pct27-missing`                    | #451    | PartName `/word/a%27b.xml` | `824e384292b8d734` | repair-warning | valid                  | valid                  | valid                                                                                            |
+| `s10` | 07:53:16Z | `451-pct28-missing`                    | #451    | PartName `/word/a%28b.xml` | `d8a75a99731ed004` | repair-warning | valid                  | valid                  | valid                                                                                            |
+| `s10` | 07:53:20Z | `451-pct29-missing`                    | #451    | PartName `/word/a%29b.xml` | `8b68495352e86d95` | repair-warning | valid                  | valid                  | valid                                                                                            |
+| `s10` | 07:53:24Z | `451-pct2A-missing`                    | #451    | PartName `/word/a%2Ab.xml` | `92aa4bc8f90e11d8` | repair-warning | valid                  | valid                  | valid                                                                                            |
+| `s10` | 07:53:28Z | `451-pct2B-missing`                    | #451    | PartName `/word/a%2Bb.xml` | `8746635cb43cc3d6` | clean-open     | valid                  | valid                  | valid                                                                                            |
+| `s10` | 07:53:28Z | `451-pct3B-missing`                    | #451    | PartName `/word/a%3Bb.xml` | `7e9e56d9d91b2d97` | clean-open     | valid                  | valid                  | valid                                                                                            |
+| `s10` | 07:53:05Z | `451-pct21-lower-missing-s10`          | #451    | PartName `/word/a%21b.xml` | `bc425c72ef356fd1` | repair-warning | valid                  | valid                  | valid                                                                                            |
+| `s10` | 07:53:28Z | `s10-control-minimal-end`              | control | —                          | `c7732ed7987bc4a0` | clean-open     | valid                  | valid                  | valid                                                                                            |
+
+<details><summary>Raw records, session 10</summary>
+
+```jsonl
+{"run": "s10", "name": "s10-control-minimal", "sha256": "c7732ed7987bc4a0244cd68be1ec0a47f56ca2a8e774696b5af126d3e75830d6", "observedAt": "2026-10-24T07:53:28+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s10", "name": "451-literal-bang-missing", "sha256": "dd1e3ac69b023367579f0094f542aed44781fd15ee9ab140c29f1e312a0786dd", "observedAt": "2026-10-24T07:53:28+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s10", "name": "408-stored-literal-bang-unreferenced", "sha256": "ce1b1521753d2a0602b8d9a39b652187cfd4ccf0ffa3467e9e1de8afe24cf0c4", "observedAt": "2026-10-24T07:53:28+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s10", "name": "451-pct26-missing", "sha256": "e436858beeb2969acfe31d4a9deed3dfc50bf52524216fc9ed604e51d6a5bd55", "observedAt": "2026-10-24T07:53:28+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s10", "name": "451-pct27-missing", "sha256": "824e384292b8d7349fa596bd7d1c9e55264dc765b221240dab4a6937c882fecb", "observedAt": "2026-10-24T07:53:12.032Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00004__wfv__451-pct27-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00004__wfv__451-pct27-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s10", "name": "451-pct28-missing", "sha256": "d8a75a99731ed004f68d31b42bec8cdbdd3a5ca2c9e9f46b734c79eb12937380", "observedAt": "2026-10-24T07:53:16.315Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00005__wfv__451-pct28-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00005__wfv__451-pct28-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s10", "name": "451-pct29-missing", "sha256": "8b68495352e86d95f058b9624cef6e71adacb13d538e2ebfa9edc2b9475c0c0e", "observedAt": "2026-10-24T07:53:20.532Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00006__wfv__451-pct29-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00006__wfv__451-pct29-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s10", "name": "451-pct2A-missing", "sha256": "92aa4bc8f90e11d8ffb396b680881ae255be7ea2c966acc77d1a6034ae49e48e", "observedAt": "2026-10-24T07:53:24.781Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00007__wfv__451-pct2A-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00007__wfv__451-pct2A-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s10", "name": "451-pct2B-missing", "sha256": "8746635cb43cc3d6edc79c5b00c4dcf6ad448d53690c73c10ea386ab22369cf6", "observedAt": "2026-10-24T07:53:28+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s10", "name": "451-pct3B-missing", "sha256": "7e9e56d9d91b2d972ec5d238217877dbdf958f25ed207b3ae465692fa0533b16", "observedAt": "2026-10-24T07:53:28+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s10", "name": "451-pct21-lower-missing-s10", "sha256": "bc425c72ef356fd12aeedac0ee85b5db926aca7add11d94f7ffcb6b7c5c8e7ba", "observedAt": "2026-10-24T07:53:05.600Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00002__wfv__451-pct21-lower-missing-s10.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__451-pct21-lower-missing-s10.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s10", "name": "s10-control-minimal-end", "sha256": "c7732ed7987bc4a0244cd68be1ec0a47f56ca2a8e774696b5af126d3e75830d6", "observedAt": "2026-10-24T07:53:28+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 11: 07:54Z–07:55Z, validator columns at 49922e9a and e08611b1
+
+The rest of RFC 3986 unreserved, a lower-case hex escape, and escapes of a control character and of 0x80 and above, in a `PartName` (#451); escaped marks and `%26` in a stored name (#408).
+
+| Run   | Observed  | Specimen                        | Issue   | Shape                      | SHA-256 (first 16) | Word           | word-valid at 49922e9a                                       | word-valid at e08611b1                                       | strict at e08611b1                                                                                                                                        |
+| ----- | --------- | ------------------------------- | ------- | -------------------------- | ------------------ | -------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `s11` | 07:55:52Z | `s11-control-minimal`           | control | —                          | `53163af036d64a84` | clean-open     | valid                                                        | valid                                                        | valid                                                                                                                                                     |
+| `s11` | 07:55:11Z | `451-pct7E-missing`             | #451    | PartName `/word/a%7Eb.xml` | `acbed2561facd207` | repair-warning | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`)                                                                                              |
+| `s11` | 07:54:36Z | `451-pct2D-missing`             | #451    | PartName `/word/a%2Db.xml` | `0501fb0893852039` | repair-warning | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`)                                                                                              |
+| `s11` | 07:55:02Z | `451-pct5F-missing`             | #451    | PartName `/word/a%5Fb.xml` | `a44d0c276a13f9ec` | repair-warning | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`)                                                                                              |
+| `s11` | 07:54:40Z | `451-pct2E-missing`             | #451    | PartName `/word/a%2Eb.xml` | `a03c2469b41a5daf` | repair-warning | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`)                                                                                              |
+| `s11` | 07:54:55Z | `451-pct41-missing`             | #451    | PartName `/word/a%41b.xml` | `34adb1a13c250126` | repair-warning | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`)                                                                                              |
+| `s11` | 07:54:49Z | `451-pct39-missing`             | #451    | PartName `/word/a%39b.xml` | `996d76fa1bbf2267` | repair-warning | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`)                                                                                              |
+| `s11` | 07:54:45Z | `451-pct2a-lower-missing`       | #451    | PartName `/word/a%2ab.xml` | `a9e7527399436038` | repair-warning | valid                                                        | valid                                                        | valid                                                                                                                                                     |
+| `s11` | 07:55:52Z | `451-pct01-missing`             | #451    | PartName `/word/a%01b.xml` | `7e8ea9c43ca23fb2` | clean-open     | valid                                                        | valid                                                        | valid                                                                                                                                                     |
+| `s11` | 07:55:21Z | `451-pct80-missing`             | #451    | PartName `/word/a%80b.xml` | `fdc646d616138256` | repair-warning | valid                                                        | valid                                                        | valid                                                                                                                                                     |
+| `s11` | 07:55:48Z | `451-pctFF-missing`             | #451    | PartName `/word/a%FFb.xml` | `b63c05d234a13a20` | repair-warning | valid                                                        | valid                                                        | valid                                                                                                                                                     |
+| `s11` | 07:54:12Z | `408-stored-pct27-unreferenced` | #408    | stored `word/a%27b.xml`    | `a113152e33aa074d` | repair-warning | valid                                                        | valid                                                        | invalid (`rels-unreferenced@word/a%27b.xml`, `xsd-summary@word/a%27b.xml`, `xsd-error@word/a%27b.xml`)                                                    |
+| `s11` | 07:54:16Z | `408-stored-pct2A-unreferenced` | #408    | stored `word/a%2Ab.xml`    | `9f76d2aefa321d9c` | repair-warning | valid                                                        | valid                                                        | invalid (`rels-unreferenced@word/a%2Ab.xml`, `xsd-summary@word/a%2Ab.xml`, `xsd-error@word/a%2Ab.xml`)                                                    |
+| `s11` | 07:54:21Z | `408-stored-pct7E-unreferenced` | #408    | stored `word/a%7Eb.xml`    | `fdeee9d61e8b2aed` | repair-warning | invalid (`opc-part-name-escaped-unreserved@word/a%7Eb.xml`)  | invalid (`opc-part-name-escaped-unreserved@word/a%7Eb.xml`)  | invalid (`rels-unreferenced@word/a%7Eb.xml`, `xsd-summary@word/a%7Eb.xml`, `xsd-error@word/a%7Eb.xml`, `opc-part-name-escaped-unreserved@word/a%7Eb.xml`) |
+| `s11` | 07:55:52Z | `408-stored-pct26-unreferenced` | #408    | stored `word/a%26b.xml`    | `5ed13af95979c1ea` | clean-open     | valid                                                        | valid                                                        | invalid (`rels-unreferenced@word/a%26b.xml`, `xsd-summary@word/a%26b.xml`, `xsd-error@word/a%26b.xml`)                                                    |
+| `s11` | 07:55:52Z | `s11-control-minimal-end`       | control | —                          | `e01fcf79ebd6259e` | clean-open     | valid                                                        | valid                                                        | valid                                                                                                                                                     |
+
+<details><summary>Raw records, session 11</summary>
+
+```jsonl
+{"run": "s11", "name": "s11-control-minimal", "sha256": "53163af036d64a842440770a355603d992e70f548bc248b12a9cb03d54b111b3", "observedAt": "2026-10-24T07:55:52+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s11", "name": "451-pct7E-missing", "sha256": "acbed2561facd20736090027516d5682cb749bc6aa4c978d56222496e190cb23", "observedAt": "2026-10-24T07:55:11.950Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00011__wfv__451-pct7E-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00011__wfv__451-pct7E-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s11", "name": "451-pct2D-missing", "sha256": "0501fb089385203918237042cc586a434b9fbe2fa969e8e834e5b96896300dad", "observedAt": "2026-10-24T07:54:36.414Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00005__wfv__451-pct2D-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00005__wfv__451-pct2D-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s11", "name": "451-pct5F-missing", "sha256": "a44d0c276a13f9ecdbc1c10f7a032e827a04fdf4f2a0943a22998c3debb5d71b", "observedAt": "2026-10-24T07:55:02.919Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00010__wfv__451-pct5F-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00010__wfv__451-pct5F-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s11", "name": "451-pct2E-missing", "sha256": "a03c2469b41a5daf17ee857a52022edd666a1271a83cb3dfa4277394431fd281", "observedAt": "2026-10-24T07:54:40.665Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00006__wfv__451-pct2E-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00006__wfv__451-pct2E-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s11", "name": "451-pct41-missing", "sha256": "34adb1a13c250126ea61911601ee95a6c7253fe444dd37a52161b915cf8350a2", "observedAt": "2026-10-24T07:54:55.705Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00009__wfv__451-pct41-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00009__wfv__451-pct41-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s11", "name": "451-pct39-missing", "sha256": "996d76fa1bbf2267a90993f61122d2123ba2c9f52677a590d150a3d818fd320d", "observedAt": "2026-10-24T07:54:49.515Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00008__wfv__451-pct39-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00008__wfv__451-pct39-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s11", "name": "451-pct2a-lower-missing", "sha256": "a9e752739943603817b5a7a070e0aaf2c79ecdd212df079cac0636ccb67f7487", "observedAt": "2026-10-24T07:54:45.048Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00007__wfv__451-pct2a-lower-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00007__wfv__451-pct2a-lower-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s11", "name": "451-pct01-missing", "sha256": "7e8ea9c43ca23fb21f7effb7571fc3707c86dbf4d366ea3767ac5331b45de319", "observedAt": "2026-10-24T07:55:52+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s11", "name": "451-pct80-missing", "sha256": "fdc646d616138256905b8c0df22a776b4aa907eb4bcaff10d861f72c83fc9c92", "observedAt": "2026-10-24T07:55:21.583Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00012__wfv__451-pct80-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00012__wfv__451-pct80-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s11", "name": "451-pctFF-missing", "sha256": "b63c05d234a13a200d7bf55a205c7351adb6fe3aad6999bd0c854ff334add22a", "observedAt": "2026-10-24T07:55:48.635Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["\"Word found unreadable content in 00013__wfv__451-pctFF-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s11", "name": "408-stored-pct27-unreferenced", "sha256": "a113152e33aa074d56db5ff8511badc9dcb6acc5878072c60c7bdea518f2f1e5", "observedAt": "2026-10-24T07:54:12.448Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00001__wfv__408-stored-pct27-unreferenced.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00001__wfv__408-stored-pct27-unreferenced.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s11", "name": "408-stored-pct2A-unreferenced", "sha256": "9f76d2aefa321d9c65ffa121571a25429b02af69201dae38085ca03ba299ffba", "observedAt": "2026-10-24T07:54:16.865Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00002__wfv__408-stored-pct2A-unreferenced.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__408-stored-pct2A-unreferenced.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s11", "name": "408-stored-pct7E-unreferenced", "sha256": "fdeee9d61e8b2aed07ab272236165080991f0c2bf335b09a23fcadcc2da6d02f", "observedAt": "2026-10-24T07:54:21.098Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00003__wfv__408-stored-pct7E-unreferenced.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00003__wfv__408-stored-pct7E-unreferenced.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s11", "name": "408-stored-pct26-unreferenced", "sha256": "5ed13af95979c1ea517def7e5040c5d86226aad6e5af324431c477882efc36bc", "observedAt": "2026-10-24T07:55:52+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s11", "name": "s11-control-minimal-end", "sha256": "e01fcf79ebd6259e468e88793e337a30a008ab632969ae53f31914aa020aaf4b", "observedAt": "2026-10-24T07:55:52+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 12: 07:59Z–07:59Z, validator columns at 49922e9a and e08611b1
+
+Dot-only folder segments (review AB S1, #453) beside the `/word./` control, and the remaining stored-name escapes (#408, #443).
+
+| Run   | Observed  | Specimen                          | Issue   | Shape                       | SHA-256 (first 16) | Word           | word-valid at 49922e9a | word-valid at e08611b1                                       | strict at e08611b1                                                                                                 |
+| ----- | --------- | --------------------------------- | ------- | --------------------------- | ------------------ | -------------- | ---------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| `s12` | 07:59:32Z | `s12-control-minimal`             | control | —                           | `3b71442f26c56f74` | clean-open     | valid                  | valid                                                        | valid                                                                                                              |
+| `s12` | 07:59:24Z | `450-dots3-folder-missing`        | #450    | PartName `/word/.../x.xml`  | `af92d93d2a9d0e7f` | repair-warning | valid                  | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`)                                                       |
+| `s12` | 07:59:28Z | `450-dots4-folder-missing`        | #450    | PartName `/word/..../x.xml` | `8bf865972a81d79c` | repair-warning | valid                  | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`)                                                       |
+| `s12` | 07:59:20Z | `450-dots3-first-folder-missing`  | #450    | PartName `/.../x.xml`       | `e0392d61bdbf078e` | repair-warning | valid                  | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`)                                                       |
+| `s12` | 07:59:32Z | `450-word-dot-folder-control-s12` | #450    | PartName `/word./x.xml`     | `0ac5be98685f79b2` | clean-open     | valid                  | valid                                                        | invalid (`ct-override-partname-invalid@[Content_Types].xml`)                                                       |
+| `s12` | 07:59:03Z | `408-stored-pct28-unreferenced`   | #408    | stored `word/a%28b.xml`     | `f15b362a047c7556` | repair-warning | valid                  | valid                                                        | invalid (`rels-unreferenced@word/a%28b.xml`, `xsd-summary@word/a%28b.xml`, `xsd-error@word/a%28b.xml`)             |
+| `s12` | 07:59:07Z | `408-stored-pct29-unreferenced`   | #408    | stored `word/a%29b.xml`     | `34bab3a959338131` | repair-warning | valid                  | valid                                                        | invalid (`rels-unreferenced@word/a%29b.xml`, `xsd-summary@word/a%29b.xml`, `xsd-error@word/a%29b.xml`)             |
+| `s12` | 07:59:15Z | `408-stored-pctC3A9-unreferenced` | #408    | stored `word/caf%C3%A9.xml` | `b1c81bade2fa92f7` | repair-warning | valid                  | valid                                                        | invalid (`rels-unreferenced@word/caf%C3%A9.xml`, `xsd-summary@word/caf%C3%A9.xml`, `xsd-error@word/caf%C3%A9.xml`) |
+| `s12` | 07:59:11Z | `408-stored-pct80-unreferenced`   | #408    | stored `word/a%80b.xml`     | `e000f0f61f8e45f1` | repair-warning | valid                  | valid                                                        | invalid (`rels-unreferenced@word/a%80b.xml`, `xsd-summary@word/a%80b.xml`, `xsd-error@word/a%80b.xml`)             |
+| `s12` | 07:59:32Z | `s12-control-minimal-end`         | control | —                           | `3b71442f26c56f74` | clean-open     | valid                  | valid                                                        | valid                                                                                                              |
+
+<details><summary>Raw records, session 12</summary>
+
+```jsonl
+{"run": "s12", "name": "s12-control-minimal", "sha256": "3b71442f26c56f74c40cd673feae668c41cf8498f52d7561bf62822a90a97afd", "observedAt": "2026-10-24T07:59:32+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s12", "name": "450-dots3-folder-missing", "sha256": "af92d93d2a9d0e7f36ce278dbea3e3b2932651ee2c834bd49e31dbb664bcafc6", "observedAt": "2026-10-24T07:59:24.259Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00005__wfv__450-dots3-folder-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00005__wfv__450-dots3-folder-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s12", "name": "450-dots4-folder-missing", "sha256": "8bf865972a81d79cf3a56a23e891044362c69c5168f916aea2eae3173642c361", "observedAt": "2026-10-24T07:59:28.493Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00006__wfv__450-dots4-folder-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00006__wfv__450-dots4-folder-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s12", "name": "450-dots3-first-folder-missing", "sha256": "e0392d61bdbf078e5d893e72016605de8f095a0fa9d403c131a3405c57ffca74", "observedAt": "2026-10-24T07:59:20.058Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00004__wfv__450-dots3-first-folder-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00004__wfv__450-dots3-first-folder-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s12", "name": "450-word-dot-folder-control-s12", "sha256": "0ac5be98685f79b2608a5604b24cf9bf750f77282cb7876514a329264a2872e6", "observedAt": "2026-10-24T07:59:32+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s12", "name": "408-stored-pct28-unreferenced", "sha256": "f15b362a047c75561f3d8da2440300bb3b7f9854253d30942f3b2305f4869a09", "observedAt": "2026-10-24T07:59:03.027Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__408-stored-pct28-unreferenced.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__408-stored-pct28-unreferenced.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s12", "name": "408-stored-pct29-unreferenced", "sha256": "34bab3a9593381317261b90fb377a7978620e13a92ebbe6bca15e66205cf1338", "observedAt": "2026-10-24T07:59:07.301Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00001__wfv__408-stored-pct29-unreferenced.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00001__wfv__408-stored-pct29-unreferenced.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s12", "name": "408-stored-pctC3A9-unreferenced", "sha256": "b1c81bade2fa92f756cd51a700f1356d3fbc02d85aa75c0641c290dff77b3863", "observedAt": "2026-10-24T07:59:15.832Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00003__wfv__408-stored-pctC3A9-unreferenced.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00003__wfv__408-stored-pctC3A9-unreferenced.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s12", "name": "408-stored-pct80-unreferenced", "sha256": "e000f0f61f8e45f190d585258fe1b529663dfbd7a66551f064a4b6be2ec07c9a", "observedAt": "2026-10-24T07:59:11.556Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00002__wfv__408-stored-pct80-unreferenced.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__408-stored-pct80-unreferenced.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s12", "name": "s12-control-minimal-end", "sha256": "3b71442f26c56f74c40cd673feae668c41cf8498f52d7561bf62822a90a97afd", "observedAt": "2026-10-24T07:59:32+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 13: 08:04Z–08:04Z, validator columns at 49922e9a and e08611b1
+
+An `Override` without a `PartName`, with an empty one and with `/` alone (review AA S2, #458).
+
+| Run   | Observed  | Specimen                      | Issue   | Shape                           | SHA-256 (first 16) | Word           | word-valid at 49922e9a                                       | word-valid at e08611b1                                       | strict at e08611b1                                                                                                               |
+| ----- | --------- | ----------------------------- | ------- | ------------------------------- | ------------------ | -------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `s13` | 08:04:21Z | `s13-control-minimal`         | control | —                               | `bf084e7192d92d0d` | clean-open     | valid                                                        | valid                                                        | valid                                                                                                                            |
+| `s13` | 08:04:14Z | `414-override-no-partname`    | #414    | `<Override>` without `PartName` | `241dec2cbbf10ab7` | repair-warning | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`, `xsd-summary@[Content_Types].xml`, `xsd-error@[Content_Types].xml`) |
+| `s13` | 08:04:09Z | `414-override-empty-partname` | #414    | PartName `""`                   | `f2262394f44bc064` | repair-warning | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`)                                                                     |
+| `s13` | 08:04:18Z | `414-override-slash-only`     | #414    | PartName `/`                    | `120aae863477e4b5` | repair-warning | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`)                                                                     |
+| `s13` | 08:04:21Z | `s13-control-minimal-end`     | control | —                               | `bf084e7192d92d0d` | clean-open     | valid                                                        | valid                                                        | valid                                                                                                                            |
+
+<details><summary>Raw records, session 13</summary>
+
+```jsonl
+{"run": "s13", "name": "s13-control-minimal", "sha256": "bf084e7192d92d0ddc894e4e40ead93149f1fb6bddce181a6c3ce29b00613400", "observedAt": "2026-10-24T08:04:21+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s13", "name": "414-override-no-partname", "sha256": "241dec2cbbf10ab74de0610a175d9067f1798a3b66f64c6647091c96d71fac19", "observedAt": "2026-10-24T08:04:14.120Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00001__wfv__414-override-no-partname.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00001__wfv__414-override-no-partname.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s13", "name": "414-override-empty-partname", "sha256": "f2262394f44bc064d5ca243c9aed9f9f51d60680c3c07f08517ca165d137988a", "observedAt": "2026-10-24T08:04:09.830Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__414-override-empty-partname.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__414-override-empty-partname.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s13", "name": "414-override-slash-only", "sha256": "120aae863477e4b5ff9c282134d98f7475c9050a7b6a8d721658efa71a6c90d3", "observedAt": "2026-10-24T08:04:18.466Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00002__wfv__414-override-slash-only.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__414-override-slash-only.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s13", "name": "s13-control-minimal-end", "sha256": "bf084e7192d92d0ddc894e4e40ead93149f1fb6bddce181a6c3ce29b00613400", "observedAt": "2026-10-24T08:04:21+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 ```
 
 </details>
@@ -1379,7 +1670,7 @@ for r in out:
 
 </details>
 
-<details><summary>Sessions 4–7 specimen builders and runner</summary>
+<details><summary>Sessions 4–13 specimen builders and runner</summary>
 
 Sessions 4 and 5 add these lines to the session 3 builder above. They were built with `BUILD_DIR=<run>/src BUILD_FROM=<first specimen>`, as in session 3:
 
@@ -1780,6 +2071,392 @@ for (const [name, issue, make] of specimens) {
     const verdict = async (profile: "word-valid" | "strict") => {
         const r = await validate(path.join(dir, file), { profile });
         return { valid: r.valid, errors: r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`) };
+    };
+    const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid}`,
+    );
+}
+```
+
+Sessions 8–13 use two more standalone builders, run the same way. Each chunk was built with `ONLY=<its specimens>`; rows were only appended to the builders after earlier chunks ran, so the builders of the observed rows are unchanged. Session 8's builder (`s8a`, `s8b`):
+
+```ts
+// Session 8 (2026-10-24): open questions behind #432 (parts typed by the generic Default), #443 (a non-ASCII
+// stored name that a relationship targets), #451 (other escapes in an Override PartName) and #437 (malformed
+// parts that a known relationship names but the document never uses).
+// Run from the stack worktree root as a copy: BUILD_DIR=<chunk>/src [ONLY=a,b] pnpm exec tsx s8builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const P = MINIMAL_PARTS as Record<string, string>;
+const CT = P["[Content_Types].xml"];
+const DOC_RELS = P["word/_rels/document.xml.rels"];
+const MAIN_OVERRIDE = `<Override PartName="/word/document.xml" ContentType="${WML}.document.main+xml"/>`;
+const STYLES_OVERRIDE = `<Override PartName="/word/styles.xml" ContentType="${WML}.styles+xml"/>`;
+const truncated = (xml: string) => xml.slice(0, 60);
+
+const ct = (extra: string, drop: readonly string[] = []) =>
+    drop
+        .reduce((acc, d) => {
+            if (!acc.includes(d)) throw new Error(`no ${d}`);
+            return acc.replace(d, "");
+        }, CT)
+        .replace("</Types>", `${extra}</Types>`);
+const rels = (extra: string, base = DOC_RELS) => base.replace("</Relationships>", `${extra}</Relationships>`);
+
+/** A part named by a document relationship, with or without its own Override. */
+const withPart = (name: string, type: string, contentType: string | undefined, xml: string) =>
+    buildDocx({
+        ...P,
+        [`word/${name}`]: xml,
+        "word/_rels/document.xml.rels": rels(`<Relationship Id="rIdX" Type="${REL}/${type}" Target="${name}"/>`),
+        "[Content_Types].xml": ct(contentType ? `<Override PartName="/word/${name}" ContentType="${contentType}"/>` : ""),
+    });
+
+const override = (partName: string) =>
+    buildDocx({ ...P, "[Content_Types].xml": ct(`<Override PartName="${partName}" ContentType="application/xml"/>`) });
+
+/** The styles part stored under `stored`, typed by a `sty` Default, its relationship targeting `target`. */
+const stylesAt = (stored: string, target: string) => {
+    const { "word/styles.xml": styles, ...rest } = P;
+    return buildDocx({
+        ...rest,
+        [stored]: styles,
+        "word/_rels/document.xml.rels": DOC_RELS.replace(`Target="styles.xml"`, `Target="${target}"`),
+        "[Content_Types].xml": ct(`<Default Extension="sty" ContentType="${WML}.styles+xml"/>`, [STYLES_OVERRIDE]),
+    });
+};
+
+const specimens: [string, string, () => Promise<Uint8Array> | Uint8Array][] = [
+    ["s8-control-minimal", "control", () => buildDocx(P)],
+    // #432: each part typed only by <Default Extension="xml" ContentType="application/xml"/>, against its control.
+    [
+        "432-settings-override-control",
+        "#432",
+        () => withPart("settings.xml", "settings", `${WML}.settings+xml`, `<w:settings xmlns:w="${W}"/>`),
+    ],
+    ["432-settings-generic-default", "#432", () => withPart("settings.xml", "settings", undefined, `<w:settings xmlns:w="${W}"/>`)],
+    [
+        "432-fonttable-override-control",
+        "#432",
+        () => withPart("fontTable.xml", "fontTable", `${WML}.fontTable+xml`, `<w:fonts xmlns:w="${W}"/>`),
+    ],
+    ["432-fonttable-generic-default", "#432", () => withPart("fontTable.xml", "fontTable", undefined, `<w:fonts xmlns:w="${W}"/>`)],
+    [
+        "432-websettings-override-control",
+        "#432",
+        () => withPart("webSettings.xml", "webSettings", `${WML}.webSettings+xml`, `<w:webSettings xmlns:w="${W}"/>`),
+    ],
+    [
+        "432-websettings-generic-default",
+        "#432",
+        () => withPart("webSettings.xml", "webSettings", undefined, `<w:webSettings xmlns:w="${W}"/>`),
+    ],
+    ["432-main-generic-default", "#432", () => buildDocx({ ...P, "[Content_Types].xml": ct("", [MAIN_OVERRIDE]) })],
+    ["432-styles-generic-default-s8", "#432", () => buildDocx({ ...P, "[Content_Types].xml": ct("", [STYLES_OVERRIDE]) })],
+    // #443: a non-ASCII stored name that the styles relationship targets, typed by an extension Default (no PartName).
+    ["443-styles-ascii-sty-control", "#443", () => stylesAt("word/styles.sty", "styles.sty")],
+    ["443-styles-nonascii-sty-referenced", "#443", () => stylesAt("word/stylés.sty", "stylés.sty")],
+    ["443-styles-nonascii-sty-referenced-escaped-target", "#443", () => stylesAt("word/stylés.sty", "styl%C3%A9s.sty")],
+    ["s8-control-minimal-mid", "control", () => buildDocx(P)],
+    // #451: other escapes in an Override PartName of a missing part.
+    ["451-pctE9-missing", "#451", () => override("/word/caf%E9.xml")],
+    ["451-pct21-missing", "#451", () => override("/word/a%21b.xml")],
+    ["451-pct7F-missing", "#451", () => override("/word/a%7Fb.xml")],
+    // #437: a malformed part that a known relationship names, but nothing in the document uses.
+    [
+        "437-customxml-rel-malformed",
+        "#437",
+        () =>
+            buildDocx({
+                ...P,
+                "customXml/item1.xml": truncated(P["word/styles.xml"]),
+                "word/_rels/document.xml.rels": rels(`<Relationship Id="rIdX" Type="${REL}/customXml" Target="../customXml/item1.xml"/>`),
+            }),
+    ],
+    [
+        "437-customxml-rel-wellformed-control",
+        "#437",
+        () =>
+            buildDocx({
+                ...P,
+                "customXml/item1.xml": `<root/>`,
+                "word/_rels/document.xml.rels": rels(`<Relationship Id="rIdX" Type="${REL}/customXml" Target="../customXml/item1.xml"/>`),
+            }),
+    ],
+    [
+        "437-footer-rel-unused-malformed",
+        "#437",
+        () =>
+            withPart(
+                "footer1.xml",
+                "footer",
+                `${WML}.footer+xml`,
+                truncated(`<w:ftr xmlns:w="${W}"><w:p><w:r><w:t>footer text here</w:t></w:r></w:p></w:ftr>`),
+            ),
+    ],
+    [
+        "437-footer-rel-unused-wellformed-control",
+        "#437",
+        () => withPart("footer1.xml", "footer", `${WML}.footer+xml`, `<w:ftr xmlns:w="${W}"><w:p/></w:ftr>`),
+    ],
+    [
+        "437-comments-rel-malformed",
+        "#437",
+        () =>
+            withPart(
+                "comments.xml",
+                "comments",
+                `${WML}.comments+xml`,
+                truncated(`<w:comments xmlns:w="${W}"><w:comment w:id="0" w:author="a"><w:p/></w:comment></w:comments>`),
+            ),
+    ],
+    [
+        "437-comments-rel-wellformed-control",
+        "#437",
+        () => withPart("comments.xml", "comments", `${WML}.comments+xml`, `<w:comments xmlns:w="${W}"/>`),
+    ],
+    ["s8-control-minimal-end", "control", () => buildDocx(P)],
+];
+const only = new Set((process.env.ONLY ?? "").split(",").filter(Boolean));
+
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    if (only.size > 0 && !only.has(name)) continue;
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        const r = await validate(path.join(dir, file), { profile });
+        return {
+            valid: r.valid,
+            errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+        };
+    };
+    const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid}`,
+    );
+}
+```
+
+The builder of sessions 9–13 (`s9a`, `s9b`, `s10`–`s13`):
+
+```ts
+// Sessions 9 to 13 (2026-10-24): boundaries behind #437 (which malformed parts Word parses: related-and-used versus
+// related-only) and #451/#408 (which percent-escapes Word refuses, in an Override PartName and in a stored name).
+// Run from the stack worktree root as a copy: BUILD_DIR=<chunk>/src [ONLY=a,b] pnpm exec tsx s9builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const P = MINIMAL_PARTS as Record<string, string>;
+const CT = P["[Content_Types].xml"];
+const DOC = P["word/document.xml"];
+const DOC_RELS = P["word/_rels/document.xml.rels"];
+/** Well formed up to a missing end of the root element: namespaces stay declared, the part does not parse. */
+const unclosed = (xml: string) => xml.slice(0, xml.lastIndexOf("</"));
+
+const ct = (extra: string) => CT.replace("</Types>", `${extra}</Types>`);
+const rels = (extra: string) => DOC_RELS.replace("</Relationships>", `${extra}</Relationships>`);
+const withR = (doc: string) => doc.replace(`xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${REL}"`);
+
+/** A part named by a document relationship with its Override; `doc` replaces the main part when given. */
+const withPart = (name: string, type: string, contentType: string, xml: string, doc?: string) =>
+    buildDocx({
+        ...P,
+        ...(doc ? { "word/document.xml": doc } : {}),
+        [`word/${name}`]: xml,
+        "word/_rels/document.xml.rels": rels(`<Relationship Id="rIdX" Type="${REL}/${type}" Target="${name}"/>`),
+        "[Content_Types].xml": ct(`<Override PartName="/word/${name}" ContentType="${contentType}"/>`),
+    });
+
+const FOOTER = `<w:ftr xmlns:w="${W}"><w:p><w:r><w:t>Footer</w:t></w:r></w:p></w:ftr>`;
+const footerDoc = withR(DOC).replace("<w:sectPr>", `<w:sectPr><w:footerReference w:type="default" r:id="rIdX"/>`);
+const COMMENTS = `<w:comments xmlns:w="${W}"><w:comment w:id="0" w:author="a"><w:p><w:r><w:t>Note</w:t></w:r></w:p></w:comment></w:comments>`;
+const commentDoc = DOC.replace(
+    `<w:r><w:t>Hello</w:t></w:r>`,
+    `<w:commentRangeStart w:id="0"/><w:r><w:t>Hello</w:t></w:r><w:commentRangeEnd w:id="0"/><w:r><w:commentReference w:id="0"/></w:r>`,
+);
+const FOOTNOTES =
+    `<w:footnotes xmlns:w="${W}"><w:footnote w:type="separator" w:id="-1"><w:p><w:r><w:separator/></w:r></w:p></w:footnote>` +
+    `<w:footnote w:type="continuationSeparator" w:id="0"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:footnote></w:footnotes>`;
+
+const override = (partName: string) =>
+    buildDocx({ ...P, "[Content_Types].xml": ct(`<Override PartName="${partName}" ContentType="application/xml"/>`) });
+const storedExtra = (name: string) => buildDocx({ ...P, [name]: "<x/>" });
+
+const specimens: [string, string, () => Promise<Uint8Array> | Uint8Array][] = [
+    ["s9-control-minimal", "control", () => buildDocx(P)],
+    // #437: related and used, against related only.
+    ["437-footer-referenced-malformed", "#437", () => withPart("footer1.xml", "footer", `${WML}.footer+xml`, unclosed(FOOTER), footerDoc)],
+    ["437-footer-referenced-wellformed-control", "#437", () => withPart("footer1.xml", "footer", `${WML}.footer+xml`, FOOTER, footerDoc)],
+    ["437-footer-related-unused-unclosed", "#437", () => withPart("footer1.xml", "footer", `${WML}.footer+xml`, unclosed(FOOTER))],
+    [
+        "437-comments-referenced-malformed",
+        "#437",
+        () => withPart("comments.xml", "comments", `${WML}.comments+xml`, unclosed(COMMENTS), commentDoc),
+    ],
+    [
+        "437-comments-referenced-wellformed-control",
+        "#437",
+        () => withPart("comments.xml", "comments", `${WML}.comments+xml`, COMMENTS, commentDoc),
+    ],
+    ["437-comments-related-unused-unclosed", "#437", () => withPart("comments.xml", "comments", `${WML}.comments+xml`, unclosed(COMMENTS))],
+    [
+        "437-settings-malformed",
+        "#437",
+        () =>
+            withPart(
+                "settings.xml",
+                "settings",
+                `${WML}.settings+xml`,
+                unclosed(`<w:settings xmlns:w="${W}"><w:zoom w:percent="100"/></w:settings>`),
+            ),
+    ],
+    [
+        "437-fonttable-malformed",
+        "#437",
+        () =>
+            withPart(
+                "fontTable.xml",
+                "fontTable",
+                `${WML}.fontTable+xml`,
+                unclosed(`<w:fonts xmlns:w="${W}"><w:font w:name="Calibri"/></w:fonts>`),
+            ),
+    ],
+    [
+        "437-websettings-malformed",
+        "#437",
+        () =>
+            withPart(
+                "webSettings.xml",
+                "webSettings",
+                `${WML}.webSettings+xml`,
+                unclosed(`<w:webSettings xmlns:w="${W}"><w:optimizeForBrowser/></w:webSettings>`),
+            ),
+    ],
+    [
+        "437-numbering-related-unused-malformed",
+        "#437",
+        () =>
+            withPart(
+                "numbering.xml",
+                "numbering",
+                `${WML}.numbering+xml`,
+                unclosed(`<w:numbering xmlns:w="${W}"><w:num w:numId="1"/></w:numbering>`),
+            ),
+    ],
+    [
+        "437-footnotes-related-unused-malformed",
+        "#437",
+        () => withPart("footnotes.xml", "footnotes", `${WML}.footnotes+xml`, unclosed(FOOTNOTES)),
+    ],
+    [
+        "437-footnotes-related-unused-wellformed-control",
+        "#437",
+        () => withPart("footnotes.xml", "footnotes", `${WML}.footnotes+xml`, FOOTNOTES),
+    ],
+    ["s9-control-minimal-mid", "control", () => buildDocx(P)],
+    // #451: escapes of pchar characters (sub-delims, ':' and '@') and of characters that need escaping, in a PartName.
+    ["451-pct3A-missing", "#451", () => override("/word/a%3Ab.xml")],
+    ["451-pct40-missing", "#451", () => override("/word/a%40b.xml")],
+    ["451-pct24-missing", "#451", () => override("/word/a%24b.xml")],
+    ["451-pct3D-missing", "#451", () => override("/word/a%3Db.xml")],
+    ["451-pct2C-missing", "#451", () => override("/word/a%2Cb.xml")],
+    ["451-pct25-missing", "#451", () => override("/word/a%25b.xml")],
+    ["451-pct22-missing", "#451", () => override("/word/a%22b.xml")],
+    ["451-pct5B-missing", "#451", () => override("/word/a%5Bb.xml")],
+    ["451-pct7B-missing", "#451", () => override("/word/a%7Bb.xml")],
+    ["451-pct3C-missing", "#451", () => override("/word/a%3Cb.xml")],
+    // #408: the same question for an unreferenced stored name.
+    ["408-stored-pct21-unreferenced", "#408", () => storedExtra("word/a%21b.xml")],
+    ["408-stored-pct3A-unreferenced", "#408", () => storedExtra("word/a%3Ab.xml")],
+    ["408-stored-pct5B-unreferenced", "#408", () => storedExtra("word/a%5Bb.xml")],
+    ["408-stored-pct7F-unreferenced", "#408", () => storedExtra("word/a%7Fb.xml")],
+    ["s9-control-minimal-end", "control", () => buildDocx(P)],
+    // Session 10: a literal '!', and the remaining sub-delim escapes.
+    ["s10-control-minimal", "control", () => buildDocx(P)],
+    ["451-literal-bang-missing", "#451", () => override("/word/a!b.xml")],
+    ["408-stored-literal-bang-unreferenced", "#408", () => storedExtra("word/a!b.xml")],
+    ["451-pct26-missing", "#451", () => override("/word/a%26b.xml")],
+    ["451-pct27-missing", "#451", () => override("/word/a%27b.xml")],
+    ["451-pct28-missing", "#451", () => override("/word/a%28b.xml")],
+    ["451-pct29-missing", "#451", () => override("/word/a%29b.xml")],
+    ["451-pct2A-missing", "#451", () => override("/word/a%2Ab.xml")],
+    ["451-pct2B-missing", "#451", () => override("/word/a%2Bb.xml")],
+    ["451-pct3B-missing", "#451", () => override("/word/a%3Bb.xml")],
+    ["451-pct21-lower-missing-s10", "#451", () => override("/word/a%21b.xml")],
+    ["s10-control-minimal-end", "control", () => buildDocx(P)],
+    // Session 11: the rest of RFC 3986 unreserved, lower-case hex, and escapes above 0x7F, in a PartName and stored.
+    ["s11-control-minimal", "control", () => buildDocx(P)],
+    ["451-pct7E-missing", "#451", () => override("/word/a%7Eb.xml")],
+    ["451-pct2D-missing", "#451", () => override("/word/a%2Db.xml")],
+    ["451-pct5F-missing", "#451", () => override("/word/a%5Fb.xml")],
+    ["451-pct2E-missing", "#451", () => override("/word/a%2Eb.xml")],
+    ["451-pct41-missing", "#451", () => override("/word/a%41b.xml")],
+    ["451-pct39-missing", "#451", () => override("/word/a%39b.xml")],
+    ["451-pct2a-lower-missing", "#451", () => override("/word/a%2ab.xml")],
+    ["451-pct01-missing", "#451", () => override("/word/a%01b.xml")],
+    ["451-pct80-missing", "#451", () => override("/word/a%80b.xml")],
+    ["451-pctFF-missing", "#451", () => override("/word/a%FFb.xml")],
+    ["408-stored-pct27-unreferenced", "#408", () => storedExtra("word/a%27b.xml")],
+    ["408-stored-pct2A-unreferenced", "#408", () => storedExtra("word/a%2Ab.xml")],
+    ["408-stored-pct7E-unreferenced", "#408", () => storedExtra("word/a%7Eb.xml")],
+    ["408-stored-pct26-unreferenced", "#408", () => storedExtra("word/a%26b.xml")],
+    ["s11-control-minimal-end", "control", () => buildDocx(P)],
+    // Session 12: dot-only folder segments (review AB S1), and the remaining stored-name escapes.
+    ["s12-control-minimal", "control", () => buildDocx(P)],
+    ["450-dots3-folder-missing", "#450", () => override("/word/.../x.xml")],
+    ["450-dots4-folder-missing", "#450", () => override("/word/..../x.xml")],
+    ["450-dots3-first-folder-missing", "#450", () => override("/.../x.xml")],
+    ["450-word-dot-folder-control-s12", "#450", () => override("/word./x.xml")],
+    ["408-stored-pct28-unreferenced", "#408", () => storedExtra("word/a%28b.xml")],
+    ["408-stored-pct29-unreferenced", "#408", () => storedExtra("word/a%29b.xml")],
+    ["408-stored-pctC3A9-unreferenced", "#408", () => storedExtra("word/caf%C3%A9.xml")],
+    ["408-stored-pct80-unreferenced", "#408", () => storedExtra("word/a%80b.xml")],
+    ["s12-control-minimal-end", "control", () => buildDocx(P)],
+    // Session 13: an Override without a PartName, with an empty one, and with "/" alone (review AA S2).
+    ["s13-control-minimal", "control", () => buildDocx(P)],
+    ["414-override-no-partname", "#414", () => buildDocx({ ...P, "[Content_Types].xml": ct(`<Override ContentType="application/xml"/>`) })],
+    ["414-override-empty-partname", "#414", () => override("")],
+    ["414-override-slash-only", "#414", () => override("/")],
+    ["s13-control-minimal-end", "control", () => buildDocx(P)],
+];
+const only = new Set((process.env.ONLY ?? "").split(",").filter(Boolean));
+
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    if (only.size > 0 && !only.has(name)) continue;
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        const r = await validate(path.join(dir, file), { profile });
+        return {
+            valid: r.valid,
+            errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+        };
     };
     const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
     appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
