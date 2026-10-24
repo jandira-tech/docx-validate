@@ -531,7 +531,9 @@ and strict add the ZIP-envelope checks for a packed file and every Word rule who
 prerequisites passed. A partial run lists the selected checks that ran, so an
 archive-only check is not listed for an unpacked directory. An archive that does
 not open fails with `package-open-failed` in every mode, and only its envelope
-checks are listed (#332). It is not a
+checks are listed (#332). One that opens but whose package view cannot be read —
+a stored item name that places no part, or an unreadable entry — fails with
+`package-extract-failed`, as the full run's extraction reports it (#413). It is not a
 per-method execution trace. In the source scheduler, use `runChecks().outcomes`
 for individual
 `passed` / `failed` / `skipped` / `unavailable` statuses. `omittedChecks` names ids

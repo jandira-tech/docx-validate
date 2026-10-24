@@ -8,7 +8,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { ValidationContext } from "../../lib/validation-context";
+import { ValidationContext, PackageViewError } from "../../lib/validation-context";
 import { walkFiles } from "./validators/base";
 
 /**
@@ -25,15 +25,21 @@ export function contextFromDirectory(dir: string): ValidationContext {
  * A context over packed archive bytes. When the bytes are not a readable ZIP
  * (encrypted OOXML, truncated or corrupted archive) the context still carries
  * them, with no parts, so the ZIP-envelope checks can explain the damage; the
- * reason the archive could not be opened is returned beside it.
+ * reason the archive could not be opened is returned beside it. An archive
+ * that opens but whose package view cannot be read ({@link PackageViewError}
+ * — a refused item name or an unreadable entry) is reported with
+ * `extractFailed`, since extraction fails it for the same reason (#413).
  */
-export async function contextFromArchive(bytes: Uint8Array): Promise<{ context: ValidationContext; openError?: string }> {
+export async function contextFromArchive(
+    bytes: Uint8Array,
+): Promise<{ context: ValidationContext; openError?: string; extractFailed?: boolean }> {
     try {
         return { context: await ValidationContext.fromArchive(bytes) };
     } catch (err) {
         return {
             context: ValidationContext.fromEntries({}, { source: "archive", archiveBytes: bytes }),
             openError: err instanceof Error ? err.message : String(err),
+            extractFailed: err instanceof PackageViewError || undefined,
         };
     }
 }
