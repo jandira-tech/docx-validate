@@ -65,14 +65,55 @@ const MALFORMED_COMMENT_PACKAGES = [
     },
 ];
 
+// The comments part stored as word/COMMENTS.XML: the same part name, in
+// another case (#390).
+const CASE_COMMENT_PARTS: Readonly<Record<string, string>> = {
+    ...Object.fromEntries(Object.entries(COMMENT_PARTS).filter(([name]) => name !== "word/comments.xml")),
+    "[Content_Types].xml": COMMENT_CONTENT_TYPES.replace("/word/comments.xml", "/word/COMMENTS.XML"),
+    "word/COMMENTS.XML": "<w:comments",
+};
+// A malformed comments part beside a well-formed document with an orphan
+// comment-range end, which only the comment rules report (#391).
+const ORPHAN_BESIDE_MALFORMED_PARTS = {
+    ...COMMENT_PARTS,
+    "word/comments.xml": "<w:comments",
+    "word/document.xml": DOCUMENT_WITH_MARKERS.replace('<w:commentRangeStart w:id="0"/>', ""),
+};
+// Every Word part under WORD/, with the main document part malformed (#392).
+const UPPER_WORD_PARTS = Object.fromEntries(
+    Object.entries({ ...MINIMAL_PARTS, "word/document.xml": "<w:document" }).map(([name, xml]) => [name.replace(/^word\//, "WORD/"), xml]),
+);
+// A malformed content-types stream stored as [CONTENT_TYPES].XML (review Q).
+const UPPER_CONTENT_TYPES_PARTS = {
+    ...Object.fromEntries(Object.entries(MINIMAL_PARTS).filter(([name]) => name !== "[Content_Types].xml")),
+    "[CONTENT_TYPES].XML": "<Types",
+};
+// The comments part named with an escaped `x` in its extension (review Q).
+const ESCAPED_COMMENT_PARTS: Readonly<Record<string, string>> = {
+    ...Object.fromEntries(Object.entries(COMMENT_PARTS).filter(([name]) => name !== "word/comments.xml")),
+    "word/comments.%78ml": "<w:comments",
+};
+
 const errorCodes = (issues: readonly ValidationIssue[]): string[] => [
     ...new Set(issues.filter((issue) => issue.severity === "error").map((issue) => issue.code ?? "")),
 ];
+
+const errorPairs = (issues: readonly ValidationIssue[]): string[] =>
+    [...new Set(issues.filter((issue) => issue.severity === "error").map((issue) => `${issue.code ?? ""}@${issue.path ?? ""}`))].sort();
 
 const specimen = async (dir: string, name: string, bytes: Buffer): Promise<string> => {
     const file = path.join(dir, name);
     writeFileSync(file, bytes);
     return file;
+};
+
+const unpacked = (dir: string, name: string, parts: Readonly<Record<string, string>>): string => {
+    const root = path.join(dir, name);
+    for (const [part, xml] of Object.entries(parts)) {
+        mkdirSync(path.dirname(path.join(root, part)), { recursive: true });
+        writeFileSync(path.join(root, part), xml);
+    }
+    return root;
 };
 
 const trailingBytes = async (): Promise<Buffer> => Buffer.concat([await buildDocx(), Buffer.from("trailing junk")]);
@@ -172,7 +213,10 @@ describe("a partial run applies its profile's policy (#381)", { timeout: 120_000
                 expect(result.valid).toBe(false);
                 expect(result.issues).toContainEqual(expect.objectContaining({ code: "xml-syntax", severity: "error", path: part }));
                 expect(result.issues.filter((issue) => issue.path === part && /^comment-.*-parse$/.test(issue.code ?? ""))).toEqual([]);
-                expect(result.metadata?.executedChecks).toEqual(["xml-syntax", "comment-markers", "comment-threading"]);
+                // Lenient stops at the malformed part, as its full run does (#391).
+                expect(result.metadata?.executedChecks).toEqual(
+                    profile === "lenient" ? ["xml-syntax"] : ["xml-syntax", "comment-markers", "comment-threading"],
+                );
                 expect(result.metadata?.omittedChecks).not.toContain("xml-syntax");
             });
         });
@@ -228,6 +272,28 @@ describe("a partial run applies its profile's policy (#381)", { timeout: 120_000
         expect(result.metadata?.omittedChecks).toContain("word-row-without-cell");
     });
 
+    it.each([["comments"], ["comment-markers"], ["comment-threading"]])(
+        "stops a lenient %s run at a malformed part, as the full lenient run does (#391)",
+        async (name) => {
+            await withTempDir(async (dir) => {
+                const file = await specimen(dir, "orphan-beside-malformed.docx", await buildDocx(ORPHAN_BESIDE_MALFORMED_PARTS));
+                const full = await validate(file, { profile: "lenient" });
+                const partial = await validate(file, { profile: "lenient", checks: [name] });
+
+                expect(errorPairs(partial.issues)).toEqual(["xml-syntax@word/comments.xml", "xml-undeclared-prefix@word/comments.xml"]);
+                expect(errorPairs(partial.issues)).toEqual(errorPairs(full.issues));
+                expect(partial.metadata?.executedChecks).toEqual(["xml-syntax"]);
+                // A selected check the stop kept from running is not an omission.
+                expect(partial.metadata?.omittedChecks).not.toContain(name === "comments" ? "comment-markers" : name);
+                // Word-valid keeps judging the parts that parsed (#307).
+                const wordValid = await validate(file, { checks: [name] });
+                expect(wordValid.metadata?.executedChecks).toEqual(
+                    expect.arrayContaining(["xml-syntax", name === "comments" ? "comment-markers" : name]),
+                );
+            });
+        },
+    );
+
     it("never fails a package that the full run under the same profile passes", async () => {
         await withTempDir(async (dir) => {
             const packages = [
@@ -239,17 +305,129 @@ describe("a partial run applies its profile's policy (#381)", { timeout: 120_000
                 ...(await Promise.all(
                     MALFORMED_COMMENT_PACKAGES.map(async ({ name, parts }) => specimen(dir, `${name}.docx`, await buildDocx(parts))),
                 )),
+                await specimen(dir, "case-comments.docx", await buildDocx(CASE_COMMENT_PARTS)),
+                unpacked(dir, "case-comments-unpacked.docx", CASE_COMMENT_PARTS),
+                await specimen(dir, "orphan-beside-malformed.docx", await buildDocx(ORPHAN_BESIDE_MALFORMED_PARTS)),
+                await specimen(dir, "upper-word.docx", await buildDocx(UPPER_WORD_PARTS)),
+                await specimen(dir, "upper-content-types.docx", await buildDocx(UPPER_CONTENT_TYPES_PARTS)),
+                await specimen(dir, "escaped-comments.docx", await buildDocx(ESCAPED_COMMENT_PARTS)),
             ];
             for (const file of packages) {
                 for (const profile of ["lenient", "word-valid"] as const) {
                     const label = `${path.basename(file)} under ${profile}`;
-                    const full = errorCodes((await validate(file, { profile })).issues);
+                    const full = await validate(file, { profile });
                     for (const selection of [{ quick: true }, { checks: ["comments"] }] as const) {
-                        const partial = errorCodes((await validate(file, { profile, ...selection })).issues);
-                        expect(full, `${label}: ${JSON.stringify(selection)}`).toEqual(expect.arrayContaining(partial));
+                        const partial = await validate(file, { profile, ...selection });
+                        // Never fails what the full run passes; never reports an
+                        // error, at a path, that the full run does not (#381).
+                        if (full.valid) expect(partial.valid, `${label}: ${JSON.stringify(selection)}`).toBe(true);
+                        expect(errorPairs(full.issues), `${label}: ${JSON.stringify(selection)}`).toEqual(
+                            expect.arrayContaining(errorPairs(partial.issues)),
+                        );
                     }
                 }
             }
         });
     });
+});
+
+describe("a part named in another case gets the verdict its lower-case name gets (#390, #392)", { timeout: 120_000 }, () => {
+    it.each(["lenient", "word-valid", "strict"] as const)(
+        "the full run rejects a malformed word/COMMENTS.XML under %s",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                const result = await validate(await specimen(dir, "case-comments.docx", await buildDocx(CASE_COMMENT_PARTS)), { profile });
+
+                expect(result.valid).toBe(false);
+                expect(result.issues).toContainEqual(
+                    expect.objectContaining({ code: "xml-syntax", severity: "error", path: "word/COMMENTS.XML" }),
+                );
+                expect(
+                    result.issues.filter((issue) => issue.path === "word/COMMENTS.XML" && /^comment-.*-parse$/.test(issue.code ?? "")),
+                ).toEqual([]);
+            });
+        },
+    );
+
+    it.each(["packed", "unpacked"] as const)("a partial run over a %s package agrees with the full run on it", async (input) => {
+        await withTempDir(async (dir) => {
+            const target =
+                input === "packed"
+                    ? await specimen(dir, "case-comments.docx", await buildDocx(CASE_COMMENT_PARTS))
+                    : unpacked(dir, "case-comments.docx", CASE_COMMENT_PARTS);
+            for (const profile of ["lenient", "word-valid"] as const) {
+                const full = await validate(target, { profile });
+                for (const selection of [{ quick: true }, { checks: ["comments"] }] as const) {
+                    const partial = await validate(target, { profile, ...selection });
+                    const label = `${profile} ${JSON.stringify(selection)}`;
+
+                    expect(partial.valid, label).toBe(full.valid);
+                    expect(errorPairs(full.issues), label).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
+                }
+            }
+        });
+    });
+
+    it.each([{}, { quick: true }] as const)("word-valid rejects a malformed main part stored under WORD/ (%j)", async (selection) => {
+        await withTempDir(async (dir) => {
+            const result = await validate(await specimen(dir, "upper-word.docx", await buildDocx(UPPER_WORD_PARTS)), {
+                profile: "word-valid",
+                ...selection,
+            });
+
+            expect(result.valid).toBe(false);
+            expect(result.issues).toContainEqual(
+                expect.objectContaining({ code: "xml-syntax", severity: "error", path: "WORD/document.xml" }),
+            );
+        });
+    });
+
+    it.each([{}, { quick: true }] as const)("word-valid rejects a malformed [CONTENT_TYPES].XML (%j)", async (selection) => {
+        await withTempDir(async (dir) => {
+            const result = await validate(await specimen(dir, "upper-content-types.docx", await buildDocx(UPPER_CONTENT_TYPES_PARTS)), {
+                profile: "word-valid",
+                ...selection,
+            });
+
+            expect(result.valid).toBe(false);
+            expect(result.issues).toContainEqual(
+                expect.objectContaining({ code: "xml-syntax", severity: "error", path: "[CONTENT_TYPES].XML" }),
+            );
+        });
+    });
+
+    it.skipIf(process.platform === "win32")(
+        "word-valid fails a directory's malformed word\\foo.xml in full and quick runs alike (review Q)",
+        async () => {
+            await withTempDir(async (dir) => {
+                const root = unpacked(dir, "backslash.docx", { ...MINIMAL_PARTS, "word\\foo.xml": "<w:foo" });
+                for (const selection of [{}, { quick: true }] as const) {
+                    const result = await validate(root, { profile: "word-valid", ...selection });
+
+                    expect(result.valid, JSON.stringify(selection)).toBe(false);
+                    expect(result.issues).toContainEqual(
+                        expect.objectContaining({ code: "xml-syntax", severity: "error", path: "word/foo.xml" }),
+                    );
+                }
+            });
+        },
+    );
+
+    it.each(["lenient", "word-valid"] as const)(
+        "judges a malformed comments part with an escaped extension in full and partial runs under %s",
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                const file = await specimen(dir, "escaped-comments.docx", await buildDocx(ESCAPED_COMMENT_PARTS));
+                for (const selection of [{}, { quick: true }, { checks: ["comments"] }] as const) {
+                    const result = await validate(file, { profile, ...selection });
+                    const label = JSON.stringify(selection);
+
+                    expect(result.valid, label).toBe(false);
+                    expect(result.issues, label).toContainEqual(
+                        expect.objectContaining({ code: "xml-syntax", severity: "error", path: "word/comments.%78ml" }),
+                    );
+                }
+            });
+        },
+    );
 });

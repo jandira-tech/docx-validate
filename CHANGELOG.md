@@ -22,6 +22,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- The full run's XML pass now checks every part whose extension is `.xml` or `.rels` as OPC compares part names (in any case, or with escaped unreserved characters such as `word/comments.%78ml`), as the `xml-syntax` check of quick and named runs does. A malformed `word/COMMENTS.XML` used to pass a full Word-valid run (the comment checks only warn about it) and fail `--quick`; both now fail it. The pass names each finding by its part name, so a directory file stored as `word\foo.xml` is judged as the `word/` part it is ([#390](https://github.com/jandira-tech/docx-validate/issues/390)).
+
+- A lenient named run that selects the comment checks stops where `xml-syntax` rejects a part, as the full lenient run stops at its first malformed part. It no longer reports defects of the parts that parsed, which the full lenient run never reaches; `executedChecks` lists only `xml-syntax` ([#391](https://github.com/jandira-tech/docx-validate/issues/391)).
+
+- Word-valid treats a malformed part under `WORD/` (any case, or with percent-escaped unreserved characters) as under `word/`: OPC part names compare that way. A package whose main document part `WORD/document.xml` does not parse no longer passes. A malformed content-types stream blocks in any case (`[CONTENT_TYPES].XML`), as System.IO.Packaging matches that ZIP item ([#392](https://github.com/jandira-tech/docx-validate/issues/392)).
+
 - Named comment checks also run XML syntax diagnostics and suppress restated parse findings, preserving the full run's profile verdict for malformed parts ([#385](https://github.com/jandira-tech/docx-validate/issues/385)).
 
 - Named `comments` selection now runs comment marker and threading integrity checks while full DOCX validation preserves its findings under every profile. The comment checks now also judge a comment part stored under an OPC-equivalent name (`word/comments.XML`, percent-encoded characters), as every other check does; the legacy rules ignored such parts, so a package that passed can now report comment findings ([#384](https://github.com/jandira-tech/docx-validate/issues/384)).
@@ -59,6 +65,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - A package that holds two equivalent part names (for example `WORD/document.xml` and `word/document.xml`), which ECMA-376 Part 2 forbids ([M1.12]), is not reported. The checks resolve to one entry deterministically, but nothing flags the package; how Word treats it has not been observed yet ([#351](https://github.com/jandira-tech/docx-validate/issues/351)).
 - An unpacked directory on POSIX can hold a file whose name contains a literal `\`, such as `word\document.xml` (`unpack` writes such names). The package view reads that file as `word/document.xml`, but the schema walk and the `.rels` sidecar lookup key on the file path, so a full run skips its schema and can report a false `rels-missing-sidecar`. Packed files are not affected ([#374](https://github.com/jandira-tech/docx-validate/issues/374)).
+- Only the XML well-formedness policy matches the content-types stream in any case. The other checks look it up as `[Content_Types].xml` exactly, so a package storing `[CONTENT_TYPES].XML` hides a Word-refused content type from `word-content-type-invalid` and passes Word-valid ([#396](https://github.com/jandira-tech/docx-validate/issues/396)).
 - The relationship checks (`rels-broken`, `rels-unreferenced`, `rels-target-missing`) resolve targets through the filesystem, not by OPC part-name equivalence. An equivalent target spelling is reported as unreferenced or broken (errors under lenient and strict, warnings under Word-valid), and the result depends on the host filesystem's case sensitivity ([#346](https://github.com/jandira-tech/docx-validate/issues/346)).
 
 ### Security

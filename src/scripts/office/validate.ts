@@ -487,7 +487,13 @@ async function runSelectedChecks(
             },
         };
     }
-    const run = await runChecks(opened.context, registry, { format, select });
+    // A full lenient run stops at its first malformed part, so a lenient
+    // partial run stops where xml-syntax fails (#391).
+    const run = await runChecks(opened.context, registry, {
+        format,
+        select,
+        ...(mode.profile === "lenient" ? { haltAfterFailing: XML_SYNTAX_CHECK_ID } : {}),
+    });
     const malformed = new Set(
         run.outcomes
             .filter((outcome) => outcome.id === XML_SYNTAX_CHECK_ID)

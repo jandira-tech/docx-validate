@@ -31,6 +31,8 @@ import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import { parseXml, parseXmlBytes } from "../src/lib/xml-helpers";
 import { checkXmlSyntax } from "../src/lib/xml-syntax";
+import { xmlSyntaxCheck } from "../src/scripts/office/checks/xml";
+import { contextFromDirectory } from "../src/scripts/office/package-context";
 import { validate } from "../src/scripts/office/validate";
 import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
 
@@ -228,6 +230,37 @@ describe("BaseSchemaValidator.validateXml — original bytes", () => {
             expect(result.issues.map((i) => i.code)).toEqual(["xml-syntax"]);
         });
     });
+
+    // `%78` is an escaped `x`: word/Notes.%78ml names the part word/Notes.xml (review Q).
+    it.each(["word/COMMENTS.XML", "_RELS/.RELS", "word/Notes.Xml", "word/Notes.%78ml"])(
+        "parses %s, whose extension is not spelled .xml or .rels, as the xml-syntax check does (#390)",
+        async (part) => {
+            await withTempDir(async (dir) => {
+                await writePart(dir, "word/document.xml", `<w:document ${W_NS}/>`);
+                await writePart(dir, part, '<?xml version="1.0"?><w:comments xmlns:w="urn:w">');
+                const result = await new BaseSchemaValidator({ unpackedDir: dir }).validateXml();
+                const registered = await xmlSyntaxCheck.run(contextFromDirectory(dir));
+
+                expect(result.valid).toBe(false);
+                expect(result.issues).toContainEqual(expect.objectContaining({ code: "xml-syntax", path: part }));
+                expect(result.issues).toEqual(registered);
+            });
+        },
+    );
+
+    it.skipIf(process.platform === "win32")(
+        "names a file stored as word\\foo.xml by its part name, as the xml-syntax check does (review Q)",
+        async () => {
+            await withTempDir(async (dir) => {
+                await writePart(dir, "word/document.xml", `<w:document ${W_NS}/>`);
+                await writePart(dir, "word\\foo.xml", "<w:foo");
+                const result = await new BaseSchemaValidator({ unpackedDir: dir }).validateXml();
+
+                expect(result.issues).toContainEqual(expect.objectContaining({ code: "xml-syntax", path: "word/foo.xml" }));
+                expect(result.issues).toEqual(await xmlSyntaxCheck.run(contextFromDirectory(dir)));
+            });
+        },
+    );
 });
 
 describe("BOM-prefixed XML is never a failure on its own", () => {
