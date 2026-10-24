@@ -81,8 +81,6 @@ import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "../checks/index";
 import { WORD_PART_CONTENT_TYPE_GENERIC, wordPartContentTypeGenericCheck } from "../checks/word-part-content-type-generic";
 import { contextFromDirectory } from "../package-context";
 import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
-import { loadCentralNamedArchive } from "../../../lib/zip-central-names";
-
 export { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
 /** OpenXmlPowerTools DocumentBuilder Insert — `PtOpenXml.ptOpenXml` in PtOpenXmlUtil.cs */
 const DOCUMENT_BUILDER_INSERT_NAMESPACE = "http://powertools.codeplex.com/documentbuilder/2011/insert";
@@ -1364,9 +1362,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             return null;
         }
         try {
-            const buf = await fs.readFile(this.originalFile);
-            const zip = await loadCentralNamedArchive(buf);
-            const entry = zip.file("word/document.xml");
+            // Shares the archive `_getOriginalFileErrors` memoizes: one read
+            // and load per validator instead of one per caller (#481).
+            const zip = await this._loadOriginalArchive();
+            const entry = zip?.file("word/document.xml");
             if (!entry) {
                 this.originalDocumentRootFailed = true;
                 return null;

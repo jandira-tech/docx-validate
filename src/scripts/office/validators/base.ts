@@ -85,6 +85,7 @@ import { CT_OVERRIDE_PARTNAME_INVALID, ctOverridePartnameInvalidCheck } from "..
 import { ctDuplicateDeclarationCheck } from "../checks/word-content-types";
 import { loadCentralNamedArchive } from "../../../lib/zip-central-names";
 import { CT_MARKUP_COMPATIBILITY, ctMarkupCompatibilityCheck } from "../checks/ct-markup-compatibility";
+import type JSZip from "jszip";
 
 /**
  * Schema mapping table — file basename / suffix → relative path inside the
@@ -1860,14 +1861,8 @@ export class BaseSchemaValidator {
         // inside the original .docx zip and validate it standalone.
         const rel = path.relative(this.unpackedDir, xmlFile);
 
-        let zipContent: Buffer;
-        try {
-            zipContent = await fs.readFile(this.originalFile);
-        } catch {
-            return new Set();
-        }
-        const zip = await loadCentralNamedArchive(zipContent);
-        const entry = zip.file(rel.replace(/\\/g, "/"));
+        const zip = await this._loadOriginalArchive();
+        const entry = zip?.file(rel.replace(/\\/g, "/"));
         if (!entry) return new Set();
 
         return withTempDir(async (tmpDir) => {
@@ -1897,6 +1892,31 @@ export class BaseSchemaValidator {
     private readonly strictRootCache = new Map<string, boolean>();
     /** See {@link isMainDocumentPart}; reset when a repair deletes files. */
     private mainDocumentParts: ReadonlySet<string> | undefined;
+    /** See {@link _loadOriginalArchive}. */
+    private originalArchivePromise: Promise<JSZip | null> | undefined;
+
+    /**
+     * The `--original` archive, read from disk and loaded once per validator —
+     * baseline subtraction consults it for every XSD-failed part, and each call
+     * otherwise re-reads and re-parses the archive (#481).
+     *
+     * A failed read resolves to `null` (the caller's empty result), exactly as
+     * before. A load JSZip refuses still rejects, so the error surfaces where it
+     * did before — and the shared rejection replays it to every caller.
+     */
+    protected _loadOriginalArchive(): Promise<JSZip | null> {
+        this.originalArchivePromise ??= (async () => {
+            if (!this.originalFile) return null;
+            let zipContent: Buffer;
+            try {
+                zipContent = await fs.readFile(this.originalFile);
+            } catch {
+                return null;
+            }
+            return loadCentralNamedArchive(zipContent);
+        })();
+        return this.originalArchivePromise;
+    }
 }
 
 // ===== module-level helpers ===================================================
