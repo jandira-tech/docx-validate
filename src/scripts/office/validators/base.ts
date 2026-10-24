@@ -1971,7 +1971,9 @@ export interface UnreadableEntry {
  * `unreadable` instead of vanishing from the package, and `holdsSymlinks`
  * marks a tree where any stored entry or directory segment is itself a
  * symbolic link, whose auto-repair write-back must never follow the link
- * (#425). `files` is exactly what `walkFiles` returns.
+ * (#425). A directory the walk cannot list is reported the same way, naming
+ * the directory: every stored file under it would otherwise vanish from the
+ * package with it (#543). `files` is exactly what `walkFiles` returns.
  */
 export function walkDirectory(
     dir: string,
@@ -1987,7 +1989,15 @@ export function walkDirectory(
         let entries: string[];
         try {
             entries = readdirSync(current);
-        } catch {
+        } catch (err) {
+            // A directory the walk cannot list hides every stored file under
+            // it — a whole subtree vanishing, not one entry (#543). Name it
+            // as unreadable so the run fails instead of judging the parts it
+            // can still see.
+            unreadable.push({
+                file: current,
+                reason: `an unreadable directory (${(err as NodeJS.ErrnoException).code ?? "error"})`,
+            });
             continue;
         }
         for (const name of entries) {
