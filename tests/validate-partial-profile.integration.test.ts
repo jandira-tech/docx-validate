@@ -88,6 +88,20 @@ const UPPER_CONTENT_TYPES_PARTS = {
     ...Object.fromEntries(Object.entries(MINIMAL_PARTS).filter(([name]) => name !== "[Content_Types].xml")),
     "[CONTENT_TYPES].XML": "<Types",
 };
+// Package relationships Word cannot read: it offers recovery for each (#388).
+// The xml-syntax check reports both codes.
+const UNREADABLE_PACKAGE_RELS = [
+    { name: "zero-byte", code: "xml-syntax", xml: "" },
+    { name: "truncated", code: "xml-syntax", xml: MINIMAL_PARTS["_rels/.rels"]!.slice(0, 120) },
+    {
+        name: "undeclared-prefix",
+        code: "xml-undeclared-prefix",
+        xml: MINIMAL_PARTS["_rels/.rels"]!.replace("<Relationships ", "<x:Relationships ").replace(
+            "</Relationships>",
+            "</x:Relationships>",
+        ),
+    },
+] as const;
 // The comments part named with an escaped `x` in its extension (review Q).
 const ESCAPED_COMMENT_PARTS: Readonly<Record<string, string>> = {
     ...Object.fromEntries(Object.entries(COMMENT_PARTS).filter(([name]) => name !== "word/comments.xml")),
@@ -430,4 +444,30 @@ describe("a part named in another case gets the verdict its lower-case name gets
             });
         },
     );
+});
+
+describe("word-valid rejects package relationships Word cannot read (#388)", { timeout: 120_000 }, () => {
+    it.each(UNREADABLE_PACKAGE_RELS)("rejects an unreadable _rels/.rels ($name) in full and partial runs", async ({ name, code, xml }) => {
+        await withTempDir(async (dir) => {
+            const file = await specimen(dir, `${name}-rels.docx`, await buildDocx({ ...MINIMAL_PARTS, "_rels/.rels": xml }));
+            for (const selection of [{}, { quick: true }, { checks: ["xml-syntax"] }] as const) {
+                const result = await validate(file, { profile: "word-valid", ...selection });
+                const label = JSON.stringify(selection);
+
+                expect(result.valid, label).toBe(false);
+                expect(result.issues, label).toContainEqual(expect.objectContaining({ code, severity: "error", path: "_rels/.rels" }));
+            }
+        });
+    });
+
+    it("passes the readable _rels/.rels control in full and partial runs", async () => {
+        await withTempDir(async (dir) => {
+            const file = await specimen(dir, "control.docx", await buildDocx());
+            for (const selection of [{}, { quick: true }, { checks: ["xml-syntax"] }] as const) {
+                const result = await validate(file, { profile: "word-valid", ...selection });
+
+                expect(result.valid, JSON.stringify(selection)).toBe(true);
+            }
+        });
+    });
 });

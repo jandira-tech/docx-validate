@@ -90,6 +90,12 @@ describe("isWordBlockingIssue", () => {
         ["[CONTENT_TYPES].XML", true],
         ["[content_types].xml", true],
         ["%5BContent_Types%5D.xml", false],
+        // Word 16.115 offers recovery for a zero-byte, truncated or
+        // undeclared-prefix _rels/.rels (#388); matched by OPC part name.
+        ["_rels/.rels", true],
+        ["_RELS/.RELS", true],
+        ["_rels/.%72els", true],
+        ["_rels/x.rels", false],
         ["docProps/app.xml", false],
         [undefined, false],
     ] as const)("judges xml-syntax and xml-undeclared-prefix in %s as blocking: %s", (path, blocking) => {

@@ -21,6 +21,15 @@ import type { ValidationIssue } from "../../../lib/types";
 const isWordFolderPart = (partName: string | undefined): boolean =>
     partName !== undefined && canonicalPartName(partName).startsWith("word/");
 
+/**
+ * Whether a part is the package relationships part, compared as OPC compares
+ * part names. Word 16.115 offers recovery when `_rels/.rels` is zero bytes,
+ * truncated or uses an undeclared prefix (#388; hash-bound observations in
+ * docs/plans/evidence/word-probes-2026-10-24.md).
+ */
+const isPackageRelationshipsPart = (partName: string | undefined): boolean =>
+    partName !== undefined && canonicalPartName(partName) === "_rels/.rels";
+
 export const isWordBlockingIssue = (issue: ValidationIssue): boolean => {
     switch (issue.code) {
         // NB: run-content-misplaced is NOT Word-blocking — a real Word probe
@@ -111,9 +120,14 @@ export const isWordBlockingIssue = (issue: ValidationIssue): boolean => {
         case "xml-syntax":
         // An undeclared namespace prefix is the same class of defect as a
         // malformed part — Word reports unreadable content — so it follows
-        // the identical word/ vs non-word/ policy.
+        // the identical policy: blocking under word/, in the content-types
+        // stream and in the package relationships part (#388).
         case "xml-undeclared-prefix":
-            return isWordFolderPart(issue.path) || (issue.path !== undefined && isContentTypesStreamName(issue.path));
+            return (
+                isWordFolderPart(issue.path) ||
+                isPackageRelationshipsPart(issue.path) ||
+                (issue.path !== undefined && isContentTypesStreamName(issue.path))
+            );
         case "rels-broken":
             // NB: a broken media/ rel (image Target absent) is NOT word-blocking:
             // real Word shows a missing-image placeholder and opens cleanly
