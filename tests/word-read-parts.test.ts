@@ -28,7 +28,7 @@ import { describe, expect, it } from "vitest";
 import { canonicalPartName } from "../src/lib/content-types";
 import { withTempDir } from "../src/lib/run-cli";
 import { ValidationContext } from "../src/lib/validation-context";
-import { wordReadParts } from "../src/lib/word-read-parts";
+import { wordReadParts, wordTypedRelationshipTargets } from "../src/lib/word-read-parts";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
@@ -211,6 +211,39 @@ describe("wordReadParts (#437)", () => {
             expect(await wordReadParts(ValidationContext.fromEntries(parts))).toContain(canonicalPartName(part));
         },
     );
+
+    it.each([
+        ["Transitional", R],
+        ["Strict", R_STRICT],
+    ] as const)("an Office-namespace %s type with an extra path segment is no styles type (#519)", async (_label, namespace) => {
+        // `…/relationships/custom/styles` is not the styles relationship type:
+        // a type has a segment only when it is exactly the namespace plus one
+        // segment. Its target is an unobserved Office type's target — unreached
+        // outside word/, `word/`-folder behaviour inside it.
+        const outside = withDocRel(
+            { ...MINIMAL_PARTS, "xdocs/xtra.xml": MALFORMED.xtra! },
+            "rId9",
+            `${namespace}/custom/styles`,
+            "../xdocs/xtra.xml",
+        );
+        expect(await wordReadParts(ValidationContext.fromEntries(outside)), "outside word/").not.toContain(
+            canonicalPartName("xdocs/xtra.xml"),
+        );
+
+        const inside = withDocRel({ ...MINIMAL_PARTS, "word/xtra.xml": MALFORMED.xtra! }, "rId9", `${namespace}/custom/styles`, "xtra.xml");
+        expect(await wordReadParts(ValidationContext.fromEntries(inside)), "under word/ keeps the folder rule").toContain(
+            canonicalPartName("word/xtra.xml"),
+        );
+    });
+
+    it("yields no wordTypedRelationshipTargets entry for a type with an extra path segment (#519)", async () => {
+        const parts = withDocRel({ ...MINIMAL_PARTS, "word/extra.xml": MALFORMED.xtra! }, "rId9", `${R}/custom/styles`, "extra.xml");
+        // The real `styles` relationship still yields word/styles.xml; the
+        // `custom/styles` one yields nothing.
+        expect(await wordTypedRelationshipTargets(ValidationContext.fromEntries(parts), new Set(["styles"]))).toEqual([
+            { part: "word/styles.xml", segment: "styles" },
+        ]);
+    });
 
     it("reaches a Microsoft-namespace relationship target from any part's relationships", async () => {
         const settings = unclosed(`<w:settings xmlns:w="${W}" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml">`);
@@ -786,6 +819,50 @@ describe("xml errors are Word-blocking by reachability (#437)", () => {
             });
         },
     );
+
+    it(
+        "warns under word-valid on a malformed part outside word/ named by an Office type with an extra segment (#519)",
+        { timeout: 120_000 },
+        async () => {
+            // `…/relationships/custom/styles` names no styles part — an unknown
+            // type inside the Office namespace is an unobserved type, so a
+            // target outside word/ is unreached and its XML error warns. Full,
+            // quick and named runs agree (#381).
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "specimen.docx");
+                writeFileSync(file, await buildDocx(outsideWordPart("xdocs/xtra.xml", `${R}/custom/styles`, CT.settings, MALFORMED.xtra!)));
+                for (const selection of [{}, { quick: true }, { checks: ["xml-syntax"] }] as const) {
+                    const wordValid = await validate(file, { profile: "word-valid", ...selection });
+                    const tag = JSON.stringify(selection);
+                    expect(
+                        wordValid.issues.find((issue) => issue.code === "xml-syntax" && issue.path === "xdocs/xtra.xml")?.severity,
+                        tag,
+                    ).toBe("warning");
+                    expect(wordValid.valid, tag).toBe(true);
+                }
+            });
+        },
+    );
+
+    it("still blocks a malformed word/ part named by an Office type with an extra segment (#519)", { timeout: 60_000 }, async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "specimen.docx");
+            writeFileSync(
+                file,
+                await buildDocx(
+                    withDocRel(
+                        withOverride({ ...MINIMAL_PARTS, "word/xtra.xml": MALFORMED.xtra! }, "word/xtra.xml", CT.settings),
+                        "rId9",
+                        `${R}/custom/styles`,
+                        "xtra.xml",
+                    ),
+                ),
+            );
+            const wordValid = await validate(file, { profile: "word-valid" });
+            expect(wordValid.issues.find((issue) => issue.code === "xml-syntax" && issue.path === "word/xtra.xml")?.severity).toBe("error");
+            expect(wordValid.valid).toBe(false);
+        });
+    });
 
     it("keeps a used, well-formed header outside word/ word-valid (#516 control)", { timeout: 60_000 }, async () => {
         await withTempDir(async (dir) => {

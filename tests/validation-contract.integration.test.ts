@@ -751,6 +751,71 @@ describe("validation contract: a Word-read part typed by a generic XML type (#51
     }
 });
 
+describe("validation contract: a type with an extra path segment is no Office type (#519)", { timeout: 120000 }, () => {
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    const R_STRICT = "http://purl.oclc.org/ooxml/officeDocument/relationships";
+    const unclosed = (rootOpen: string): string => `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n${rootOpen}`;
+    const MALFORMED = unclosed(`<w:settings xmlns:w="${W}">`);
+
+    it("reports no word-part-content-type-generic for a generic part named by `…/relationships/custom/styles`", async () => {
+        // `custom/styles` is not the styles relationship type — a type has a
+        // segment only when it is exactly the namespace plus one segment — so
+        // its target is an unobserved Office type's target: no generic-type
+        // finding, under word-valid or strict.
+        const parts = {
+            ...MINIMAL_PARTS,
+            "word/extra.xml": `<w:styles xmlns:w="${W}"/>`,
+            "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                "</Relationships>",
+                `<Relationship Id="rId9" Type="${R}/custom/styles" Target="extra.xml"/></Relationships>`,
+            ),
+        };
+        for (const profile of ["word-valid", "strict"] as const) {
+            const result = await validateBytes(await buildDocx(parts), profile);
+            expect(
+                result.issues.some((issue) => issue.code === "word-part-content-type-generic"),
+                profile,
+            ).toBe(false);
+            expect(result.valid, profile).toBe(true);
+        }
+    });
+
+    it.each([
+        ["Transitional", R],
+        ["Strict", R_STRICT],
+    ] as const)(
+        "keeps the word/ folder rule under word-valid and strict for a malformed word/ part named by the %s `…/custom/styles`",
+        { timeout: 120000 },
+        async (_label, namespace) => {
+            // An unknown type inside an Office relationship namespace is
+            // unprobed (session 5b probed only `urn:x:unknown`, clean-open), so
+            // its target keeps the conservative word/ rule — blocking — rather
+            // than the styles EAGER path.
+            const parts = {
+                ...MINIMAL_PARTS,
+                "word/xtra.xml": MALFORMED,
+                "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                    "</Relationships>",
+                    `<Relationship Id="rId9" Type="${namespace}/custom/styles" Target="xtra.xml"/></Relationships>`,
+                ),
+                "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                    "</Types>",
+                    '<Override PartName="/word/xtra.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/></Types>',
+                ),
+            };
+            for (const profile of ["word-valid", "strict"] as const) {
+                const result = await validateBytes(await buildDocx(parts), profile);
+                expect(
+                    result.issues.find((issue) => issue.code === "xml-syntax" && issue.path === "word/xtra.xml")?.severity,
+                    profile,
+                ).toBe("error");
+                expect(result.valid, profile).toBe(false);
+            }
+        },
+    );
+});
+
 describe("validation contract: strict judges the other Part 1 part types too (#506)", { timeout: 120000 }, () => {
     const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
     const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";

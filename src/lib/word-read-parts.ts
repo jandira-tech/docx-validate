@@ -29,7 +29,10 @@
  *  - a part under `word/` that any relationship of a KNOWN Office type names
  *    with none of the observed types above (people, chart, image, …). These
  *    are unobserved, so they keep the old `word/`-folder behaviour —
- *    blocking — and open no new false negative.
+ *    blocking — and open no new false negative. A type has a segment only
+ *    when it is exactly an Office relationship-type namespace plus one
+ *    segment, so `…/relationships/custom/styles` is an unobserved type too,
+ *    not the `styles` type (#519).
  *
  * Compute once per run, as `propertiesParts` (#409) is, and pass the set to
  * `isWordBlockingIssue`, so full and partial runs agree (#381). Evidence:
@@ -90,13 +93,25 @@ const isKnownOfficeNamespace = (type: string): boolean =>
     type.startsWith("http://purl.oclc.org/ooxml/") ||
     type.startsWith("http://schemas.microsoft.com/office/");
 
-/** A relationship type under one of the two Office relationship-type namespaces. */
-const isOfficeRelationshipType = (type: string): boolean =>
-    type.startsWith(RELATIONSHIP_TYPES_TRANSITIONAL) || type.startsWith(RELATIONSHIP_TYPES_STRICT);
-
-/** The last path segment of a relationship-type URI: `…/relationships/styles` → `styles`. */
-const typeSegment = (type: string): string => type.slice(type.lastIndexOf("/") + 1);
-
+/**
+ * The segment of a relationship type that is exactly an Office
+ * relationship-type namespace plus one segment: `…/relationships/styles` →
+ * `styles`, Transitional or Strict. `undefined` for every other type — a
+ * type with an extra path segment such as `…/relationships/custom/styles`
+ * is an unknown type inside the namespace, not the `styles` type (#519).
+ */
+const officeRelationshipTypeSegment = (type: string): string | undefined => {
+    const prefix = type.startsWith(RELATIONSHIP_TYPES_TRANSITIONAL)
+        ? RELATIONSHIP_TYPES_TRANSITIONAL
+        : type.startsWith(RELATIONSHIP_TYPES_STRICT)
+          ? RELATIONSHIP_TYPES_STRICT
+          : undefined;
+    if (prefix === undefined) {
+        return undefined;
+    }
+    const segment = type.slice(prefix.length);
+    return segment.length > 0 && !segment.includes("/") ? segment : undefined;
+};
 /** An absolute URI names no package part, whatever its TargetMode says. */
 const hasUriScheme = (target: string): boolean => /^[a-z][a-z\d+.-]*:/i.test(target);
 
@@ -264,13 +279,13 @@ export const wordTypedRelationshipTargets = async (
             if (relationship.getAttribute("TargetMode") === "External") {
                 continue;
             }
-            const type = relationship.getAttribute("Type") ?? "";
-            if (!isOfficeRelationshipType(type) || !wanted.has(typeSegment(type))) {
+            const segment = officeRelationshipTypeSegment(relationship.getAttribute("Type") ?? "");
+            if (segment === undefined || !wanted.has(segment)) {
                 continue;
             }
             const target = resolveTarget(reach.lookup, path.posix.dirname(mainPart), relationship.getAttribute("Target") ?? "");
             if (target !== undefined) {
-                add(target, typeSegment(type));
+                add(target, segment);
             }
         }
     }
@@ -338,15 +353,14 @@ export const wordReadParts = async (context: ValidationContext): Promise<Readonl
             if (relationship.getAttribute("TargetMode") === "External") {
                 continue;
             }
-            const type = relationship.getAttribute("Type") ?? "";
-            if (!isOfficeRelationshipType(type)) {
+            const segment = officeRelationshipTypeSegment(relationship.getAttribute("Type") ?? "");
+            if (segment === undefined) {
                 continue;
             }
             const target = resolveTarget(lookup, baseDir, relationship.getAttribute("Target") ?? "");
             if (target === undefined) {
                 continue;
             }
-            const segment = typeSegment(type);
             if (EAGER_TYPES.has(segment)) {
                 parts.add(canonicalPartName(target));
             } else if (LAZY_TYPES.has(segment)) {
@@ -371,7 +385,11 @@ export const wordReadParts = async (context: ValidationContext): Promise<Readonl
                 continue;
             }
             const type = relationship.getAttribute("Type") ?? "";
-            if (!isKnownOfficeNamespace(type) || OBSERVED_TYPES.has(typeSegment(type))) {
+            // Only an exact namespace-plus-segment type can be an observed
+            // type; anything else in a known Office namespace — including a
+            // type with an extra path segment — is unobserved (#519).
+            const segment = officeRelationshipTypeSegment(type);
+            if (!isKnownOfficeNamespace(type) || (segment !== undefined && OBSERVED_TYPES.has(segment))) {
                 continue;
             }
             const target = resolveTarget(lookup, baseDir, relationship.getAttribute("Target") ?? "");
