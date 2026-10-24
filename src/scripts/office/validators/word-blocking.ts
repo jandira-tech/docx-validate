@@ -113,9 +113,10 @@ export const isWordBlockingIssue = (issue: ValidationIssue): boolean => {
         // backslash, and two content-types streams (#351; evidence in
         // docs/plans/evidence/word-probes-2026-10-24.md).
         case "opc-equivalent-part-names":
-        // Word 16.115 offers recovery even for an unreferenced item whose
-        // stored name escapes an unreserved character (#408; evidence in
-        // docs/plans/evidence/word-probes-2026-10-24.md).
+        // Word 16.115 offers recovery for every unreserved escape probed
+        // (letters in either case, a digit, -, ., _ and ~), even on an
+        // unreferenced item, and opens the %20 control clean (#408; evidence
+        // in docs/plans/evidence/word-probes-2026-10-24.md).
         case "opc-part-name-escaped-unreserved":
             return true;
         // NB: comment-orphan-start/end and comment-marker-missing are NOT
@@ -134,8 +135,9 @@ export const isWordBlockingIssue = (issue: ValidationIssue): boolean => {
         case "xml-undeclared-prefix":
         // A part whose text cannot be decoded is unreadable too: Word 16.115
         // refuses a word/document.xml declaring an unknown encoding and opens
-        // the windows-1252 control clean (#397). The other paths follow the
-        // xml-syntax policy above.
+        // the windows-1252 control clean (#397). It also refuses real labels
+        // libxml2 cannot decode: macintosh, x-mac-cyrillic, IBM866, UTF-7
+        // (#410). The other paths follow the xml-syntax policy above.
         case "xml-encoding":
             return (
                 isWordFolderPart(issue.path) ||
