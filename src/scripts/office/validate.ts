@@ -31,7 +31,7 @@
  */
 
 import { createHash } from "node:crypto";
-import { promises as fs } from "node:fs";
+import { promises as fs, type Stats } from "node:fs";
 import path from "node:path";
 
 import { Command } from "commander";
@@ -83,7 +83,14 @@ import { CT_OVERRIDE_PARTNAME_INVALID } from "./checks/ct-override-partname";
 import { CT_MARKUP_COMPATIBILITY } from "./checks/ct-markup-compatibility";
 import { WORD_PART_CONTENT_TYPE_GENERIC } from "./checks/word-part-content-type-generic";
 import { contextFromArchive, contextFromDirectory } from "./package-context";
-import { BaseSchemaValidator, rootIgnorableIssues, walkFiles, withoutRestatedIgnorablePrefixes } from "./validators/base";
+import {
+    BaseSchemaValidator,
+    containRelationshipTarget,
+    rootIgnorableIssues,
+    walkDirectory,
+    withoutRestatedIgnorablePrefixes,
+    type UnreadableEntry,
+} from "./validators/base";
 import { DOCXSchemaValidator } from "./validators/docx";
 import { buildRepairPlanIssues, collectDocxSemanticInventory, compareDocxSemanticInventories } from "./validators/docx-diagnostics";
 import { PPTXSchemaValidator } from "./validators/pptx";
@@ -305,10 +312,13 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     };
 
     // A packed input, or a directory holding a stored name that differs from
-    // its part name (`word\document.xml`), is judged through the package view
-    // staged under part names, so the path-keyed validators see one entry per
-    // part (#371, #374). `sources` maps each staged part to the directory file
-    // it came from, so `--auto-repair` keeps writing to the stored names.
+    // its part name (`word\document.xml`) or a symbolic link — a stored entry
+    // or a directory segment — is judged through the package view staged
+    // under part names, so the path-keyed validators see one entry per part
+    // (#371, #374) and `--auto-repair` reaches its sources only through the
+    // guarded write-back, never a link's target (#425). `sources` maps each
+    // staged part to the directory file it came from, so `--auto-repair`
+    // keeps writing to the stored names.
     const runStaged = async (
         zip: JSZip,
         envelope: { issues: ValidationResult["issues"]; executed: readonly string[] },
@@ -316,6 +326,9 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         // The findings to merge into a staging failure: what the archive
         // still holds after the extraction failed (#454).
         onExtractFailure?: (err: unknown) => Promise<{ issues: readonly ValidationIssue[]; executed: readonly string[] }>,
+        // The input directory a staged directory's write-back may modify;
+        // its destinations are guarded against symlinks (#425).
+        writeBackRoot?: string,
     ): Promise<ValidateRunResult> =>
         withTempDir(async (tempDir) => {
             try {
@@ -355,11 +368,19 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
             // dropped duplicate entry has no write-back destination at all.
             if (autoRepair && sources) {
                 for (const [part, file] of sources) {
+                    // #425: a destination the input directory does not
+                    // directly hold — a symbolic link, or a path that
+                    // resolves outside it — receives nothing.
+                    const refusal = writeBackRoot === undefined ? undefined : await refusedWriteBackDestination(writeBackRoot, file);
                     let repaired: Buffer;
                     try {
                         repaired = await fs.readFile(path.join(tempDir, part));
                     } catch (err) {
                         if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+                            if (refusal !== undefined) {
+                                writeBackFailed(part, file, refusal);
+                                continue;
+                            }
                             // The repair removed the part: its source goes too.
                             // A source already removed mid-run is the desired
                             // end state, so only a different rm failure reports.
@@ -376,7 +397,10 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
                     const previous = before.get(part);
                     if (previous == null) continue;
                     try {
-                        if (!repaired.equals(previous)) await fs.writeFile(file, repaired);
+                        if (!repaired.equals(previous)) {
+                            if (refusal !== undefined) writeBackFailed(part, file, refusal);
+                            else await fs.writeFile(file, repaired);
+                        }
                     } catch (err) {
                         writeBackFailed(part, file, err);
                     }
@@ -449,9 +473,22 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     }
 
     const dir = path.resolve(target);
+    const walked = walkDirectory(dir);
+    if (walked.unreadable.length > 0) {
+        // #426: a stored entry that can never yield part bytes — a broken
+        // symbolic link, a FIFO — is not a part that silently vanishes: the
+        // package view cannot be built, so the run fails as a failed
+        // extraction does, naming the stored file (#412). The stored-names
+        // diagnosis still sees every stored name, readable or not.
+        const diagnostic = await storedNamesRun(contextFromDirectory(dir, walked.unreadable), format, profile);
+        return finish(stagingFailed(diagnostic, new Error(unreadableStoredDetail(dir, walked.unreadable))));
+    }
     const diagnostic = await storedNamesRun(contextFromDirectory(dir), format, profile);
-    const entries = walkFiles(dir).map((file) => [path.relative(dir, file).split(path.sep).join("/"), file] as const);
-    if (entries.some(([name]) => name !== normalizePartName(name))) {
+    const entries = walked.files.map((file) => [path.relative(dir, file).split(path.sep).join("/"), file] as const);
+    // A symlink in the tree stages too (#425): the stored bytes are read
+    // through it into the package view, while every write-back destination
+    // is guarded against following it.
+    if (entries.some(([name]) => name !== normalizePartName(name)) || walked.holdsSymlinks) {
         // JSZip is only an in-memory entry collection here: no ZIP is written.
         const zip = new JSZip();
         for (const [name, file] of entries) {
@@ -466,7 +503,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
             }
             zip.file(name, bytes, { createFolders: false });
         }
-        return finish(await runStaged(zip, diagnostic, indexByPartName(entries)));
+        return finish(await runStaged(zip, diagnostic, indexByPartName(entries), undefined, dir));
     }
     return finish(await runWithUnpacked(dir, diagnostic));
 }
@@ -748,7 +785,7 @@ async function runSelectedChecks(
     // A companion, not a prerequisite: these checks still read every part
     // with their own parser, even when xml-syntax rejects it (#385).
     const select = reportsParseFailures ? [...selected, XML_SYNTAX_CHECK_ID] : selected;
-    const opened = packed ? await contextFromArchive(await fs.readFile(target)) : { context: contextFromDirectory(path.resolve(target)) };
+    const opened = packed ? await contextFromArchive(await fs.readFile(target)) : openedFromDirectory(path.resolve(target));
     if (opened.openError !== undefined) {
         // An archive that does not open has no parts: only the selected
         // envelope checks can read its bytes, and nothing else ran (#332).
@@ -846,6 +883,53 @@ async function runSelectedChecks(
             schemaCompleted: false,
         },
     };
+}
+
+/**
+ * A directory input as a partial run opens it: its package view, plus — when
+ * a stored entry can never yield part bytes (#426) — the same refusal a
+ * refused packed view reports, so the partial run fails where the full run
+ * fails and runs only the checks that need stored names (#381, #413, #420).
+ */
+function openedFromDirectory(dir: string): { context: ValidationContext; openError?: string; extractFailed?: boolean } {
+    const unreadable = walkDirectory(dir).unreadable;
+    const context = contextFromDirectory(dir, unreadable);
+    return unreadable.length === 0 ? { context } : { context, openError: unreadableStoredDetail(dir, unreadable), extractFailed: true };
+}
+
+/**
+ * Why a directory input's package view cannot be read: one clause per stored
+ * entry that can never yield part bytes, each naming the stored file (#426).
+ */
+function unreadableStoredDetail(dir: string, unreadable: readonly UnreadableEntry[]): string {
+    return unreadable.map((entry) => `Cannot read ${path.relative(dir, entry.file).split(path.sep).join("/")}: ${entry.reason}`).join("; ");
+}
+
+/**
+ * The reason `file` may not receive a staged auto-repair's write-back, or
+ * `undefined` when it may (#425): the stored file itself must be a regular
+ * one — a symbolic link is never followed, wherever its target lives — and
+ * its resolved path must stay under the input `root`, so a link on a
+ * directory segment cannot carry the repair outside either. A destination
+ * that no longer exists keeps the write-back's own ENOENT handling.
+ */
+async function refusedWriteBackDestination(root: string, file: string): Promise<Error | undefined> {
+    let listed: Stats;
+    try {
+        listed = await fs.lstat(file);
+    } catch {
+        return undefined;
+    }
+    if (listed.isSymbolicLink()) {
+        return new Error(`${file} is a symbolic link; the write-back never follows it`);
+    }
+    if (!listed.isFile()) {
+        return new Error(`${file} is not a regular file`);
+    }
+    if (containRelationshipTarget(root, file) === null) {
+        return new Error(`${file} resolves outside the input directory`);
+    }
+    return undefined;
 }
 
 /**
