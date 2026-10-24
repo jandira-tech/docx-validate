@@ -49,6 +49,7 @@
 import { default as JSZip } from "jszip";
 import { promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
+import { resolvePartName } from "../../../lib/content-types";
 import { nextSecureLongHexNumber } from "../../../lib/secure-id";
 import type { ValidationIssue, ValidationResult } from "../../../lib/types";
 import { withoutConsequentialParseFailures } from "../../../lib/parse-failures";
@@ -66,7 +67,9 @@ import {
     BaseSchemaValidator,
     collectDeclaredPrefixes,
     containRelationshipTarget,
+    isRelationshipsPartName,
     PACKAGE_RELATIONSHIPS_NAMESPACE,
+    packageEntries,
     withoutRestatedIgnorablePrefixes,
     XML_NAMESPACE,
 } from "./base";
@@ -1362,8 +1365,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      */
     async validateOrphanedRelationships(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        for (const xmlFile of this.xmlFiles) {
-            if (!xmlFile.endsWith(".rels")) continue;
+        const entries = packageEntries(this.unpackedDir);
+        const names = [...entries.keys()];
+        for (const [name, xmlFile] of entries) {
+            if (!isRelationshipsPartName(name)) continue;
             let dom: Document;
             try {
                 dom = parseXmlBytes(await fs.readFile(xmlFile));
@@ -1387,10 +1392,12 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     });
                     continue;
                 }
-                try {
-                    const stat = await fs.stat(resolved);
-                    if (!stat.isFile()) throw new Error("Target is not a file");
-                } catch {
+                // The target names a part by OPC equivalence (ASCII case,
+                // escapes of unreserved characters), not by a file-system
+                // lookup of its spelling (#346).
+                const part = resolvePartName(names, this.entryName(resolved));
+                const file = part === undefined ? undefined : entries.get(part);
+                if (file === undefined || containRelationshipTarget(this.unpackedDir, file) === null) {
                     issues.push({
                         severity: "error",
                         message: `Relationship target '${target}' resolves to '${this.relPath(resolved)}' which does not exist`,
@@ -2712,7 +2719,8 @@ function resolveRelationshipTargetPath(unpackedDir: string, relsFile: string, ta
         resolved = path.resolve(unpackedDir, targetWithoutFragment.replace(/^\/+/, ""));
     } else {
         const relsDir = path.dirname(relsFile);
-        const baseDir = path.basename(relsDir) === "_rels" ? path.dirname(relsDir) : relsDir;
+        // `_RELS` is the `_rels` folder: part names compare case-insensitively (#346).
+        const baseDir = /^_rels$/i.test(path.basename(relsDir)) ? path.dirname(relsDir) : relsDir;
         resolved = path.resolve(baseDir, targetWithoutFragment);
     }
 

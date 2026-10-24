@@ -816,16 +816,16 @@ export class BaseSchemaValidator {
         const issues: ValidationIssue[] = [];
         const entries = packageEntries(this.unpackedDir);
         const names = [...entries.keys()];
-        const relsFiles = [...entries.values()].filter((file) => file.endsWith(".rels"));
+        const relsFiles = [...entries].flatMap(([name, file]) => (isRelationshipsPartName(name) ? [file] : []));
 
         if (relsFiles.length === 0) {
             return OK_RESULT;
         }
 
         const allFiles: string[] = [];
-        for (const f of entries.values()) {
+        for (const [name, f] of entries) {
             const base = path.basename(f);
-            if (base === "[Content_Types].xml" || f.endsWith(".rels")) continue;
+            if (base === "[Content_Types].xml" || isRelationshipsPartName(name)) continue;
             allFiles.push(path.resolve(f));
         }
 
@@ -1481,7 +1481,7 @@ export class BaseSchemaValidator {
     }
 
     /** A walked file's name in the package, with `/` separators on every platform. */
-    private entryName(file: string): string {
+    protected entryName(file: string): string {
         return this.relPath(file).split(path.sep).join("/");
     }
 
@@ -1770,6 +1770,13 @@ export class BaseSchemaValidator {
 }
 
 // ===== module-level helpers ===================================================
+
+/**
+ * Whether a part is a relationships part: its extension is `.rels` in any
+ * case, as OPC compares part names ASCII case-insensitively, so
+ * `_RELS/.RELS` holds the package relationships (#346, #364).
+ */
+export const isRelationshipsPartName = (partName: string): boolean => /\.rels$/i.test(partName);
 
 /**
  * The files of `dir` by part name. Of several files naming one part

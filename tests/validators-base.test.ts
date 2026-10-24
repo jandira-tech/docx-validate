@@ -136,7 +136,7 @@ describe("BaseSchemaValidator", () => {
     });
 
     describe("validateFileReferences", () => {
-        describe("OPC part-name equivalence (#393)", { timeout: 120_000 }, () => {
+        describe("OPC part-name equivalence (#346, #393)", { timeout: 120_000 }, () => {
             const cases = [
                 {
                     name: "WORD folder with lowercase relationship targets",
@@ -182,7 +182,37 @@ describe("BaseSchemaValidator", () => {
                     expected: [
                         { code: "rels-broken", path: "word/_rels/document.xml.rels", message: "Broken reference to missing.xml" },
                         { code: "rels-unreferenced", path: "word/styles.xml", message: "Unreferenced file: word/styles.xml" },
+                        {
+                            code: "rels-target-missing",
+                            path: "word/_rels/document.xml.rels",
+                            message: "Relationship target 'missing.xml' resolves to 'word/missing.xml' which does not exist",
+                        },
                     ],
+                },
+                {
+                    // An escaped reserved character names another part (#297, #344).
+                    name: "reserved escape in the main target",
+                    parts: {
+                        ...MINIMAL_PARTS,
+                        "_rels/.rels": MINIMAL_PARTS["_rels/.rels"]!.replace("word/document.xml", "word%2Fdocument.xml"),
+                    },
+                    expected: [
+                        { code: "rels-broken", path: "_rels/.rels", message: "Broken reference to word%2Fdocument.xml" },
+                        { code: "rels-unreferenced", path: "word/document.xml", message: "Unreferenced file: word/document.xml" },
+                        {
+                            code: "rels-target-missing",
+                            path: "_rels/.rels",
+                            message: "Relationship target 'word%2Fdocument.xml' resolves to 'word%2Fdocument.xml' which does not exist",
+                        },
+                    ],
+                },
+                {
+                    // _RELS/.RELS names the package relationships part (#364).
+                    name: "package relationships stored as _RELS/.RELS",
+                    parts: Object.fromEntries(
+                        Object.entries(MINIMAL_PARTS).map(([name, xml]) => [name === "_rels/.rels" ? "_RELS/.RELS" : name, xml]),
+                    ),
+                    expected: [],
                 },
                 {
                     name: "part named by no relationship",
@@ -210,13 +240,12 @@ describe("BaseSchemaValidator", () => {
 
                                 const result = await validate(source, { profile });
                                 const references = result.issues
-                                    .filter((issue) => issue.code === "rels-broken" || issue.code === "rels-unreferenced")
+                                    .filter((issue) =>
+                                        ["rels-broken", "rels-unreferenced", "rels-target-missing"].includes(issue.code ?? ""),
+                                    )
                                     .map(({ code, path, message }) => ({ code, path, message }));
                                 expect(references).toEqual(expected);
-                                // The separate rels-target-missing pass still
-                                // rejects escaped targets (#346); #393 fixes
-                                // rels-broken and rels-unreferenced only.
-                                if (expected.length > 0) expect(result.valid).toBe(false);
+                                expect(result.valid).toBe(expected.length === 0);
 
                                 if (bytes) {
                                     expect(await fs.readFile(source)).toEqual(bytes);
