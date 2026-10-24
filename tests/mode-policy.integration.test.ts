@@ -183,6 +183,8 @@ describe("quick mode runs the common-defect preset and discloses its omissions",
             "word-content-type-invalid",
         ]);
         expect(result.metadata?.omittedChecks).toEqual([
+            "comment-markers",
+            "comment-threading",
             "word-math-run-insertion",
             "word-math-run-deletion",
             "word-shading-color",
