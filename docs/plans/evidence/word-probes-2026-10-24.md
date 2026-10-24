@@ -1,6 +1,6 @@
 # Real-Word probes, 2026-10-24
 
-Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), and what session 18 settled for review AS's question on NFC/NFD-distinct names (#441).
+Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), and what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562).
 
 - Word: Microsoft Word for Mac 16.115 (build 16.115.26100424), platform `darwin`.
 - Transport, sessions 1 and 2: `verifyInWord` (`src/lib/word-verifier.ts`). It opens each specimen by path, reads Word's window and dialog state, and never saves.
@@ -8,7 +8,7 @@ Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398
 - Transport, sessions 4–13: the same driver in the same mode, run in the foreground, as its documentation requires. Single-specimen runs are attributed by the same parser. The runner and the helper that copies one specimen into its own run are reproduced at the end.
 - Outcomes: `clean-open` means Word opened the document with no dialog. `repair-warning` means Word showed "Word found unreadable content … Do you want to recover the contents of this document?". `open-error` means Word showed "Word experienced an error trying to open the file." In session 3, `inconclusive` means Word loaded no document in two passes and no alert named the file. Word stayed alive throughout, and `~/Library/Logs/DiagnosticReports` holds no Word report from any session. In session 3 the driver itself restarted Word after runs of empty loads, as designed.
 - Specimens: built in code from `MINIMAL_PARTS` (`tests/support/minimal-docx.ts`). The `398-dup-theme-*` specimens are built from `tests/fixtures/broken/package.word-duplicate-theme.docx`, which was only read. The probe script that builds, validates and opens them is reproduced at the end of this file. No fixture or manifest was changed.
-- Validator: the `word-valid` and `strict` columns record `validate()` **at probe time**, before the policy changes the probes motivated. They are not current verdicts. Session 1 (02:18Z–02:26Z) ran against `wfv/46-plan-audit` (199c2d5b); session 2 (03:10Z–03:19Z) ran against `wfv/51-directory-staging` (ad072db8). Session 3's columns are `validate()` at `wfv/57-central-directory-names` (ab7f311d), run on the exact files Word was given. The columns for sessions 4–6 are `validate()` at `wfv/62-ct-duplicate-declaration` (3126dcfc). They were recomputed after the sessions on the exact files Word was given, and every SHA-256 was checked against its record. Session 7's columns are `validate()` at `wfv/65-override-partname` before (9960b273) and after (34d0ace3) the #450 fix, recomputed the same way; the verdicts recorded at build time equal the 9960b273 ones. Sessions 8–13's columns are `validate()` at 49922e9a, the commit the specimens were built against, and at `wfv/66-partname-review-fixes` (e08611b1) after the #453 and #458 fixes, recomputed the same way with every SHA-256 checked; the verdicts recorded at build time equal the 49922e9a ones. Session 14's columns are `validate()` at ed34e3bf. Session 15's columns are `validate()` at `wfv/87-zip64-rekey` (8252ce4f), the commit the specimens were built against, recorded at build time on the exact files Word was given; every SHA-256 was re-checked against its record after the runs. Session 16's columns are `validate()` at `wfv/98-iri` (98902c85), recorded the same way. Session 17's columns are `validate()` at `wfv/100-word-probes-s16` (3ebe3e7f, whose source is layer 99's), and session 18's at `wfv/101-glossary-header` (ab1fba79), recorded the same way.
+- Validator: the `word-valid` and `strict` columns record `validate()` **at probe time**, before the policy changes the probes motivated. They are not current verdicts. Session 1 (02:18Z–02:26Z) ran against `wfv/46-plan-audit` (199c2d5b); session 2 (03:10Z–03:19Z) ran against `wfv/51-directory-staging` (ad072db8). Session 3's columns are `validate()` at `wfv/57-central-directory-names` (ab7f311d), run on the exact files Word was given. The columns for sessions 4–6 are `validate()` at `wfv/62-ct-duplicate-declaration` (3126dcfc). They were recomputed after the sessions on the exact files Word was given, and every SHA-256 was checked against its record. Session 7's columns are `validate()` at `wfv/65-override-partname` before (9960b273) and after (34d0ace3) the #450 fix, recomputed the same way; the verdicts recorded at build time equal the 9960b273 ones. Sessions 8–13's columns are `validate()` at 49922e9a, the commit the specimens were built against, and at `wfv/66-partname-review-fixes` (e08611b1) after the #453 and #458 fixes, recomputed the same way with every SHA-256 checked; the verdicts recorded at build time equal the 49922e9a ones. Session 14's columns are `validate()` at ed34e3bf. Session 15's columns are `validate()` at `wfv/87-zip64-rekey` (8252ce4f), the commit the specimens were built against, recorded at build time on the exact files Word was given; every SHA-256 was re-checked against its record after the runs. Session 16's columns are `validate()` at `wfv/98-iri` (98902c85), recorded the same way. Session 17's columns are `validate()` at `wfv/100-word-probes-s16` (3ebe3e7f, whose source is layer 99's), session 18's at `wfv/101-glossary-header` (ab1fba79), and session 19's at `wfv/108-segment-doc` (4c86cbfe), recorded the same way.
 
 ## What the observations decide
 
@@ -133,6 +133,10 @@ Session 18 adds, for review AS's suspected item S3 (#441):
 
 - **A literal non-ASCII stored name is refused alone.** An unreferenced well-formed `word/café.xml` makes Word offer recovery in NFC and in NFD, stored alone, as do the NFC/NFD part pair, an NFC/NFD folder pair and a case pair. Word-valid at ab1fba79 fails all five (`opc-part-name-word-refused`, `opc-equivalent-part-names`), so its failure of NFC/NFD pairs agrees with Word.
 
+Session 19 adds, for the glossary's eagerly parsed parts, which #549 left unobserved:
+
+- **#562: the glossary's own styles, settings, fontTable, webSettings and numbering are read.** Each specimen pairs a reached glossary that references no story with one part related from the glossary's own relationships part (`word/glossary/styles.xml`, `settings.xml`, `fontTable.xml`, `webSettings.xml` or `numbering.xml`, each with its Word `Override`). When that part is missing its root end tag, Word offers recovery, for all five types; every well-formed control opens clean. Word-valid at 4c86cbfe passes all ten. Strict fails the malformed ones through `xml-syntax`, and every glossary specimen through the strict-only `paraid-missing-element` on the glossary paragraph, which the session 16 and 17 glossary controls also carried while opening clean.
+
 ## Not observed
 
 Session 1. Another session began driving Word by 02:28Z: its first log line is at 02:28:14Z, and its map file was written at 02:27:55Z. Its preflight closes every open document, so rows observed from 02:26Z on were not treated as evidence. Session 2 observed all of them again (below).
@@ -169,6 +173,8 @@ Session 16 ran in the foreground (`s16a` 12:49Z, `s16b` 12:49Z–12:50Z), one dr
 
 Session 17 ran in the foreground (`s17a` 13:04Z–13:06Z, `s17b` 13:06Z–13:08Z, `s17c` 13:08Z–13:09Z, `s17d` 13:10Z), and session 18 too (`s18a` 13:18Z–13:19Z), one driver run per chunk. Nothing was set aside, and every row is attributed by an alert or a manifest entry naming its staged file. No `word_watchdog.sh` was running. Before `s17a`, `s17b`, `s17d` and `s18a` no other `word_pdf`, `word_redline` or `word_watchdog` process was running, and the other session's newest redline log was last written at 04:57Z. The preflight of `s17a` launched Word and found no open document. The Word that `s17b` through `s18a` found (`launched_by_us=False`, `open_documents=0`) started at 13:06:56Z, the second `s17b` started, while its warm-up waited for Word to answer Apple events; it is that run's own Word.
 
+Session 19 ran in the foreground (`s19a` 13:56Z–13:58Z, `s19b` 13:58Z), one driver run per chunk. Nothing was set aside, and every row is attributed by an alert or a manifest entry naming its staged file. No `word_watchdog.sh` was running. Before each chunk no other `word_pdf`, `word_redline` or `word_watchdog` process was running, and the other session's newest Word log (`fix013w/ab1721r/wrej.log`) was last written at 13:26:13Z. Both preflights found a Word process the driver had not launched, with no open document (`launched_by_us=False`, `open_documents=0`); it had been running since 13:26:18Z.
+
 Sessions 4–6 observed `main-relationship-missing` (#380), the #414 `PartName`s with `application/xml`, an escape in a folder segment (#408), a part-level relationships part (#433) and an unreferenced malformed `customXml/item9.xml` (#437). Still to be observed:
 
 - `numbering` and `theme` typed by the generic Default (#432). Sessions 8–13 observed settings, fontTable, webSettings, the main part and styles.
@@ -177,6 +183,7 @@ Sessions 4–6 observed `main-relationship-missing` (#380), the #414 `PartName`s
 - Markup Compatibility elements or attributes in `[Content_Types].xml` (#459).
 - A footnotes, endnotes or comments part the glossary relates but does not reference (#549). Session 17 observed only the header case.
 - A parameterized or padded content type on footer, comments, footnotes, endnotes, numbering, theme and glossary parts (#550). Session 17 observed the main part, styles, settings, fontTable, webSettings and a header.
+- `customXml` and `theme` parts, or a nested `glossaryDocument`, related from a glossary (#562). Session 19 observed styles, settings, fontTable, webSettings and numbering.
 
 ## Observations
 
@@ -1180,6 +1187,50 @@ The two controls are byte-identical.
 {"run": "s18a", "name": "nfc-nfd-folder-pair", "sha256": "4ae45c123ba0c92121c310bfea93e886f747978ded41aa383ba12af164225907", "observedAt": "2026-10-24T13:19:14.990Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00002__wfv__nfc-nfd-folder-pair.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__nfc-nfd-folder-pair.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
 {"run": "s18a", "name": "case-part-pair-control", "sha256": "afc124cc2608bb3652999ff00a7076e7bb8e97401fc18bd9df7948234fe8fca1", "observedAt": "2026-10-24T13:19:06.565Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__case-part-pair-control.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__case-part-pair-control.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
 {"run": "s18a", "name": "s18a-control-minimal-end", "sha256": "eed77cd1accfa6524774a1516873f7f64c6162170c35d62c24ff306c956f1ec7", "observedAt": "2026-10-24T13:19:31+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 19: 13:56Z–13:58Z, validator columns at 4c86cbfe
+
+The glossary's eagerly parsed parts (#562). Each glossary specimen is the minimal package plus `word/glossary/document.xml`, reached through a main-document `glossaryDocument` relationship and referencing no story, whose own relationships part relates one part of the named type under `word/glossary/`, with that type's Word `Override`. "Unclosed" drops the part's root end tag.
+
+| Run    | Observed  | Specimen                                  | Issue      | Shape                                                                                                                           | SHA-256 (first 16) | Word           | word-valid at 4c86cbfe | strict at 4c86cbfe                                                                                        |
+| ------ | --------- | ----------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | ---------------------- | --------------------------------------------------------------------------------------------------------- |
+| `s19a` | 13:58:08Z | `s19a-control-minimal`                    | control    | —                                                                                                                               | `771b090b1d7159c5` | clean-open     | valid                  | valid                                                                                                     |
+| `s19a` | 13:58:02Z | `glossary-styles-malformed`               | #549 eager | a reached glossary (no story references) whose own `.rels` relates `word/glossary/styles.xml` (`styles`), unclosed              | `a2806711c66c6f67` | repair-warning | valid                  | invalid (`xml-syntax@word/glossary/styles.xml`, `paraid-missing-element@word/glossary/document.xml`)      |
+| `s19a` | 13:58:08Z | `glossary-styles-wellformed-control`      | #549 eager | a reached glossary (no story references) whose own `.rels` relates `word/glossary/styles.xml` (`styles`), well formed           | `a558cc38b4f31b79` | clean-open     | valid                  | invalid (`paraid-missing-element@word/glossary/document.xml`)                                             |
+| `s19a` | 13:57:52Z | `glossary-settings-malformed`             | #549 eager | a reached glossary (no story references) whose own `.rels` relates `word/glossary/settings.xml` (`settings`), unclosed          | `8a3b63239dc3bfef` | repair-warning | valid                  | invalid (`xml-syntax@word/glossary/settings.xml`, `paraid-missing-element@word/glossary/document.xml`)    |
+| `s19a` | 13:57:01Z | `glossary-fonttable-malformed`            | #549 eager | a reached glossary (no story references) whose own `.rels` relates `word/glossary/fontTable.xml` (`fontTable`), unclosed        | `39eecc758c302f8e` | repair-warning | valid                  | invalid (`xml-syntax@word/glossary/fontTable.xml`, `paraid-missing-element@word/glossary/document.xml`)   |
+| `s19a` | 13:58:07Z | `glossary-websettings-malformed`          | #549 eager | a reached glossary (no story references) whose own `.rels` relates `word/glossary/webSettings.xml` (`webSettings`), unclosed    | `302c06953240c800` | repair-warning | valid                  | invalid (`xml-syntax@word/glossary/webSettings.xml`, `paraid-missing-element@word/glossary/document.xml`) |
+| `s19a` | 13:58:08Z | `s19a-control-minimal-end`                | control    | —                                                                                                                               | `295e6a6b1ee42022` | clean-open     | valid                  | valid                                                                                                     |
+| `s19b` | 13:58:33Z | `s19b-control-minimal`                    | control    | —                                                                                                                               | `295e6a6b1ee42022` | clean-open     | valid                  | valid                                                                                                     |
+| `s19b` | 13:58:30Z | `glossary-numbering-malformed`            | #549 eager | a reached glossary (no story references) whose own `.rels` relates `word/glossary/numbering.xml` (`numbering`), unclosed        | `6b449ed507c7de21` | repair-warning | valid                  | invalid (`xml-syntax@word/glossary/numbering.xml`, `paraid-missing-element@word/glossary/document.xml`)   |
+| `s19b` | 13:58:33Z | `glossary-numbering-wellformed-control`   | #549 eager | a reached glossary (no story references) whose own `.rels` relates `word/glossary/numbering.xml` (`numbering`), well formed     | `5c935d7377433c83` | clean-open     | valid                  | invalid (`paraid-missing-element@word/glossary/document.xml`)                                             |
+| `s19b` | 13:58:33Z | `glossary-settings-wellformed-control`    | #549 eager | a reached glossary (no story references) whose own `.rels` relates `word/glossary/settings.xml` (`settings`), well formed       | `66c08103f14382f7` | clean-open     | valid                  | invalid (`paraid-missing-element@word/glossary/document.xml`)                                             |
+| `s19b` | 13:58:33Z | `glossary-fonttable-wellformed-control`   | #549 eager | a reached glossary (no story references) whose own `.rels` relates `word/glossary/fontTable.xml` (`fontTable`), well formed     | `6fa53cf2a2976787` | clean-open     | valid                  | invalid (`paraid-missing-element@word/glossary/document.xml`)                                             |
+| `s19b` | 13:58:33Z | `glossary-websettings-wellformed-control` | #549 eager | a reached glossary (no story references) whose own `.rels` relates `word/glossary/webSettings.xml` (`webSettings`), well formed | `a28641bef2bf0591` | clean-open     | valid                  | invalid (`paraid-missing-element@word/glossary/document.xml`)                                             |
+| `s19b` | 13:58:33Z | `s19b-control-minimal-end`                | control    | —                                                                                                                               | `19cd78173931a680` | clean-open     | valid                  | valid                                                                                                     |
+
+The four controls are minimal packages; `s19a-control-minimal-end` and `s19b-control-minimal` are byte-identical.
+
+<details><summary>Raw records, session 19</summary>
+
+```jsonl
+{"run": "s19a", "name": "s19a-control-minimal", "sha256": "771b090b1d7159c591a72ffc6a49664823e14da5c53af04d49e4f70e0a694c84", "observedAt": "2026-10-24T13:58:08+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s19a", "name": "glossary-styles-malformed", "sha256": "a2806711c66c6f67d10817c0e51445b70129657a20e8969c197fc18d7ea8e2ab", "observedAt": "2026-10-24T13:58:02.413Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00002__wfv__glossary-styles-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__glossary-styles-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s19a", "name": "glossary-styles-wellformed-control", "sha256": "a558cc38b4f31b7905a7d53c210084cc20b9f9b088dffc30731c7091b5fef45e", "observedAt": "2026-10-24T13:58:08+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s19a", "name": "glossary-settings-malformed", "sha256": "8a3b63239dc3bfefb59c188ad08b2ae766f5c6b738d32db1071b3a8e01eb0124", "observedAt": "2026-10-24T13:57:52.781Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00001__wfv__glossary-settings-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00001__wfv__glossary-settings-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s19a", "name": "glossary-fonttable-malformed", "sha256": "39eecc758c302f8e3e79751a4a18515cbcbc63d6aa1be1818109657ad5e4798e", "observedAt": "2026-10-24T13:57:01.602Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__glossary-fonttable-malformed.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00000__wfv__glossary-fonttable-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__glossary-fonttable-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s19a", "name": "glossary-websettings-malformed", "sha256": "302c06953240c800106df83889816555b9b45419e806074068e009542558cabd", "observedAt": "2026-10-24T13:58:07.101Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00004__wfv__glossary-websettings-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00004__wfv__glossary-websettings-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s19a", "name": "s19a-control-minimal-end", "sha256": "295e6a6b1ee420220c7ed175740eeb7b3c07f7f13bc8d5f85e8d6d5d9169fb6c", "observedAt": "2026-10-24T13:58:08+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s19b", "name": "s19b-control-minimal", "sha256": "295e6a6b1ee420220c7ed175740eeb7b3c07f7f13bc8d5f85e8d6d5d9169fb6c", "observedAt": "2026-10-24T13:58:33+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s19b", "name": "glossary-numbering-malformed", "sha256": "6b449ed507c7de213940bed2ee433149434486766ae6d5bd4523e714b322af31", "observedAt": "2026-10-24T13:58:30.868Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00001__wfv__glossary-numbering-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00001__wfv__glossary-numbering-malformed.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s19b", "name": "glossary-numbering-wellformed-control", "sha256": "5c935d7377433c8348972d225c6c3f9769dda9b4fe68b426479d078621ebeec1", "observedAt": "2026-10-24T13:58:33+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s19b", "name": "glossary-settings-wellformed-control", "sha256": "66c08103f14382f7f31c939d01b06645c7f5e58c1ff82f4747db4c1606d3a3ea", "observedAt": "2026-10-24T13:58:33+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s19b", "name": "glossary-fonttable-wellformed-control", "sha256": "6fa53cf2a2976787f43badf42cf1cdbf64e3393896e158461e4b52ad71fc777b", "observedAt": "2026-10-24T13:58:33+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s19b", "name": "glossary-websettings-wellformed-control", "sha256": "a28641bef2bf059180f4d84f66a51ea932c946c399abfa74c229a681e4643016", "observedAt": "2026-10-24T13:58:33+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s19b", "name": "s19b-control-minimal-end", "sha256": "19cd78173931a680dbd8898262a30f1ede701d4ca8598c5762d33ddfd707a132", "observedAt": "2026-10-24T13:58:33+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 ```
 
 </details>
@@ -3645,6 +3696,108 @@ const specimens: [string, string, () => Promise<Uint8Array> | Uint8Array][] = [
     ["nfc-nfd-folder-pair", "#441 S3", () => withParts(`word/${NFC}/a.xml`, `word/${NFD}/b.xml`)],
     ["case-part-pair-control", "#351 control", () => withParts("word/extra.xml", "word/EXTRA.xml")],
     ["s18a-control-minimal-end", "control", () => buildDocx(P)],
+];
+const only = new Set((process.env.ONLY ?? "").split(",").filter(Boolean));
+
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    if (only.size > 0 && !only.has(name)) continue;
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        const r = await validate(path.join(dir, file), { profile });
+        return {
+            valid: r.valid,
+            errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+        };
+    };
+    const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid}`,
+    );
+}
+```
+
+Session 19's builder (`s19a`, `s19b`) is another standalone script, run the same way:
+
+```ts
+// Session 19 (2026-10-24): #549 made a reached glossary a second story root for its relationships part and the five lazy
+// story types, but left the glossary's eagerly parsed relationships (styles, settings, fontTable, webSettings, numbering)
+// unfollowed as unobserved. Real Word glossaries carry their own styles, settings, fontTable and webSettings parts.
+// Does Word read them at open — does a malformed one get a repair offer?
+// Run from the stack worktree root as a copy: BUILD_DIR=<chunk>/src [ONLY=a,b] pnpm exec tsx s19builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const P = MINIMAL_PARTS as Record<string, string>;
+const CT = P["[Content_Types].xml"];
+const DOC_RELS = P["word/_rels/document.xml.rels"];
+/** Well formed up to a missing end of the root element: namespaces stay declared, the part does not parse. */
+const unclosed = (xml: string) => xml.slice(0, xml.lastIndexOf("</"));
+const ct = (extra: string) => CT.replace("</Types>", `${extra}</Types>`);
+const rels = (extra: string) => DOC_RELS.replace("</Relationships>", `${extra}</Relationships>`);
+const relsPart = (body: string) =>
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${body}</Relationships>`;
+
+// A glossary that references no story: only its eager relationships can reach a part.
+const GLOSSARY =
+    `<w:glossaryDocument xmlns:w="${W}" xmlns:r="${REL}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+    `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+    `<w:docPartBody><w:p><w:r><w:t>Part</w:t></w:r></w:p></w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`;
+
+/** Each eager type: relationship segment, stored file under word/glossary/, content type, and a well-formed part. */
+const EAGER = {
+    styles: { file: "styles.xml", type: `${WML}.styles+xml`, xml: `<w:styles xmlns:w="${W}"></w:styles>` },
+    settings: { file: "settings.xml", type: `${WML}.settings+xml`, xml: `<w:settings xmlns:w="${W}"></w:settings>` },
+    fontTable: { file: "fontTable.xml", type: `${WML}.fontTable+xml`, xml: `<w:fonts xmlns:w="${W}"></w:fonts>` },
+    webSettings: { file: "webSettings.xml", type: `${WML}.webSettings+xml`, xml: `<w:webSettings xmlns:w="${W}"></w:webSettings>` },
+    numbering: { file: "numbering.xml", type: `${WML}.numbering+xml`, xml: `<w:numbering xmlns:w="${W}"></w:numbering>` },
+} as const;
+type Eager = keyof typeof EAGER;
+
+/** The minimal package plus a glossary whose own relationships part relates one `segment` part, malformed or not. */
+const glossaryWithEager = (segment: Eager, malformed: boolean) => {
+    const { file, type, xml } = EAGER[segment];
+    return buildDocx({
+        ...P,
+        "word/glossary/document.xml": GLOSSARY,
+        "word/glossary/_rels/document.xml.rels": relsPart(`<Relationship Id="rIdE" Type="${REL}/${segment}" Target="${file}"/>`),
+        [`word/glossary/${file}`]: malformed ? unclosed(xml) : xml,
+        "word/_rels/document.xml.rels": rels(`<Relationship Id="rIdG" Type="${REL}/glossaryDocument" Target="glossary/document.xml"/>`),
+        "[Content_Types].xml": ct(
+            `<Override PartName="/word/glossary/document.xml" ContentType="${WML}.document.glossary+xml"/><Override PartName="/word/glossary/${file}" ContentType="${type}"/>`,
+        ),
+    });
+};
+
+const specimens: [string, string, () => Promise<Uint8Array> | Uint8Array][] = [
+    // s19a — a malformed eager part related from a reached glossary.
+    ["s19a-control-minimal", "control", () => buildDocx(P)],
+    ["glossary-styles-malformed", "#549 eager", () => glossaryWithEager("styles", true)],
+    ["glossary-styles-wellformed-control", "#549 eager", () => glossaryWithEager("styles", false)],
+    ["glossary-settings-malformed", "#549 eager", () => glossaryWithEager("settings", true)],
+    ["glossary-fonttable-malformed", "#549 eager", () => glossaryWithEager("fontTable", true)],
+    ["glossary-websettings-malformed", "#549 eager", () => glossaryWithEager("webSettings", true)],
+    ["s19a-control-minimal-end", "control", () => buildDocx(P)],
+    // s19b — numbering, and the well-formed controls of the other eager types.
+    ["s19b-control-minimal", "control", () => buildDocx(P)],
+    ["glossary-numbering-malformed", "#549 eager", () => glossaryWithEager("numbering", true)],
+    ["glossary-numbering-wellformed-control", "#549 eager", () => glossaryWithEager("numbering", false)],
+    ["glossary-settings-wellformed-control", "#549 eager", () => glossaryWithEager("settings", false)],
+    ["glossary-fonttable-wellformed-control", "#549 eager", () => glossaryWithEager("fontTable", false)],
+    ["glossary-websettings-wellformed-control", "#549 eager", () => glossaryWithEager("webSettings", false)],
+    ["s19b-control-minimal-end", "control", () => buildDocx(P)],
 ];
 const only = new Set((process.env.ONLY ?? "").split(",").filter(Boolean));
 
