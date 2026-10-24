@@ -104,6 +104,11 @@ Sessions 8–13 add:
 - **#453: dot-only folder segments.** `/word/.../x.xml`, `/word/..../x.xml` and `/.../x.xml` make Word offer recovery, while `/word./x.xml` opens clean again. Word-valid at 49922e9a passes the three, because the #450 tolerance caught them. At e08611b1 they break their own rule ([M1.10]) and fail word-valid.
 - **#458: an `Override` without a usable `PartName`.** Without the attribute, with `PartName=""` and with `PartName="/"`, Word offers recovery, and word-valid fails all three.
 
+Session 14 adds:
+
+- **#459: Markup Compatibility in the content-types stream.** `xmlns:mc` declared on `Types` and left unused opens clean. `mc:Ignorable="x"` on `Types` makes Word offer recovery, alone or with an ignored `<x:Foo/>` child; word-valid at ed34e3bf passes both, and strict fails both through `xsd-error`. An ignorable namespace declaration in `[Content_Types].xml` is itself enough for Word to offer recovery. Both `mc:AlternateContent` orientations, whose Choice and Fallback each hold one `Override`, make Word offer recovery too, but each also carries `/word/a%41b.xml`, which Word refuses alone (session 11), so those two do not separate the MCE cause.
+- **#464: bytes before the archive.** A 2-entry ZIP, or 4096 spaces, in front of the minimal package make Word offer recovery, with the package's offsets relative to its own start and with them rewritten as absolute. Word-valid at ed34e3bf fails the prefixed ZIP through `zip-bytes-after-eocd` and passes both space prefixes, as strict does.
+
 ## Not observed
 
 Session 1. Another session began driving Word by 02:28Z: its first log line is at 02:28:14Z, and its map file was written at 02:27:55Z. Its preflight closes every open document, so rows observed from 02:26Z on were not treated as evidence. Session 2 observed all of them again (below).
@@ -866,6 +871,46 @@ An `Override` without a `PartName`, with an empty one and with `/` alone (review
 {"run": "s13", "name": "414-override-empty-partname", "sha256": "f2262394f44bc064d5ca243c9aed9f9f51d60680c3c07f08517ca165d137988a", "observedAt": "2026-10-24T08:04:09.830Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__414-override-empty-partname.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__414-override-empty-partname.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
 {"run": "s13", "name": "414-override-slash-only", "sha256": "120aae863477e4b5ff9c282134d98f7475c9050a7b6a8d721658efa71a6c90d3", "observedAt": "2026-10-24T08:04:18.466Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00002__wfv__414-override-slash-only.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__414-override-slash-only.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
 {"run": "s13", "name": "s13-control-minimal-end", "sha256": "bf084e7192d92d0ddc894e4e40ead93149f1fb6bddce181a6c3ce29b00613400", "observedAt": "2026-10-24T08:04:21+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 14: 08:57Z–09:01Z, validator columns at ed34e3bf
+
+Markup Compatibility in `[Content_Types].xml` (#459) and bytes before the archive (#464). The Choice reads `Requires="x"` with `x` bound to `urn:x:unknown`, so a processor would take the Fallback. `/word/a%41b.xml` alone gets repair (session 11) and `/word/fallback.xml` alone opens clean (session 7). Each preflight shows `launched_by_us=True` and `open_documents=0`.
+
+| Run    | Observed  | Specimen                           | Issue   | Shape                                                                          | SHA-256 (first 16) | Word           | word-valid at ed34e3bf                                       | strict at ed34e3bf                                                                                                               |
+| ------ | --------- | ---------------------------------- | ------- | ------------------------------------------------------------------------------ | ------------------ | -------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `s14a` | 09:00:16Z | `s14a-control-minimal`             | control | —                                                                              | `cf3d7334a3e915bb` | clean-open     | valid                                                        | valid                                                                                                                            |
+| `s14a` | 09:00:16Z | `459-mc-namespace-declared-only`   | #459    | `xmlns:mc` declared on `Types`, unused                                         | `c0d18ab449b669be` | clean-open     | valid                                                        | valid                                                                                                                            |
+| `s14a` | 09:00:13Z | `459-mc-ignorable-only`            | #459    | `mc:Ignorable="x"` on `Types`                                                  | `08ae41c073579db4` | repair-warning | valid                                                        | invalid (`xsd-summary@[Content_Types].xml`, `xsd-error@[Content_Types].xml`)                                                     |
+| `s14a` | 08:59:20Z | `459-mc-ignorable-ignored-element` | #459    | `mc:Ignorable="x"` and an `<x:Foo/>` child                                     | `292b5d5996b19a80` | repair-warning | valid                                                        | invalid (`xsd-summary@[Content_Types].xml`, `xsd-error@[Content_Types].xml`)                                                     |
+| `s14a` | 08:57:36Z | `459-mc-choice-bad-fallback-good`  | #459    | `mc:AlternateContent`: Choice `/word/a%41b.xml`, Fallback `/word/fallback.xml` | `0a1001d5f0629b3a` | repair-warning | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`, `xsd-summary@[Content_Types].xml`, `xsd-error@[Content_Types].xml`) |
+| `s14a` | 08:58:28Z | `459-mc-choice-good-fallback-bad`  | #459    | `mc:AlternateContent`: Choice `/word/fallback.xml`, Fallback `/word/a%41b.xml` | `5b5bad74b92b1239` | repair-warning | invalid (`ct-override-partname-invalid@[Content_Types].xml`) | invalid (`ct-override-partname-invalid@[Content_Types].xml`, `xsd-summary@[Content_Types].xml`, `xsd-error@[Content_Types].xml`) |
+| `s14a` | 09:00:16Z | `s14a-control-minimal-end`         | control | —                                                                              | `cf3d7334a3e915bb` | clean-open     | valid                                                        | valid                                                                                                                            |
+| `s14b` | 09:01:11Z | `s14b-control-minimal`             | control | —                                                                              | `cf3d7334a3e915bb` | clean-open     | valid                                                        | valid                                                                                                                            |
+| `s14b` | 09:01:09Z | `464-prefix-zip-docx`              | #464    | a 2-entry ZIP before the package                                               | `11d401efa68b3815` | repair-warning | invalid (`zip-bytes-after-eocd@-`)                           | invalid (`zip-bytes-after-eocd@-`)                                                                                               |
+| `s14b` | 09:01:05Z | `464-prefix-junk-docx-relative`    | #464    | 4096 spaces before the package, offsets relative                               | `47401fd6ef941c04` | repair-warning | valid                                                        | valid                                                                                                                            |
+| `s14b` | 09:01:00Z | `464-prefix-junk-docx-absolute`    | #464    | 4096 spaces before the package, offsets absolute                               | `8e4b03234f887784` | repair-warning | valid                                                        | valid                                                                                                                            |
+| `s14b` | 09:01:11Z | `s14b-control-minimal-end`         | control | —                                                                              | `828d87c635821a14` | clean-open     | valid                                                        | valid                                                                                                                            |
+
+The two `s14b` controls differ in 16 bytes, the DOS modification time of each entry in its local and central headers: JSZip stamps the build time, and the end control was built two seconds later.
+
+<details><summary>Raw records, session 14</summary>
+
+```jsonl
+{"run": "s14a", "name": "s14a-control-minimal", "sha256": "cf3d7334a3e915bb920a7d95d4e355238b8cd0d5ff71fedc3fe713f2d10077d7", "observedAt": "2026-10-24T09:00:16+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s14a", "name": "459-mc-namespace-declared-only", "sha256": "c0d18ab449b669be416a623fc1e73666c96408661f5e9232a5c7f06867c5e3bb", "observedAt": "2026-10-24T09:00:16+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s14a", "name": "459-mc-ignorable-only", "sha256": "08ae41c073579db4c46ebadeb98cd16f21c349c6b93cf1bf40e261d61f8bc4cd", "observedAt": "2026-10-24T09:00:13.118Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00003__wfv__459-mc-ignorable-only.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00003__wfv__459-mc-ignorable-only.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00003__wfv__459-mc-ignorable-only.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s14a", "name": "459-mc-ignorable-ignored-element", "sha256": "292b5d5996b19a80cc529a8967c72cbf3b843aae256cff050f1fab5644f7563b", "observedAt": "2026-10-24T08:59:20.697Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00002__wfv__459-mc-ignorable-ignored-element.docx; refusing to guess", "dialogs": ["\"Word found unreadable content in 00002__wfv__459-mc-ignorable-ignored-element.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s14a", "name": "459-mc-choice-bad-fallback-good", "sha256": "0a1001d5f0629b3ad7ca713402e10a23b9436443452c075adc006ab35837c2d7", "observedAt": "2026-10-24T08:57:36.768Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__459-mc-choice-bad-fallback-good.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__459-mc-choice-bad-fallback-good.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s14a", "name": "459-mc-choice-good-fallback-bad", "sha256": "5b5bad74b92b12397f44f140960852dc52d93b1d4215158230d25cd325e12b9c", "observedAt": "2026-10-24T08:58:28.648Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00001__wfv__459-mc-choice-good-fallback-bad.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00001__wfv__459-mc-choice-good-fallback-bad.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s14a", "name": "s14a-control-minimal-end", "sha256": "cf3d7334a3e915bb920a7d95d4e355238b8cd0d5ff71fedc3fe713f2d10077d7", "observedAt": "2026-10-24T09:00:16+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s14b", "name": "s14b-control-minimal", "sha256": "cf3d7334a3e915bb920a7d95d4e355238b8cd0d5ff71fedc3fe713f2d10077d7", "observedAt": "2026-10-24T09:01:11+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s14b", "name": "464-prefix-zip-docx", "sha256": "11d401efa68b38151933f3b3ab6838c083038c458ac1a315ce2e3dbd42e0d5dc", "observedAt": "2026-10-24T09:01:09.200Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00002__wfv__464-prefix-zip-docx.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__464-prefix-zip-docx.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s14b", "name": "464-prefix-junk-docx-relative", "sha256": "47401fd6ef941c0493b50c513e6cd49f36fe7a19def5f36b49fd3072b471cdb9", "observedAt": "2026-10-24T09:01:05.017Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00001__wfv__464-prefix-junk-docx-relative.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00001__wfv__464-prefix-junk-docx-relative.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s14b", "name": "464-prefix-junk-docx-absolute", "sha256": "8e4b03234f8877847abb68015d1f89d04d53c9b1a4e0a008db018d802e4b3e7e", "observedAt": "2026-10-24T09:01:00.834Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__464-prefix-junk-docx-absolute.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__464-prefix-junk-docx-absolute.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s14b", "name": "s14b-control-minimal-end", "sha256": "828d87c635821a14fabb04b355991544f6a83cbe01dbd1661866db579eed5b36", "observedAt": "2026-10-24T09:01:11+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 ```
 
 </details>
@@ -1670,7 +1715,7 @@ for r in out:
 
 </details>
 
-<details><summary>Sessions 4–13 specimen builders and runner</summary>
+<details><summary>Sessions 4–14 specimen builders and runner</summary>
 
 Sessions 4 and 5 add these lines to the session 3 builder above. They were built with `BUILD_DIR=<run>/src BUILD_FROM=<first specimen>`, as in session 3:
 
@@ -2439,6 +2484,94 @@ const specimens: [string, string, () => Promise<Uint8Array> | Uint8Array][] = [
     ["414-override-empty-partname", "#414", () => override("")],
     ["414-override-slash-only", "#414", () => override("/")],
     ["s13-control-minimal-end", "control", () => buildDocx(P)],
+];
+const only = new Set((process.env.ONLY ?? "").split(",").filter(Boolean));
+
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    if (only.size > 0 && !only.has(name)) continue;
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        const r = await validate(path.join(dir, file), { profile });
+        return {
+            valid: r.valid,
+            errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+        };
+    };
+    const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid}`,
+    );
+}
+```
+
+Session 14's builder (`s14a`, `s14b`) is another standalone script, run the same way; each chunk was built with `ONLY=<its specimens>`:
+
+```ts
+// Session 14 (2026-10-24): Markup Compatibility in [Content_Types].xml (#459) and prefixed packages (#464).
+// Run from the stack worktree root as a copy: BUILD_DIR=<chunk>/src [ONLY=a,b] pnpm exec tsx s14builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { buildRawZip } from "./tests/support/raw-zip";
+import { validate } from "./src/scripts/office/validate";
+
+const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+const P = MINIMAL_PARTS as Record<string, string>;
+const CT = P["[Content_Types].xml"];
+const TYPES_OPEN = CT.match(/<Types [^>]*>/)![0];
+
+/** The content-types stream with extra namespace declarations/attributes on the root and extra children. */
+const ct = (rootExtra: string, children: string) =>
+    CT.replace(TYPES_OPEN, TYPES_OPEN.replace(/>$/, ` ${rootExtra}>`)).replace("</Types>", `${children}</Types>`);
+const withCt = (rootExtra: string, children: string) => buildDocx({ ...P, "[Content_Types].xml": ct(rootExtra, children) });
+const MC_DECL = `xmlns:mc="${MC}" xmlns:x="urn:x:unknown"`;
+// An Override Word refuses on its own (OPC [M1.8], session 11: repair-warning) and one it accepts (session 7: clean).
+const BAD = `<Override PartName="/word/a%41b.xml" ContentType="application/xml"/>`;
+const GOOD = `<Override PartName="/word/fallback.xml" ContentType="application/xml"/>`;
+const alternate = (choice: string, fallback: string) =>
+    `<mc:AlternateContent><mc:Choice Requires="x">${choice}</mc:Choice><mc:Fallback>${fallback}</mc:Fallback></mc:AlternateContent>`;
+
+/** A ZIP whose offsets are absolute in a buffer with `prefix` bytes in front, as a self-extractor writes them. */
+const absoluteAfter = (zip: Uint8Array, prefix: number): Buffer => {
+    const buf = Buffer.from(zip);
+    const eocd = buf.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
+    const count = buf.readUInt16LE(eocd + 10);
+    let offset = buf.readUInt32LE(eocd + 16);
+    buf.writeUInt32LE(offset + prefix, eocd + 16);
+    for (let i = 0; i < count; i += 1) {
+        if (buf.readUInt32LE(offset) !== 0x02014b50) throw new Error("bad central header");
+        buf.writeUInt32LE(buf.readUInt32LE(offset + 42) + prefix, offset + 42);
+        offset += 46 + buf.readUInt16LE(offset + 28) + buf.readUInt16LE(offset + 30) + buf.readUInt16LE(offset + 32);
+    }
+    return buf;
+};
+const JUNK = Buffer.alloc(4096, 0x20);
+const PREFIX_ZIP = buildRawZip([
+    { name: "pad.bin", content: Buffer.alloc(600) },
+    { name: "ok.xml", content: "<x/>" },
+]);
+
+const specimens: [string, string, () => Promise<Uint8Array> | Uint8Array][] = [
+    ["s14a-control-minimal", "control", () => buildDocx(P)],
+    ["459-mc-namespace-declared-only", "#459", () => withCt(MC_DECL, "")],
+    ["459-mc-ignorable-only", "#459", () => withCt(`${MC_DECL} mc:Ignorable="x"`, "")],
+    ["459-mc-ignorable-ignored-element", "#459", () => withCt(`${MC_DECL} mc:Ignorable="x"`, `<x:Foo/>`)],
+    ["459-mc-choice-bad-fallback-good", "#459", () => withCt(MC_DECL, alternate(BAD, GOOD))],
+    ["459-mc-choice-good-fallback-bad", "#459", () => withCt(MC_DECL, alternate(GOOD, BAD))],
+    ["s14a-control-minimal-end", "control", () => buildDocx(P)],
+    ["s14b-control-minimal", "control", () => buildDocx(P)],
+    ["464-prefix-zip-docx", "#464", async () => Buffer.concat([PREFIX_ZIP, await buildDocx(P)])],
+    ["464-prefix-junk-docx-relative", "#464", async () => Buffer.concat([JUNK, await buildDocx(P)])],
+    ["464-prefix-junk-docx-absolute", "#464", async () => Buffer.concat([JUNK, absoluteAfter(await buildDocx(P), JUNK.length)])],
+    ["s14b-control-minimal-end", "control", () => buildDocx(P)],
 ];
 const only = new Set((process.env.ONLY ?? "").split(",").filter(Boolean));
 

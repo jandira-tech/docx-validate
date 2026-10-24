@@ -134,6 +134,11 @@ export const isWordBlockingIssue = (issue: ValidationIssue, propertiesParts: Rea
         // refuses `word%5Cxtra.xml`, and opens the well-formed `word/xtra.xml`
         // control clean — the stored name alone predicts the dialog (#436;
         // evidence in docs/plans/evidence/word-probes-2026-10-24.md).
+        // Word 16.115 recovers escaped RFC 2396 marks, high octets and literal
+        // non-ASCII names, even unreferenced (#408, #443, #451; sessions 6–12
+        // in docs/plans/evidence/word-probes-2026-10-24.md).
+        case "opc-part-name-word-refused":
+        case "ct-override-partname-word-refused":
         case "opc-part-name-escaped-slash":
             return true;
         // Word 16.115 offers recovery for every malformed Override PartName

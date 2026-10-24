@@ -57,7 +57,7 @@ import {
     resolvePartName,
 } from "../../../lib/content-types";
 import { applyMarkupCompatibility, STRICT_UNDERSTOOD_NAMESPACES, UNDERSTOOD_NAMESPACES } from "../../../lib/markup-compatibility";
-import { opcNameIssueSeverity } from "../../../lib/mode-policy";
+import { opcNameIssueSeverity, wordNameIssueSeverity } from "../../../lib/mode-policy";
 import { withTempDir } from "../../../lib/run-cli";
 import { indexByPartName, type ValidationContext } from "../../../lib/validation-context";
 import type { PackageFormat, Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
@@ -75,6 +75,7 @@ import {
 import { checkXmlSyntax } from "../../../lib/xml-syntax";
 import { resolveSafeZipEntry } from "../../../lib/zip-path";
 import { isXmlPartName, XML_SYNTAX_CHECK_ID } from "../checks/xml";
+import { CT_OVERRIDE_PARTNAME_WORD_REFUSED, ctOverridePartnameWordRefusedCheck } from "../checks/ct-override-partname-word-refused";
 import { CT_OVERRIDE_PARTNAME_INVALID, ctOverridePartnameInvalidCheck } from "../checks/ct-override-partname";
 import { ctDuplicateDeclarationCheck } from "../checks/word-content-types";
 
@@ -1320,6 +1321,9 @@ export class BaseSchemaValidator {
      * tolerates, #450), and a warning under lenient and for the unobserved
      * PPTX/XLSX.
      *
+     * Also run the Word-specific spelling rule (#451). It warns for PPTX/XLSX
+     * under every profile, while strict DOCX includes Word's refusals.
+     *
      * The parts that do not parse are hidden from the check, as the XML
      * syntax gate hides them from every other DOM-reading rule (#307): a
      * content-types stream that does not parse is reported by that gate
@@ -1334,7 +1338,12 @@ export class BaseSchemaValidator {
         const issues = await ctOverridePartnameInvalidCheck.run(view);
         this.recordExecutedCheck(CT_OVERRIDE_PARTNAME_INVALID);
         const severity = opcNameIssueSeverity(this.profile, format);
-        return finalize([...issues].map((issue): ValidationIssue => (severity === "warning" ? { ...issue, severity: "warning" } : issue)));
+        const wordIssues = await ctOverridePartnameWordRefusedCheck.run(view);
+        this.recordExecutedCheck(CT_OVERRIDE_PARTNAME_WORD_REFUSED);
+        return finalize([
+            ...issues.map((issue): ValidationIssue => ({ ...issue, severity })),
+            ...wordIssues.map((issue): ValidationIssue => ({ ...issue, severity: wordNameIssueSeverity(this.profile, format) })),
+        ]);
     }
 
     /**

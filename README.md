@@ -263,9 +263,11 @@ marks archive-only checks `unavailable`; use packed input to check ZIP integrity
 The complete named check catalogue is below. Each Word check except
 `word-markup-compatibility` uses its id as its finding code. Package checks are
 `zip-bytes-after-eocd`, `zip-eocd-comment-overrun`, `opc-equivalent-part-names`,
-`opc-part-name-escaped-unreserved`, and `opc-part-name-escaped-slash`; `xml-syntax` is the shared
+`opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, and
+`opc-part-name-word-refused`; `xml-syntax` is the shared
 XML prerequisite. All `word-*` checks apply to DOCX/DOCM only.
-`ct-duplicate-declaration` and `ct-override-partname-invalid` apply to every
+`ct-duplicate-declaration`, `ct-override-partname-invalid`, and
+`ct-override-partname-word-refused` apply to every
 package format; `word-content-type-invalid` applies to DOCX/DOCM only.
 
 `opc-equivalent-part-names` applies to DOCX/DOCM, PPTX, and XLSX package selections,
@@ -303,15 +305,42 @@ before `2F`) stays legal. Word 16.115 offers recovery for an unreferenced
 `word%2Fxtra.xml`, refuses `word%5Cxtra.xml`, and opens the well-formed
 `word/xtra.xml` control clean ([#436](https://github.com/jandira-tech/docx-validate/issues/436)).
 
+`opc-part-name-word-refused` reports one finding per stored name containing a
+percent-escaped RFC 2396 mark (`!`, `'`, `(`, `)`, `*`), a percent-escaped octet
+at or above `0x80`, or a literal non-ASCII character. It reads stored ZIP names
+before extraction, including unreferenced entries and refused package views,
+and walked file names for directories. Hex is case-insensitive and whole
+triplets are consumed: `%2521` stays clean, as do `%20`, `%26`, `%3A`, `%5B`,
+`%7F`, and a literal `!`. Unreserved escapes keep their existing M1.8 finding.
+
+`ct-override-partname-word-refused` applies the same escaped-mark and high-octet
+rules to every Override PartName, even when no part is stored under that name.
+It reports one finding per declaration at the stored content-types stream,
+quoting the PartName. Literal non-ASCII PartNames already fail
+`ct-override-partname-invalid` and are not reported twice. A spelling containing
+both `%41` and `%21` reports both applicable codes once.
+
+Both checks are errors for DOCX/DOCM under word-valid and strict (strict includes
+every Word-blocking defect), warnings under lenient, and warnings for PPTX/XLSX
+under every profile: these spellings are spec-valid and PowerPoint/Excel refusal
+has not been observed. Full, quick and named selections share this policy;
+strict still rejects partial selection, and XLSX supports partial runs only.
+Word 16.115 offers recovery for these spellings, as recorded with SHA-256 hashes
+in [probe sessions 6–12](docs/plans/evidence/word-probes-2026-10-24.md)
+([#451](https://github.com/jandira-tech/docx-validate/issues/451),
+[#408](https://github.com/jandira-tech/docx-validate/issues/408),
+[#443](https://github.com/jandira-tech/docx-validate/issues/443)). Validation leaves
+names and input bytes unchanged.
+
 | Group                     | Named checks                                                                                                                                                                                                                                                                                                                                        |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `package`                 | `zip-bytes-after-eocd`, `zip-eocd-comment-overrun`, `opc-equivalent-part-names`, `opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`                                                                                                                                                                                                  |
+| `package`                 | `zip-bytes-after-eocd`, `zip-eocd-comment-overrun`, `opc-equivalent-part-names`, `opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, `opc-part-name-word-refused`                                                                                                                                                                    |
 | `math`, `tracked-changes` | `word-math-run-insertion`, `word-math-run-deletion`                                                                                                                                                                                                                                                                                                 |
 | `math`                    | `word-math-parse`, `word-math-spre-body`                                                                                                                                                                                                                                                                                                            |
 | `story`                   | `word-shading-color`, `word-page-margin-attributes`, `word-run-misplaced`, `word-run-properties-misplaced`, `word-underline-misplaced`, `word-paragraph-properties-misplaced`, `word-section-properties-misplaced`, `word-footnote-reference-missing`, `word-numbering-picture-bullet`, `word-sdt-id-empty`, `word-text-contains-paragraph`         |
 | `tables`                  | `word-grid-column-attributes`, `word-cell-margin-order`, `word-table-properties-required`, `word-table-properties-misplaced`, `word-row-without-cell`, `word-cell-ends-with-table`                                                                                                                                                                  |
 | `drawings`                | `word-textbox-content-namespace`, `word-drawing-extent-missing`, `word-drawing-extent-misplaced`, `word-picture-nvpicpr-missing`, `word-picture-sppr-missing`, `word-empty-drawing`, `word-anchor-missing-attribute`, `word-position-offset-and-align`, `word-drawing-scalar-whitespace`, `word-drawing-arc-radius`, `word-drawing-extent-negative` |
-| `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`, `ct-override-partname-invalid`                                                                                                                                                                                                                                                             |
+| `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`, `ct-override-partname-invalid`, `ct-override-partname-word-refused`                                                                                                                                                                                                                        |
 | `relationships`           | `word-duplicate-theme-relationship`, `word-duplicate-font-table-relationship`, `word-duplicate-web-settings-relationship`, `word-duplicate-settings-relationship`, `word-hyperlink-relationship`, `word-main-document-part`, `opc-relationships-structure`                                                                                          |
 | `tracked-changes`         | `word-textbox-deleted-text`, `word-move-from-deleted-text`                                                                                                                                                                                                                                                                                          |
 | `settings`                | `word-custom-property-filetime-empty`, `word-attached-toolbar-utf8`                                                                                                                                                                                                                                                                                 |
@@ -662,7 +691,8 @@ interface ValidationResult {
 `ValidationMetadata` has optional `profile`, `executedChecks`, `omittedChecks`,
 `schemaCompleted`, and `wordVerification` fields. `executedChecks` reports the
 registry ids a complete run executed (#319): lenient lists `opc-equivalent-part-names`,
-`opc-part-name-escaped-unreserved`, and `opc-part-name-escaped-slash` first, then `xml-syntax` and the rest; Word-valid
+`opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, and
+`opc-part-name-word-refused` first, then `xml-syntax` and the rest; Word-valid
 and strict add the ZIP-envelope checks for a packed file and every Word rule whose
 prerequisites passed. A partial run lists the selected checks that ran, so an
 archive-only check is not listed for an unpacked directory. An archive that does
@@ -671,7 +701,8 @@ checks are listed (#332). One that opens but whose package view cannot be read �
 a stored item name that places no part, or an unreadable entry — fails with
 `package-extract-failed`, as the full run's extraction reports it (#413). Its stored
 entry names and archive bytes are still read. Selected `opc-equivalent-part-names`,
-`opc-part-name-escaped-unreserved` and `opc-part-name-escaped-slash` checks and
+`opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, and
+`opc-part-name-word-refused` checks and
 selected envelope checks (such as `zip-bytes-after-eocd`) run and report what the
 full run reports. Every other selected check needs the package's parts and is
 listed in `omittedChecks`

@@ -271,7 +271,12 @@ describe("a partial run of a refused package view still runs the stored-name che
     // the stored-name checks (#351, #408) read only the names — the full run
     // reports them before extraction, and a partial run that selects them must
     // report the same findings.
-    const STORED_NAME_CHECKS = ["opc-equivalent-part-names", "opc-part-name-escaped-unreserved", "opc-part-name-escaped-slash"] as const;
+    const STORED_NAME_CHECKS = [
+        "opc-equivalent-part-names",
+        "opc-part-name-escaped-unreserved",
+        "opc-part-name-escaped-slash",
+        "opc-part-name-word-refused",
+    ] as const;
     const SELECTIONS = [
         { checks: ["opc-equivalent-part-names"] },
         { checks: ["opc-part-name-escaped-unreserved"] },
@@ -459,10 +464,12 @@ describe("a partial run applies its profile's policy (#381)", { timeout: 120_000
             "opc-equivalent-part-names",
             "opc-part-name-escaped-unreserved",
             "opc-part-name-escaped-slash",
+            "opc-part-name-word-refused",
             "xml-syntax",
             "ct-duplicate-declaration",
             // The content-types group's Override PartName grammar (#414).
             "ct-override-partname-invalid",
+            "ct-override-partname-word-refused",
         ]);
         expect(result.metadata?.omittedChecks).toEqual(expect.arrayContaining(["word-row-without-cell", "zip-bytes-after-eocd"]));
         expect(errorCodes((await validate(ROW_WITHOUT_CELL, { profile: "lenient" })).issues)).not.toContain("word-row-without-cell");
