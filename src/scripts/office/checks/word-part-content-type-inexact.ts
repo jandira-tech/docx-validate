@@ -141,10 +141,10 @@ const OBSERVED_SEGMENTS: ReadonlySet<string> = new Set([
 ]);
 
 /** The lazily parsed observed segments: judged under the observed scope only when the document uses them (#516, #570). */
-const LAZY_OBSERVED_SEGMENTS: ReadonlySet<string> = new Set(["header", "footer", "comments", "footnotes", "endnotes"]);
+export const LAZY_OBSERVED_SEGMENTS: ReadonlySet<string> = new Set(["header", "footer", "comments", "footnotes", "endnotes"]);
 
 /** The segments a strict run judges: the probed set plus every other Part 1 WordprocessingML part type (#506). */
-const SPEC_SEGMENTS: ReadonlySet<string> = new Set([...OBSERVED_SEGMENTS, ...SPEC_ONLY_CONTENT_TYPES.keys()]);
+export const SPEC_SEGMENTS: ReadonlySet<string> = new Set([...OBSERVED_SEGMENTS, ...SPEC_ONLY_CONTENT_TYPES.keys()]);
 
 /**
  * The segments a reached glossary's relationships were probed on (#579):
@@ -188,15 +188,35 @@ const expectedText = (segment: string, source: "override" | "default", observed:
     return source === "default" ? `it needs its own Override "${expected}"${clause}` : `its Override should carry "${expected}"${clause}`;
 };
 
-/** A finding, with the resolution detail the full strict run's de-duplication needs (#535). */
-export type WordInexactContentTypeFinding = {
+/** Shared related-part finding, retaining resolution details for strict de-duplication (#535, #600). */
+export type WordPartContentTypeFinding = {
     readonly issue: ValidationIssue;
     /** Which relationship segment reached the part — the one the message names. */
     readonly segment: string;
     /** Every in-scope relationship segment that reaches the part (#593). */
     readonly segments: readonly string[];
-    /** Which declaration produced the inexact type. */
+    /** Which declaration produced the content type. */
     readonly source: "override" | "default";
+};
+
+/** Existing inexact finding name, retained for callers. */
+export type WordInexactContentTypeFinding = WordPartContentTypeFinding;
+
+/** Shared typed-target walk: every reaching (part, segment, story root) stays available (#593, #600). */
+export const wordContentTypeTargets = async (ctx: ValidationContext, scope: "observed" | "spec") => {
+    const targets = await wordTypedRelationshipTargets(ctx, scope === "spec" ? SPEC_SEGMENTS : OBSERVED_SEGMENTS);
+    const glossaryTargets = await glossaryTypedRelationshipTargets(
+        ctx,
+        scope === "spec" ? GLOSSARY_SPEC_SEGMENTS : GLOSSARY_OBSERVED_SEGMENTS,
+    );
+    return [...targets, ...glossaryTargets];
+};
+
+/** The shared expected-type map, including all four main-document types (#505, #600). */
+export const expectedContentTypesFor = (segment: string): readonly string[] => {
+    if (segment === OFFICE_DOCUMENT_SEGMENT) return MAIN_DOCUMENT_CONTENT_TYPES;
+    const expected = expectedContentTypeFor(segment);
+    return expected === undefined ? [] : [expected];
 };
 
 /**
@@ -225,23 +245,7 @@ export const wordPartContentTypeInexactFindings = async (
     }
     const table = parseContentTypes(parsed.document);
 
-    const targets = await wordTypedRelationshipTargets(ctx, scope === "spec" ? SPEC_SEGMENTS : OBSERVED_SEGMENTS);
-    // A reached glossary is a second story root (#549), so its own
-    // relationships name parts this check judges too: its styles and the
-    // stories it references under the observed scope (#579, #596, sessions
-    // 21–23), every Part 1 WordprocessingML type and theme under the spec
-    // scope. A part the main document also names keeps both entries, and
-    // is still reported once (#593).
-    const glossaryTargets = await glossaryTypedRelationshipTargets(
-        ctx,
-        scope === "spec" ? GLOSSARY_SPEC_SEGMENTS : GLOSSARY_OBSERVED_SEGMENTS,
-    );
-    // Every entry stays, the main document's first: each type judges the
-    // part (#593), and a part the main document and a reached glossary both
-    // name by the same type is judged through whichever root reads it — a
-    // root's unused relationship must not hide the other root's read one.
-    // The part is still reported once (#579).
-    const merged = [...targets, ...glossaryTargets];
+    const merged = await wordContentTypeTargets(ctx, scope);
     // Headers, footers, comments, footnotes and endnotes are parsed lazily
     // — only when the document uses them (#516); session 20's specimens
     // reference theirs (#570) — so the typed reads `wordReadTypedTargets`
@@ -284,18 +288,28 @@ export const wordPartContentTypeInexactFindings = async (
             continue;
         }
         const declared = resolved.contentType;
-        const expectedTypesFor = (segment: string): readonly string[] => {
-            if (segment === OFFICE_DOCUMENT_SEGMENT) {
-                return MAIN_DOCUMENT_CONTENT_TYPES;
-            }
-            const expected = expectedContentTypeFor(segment);
-            return expected === undefined ? [] : [expected];
-        };
         // A media type outside every reaching segment's own types is the
         // generic check's class or no known defect at all; this check never
         // double-reports.
         const mediaType = contentTypeMediaType(declared);
-        const matching = entries.filter(({ segment }) => expectedTypesFor(segment).some((type) => mediaType === asciiLowercase(type)));
+        // A lazily parsed candidate its story root does not read through
+        // that segment is not Word's finding, and cannot hide a read one
+        // (#593); `readKeys === undefined` (usage undecidable, #536) counts
+        // as read.
+        const isRead = ({ segment, via }: (typeof entries)[number]): boolean =>
+            !(
+                (via === "glossary" || LAZY_OBSERVED_SEGMENTS.has(segment)) &&
+                readKeys !== undefined &&
+                !readKeys.has(`${via ?? "main"}\n${canonical}\n${segment}`)
+            );
+        // A part read through another story-reference segment is a mismatch,
+        // even when an unused relationship matches this inexact media type
+        // (#607). Eager relationships keep their existing spec scope.
+        const readEntries = entries.filter((entry) => LAZY_OBSERVED_SEGMENTS.has(entry.segment) && isRead(entry));
+        const judged = readEntries.length > 0 ? readEntries : entries;
+        const matching = judged.filter(({ segment }) =>
+            expectedContentTypesFor(segment).some((type) => mediaType === asciiLowercase(type)),
+        );
         if (matching.length === 0) {
             continue;
         }
@@ -303,19 +317,13 @@ export const wordPartContentTypeInexactFindings = async (
         // the expected type to the letter, so any parameter or padding
         // reports while an upper-case spelling stays silent (session 17).
         // Both sides lowercase — `webSettings` and `fontTable` are camelCase.
-        if (matching.some(({ segment }) => expectedTypesFor(segment).some((type) => asciiLowercase(declared) === asciiLowercase(type)))) {
+        if (
+            matching.some(({ segment }) =>
+                expectedContentTypesFor(segment).some((type) => asciiLowercase(declared) === asciiLowercase(type)),
+            )
+        ) {
             continue;
         }
-        // A lazily parsed candidate its story root does not read through
-        // that segment is not Word's finding, and cannot hide a read one
-        // (#593); `readKeys === undefined` (usage undecidable, #536) counts
-        // as read.
-        const isRead = ({ segment, via }: (typeof matching)[number]): boolean =>
-            !(
-                (via === "glossary" || LAZY_OBSERVED_SEGMENTS.has(segment)) &&
-                readKeys !== undefined &&
-                !readKeys.has(`${via ?? "main"}\n${canonical}\n${segment}`)
-            );
         // The observed pairs are the main-document probes plus the
         // glossary's probed styles and referenced stories (#579, #596); every
         // other glossary segment is spec-only.

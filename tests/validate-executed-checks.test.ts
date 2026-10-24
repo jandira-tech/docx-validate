@@ -75,6 +75,7 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
                 "word-part-content-type-generic",
                 // An inexact Word content type (#550).
                 "word-part-content-type-inexact",
+                "word-part-content-type-mismatch",
                 "comment-markers",
                 "comment-threading",
             ]);
@@ -167,6 +168,7 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
                     "word-part-content-type-generic",
                     // An inexact Word content type, likewise (#550).
                     "word-part-content-type-inexact",
+                    "word-part-content-type-mismatch",
                     "comment-markers",
                     "comment-threading",
                 ]);

@@ -100,6 +100,7 @@ import { CT_DUPLICATE_DECLARATION } from "../../lib/content-types";
 import { isWordBlockingIssue } from "./validators/word-blocking";
 import { explainWordError } from "./validators/word-error-explanations";
 import { loadCentralNamedArchive } from "../../lib/zip-central-names";
+import { WORD_PART_CONTENT_TYPE_MISMATCH } from "./checks/word-part-content-type-mismatch";
 import { WORD_PART_CONTENT_TYPE_INEXACT } from "./checks/word-part-content-type-inexact";
 
 const SUPPORTED_SUFFIXES = new Set([".docm", ".docx", ".pptx", ".xlsx"]);
@@ -110,7 +111,8 @@ const SUPPORTED_SUFFIXES = new Set([".docm", ".docx", ".pptx", ".xlsx"]);
  * unreserved characters and separators, duplicate content-type declarations,
  * malformed Override PartNames, and a Word-read part typed only by the
  * generic Default (#432) or carrying an inexact spelling of its Word
- * content type — a MIME parameter or padding (#540, #550).
+ * content type — a MIME parameter or padding (#540, #550) — or a mapped
+ * content type belonging to another part (#600).
  */
 const ADVISORY_CODES: ReadonlySet<string> = new Set([
     OPC_EQUIVALENT_PART_NAMES,
@@ -120,6 +122,7 @@ const ADVISORY_CODES: ReadonlySet<string> = new Set([
     CT_OVERRIDE_PARTNAME_INVALID,
     WORD_PART_CONTENT_TYPE_GENERIC,
     WORD_PART_CONTENT_TYPE_INEXACT,
+    WORD_PART_CONTENT_TYPE_MISMATCH,
 ]);
 
 /**

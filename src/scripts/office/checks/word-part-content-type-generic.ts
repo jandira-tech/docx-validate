@@ -168,7 +168,7 @@ const SPEC_SEGMENTS: ReadonlySet<string> = new Set([...OBSERVED_SEGMENTS, ...SPE
  * message. Segments outside the scope requested cannot appear; an
  * unlisted segment ranks last.
  */
-const REPORTING_SEGMENT_ORDER: readonly string[] = [...SPEC_SEGMENTS];
+export const REPORTING_SEGMENT_ORDER: readonly string[] = [...SPEC_SEGMENTS];
 
 /** What the part needs, named for the finding's message. */
 const expectedContentTypeText = (segment: string, source: "override" | "default"): string => {
@@ -232,9 +232,9 @@ export const wordPartContentTypeGenericFindings = async (
 
     const findings: WordGenericContentTypeFinding[] = [];
     const targets = await wordTypedRelationshipTargets(ctx, scope === "spec" ? SPEC_SEGMENTS : OBSERVED_SEGMENTS);
-    // Session 23 observed the reached glossary's generic-Default theme
-    // trigger recovery (#595). No other glossary segment is observed here.
-    const glossaryTargets = await glossaryTypedRelationshipTargets(ctx, new Set(["theme"]));
+    // Sessions 23 and 24 observed recovery for the reached glossary's
+    // generic-Default theme and styles (#595, #601); other segments stay unprobed.
+    const glossaryTargets = await glossaryTypedRelationshipTargets(ctx, new Set(["theme", "styles"]));
     // One finding per part. A part reached through two relationship types
     // keeps every segment (#593); the message names the segment
     // `REPORTING_SEGMENT_ORDER` ranks first, deterministically, so the

@@ -24,6 +24,7 @@ import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
 import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+import { storyContentTypeParts } from "./support/story-content-type-specimens";
 import { poisonEntry } from "./support/poison-entry";
 import { buildRawZip } from "./support/raw-zip";
 
@@ -485,6 +486,7 @@ describe("a partial run applies its profile's policy (#381)", { timeout: 120_000
             "word-part-content-type-generic",
             // An inexact Word content type is the same class (#550).
             "word-part-content-type-inexact",
+            "word-part-content-type-mismatch",
         ]);
         expect(result.metadata?.omittedChecks).toEqual(expect.arrayContaining(["word-row-without-cell", "zip-bytes-after-eocd"]));
         expect(errorCodes((await validate(ROW_WITHOUT_CELL, { profile: "lenient" })).issues)).not.toContain("word-row-without-cell");
@@ -958,3 +960,22 @@ describe("M1.12 selection parity for entries ZIP loading hides (#411)", { timeou
         },
     );
 });
+
+it("full, quick and named content-type mismatch runs apply the same severity (#600, #381)", async () => {
+    await withTempDir(async (dir) => {
+        const file = path.join(dir, "mismatch.docx");
+        writeFileSync(file, await buildDocx(storyContentTypeParts("footer")));
+        const code = "word-part-content-type-mismatch";
+        for (const profile of ["word-valid", "lenient"] as const) {
+            const full = await validate(file, { profile });
+            const found = full.issues.filter((issue) => issue.code === code);
+            expect(found).toHaveLength(1);
+            expect(found[0]?.severity).toBe(profile === "lenient" ? "warning" : "error");
+            for (const selection of [{ quick: true }, { checks: [code] }, { checks: ["content-types"] }]) {
+                const partial = await validate(file, { profile, ...selection });
+                expect(partial.issues.filter((issue) => issue.code === code)).toEqual(found);
+                if (full.valid) expect(partial.valid).toBe(true);
+            }
+        }
+    });
+}, 60_000);
