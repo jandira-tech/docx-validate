@@ -44,7 +44,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+    findContentTypesStream,
     findEquivalentPart,
+    isContentTypesStreamName,
     isRelationshipsPartName,
     parseContentTypes,
     partExtension,
@@ -831,8 +833,7 @@ export class BaseSchemaValidator {
 
         const allFiles: string[] = [];
         for (const [name, f] of entries) {
-            const base = path.basename(f);
-            if (base === "[Content_Types].xml" || isRelationshipsPartName(name)) continue;
+            if (isContentTypesStreamName(name) || isRelationshipsPartName(name)) continue;
             allFiles.push(path.resolve(f));
         }
 
@@ -1132,8 +1133,9 @@ export class BaseSchemaValidator {
 
     async validateContentTypes(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const contentTypesFile = path.join(this.unpackedDir, "[Content_Types].xml");
-        if (!existsSync(contentTypesFile)) {
+        const entries = packageEntries(this.unpackedDir);
+        const contentTypesName = findContentTypesStream(entries.keys());
+        if (contentTypesName === undefined) {
             return {
                 valid: false,
                 issues: [
@@ -1148,15 +1150,15 @@ export class BaseSchemaValidator {
 
         let dom: Document;
         try {
-            dom = parseXmlBytes(await fs.readFile(contentTypesFile));
+            dom = parseXmlBytes(await fs.readFile(entries.get(contentTypesName)!));
         } catch (err) {
             return {
                 valid: false,
                 issues: [
                     {
                         severity: "error",
-                        message: `Error parsing [Content_Types].xml: ${err instanceof Error ? err.message : String(err)}`,
-                        path: "[Content_Types].xml",
+                        message: `Error parsing ${contentTypesName}: ${err instanceof Error ? err.message : String(err)}`,
+                        path: contentTypesName,
                         code: "ct-parse",
                     },
                 ],
@@ -1191,11 +1193,15 @@ export class BaseSchemaValidator {
             emf: "image/x-emf",
         };
 
-        const allFiles = [...packageEntries(this.unpackedDir).values()];
+        const allFiles = [...entries.values()];
 
         for (const xmlFile of this.xmlFiles) {
             const pathStr = this.relPath(xmlFile).replace(/\\/g, "/");
-            if (isRelationshipsPartName(pathStr) || ["[Content_Types]", "docProps/", "_rels/"].some((s) => pathStr.includes(s))) {
+            if (
+                isContentTypesStreamName(pathStr) ||
+                isRelationshipsPartName(pathStr) ||
+                ["docProps/", "_rels/"].some((s) => pathStr.includes(s))
+            ) {
                 continue;
             }
 
@@ -1210,7 +1216,7 @@ export class BaseSchemaValidator {
                 if (declarableRoots.has(rootName) && resolveContentType(table, pathStr)?.source !== "override") {
                     issues.push({
                         severity: "error",
-                        message: `File with <${rootName}> root not declared in [Content_Types].xml`,
+                        message: `File with <${rootName}> root not declared in ${contentTypesName}`,
                         path: pathStr,
                         code: "ct-undeclared-part",
                     });
@@ -1221,7 +1227,7 @@ export class BaseSchemaValidator {
         for (const filePath of allFiles) {
             const ext = path.extname(filePath).toLowerCase();
             if (ext === ".xml" || isRelationshipsPartName(this.entryName(filePath))) continue;
-            if (path.basename(filePath) === "[Content_Types].xml") continue;
+            if (isContentTypesStreamName(this.relPath(filePath))) continue;
             const parts = filePath.split(path.sep);
             if (parts.includes("_rels") || parts.includes("docProps")) continue;
 
@@ -1240,7 +1246,7 @@ export class BaseSchemaValidator {
                 issues.push({
                     severity: "error",
                     message:
-                        `File with extension '${extension}' not declared in [Content_Types].xml - ` +
+                        `File with extension '${extension}' not declared in ${contentTypesName} - ` +
                         `should add: <Default Extension="${extension}" ContentType="${mediaExtensions[extension]}"/>`,
                     path: rel,
                     code: "ct-undeclared-ext",
@@ -1253,12 +1259,12 @@ export class BaseSchemaValidator {
         // media extensions (ct-undeclared-ext) — and deliberately skip what
         // they don't recognise. This pass enforces the underlying spec
         // invariant instead: every part must be matched by an
-        // <Override PartName> or a <Default Extension> in [Content_Types].xml.
+        // <Override PartName> or a <Default Extension> in the content-types stream.
         // The recurring real-world case is extensionless media
         // (word/media/image_3094991244). Known media extensions are left to
         // ct-undeclared-ext above, which reports them with a fix-it message.
         for (const filePath of allFiles) {
-            if (path.basename(filePath) === "[Content_Types].xml") continue;
+            if (isContentTypesStreamName(this.relPath(filePath))) continue;
             const rel = this.relPath(filePath).replace(/\\/g, "/");
             // One resolver call subsumes the old set lookups: an OPC-
             // equivalent <Override PartName> (case-insensitive, decoded) or
@@ -1272,7 +1278,7 @@ export class BaseSchemaValidator {
                 severity: "error",
                 message:
                     `Part '${rel}' has no content type: matched by no <Override PartName> and no ` +
-                    `<Default Extension> in [Content_Types].xml. OPC requires a content type for every ` +
+                    `<Default Extension> in ${contentTypesName}. OPC requires a content type for every ` +
                     `part; Word prompts to repair such packages.`,
                 path: rel,
                 code: "ct-uncovered-part",
@@ -1702,9 +1708,10 @@ export class BaseSchemaValidator {
         // `WORD/` maps as one under `word/` does. The tests read the
         // package-relative name with `/` on every platform (#377).
         const name = asciiLowerCase(this.relPath(xmlFile).split(path.sep).join("/"));
+        if (isContentTypesStreamName(name)) return "[Content_Types].xml";
         const base = path.posix.basename(name);
         const mapped = SCHEMA_KEY_BY_LOWER_CASE.get(base);
-        if (mapped !== undefined) {
+        if (mapped !== undefined && mapped !== "[Content_Types].xml") {
             return mapped;
         }
         if (isRelationshipsPartName(name)) {

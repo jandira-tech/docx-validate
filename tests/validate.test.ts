@@ -650,18 +650,68 @@ describe("packed OPC-equivalent relationships parts (#398)", () => {
                 };
                 const control = await run("[Content_Types].xml");
                 const variant = await run("[CONTENT_TYPES].XML");
-                // Before #398 the exact stream skip already emits rels-unreferenced
-                // for this spelling (#396). Preserve it, and prove the expanded
-                // XML list introduces no other finding. On case-sensitive hosts
-                // the unchanged legacy lookup also emits ct-missing (#396).
-                const existing = variant.issues.filter(
-                    (issue) => issue.code === "rels-unreferenced" && issue.path === "[CONTENT_TYPES].XML",
-                );
-                expect(existing).toHaveLength(1);
-                const rest = variant.issues.filter((issue) => !existing.includes(issue) && issue.code !== "ct-missing");
-                expect(rest).toEqual(control.issues);
-                expect(!rest.some(({ severity }) => severity === "error")).toBe(control.valid);
+                // The stream is found in any case (#396), so the expanded XML
+                // list (#398) adds no finding for it.
+                expect(variant.issues).toEqual(control.issues);
+                expect(variant.valid).toBe(control.valid);
             }
+        });
+    });
+});
+
+describe("packed content-types stream names (#396)", () => {
+    it.each([
+        { profile: "word-valid", checks: undefined },
+        { profile: "word-valid", checks: ["word-content-type-invalid"] },
+        { profile: "lenient", checks: undefined },
+    ] as const)("preserves the control verdict under $profile with checks=$checks", async (options) => {
+        await withTempDir(async (dir) => {
+            const types = MINIMAL_PARTS["[Content_Types].xml"]
+                .replace('<Default Extension="xml" ContentType="application/xml"/>', "")
+                .replace("</Types>", `<Override PartName="/word/x.xml" ContentType="invalid-type"/></Types>`);
+            const { "[Content_Types].xml": _stream, ...otherParts } = MINIMAL_PARTS;
+            const controlFile = path.join(dir, "control.docx");
+            await fs.writeFile(controlFile, await buildDocx({ ...otherParts, "[Content_Types].xml": types }));
+            const control = await validate(controlFile, options);
+            const controlFindings = control.issues.filter((issue) => issue.code === "word-content-type-invalid");
+            expect(controlFindings).toHaveLength(options.profile === "lenient" ? 0 : 1);
+            for (const name of ["[CONTENT_TYPES].XML", "[content_types].xml"]) {
+                const file = path.join(dir, "variant.docx");
+                const bytes = await buildDocx({ ...otherParts, [name]: types });
+                await fs.writeFile(file, bytes);
+                const result = await validate(file, options);
+                expect(result.valid).toBe(control.valid);
+                expect(result.issues.filter((issue) => issue.code === "word-content-type-invalid")).toEqual(
+                    controlFindings.map((issue) => ({ ...issue, path: name })),
+                );
+                expect(result.issues.filter((issue) => issue.code?.startsWith("ct-"))).toEqual(
+                    control.issues.filter((issue) => issue.code?.startsWith("ct-")),
+                );
+                expect(await fs.readFile(file)).toEqual(bytes);
+            }
+        });
+    });
+
+    it.each(["[CONTENT_TYPES].XML", "[content_types].xml"])("dispatches stored stream %s to the OPC schema under strict", async (name) => {
+        await withTempDir(async (dir) => {
+            const { "[Content_Types].xml": types, ...parts } = MINIMAL_PARTS;
+            // Missing PartName is an OPC XSD error; other parts remain valid.
+            const invalid = types.replace("</Types>", `<Override ContentType="application/xml"/></Types>`);
+            const file = path.join(dir, "variant.docx");
+            const controlFile = path.join(dir, "control.docx");
+            await fs.writeFile(file, await buildDocx({ ...parts, [name]: invalid }));
+            await fs.writeFile(controlFile, await buildDocx({ ...parts, "[Content_Types].xml": invalid }));
+            const control = await validate(controlFile, { profile: "strict" });
+            const result = await validate(file, { profile: "strict" });
+            expect(control.xsdWalk.parts).toContain("[Content_Types].xml");
+            expect(result.xsdWalk.parts).toContain(name);
+            expect(result.valid).toBe(false);
+            const errors = (issues: typeof result.issues, stored: string) =>
+                issues.filter((issue) => issue.path === stored && issue.code === "xsd-error");
+            expect(errors(control.issues, "[Content_Types].xml")).not.toHaveLength(0);
+            expect(errors(result.issues, name)).toEqual(
+                errors(control.issues, "[Content_Types].xml").map((issue) => ({ ...issue, path: name })),
+            );
         });
     });
 });

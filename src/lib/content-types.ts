@@ -35,6 +35,34 @@ import { getElementsByTagNameNSAll } from "./xml-helpers";
 
 export const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types";
 
+/**
+ * The content-types stream is a ZIP item, not an OPC part. Match its ASCII
+ * spelling without percent-decoding, as System.IO.Packaging does (#396).
+ */
+export const isContentTypesStreamName = (name: string): boolean =>
+    /^\[content_types\]\.xml$/i.test(name.replace(/\\/g, "/").replace(/^\//, ""));
+
+/**
+ * The stored content-types stream: `[Content_Types].xml` when it is stored,
+ * otherwise the first name {@link isContentTypesStreamName} accepts. Of two
+ * stored streams, System.IO.Packaging keeps the last matching ZIP item in
+ * central-directory order; this follows the rule the package view applies to
+ * equivalent entries (#366), which a directory input, having no ZIP order,
+ * can apply too. Nothing reports the second stream (#351).
+ */
+export const findContentTypesStream = (names: Iterable<string>): string | undefined => {
+    let found: string | undefined;
+    for (const name of names) {
+        if (name === "[Content_Types].xml") {
+            return name;
+        }
+        if (found === undefined && isContentTypesStreamName(name)) {
+            found = name;
+        }
+    }
+    return found;
+};
+
 /** Normalized declaration table extracted from a [Content_Types].xml DOM. */
 export type ContentTypeTable = {
     /** Normalized PartName → ContentType for every `<Override>`. */

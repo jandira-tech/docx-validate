@@ -17,7 +17,9 @@ import {
     canonicalPartName,
     CONTENT_TYPES_NAMESPACE,
     equivalentPartLookup,
+    findContentTypesStream,
     findEquivalentPart,
+    isContentTypesStreamName,
     isRelationshipsPartName,
     resolvePartName,
     normalizePartName,
@@ -347,5 +349,37 @@ describe("isRelationshipsPartName (#398)", () => {
     it("decodes an escaped dot as an unreserved character", () => {
         expect(canonicalPartName("word/x.%2Erels")).toBe(canonicalPartName("word/x..rels"));
         expect(isRelationshipsPartName("word/x.%2Erels")).toBe(true);
+    });
+});
+
+describe("content-types stream names (#396)", () => {
+    it.each([
+        ["[Content_Types].xml", true],
+        ["[CONTENT_TYPES].XML", true],
+        ["[content_types].xml", true],
+        ["/[CONTENT_TYPES].XML", true],
+        ["\\[content_types].xml", true],
+        ["//[Content_Types].xml", false],
+        ["word/[Content_Types].xml", false],
+        ["%5BContent_Types%5D.xml", false],
+        ["[Content_%54ypes].xml", false],
+        ["[Content_Types].%78ml", false],
+        ["[Content_Typeſ].xml", false],
+        ["", false],
+    ])("matches ZIP stream %j without decoding escapes", (name, expected) => {
+        expect(isContentTypesStreamName(name)).toBe(expected);
+    });
+
+    it.each([
+        [["word/document.xml", "[CONTENT_TYPES].XML", "[Content_Types].xml"], "[Content_Types].xml"],
+        [["[Content_Types].xml", "[CONTENT_TYPES].XML"], "[Content_Types].xml"],
+        [["word/document.xml", "[content_types].xml", "[CONTENT_TYPES].XML"], "[content_types].xml"],
+        [["[CONTENT_TYPES].XML", "[content_types].xml"], "[CONTENT_TYPES].XML"],
+        [["/[CONTENT_TYPES].XML"], "/[CONTENT_TYPES].XML"],
+        [["%5BContent_Types%5D.xml"], undefined],
+        [[], undefined],
+    ])("resolves the stored stream from %j", (names, expected) => {
+        // A one-shot iterable verifies that exact preference needs only one pass.
+        expect(findContentTypesStream(new Set(names).values())).toBe(expected);
     });
 });
