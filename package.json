@@ -41,6 +41,9 @@
     "attw": {
         "profile": "esm-only"
     },
+    "bin": {
+        "docx-validate": "./dist/cli.mjs"
+    },
     "exports": {
         ".": {
             "types": "./dist/index.d.mts",
