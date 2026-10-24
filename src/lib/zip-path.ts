@@ -44,7 +44,13 @@ export const resolveSafeZipEntry = (outputDir: string, entryName: string): strin
 export const extractZipEntries = async (zip: JSZip, outputDir: string): Promise<void> => {
     const entries: { name: string; file: JSZip.JSZipObject }[] = [];
     zip.forEach((relativePath, file) => {
-        entries.push({ name: relativePath, file });
+        // JSZip >= 3.8.0 sanitizes `relativePath` by default.
+        // In order to perform our own path traversal validation accurately,
+        // we use `unsafeOriginalName` which contains the unsanitized raw path.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+        const unsafeName: string | undefined = (file as any).unsafeOriginalName;
+        const nameToValidate = typeof unsafeName === "string" ? unsafeName : relativePath;
+        entries.push({ name: nameToValidate, file });
     });
     for (const { name, file } of entries) {
         const resolved = resolveSafeZipEntry(outputDir, name);
