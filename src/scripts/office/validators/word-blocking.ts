@@ -161,6 +161,11 @@ export const isWordBlockingIssue = (
         // the quoted PartName, so only its end is read.
         case "ct-override-partname-invalid":
             return !issue.message.endsWith(`it ${PART_NAME_FOLDER_SEGMENT_DOT}.`);
+        // Word 16.115 offers to recover a package whose Word-read part is
+        // typed only by the generic application/xml Default (#432, session
+        // 8a): the main document, styles, settings, fontTable and webSettings.
+        case "word-part-content-type-generic":
+            return true;
         // NB: comment-orphan-start/end and comment-marker-missing are NOT
         // promoted here. Empirically Word TOLERATES an orphan comment-range
         // marker (a commentRangeStart with no End, referencing a missing

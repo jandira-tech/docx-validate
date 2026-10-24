@@ -81,6 +81,7 @@ import { OPC_PART_NAME_ESCAPED_SLASH } from "./checks/opc-part-name-escaped-slas
 import { OPC_PART_NAME_ESCAPED_UNRESERVED } from "./checks/opc-part-name-escaped-unreserved";
 import { CT_OVERRIDE_PARTNAME_INVALID } from "./checks/ct-override-partname";
 import { CT_MARKUP_COMPATIBILITY } from "./checks/ct-markup-compatibility";
+import { WORD_PART_CONTENT_TYPE_GENERIC } from "./checks/word-part-content-type-generic";
 import { contextFromArchive, contextFromDirectory } from "./package-context";
 import { BaseSchemaValidator, walkFiles } from "./validators/base";
 import { DOCXSchemaValidator } from "./validators/docx";
@@ -100,7 +101,8 @@ const SUPPORTED_SUFFIXES = new Set([".docm", ".docx", ".pptx", ".xlsx"]);
  * The package-name findings whose severity follows the profile and the
  * format ({@link opcNameIssueSeverity}): equivalent stored names, escaped
  * unreserved characters and separators, duplicate content-type declarations,
- * and malformed Override PartNames.
+ * malformed Override PartNames, and a Word-read part typed only by the
+ * generic Default (#432).
  */
 const ADVISORY_CODES: ReadonlySet<string> = new Set([
     OPC_EQUIVALENT_PART_NAMES,
@@ -108,6 +110,7 @@ const ADVISORY_CODES: ReadonlySet<string> = new Set([
     OPC_PART_NAME_ESCAPED_SLASH,
     CT_DUPLICATE_DECLARATION,
     CT_OVERRIDE_PARTNAME_INVALID,
+    WORD_PART_CONTENT_TYPE_GENERIC,
 ]);
 
 /**
