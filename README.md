@@ -516,16 +516,17 @@ names ([#504](https://github.com/jandira-tech/docx-validate/issues/504),
 [#540](https://github.com/jandira-tech/docx-validate/issues/540)). The reached parts
 are the main document (the package `officeDocument` relationship's target) and
 the parts the main document's relationships of type styles, settings,
-fontTable or webSettings name, wherever they are stored. Resolution follows
+fontTable, webSettings, numbering or theme name, wherever they are stored.
+Resolution follows
 ECMA-376 Part 2 §10.1.2.4 through the shared table: a part with a specific
 non-generic Override — right or wrong — is out of scope, and under
-word-valid and lenient numbering and customXml stay silent until a probe
-observes them. Under strict the check also judges every other Part 1
-WordprocessingML part type a main-document relationship names — numbering,
+word-valid and lenient customXml stays outside this check. Under strict the
+check also judges every other Part 1
+WordprocessingML part type a main-document relationship names —
 header, footer, endnotes, footnotes, comments and glossaryDocument — whose
 findings cite the content type ECMA-376 Part 1 (4th edition), clause 11.3,
 assigns rather than a Word observation
-([#506](https://github.com/jandira-tech/docx-validate/issues/506)). Under strict, a Default-typed main finding is suppressed only when
+([#506](https://github.com/jandira-tech/docx-validate/issues/506)). Under strict, a Default-typed main or theme finding is suppressed only when
 `ct-undeclared-part` actually reports an error on that same path; renamed
 main parts, including non-XML names and parts under `docProps/`, retain their
 generic-type error ([#535](https://github.com/jandira-tech/docx-validate/issues/535)). One finding
@@ -538,7 +539,17 @@ for all five parts probed typed only by the generic Default — the main
 document and styles with their Override removed, and settings, fontTable and
 webSettings added with a relationship but no Override — and opens every
 proper-Override control clean ([#432](https://github.com/jandira-tech/docx-validate/issues/432),
-session 8a in `docs/plans/evidence/word-probes-2026-10-24.md`). Session 15
+session 8a in `docs/plans/evidence/word-probes-2026-10-24.md`). Session 20
+adds related numbering (`word/numbering.xml`) and theme
+(`word/theme/theme1.xml`) typed only by the `application/xml` Default:
+Word 16.115.26100424 raised a repair warning for both, and opened their exact
+Override controls clean (session 20, chunks s20c and s20d, in
+`docs/plans/evidence/word-probes-2026-10-24.md`; [#571](https://github.com/jandira-tech/docx-validate/issues/571)).
+Other generic spellings for numbering and theme are inference from the same
+resolution. Strict keeps only `ct-undeclared-part` for the observed
+Default-typed theme, while numbering keeps `word-part-content-type-generic`;
+full, quick and named word-valid runs agree, and lenient warns. This does
+not widen the separate inexact-type check's scope. Session 15
 probed the main document and styles with `text/xml` by Default or Override
 and with `application/xml` by Override, and Word offers to recover every
 spelling; the Override and `text/xml` spellings for settings, fontTable and

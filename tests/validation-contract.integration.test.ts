@@ -31,6 +31,8 @@ import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { buildRawZip } from "./support/raw-zip";
 import { DUPLICATE_MAIN_DOCUMENT_PARTS } from "./support/main-document-specimens";
 
+import { GENERIC_NUMBERING_THEME_SPECIMENS, genericNumberingThemeParts } from "./support/generic-numbering-theme-specimens";
+
 import { BYTE_REJECTED_MAIN_PARTS, GENERIC_RENAMED_MAIN_PARTS } from "./support/word-profile-regression-specimens";
 
 /** The profile a `.docx` is validated under when the caller names none. */
@@ -1314,7 +1316,6 @@ describe("validation contract: strict judges the other Part 1 part types too (#5
     const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 
     for (const [segment, part, root] of [
-        ["numbering", "word/numbering.xml", "numbering"],
         ["header", "word/header1.xml", "hdr"],
         ["footer", "word/footer1.xml", "ftr"],
     ] as const) {
@@ -3168,6 +3169,49 @@ describe.each([false, true])("validation contract: byte-rejected main usage, sta
                         word.issues.filter((issue) => issue.code === "xml-syntax" && issue.path === part),
                     );
                     expect([...errorCodes(partial.issues)].every((error) => errorCodes(word.issues).has(error))).toBe(true);
+                }
+            });
+        },
+        60_000,
+    );
+});
+
+describe("validation contract: numbering/theme generic Default (#571, #432, #535, #381)", () => {
+    it.each(GENERIC_NUMBERING_THEME_SPECIMENS)(
+        "rejects $segment in word-valid and strict with partial/full agreement",
+        async (specimen) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "generic.docx");
+                const control = path.join(dir, "exact.docx");
+                writeFileSync(file, await buildDocx(genericNumberingThemeParts(specimen)));
+                writeFileSync(control, await buildDocx(genericNumberingThemeParts(specimen, true)));
+                const code = "word-part-content-type-generic";
+                const word = await validate(file, { profile: "word-valid" });
+                expect(word.valid).toBe(false);
+                expect(errorCodes(word.issues)).toEqual(new Set([code]));
+                expect(word.issues).toContainEqual(expect.objectContaining({ code, path: specimen.part, severity: "error" }));
+                const strict = await validate(file, { profile: "strict" });
+                expect(strict.valid).toBe(false);
+                // Theme's declarable root already fails ct-undeclared-part;
+                // suppress only that same-path duplicate, as for main (#535).
+                const strictCode = specimen.segment === "theme" ? "ct-undeclared-part" : code;
+                expect(errorCodes(strict.issues)).toEqual(new Set([strictCode]));
+                expect(strict.issues).toContainEqual(expect.objectContaining({ code: strictCode, path: specimen.part, severity: "error" }));
+                for (const selection of [{ quick: true }, { checks: [code] }, { checks: ["content-types"] }]) {
+                    const partial = await validate(file, { profile: "word-valid", ...selection });
+                    expect(partial.valid).toBe(word.valid);
+                    expect(errorCodes(partial.issues)).toEqual(errorCodes(word.issues));
+                    expect(partial.issues.filter((issue) => issue.code === code)).toEqual(
+                        word.issues.filter((issue) => issue.code === code),
+                    );
+                    expect((await validate(control, { profile: "word-valid", ...selection })).valid).toBe(true);
+                }
+                const lenient = await validate(file, { profile: "lenient" });
+                expect(lenient.issues.filter((issue) => issue.code === code)).toEqual([
+                    expect.objectContaining({ code, path: specimen.part, severity: "warning" }),
+                ]);
+                for (const profile of ["word-valid", "strict", "lenient"] as const) {
+                    expect((await validate(control, { profile })).valid, `${specimen.segment} ${profile} control`).toBe(true);
                 }
             });
         },
