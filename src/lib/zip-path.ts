@@ -82,8 +82,10 @@ const filesUnder = async (dir: string, prefix = ""): Promise<string[]> => {
  * its part name, with the bytes of the entry `indexByPartName` keeps. An
  * entry the view drops is read but not written, so no filesystem lets it
  * overwrite a kept part, and an unreadable one still fails (#371, #369). An
- * item name the view refuses stops the extraction (#372, #378), and so does a
- * part that would land on a file an earlier part wrote: a filesystem that
+ * item name the view refuses stops the extraction (#372, #378). Distinct
+ * case/NFC part or folder spellings are refused before writing, on every
+ * host (#441). The exclusive writes also guard against a part landing on a
+ * file an earlier part wrote through additional filesystem folding: a filesystem that
  * folds case or Unicode normalization holds the two names as one file, and
  * the merged bytes are not what the package holds (#373). `unpack` keeps the raw
  * names (`extractZipEntries`).

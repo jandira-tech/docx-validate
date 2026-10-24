@@ -15,22 +15,11 @@
  */
 
 /**
- * A full run that cannot extract still reports what it can read from the
- * archive (#454).
- *
- * A packed file whose stored names collide on the host filesystem — two
- * spellings of one name, as `[Content_Types].xml` and `[CONTENT_TYPES].XML`
- * are on APFS — opens as an archive and builds an in-memory package view, but
- * cannot be staged on disk. The full run stopped there, so every finding a
- * partial run computes on the archive context was dropped: the partial run's
- * errors were not a subset of the full run's, which breaks #381.
- *
- * The full run must therefore merge the archive-backed findings into the
- * staging failure, under the profile, without changing the verdict: the
- * package still cannot be staged, so it stays invalid.
+ * Stored-name collisions refuse the package view on every host (#441).
+ * Later filesystem failures still merge readable archive findings (#454).
  */
 
-import { chmodSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -41,16 +30,6 @@ import type { ValidationIssue } from "../src/lib/types";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { buildRawZip } from "./support/raw-zip";
-
-/**
- * Whether the host filesystem folds case. Two stored names that differ only
- * in case are one file there, so the extraction fails; on a case-sensitive
- * host it does not, and the specimens cannot reproduce the defect at all.
- */
-const CASE_INSENSITIVE = await withTempDir(async (dir) => {
-    writeFileSync(path.join(dir, "a"), "x");
-    return existsSync(path.join(dir, "A"));
-});
 
 /** The content-types stream with an `Override` whose PartName names no part. */
 const BAD_OVERRIDE_TYPES = MINIMAL_PARTS["[Content_Types].xml"]!.replace(
@@ -65,6 +44,7 @@ const BAD_OVERRIDE_TYPES = MINIMAL_PARTS["[Content_Types].xml"]!.replace(
 const SPECIMENS = [
     {
         name: "content-types-stream",
+        refusedView: true,
         entries: [
             ...Object.entries(MINIMAL_PARTS)
                 .filter(([name]) => name !== "[Content_Types].xml")
@@ -75,6 +55,7 @@ const SPECIMENS = [
     },
     {
         name: "word-part",
+        refusedView: true,
         entries: [
             ...Object.entries(MINIMAL_PARTS).map(([name, text]) => ({
                 name,
@@ -82,6 +63,17 @@ const SPECIMENS = [
             })),
             { name: "word/ZZ.xml", content: "<x/>" },
             { name: "word/zz.xml", content: "<x/>" },
+        ],
+    },
+    {
+        name: "long-file-name",
+        refusedView: false,
+        entries: [
+            ...Object.entries(MINIMAL_PARTS).map(([name, content]) => ({
+                name,
+                content: name === "[Content_Types].xml" ? BAD_OVERRIDE_TYPES : content,
+            })),
+            { name: `word/${"a".repeat(300)}.xml`, content: "<x/>" },
         ],
     },
 ] as const;
@@ -114,10 +106,8 @@ const duplicates = (issues: readonly ValidationIssue[]): string[] => {
 const severityUnder = (profile: (typeof PROFILES)[number]): "error" | "warning" => (profile === "lenient" ? "warning" : "error");
 
 describe("a full run that cannot extract still reports what the archive holds (#454)", { timeout: 120_000 }, () => {
-    describe.each(SPECIMENS)("$name", ({ name, entries }) => {
-        // On a case-sensitive host the two spellings are two files, so the
-        // extraction succeeds and the defect cannot be reproduced.
-        it.runIf(CASE_INSENSITIVE).each(["docx", "docm"] as const)(
+    describe.each(SPECIMENS)("$name", ({ name, entries, refusedView }) => {
+        it.each(["docx", "docm"] as const)(
             "keeps the partial runs a subset of the full %s run, under every profile",
             async (suffix) => {
                 await withTempDir(async (dir) => {
@@ -135,17 +125,24 @@ describe("a full run that cannot extract still reports what the archive holds (#
                         expect(full.issues, tag).toContainEqual(
                             expect.objectContaining({ code: "package-extract-failed", severity: "error" }),
                         );
-                        // The finding the archive holds, which every partial
-                        // run of it reports.
-                        expect(full.issues, tag).toContainEqual(
-                            expect.objectContaining({
-                                code: "ct-override-partname-invalid",
-                                path: "[Content_Types].xml",
-                                severity: severityUnder(profile),
-                            }),
-                        );
-                        // The merged findings come from checks that ran.
-                        expect(full.metadata?.executedChecks, tag).toContain("ct-override-partname-invalid");
+                        // A refused view runs only stored-name/envelope checks.
+                        // A later filesystem failure can still judge its parts.
+                        if (refusedView) {
+                            expect(
+                                full.issues.some((issue) => issue.code === "ct-override-partname-invalid"),
+                                tag,
+                            ).toBe(false);
+                            expect(full.metadata?.executedChecks, tag).not.toContain("ct-override-partname-invalid");
+                        } else {
+                            expect(full.issues, tag).toContainEqual(
+                                expect.objectContaining({
+                                    code: "ct-override-partname-invalid",
+                                    path: "[Content_Types].xml",
+                                    severity: severityUnder(profile),
+                                }),
+                            );
+                            expect(full.metadata?.executedChecks, tag).toContain("ct-override-partname-invalid");
+                        }
                         // Nothing is reported twice.
                         expect(duplicates(full.issues), tag).toEqual([]);
 
@@ -174,6 +171,7 @@ describe("a full run that cannot extract still reports what the archive holds (#
                     expect(readFileSync(file)).toEqual(bytes);
                 });
             },
+            60_000,
         );
     });
 });

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { existsSync, mkdirSync, promises as fsPromises, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, promises as fsPromises, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 import JSZip from "jszip";
@@ -78,13 +78,6 @@ describe("extractPackageParts", () => {
             .filter((entry) => entry.isFile())
             .map((entry) => path.relative(dir, path.join(entry.parentPath, entry.name)).split(path.sep).join("/"))
             .sort();
-    // Whether this filesystem holds the two file names as one file.
-    const holdsAsOne = (dir: string, a: string, b: string): boolean => {
-        const probe = path.join(dir, "probe");
-        mkdirSync(probe);
-        writeFileSync(path.join(probe, a), "");
-        return existsSync(path.join(probe, b));
-    };
 
     it("writes each part once, under its part name, with the bytes of the entry the package view keeps (#371)", async () => {
         await withTempDir(async (dir) => {
@@ -126,10 +119,9 @@ describe("extractPackageParts", () => {
     it.each([
         ["Unicode normalization", "caf\u00e9.xml", "cafe\u0301.xml"],
         ["case", "a.xml", "A.xml"],
-    ])("never writes two parts this filesystem holds as one file (%s, #373)", async (_relation, first, second) => {
+    ])("refuses colliding part spellings before writing on every host (%s, #373, #441)", async (_relation, first, second) => {
         await withTempDir(async (dir) => {
             const out = path.join(dir, "out");
-            const merges = holdsAsOne(dir, first, second);
             const extraction = extractPackageParts(
                 await zipOf([
                     [`word/${first}`, "<first/>"],
@@ -137,13 +129,8 @@ describe("extractPackageParts", () => {
                 ]),
                 out,
             );
-            if (merges) {
-                await expect(extraction).rejects.toThrow(/already holds/);
-            } else {
-                await extraction;
-                expect(readFileSync(path.join(out, "word", first), "utf8")).toBe("<first/>");
-                expect(readFileSync(path.join(out, "word", second), "utf8")).toBe("<second/>");
-            }
+            await expect(extraction).rejects.toThrow(/collide under portable ASCII-case\/NFC folding/);
+            expect(existsSync(out)).toBe(false);
         });
     });
 
@@ -188,10 +175,9 @@ describe("extractPackageParts", () => {
     it.each([
         ["case", "word", "WORD"],
         ["Unicode normalization", "caf\u00e9", "cafe\u0301"],
-    ])("never renames a part through a folder this filesystem folds (%s, #376)", async (_relation, first, second) => {
+    ])("refuses colliding folder spellings before writing on every host (%s, #376, #441)", async (_relation, first, second) => {
         await withTempDir(async (dir) => {
             const out = path.join(dir, "out");
-            const merges = holdsAsOne(dir, first, second);
             const extraction = extractPackageParts(
                 await zipOf([
                     [`${first}/a.xml`, "<a/>"],
@@ -199,12 +185,8 @@ describe("extractPackageParts", () => {
                 ]),
                 out,
             );
-            if (merges) {
-                await expect(extraction).rejects.toThrow(/under another name/);
-            } else {
-                await extraction;
-                expect(filesUnder(out)).toEqual([`${first}/a.xml`, `${second}/b.xml`].sort());
-            }
+            await expect(extraction).rejects.toThrow(/collide under portable ASCII-case\/NFC folding/);
+            expect(existsSync(out)).toBe(false);
         });
     });
 
