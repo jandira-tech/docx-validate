@@ -154,7 +154,8 @@ describe.skipIf(process.platform === "win32")("direct validators return director
                             ]);
                             const direct = new Validator({ unpackedDir: root, profile });
                             await expect(direct.validate()).resolves.toEqual({ valid: false, issues: full.issues });
-                            expect(direct.executedChecks).toEqual([]);
+                            // The stored-name checks run before the refusal, as in validate() (#572).
+                            expect(direct.executedChecks).toEqual(full.metadata?.executedChecks);
                             expect(direct.xsdWalk.started).toBe(false);
                         } finally {
                             if (defect === "unreadable subdirectory") chmodSync(customXml, 0o755);

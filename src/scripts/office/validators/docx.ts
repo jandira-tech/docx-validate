@@ -79,7 +79,7 @@ import { runChecks } from "../../../lib/check-scheduler";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "../checks/index";
 import { WORD_PART_CONTENT_TYPE_GENERIC, wordPartContentTypeGenericFindings } from "../checks/word-part-content-type-generic";
-import { contextFromDirectory, openDirectoryContext, packageExtractFailedIssue } from "../package-context";
+import { contextFromDirectory, openDirectoryContext, packageExtractFailedIssue, storedNamesRun } from "../package-context";
 import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
 import { WORD_PART_CONTENT_TYPE_INEXACT, wordPartContentTypeInexactFindings } from "../checks/word-part-content-type-inexact";
 
@@ -436,7 +436,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         this.resetExecutedChecks();
         const opened = openDirectoryContext(this.unpackedDir);
         if (opened.openError !== undefined) {
-            return { valid: false, issues: [packageExtractFailedIssue(this.unpackedDir, opened.openError)] };
+            const diagnostic = await storedNamesRun(opened.context, "docx", this.profile);
+            this.recordExecutedChecks(diagnostic.executed);
+            return { valid: false, issues: [...diagnostic.issues, packageExtractFailedIssue(this.unpackedDir, opened.openError)] };
         }
         this.runContext = opened.context;
         const xmlOk = await this.validateXml();

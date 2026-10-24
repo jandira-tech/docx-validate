@@ -983,11 +983,14 @@ a stored item name that places no part — judged on the central-directory name,
 never the local header's or the unicode-path field's (#445) — or an unreadable
 entry — fails with
 `package-extract-failed`, as the full run's extraction reports it (#413). Directory inputs apply the same stored-name refusal before either full or partial validation: literal backslash names with empty or dot-only segments are refused with the same code and message (#424).
-Direct `DOCXSchemaValidator.validate()` and `PPTXSchemaValidator.validate()` calls also return one error-severity
+Direct `DOCXSchemaValidator.validate()` and `PPTXSchemaValidator.validate()` calls also return an error-severity
 `package-extract-failed` for such refused directory names, with the same message as `validate()`; programming errors still propagate
 ([#548](https://github.com/jandira-tech/docx-validate/issues/548)). They also apply the same directory walk refusal
 for broken symbolic links, non-regular files, unlistable directories and symbolic-link loops under every profile,
-before running any check ([#557](https://github.com/jandira-tech/docx-validate/issues/557)). Its stored
+before running any part-content check ([#557](https://github.com/jandira-tech/docx-validate/issues/557)). For either refusal,
+direct validators include the same stored-name findings, in the same order and at the same profile-dependent severities,
+as `validate()` for the same path string, and list the stored-name checks they ran in `executedChecks`, as `validate()`'s
+`metadata.executedChecks` does ([#572](https://github.com/jandira-tech/docx-validate/issues/572)). Its stored
 entry names and archive bytes are still read. Selected `opc-equivalent-part-names`,
 `opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, and
 `opc-part-name-word-refused` checks and

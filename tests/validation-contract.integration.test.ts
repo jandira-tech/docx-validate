@@ -2995,7 +2995,20 @@ describe.skipIf(process.platform === "win32")("validation contract: directory re
     );
 });
 
-describe.skipIf(process.platform === "win32")("validation contract: direct directory refusals (#548, #381)", () => {
+const REFUSED_DIRECTORY_NAME_PARTS = {
+    "word/docu%6Dent.xml": "<x/>",
+    "word/escaped%2Fslash.xml": "<x/>",
+    "word/escaped%21mark.xml": "<x/>",
+};
+const REFUSED_DIRECTORY_CODES = [
+    "opc-equivalent-part-names",
+    "opc-part-name-escaped-unreserved",
+    "opc-part-name-escaped-slash",
+    "opc-part-name-word-refused",
+    "package-extract-failed",
+];
+
+describe.skipIf(process.platform === "win32")("validation contract: direct directory refusals (#548, #572, #381)", () => {
     it.each([
         ["docx", DOCXSchemaValidator],
         ["pptx", PPTXSchemaValidator],
@@ -3005,26 +3018,34 @@ describe.skipIf(process.platform === "win32")("validation contract: direct direc
             await withTempDir(async (dir) => {
                 const root = path.join(dir, `input.${suffix}`);
                 mkdirSync(root);
-                for (const [name, content] of Object.entries(MINIMAL_PARTS)) {
+                for (const [name, content] of Object.entries({ ...MINIMAL_PARTS, ...REFUSED_DIRECTORY_NAME_PARTS })) {
                     writeFileSync(path.join(root, name.replaceAll("/", "\\")), content);
                 }
                 writeFileSync(path.join(root, "word\\a\\..\\x.xml"), "<x/>");
                 const word = await validate(root, { profile: "word-valid" });
                 expect(word.valid).toBe(false);
-                expect(word.issues).toEqual([expect.objectContaining({ code: "package-extract-failed", severity: "error" })]);
-                for (const profile of ["word-valid", "strict"] as const) {
+                expect(word.issues.map((issue) => issue.code)).toEqual(REFUSED_DIRECTORY_CODES);
+                for (const profile of ["word-valid", "strict", "lenient"] as const) {
                     const full = await validate(root, { profile });
                     expect(full.valid).toBe(false);
-                    expect(full.issues).toEqual(word.issues);
+                    expect(full.issues.map((issue) => issue.code)).toEqual(REFUSED_DIRECTORY_CODES);
+                    if (profile === "strict") {
+                        expect([...errorCodes(word.issues)].every((code) => errorCodes(full.issues).has(code))).toBe(true);
+                    }
                     await expect(new Validator({ unpackedDir: root, profile }).validate()).resolves.toEqual({
                         valid: false,
                         issues: full.issues,
                     });
-                }
-                for (const selection of [{ quick: true }, { checks: ["xml-syntax"] }, { checks: ["package"] }]) {
-                    const partial = await validate(root, { profile: "word-valid", ...selection });
-                    expect(partial.valid).toBe(false);
-                    expect(partial.issues).toEqual(word.issues);
+                    if (profile === "strict") continue;
+                    for (const selection of [{ quick: true }, { checks: ["xml-syntax"] }, { checks: ["package"] }]) {
+                        const partial = await validate(root, { profile, ...selection });
+                        expect(partial.valid).toBe(false);
+                        expect(partial.issues).toEqual(
+                            selection.checks?.includes("xml-syntax")
+                                ? full.issues.filter((issue) => issue.code === "package-extract-failed")
+                                : full.issues,
+                        );
+                    }
                 }
             });
         },
@@ -3032,7 +3053,7 @@ describe.skipIf(process.platform === "win32")("validation contract: direct direc
     );
 });
 
-describe.skipIf(process.platform === "win32")("validation contract: direct walk refusals (#557, #381)", () => {
+describe.skipIf(process.platform === "win32")("validation contract: direct walk refusals (#557, #572, #381)", () => {
     describe.each([
         ["docx", DOCXSchemaValidator],
         ["pptx", PPTXSchemaValidator],
@@ -3043,7 +3064,7 @@ describe.skipIf(process.platform === "win32")("validation contract: direct walk 
                 async () => {
                     await withTempDir(async (dir) => {
                         const root = path.join(dir, `input.${suffix}`);
-                        for (const [name, content] of Object.entries(MINIMAL_PARTS)) {
+                        for (const [name, content] of Object.entries({ ...MINIMAL_PARTS, ...REFUSED_DIRECTORY_NAME_PARTS })) {
                             mkdirSync(path.dirname(path.join(root, name)), { recursive: true });
                             writeFileSync(path.join(root, name), content);
                         }
@@ -3058,11 +3079,17 @@ describe.skipIf(process.platform === "win32")("validation contract: direct walk 
                         try {
                             const word = await validate(root, { profile: "word-valid" });
                             expect(word.valid).toBe(false);
-                            expect(word.issues).toEqual([expect.objectContaining({ code: "package-extract-failed", severity: "error" })]);
+                            expect(word.issues.map((issue) => issue.code)).toEqual(REFUSED_DIRECTORY_CODES);
                             for (const profile of ["word-valid", "strict", "lenient"] as const) {
                                 const full = await validate(root, { profile });
                                 expect(full.valid, profile).toBe(false);
-                                expect(full.issues, profile).toEqual(word.issues);
+                                expect(
+                                    full.issues.map((issue) => issue.code),
+                                    profile,
+                                ).toEqual(REFUSED_DIRECTORY_CODES);
+                                if (profile === "strict") {
+                                    expect([...errorCodes(word.issues)].every((code) => errorCodes(full.issues).has(code))).toBe(true);
+                                }
                                 await expect(new Validator({ unpackedDir: root, profile }).validate()).resolves.toEqual({
                                     valid: false,
                                     issues: full.issues,
@@ -3071,7 +3098,11 @@ describe.skipIf(process.platform === "win32")("validation contract: direct walk 
                                 for (const selection of [{ quick: true }, { checks: ["xml-syntax"] }, { checks: ["package"] }]) {
                                     const partial = await validate(root, { profile, ...selection });
                                     expect(partial.valid).toBe(false);
-                                    expect(partial.issues).toEqual(full.issues);
+                                    expect(partial.issues).toEqual(
+                                        selection.checks?.includes("xml-syntax")
+                                            ? full.issues.filter((issue) => issue.code === "package-extract-failed")
+                                            : full.issues,
+                                    );
                                 }
                             }
                         } finally {
