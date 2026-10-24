@@ -670,12 +670,14 @@ reference opens clean
 [#549](https://github.com/jandira-tech/docx-validate/issues/549); probe
 sessions 16 and 17). References from inside a footnote are not followed — an
 endnotes part referenced only from there opens clean. A reached glossary's
-styles, settings, fontTable, webSettings and numbering relationships are
-eagerly parsed like the main document's — a malformed one gets the repair
-offer even when the glossary references no story, while a `customXml`,
-`theme` or nested `glossaryDocument` it relates stays unobserved and
-unfollowed ([#562](https://github.com/jandira-tech/docx-validate/issues/562);
-probe session 19).
+styles, settings, fontTable, webSettings, numbering and theme relationships
+are eagerly parsed like the main document's — a malformed one gets the
+repair offer even when the glossary references no story, while a `customXml`
+or nested `glossaryDocument` it relates is observed, not read — malformed,
+both open clean — and stays unfollowed
+([#562](https://github.com/jandira-tech/docx-validate/issues/562),
+[#569](https://github.com/jandira-tech/docx-validate/issues/569); probe
+sessions 19 and 20).
 When the main document or a glossary fails byte-level XML checks, including an
 unsupported encoding declaration, lazy usage is unknown and those related
 parts stay reached in full, partial and staging-fallback runs

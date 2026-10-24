@@ -213,8 +213,10 @@ export const isWordBlockingIssue = (
             // is a second story root: its own relationships part is read
             // (#549, session 17), the lazy stories its references use are read
             // (#539, session 16; #549, session 17), and its styles, settings,
-            // fontTable, webSettings and numbering are eagerly parsed (#562,
-            // session 19). Unobserved relationship
+            // fontTable, webSettings, numbering and theme are eagerly parsed
+            // (#562, session 19; the theme #569, session 20) — a glossary's
+            // customXml and a nested glossaryDocument are observed, not read
+            // (session 20: malformed, both open clean). Unobserved relationship
             // types under word/ (chart, image, …) keep blocking, as before.
             // The content-types stream, the package relationships part and the
             // properties parts (#409) always block; so does each main

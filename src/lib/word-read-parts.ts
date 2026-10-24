@@ -37,12 +37,13 @@
  *    `w:footnoteReference` / `w:endnoteReference` — every referenced story
  *    gets repair when malformed, every well-formed control opens clean
  *    (#539 session 16, header; #549 session 17, the rest). Its `styles`,
- *    `settings`, `fontTable`, `webSettings` and `numbering` relationships
- *    are eagerly parsed as a main document's are, even when the glossary
- *    references no story — every malformed part gets repair, every
- *    well-formed control opens clean (#562, session 19); `customXml`,
- *    `theme` and a nested `glossaryDocument` from a glossary stay
- *    unobserved and unfollowed. A header it relates but does not reference
+ *    `settings`, `fontTable`, `webSettings`, `numbering` and `theme`
+ *    relationships are eagerly parsed as a main document's are, even when
+ *    the glossary references no story — every malformed part gets repair,
+ *    every well-formed control opens clean (#562, session 19; the theme
+ *    #569, session 20); `customXml` and a nested `glossaryDocument` from a
+ *    glossary are observed, not read (session 20: malformed, both open
+ *    clean) and stay unfollowed. A header it relates but does not reference
  *    is not read (clean open), and references from inside a footnote are
  *    not followed (session 16);
  *  - a part under `word/` that any relationship of a KNOWN Office type names
@@ -61,7 +62,9 @@
  * glossary's header reference, #539); session 17 (the glossary's
  * relationships part and its comments, footnotes and endnotes, #549);
  * session 19 (the glossary's eager styles, settings, fontTable, webSettings
- * and numbering, #562).
+ * and numbering, #562); session 20 (the glossary's theme is read too,
+ * while its customXml and a nested glossaryDocument are observed, not
+ * read, #569).
  */
 
 import path from "node:path";
@@ -109,12 +112,13 @@ const LAZY_TYPES: ReadonlySet<string> = new Set(["footer", "header", "comments",
 
 /**
  * The eagerly parsed types a reached glossary's relationships are observed
- * to follow (#562, session 19): real Word glossaries carry their own
- * styles, settings, fontTable and webSettings parts, and a malformed one —
- * numbering included — gets repair. `customXml`, `theme` and a nested
- * `glossaryDocument` from a glossary stay unobserved and unfollowed.
+ * to follow (#562, session 19; #569, session 20): real Word glossaries carry
+ * their own styles, settings, fontTable and webSettings parts, and a
+ * malformed one — numbering and theme included — gets repair. `customXml`
+ * and a nested `glossaryDocument` from a glossary are observed, not read
+ * (session 20: malformed, both open clean), so they stay unfollowed.
  */
-const GLOSSARY_EAGER_TYPES: ReadonlySet<string> = new Set(["styles", "settings", "fontTable", "webSettings", "numbering"]);
+const GLOSSARY_EAGER_TYPES: ReadonlySet<string> = new Set(["styles", "settings", "fontTable", "webSettings", "numbering", "theme"]);
 
 /** Every relationship type whose reachability a probe has observed. */
 const OBSERVED_TYPES: ReadonlySet<string> = new Set([...EAGER_TYPES, ...LAZY_TYPES]);
@@ -335,9 +339,10 @@ export const wordTypedRelationshipTargets = async (
  * relationship's stored target as `{ part, segment }`. `eagerTypes` names
  * the eagerly parsed segments whose targets are added: `EAGER_TYPES` for a
  * main document, `GLOSSARY_EAGER_TYPES` for a glossary — a glossary's
- * `styles`, `settings`, `fontTable`, `webSettings` and `numbering` are
- * observed (#562, session 19) while its `customXml`, `theme` and
- * `glossaryDocument` stay unobserved and unfollowed (#549).
+ * `styles`, `settings`, `fontTable`, `webSettings`, `numbering` and
+ * `theme` are observed (#562, session 19; #569, session 20) while its
+ * `customXml` and nested `glossaryDocument` are observed, not read
+ * (session 20) and stay unfollowed (#549).
  *
  * Lazy usage comes from the effective XML Word consumes, after markup
  * compatibility has selected its branches, but only once the part's bytes
@@ -445,9 +450,10 @@ export const wordReadParts = async (context: ValidationContext): Promise<Readonl
     // references nothing (unclosed, zero-byte and unreferenced sidecars all
     // get repair) — and so are the header, footer, comments, footnotes and
     // endnotes its effective XML uses, as a main document's are, and the
-    // styles, settings, fontTable, webSettings and numbering it relates
-    // eagerly, used or not (#562, session 19) — customXml, theme and a
-    // nested glossaryDocument stay unobserved. A header it relates but
+    // styles, settings, fontTable, webSettings, numbering and theme it
+    // relates eagerly, used or not (#562, session 19; the theme #569,
+    // session 20) — customXml and a nested glossaryDocument are observed,
+    // not read (session 20) and stay unfollowed. A header it relates but
     // does not reference is not read (clean open), and references from
     // inside a footnote are not followed (session 16). A glossary that
     // fails byte-level XML checks leaves usage unknown, as an unparseable
