@@ -15,7 +15,11 @@ export const OPC_EQUIVALENT_PART_NAMES = "opc-equivalent-part-names";
  * read. The stream is not an OPC part: percent-encoded brackets must never
  * merge with its literal spelling. Profile policy keeps the error under strict
  * and, Word-blocking, under word-valid for DOCX/DOCM (Word offers recovery for
- * every duplicate probed); lenient only warns (#351).
+ * every duplicate probed); lenient only warns (#351). Two entries stored under
+ * the identical spelling are reported the same way, and Word offers recovery
+ * for them too: both entries valid, or the first malformed and the second
+ * valid (#411). The package view reads the last stored entry of an identical
+ * group, as JSZip keeps it.
  */
 export const opcEquivalentPartNamesCheck: CheckDefinition = {
     id: OPC_EQUIVALENT_PART_NAMES,
@@ -38,11 +42,15 @@ export const opcEquivalentPartNamesCheck: CheckDefinition = {
             // An exact canonical spelling wins; otherwise code-unit order wins.
             const parts = [...indexByPartName(names.map((name) => [name, name] as const)).keys()].sort();
             const kept = key === "stream" ? findContentTypesStream(parts) : findEquivalentPart(parts, key.slice("part:".length));
+            // Identical spellings name the spelling once per stored entry
+            // and disclose which entry the package view reads: JSZip keeps
+            // the last.
+            const lastRead = new Set(names).size === 1 ? " The last stored entry is the one read." : "";
             issues.push({
                 code: OPC_EQUIVALENT_PART_NAMES,
                 severity: "error",
                 path: kept,
-                message: `OPC [M1.12] forbids equivalent stored names: ${names.map((name) => JSON.stringify(name)).join(", ")}.`,
+                message: `OPC [M1.12] forbids equivalent stored names: ${names.map((name) => JSON.stringify(name)).join(", ")}.${lastRead}`,
             });
         }
         return issues.sort((a, b) => (a.path! < b.path! ? -1 : a.path! > b.path! ? 1 : 0));

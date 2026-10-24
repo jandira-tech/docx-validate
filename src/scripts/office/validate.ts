@@ -61,7 +61,13 @@ import {
 } from "../../lib/types";
 import type { XsdValidator } from "../../lib/xsd-validator";
 import { verifyInWord, type WordVerification } from "../../lib/word-verifier";
-import { indexByPartName, normalizePartName, ValidationContext } from "../../lib/validation-context";
+import {
+    archiveStoredNames,
+    assertPlaceableNames,
+    indexByPartName,
+    normalizePartName,
+    ValidationContext,
+} from "../../lib/validation-context";
 import { extractPackageParts } from "../../lib/zip-path";
 import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "./checks";
 import { XML_SYNTAX_CHECK_ID } from "./checks/xml";
@@ -366,17 +372,27 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
             });
         }
         // Diagnose the archive's own names before extraction can reject
-        // case/normalization collisions on the host filesystem (#351).
-        const names = Object.values(zip.files)
-            .filter((entry) => !entry.dir)
-            .map((entry) => [entry.unsafeOriginalName ?? entry.name, ""] as const);
-        const diagnostic = await storedNamesRun(ValidationContext.fromEntries(names), format, profile);
-        return finish(
-            await runStaged(zip, {
-                issues: [...envelope.issues, ...diagnostic.issues],
-                executed: [...envelope.executed, ...diagnostic.executed],
-            }),
+        // case/normalization collisions on the host filesystem (#351). The
+        // names are the central directory's: the loaded view already dropped
+        // a duplicate or hid a `..` segment behind the entry it resolves to,
+        // so the diagnosis and the refusal judge every stored name (#411).
+        const stored = archiveStoredNames(
+            buf,
+            Object.values(zip.files).filter((entry) => !entry.dir),
         );
+        const diagnostic = await storedNamesRun(ValidationContext.fromEntries(stored.map((name) => [name, ""] as const)), format, profile);
+        const named = {
+            issues: [...envelope.issues, ...diagnostic.issues],
+            executed: [...envelope.executed, ...diagnostic.executed],
+        };
+        try {
+            // The refusal runs on the stored names too: a `..` name JSZip
+            // resolved onto a later entry names no part either way (#378).
+            assertPlaceableNames(stored);
+        } catch (err) {
+            return finish(stagingFailed(named, err));
+        }
+        return finish(await runStaged(zip, named));
     }
 
     const dir = path.resolve(target);
@@ -528,9 +544,10 @@ function selectionUnderProfile(
  */
 function findingsUnderProfile(run: CheckRun, registry: CheckRegistry, format: PackageFormat, profile: Profile): ValidationIssue[] {
     // Equivalent names and escaped unreserved characters are Word-blocking for
-    // DOCX/DOCM (#351, #408). Lenient keeps the earlier policy and runs no
-    // Word rule. No PowerPoint or Excel behaviour has been observed, so those
-    // only warn.
+    // DOCX/DOCM (#351, #408), and so are two entries under the identical
+    // spelling, for which Word offers recovery too (#411).
+    // Lenient keeps the earlier policy and runs no Word rule. No PowerPoint or
+    // Excel behaviour has been observed, so those only warn.
     const advisory = (issue: ValidationIssue): ValidationIssue =>
         (issue.code === OPC_EQUIVALENT_PART_NAMES || issue.code === OPC_PART_NAME_ESCAPED_UNRESERVED) &&
         (profile === "lenient" || (profile === "word-valid" && format !== "docx"))

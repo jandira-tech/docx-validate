@@ -16,6 +16,7 @@ import { contextFromDirectory } from "../src/scripts/office/package-context";
 import { validate } from "../src/scripts/office/validate";
 import { isWordBlockingIssue } from "../src/scripts/office/validators/word-blocking";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+import { buildRawZip } from "./support/raw-zip";
 
 const ID = "opc-equivalent-part-names";
 const PAIRS = [
@@ -252,6 +253,130 @@ describe("M1.8 and M1.12 diagnose independent stored-name defects (#408)", { tim
                 expect(findings(result.issues)).toHaveLength(1);
             }
             expect(readFileSync(file)).toEqual(bytes);
+        });
+    });
+});
+
+// Identical stored names (#411): JSZip cannot write two entries under one
+// name, so the specimens are raw ZIP bytes. The finding names the spelling
+// twice — once per stored entry — and discloses that the last stored entry
+// is the one the package view reads. Word-blocking: Word 16.115 offers
+// recovery for two identical entries whether both are valid or only the
+// second is.
+describe("identical stored names (#411)", { timeout: 120_000 }, () => {
+    const MALFORMED = "<w:document";
+    const OTHER_DOCUMENT = MINIMAL_PARTS["word/document.xml"]!.replace(">Hello<", ">Other<");
+    const IDENTICAL = (name: string, severity = "warning") => ({
+        code: ID,
+        severity,
+        path: name,
+        message: `OPC [M1.12] forbids equivalent stored names: ${JSON.stringify(name)}, ${JSON.stringify(name)}. The last stored entry is the one read.`,
+    });
+    // The minimal package, its named part written as two raw entries in the
+    // given order. Duplicate entries take the order they are given in.
+    const rawSpecimen = (name: string, first: string, second: string): Buffer =>
+        buildRawZip([
+            ...Object.entries(MINIMAL_PARTS)
+                .filter(([part]) => part !== name)
+                .map(([part, text]) => ({ name: part, content: text })),
+            { name, content: first },
+            { name, content: second },
+        ]);
+
+    it("sees both entries of an identical stored name, in central-directory order", async () => {
+        const bytes = rawSpecimen("word/document.xml", MINIMAL_PARTS["word/document.xml"]!, OTHER_DOCUMENT);
+        const ctx = await ValidationContext.fromArchive(bytes);
+        expect(ctx.storedNames.filter((name) => name === "word/document.xml")).toHaveLength(2);
+        // The view reads the last stored entry (#411), so text() is the second.
+        expect(ctx.text("word/document.xml")).toBe(OTHER_DOCUMENT);
+        expect(await diagnose(ctx)).toEqual([IDENTICAL("word/document.xml", "error")]);
+    });
+
+    it.each([
+        ["valid", "valid", MINIMAL_PARTS["word/document.xml"]!, OTHER_DOCUMENT],
+        ["valid", "malformed", MINIMAL_PARTS["word/document.xml"]!, MALFORMED],
+        ["malformed", "valid", MALFORMED, MINIMAL_PARTS["word/document.xml"]!],
+    ])("reports one finding for a %s+%s pair under every profile, in either ZIP order", async (_a, _b, first, second) => {
+        await withTempDir(async (dir) => {
+            const perProfile: ValidationIssue[][] = [];
+            for (const [order, pair] of [
+                [first, second],
+                [second, first],
+            ].entries()) {
+                const file = path.join(dir, `order-${order}.docx`);
+                const bytes = rawSpecimen("word/document.xml", pair[0]!, pair[1]!);
+                writeFileSync(file, bytes);
+                const profileFindings: ValidationIssue[] = [];
+                for (const profile of ["word-valid", "lenient", "strict"] as const) {
+                    const full = await validate(file, { profile });
+                    expect(findings(full.issues), `${profile} order ${order}`).toEqual([
+                        IDENTICAL("word/document.xml", severityUnder(profile)),
+                    ]);
+                    if (profile === "word-valid" || profile === "strict") expect(full.valid).toBe(false);
+                    if (profile !== "strict") {
+                        for (const selection of [{ checks: [ID] }, { checks: ["package"] }, { quick: true }] as const) {
+                            const partial = await validate(file, { profile, ...selection });
+                            const tag = `${profile} ${JSON.stringify(selection)} order ${order}`;
+                            expect(findings(partial.issues), tag).toEqual(findings(full.issues));
+                            if (full.valid) expect(partial.valid, tag).toBe(true); // #381
+                            expect(errorPairs(full.issues), tag).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
+                        }
+                    }
+                    profileFindings.push(...findings(full.issues));
+                }
+                perProfile.push(profileFindings);
+                expect(readFileSync(file)).toEqual(bytes);
+            }
+            // The verdict does not depend on which entry comes first (#411).
+            expect(perProfile[0]).toEqual(perProfile[1]);
+        });
+    });
+
+    it("reports the content-types stream stored twice under the identical name", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "streams.docx");
+            const bytes = rawSpecimen("[Content_Types].xml", MINIMAL_PARTS["[Content_Types].xml"]!, MINIMAL_PARTS["[Content_Types].xml"]!);
+            writeFileSync(file, bytes);
+            for (const profile of ["word-valid", "lenient", "strict"] as const) {
+                const full = await validate(file, { profile });
+                expect(findings(full.issues), profile).toEqual([IDENTICAL("[Content_Types].xml", severityUnder(profile))]);
+            }
+        });
+    });
+});
+
+describe("a `..` name collapsing onto a part entry (#411, #378)", { timeout: 120_000 }, () => {
+    // `word/deep/../x.xml` names no part (#378). Stored first, JSZip's `..`
+    // resolution hides it behind the later `word/x.xml`, so the refusal and
+    // any diagnosis used to depend on ZIP order.
+    it.each(["word-valid", "lenient", "strict"] as const)("refuses the stored `..` name in either ZIP order under %s", async (profile) => {
+        await withTempDir(async (dir) => {
+            const verdicts: string[][] = [];
+            for (const [order, entries] of [
+                [
+                    { name: "word/deep/../x.xml", content: "<x/>" },
+                    { name: "word/x.xml", content: "<x/>" },
+                ],
+                [
+                    { name: "word/x.xml", content: "<x/>" },
+                    { name: "word/deep/../x.xml", content: "<x/>" },
+                ],
+            ].entries()) {
+                const file = path.join(dir, `order-${order}.docx`);
+                const bytes = buildRawZip([
+                    ...Object.entries(MINIMAL_PARTS).map(([part, text]) => ({ name: part, content: text })),
+                    ...entries,
+                ]);
+                writeFileSync(file, bytes);
+                const full = await validate(file, { profile });
+                const failed = full.issues.find((issue) => issue.code === "package-extract-failed");
+                expect(failed, `order ${order}`).toBeDefined();
+                expect(failed!.message, `order ${order}`).toContain('"word/deep/../x.xml"');
+                expect(full.valid, `order ${order}`).toBe(false);
+                expect(findings(full.issues), `order ${order}`).toEqual([]);
+                verdicts.push(full.issues.map((issue) => `${issue.code}:${issue.message.replace(file, "FILE")}`));
+            }
+            expect(verdicts[0]).toEqual(verdicts[1]);
         });
     });
 });

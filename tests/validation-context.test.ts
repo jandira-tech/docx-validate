@@ -8,6 +8,7 @@ import { describe, expect, it } from "vitest";
 
 import { ValidationContext } from "../src/lib/validation-context";
 import { poisonEntry } from "./support/poison-entry";
+import { buildRawZip } from "./support/raw-zip";
 
 const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 const DOCUMENT = `<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="${W}"><w:body><w:p/></w:body></w:document>`;
@@ -315,5 +316,49 @@ describe("ValidationContext.fromArchive: a stored item name a view would rename 
         zip.file("word/.hidden.xml", "<y/>");
         const ctx = await ValidationContext.fromArchive(await zip.generateAsync({ type: "uint8array" }));
         expect(ctx.partNames).toEqual(["word/.hidden.xml", "word/a..b.xml"]);
+    });
+});
+
+describe("ValidationContext.fromArchive: names the ZIP view drops or rewrites (#411)", () => {
+    it("lists two entries stored under the identical name, and keeps the last one's bytes", async () => {
+        const bytes = buildRawZip([
+            { name: "word/document.xml", content: "<a/>" },
+            { name: "word/document.xml", content: "<b/>" },
+        ]);
+        const ctx = await ValidationContext.fromArchive(bytes);
+        expect(ctx.storedNames).toEqual(["word/document.xml", "word/document.xml"]);
+        expect(ctx.text("word/document.xml")).toBe("<b/>");
+    });
+
+    it.each([
+        [
+            "the `..` name first",
+            [
+                { name: "word/deep/../x.xml", content: "<x/>" },
+                { name: "word/x.xml", content: "<x/>" },
+            ] as const,
+        ],
+        [
+            "the `..` name last",
+            [
+                { name: "word/x.xml", content: "<x/>" },
+                { name: "word/deep/../x.xml", content: "<x/>" },
+            ] as const,
+        ],
+    ])("rejects the archive whichever order a `..` collapse comes in (%s)", async (_label, entries) => {
+        await expect(ValidationContext.fromArchive(buildRawZip([...entries]))).rejects.toThrow(/names no package part/);
+    });
+
+    it("falls back to the loaded view's names when the central directory does not parse", async () => {
+        const bytes = buildRawZip([
+            { name: "word/a.xml", content: "<a/>" },
+            { name: "word/b.xml", content: "<b/>" },
+        ]);
+        // A record count that lies makes the directory unreadable; the
+        // stored names then come from the entries JSZip loaded.
+        bytes.writeUInt16LE(9, bytes.length - 14);
+        bytes.writeUInt16LE(9, bytes.length - 12);
+        const ctx = await ValidationContext.fromArchive(bytes);
+        expect(ctx.storedNames).toEqual(["word/a.xml", "word/b.xml"]);
     });
 });
