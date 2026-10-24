@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import { ValidationContext } from "../src/lib/validation-context";
-import { document, CT } from "./support/word-rule-test-xml";
+import { document, CT, MC, R, RS } from "./support/word-rule-test-xml";
 import { wordContentTypeInvalidCheck } from "../src/scripts/office/checks/word-content-types";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { contentTypeSpecimens } from "./support/word-content-types-specimens";
@@ -110,4 +110,93 @@ it("does not read a percent-escaped name as the stream (#396)", async () => {
         "%5BContent_Types%5D.xml": `<Types xmlns="${CT}"><Override PartName="/word/x.xml" ContentType="invalid-type"/></Types>`,
     });
     expect(await wordContentTypeInvalidCheck.run(ctx)).toEqual([]);
+});
+
+// Word 16.115.26100424 offered recovery for the empty main Override:
+// session 22 in docs/plans/evidence/word-probes-2026-10-24.md (#581).
+describe("empty main-document Override (#581)", () => {
+    const mainType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
+    const emptyStream = MINIMAL_PARTS["[Content_Types].xml"]!.replace(mainType, "");
+    const finding = (part = "word/document.xml", stream = "[Content_Types].xml") => ({
+        code: "word-content-type-invalid",
+        severity: "error",
+        path: stream,
+        message: `Microsoft Word refuses empty content type '' for ${part} (main document Override)`,
+    });
+
+    it("reports the empty value and the main part once, without changing the stream", async () => {
+        const ctx = ValidationContext.fromEntries({ ...MINIMAL_PARTS, "[Content_Types].xml": emptyStream });
+        expect(await wordContentTypeInvalidCheck.run(ctx)).toEqual([finding()]);
+        expect(ctx.text("[Content_Types].xml")).toBe(emptyStream);
+    });
+
+    it.each([R, RS])("follows %s/officeDocument to a renamed main part using OPC equivalence", async (namespace) => {
+        const parts = { ...MINIMAL_PARTS };
+        delete parts["word/document.xml"];
+        delete parts["[Content_Types].xml"];
+        const ctx = ValidationContext.fromEntries({
+            ...parts,
+            "renamed/main.xml": MINIMAL_PARTS["word/document.xml"]!,
+            "_rels/.rels": `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="main" Type="${namespace}/officeDocument" Target="RENAMED/%6dain.xml"/></Relationships>`,
+            "[CONTENT_TYPES].XML": emptyStream.replace("/word/document.xml", "/RENAMED/main.xml"),
+        });
+        expect(await wordContentTypeInvalidCheck.run(ctx)).toEqual([finding("renamed/main.xml", "[CONTENT_TYPES].XML")]);
+    });
+
+    it.each([
+        ["proper control", MINIMAL_PARTS["[Content_Types].xml"]!],
+        [
+            "another part's empty Override",
+            MINIMAL_PARTS["[Content_Types].xml"]!.replace("application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml", ""),
+        ],
+        ["empty Default", MINIMAL_PARTS["[Content_Types].xml"]!.replace('ContentType="application/xml"', 'ContentType=""')],
+        [
+            "main typed by empty Default",
+            emptyStream
+                .replace('<Override PartName="/word/document.xml" ContentType=""/>', "")
+                .replace('ContentType="application/xml"', 'ContentType=""'),
+        ],
+        [
+            "missing ContentType attribute",
+            emptyStream.replace('PartName="/word/document.xml" ContentType=""', 'PartName="/word/document.xml"'),
+        ],
+        [
+            "whitespace is unobserved",
+            emptyStream.replace('PartName="/word/document.xml" ContentType=""', 'PartName="/word/document.xml" ContentType=" "'),
+        ],
+        [
+            "first Override wins",
+            emptyStream.replace(
+                '<Override PartName="/word/document.xml"',
+                `<Override PartName="/word/document.xml" ContentType="${mainType}"/><Override PartName="/word/document.xml"`,
+            ),
+        ],
+    ])("leaves %s outside the empty-value finding", async (_label, stream) => {
+        expect(
+            await wordContentTypeInvalidCheck.run(ValidationContext.fromEntries({ ...MINIMAL_PARTS, "[Content_Types].xml": stream })),
+        ).toEqual([]);
+    });
+
+    it.each([
+        ["missing", undefined],
+        ["malformed", "<broken"],
+        [
+            "external",
+            MINIMAL_PARTS["_rels/.rels"]!.replace('Target="word/document.xml"', 'Target="word/document.xml" TargetMode="External"'),
+        ],
+        ["unknown relationship", MINIMAL_PARTS["_rels/.rels"]!.replace("/officeDocument", "/unknown")],
+    ])("does not infer a main part from %s package relationships", async (_label, rels) => {
+        const parts: Record<string, string> = { ...MINIMAL_PARTS, "[Content_Types].xml": emptyStream };
+        delete parts["_rels/.rels"];
+        if (rels !== undefined) parts["_rels/.rels"] = rels;
+        expect(await wordContentTypeInvalidCheck.run(ValidationContext.fromEntries(parts))).toEqual([]);
+    });
+
+    it.each([false, true])("judges the effective stream with empty fallback selected=%s", async (selected) => {
+        const proper = `<Override PartName="/word/document.xml" ContentType="${mainType}"/>`;
+        const empty = '<Override PartName="/word/document.xml" ContentType=""/>';
+        const stream = `<Types xmlns="${CT}" xmlns:mc="${MC}" xmlns:f="urn:unobserved"><mc:AlternateContent><mc:Choice Requires="f">${selected ? proper : empty}</mc:Choice><mc:Fallback>${selected ? empty : proper}</mc:Fallback></mc:AlternateContent></Types>`;
+        const ctx = ValidationContext.fromEntries({ ...MINIMAL_PARTS, "[Content_Types].xml": stream });
+        expect(await wordContentTypeInvalidCheck.run(ctx)).toEqual(selected ? [finding()] : []);
+    });
 });
