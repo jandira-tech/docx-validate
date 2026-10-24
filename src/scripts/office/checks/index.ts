@@ -16,6 +16,7 @@ import { mathRunInsertionCheck } from "./math-run-insertion";
 import { zipBytesAfterEocdCheck, zipEocdCommentOverrunCheck } from "./package";
 import { opcEquivalentPartNamesCheck } from "./opc-equivalent-part-names";
 import { opcRelationshipsStructureCheck } from "./opc-relationships-structure";
+import { opcPartNameEscapedSlashCheck } from "./opc-part-name-escaped-slash";
 import { opcPartNameEscapedUnreservedCheck } from "./opc-part-name-escaped-unreserved";
 import { pageMarginAttributesCheck } from "./page-margin-attributes";
 import { wordShadingColorCheck } from "./shading-color";
@@ -119,6 +120,7 @@ export function createDefaultCheckRegistry(): CheckRegistry {
         zipEocdCommentOverrunCheck,
         opcEquivalentPartNamesCheck,
         opcPartNameEscapedUnreservedCheck,
+        opcPartNameEscapedSlashCheck,
         xmlSyntaxCheck,
         ctDuplicateDeclarationCheck,
         commentMarkersCheck,

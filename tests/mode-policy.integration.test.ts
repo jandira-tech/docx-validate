@@ -156,6 +156,7 @@ describe("quick mode runs the common-defect preset and discloses its omissions",
             // The package group's stored-name diagnosis runs in quick too (#351).
             "opc-equivalent-part-names",
             "opc-part-name-escaped-unreserved",
+            "opc-part-name-escaped-slash",
             "xml-syntax",
             "ct-duplicate-declaration",
             "word-grid-column-attributes",
