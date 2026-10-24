@@ -588,9 +588,19 @@ header through their `w:*Reference r:id`, comments through
 part wherever they are stored — offering repair or refusing the file when one
 is malformed — and opens a related-but-unused header or endnotes part clean,
 even under `word/` ([#516](https://github.com/jandira-tech/docx-validate/issues/516); probe session 15).
-When the main document fails byte-level XML checks, including an unsupported
-encoding declaration, lazy usage is unknown and those related parts stay
-reached in full, partial and staging-fallback runs
+A glossary document reached through a `glossaryDocument` relationship reads
+its own relationships part for `header` and `footer` relationships, used when
+its `w:docPartBody` `w:sectPr` carries the matching `w:headerReference` /
+`w:footerReference` `r:id` — Word 16.115 offers repair for a malformed
+glossary header so referenced, and opens the well-formed control and an
+endnotes part referenced only from inside a footnote clean
+([#539](https://github.com/jandira-tech/docx-validate/issues/539); probe session
+16; the footer is inference from the header observation). The glossary's
+comments, footnotes and endnotes relationships and its own relationships part
+are unobserved and stay unreached.
+When the main document or a glossary fails byte-level XML checks, including an
+unsupported encoding declaration, lazy usage is unknown and those related
+parts stay reached in full, partial and staging-fallback runs
 ([#536](https://github.com/jandira-tech/docx-validate/issues/536)).
 Any other part under `word/` that a known Office relationship of an unobserved
 type names also blocks — a type has an Office segment only when it is exactly
