@@ -434,6 +434,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             return this.applyWordValidProfile(mergeResults(profiled, xsd));
         }
 
+        // Strict is a superset of word-valid: every Word-proven rejection
+        // rule runs here too, at its native error severity.
+        if (this.profile === "strict") checks.push(this.validateWordOpenCompatibility());
         checks.push(this.validateAgainstXsd());
         return mergeResults(xmlOk, ...(await Promise.all(checks)));
     }

@@ -27,8 +27,14 @@ describe("word-valid move source deleted text", { timeout: 30000 }, () => {
         expect(result.valid).toBe(true);
     });
 
-    it.each(["lenient", "strict"] as const)("does not report the cause on %s", async (profile) => {
-        const result = await validate(BROKEN, { profile });
+    it("does not report the cause on lenient", async () => {
+        const result = await validate(BROKEN, { profile: "lenient" });
         expect(result.issues.some((issue) => issue.code === "word-move-from-deleted-text")).toBe(false);
+    });
+
+    // strict includes every Word-valid check (validation contract, Task 1).
+    it("reports the cause on strict", async () => {
+        const result = await validate(BROKEN, { profile: "strict" });
+        expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "word-move-from-deleted-text")).toBe(true);
     });
 });
