@@ -551,8 +551,24 @@ Diagnostics use `xml-syntax`, `xml-undeclared-prefix`, and `xml-encoding`, with 
 part name and available 1-based line/column. Every part whose extension is `.xml` or
 `.rels` as OPC compares part names (any case, `word/COMMENTS.XML`; escaped,
 `word/comments.%78ml`) is checked, by full and partial runs alike
-([#390](https://github.com/jandira-tech/docx-validate/issues/390)). Word-valid blocks on a malformed part under `word/`, on
-the content-types stream, or on the package relationships part `_rels/.rels`;
+([#390](https://github.com/jandira-tech/docx-validate/issues/390)). Word-valid blocks on a malformed part by
+reachability, not by folder ([#437](https://github.com/jandira-tech/docx-validate/issues/437)):
+the main document wherever it is stored, its own relationships part — Word 16.115
+offers to recover a `word/_rels/document.xml.rels` that is zero bytes or missing
+its root end tag, wherever the main document is stored
+([#514](https://github.com/jandira-tech/docx-validate/issues/514); probe session 15) — and
+the parts a main-document relationship names: eagerly parsed types always
+(styles, settings, fontTable, webSettings, numbering, customXml, theme,
+glossaryDocument), lazy types only when the document uses them (footer and
+header through their `w:*Reference r:id`, comments through
+`w:commentReference`, footnotes and endnotes through their references). Word
+16.115 reads a used header or endnotes part and a theme or glossaryDocument
+part wherever they are stored — offering repair or refusing the file when one
+is malformed — and opens a related-but-unused header or endnotes part clean,
+even under `word/` ([#516](https://github.com/jandira-tech/docx-validate/issues/516); probe session 15).
+Any other part under `word/` that a known Office relationship of an unobserved
+type names also blocks; on the content-types
+stream and the package relationships part `_rels/.rels` it always blocks.
 `word/` is matched as OPC compares part names, so `WORD/document.xml` counts, and
 the stream is matched in any case (`[CONTENT_TYPES].XML`), as System.IO.Packaging
 finds it ([#392](https://github.com/jandira-tech/docx-validate/issues/392)). Word 16.115 offers to recover a package whose `_rels/.rels`
