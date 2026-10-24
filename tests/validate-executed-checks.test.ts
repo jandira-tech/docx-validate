@@ -73,6 +73,8 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
                 // The content-types Markup Compatibility refusal (#459).
                 "ct-markup-compatibility",
                 "word-part-content-type-generic",
+                // A parameterized Word content type (#540).
+                "word-part-content-type-parameter",
                 "comment-markers",
                 "comment-threading",
             ]);
@@ -163,6 +165,8 @@ describe("metadata.executedChecks reports the checks a run actually executed (#3
                     "ct-markup-compatibility",
                     // A DOCX content-types check, run under every profile (#432).
                     "word-part-content-type-generic",
+                    // A parameterized Word content type, likewise (#540).
+                    "word-part-content-type-parameter",
                     "comment-markers",
                     "comment-threading",
                 ]);

@@ -902,6 +902,86 @@ describe("validation contract: a Word-read part typed by a generic XML type (#51
     }
 });
 
+describe("validation contract: a MIME parameter on a Word-read part's content type (#540)", { timeout: 120000 }, () => {
+    const STREAM = MINIMAL_PARTS["[Content_Types].xml"]!;
+    const DOCM = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
+    const STYLES = "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml";
+
+    const specimen = (from: string, to: string) => buildDocx({ ...MINIMAL_PARTS, "[Content_Types].xml": STREAM.replace(from, to) });
+
+    it.each([
+        {
+            label: "the main part's Override carrying the main type plus `; charset=utf-8`",
+            bytes: specimen(`ContentType="${DOCM}"`, `ContentType="${DOCM}; charset=utf-8"`),
+            code: "word-part-content-type-parameter",
+            part: "word/document.xml",
+        },
+        {
+            label: "the styles Override carrying the styles type plus `; charset=utf-8`",
+            bytes: specimen(`ContentType="${STYLES}"`, `ContentType="${STYLES}; charset=utf-8"`),
+            code: "word-part-content-type-parameter",
+            part: "word/styles.xml",
+        },
+        {
+            label: "the styles Override to `application/xml; charset=utf-8`",
+            bytes: specimen(`ContentType="${STYLES}"`, 'ContentType="application/xml; charset=utf-8"'),
+            code: "word-part-content-type-generic",
+            part: "word/styles.xml",
+        },
+    ] as const)(
+        "word-valid and strict both reject $label",
+        async ({ bytes, code, part }) => {
+            const wordValid = await validateBytes(await bytes, "word-valid");
+            expect(wordValid.issues).toContainEqual(expect.objectContaining({ code, severity: "error", path: part }));
+            expect(wordValid.valid).toBe(false);
+            const strict = await validateBytes(await bytes, "strict");
+            expect(strict.issues).toContainEqual(expect.objectContaining({ code, severity: "error", path: part }));
+            expect(strict.valid).toBe(false);
+            expect(strict.valid && !wordValid.valid, "strict success must imply word-valid success").toBe(false);
+        },
+        60_000,
+    );
+
+    it("the un-parameterized controls stay valid under every profile", async () => {
+        const bytes = await buildDocx(MINIMAL_PARTS);
+        for (const profile of ["word-valid", "lenient", "strict"] as const) {
+            const result = await validateBytes(bytes, profile);
+            expect(result.valid, profile).toBe(true);
+            expect(
+                result.issues.filter(
+                    (issue) => issue.code === "word-part-content-type-generic" || issue.code === "word-part-content-type-parameter",
+                ),
+                profile,
+            ).toEqual([]);
+        }
+    }, 60_000);
+
+    it("partial runs agree with the full run (#381)", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "parameter.docx");
+            writeFileSync(file, await specimen(`ContentType="${DOCM}"`, `ContentType="${DOCM}; charset=utf-8"`));
+            const code = "word-part-content-type-parameter";
+            const word = await validate(file, { profile: "word-valid" });
+            expect(word.valid).toBe(false);
+            const strict = await validate(file, { profile: "strict" });
+            expect(strict.valid && !word.valid, "strict success must imply word-valid success").toBe(false);
+            for (const selection of [{ quick: true }, { checks: [code] }, { checks: ["content-types"] }]) {
+                const partial = await validate(file, { profile: "word-valid", ...selection });
+                const tag = JSON.stringify(selection);
+                expect(partial.valid, tag).toBe(word.valid);
+                expect(
+                    partial.issues.filter((issue) => issue.code === code),
+                    tag,
+                ).toEqual(word.issues.filter((issue) => issue.code === code));
+                expect(
+                    [...errorCodes(partial.issues)].every((error) => errorCodes(word.issues).has(error)),
+                    tag,
+                ).toBe(true);
+            }
+        });
+    }, 60_000);
+});
+
 describe("validation contract: a type with an extra path segment is no Office type (#519)", { timeout: 120000 }, () => {
     const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
     const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";

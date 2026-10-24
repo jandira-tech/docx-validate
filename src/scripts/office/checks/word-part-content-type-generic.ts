@@ -27,6 +27,14 @@
  * Numbering and customXml were not probed, so they stay silent until a
  * probe observes them.
  *
+ * Session 16 widened the comparison itself: the check judges the media
+ * type — everything before the first `;`, ASCII-lowercased — so a
+ * parameterized spelling such as `application/xml; charset=utf-8` counts
+ * as generic and the finding names the declared value (#540). Word 16.115
+ * offers to recover a styles part whose Override carries exactly that
+ * value; the parameterized spellings on settings, fontTable and
+ * webSettings are inference from the same resolution, like #517's.
+ *
  * The main document's finding names every Word main-document content type —
  * document, macro-enabled, template, macro-enabled template — because the
  * check judges the package, not the file name, and naming only the
@@ -55,7 +63,14 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
-import { asciiLowercase, findContentTypesStream, parseContentTypes, partExtension, resolveContentType } from "../../../lib/content-types";
+import {
+    asciiLowercase,
+    findContentTypesStream,
+    parseContentTypes,
+    partExtension,
+    resolveContentType,
+    contentTypeMediaType,
+} from "../../../lib/content-types";
 import type { ValidationIssue } from "../../../lib/types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
@@ -66,7 +81,7 @@ export const WORD_PART_CONTENT_TYPE_GENERIC = "word-part-content-type-generic";
 const GENERIC_CONTENT_TYPES: ReadonlySet<string> = new Set(["application/xml", "text/xml"]);
 
 /** The relationship segments Word was observed to reject on a generic XML type, and the content type each part needs. */
-const EXPECTED_CONTENT_TYPES: ReadonlyMap<string, string> = new Map([
+export const EXPECTED_CONTENT_TYPES: ReadonlyMap<string, string> = new Map([
     ["styles", "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"],
     ["settings", "application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"],
     ["fontTable", "application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml"],
@@ -74,7 +89,7 @@ const EXPECTED_CONTENT_TYPES: ReadonlyMap<string, string> = new Map([
 ]);
 
 /** The main document, reached through the package `officeDocument` relationship rather than a main-document one. */
-const OFFICE_DOCUMENT_SEGMENT = "officeDocument";
+export const OFFICE_DOCUMENT_SEGMENT = "officeDocument";
 
 /**
  * The Word main-document content types (#505). The check judges the package,
@@ -82,7 +97,7 @@ const OFFICE_DOCUMENT_SEGMENT = "officeDocument";
  * advising the macro-free type would turn a macro-enabled package into a
  * macro-free document.
  */
-const MAIN_DOCUMENT_CONTENT_TYPES = [
+export const MAIN_DOCUMENT_CONTENT_TYPES = [
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml",
     "application/vnd.ms-word.document.macroEnabled.main+xml",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml",
@@ -169,7 +184,7 @@ export const wordPartContentTypeGenericFindings = async (
     const targets = await wordTypedRelationshipTargets(ctx, scope === "spec" ? SPEC_SEGMENTS : OBSERVED_SEGMENTS);
     for (const { part, segment } of targets) {
         const resolved = resolveContentType(table, part);
-        if (resolved === null || !GENERIC_CONTENT_TYPES.has(asciiLowercase(resolved.contentType))) {
+        if (resolved === null || !GENERIC_CONTENT_TYPES.has(contentTypeMediaType(resolved.contentType))) {
             continue;
         }
         const by =

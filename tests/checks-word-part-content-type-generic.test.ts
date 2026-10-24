@@ -616,3 +616,317 @@ describe("generic renamed main parts (#535)", () => {
         60_000,
     );
 });
+
+/**
+ * Session 16 (2026-10-24, the table living with issue #540): Word 16.115
+ * offers to recover the package for a Word-read part whose content type
+ * carries a MIME parameter. The generic check judges the media type —
+ * everything before the first `;`, ASCII-lowercased — so
+ * `application/xml; charset=utf-8` counts as generic (#540).
+ */
+describe("word-part-content-type-generic judges the media type, parameters stripped (#540)", { timeout: 120_000 }, () => {
+    it("reports styles typed `application/xml; charset=utf-8` by an Override, naming the declared value", async () => {
+        const parts = withOverride(genericDefault("word/styles.xml"), "word/styles.xml", "application/xml; charset=utf-8");
+        expect(await diagnose(ValidationContext.fromEntries(parts))).toEqual([
+            expectedFinding("word/styles.xml", "styles", "error", { source: "override", contentType: "application/xml; charset=utf-8" }),
+        ]);
+    });
+
+    it("reports styles typed `text/xml; charset=utf-8` through the Default", async () => {
+        const parts = typedByDefault("word/styles.xml", "text/xml; charset=utf-8");
+        expect(await diagnose(ValidationContext.fromEntries(parts))).toEqual([
+            expectedFinding("word/styles.xml", "styles", "error", { contentType: "text/xml; charset=utf-8" }),
+        ]);
+    });
+
+    it("reports the main document typed `application/xml; charset=utf-8` by an Override", async () => {
+        const parts = withOverride(genericDefault("word/document.xml"), "word/document.xml", "application/xml; charset=utf-8");
+        expect(await diagnose(ValidationContext.fromEntries(parts))).toEqual([
+            expectedFinding("word/document.xml", "officeDocument", "error", {
+                source: "override",
+                contentType: "application/xml; charset=utf-8",
+            }),
+        ]);
+    });
+
+    it("infers the same verdict for settings, an unprobed spelling of the same resolution", async () => {
+        // Session 16 probed the parameterized generic type only on styles; the
+        // settings spelling follows from the same resolution, as #517's did.
+        const parts = withOverride(
+            withDocRel(
+                { ...withoutOverride({ ...MINIMAL_PARTS, "word/settings.xml": `<w:settings xmlns:w="${W}"/>` }, "word/settings.xml") },
+                `${R}/settings`,
+                "settings.xml",
+            ),
+            "word/settings.xml",
+            "application/xml; charset=utf-8",
+        );
+        expect(await diagnose(ValidationContext.fromEntries(parts))).toEqual([
+            expectedFinding("word/settings.xml", "settings", "error", {
+                source: "override",
+                contentType: "application/xml; charset=utf-8",
+            }),
+        ]);
+    });
+
+    it("fails word-valid and strict for the observed specimen: styles Override `application/xml; charset=utf-8`", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "styles-appxml-charset.docx");
+            writeFileSync(
+                file,
+                await buildDocx(withOverride(genericDefault("word/styles.xml"), "word/styles.xml", "application/xml; charset=utf-8")),
+            );
+            const wanted = expectedFinding("word/styles.xml", "styles", "error", {
+                source: "override",
+                contentType: "application/xml; charset=utf-8",
+            });
+            for (const profile of ["word-valid", "strict"] as const) {
+                const result = await validate(file, { profile });
+                expect(result.issues, profile).toContainEqual(wanted);
+                expect(result.valid, profile).toBe(false);
+            }
+        });
+    }, 60_000);
+});
+
+/**
+ * The `word-part-content-type-parameter` check (#540): a part Word reads,
+ * typed by its own Word content type with a MIME parameter appended. Word
+ * 16.115 offers to recover the package for the main document and for styles
+ * in this shape (session 16, 2026-10-24; the table lives with the issue).
+ * The finding is an error — and Word-blocking — under word-valid, an error
+ * under strict, and a warning under lenient; strict drops a Default-typed
+ * main only when `ct-undeclared-part` errors at the same path (#535).
+ */
+describe("word-part-content-type-parameter (#540)", { timeout: 120_000 }, () => {
+    const PID = "word-part-content-type-parameter";
+    const parameterFindings = (issues: readonly { code?: string }[]) => issues.filter((issue) => issue.code === PID);
+
+    const mainTypesList = MAIN_DOCUMENT_TYPES.map((type) => `"${type}"`)
+        .join(", ")
+        .replace(/, ([^,]*)$/, " or $1");
+
+    const expectedParameterFinding = (
+        part: string,
+        segment: string,
+        severity: "error" | "warning",
+        contentType: string,
+        options: { readonly source?: "default" | "override" } = {},
+    ) => {
+        const source = options.source ?? "override";
+        const by = segment === "officeDocument" ? "the package officeDocument relationship" : `the main document's ${segment} relationship`;
+        const extension = part.slice(part.lastIndexOf(".") + 1);
+        const resolved =
+            source === "default"
+                ? `resolves only through the Default for extension "${extension}" to "${contentType}"`
+                : `is typed "${contentType}" by an Override`;
+        const needed =
+            segment === "officeDocument"
+                ? source === "default"
+                    ? `it needs its own Override carrying exactly one of the Word main-document content types — ${mainTypesList}, with no MIME parameter`
+                    : `its content type must be exactly one of the Word main-document content types — ${mainTypesList}, with no MIME parameter`
+                : source === "default"
+                  ? `it needs its own Override "${CT.styles}", with no MIME parameter`
+                  : `its Override should carry "${CT.styles}" exactly, with no MIME parameter`;
+        return {
+            code: PID,
+            severity,
+            path: part,
+            message: `${part}, named by ${by}, ${resolved}; ${needed}. Word 16.115 offers to recover the package.`,
+        };
+    };
+
+    const diagnoseParameter = async (ctx: ValidationContext): Promise<readonly ValidationIssue[]> => {
+        const check = createDefaultCheckRegistry().get(PID);
+        expect(check, "the check is registered").toBeDefined();
+        return check ? await check.run(ctx) : [];
+    };
+
+    it("registers in the content-types group for DOCX/DOCM only", () => {
+        const check = createDefaultCheckRegistry().get(PID);
+        expect(check).toMatchObject({ id: PID, groups: ["content-types"], formats: ["docx"] });
+        // It reads the content-types stream and the relationships parts, so
+        // the XML syntax gate must precede it.
+        expect(check?.requires ?? []).toContain("xml-syntax");
+    });
+
+    it("is Word-blocking for DOCX and DOCM", () => {
+        expect(isWordBlockingIssue({ code: PID, severity: "error", message: "", path: "word/styles.xml" }, new Set(), new Set())).toBe(
+            true,
+        );
+    });
+
+    it.each([
+        {
+            label: "the main document's Override carrying the main type plus `; charset=utf-8`",
+            part: "word/document.xml",
+            segment: "officeDocument",
+            source: "override" as const,
+            contentType: `${CT.document}; charset=utf-8`,
+        },
+        {
+            label: "the styles Override carrying the styles type plus `; charset=utf-8`",
+            part: "word/styles.xml",
+            segment: "styles",
+            source: "override" as const,
+            contentType: `${CT.styles}; charset=utf-8`,
+        },
+        {
+            label: "styles resolved through the Default to the styles type plus `; charset=utf-8`",
+            part: "word/styles.xml",
+            segment: "styles",
+            source: "default" as const,
+            contentType: `${CT.styles}; charset=utf-8`,
+        },
+    ] as const)("reports $label", async ({ part, segment, source, contentType }) => {
+        const parts =
+            source === "override" ? withOverride({ ...MINIMAL_PARTS }, part, contentType) : typedByDefault("word/styles.xml", contentType);
+        expect(await diagnoseParameter(ValidationContext.fromEntries(parts))).toEqual([
+            expectedParameterFinding(part, segment, "error", contentType, { source }),
+        ]);
+    });
+
+    it.each([
+        {
+            label: "ar-main-override-proper-charset",
+            parts: withOverride({ ...MINIMAL_PARTS }, "word/document.xml", `${CT.document}; charset=utf-8`),
+            part: "word/document.xml",
+            segment: "officeDocument",
+            source: "override" as const,
+            contentType: `${CT.document}; charset=utf-8`,
+        },
+        {
+            label: "ar-styles-override-proper-charset",
+            parts: withOverride({ ...MINIMAL_PARTS }, "word/styles.xml", `${CT.styles}; charset=utf-8`),
+            part: "word/styles.xml",
+            segment: "styles",
+            source: "override" as const,
+            contentType: `${CT.styles}; charset=utf-8`,
+        },
+    ] as const)(
+        "word-valid and strict both fail the $label specimen",
+        async ({ parts, part, segment, source, contentType }) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "specimen.docx");
+                writeFileSync(file, await buildDocx(parts));
+                const wanted = expectedParameterFinding(part, segment, "error", contentType, { source });
+                const wordValid = await validate(file, { profile: "word-valid" });
+                expect(wordValid.issues).toContainEqual(wanted);
+                expect(wordValid.valid).toBe(false);
+                const strict = await validate(file, { profile: "strict" });
+                expect(strict.issues).toContainEqual(wanted);
+                expect(strict.valid).toBe(false);
+            });
+        },
+        60_000,
+    );
+
+    it("warns under lenient without failing the package", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "lenient.docx");
+            writeFileSync(file, await buildDocx(withOverride({ ...MINIMAL_PARTS }, "word/styles.xml", `${CT.styles}; charset=utf-8`)));
+            const result = await validate(file, { profile: "lenient" });
+            expect(parameterFindings(result.issues)).toEqual([
+                expectedParameterFinding("word/styles.xml", "styles", "warning", `${CT.styles}; charset=utf-8`),
+            ]);
+            expect(result.valid).toBe(true);
+            expect(result.metadata?.executedChecks).toContain(PID);
+        });
+    }, 60_000);
+
+    it("keeps the un-parameterized controls valid under every profile", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "control.docx");
+            writeFileSync(file, await buildDocx(MINIMAL_PARTS));
+            for (const profile of ["word-valid", "lenient", "strict"] as const) {
+                const result = await validate(file, { profile });
+                expect(parameterFindings(result.issues), profile).toEqual([]);
+                expect(result.valid, profile).toBe(true);
+            }
+        });
+    }, 60_000);
+
+    it("never reports one part twice: each defect class belongs to one check", async () => {
+        // A generic media type with a parameter is the generic check's
+        // finding alone; the styles type with a parameter is this check's
+        // finding alone.
+        const generic = withOverride(genericDefault("word/styles.xml"), "word/styles.xml", "application/xml; charset=utf-8");
+        expect(await diagnoseParameter(ValidationContext.fromEntries(generic))).toEqual([]);
+        const parameterized = withOverride(genericDefault("word/styles.xml"), "word/styles.xml", `${CT.styles}; charset=utf-8`);
+        expect(findings(await diagnose(ValidationContext.fromEntries(parameterized)))).toEqual([]);
+    });
+
+    it("stays silent for settings, fontTable and webSettings, unprobed for this defect", async () => {
+        const settings = withDocRel(
+            { ...MINIMAL_PARTS, "word/settings.xml": `<w:settings xmlns:w="${W}"/>` },
+            `${R}/settings`,
+            "settings.xml",
+        );
+        settings["[Content_Types].xml"] = (settings["[Content_Types].xml"] as string).replace(
+            "</Types>",
+            `<Override PartName="/word/settings.xml" ContentType="${CT.settings}; charset=utf-8"/></Types>`,
+        );
+        expect(await diagnoseParameter(ValidationContext.fromEntries(settings))).toEqual([]);
+    });
+
+    it("stays silent for the Part 1 types under strict too, until a probe observes them", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "numbering.docx");
+            writeFileSync(
+                file,
+                await buildDocx({
+                    ...MINIMAL_PARTS,
+                    "word/numbering.xml": `<w:numbering xmlns:w="${W}"/>`,
+                    "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                        "</Relationships>",
+                        `<Relationship Id="rId9" Type="${R}/numbering" Target="numbering.xml"/></Relationships>`,
+                    ),
+                    "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                        "</Types>",
+                        `<Override PartName="/word/numbering.xml" ContentType="${CT.numbering}; charset=utf-8"/></Types>`,
+                    ),
+                }),
+            );
+            expect(parameterFindings((await validate(file, { profile: "strict" })).issues)).toEqual([]);
+        });
+    }, 60_000);
+
+    it("drops a Default-typed main under strict only when ct-undeclared-part errors at the same path (#535)", async () => {
+        await withTempDir(async (dir) => {
+            const declared = path.join(dir, "declared.docx");
+            writeFileSync(declared, await buildDocx(typedByDefault("word/document.xml", `${CT.document}; charset=utf-8`)));
+            const wordValid = await validate(declared, { profile: "word-valid" });
+            expect(wordValid.issues).toContainEqual(
+                expectedParameterFinding("word/document.xml", "officeDocument", "error", `${CT.document}; charset=utf-8`, {
+                    source: "default",
+                }),
+            );
+            expect(wordValid.valid).toBe(false);
+            // The declarable `document` root without an Override is
+            // ct-undeclared-part's rejection; it is not reported twice.
+            const strict = await validate(declared, { profile: "strict" });
+            expect(parameterFindings(strict.issues)).toEqual([]);
+            expect(strict.issues.some((issue) => issue.code === "ct-undeclared-part" && issue.path === "word/document.xml")).toBe(true);
+
+            // A renamed main the base pass skips keeps its error (#535).
+            const renamed: Parts = { ...MINIMAL_PARTS };
+            delete renamed["word/document.xml"];
+            delete renamed["word/_rels/document.xml.rels"];
+            renamed["word/document.bin"] = MINIMAL_PARTS["word/document.xml"]!;
+            renamed["word/_rels/document.bin.rels"] = MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                'Target="styles.xml"',
+                'Target="/word/styles.xml"',
+            );
+            renamed["_rels/.rels"] = MINIMAL_PARTS["_rels/.rels"]!.replace("word/document.xml", "word/document.bin");
+            renamed["[Content_Types].xml"] = (MINIMAL_PARTS["[Content_Types].xml"] as string)
+                .replace(`<Override PartName="/word/document.xml" ContentType="${CT.document}"/>`, "")
+                .replace("</Types>", `<Default Extension="bin" ContentType="${CT.document}; charset=utf-8"/></Types>`);
+            const binFile = path.join(dir, "renamed.docx");
+            writeFileSync(binFile, await buildDocx(renamed));
+            const renamedStrict = await validate(binFile, { profile: "strict" });
+            expect(renamedStrict.issues).toContainEqual(
+                expect.objectContaining({ code: PID, path: "word/document.bin", severity: "error" }),
+            );
+        });
+    }, 60_000);
+});

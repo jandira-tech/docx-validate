@@ -101,6 +101,7 @@ import { CT_DUPLICATE_DECLARATION } from "../../lib/content-types";
 import { isWordBlockingIssue } from "./validators/word-blocking";
 import { explainWordError } from "./validators/word-error-explanations";
 import { loadCentralNamedArchive } from "../../lib/zip-central-names";
+import { WORD_PART_CONTENT_TYPE_PARAMETER } from "./checks/word-part-content-type-parameter";
 
 const SUPPORTED_SUFFIXES = new Set([".docm", ".docx", ".pptx", ".xlsx"]);
 
@@ -109,7 +110,8 @@ const SUPPORTED_SUFFIXES = new Set([".docm", ".docx", ".pptx", ".xlsx"]);
  * format ({@link opcNameIssueSeverity}): equivalent stored names, escaped
  * unreserved characters and separators, duplicate content-type declarations,
  * malformed Override PartNames, and a Word-read part typed only by the
- * generic Default (#432).
+ * generic Default (#432) or carrying a MIME parameter on its Word content
+ * type (#540).
  */
 const ADVISORY_CODES: ReadonlySet<string> = new Set([
     OPC_EQUIVALENT_PART_NAMES,
@@ -118,6 +120,7 @@ const ADVISORY_CODES: ReadonlySet<string> = new Set([
     CT_DUPLICATE_DECLARATION,
     CT_OVERRIDE_PARTNAME_INVALID,
     WORD_PART_CONTENT_TYPE_GENERIC,
+    WORD_PART_CONTENT_TYPE_PARAMETER,
 ]);
 
 /**
