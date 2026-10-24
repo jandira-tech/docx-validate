@@ -738,30 +738,40 @@ describe("word-part-content-type-inexact (#550)", { timeout: 120_000 }, () => {
         segment: string,
         severity: "error" | "warning",
         contentType: string,
-        options: { readonly source?: "default" | "override" } = {},
+        options: { readonly source?: "default" | "override"; readonly via?: "glossary"; readonly specOnly?: boolean } = {},
     ) => {
         const source = options.source ?? "override";
-        const by = segment === "officeDocument" ? "the package officeDocument relationship" : `the main document's ${segment} relationship`;
+        const by =
+            segment === "officeDocument"
+                ? "the package officeDocument relationship"
+                : options.via === "glossary"
+                  ? `the glossary's ${segment} relationship`
+                  : `the main document's ${segment} relationship`;
         const extension = part.slice(part.lastIndexOf(".") + 1);
         const resolved =
             source === "default"
                 ? `resolves only through the Default for extension "${extension}" to "${contentType}"`
                 : `is typed "${contentType}" by an Override`;
         const type = CT[segment as keyof typeof CT];
-        const clause = `, the content type ECMA-376 Part 1 (4th edition), clause 11.3 assigns the ${segment} part`;
+        // The theme is a DrawingML part, not a WordprocessingML one, so a
+        // spec-only theme finding cites no clause 11.3 (#579).
+        const clause =
+            segment === "theme"
+                ? ", the theme part's own content type"
+                : `, the content type ECMA-376 Part 1 (4th edition), clause 11.3 assigns the ${segment} part`;
         const needed =
             segment === "officeDocument"
                 ? source === "default"
                     ? `it needs its own Override carrying exactly one of the Word main-document content types — ${mainTypesList}`
                     : `its content type must be exactly one of the Word main-document content types — ${mainTypesList}`
-                : !RECOVERY_SEGMENTS.has(segment)
+                : options.specOnly === true || !RECOVERY_SEGMENTS.has(segment)
                   ? source === "default"
                       ? `it needs its own Override "${type}"${clause}`
                       : `its Override should carry "${type}"${clause}`
                   : source === "default"
                     ? `it needs its own Override "${type}" exactly`
                     : `its Override should carry "${type}" exactly`;
-        const verdict = RECOVERY_SEGMENTS.has(segment) ? " Word 16.115 offers to recover the package." : "";
+        const verdict = options.specOnly === true || !RECOVERY_SEGMENTS.has(segment) ? "" : " Word 16.115 offers to recover the package.";
         return {
             code: PID,
             severity,
@@ -1291,6 +1301,210 @@ describe("word-part-content-type-inexact (#550)", { timeout: 120_000 }, () => {
                 expect(result.valid).toBe(true);
             });
         }, 60_000);
+    });
+
+    /**
+     * Sessions 21 and 22 (2026-10-24, Word 16.115; in
+     * docs/plans/evidence/word-probes-2026-10-24.md) probed an inexact
+     * content type on the parts a reached glossary's own relationships
+     * part names. The glossary's styles part — eagerly parsed, so related
+     * is enough (#562, session 19) — and a header the glossary references
+     * through `w:headerReference` both get the repair warning, while every
+     * exact-type control opens clean (#579). The glossary's settings,
+     * fontTable, webSettings, numbering and theme relationships were not
+     * probed for an inexact type and stay silent under word-valid; strict
+     * judges every Part 1 WordprocessingML relationship — and theme — by
+     * the spec, citing clause 11.3 for the unobserved segments.
+     */
+    describe("a reached glossary's parts (#579)", () => {
+        const GLOSSARY_TYPE = CT.glossaryDocument;
+        const RELS_PART = (body: string): string =>
+            `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${body}</Relationships>`;
+
+        /** The s21 builder's `glossary` — a reached glossary that references no story. */
+        const GLOSSARY_DOC =
+            `<w:glossaryDocument xmlns:w="${W}" xmlns:r="${R}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+            `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+            `<w:docPartBody><w:p><w:r><w:t>Part</w:t></w:r></w:p></w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`;
+
+        /** The s22 builder's `glossaryWithSect` — the same glossary whose `docPartBody` ends with a `w:sectPr` holding `sect`. */
+        const glossaryWithSect = (sect: string): string =>
+            `<w:glossaryDocument xmlns:w="${W}" xmlns:r="${R}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+            `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+            `<w:docPartBody><w:p><w:r><w:t>Part</w:t></w:r></w:p><w:sectPr>${sect}</w:sectPr></w:docPartBody>` +
+            `</w:docPart></w:docParts></w:glossaryDocument>`;
+
+        /**
+         * The minimal package plus a reached glossary — related from the
+         * main document through `glossaryDocument` — whose own
+         * `word/glossary/_rels/document.xml.rels` relates `segment` →
+         * `target`, stored at `stored` and typed by `contentType` (the s21
+         * builder's `glossaryRelating`).
+         */
+        const glossarySpecimen = (
+            segment: string,
+            target: string,
+            stored: string,
+            xml: string,
+            contentType: string,
+            glossary = GLOSSARY_DOC,
+        ): Parts => ({
+            ...MINIMAL_PARTS,
+            "word/glossary/document.xml": glossary,
+            "word/glossary/_rels/document.xml.rels": RELS_PART(`<Relationship Id="rIdE" Type="${R}/${segment}" Target="${target}"/>`),
+            [stored]: xml,
+            "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                "</Relationships>",
+                `<Relationship Id="rIdG" Type="${R}/glossaryDocument" Target="glossary/document.xml"/></Relationships>`,
+            ),
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                `<Override PartName="/word/glossary/document.xml" ContentType="${GLOSSARY_TYPE}"/>` +
+                    `<Override PartName="/${stored}" ContentType="${contentType}"/></Types>`,
+            ),
+        });
+
+        /** The s21b shapes: the reached glossary's own styles part, well formed, typed `contentType`. */
+        const glossaryStyles = (contentType: string): Parts =>
+            glossarySpecimen("styles", "styles.xml", "word/glossary/styles.xml", `<w:styles xmlns:w="${W}"></w:styles>`, contentType);
+
+        /** The s22a `headerViaGlossary` shape: the reached glossary's sectPr references `rIdE`, the header relationship id. */
+        const glossaryHeader = (contentType: string, referenced = true): Parts =>
+            glossarySpecimen(
+                "header",
+                "header9.xml",
+                "word/glossary/header9.xml",
+                `<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header</w:t></w:r></w:p></w:hdr>`,
+                contentType,
+                referenced ? glossaryWithSect(`<w:headerReference w:type="default" r:id="rIdE"/>`) : GLOSSARY_DOC,
+            );
+
+        it("reports the reached glossary's styles part typed `styles type; charset=utf-8`, naming the glossary's relationship (s21b)", async () => {
+            const contentType = `${CT.styles}; charset=utf-8`;
+            expect(await diagnoseInexact(ValidationContext.fromEntries(glossaryStyles(contentType)))).toEqual([
+                expectedInexactFinding("word/glossary/styles.xml", "styles", "error", contentType, { via: "glossary" }),
+            ]);
+            // The glossary eagerly parses its styles part, so strict reports
+            // the same finding.
+            const strict = await wordPartContentTypeInexactFindings(ValidationContext.fromEntries(glossaryStyles(contentType)), "spec");
+            expect(strict.map((finding) => finding.issue)).toEqual([
+                expectedInexactFinding("word/glossary/styles.xml", "styles", "error", contentType, { via: "glossary" }),
+            ]);
+        });
+
+        it("reports a header the reached glossary references, naming the glossary's relationship (s22a)", async () => {
+            const contentType = `${CT.header}; charset=utf-8`;
+            expect(await diagnoseInexact(ValidationContext.fromEntries(glossaryHeader(contentType)))).toEqual([
+                expectedInexactFinding("word/glossary/header9.xml", "header", "error", contentType, { via: "glossary" }),
+            ]);
+        });
+
+        it("keeps a header the reached glossary relates but does not reference silent under word-valid, while strict judges it by the spec", async () => {
+            const contentType = `${CT.header}; charset=utf-8`;
+            expect(await diagnoseInexact(ValidationContext.fromEntries(glossaryHeader(contentType, false)))).toEqual([]);
+            const strict = await wordPartContentTypeInexactFindings(
+                ValidationContext.fromEntries(glossaryHeader(contentType, false)),
+                "spec",
+            );
+            expect(strict.map((finding) => finding.issue)).toEqual([
+                expectedInexactFinding("word/glossary/header9.xml", "header", "error", contentType, { via: "glossary" }),
+            ]);
+        });
+
+        it.each(["settings", "fontTable", "webSettings", "numbering", "theme"] as const)(
+            "keeps the reached glossary's unprobed %s part silent under word-valid while strict judges it by the spec",
+            async (segment) => {
+                const contentType = `${CT[segment]}; charset=utf-8`;
+                const parts = glossarySpecimen(
+                    segment,
+                    `${segment.toLowerCase()}.xml`,
+                    `word/glossary/${segment.toLowerCase()}.xml`,
+                    `<w:p xmlns:w="${W}"/>`,
+                    contentType,
+                );
+                expect(await diagnoseInexact(ValidationContext.fromEntries(parts))).toEqual([]);
+                const strict = await wordPartContentTypeInexactFindings(ValidationContext.fromEntries(parts), "spec");
+                expect(strict.map((finding) => finding.issue)).toEqual([
+                    expectedInexactFinding(`word/glossary/${segment.toLowerCase()}.xml`, segment, "error", contentType, {
+                        via: "glossary",
+                        specOnly: true,
+                    }),
+                ]);
+            },
+        );
+
+        it("word-valid and strict both fail the glossary-styles specimen, lenient warns (s21b)", async () => {
+            await withTempDir(async (dir) => {
+                const contentType = `${CT.styles}; charset=utf-8`;
+                const file = path.join(dir, "glossary-styles.docx");
+                writeFileSync(file, await buildDocx(glossaryStyles(contentType)));
+                const wanted = expectedInexactFinding("word/glossary/styles.xml", "styles", "error", contentType, { via: "glossary" });
+                const wordValid = await validate(file, { profile: "word-valid" });
+                expect(wordValid.issues).toContainEqual(wanted);
+                expect(wordValid.valid).toBe(false);
+                const strict = await validate(file, { profile: "strict" });
+                expect(strict.issues).toContainEqual(wanted);
+                expect(strict.valid).toBe(false);
+                const lenient = await validate(file, { profile: "lenient" });
+                expect(inexactFindings(lenient.issues)).toEqual([
+                    expectedInexactFinding("word/glossary/styles.xml", "styles", "warning", contentType, { via: "glossary" }),
+                ]);
+                expect(lenient.valid).toBe(true);
+            });
+        }, 60_000);
+
+        it("word-valid and strict both fail the referenced glossary-header specimen (s22a)", async () => {
+            await withTempDir(async (dir) => {
+                const contentType = `${CT.header}; charset=utf-8`;
+                const file = path.join(dir, "glossary-header.docx");
+                writeFileSync(file, await buildDocx(glossaryHeader(contentType)));
+                const wanted = expectedInexactFinding("word/glossary/header9.xml", "header", "error", contentType, { via: "glossary" });
+                const wordValid = await validate(file, { profile: "word-valid" });
+                expect(wordValid.issues).toContainEqual(wanted);
+                expect(wordValid.valid).toBe(false);
+                const strict = await validate(file, { profile: "strict" });
+                expect(strict.issues).toContainEqual(wanted);
+                expect(strict.valid).toBe(false);
+            });
+        }, 60_000);
+
+        it("keeps the exact-type controls valid under every profile (s21b, s22a)", async () => {
+            await withTempDir(async (dir) => {
+                for (const [name, parts] of [
+                    ["glossary-styles-exact", glossaryStyles(CT.styles)],
+                    ["glossary-header-exact", glossaryHeader(CT.header)],
+                ] as const) {
+                    const file = path.join(dir, `${name}.docx`);
+                    writeFileSync(file, await buildDocx(parts));
+                    for (const profile of ["word-valid", "lenient", "strict"] as const) {
+                        const result = await validate(file, { profile });
+                        expect(inexactFindings(result.issues), `${name} ${profile}`).toEqual([]);
+                    }
+                    const wordValid = await validate(file, { profile: "word-valid" });
+                    expect(wordValid.valid, name).toBe(true);
+                }
+            });
+        }, 60_000);
+
+        it("never reports one part twice: a part the main document and the glossary both relate keeps the main document's entry", async () => {
+            const contentType = `${CT.styles}; charset=utf-8`;
+            const parts: Parts = {
+                ...MINIMAL_PARTS,
+                "word/glossary/document.xml": GLOSSARY_DOC,
+                "word/glossary/_rels/document.xml.rels": RELS_PART(`<Relationship Id="rIdE" Type="${R}/styles" Target="../styles.xml"/>`),
+                "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                    "</Relationships>",
+                    `<Relationship Id="rIdG" Type="${R}/glossaryDocument" Target="glossary/document.xml"/></Relationships>`,
+                ),
+                "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                    `<Override PartName="/word/styles.xml" ContentType="${CT.styles}"/>`,
+                    `<Override PartName="/word/styles.xml" ContentType="${contentType}"/>`,
+                ),
+            };
+            expect(await diagnoseInexact(ValidationContext.fromEntries(parts))).toEqual([
+                expectedInexactFinding("word/styles.xml", "styles", "error", contentType),
+            ]);
+        });
     });
 
     it("drops a Default-typed main under strict only when ct-undeclared-part errors at the same path (#535)", async () => {

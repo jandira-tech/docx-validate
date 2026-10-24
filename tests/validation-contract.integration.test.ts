@@ -1441,6 +1441,78 @@ describe("validation contract: an inexact content type on a Word-read part (#550
         expect(strict.valid).toBe(false);
     }, 60_000);
 
+    // Sessions 21 and 22 (2026-10-24) probed an inexact type on the parts a
+    // reached glossary's own relationships part names: its styles part —
+    // eagerly parsed, so related is enough (#562, session 19) — and a header
+    // the glossary references through `w:headerReference` both get the repair
+    // warning, while every exact-type control opens clean (#579). The finding
+    // names the glossary's relationship, not the main document's.
+    const RELS_PART = (body: string): string =>
+        `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${body}</Relationships>`;
+    const GLOSSARY_CT = `${WMLT}.document.glossary+xml`;
+    /** The s22 builder's `glossaryWithSect` — the reached glossary whose `docPartBody` ends with a `w:sectPr` holding `sect`. */
+    const glossaryWithSect = (sect: string): string =>
+        `<w:glossaryDocument xmlns:w="${W}" xmlns:r="${R}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+        `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+        `<w:docPartBody><w:p><w:r><w:t>Part</w:t></w:r></w:p><w:sectPr>${sect}</w:sectPr></w:docPartBody>` +
+        `</w:docPart></w:docParts></w:glossaryDocument>`;
+
+    /** The s21/s22 builders' reached-glossary shapes: the minimal package plus a glossary whose own `.rels` relates `stored` at `contentType`. */
+    const glossarySpecimen = (segment: string, stored: string, xml: string, contentType: string, glossary: string = GLOSSARY_XML) =>
+        specimen(
+            STREAM.replace(
+                "</Types>",
+                `<Override PartName="/word/glossary/document.xml" ContentType="${GLOSSARY_CT}"/>` +
+                    `<Override PartName="/${stored}" ContentType="${contentType}"/></Types>`,
+            ),
+            {
+                "word/glossary/document.xml": glossary,
+                "word/glossary/_rels/document.xml.rels": RELS_PART(
+                    `<Relationship Id="rIdE" Type="${R}/${segment}" Target="${path.posix.basename(stored)}"/>`,
+                ),
+                [stored]: xml,
+            },
+            RELS.replace(
+                "</Relationships>",
+                `<Relationship Id="rIdG" Type="${R}/glossaryDocument" Target="glossary/document.xml"/></Relationships>`,
+            ),
+        );
+
+    it.each([
+        [
+            "styles (s21b)",
+            "word/glossary/styles.xml",
+            glossarySpecimen("styles", "word/glossary/styles.xml", `<w:styles xmlns:w="${W}"></w:styles>`, `${STYLES}; charset=utf-8`),
+            "the glossary's styles relationship",
+        ],
+        [
+            "header (s22a)",
+            "word/glossary/header9.xml",
+            glossarySpecimen(
+                "header",
+                "word/glossary/header9.xml",
+                `<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header</w:t></w:r></w:p></w:hdr>`,
+                `${HEADER}; charset=utf-8`,
+                glossaryWithSect(`<w:headerReference w:type="default" r:id="rIdE"/>`),
+            ),
+            "the glossary's header relationship",
+        ],
+    ] as const)(
+        "word-valid and strict both reject the reached glossary's %s part typed `type; charset=utf-8`, naming the glossary's relationship (#579)",
+        async (_label, part, bytes, by) => {
+            const wordValid = await validateBytes(await bytes, "word-valid");
+            expect(wordValid.issues).toContainEqual(
+                expect.objectContaining({ code: CODE, severity: "error", path: part, message: expect.stringContaining(by) }),
+            );
+            expect(wordValid.valid).toBe(false);
+            const strict = await validateBytes(await bytes, "strict");
+            expect(strict.issues).toContainEqual(expect.objectContaining({ code: CODE, severity: "error", path: part }));
+            expect(strict.valid).toBe(false);
+            expect(strict.valid && !wordValid.valid, "strict success must imply word-valid success").toBe(false);
+        },
+        60_000,
+    );
+
     it("partial runs agree with the full run (#381)", async () => {
         await withTempDir(async (dir) => {
             const code = CODE;
@@ -1474,6 +1546,27 @@ describe("validation contract: an inexact content type on a Word-read part (#550
                     ),
                     await s20Parts("footer"),
                     RELS.replace("</Relationships>", `<Relationship Id="rIdX" Type="${R}/footer" Target="footer9.xml"/></Relationships>`),
+                ],
+                // Session 21's widened scope: a reached glossary's styles part
+                // must agree in partial runs too (#381, #579).
+                [
+                    "glossary-styles",
+                    STREAM.replace(
+                        "</Types>",
+                        `<Override PartName="/word/glossary/document.xml" ContentType="${GLOSSARY_CT}"/>` +
+                            `<Override PartName="/word/glossary/styles.xml" ContentType="${STYLES}; charset=utf-8"/></Types>`,
+                    ),
+                    {
+                        "word/glossary/document.xml": GLOSSARY_XML,
+                        "word/glossary/_rels/document.xml.rels": RELS_PART(
+                            `<Relationship Id="rIdE" Type="${R}/styles" Target="styles.xml"/>`,
+                        ),
+                        "word/glossary/styles.xml": `<w:styles xmlns:w="${W}"></w:styles>`,
+                    },
+                    RELS.replace(
+                        "</Relationships>",
+                        `<Relationship Id="rIdG" Type="${R}/glossaryDocument" Target="glossary/document.xml"/></Relationships>`,
+                    ),
                 ],
             ];
             for (const [name, stream, extra, rels] of shapes) {

@@ -542,7 +542,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * check's probes have not observed; #506), a warning under lenient.
      * Sessions 20 and 21 moved numbering and theme into the generic check's
      * observed set (#571), and numbering, theme, footer, endnotes, footnotes
-     * and comments into the inexact check's (#570). A Default-typed main or
+     * and comments into the inexact check's (#570); sessions 21 and 22 moved
+     * a reached glossary's styles part and referenced header into the
+     * inexact check's (#579). A Default-typed main or
      * theme finding is dropped only when strict actually reports
      * ct-undeclared-part for that same part (#535, #571).
      */
