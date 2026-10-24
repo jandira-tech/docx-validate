@@ -43,7 +43,14 @@ import { existsSync, promises as fs, readdirSync, readFileSync, realpathSync, st
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { findEquivalentPart, parseContentTypes, partExtension, resolveContentType, resolvePartName } from "../../../lib/content-types";
+import {
+    findEquivalentPart,
+    isRelationshipsPartName,
+    parseContentTypes,
+    partExtension,
+    resolveContentType,
+    resolvePartName,
+} from "../../../lib/content-types";
 import { applyMarkupCompatibility, STRICT_UNDERSTOOD_NAMESPACES, UNDERSTOOD_NAMESPACES } from "../../../lib/markup-compatibility";
 import { withTempDir } from "../../../lib/run-cli";
 import { indexByPartName } from "../../../lib/validation-context";
@@ -409,7 +416,7 @@ export class BaseSchemaValidator {
         this.originalFile = opts.originalFile ? path.resolve(opts.originalFile) : null;
         this.verbose = opts.verbose ?? false;
         this.schemasDir = opts.schemasDir ?? defaultSchemasDir();
-        this.xmlFiles = [...packageEntries(this.unpackedDir, [".xml", ".rels"]).values()];
+        this.xmlFiles = [...packageEntries(this.unpackedDir)].flatMap(([name, file]) => (isXmlPartName(name) ? [file] : []));
         this.profile = opts.profile ?? DEFAULT_PROFILE;
         this.xsdValidatorRef = opts.xsdValidator;
     }
@@ -493,7 +500,7 @@ export class BaseSchemaValidator {
         const issues: ValidationIssue[] = [];
         const severity: "error" | "warning" = this.profile === "strict" ? "error" : "warning";
         for (const xmlFile of this.xmlFiles) {
-            if (!xmlFile.endsWith(".rels")) continue;
+            if (!isRelationshipsPartName(this.entryName(xmlFile))) continue;
             let dom: Document;
             try {
                 dom = parseXmlBytes(await fs.readFile(xmlFile));
@@ -814,16 +821,18 @@ export class BaseSchemaValidator {
 
     async validateFileReferences(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const relsFiles = [...packageEntries(this.unpackedDir, [".rels"]).values()];
+        const entries = packageEntries(this.unpackedDir);
+        const names = [...entries.keys()];
+        const relsFiles = [...entries].flatMap(([name, file]) => (isRelationshipsPartName(name) ? [file] : []));
 
         if (relsFiles.length === 0) {
             return OK_RESULT;
         }
 
         const allFiles: string[] = [];
-        for (const f of packageEntries(this.unpackedDir).values()) {
+        for (const [name, f] of entries) {
             const base = path.basename(f);
-            if (base === "[Content_Types].xml" || f.endsWith(".rels")) continue;
+            if (base === "[Content_Types].xml" || isRelationshipsPartName(name)) continue;
             allFiles.push(path.resolve(f));
         }
 
@@ -846,7 +855,6 @@ export class BaseSchemaValidator {
             if (!root) continue;
 
             const relsDir = path.dirname(relsFile);
-            const referenced: string[] = [];
             const broken: string[] = [];
 
             const rels = getElementsByTagNameNSAll(dom, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
@@ -872,9 +880,13 @@ export class BaseSchemaValidator {
                         broken.push(target);
                         continue;
                     }
-                    if (existsSync(targetPath) && statSync(targetPath).isFile()) {
-                        referenced.push(targetPath);
-                        allReferenced.add(targetPath);
+                    // Resolve against stored part names, as the main-part lookup
+                    // does. Filesystem existence and target spelling cannot decide
+                    // OPC equivalence (ASCII case and unreserved escapes, #393).
+                    const part = resolvePartName(names, this.entryName(targetPath));
+                    const file = part === undefined ? undefined : entries.get(part);
+                    if (file !== undefined && containRelationshipTarget(this.unpackedDir, file) !== null) {
+                        allReferenced.add(path.resolve(file));
                     } else {
                         broken.push(target);
                     }
@@ -908,7 +920,7 @@ export class BaseSchemaValidator {
 
     async validateRelationshipElements(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const relsFiles = [...packageEntries(this.unpackedDir, [".rels"]).values()];
+        const relsFiles = [...packageEntries(this.unpackedDir)].flatMap(([name, file]) => (isRelationshipsPartName(name) ? [file] : []));
 
         for (const relsFile of relsFiles) {
             let dom: Document;
@@ -972,7 +984,7 @@ export class BaseSchemaValidator {
         const issues: ValidationIssue[] = [];
 
         for (const xmlFile of this.xmlFiles) {
-            if (xmlFile.endsWith(".rels")) continue;
+            if (isRelationshipsPartName(this.entryName(xmlFile))) continue;
 
             const relsDir = path.join(path.dirname(xmlFile), "_rels");
             const relsFile = path.join(relsDir, `${path.basename(xmlFile)}.rels`);
@@ -1183,7 +1195,7 @@ export class BaseSchemaValidator {
 
         for (const xmlFile of this.xmlFiles) {
             const pathStr = this.relPath(xmlFile).replace(/\\/g, "/");
-            if ([".rels", "[Content_Types]", "docProps/", "_rels/"].some((s) => pathStr.includes(s))) {
+            if (isRelationshipsPartName(pathStr) || ["[Content_Types]", "docProps/", "_rels/"].some((s) => pathStr.includes(s))) {
                 continue;
             }
 
@@ -1208,7 +1220,7 @@ export class BaseSchemaValidator {
 
         for (const filePath of allFiles) {
             const ext = path.extname(filePath).toLowerCase();
-            if (ext === ".xml" || ext === ".rels") continue;
+            if (ext === ".xml" || isRelationshipsPartName(this.entryName(filePath))) continue;
             if (path.basename(filePath) === "[Content_Types].xml") continue;
             const parts = filePath.split(path.sep);
             if (parts.includes("_rels") || parts.includes("docProps")) continue;
@@ -1476,7 +1488,7 @@ export class BaseSchemaValidator {
     }
 
     /** A walked file's name in the package, with `/` separators on every platform. */
-    private entryName(file: string): string {
+    protected entryName(file: string): string {
         return this.relPath(file).split(path.sep).join("/");
     }
 
@@ -1695,7 +1707,7 @@ export class BaseSchemaValidator {
         if (mapped !== undefined) {
             return mapped;
         }
-        if (name.endsWith(".rels")) {
+        if (isRelationshipsPartName(name)) {
             return ".rels";
         }
         if (name.includes("charts/") && base.startsWith("chart")) {

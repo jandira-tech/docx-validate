@@ -27,6 +27,7 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
+import { isRelationshipsPartName } from "../../../lib/content-types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import type { ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
@@ -43,7 +44,7 @@ export const wordDuplicateThemeRelationshipCheck: CheckDefinition = {
         const issues: ValidationIssue[] = [];
 
         for (const relsFile of ctx.partNames) {
-            if (!relsFile.endsWith(".rels")) {
+            if (!isRelationshipsPartName(relsFile)) {
                 continue;
             }
             const parsed = ctx.effectiveXml(relsFile);
@@ -87,7 +88,7 @@ export const wordDuplicateFontTableRelationshipCheck: CheckDefinition = {
         const issues: ValidationIssue[] = [];
 
         for (const relsFile of ctx.partNames) {
-            if (!relsFile.endsWith(".rels")) {
+            if (!isRelationshipsPartName(relsFile)) {
                 continue;
             }
             const parsed = ctx.effectiveXml(relsFile);
@@ -131,7 +132,7 @@ export const wordDuplicateWebSettingsRelationshipCheck: CheckDefinition = {
         const issues: ValidationIssue[] = [];
 
         for (const relsFile of ctx.partNames) {
-            if (!relsFile.endsWith(".rels")) {
+            if (!isRelationshipsPartName(relsFile)) {
                 continue;
             }
             const parsed = ctx.effectiveXml(relsFile);
@@ -175,7 +176,7 @@ export const wordDuplicateSettingsRelationshipCheck: CheckDefinition = {
         const issues: ValidationIssue[] = [];
 
         for (const relsFile of ctx.partNames) {
-            if (!relsFile.endsWith(".rels")) {
+            if (!isRelationshipsPartName(relsFile)) {
                 continue;
             }
             const parsed = ctx.effectiveXml(relsFile);

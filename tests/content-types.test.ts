@@ -18,6 +18,7 @@ import {
     CONTENT_TYPES_NAMESPACE,
     equivalentPartLookup,
     findEquivalentPart,
+    isRelationshipsPartName,
     resolvePartName,
     normalizePartName,
     parseContentTypes,
@@ -327,5 +328,24 @@ describe("resolveContentType", () => {
     it("returns null when only an Override for a different part exists", () => {
         const table = parseContentTypes(typesXml(overrideEntry("/word/media/other.jpeg", "image/jpeg")));
         expect(resolveContentType(table, "word/media/image1.jpeg")).toBeNull();
+    });
+});
+
+describe("isRelationshipsPartName (#398)", () => {
+    it.each([
+        "_rels/.rels",
+        "_RELS/.RELS",
+        "word/_rels/document.xml.Rels",
+        "word/_rels/document.xml.%72els",
+        "word/_rels/document.xml.%52ELS",
+    ])("recognises %s by OPC equivalence", (part) => {
+        expect(isRelationshipsPartName(part)).toBe(true);
+    });
+    it.each(["word/rels", "word/x.relsx", "word/x.rels.xml"])("does not recognise %s", (part) => {
+        expect(isRelationshipsPartName(part)).toBe(false);
+    });
+    it("decodes an escaped dot as an unreserved character", () => {
+        expect(canonicalPartName("word/x.%2Erels")).toBe(canonicalPartName("word/x..rels"));
+        expect(isRelationshipsPartName("word/x.%2Erels")).toBe(true);
     });
 });
