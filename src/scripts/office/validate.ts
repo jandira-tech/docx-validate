@@ -82,7 +82,7 @@ import { OPC_PART_NAME_ESCAPED_UNRESERVED } from "./checks/opc-part-name-escaped
 import { CT_OVERRIDE_PARTNAME_INVALID } from "./checks/ct-override-partname";
 import { CT_MARKUP_COMPATIBILITY } from "./checks/ct-markup-compatibility";
 import { WORD_PART_CONTENT_TYPE_GENERIC } from "./checks/word-part-content-type-generic";
-import { contextFromArchive, openDirectoryContext } from "./package-context";
+import { contextFromArchive, openDirectoryContext, packageExtractFailedIssue } from "./package-context";
 import {
     BaseSchemaValidator,
     containRelationshipTarget,
@@ -982,21 +982,6 @@ async function refusedWriteBackDestination(root: string, file: string): Promise<
         return new Error(`${file} resolves outside the input directory`);
     }
     return undefined;
-}
-
-/**
- * The finding for an input whose package view cannot be read: an item name
- * places no part, an entry cannot be read, the host filesystem cannot hold
- * two parts' names, or a staged directory's stored file cannot be read
- * (#412). The package view fails before the format validator runs, so
- * partial runs of a packed file report the same failure (#413).
- */
-function packageExtractFailedIssue(target: string, detail: string): ValidationIssue {
-    return {
-        severity: "error",
-        message: `Cannot extract ${target}: ${detail}`,
-        code: "package-extract-failed",
-    };
 }
 
 /**

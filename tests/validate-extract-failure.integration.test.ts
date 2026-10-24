@@ -19,7 +19,7 @@
  * Later filesystem failures still merge readable archive findings (#454).
  */
 
-import { chmodSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import { describe, expect, it, vi } from "vitest";
@@ -27,7 +27,10 @@ import { describe, expect, it, vi } from "vitest";
 import { ModeConflictError } from "../src/lib/mode-policy";
 import { withTempDir } from "../src/lib/run-cli";
 import type { ValidationIssue } from "../src/lib/types";
+import { ValidationContext } from "../src/lib/validation-context";
 import { validate } from "../src/scripts/office/validate";
+import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
+import { PPTXSchemaValidator } from "../src/scripts/office/validators/pptx";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { buildRawZip } from "./support/raw-zip";
 
@@ -85,6 +88,58 @@ const PARTIAL_SELECTIONS = [
     { checks: ["content-types"] },
     { checks: ["ct-override-partname-invalid"] },
 ] as const;
+
+describe.skipIf(process.platform === "win32")("direct validators return directory refusals (#548)", () => {
+    describe.each([
+        ["docx", DOCXSchemaValidator],
+        ["pptx", PPTXSchemaValidator],
+    ] as const)("%s", (suffix, Validator) => {
+        it.each(PROFILES)(
+            "returns the wrapper's single extract failure under %s",
+            async (profile) => {
+                await withTempDir(async (dir) => {
+                    const root = path.join(dir, `input.${suffix}`);
+                    mkdirSync(root);
+                    for (const [name, content] of Object.entries(MINIMAL_PARTS)) {
+                        mkdirSync(path.dirname(path.join(root, name)), { recursive: true });
+                        writeFileSync(path.join(root, name), content);
+                    }
+                    const stored = "word\\a\\..\\x.xml";
+                    // Even malformed XML must not hide the refused stored name in lenient.
+                    writeFileSync(path.join(root, stored), "<x");
+                    const full = await validate(root, { profile });
+                    expect(full.issues).toEqual([
+                        expect.objectContaining({
+                            code: "package-extract-failed",
+                            severity: "error",
+                            message: expect.stringContaining(JSON.stringify(stored)),
+                        }),
+                    ]);
+                    await expect(new Validator({ unpackedDir: root, profile }).validate()).resolves.toEqual({
+                        valid: false,
+                        issues: full.issues,
+                    });
+                });
+            },
+            60_000,
+        );
+
+        it("propagates programming errors while building the context", async () => {
+            await withTempDir(async (dir) => {
+                const error = new TypeError("context construction bug");
+                // There is no upstream fixture for an internal construction bug.
+                const spy = vi.spyOn(ValidationContext, "fromEntries").mockImplementation(() => {
+                    throw error;
+                });
+                try {
+                    await expect(new Validator({ unpackedDir: dir }).validate()).rejects.toBe(error);
+                } finally {
+                    spy.mockRestore();
+                }
+            });
+        }, 60_000);
+    });
+});
 
 /** The error findings of a run, as `code@path`. */
 const errorPairs = (issues: readonly ValidationIssue[]): string[] =>

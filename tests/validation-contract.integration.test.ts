@@ -25,6 +25,7 @@ import { defaultProfileForFormat } from "../src/lib/mode-policy";
 import type { Profile } from "../src/lib/types";
 import { validate } from "../src/scripts/office/validate";
 import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
+import { PPTXSchemaValidator } from "../src/scripts/office/validators/pptx";
 import { walkFiles } from "../src/scripts/office/validators/base";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { buildRawZip } from "./support/raw-zip";
@@ -2100,6 +2101,43 @@ describe.skipIf(process.platform === "win32")("validation contract: directory re
                     expect(result.valid).toBe(false);
                     expect(errorCodes(result.issues)).toContain("package-extract-failed");
                     expect(result.metadata?.executedChecks).not.toContain("xml-syntax");
+                }
+            });
+        },
+        60_000,
+    );
+});
+
+describe.skipIf(process.platform === "win32")("validation contract: direct directory refusals (#548, #381)", () => {
+    it.each([
+        ["docx", DOCXSchemaValidator],
+        ["pptx", PPTXSchemaValidator],
+    ] as const)(
+        "%s agrees across direct, full, strict and partial runs",
+        async (suffix, Validator) => {
+            await withTempDir(async (dir) => {
+                const root = path.join(dir, `input.${suffix}`);
+                mkdirSync(root);
+                for (const [name, content] of Object.entries(MINIMAL_PARTS)) {
+                    writeFileSync(path.join(root, name.replaceAll("/", "\\")), content);
+                }
+                writeFileSync(path.join(root, "word\\a\\..\\x.xml"), "<x/>");
+                const word = await validate(root, { profile: "word-valid" });
+                expect(word.valid).toBe(false);
+                expect(word.issues).toEqual([expect.objectContaining({ code: "package-extract-failed", severity: "error" })]);
+                for (const profile of ["word-valid", "strict"] as const) {
+                    const full = await validate(root, { profile });
+                    expect(full.valid).toBe(false);
+                    expect(full.issues).toEqual(word.issues);
+                    await expect(new Validator({ unpackedDir: root, profile }).validate()).resolves.toEqual({
+                        valid: false,
+                        issues: full.issues,
+                    });
+                }
+                for (const selection of [{ quick: true }, { checks: ["xml-syntax"] }, { checks: ["package"] }]) {
+                    const partial = await validate(root, { profile: "word-valid", ...selection });
+                    expect(partial.valid).toBe(false);
+                    expect(partial.issues).toEqual(word.issues);
                 }
             });
         },

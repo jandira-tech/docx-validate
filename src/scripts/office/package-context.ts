@@ -8,8 +8,26 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
+import type { ValidationIssue } from "../../lib/types";
 import { assertPlaceableNames, ValidationContext, PackageViewError, PackageOpenError } from "../../lib/validation-context";
 import { walkFiles, type UnreadableEntry } from "./validators/base";
+
+/**
+ * The finding for an input whose package view cannot be read: an item name
+ * places no part, an entry cannot be read, the host filesystem cannot hold
+ * two parts' names, or a staged directory's stored file cannot be read
+ * (#412). The package view fails before the format validator runs, so
+ * partial runs of a packed file report the same failure (#413). Directly
+ * constructed DOCX and PPTX validators report a refused directory view with
+ * it too, so they match `validate()` (#548).
+ */
+export function packageExtractFailedIssue(target: string, detail: string): ValidationIssue {
+    return {
+        severity: "error",
+        message: `Cannot extract ${target}: ${detail}`,
+        code: "package-extract-failed",
+    };
+}
 
 /**
  * A context over an unpacked package directory. Parts are read lazily and at
