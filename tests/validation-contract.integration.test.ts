@@ -200,6 +200,67 @@ describe("validation contract: no prefix claim where JSZip's reader index goes n
     );
 });
 
+describe("validation contract: no prefix claim where JSZip's local name/extra reads throw (#566, #381)", { timeout: 120_000 }, () => {
+    // Review of layer 112: `readLocalPart` bounds the local name and the
+    // extra field on their own reads before `readData(compressedSize)`, so
+    // a small negative resolved size — a ZIP64 0x0001 extra resolving to
+    // -8, or the 32-bit field 0xFFFFFFF8 — still throws on a name/extra
+    // overrun of up to |size| bytes; the combined bound #555 added misses
+    // exactly that window. The archive never opens and no prefix is
+    // claimed beside the refusal, full and partial runs alike.
+    it.each([["the 32-bit compressed-size field 0xFFFFFFF8"], ["a ZIP64 extra resolving the compressed size to -8"]])(
+        "word-valid and strict report the refusal alone for %s, and partial runs agree",
+        async ([label]) => {
+            const plain = buildRawZip(Object.entries(MINIMAL_PARTS).map(([name, content]) => ({ name, content })));
+            const cd = plain.readUInt32LE(plain.length - 22 + 16);
+            let bytes: Buffer;
+            if (label.startsWith("the 32-bit")) {
+                bytes = plain;
+                bytes.writeUInt32LE(0xfffffff8, cd + 20);
+            } else {
+                const field = Buffer.alloc(20);
+                field.writeUInt16LE(0x0001, 0);
+                field.writeUInt16LE(16, 2);
+                field.writeBigUInt64LE(BigInt(plain.readUInt32LE(cd + 24)), 4);
+                field.writeBigUInt64LE(0xfffffffffffffff8n, 12);
+                const insert = cd + 46 + plain.readUInt16LE(cd + 28);
+                bytes = Buffer.concat([plain.subarray(0, insert), field, plain.subarray(insert)]);
+                bytes.writeUInt32LE(0xffffffff, cd + 20);
+                bytes.writeUInt32LE(0xffffffff, cd + 24);
+                bytes.writeUInt16LE(bytes.readUInt16LE(cd + 30) + field.length, cd + 30);
+                const eocd = bytes.length - 22;
+                bytes.writeUInt32LE(bytes.readUInt32LE(eocd + 12) + field.length, eocd + 12);
+            }
+            const specimen = Buffer.concat([Buffer.alloc(64, 0x41), bytes]);
+            // The first record's local header sits at archive offset 0 —
+            // buffer offset 64 — and its declared extra length ends the
+            // local name and extra field 4 bytes past the buffer.
+            const nameLength = specimen.readUInt16LE(64 + 26);
+            specimen.writeUInt16LE(specimen.length + 4 - (64 + 30 + nameLength), 64 + 28);
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "specimen.docx");
+                writeFileSync(file, specimen);
+                for (const profile of ["word-valid", "strict", "lenient"] as const) {
+                    const full = await validate(file, { profile });
+                    expect(full.valid, `${label} ${profile}`).toBe(false);
+                    expect([...errorCodes(full.issues)], `${label} ${profile}`).toEqual(["package-open-failed"]);
+                    if (profile !== "word-valid") continue; // Strict rejects partial selectors; lenient runs no envelope check.
+                    for (const selection of [{ quick: true }, { checks: ["zip-bytes-before-archive"] }, { checks: ["package"] }]) {
+                        const partial = await validate(file, { profile, ...selection });
+                        const tag = `${label} ${profile} ${JSON.stringify(selection)}`;
+                        expect(partial.valid, tag).toBe(false);
+                        expect(errorCodes(partial.issues).has("package-open-failed"), tag).toBe(true);
+                        expect(
+                            [...errorCodes(partial.issues)].every((code) => errorCodes(full.issues).has(code)),
+                            `${tag}: partial errors ⊆ full errors`,
+                        ).toBe(true);
+                    }
+                }
+            });
+        },
+    );
+});
+
 describe("validation contract: strict includes every Word-valid package check", { timeout: 120000 }, () => {
     for (const profile of ["word-valid", "strict"] as const) {
         it(`${profile}: the schema-clean control passes`, async () => {
