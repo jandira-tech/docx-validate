@@ -240,8 +240,12 @@ export const getElementsByTagNameNSAll = (root: Document | Element, namespaceURI
     if (root.nodeType === 9 /* DOCUMENT_NODE */) {
         const index = documentElementIndex(root as Document);
         if (index !== undefined) {
-            if (namespaceURI === "*" && localName === "*") return index.all.slice();
-            if (namespaceURI !== "*" && localName !== "*") return index.byName.get(namespaceURI)?.get(localName)?.slice() ?? [];
+            if (namespaceURI === "*" && localName === "*") {
+                return index.all.slice();
+            }
+            if (namespaceURI !== "*" && localName !== "*") {
+                return index.byName.get(namespaceURI)?.get(localName)?.slice() ?? [];
+            }
             return index.all.filter(
                 (elem) =>
                     (namespaceURI === "*" || elem.namespaceURI === namespaceURI) && (localName === "*" || elem.localName === localName),
@@ -252,12 +256,12 @@ export const getElementsByTagNameNSAll = (root: Document | Element, namespaceURI
 };
 
 /** Every descendant element of a document in document order, and the same grouped by namespace and local name. */
-interface DocumentElementIndex {
+type DocumentElementIndex = {
     /** The document's mutation counter when the index was built. */
     readonly inc: number;
     readonly all: Element[];
     readonly byName: Map<string | null, Map<string, Element[]>>;
-}
+};
 
 const documentElementIndexes = new WeakMap<Document, DocumentElementIndex>();
 
@@ -275,9 +279,13 @@ const documentWalkedAt = new WeakMap<Document, number>();
  */
 const documentElementIndex = (document: Document): DocumentElementIndex | undefined => {
     const inc = (document as Document & { _inc?: unknown })._inc;
-    if (typeof inc !== "number") return undefined;
+    if (typeof inc !== "number") {
+        return undefined;
+    }
     const cached = documentElementIndexes.get(document);
-    if (cached?.inc === inc) return cached;
+    if (cached?.inc === inc) {
+        return cached;
+    }
     if (documentWalkedAt.get(document) !== inc) {
         documentWalkedAt.set(document, inc);
         return undefined;
@@ -292,8 +300,11 @@ const documentElementIndex = (document: Document): DocumentElementIndex | undefi
         }
         const name = elem.localName ?? "";
         const list = byLocal.get(name);
-        if (list === undefined) byLocal.set(name, [elem]);
-        else list.push(elem);
+        if (list === undefined) {
+            byLocal.set(name, [elem]);
+        } else {
+            list.push(elem);
+        }
     }
     const index = { inc, all, byName };
     documentElementIndexes.set(document, index);
