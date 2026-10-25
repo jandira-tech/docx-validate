@@ -71,8 +71,11 @@ export function severityClassFor(category: string): InventorySeverityClass {
 interface RepairPlanGroup {
     path?: string;
     code: string;
-    action: string | null;
     count: number;
+    /** Distinct manual guidance strings carried by the group's findings. */
+    actions: Set<string>;
+    /** Findings in the group with no manual guidance. */
+    unguided: number;
 }
 
 export async function collectDocxSemanticInventory(unpackedDir: string, profile: Profile = "lenient"): Promise<DocxSemanticInventory> {
@@ -122,33 +125,43 @@ export function compareDocxSemanticInventories(before: DocxSemanticInventory, af
 }
 
 /**
- * Summarize the same auto-repair run's observed outcomes. Groups retain the
- * pre-repair path, code and manual guidance; only their before/after counts
- * decide whether they cleared, partly cleared, or remain. This also captures
- * indirect repairs and works for every format without a capability table.
+ * Summarize the same auto-repair run's observed outcomes. Groups key on the
+ * finding's (path, code) alone — never the guidance class — so a surviving
+ * finding always keeps its group's "none remain" line away: a `repair-plan`
+ * issue cannot sit beside findings carrying the same path and code (#648).
+ * The surviving findings supply the manual guidance, listed inside the one
+ * line when they differ. Counts decide whether a group cleared, partly
+ * cleared, or remains. This also captures indirect repairs and works for
+ * every format without a capability table.
  */
 export function buildRepairPlanIssues(before: readonly ValidationIssue[], after: readonly ValidationIssue[]): ValidationIssue[] {
     const beforeGroups = groupRepairIssues(before);
     const afterGroups = groupRepairIssues(after);
-    return [...beforeGroups.entries()]
-        .sort(([, a], [, b]) => compareRepairPlanGroups(a, b))
-        .map(([key, group]) => {
-            const remaining = afterGroups.get(key)?.count ?? 0;
-            // New findings may increase a group; never report a negative clearance.
-            const cleared = Math.max(0, group.count - remaining);
-            const guidance =
-                remaining === 0
-                    ? ""
-                    : group.action !== null
-                      ? ` Fix manually: ${group.action}.`
-                      : " No manual repair guidance is available.";
-            return {
-                severity: "info" as const,
-                path: group.path,
-                code: remaining === 0 ? "repair-plan" : cleared > 0 ? "repair-plan-partial" : "repair-plan-unavailable",
-                message: `Before repair found ${group.count} [${group.code}] issue(s). Auto-repair cleared ${cleared}; ${remaining} remain.${guidance}`,
-            };
-        });
+    return [...beforeGroups.values()].sort(compareRepairPlanGroups).map((group) => {
+        const survivors = afterGroups.get(groupKey(group.path, group.code));
+        const remaining = survivors?.count ?? 0;
+        // New findings may increase a group; never report a negative clearance.
+        const cleared = Math.max(0, group.count - remaining);
+        const actions = [...(survivors?.actions ?? [])].sort();
+        const unguided = survivors?.unguided ?? 0;
+        const guidance =
+            remaining === 0
+                ? ""
+                : actions.length === 0
+                  ? " No manual repair guidance is available."
+                  : ` Fix manually: ${actions.join("; ")}.` +
+                    (unguided > 0 ? " No manual repair guidance is available for the other remaining issue(s)." : "");
+        return {
+            severity: "info" as const,
+            path: group.path,
+            code: remaining === 0 ? "repair-plan" : cleared > 0 ? "repair-plan-partial" : "repair-plan-unavailable",
+            message: `Before repair found ${group.count} [${group.code}] issue(s). Auto-repair cleared ${cleared}; ${remaining} remain.${guidance}`,
+        };
+    });
+}
+
+function groupKey(partPath: string | undefined, code: string): string {
+    return `${partPath ?? ""}\u0000${code}`;
 }
 
 function groupRepairIssues(issues: readonly ValidationIssue[]): Map<string, RepairPlanGroup> {
@@ -157,12 +170,20 @@ function groupRepairIssues(issues: readonly ValidationIssue[]): Map<string, Repa
         if (issue.severity === "info") continue;
         const code = issue.code ?? "uncoded-validation-issue";
         const action = repairActionForIssue(issue);
-        const key = `${issue.path ?? ""}\u0000${code}\u0000${action ?? ""}`;
+        const key = groupKey(issue.path, code);
         const existing = groups.get(key);
         if (existing) {
             existing.count += 1;
+            if (action === null) existing.unguided += 1;
+            else existing.actions.add(action);
         } else {
-            groups.set(key, { path: issue.path, code, action, count: 1 });
+            groups.set(key, {
+                path: issue.path,
+                code,
+                count: 1,
+                actions: new Set(action === null ? [] : [action]),
+                unguided: action === null ? 1 : 0,
+            });
         }
     }
     return groups;
@@ -652,7 +673,7 @@ function compareCounters(a: DocxSemanticCounter, b: DocxSemanticCounter): number
 }
 
 function compareRepairPlanGroups(a: RepairPlanGroup, b: RepairPlanGroup): number {
-    return (a.path ?? "").localeCompare(b.path ?? "") || a.code.localeCompare(b.code) || (a.action ?? "").localeCompare(b.action ?? "");
+    return (a.path ?? "").localeCompare(b.path ?? "") || a.code.localeCompare(b.code);
 }
 
 function shortRelationshipType(type: string): string {

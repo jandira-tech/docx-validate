@@ -668,7 +668,40 @@ describe("repair plan vs repair() coverage (#622)", () => {
         expect(unguided?.message).toContain("No manual repair guidance is available");
     });
 
-    it("groups and sorts null guidance, paths and XSD actions identically across permutations", () => {
+    it("counts cleared and remaining per (path, code), so a surviving finding blocks 'none remain' (#648)", () => {
+        const cleared: ValidationIssue = {
+            severity: "error",
+            path: "word/document.xml",
+            code: "xsd-error",
+            message: "}graphic': This element is not expected",
+        };
+        const survivor: ValidationIssue = { severity: "error", path: "word/document.xml", code: "xsd-error", message: "bogus" };
+        const plans = buildRepairPlanIssues([cleared, survivor], [survivor]);
+        // One group per (path, code): the survivor's null guidance must not let
+        // the cleared member's group claim "0 remain" for [xsd-error].
+        expect(plans).toHaveLength(1);
+        expect(plans[0]).toMatchObject({ severity: "info", code: "repair-plan-partial", path: "word/document.xml" });
+        expect(plans[0].message).toBe(
+            "Before repair found 2 [xsd-error] issue(s). Auto-repair cleared 1; 1 remain. No manual repair guidance is available.",
+        );
+    });
+
+    it("lists each surviving finding's guidance inside the one (path, code) line (#648)", () => {
+        const before: ValidationIssue[] = [
+            { severity: "error", path: "word/document.xml", code: "xsd-error", message: "}graphic': This element is not expected" },
+            { severity: "error", path: "word/document.xml", code: "xsd-error", message: "}filetime': '' is not a valid value" },
+            { severity: "error", path: "word/document.xml", code: "xsd-error", message: "bogus" },
+        ];
+        const plans = buildRepairPlanIssues(before, before);
+        expect(plans).toHaveLength(1);
+        expect(plans[0].code).toBe("repair-plan-unavailable");
+        expect(plans[0].message).toContain("Before repair found 3 [xsd-error] issue(s)");
+        expect(plans[0].message).toContain("supply the required DrawingML children in schema order");
+        expect(plans[0].message).toContain("give the custom property a valid xs:dateTime value");
+        expect(plans[0].message).toContain("No manual repair guidance is available for the other remaining issue(s)");
+    });
+
+    it("groups and sorts by path and code identically across permutations", () => {
         const before: ValidationIssue[] = [
             { severity: "warning", path: "word/document.xml", code: "ws-missing-preserve", message: "a" },
             { severity: "error", path: "word/document.xml", code: "ws-missing-preserve", message: "b" },
@@ -680,19 +713,22 @@ describe("repair plan vs repair() coverage (#622)", () => {
         ];
         const after = [before[0], before[3], before[5], before[6]];
         const expected = buildRepairPlanIssues(before, after);
-        expect(expected).toHaveLength(6);
+        // #648: groups key on (path, code) alone, so the three same-part
+        // xsd-error guidance classes merge into one line.
+        expect(expected).toHaveLength(4);
         expect(expected.map((i) => i.code)).toEqual([
             "repair-plan-unavailable",
             "repair-plan-partial",
-            "repair-plan-unavailable",
-            "repair-plan",
-            "repair-plan-unavailable",
+            "repair-plan-partial",
             "repair-plan",
         ]);
         expect(expected[0].message).toContain("[uncoded-validation-issue]");
         expect(expected[1].message).toContain("Auto-repair cleared 1; 1 remain");
-        // The same xsd-error/path has three distinct guidance groups, including null.
-        expect(expected[2].message).toContain("No manual repair guidance is available");
+        // Two xsd-errors survive at word/document.xml: one carries the scaffold
+        // guidance, the other has none, so the line lists both facts.
+        expect(expected[2].message).toContain("Auto-repair cleared 1; 2 remain");
+        expect(expected[2].message).toContain("supply the required DrawingML children in schema order");
+        expect(expected[2].message).toContain("No manual repair guidance is available for the other remaining issue(s)");
         let permutations = 0;
         const visit = (prefix: ValidationIssue[], rest: ValidationIssue[]): void => {
             if (rest.length === 0) {

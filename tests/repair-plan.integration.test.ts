@@ -11,6 +11,7 @@ import { buildPptx, MINIMAL_PPTX_PARTS } from "./support/minimal-pptx";
 const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 const WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
 const A = "http://schemas.openxmlformats.org/drawingml/2006/main";
+const PIC = "http://schemas.openxmlformats.org/drawingml/2006/picture";
 const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 const documentWith = (inner: string): string => MINIMAL_PARTS["word/document.xml"].replace("<w:t>Hello</w:t>", inner);
 const drawing = (inner: string): string => `<w:drawing>${inner}</w:drawing>`;
@@ -250,4 +251,68 @@ describe("repair plan observed outcomes (#622 review regressions)", () => {
             if (c.excludedHint) expect(plan.message).not.toMatch(c.excludedHint);
         });
     });
+
+    /*
+     * #648 / review F1 — one part with two `xsd-error`s of different guidance
+     * classes: the scaffold repair clears the wp:inline error and leaves the
+     * bogus element. The plan counts per (path, code), so the single xsd-error
+     * line reports "cleared 1; 1 remain" and no line may claim "0 remain"
+     * while a finding with that (path, code) survives.
+     */
+    const twoGuidanceClassParts = (): Record<string, string | Uint8Array> => {
+        const parts: Record<string, string | Uint8Array> = {
+            ...MINIMAL_PARTS,
+            "word/document.xml":
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+                `<w:document xmlns:w="${W}" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" ` +
+                `xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="w14" xmlns:r="${R}">` +
+                `<w:body>` +
+                `<w:p w14:paraId="00000001" w14:textId="00000001"><w:r><w:drawing>` +
+                `<wp:inline xmlns:wp="${WP}">` +
+                `<a:graphic xmlns:a="${A}"><a:graphicData uri="${PIC}">` +
+                `<pic:pic xmlns:pic="${PIC}"><pic:blipFill><a:blip xmlns:a="${A}" r:embed="rId9"/><a:stretch xmlns:a="${A}"><a:fillRect/></a:stretch></pic:blipFill></pic:pic>` +
+                `</a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>` +
+                `<w:p w14:paraId="00000002" w14:textId="00000002"><w:r><w:bogusElement/></w:r></w:p>` +
+                `<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/></w:sectPr>` +
+                `</w:body></w:document>`,
+            "word/media/image1.png": new Uint8Array([0x89, 0x50, 0x4e, 0x47]),
+        };
+        parts["[Content_Types].xml"] = (parts["[Content_Types].xml"] as string).replace(
+            "</Types>",
+            `<Default Extension="png" ContentType="image/png"/></Types>`,
+        );
+        parts["word/_rels/document.xml.rels"] = (parts["word/_rels/document.xml.rels"] as string).replace(
+            "</Relationships>",
+            `<Relationship Id="rId9" Type="${R}/image" Target="media/image1.png"/></Relationships>`,
+        );
+        return parts;
+    };
+
+    it.each(["lenient", "strict"] as const)(
+        "never prints 'none remain' for a (path, code) with surviving findings (%s, #648)",
+        { timeout: 60_000 },
+        async (profile) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "xsd-class-change.docx");
+                await fs.writeFile(file, await buildDocx(twoGuidanceClassParts()));
+                const after = await validate(file, { profile, autoRepair: true });
+                // The bogusElement xsd-error survives the scaffold repair.
+                expect(after.issues.some((i) => i.code === "xsd-error" && i.path === "word/document.xml")).toBe(true);
+                const plans = after.issues.filter(
+                    (i) => i.code?.startsWith("repair-plan") && i.path === "word/document.xml" && i.message.includes("[xsd-error]"),
+                );
+                // One line for the (path, code) pair, reporting the partial clearance.
+                expect(plans).toHaveLength(1);
+                expect(plans[0].code).toBe("repair-plan-partial");
+                expect(plans[0].message).toContain("Auto-repair cleared 1; 1 remain");
+                // The general invariant: no "none remain" line while a finding
+                // with that (path, code) survives in the same result.
+                for (const clearedLine of after.issues.filter((i) => i.code === "repair-plan")) {
+                    const match = clearedLine.message.match(/\[([^\]]+)\]/);
+                    expect(match).not.toBeNull();
+                    expect(after.issues.filter((i) => i.code === match![1] && i.path === clearedLine.path)).toHaveLength(0);
+                }
+            });
+        },
+    );
 });
