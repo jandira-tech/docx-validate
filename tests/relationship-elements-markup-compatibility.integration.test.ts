@@ -150,23 +150,31 @@ describe("one markup-compatibility pass per relationships part (#642)", { timeou
  * #654: outside a `validate()` run a check method called directly reads the
  * package as it is now, as `context()` does. A stored `c:dummy.bin` makes the
  * shared context refuse the directory, so the walks take the processed
- * clone; `repairIgnorable()` then declares `w14`, which moves markup
- * compatibility from the Fallback (no `Target`) to the complete Choice.
+ * clone; in a readable directory they read `context().effectiveXml`, which
+ * outside a run is a fresh context per call (#659). `repairIgnorable()` then
+ * declares `w14`, which moves markup compatibility from the Fallback (no
+ * `Target`) to the complete Choice.
  */
 describe("the processed relationships view outside a run (#654)", { timeout: 120_000 }, () => {
     const SIDECAR = "word/_rels/document.xml.rels";
     const PR = "http://schemas.openxmlformats.org/package/2006/relationships";
     const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
-    const parts: Record<string, string> = {
+    const readable: Record<string, string> = {
         ...MINIMAL_PARTS,
-        "c:dummy.bin": "a stored name the shared context refuses",
         [SIDECAR]:
             `<Relationships xmlns="${PR}" xmlns:mc="${MC}" mc:Ignorable="w14"><mc:AlternateContent>` +
             `<mc:Choice Requires="w14"><Relationship Id="rIdC" Type="${R}/styles" Target="styles.xml"/></mc:Choice>` +
             `<mc:Fallback><Relationship Id="rIdF" Type="${R}/styles"/></mc:Fallback></mc:AlternateContent></Relationships>`,
     };
 
-    it.each(["word-valid", "strict"] as const)("%s: a direct check after a repair reads the repaired branch", async (profile) => {
+    const refused: Record<string, string> = { ...readable, "c:dummy.bin": "a stored name the shared context refuses" };
+
+    it.each([
+        ["word-valid", "a refused", refused],
+        ["strict", "a refused", refused],
+        ["word-valid", "a readable", readable],
+        ["strict", "a readable", readable],
+    ] as const)("%s: in %s directory, a direct check after a repair reads the repaired branch", async (profile, _kind, parts) => {
         await withTempDir(async (dir) => {
             for (const [part, xml] of Object.entries(parts)) {
                 await mkdir(path.dirname(path.join(dir, part)), { recursive: true });
