@@ -1998,27 +1998,27 @@ Adversarial reviews BE and BG's suspected items on #619 (#623, #624, #625, #631,
 
 The adversarial review of layer 130 (empryo devin/swe-2), suspected findings 5–8, between clean controls. The specimens sort before their chunk's controls, so each chunk's two controls ran last.
 
-| Run | Observed | Specimen | Issue | Shape | SHA-256 (first 16) | Word | word-valid at 9ac8d583 | strict at 9ac8d583 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `s35a` | 06:25:38Z | `s35a-control-minimal` | control | `MINIMAL_PARTS` | `f930e0867aa34565` | clean-open | valid | valid |
-| `s35a` | 06:25:38Z | `unread-xtra-rs-id-no-sidecar` | #638 (review 130 finding 5) | `MINIMAL_PARTS` plus an unreferenced `word/xtra.xml`, `<x:root xmlns:x="urn:x">` holding `<x:e rs:id="rId9"/>` (ISO Strict relationships namespace), no `.rels` | `37b4859edfdcc272` | clean-open | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `rels-unreferenced`, `xsd-error`, `xsd-summary` |
-| `s35a` | 06:25:38Z | `unread-xtra-r-id-no-sidecar` | #638 twin (Transitional) | the same with a Transitional `r:id` | `1a1147e1cecc8e33` | clean-open | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `rels-unreferenced`, `xsd-error`, `xsd-summary` |
-| `s35a` | 06:25:38Z | `unread-app-props-rs-id-no-sidecar` | #638 (review 130 finding 5) | `MINIMAL_PARTS` plus `docProps/app.xml` with its Override and no relationship, `<Application rs:id="rId9">`, no `.rels` | `86dcb93528a77cbc` | clean-open | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `rels-unreferenced`, `xsd-error`, `xsd-summary` |
-| `s35a` | 06:25:38Z | `unreached-glossary-rs-id-no-sidecar` | #638 (review 130 finding 5) | `MINIMAL_PARTS` plus an ISO Strict `word/glossary/document.xml` with its Override and no `glossaryDocument` relationship, a `w:footerReference rs:id="rId9"` in a `w:docPartBody` `w:sectPr`, no `.rels` | `ddf82ef1c9eb6f42` | clean-open | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `rels-unreferenced` |
-| `s35a` | 06:25:38Z | `styles-rs-id-no-sidecar` | #638 (review 130 finding 5) | `MINIMAL_PARTS` with `rs:id="rId9"` on the first `w:name` of `word/styles.xml`, which has no `.rels` | `cb8546802b5c65d4` | clean-open | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `xsd-error`, `xsd-summary` |
-| `s35a` | 06:25:38Z | `s35a-control-minimal-end` | control | `MINIMAL_PARTS` | `5d9f08c1efc1ee32` | clean-open | valid | valid |
-| `s35b` | 06:26:53Z | `s35b-control-minimal` | control | `MINIMAL_PARTS` | `5d9f08c1efc1ee32` | clean-open | valid | valid |
-| `s35b` | 06:26:53Z | `mce-unselected-rs-embed-no-sidecar` | #638 (review 130 finding 6) | `MINIMAL_PARTS` without `word/_rels/document.xml.rels`, the body holding `<mc:AlternateContent><mc:Choice Requires="foo"><w:p><w:r><w:drawing><a:blip rs:embed="rId9"/></w:drawing></w:r></w:p></mc:Choice><mc:Fallback/></mc:AlternateContent>` (`foo` = `urn:foo`) before the body `w:sectPr` | `c0899813960b1eec` | clean-open | invalid: `rels-missing-sidecar` | invalid: `paraid-missing-element`, `rels-missing-sidecar`, `rels-unreferenced` |
-| `s35b` | 06:26:53Z | `mce-unselected-r-embed-no-sidecar` | #638 twin (Transitional) | the same with a Transitional `r:embed` | `e5af8b5f89d47fca` | clean-open | invalid: `rels-missing-sidecar` | invalid: `paraid-missing-element`, `rels-missing-sidecar`, `rels-unreferenced` |
-| `s35b` | 06:26:20Z | `sectprchange-rs-id-no-sidecar` | review 130 finding 6 (calibration for #638) | `MINIMAL_PARTS` without `word/_rels/document.xml.rels`, a `w:footerReference w:type="default" rs:id="rId9"` inside `w:sectPrChange/w:sectPr` at the end of the body `w:sectPr` | `24bf7cf6dd8fb77d` | repair-warning | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `rels-unreferenced`, `xsd-error`, `xsd-summary` |
-| `s35b` | 06:26:15Z | `sectprchange-footerref-no-id` | review 130 finding 7 (#623) | `MINIMAL_PARTS` with `<w:footerReference w:type="default"/>` (no id) inside `w:sectPrChange/w:sectPr` at the end of the body `w:sectPr` | `df3d9ae1815f280d` | open-error | invalid: `word-header-footer-relationship` | invalid: `word-header-footer-relationship`, `xsd-error`, `xsd-summary` |
-| `s35b` | 06:26:05Z | `body-child-footerref-no-id` | review 130 finding 7 (#623) | `MINIMAL_PARTS` with `<w:footerReference w:type="default"/>` (no id) as a direct `w:body` child before the body `w:sectPr` | `43d67a73dc2e5ab8` | open-error | invalid: `word-header-footer-relationship` | invalid: `word-header-footer-relationship`, `xsd-error`, `xsd-summary` |
-| `s35b` | 06:26:10Z | `ppr-sectpr-footerref-no-id` | review 130 finding 7 (#623) | `MINIMAL_PARTS` with `<w:footerReference w:type="default"/>` (no id) in a paragraph-level `w:pPr/w:sectPr` | `e54fb5744158b43e` | open-error | invalid: `word-header-footer-relationship` | invalid: `word-header-footer-relationship`, `xsd-error`, `xsd-summary` |
-| `s35b` | 06:26:53Z | `s35b-control-minimal-end` | control | `MINIMAL_PARTS` | `4293acd4ef77952a` | clean-open | valid | valid |
-| `s35c` | 06:28:26Z | `s35c-control-minimal` | control | `MINIMAL_PARTS` | `4293acd4ef77952a` | clean-open | valid | valid |
-| `s35c` | 06:27:22Z | `footerref-rid-empty-x-id` | review 130 finding 8 (#623) | `MINIMAL_PARTS` with a body `w:sectPr` `<w:footerReference w:type="default" r:id="" x:id="rId9"/>` (`x` = `urn:x`) | `400ef042eb6c180a` | repair-warning | invalid: `word-header-footer-relationship` | invalid: `word-header-footer-relationship`, `xsd-error`, `xsd-summary` |
-| `s35c` | 06:28:23Z | `footerref-rid-whitespace` | review 130 finding 8 (#623) | `MINIMAL_PARTS` with a body `w:sectPr` `<w:footerReference w:type="default" r:id=" "/>` | `a41c3a3f6cc36a7a` | repair-warning | invalid: `word-header-footer-relationship` | invalid: `word-header-footer-relationship` |
-| `s35c` | 06:28:26Z | `s35c-control-minimal-end` | control | `MINIMAL_PARTS` | `4293acd4ef77952a` | clean-open | valid | valid |
+| Run    | Observed  | Specimen                              | Issue                                       | Shape                                                                                                                                                                                                                                                                                           | SHA-256 (first 16) | Word           | word-valid at 9ac8d583                     | strict at 9ac8d583                                                               |
+| ------ | --------- | ------------------------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | ------------------------------------------ | -------------------------------------------------------------------------------- |
+| `s35a` | 06:25:38Z | `s35a-control-minimal`                | control                                     | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                                 | `f930e0867aa34565` | clean-open     | valid                                      | valid                                                                            |
+| `s35a` | 06:25:38Z | `unread-xtra-rs-id-no-sidecar`        | #638 (review 130 finding 5)                 | `MINIMAL_PARTS` plus an unreferenced `word/xtra.xml`, `<x:root xmlns:x="urn:x">` holding `<x:e rs:id="rId9"/>` (ISO Strict relationships namespace), no `.rels`                                                                                                                                 | `37b4859edfdcc272` | clean-open     | invalid: `rels-missing-sidecar`            | invalid: `rels-missing-sidecar`, `rels-unreferenced`, `xsd-error`, `xsd-summary` |
+| `s35a` | 06:25:38Z | `unread-xtra-r-id-no-sidecar`         | #638 twin (Transitional)                    | the same with a Transitional `r:id`                                                                                                                                                                                                                                                             | `1a1147e1cecc8e33` | clean-open     | invalid: `rels-missing-sidecar`            | invalid: `rels-missing-sidecar`, `rels-unreferenced`, `xsd-error`, `xsd-summary` |
+| `s35a` | 06:25:38Z | `unread-app-props-rs-id-no-sidecar`   | #638 (review 130 finding 5)                 | `MINIMAL_PARTS` plus `docProps/app.xml` with its Override and no relationship, `<Application rs:id="rId9">`, no `.rels`                                                                                                                                                                         | `86dcb93528a77cbc` | clean-open     | invalid: `rels-missing-sidecar`            | invalid: `rels-missing-sidecar`, `rels-unreferenced`, `xsd-error`, `xsd-summary` |
+| `s35a` | 06:25:38Z | `unreached-glossary-rs-id-no-sidecar` | #638 (review 130 finding 5)                 | `MINIMAL_PARTS` plus an ISO Strict `word/glossary/document.xml` with its Override and no `glossaryDocument` relationship, a `w:footerReference rs:id="rId9"` in a `w:docPartBody` `w:sectPr`, no `.rels`                                                                                        | `ddf82ef1c9eb6f42` | clean-open     | invalid: `rels-missing-sidecar`            | invalid: `rels-missing-sidecar`, `rels-unreferenced`                             |
+| `s35a` | 06:25:38Z | `styles-rs-id-no-sidecar`             | #638 (review 130 finding 5)                 | `MINIMAL_PARTS` with `rs:id="rId9"` on the first `w:name` of `word/styles.xml`, which has no `.rels`                                                                                                                                                                                            | `cb8546802b5c65d4` | clean-open     | invalid: `rels-missing-sidecar`            | invalid: `rels-missing-sidecar`, `xsd-error`, `xsd-summary`                      |
+| `s35a` | 06:25:38Z | `s35a-control-minimal-end`            | control                                     | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                                 | `5d9f08c1efc1ee32` | clean-open     | valid                                      | valid                                                                            |
+| `s35b` | 06:26:53Z | `s35b-control-minimal`                | control                                     | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                                 | `5d9f08c1efc1ee32` | clean-open     | valid                                      | valid                                                                            |
+| `s35b` | 06:26:53Z | `mce-unselected-rs-embed-no-sidecar`  | #638 (review 130 finding 6)                 | `MINIMAL_PARTS` without `word/_rels/document.xml.rels`, the body holding `<mc:AlternateContent><mc:Choice Requires="foo"><w:p><w:r><w:drawing><a:blip rs:embed="rId9"/></w:drawing></w:r></w:p></mc:Choice><mc:Fallback/></mc:AlternateContent>` (`foo` = `urn:foo`) before the body `w:sectPr` | `c0899813960b1eec` | clean-open     | invalid: `rels-missing-sidecar`            | invalid: `paraid-missing-element`, `rels-missing-sidecar`, `rels-unreferenced`   |
+| `s35b` | 06:26:53Z | `mce-unselected-r-embed-no-sidecar`   | #638 twin (Transitional)                    | the same with a Transitional `r:embed`                                                                                                                                                                                                                                                          | `e5af8b5f89d47fca` | clean-open     | invalid: `rels-missing-sidecar`            | invalid: `paraid-missing-element`, `rels-missing-sidecar`, `rels-unreferenced`   |
+| `s35b` | 06:26:20Z | `sectprchange-rs-id-no-sidecar`       | review 130 finding 6 (calibration for #638) | `MINIMAL_PARTS` without `word/_rels/document.xml.rels`, a `w:footerReference w:type="default" rs:id="rId9"` inside `w:sectPrChange/w:sectPr` at the end of the body `w:sectPr`                                                                                                                  | `24bf7cf6dd8fb77d` | repair-warning | invalid: `rels-missing-sidecar`            | invalid: `rels-missing-sidecar`, `rels-unreferenced`, `xsd-error`, `xsd-summary` |
+| `s35b` | 06:26:15Z | `sectprchange-footerref-no-id`        | review 130 finding 7 (#623)                 | `MINIMAL_PARTS` with `<w:footerReference w:type="default"/>` (no id) inside `w:sectPrChange/w:sectPr` at the end of the body `w:sectPr`                                                                                                                                                         | `df3d9ae1815f280d` | open-error     | invalid: `word-header-footer-relationship` | invalid: `word-header-footer-relationship`, `xsd-error`, `xsd-summary`           |
+| `s35b` | 06:26:05Z | `body-child-footerref-no-id`          | review 130 finding 7 (#623)                 | `MINIMAL_PARTS` with `<w:footerReference w:type="default"/>` (no id) as a direct `w:body` child before the body `w:sectPr`                                                                                                                                                                      | `43d67a73dc2e5ab8` | open-error     | invalid: `word-header-footer-relationship` | invalid: `word-header-footer-relationship`, `xsd-error`, `xsd-summary`           |
+| `s35b` | 06:26:10Z | `ppr-sectpr-footerref-no-id`          | review 130 finding 7 (#623)                 | `MINIMAL_PARTS` with `<w:footerReference w:type="default"/>` (no id) in a paragraph-level `w:pPr/w:sectPr`                                                                                                                                                                                      | `e54fb5744158b43e` | open-error     | invalid: `word-header-footer-relationship` | invalid: `word-header-footer-relationship`, `xsd-error`, `xsd-summary`           |
+| `s35b` | 06:26:53Z | `s35b-control-minimal-end`            | control                                     | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                                 | `4293acd4ef77952a` | clean-open     | valid                                      | valid                                                                            |
+| `s35c` | 06:28:26Z | `s35c-control-minimal`                | control                                     | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                                 | `4293acd4ef77952a` | clean-open     | valid                                      | valid                                                                            |
+| `s35c` | 06:27:22Z | `footerref-rid-empty-x-id`            | review 130 finding 8 (#623)                 | `MINIMAL_PARTS` with a body `w:sectPr` `<w:footerReference w:type="default" r:id="" x:id="rId9"/>` (`x` = `urn:x`)                                                                                                                                                                              | `400ef042eb6c180a` | repair-warning | invalid: `word-header-footer-relationship` | invalid: `word-header-footer-relationship`, `xsd-error`, `xsd-summary`           |
+| `s35c` | 06:28:23Z | `footerref-rid-whitespace`            | review 130 finding 8 (#623)                 | `MINIMAL_PARTS` with a body `w:sectPr` `<w:footerReference w:type="default" r:id=" "/>`                                                                                                                                                                                                         | `a41c3a3f6cc36a7a` | repair-warning | invalid: `word-header-footer-relationship` | invalid: `word-header-footer-relationship`                                       |
+| `s35c` | 06:28:26Z | `s35c-control-minimal-end`            | control                                     | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                                 | `4293acd4ef77952a` | clean-open     | valid                                      | valid                                                                            |
 
 <details><summary>Raw records, session 35</summary>
 
@@ -7084,68 +7084,176 @@ const MAIN = "word/document.xml";
 const SIDECAR = "word/_rels/document.xml.rels";
 type Parts = Record<string, string>;
 const replaceOnce = (text: string, from: string, to: string) => {
-  if (!text.includes(from)) throw new Error(`missing ${from}`);
-  return text.replace(from, to);
+    if (!text.includes(from)) throw new Error(`missing ${from}`);
+    return text.replace(from, to);
 };
-const override = (part: string, type: string) => replaceOnce(MINIMAL_PARTS[CT]!, "</Types>", `<Override PartName="/${part}" ContentType="${type}"/></Types>`);
+const override = (part: string, type: string) =>
+    replaceOnce(MINIMAL_PARTS[CT]!, "</Types>", `<Override PartName="/${part}" ContentType="${type}"/></Types>`);
 const main = (declarations: string, from: string, to: string): string =>
-  replaceOnce(replaceOnce(MINIMAL_PARTS[MAIN]!, "<w:document ", `<w:document ${declarations} `), from, to);
+    replaceOnce(replaceOnce(MINIMAL_PARTS[MAIN]!, "<w:document ", `<w:document ${declarations} `), from, to);
 const withoutSidecar = (parts: Parts): Parts => {
-  const out = { ...parts };
-  delete out[SIDECAR];
-  return out;
+    const out = { ...parts };
+    delete out[SIDECAR];
+    return out;
 };
 const NOID = '<w:footerReference w:type="default"/>';
-const SECTPR_CHANGE = (inner: string) => `<w:sectPrChange w:id="5" w:author="a" w:date="2026-01-01T00:00:00Z"><w:sectPr>${inner}</w:sectPr></w:sectPrChange></w:sectPr>`;
+const SECTPR_CHANGE = (inner: string) =>
+    `<w:sectPrChange w:id="5" w:author="a" w:date="2026-01-01T00:00:00Z"><w:sectPr>${inner}</w:sectPr></w:sectPrChange></w:sectPr>`;
 const control = () => buildDocx({ ...MINIMAL_PARTS });
 
 const chunks: Record<string, Array<[string, string, () => Promise<Uint8Array>]>> = {
-  s35a: [
-    ["s35a-control-minimal", "control", control],
-    ["unread-xtra-rs-id-no-sidecar", "review 130 finding 5 (#624)", () =>
-      buildDocx({ ...MINIMAL_PARTS, "word/xtra.xml": `<?xml version="1.0"?><x:root xmlns:x="urn:x" xmlns:rs="${RS}"><x:e rs:id="rId9"/></x:root>` })],
-    ["unread-xtra-r-id-no-sidecar", "review 130 finding 5 twin (Transitional)", () =>
-      buildDocx({ ...MINIMAL_PARTS, "word/xtra.xml": `<?xml version="1.0"?><x:root xmlns:x="urn:x" xmlns:r="${R}"><x:e r:id="rId9"/></x:root>` })],
-    ["unread-app-props-rs-id-no-sidecar", "review 130 finding 5 (#624)", () =>
-      buildDocx({
-        ...MINIMAL_PARTS,
-        "docProps/app.xml": `<?xml version="1.0"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:rs="${RS}"><Application rs:id="rId9">x</Application></Properties>`,
-        [CT]: override("docProps/app.xml", "application/vnd.openxmlformats-officedocument.extended-properties+xml"),
-      })],
-    ["unreached-glossary-rs-id-no-sidecar", "review 130 finding 5 (#624)", () =>
-      buildDocx({
-        ...MINIMAL_PARTS,
-        "word/glossary/document.xml": `<?xml version="1.0"?><w:glossaryDocument xmlns:w="${WS}" xmlns:rs="${RS}"><w:docParts><w:docPart><w:docPartBody><w:sectPr><w:footerReference w:type="default" rs:id="rId9"/></w:sectPr></w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`,
-        [CT]: override("word/glossary/document.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.document.glossary+xml"),
-      })],
-    ["styles-rs-id-no-sidecar", "review 130 finding 5 (#624; styles is reached)", () =>
-      buildDocx({ ...MINIMAL_PARTS, "word/styles.xml": replaceOnce(replaceOnce(MINIMAL_PARTS["word/styles.xml"]!, "<w:styles ", `<w:styles xmlns:rs="${RS}" `), "<w:name ", `<w:name rs:id="rId9" `) })],
-    ["s35a-control-minimal-end", "control", control],
-  ],
-  s35b: [
-    ["s35b-control-minimal", "control", control],
-    ["mce-unselected-rs-embed-no-sidecar", "review 130 finding 6 (#624)", () =>
-      buildDocx(withoutSidecar({ ...MINIMAL_PARTS, [MAIN]: main(`xmlns:rs="${RS}" xmlns:foo="urn:foo" xmlns:a="${A}"`, "<w:sectPr>", `<mc:AlternateContent><mc:Choice Requires="foo"><w:p><w:r><w:drawing><a:blip rs:embed="rId9"/></w:drawing></w:r></w:p></mc:Choice><mc:Fallback/></mc:AlternateContent><w:sectPr>`) }))],
-    ["mce-unselected-r-embed-no-sidecar", "review 130 finding 6 twin (Transitional)", () =>
-      buildDocx(withoutSidecar({ ...MINIMAL_PARTS, [MAIN]: main(`xmlns:r="${R}" xmlns:foo="urn:foo" xmlns:a="${A}"`, "<w:sectPr>", `<mc:AlternateContent><mc:Choice Requires="foo"><w:p><w:r><w:drawing><a:blip r:embed="rId9"/></w:drawing></w:r></w:p></mc:Choice><mc:Fallback/></mc:AlternateContent><w:sectPr>`) }))],
-    ["sectprchange-rs-id-no-sidecar", "review 130 finding 6 (#624)", () =>
-      buildDocx(withoutSidecar({ ...MINIMAL_PARTS, [MAIN]: main(`xmlns:rs="${RS}"`, "</w:sectPr>", SECTPR_CHANGE('<w:footerReference w:type="default" rs:id="rId9"/>')) }))],
-    ["sectprchange-footerref-no-id", "review 130 finding 7 (#623)", () =>
-      buildDocx({ ...MINIMAL_PARTS, [MAIN]: main(`xmlns:r="${R}"`, "</w:sectPr>", SECTPR_CHANGE(NOID)) })],
-    ["body-child-footerref-no-id", "review 130 finding 7 (#623)", () =>
-      buildDocx({ ...MINIMAL_PARTS, [MAIN]: main(`xmlns:r="${R}"`, "<w:sectPr>", `${NOID}<w:sectPr>`) })],
-    ["ppr-sectpr-footerref-no-id", "review 130 finding 7 (#623)", () =>
-      buildDocx({ ...MINIMAL_PARTS, [MAIN]: main(`xmlns:r="${R}"`, "<w:r><w:t>Hello", `<w:pPr><w:sectPr>${NOID}</w:sectPr></w:pPr><w:r><w:t>Hello`) })],
-    ["s35b-control-minimal-end", "control", control],
-  ],
-  s35c: [
-    ["s35c-control-minimal", "control", control],
-    ["footerref-rid-empty-x-id", "review 130 finding 8 (#623)", () =>
-      buildDocx({ ...MINIMAL_PARTS, [MAIN]: main(`xmlns:r="${R}" xmlns:x="urn:x"`, "<w:sectPr>", '<w:sectPr><w:footerReference w:type="default" r:id="" x:id="rId9"/>') })],
-    ["footerref-rid-whitespace", "review 130 finding 8 (#623)", () =>
-      buildDocx({ ...MINIMAL_PARTS, [MAIN]: main(`xmlns:r="${R}"`, "<w:sectPr>", '<w:sectPr><w:footerReference w:type="default" r:id=" "/>') })],
-    ["s35c-control-minimal-end", "control", control],
-  ],
+    s35a: [
+        ["s35a-control-minimal", "control", control],
+        [
+            "unread-xtra-rs-id-no-sidecar",
+            "review 130 finding 5 (#624)",
+            () =>
+                buildDocx({
+                    ...MINIMAL_PARTS,
+                    "word/xtra.xml": `<?xml version="1.0"?><x:root xmlns:x="urn:x" xmlns:rs="${RS}"><x:e rs:id="rId9"/></x:root>`,
+                }),
+        ],
+        [
+            "unread-xtra-r-id-no-sidecar",
+            "review 130 finding 5 twin (Transitional)",
+            () =>
+                buildDocx({
+                    ...MINIMAL_PARTS,
+                    "word/xtra.xml": `<?xml version="1.0"?><x:root xmlns:x="urn:x" xmlns:r="${R}"><x:e r:id="rId9"/></x:root>`,
+                }),
+        ],
+        [
+            "unread-app-props-rs-id-no-sidecar",
+            "review 130 finding 5 (#624)",
+            () =>
+                buildDocx({
+                    ...MINIMAL_PARTS,
+                    "docProps/app.xml": `<?xml version="1.0"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:rs="${RS}"><Application rs:id="rId9">x</Application></Properties>`,
+                    [CT]: override("docProps/app.xml", "application/vnd.openxmlformats-officedocument.extended-properties+xml"),
+                }),
+        ],
+        [
+            "unreached-glossary-rs-id-no-sidecar",
+            "review 130 finding 5 (#624)",
+            () =>
+                buildDocx({
+                    ...MINIMAL_PARTS,
+                    "word/glossary/document.xml": `<?xml version="1.0"?><w:glossaryDocument xmlns:w="${WS}" xmlns:rs="${RS}"><w:docParts><w:docPart><w:docPartBody><w:sectPr><w:footerReference w:type="default" rs:id="rId9"/></w:sectPr></w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`,
+                    [CT]: override(
+                        "word/glossary/document.xml",
+                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document.glossary+xml",
+                    ),
+                }),
+        ],
+        [
+            "styles-rs-id-no-sidecar",
+            "review 130 finding 5 (#624; styles is reached)",
+            () =>
+                buildDocx({
+                    ...MINIMAL_PARTS,
+                    "word/styles.xml": replaceOnce(
+                        replaceOnce(MINIMAL_PARTS["word/styles.xml"]!, "<w:styles ", `<w:styles xmlns:rs="${RS}" `),
+                        "<w:name ",
+                        `<w:name rs:id="rId9" `,
+                    ),
+                }),
+        ],
+        ["s35a-control-minimal-end", "control", control],
+    ],
+    s35b: [
+        ["s35b-control-minimal", "control", control],
+        [
+            "mce-unselected-rs-embed-no-sidecar",
+            "review 130 finding 6 (#624)",
+            () =>
+                buildDocx(
+                    withoutSidecar({
+                        ...MINIMAL_PARTS,
+                        [MAIN]: main(
+                            `xmlns:rs="${RS}" xmlns:foo="urn:foo" xmlns:a="${A}"`,
+                            "<w:sectPr>",
+                            `<mc:AlternateContent><mc:Choice Requires="foo"><w:p><w:r><w:drawing><a:blip rs:embed="rId9"/></w:drawing></w:r></w:p></mc:Choice><mc:Fallback/></mc:AlternateContent><w:sectPr>`,
+                        ),
+                    }),
+                ),
+        ],
+        [
+            "mce-unselected-r-embed-no-sidecar",
+            "review 130 finding 6 twin (Transitional)",
+            () =>
+                buildDocx(
+                    withoutSidecar({
+                        ...MINIMAL_PARTS,
+                        [MAIN]: main(
+                            `xmlns:r="${R}" xmlns:foo="urn:foo" xmlns:a="${A}"`,
+                            "<w:sectPr>",
+                            `<mc:AlternateContent><mc:Choice Requires="foo"><w:p><w:r><w:drawing><a:blip r:embed="rId9"/></w:drawing></w:r></w:p></mc:Choice><mc:Fallback/></mc:AlternateContent><w:sectPr>`,
+                        ),
+                    }),
+                ),
+        ],
+        [
+            "sectprchange-rs-id-no-sidecar",
+            "review 130 finding 6 (#624)",
+            () =>
+                buildDocx(
+                    withoutSidecar({
+                        ...MINIMAL_PARTS,
+                        [MAIN]: main(
+                            `xmlns:rs="${RS}"`,
+                            "</w:sectPr>",
+                            SECTPR_CHANGE('<w:footerReference w:type="default" rs:id="rId9"/>'),
+                        ),
+                    }),
+                ),
+        ],
+        [
+            "sectprchange-footerref-no-id",
+            "review 130 finding 7 (#623)",
+            () => buildDocx({ ...MINIMAL_PARTS, [MAIN]: main(`xmlns:r="${R}"`, "</w:sectPr>", SECTPR_CHANGE(NOID)) }),
+        ],
+        [
+            "body-child-footerref-no-id",
+            "review 130 finding 7 (#623)",
+            () => buildDocx({ ...MINIMAL_PARTS, [MAIN]: main(`xmlns:r="${R}"`, "<w:sectPr>", `${NOID}<w:sectPr>`) }),
+        ],
+        [
+            "ppr-sectpr-footerref-no-id",
+            "review 130 finding 7 (#623)",
+            () =>
+                buildDocx({
+                    ...MINIMAL_PARTS,
+                    [MAIN]: main(`xmlns:r="${R}"`, "<w:r><w:t>Hello", `<w:pPr><w:sectPr>${NOID}</w:sectPr></w:pPr><w:r><w:t>Hello`),
+                }),
+        ],
+        ["s35b-control-minimal-end", "control", control],
+    ],
+    s35c: [
+        ["s35c-control-minimal", "control", control],
+        [
+            "footerref-rid-empty-x-id",
+            "review 130 finding 8 (#623)",
+            () =>
+                buildDocx({
+                    ...MINIMAL_PARTS,
+                    [MAIN]: main(
+                        `xmlns:r="${R}" xmlns:x="urn:x"`,
+                        "<w:sectPr>",
+                        '<w:sectPr><w:footerReference w:type="default" r:id="" x:id="rId9"/>',
+                    ),
+                }),
+        ],
+        [
+            "footerref-rid-whitespace",
+            "review 130 finding 8 (#623)",
+            () =>
+                buildDocx({
+                    ...MINIMAL_PARTS,
+                    [MAIN]: main(`xmlns:r="${R}"`, "<w:sectPr>", '<w:sectPr><w:footerReference w:type="default" r:id=" "/>'),
+                }),
+        ],
+        ["s35c-control-minimal-end", "control", control],
+    ],
 };
 
 const chunk = process.env.CHUNK ?? "";
@@ -7155,17 +7263,22 @@ const dir = process.env.BUILD_DIR;
 if (!dir) throw new Error("BUILD_DIR is required");
 mkdirSync(dir, { recursive: true });
 for (const [name, issue, make] of specimens) {
-  const bytes = await make();
-  const file = `${name}.docx`;
-  writeFileSync(path.join(dir, file), bytes);
-  const sha256 = createHash("sha256").update(bytes).digest("hex");
-  const verdict = async (profile: "word-valid" | "strict") => {
-    const r = await validate(path.join(dir, file), { profile });
-    return { valid: r.valid, errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))] };
-  };
-  const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
-  appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
-  console.log(`built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`);
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        const r = await validate(path.join(dir, file), { profile });
+        return {
+            valid: r.valid,
+            errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+        };
+    };
+    const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
 }
 ```
 
