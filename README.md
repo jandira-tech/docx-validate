@@ -966,11 +966,13 @@ part is this check's finding too — when that relationships part exists and
 parses, as Word 16.115 offered recovery for a body `w:footerReference`
 `r:id="rId9"` beside a kept `word/_rels/document.xml.rels` holding no `rId9`
 ([#619](https://github.com/jandira-tech/docx-validate/issues/619); session 32
-in the same evidence file); a part with no relationships part keeps
-`rels-missing-sidecar` as its only finding for a non-empty `r:id`.
+in the same evidence file). In a full run, a part with no relationships part
+keeps `rels-missing-sidecar` as its only finding for a non-empty `r:id`; the
+legacy relationship walk that reports it runs only in full runs, so quick and
+named runs report nothing for that shape.
 Under word-valid for DOCX/DOCM, `rels-missing-sidecar` blocks when the part
-is a story root — the main document or a reached glossary — wherever it is
-stored, even under `word/header1.xml`: Word judges a story root by the
+is a story root — the main document or a reached glossary — under any `.xml`
+name, even `word/header1.xml`: Word judges a story root by the
 relationship that reaches it, not by its file name, and session 33 observed
 recovery for both a renamed main document and a renamed reached glossary
 whose `.rels` was gone beside their story reference, while the renamed
@@ -980,7 +982,10 @@ chunk s33b, in the same evidence file). Every other part keeps the basename
 rule: a genuine `word/header1.xml` or `word/footer1.xml` bearing relationship
 references with no sidecar keeps its word-valid warning — Word's own
 regenerated output opens clean carrying that finding — and any other name
-blocks as before.
+blocks as before. A story root stored without a `.xml` suffix
+(`word/document.bin`) is not checked as XML, so it gets no
+`rels-missing-sidecar` at all
+([#620](https://github.com/jandira-tech/docx-validate/issues/620)).
 An empty or missing id in both relationships namespaces is this check's
 finding regardless of whether the sidecar exists or parses
 ([#623](https://github.com/jandira-tech/docx-validate/issues/623)). Session 33
@@ -1009,7 +1014,8 @@ legacy walk reads only truthy ids and reports neither shape.
 A glossary no main-document relationship reaches keeps its
 `rels-id-mismatch` or `rels-id-missing` under strict (Word does not read it,
 so word-valid stays silent), and lenient keeps every one of them.
-Full, quick and named Word-valid runs agree (#381).
+Full, quick and named Word-valid runs judge the findings they report alike
+(#381).
 
 `rels-missing-sidecar` reports a part that uses a non-empty `id`, `embed` or
 `link` attribute in either the Transitional or ISO Strict relationships

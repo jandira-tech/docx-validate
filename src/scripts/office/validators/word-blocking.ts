@@ -230,6 +230,9 @@ export const isWordBlockingIssue = (
             // word/footer1.xml with no sidecar is Word-tolerated (Word's own
             // regenerated header-with-rid-no-sidecar output opens clean
             // carrying the finding), and any other name blocks as before.
+            // The finding itself exists only for parts stored under a .xml
+            // name: a story root stored as word/document.bin is not checked
+            // as XML and never gets one (#620).
             const part = issue.path?.replace(/\\/g, "/");
             if (part !== undefined && storyRootParts.has(canonicalPartName(part))) return true;
             return !/^word\/(?:header|footer)\d*\.xml$/i.test(issue.path ?? "");

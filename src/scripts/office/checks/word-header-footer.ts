@@ -49,8 +49,8 @@
  * truthy ids and reports neither shape.
  *
  * In a full word-valid or strict
- * run each element this check reports yields one finding, this check's: the
- * run drops the matching `rels-id-mismatch` — or, for an `r:id` naming no
+ * run each element this check reports yields one relationship finding, this
+ * check's: the run drops the matching `rels-id-mismatch` — or, for an `r:id` naming no
  * Relationship, `rels-id-missing` — copy of it (#612, #619;
  * `withoutRepeatedHeaderFooterFindings` in validators/docx.ts), paired through
  * the structured element identity the check registers on the issue, never
@@ -59,7 +59,8 @@
  * `x:headerReference` this check does not match, a glossary no
  * main-document relationship reaches, and lenient, which runs no Word rule
  * (Word does not read an unreached glossary, so word-valid stays silent
- * there).
+ * there). Strict also keeps the schema's own `xsd-error` for a reference with
+ * no `r:id`, which the XSD requires; it carries no identity to pair.
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";

@@ -1358,6 +1358,9 @@ describe("#623: empty and missing story reference ids (Word 16.115 session 33)",
         expect(storyReferenceIdentity(issues[0]!)).toBeUndefined();
     });
 
+    // A guard against over-reporting, not a RED test for #623: the code before
+    // #623 passed it too. It pins that the empty-id finding needs both
+    // namespaces empty, so an empty id beside a usable one stays clean.
     it.each(['r:id="" rs:id="rIdF"', 'r:id="rIdF" rs:id=""'])(
         "uses the non-empty id when the other namespace is empty: %s",
         async (attributes) => {
