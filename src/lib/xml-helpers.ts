@@ -163,22 +163,26 @@ export const prettyXml = (node: Node, indent = "  "): string => {
 export const getElementsByTagNameNSAll = (root: Document | Element, namespaceURI: string, localName: string): Element[] => {
     const out: Element[] = [];
     const stack: Node[] = [root];
+    const isWildNs = namespaceURI === "*";
+    const isWildLocal = localName === "*";
 
     while (stack.length > 0) {
         const node = stack.pop()!;
         if (node !== root && node.nodeType === 1) {
             const elem = node as Element;
-            if ((namespaceURI === "*" || elem.namespaceURI === namespaceURI) && (localName === "*" || elem.localName === localName)) {
+            if ((isWildNs || elem.namespaceURI === namespaceURI) && (isWildLocal || elem.localName === localName)) {
                 out.push(elem);
             }
         }
 
-        let child = node.lastChild;
-        while (child) {
-            if (child.nodeType === 1) {
-                stack.push(child);
+        const { childNodes } = node;
+        if (childNodes) {
+            for (let i = childNodes.length - 1; i >= 0; i--) {
+                const child = childNodes[i];
+                if (child.nodeType === 1) {
+                    stack.push(child);
+                }
             }
-            child = child.previousSibling;
         }
     }
     return out;
