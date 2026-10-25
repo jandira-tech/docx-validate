@@ -7,9 +7,9 @@ import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
-import type { ValidationIssue } from "../src/lib/types";
+import { NS, type ValidationIssue } from "../src/lib/types";
 import { validate } from "../src/scripts/office/validate";
-import { buildDocx } from "./support/minimal-docx";
+import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import {
     RELATIONSHIPS_MCE_CASES,
     STORY_RELS_MCE_CASES,
@@ -373,5 +373,188 @@ describe("story-root relationships MCE classification (#644, session 36)", () =>
                 });
             },
         );
+    }
+});
+
+/**
+ * #639: the judged set is compared as OPC compares part names, so an
+ * OPC-equivalent spelling with an escaped unreserved character is judged as
+ * its unescaped twin is, in full, quick and named runs (#381). Word was not
+ * shown these escaped shapes: the package stays invalid through its stored
+ * name's `opc-part-name-escaped-unreserved` rejection (#408), so no verdict
+ * changes — only the findings do.
+ */
+describe("markup compatibility judging of OPC-equivalent word/*.xml part names (#639, #381)", () => {
+    const HEAD = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+    // `%78` is an escaped `x` (M1.8 forbids the escape; OPC still equates it).
+    const MUST_UNDERSTAND_FOO = `${HEAD}<w:document xmlns:w="${NS.W}" xmlns:mc="${NS.MC}" xmlns:foo="urn:foo" mc:MustUnderstand="foo"><w:body/></w:document>`;
+    const IGNORABLE_UNDECLARED = `${HEAD}<w:document xmlns:w="${NS.W}" xmlns:mc="${NS.MC}" mc:Ignorable="undecl"><w:body/></w:document>`;
+    const withPart = (part: string, xml: string): Record<string, string> => ({ ...MINIMAL_PARTS, [part]: xml });
+
+    const specimens = [
+        {
+            label: "escaped-extension-must-understand",
+            part: "word/foo.%78ml",
+            parts: withPart("word/foo.%78ml", MUST_UNDERSTAND_FOO),
+            code: "mce-must-understand",
+            // mce-must-understand is Word-blocking in the XML parts under
+            // word/, keyed by the canonical name, so the finding is an error.
+            severity: "error",
+            fullValid: false,
+            namedValid: false,
+            quickValid: false,
+            lenient: [
+                "error:ct-undeclared-part@word/foo.%78ml",
+                "error:mce-must-understand@word/foo.%78ml",
+                "error:rels-unreferenced@word/foo.%78ml",
+                "info:latent-styles-missing@word/styles.xml",
+                "warning:opc-part-name-escaped-unreserved@word/foo.%78ml",
+            ],
+        },
+        {
+            label: "escaped-extension-ignorable-undeclared",
+            part: "word/foo.%78ml",
+            parts: withPart("word/foo.%78ml", IGNORABLE_UNDECLARED),
+            code: "ignorable-undeclared",
+            // Not Word-blocking, so word-valid keeps the warning the full
+            // run's validateNamespaces already reports at this part.
+            severity: "warning",
+            fullValid: false,
+            namedValid: true,
+            quickValid: false,
+            lenient: [
+                "error:ct-undeclared-part@word/foo.%78ml",
+                "error:ignorable-undeclared@word/foo.%78ml",
+                "error:rels-unreferenced@word/foo.%78ml",
+                "info:latent-styles-missing@word/styles.xml",
+                "warning:opc-part-name-escaped-unreserved@word/foo.%78ml",
+            ],
+        },
+        {
+            label: "upper-case-must-understand",
+            part: "word/FOO.XML",
+            parts: withPart("word/FOO.XML", MUST_UNDERSTAND_FOO),
+            code: "mce-must-understand",
+            severity: "error",
+            fullValid: false,
+            namedValid: false,
+            quickValid: false,
+            lenient: [
+                "error:ct-undeclared-part@word/FOO.XML",
+                "error:mce-must-understand@word/FOO.XML",
+                "error:rels-unreferenced@word/FOO.XML",
+                "info:latent-styles-missing@word/styles.xml",
+            ],
+        },
+        {
+            label: "upper-case-ignorable-undeclared",
+            part: "word/FOO.XML",
+            parts: withPart("word/FOO.XML", IGNORABLE_UNDECLARED),
+            code: "ignorable-undeclared",
+            severity: "warning",
+            fullValid: true,
+            namedValid: true,
+            quickValid: true,
+            lenient: [
+                "error:ct-undeclared-part@word/FOO.XML",
+                "error:ignorable-undeclared@word/FOO.XML",
+                "error:rels-unreferenced@word/FOO.XML",
+                "info:latent-styles-missing@word/styles.xml",
+            ],
+        },
+        {
+            label: "unescaped-must-understand",
+            part: "word/foo.xml",
+            parts: withPart("word/foo.xml", MUST_UNDERSTAND_FOO),
+            code: "mce-must-understand",
+            severity: "error",
+            fullValid: false,
+            namedValid: false,
+            quickValid: false,
+            lenient: [
+                "error:ct-undeclared-part@word/foo.xml",
+                "error:mce-must-understand@word/foo.xml",
+                "error:rels-unreferenced@word/foo.xml",
+                "info:latent-styles-missing@word/styles.xml",
+            ],
+        },
+        {
+            label: "unescaped-ignorable-undeclared",
+            part: "word/foo.xml",
+            parts: withPart("word/foo.xml", IGNORABLE_UNDECLARED),
+            code: "ignorable-undeclared",
+            severity: "warning",
+            fullValid: true,
+            namedValid: true,
+            quickValid: true,
+            lenient: [
+                "error:ct-undeclared-part@word/foo.xml",
+                "error:ignorable-undeclared@word/foo.xml",
+                "error:rels-unreferenced@word/foo.xml",
+                "info:latent-styles-missing@word/styles.xml",
+            ],
+        },
+    ] as const;
+
+    for (const suffix of ["docx", "docm"] as const) {
+        it.each(specimens)(`${suffix}: $label`, async ({ parts, part, code, severity, fullValid, namedValid, quickValid, lenient }) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, `specimen.${suffix}`);
+                const bytes = await buildDocx(parts);
+                await writeFile(file, bytes);
+
+                const wordValid = await validate(file, { profile: "word-valid" });
+                expect(wordValid.issues.filter((issue) => issue.code === code)).toEqual([
+                    expect.objectContaining({ code, severity, path: part }),
+                ]);
+                expect(wordValid.valid).toBe(fullValid);
+                // The escaped spelling keeps its stored-name rejection, so
+                // the verdict never rests on the new finding (#408, #639).
+                if (part.includes("%")) {
+                    expect(wordValid.issues.filter((issue) => issue.code === "opc-part-name-escaped-unreserved")).toEqual([
+                        expect.objectContaining({ severity: "error", path: part }),
+                    ]);
+                }
+
+                const strict = await validate(file, { profile: "strict" });
+                expect(strict.issues.filter((issue) => issue.code === code)).toEqual([
+                    expect.objectContaining({ code, severity: "error", path: part }),
+                ]);
+                expect(strict.valid).toBe(false);
+
+                const selections = [
+                    { quick: true, expectedValid: quickValid },
+                    { checks: [CODE], expectedValid: namedValid },
+                ] as const;
+                for (const { expectedValid, ...selection } of selections) {
+                    const partial = await validate(file, { profile: "word-valid", ...selection });
+                    const label = JSON.stringify(selection);
+                    expect.soft(partial.valid, label).toBe(expectedValid);
+                    // The named run reports the full run's finding through the
+                    // shared predicate, and the root-Ignorable pairing (#499)
+                    // keeps the same identity and count.
+                    expect
+                        .soft(
+                            partial.issues.filter((issue) => issue.code === code),
+                            label,
+                        )
+                        .toEqual(wordValid.issues.filter((issue) => issue.code === code));
+                    expect.soft(mce(partial.issues), label).toEqual(mce(wordValid.issues));
+                    expect
+                        .soft(
+                            [...errors(partial.issues)].filter((pair) => !errors(wordValid.issues).has(pair)),
+                            label,
+                        )
+                        .toEqual([]);
+                }
+
+                // Lenient runs no Word rule, so its findings stay as they were.
+                const lenientRun = await validate(file, { profile: "lenient" });
+                expect(lenientRun.issues.map((issue) => `${issue.severity}:${issue.code}@${issue.path ?? ""}`).sort()).toEqual([
+                    ...lenient,
+                ]);
+                expect(await readFile(file)).toEqual(bytes);
+            });
+        });
     }
 });

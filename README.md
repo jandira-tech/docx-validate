@@ -1116,8 +1116,15 @@ were not observed in Word in this session.
 
 `word-markup-compatibility` reports processor errors for the XML parts under
 `word/` and for every relationships part, at the stored part name
-([#636](https://github.com/jandira-tech/docx-validate/issues/636)). Word 16.115
-applies markup compatibility to relationships parts before judging their children
+([#636](https://github.com/jandira-tech/docx-validate/issues/636)). The judged
+names are compared as OPC compares part names — canonical, ASCII case folded,
+escapes of unreserved characters decoded — so `word/FOO.XML` and
+`word/foo.%78ml` (an escaped `x`) are judged as `word/foo.xml` is, on both the
+check and the named runs' root-Ignorable pairing
+([#639](https://github.com/jandira-tech/docx-validate/issues/639)). An escaped
+spelling keeps its own `opc-part-name-escaped-unreserved` rejection, so no
+verdict changes; the escaped shapes themselves were not shown to Word.
+Word 16.115 applies markup compatibility to relationships parts before judging their children
 (session 33, `s33d`/`s33e`) and honours its errors there: `mc:MustUnderstand` of a
 namespace it does not understand on the `_rels/.rels` root (session 34, `s34c`)
 and an `mc:Choice` whose `Requires` prefix is undeclared in

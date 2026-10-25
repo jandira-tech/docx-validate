@@ -142,9 +142,11 @@ describe("isWordBlockingIssue", () => {
         expect(isWordBlockingIssue(issue(code))).toBe(true);
     });
 
-    it.each(["word/document.xml", "WORD/footnotes.XML"])(
+    it.each(["word/document.xml", "WORD/footnotes.XML", "word/footnotes.%78ml"])(
         "keeps the markup-compatibility errors of %s an error under word-valid",
         (path) => {
+            // The part key compares canonical part names, so the escaped
+            // spelling of a word/*.xml part blocks as its twin does (#639).
             for (const code of ["mce-malformed", "mce-must-understand"]) {
                 expect(isWordBlockingIssue(issue(code, { path })), `${code} ${path}`).toBe(true);
             }

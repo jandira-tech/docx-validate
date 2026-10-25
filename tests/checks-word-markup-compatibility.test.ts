@@ -15,6 +15,7 @@ const PR = "http://schemas.openxmlformats.org/package/2006/relationships";
 const ROOT = `xmlns:w="${W}" xmlns:mc="${MC}" xmlns:w14="${W14}" xmlns:e="urn:future"`;
 const document = (body: string, attributes = "") => `<w:document ${ROOT}${attributes}><w:body>${body}</w:body></w:document>`;
 const FALLBACK_ONLY = "<mc:AlternateContent><mc:Fallback><w:p/></mc:Fallback></mc:AlternateContent>";
+const MUST_UNDERSTAND_FOO = ` xmlns:foo="urn:foo" mc:MustUnderstand="foo"`;
 
 describe("markup compatibility as Word processes it", () => {
     it("rejects an AlternateContent without a Choice and a namespace Word must understand but does not", async () => {
@@ -58,6 +59,7 @@ describe("markup compatibility as Word processes it", () => {
             // of the schema view, not a Word rejection.
             "word/settings.xml": `<w:settings ${ROOT} w14:foo="1"/>`,
             "docProps/custom.xml": document(FALLBACK_ONLY),
+            "docProps/foo.%78ml": document(FALLBACK_ONLY),
             "customXml/item1.xml": document(FALLBACK_ONLY),
             "word/styles.xml": document(FALLBACK_ONLY).replace("</w:document>", ""),
         });
@@ -82,6 +84,19 @@ describe("markup compatibility as Word processes it", () => {
             expect.objectContaining({ code: "mce-must-understand", severity: "error", path: "_rels/.rels" }),
             expect.objectContaining({ code: "mce-malformed", severity: "error", path: "word/_rels/document.xml.rels" }),
             expect.objectContaining({ code: "mce-must-understand", severity: "error", path: "word/_rels/header1.xml.rels" }),
+        ]);
+    });
+
+    it("judges the OPC-equivalent spellings of a word/*.xml part name, as OPC compares them (#639)", async () => {
+        const ctx = ValidationContext.fromEntries({
+            "word/FOO.XML": document("", MUST_UNDERSTAND_FOO),
+            "word/foo.%78ml": document("", MUST_UNDERSTAND_FOO),
+            "word/foo.xml": document("", MUST_UNDERSTAND_FOO),
+        });
+        expect(await check.run(ctx)).toEqual([
+            expect.objectContaining({ code: "mce-must-understand", severity: "error", path: "word/FOO.XML" }),
+            expect.objectContaining({ code: "mce-must-understand", severity: "error", path: "word/foo.%78ml" }),
+            expect.objectContaining({ code: "mce-must-understand", severity: "error", path: "word/foo.xml" }),
         ]);
     });
 

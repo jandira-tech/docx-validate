@@ -739,9 +739,9 @@ function findingsUnderProfile(
     // Full DOCX validation diagnoses root Ignorable prefixes before dropping
     // their MC restatements. Apply those same two steps only when the selected
     // Word compatibility check ran; descendant-only findings remain distinct (#499).
-    // The check judges the XML parts under word/ and every relationships part
-    // (#636), so the pairing covers both, as the full run's validateNamespaces
-    // walk does.
+    // The check judges the XML parts under word/ and every relationships part,
+    // each compared as OPC compares part names (#636, #639), so the pairing
+    // covers both, as the full run's validateNamespaces walk does.
     const outcomes = run.outcomes.map((outcome) => {
         if (outcome.id !== "word-markup-compatibility" || !context || !run.executed.includes(outcome.id)) return outcome;
         const roots = context.partNames.filter(isMarkupCompatibilityJudgedPart).flatMap((name) => {
