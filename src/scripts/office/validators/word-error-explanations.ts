@@ -18,6 +18,8 @@
  * lenient on others, so the wording reflects Word's actual behaviour.
  */
 export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.freeze({
+    "mce-malformed":
+        "Markup compatibility has an invalid structure. AlternateContent needs Choices with declared, non-empty Requires prefixes followed by at most one Fallback; unwrapping a part root must leave exactly one element. If root unwrapping fails, validation keeps the stored part and its root findings. Word 16.115 offered recovery for a _rels/.rels root that unwraps to two Relationship elements (session 36); other root-wrapped shapes are unobserved, and this code keeps its existing severity policy by part. Restore a valid stored root and compatibility structure.",
     "ignorable-undeclared":
         "Word refuses to open the file: mc:Ignorable lists a namespace prefix that is never declared on the element. Declare the prefix (xmlns:…) on the root, or remove it from mc:Ignorable.",
     "word-math-spre-body":

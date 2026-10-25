@@ -106,3 +106,29 @@ export const RELATIONSHIPS_MCE_CASES = [
         parts: wrapRelationship(footer, DOCUMENT_RELS, "rIdX", (rel) => fallback(`${rel}<x:Wrap/>`)),
     },
 ] as const;
+
+/**
+ * Root-wrapped parts from #640. Word 16.115 offered recovery for the
+ * `fallback` shape in `_rels/.rels` (session 36, s36c); the rest are unobserved.
+ */
+export const ROOT_MCE_SHAPES = ["fallback", "choice", "process-content"] as const;
+export type RootMceShape = (typeof ROOT_MCE_SHAPES)[number];
+export const rootMceXml = (shape: RootMceShape, content: string): string => {
+    if (shape === "process-content") {
+        return `<x:Wrap ${MCE_DECLARATIONS} mc:Ignorable="x" mc:ProcessContent="x:Wrap">${content}</x:Wrap>`;
+    }
+    const branches =
+        shape === "choice"
+            ? `<mc:Choice Requires="w14">${content}</mc:Choice><mc:Fallback/>`
+            : `<mc:Choice Requires="foo"/><mc:Fallback>${content}</mc:Fallback>`;
+    return `<mc:AlternateContent ${MCE_DECLARATIONS}>${branches}</mc:AlternateContent>`;
+};
+
+export const rootMceRelationshipsParts = (part: string, shape: RootMceShape): Record<string, string> => ({
+    ...MINIMAL_PARTS,
+    [part]: rootMceXml(
+        shape,
+        `<Relationship xmlns="${NS.PR}" Id="rId1" Type="${NS.R}/officeDocument" Target="${part === PACKAGE_RELS ? "word/document.xml" : "document.xml"}"/>` +
+            `<Relationship xmlns="${NS.PR}" Id="rId2" Type="${NS.R}/styles" Target="${part === PACKAGE_RELS ? "word/styles.xml" : "styles.xml"}"/>`,
+    ),
+});

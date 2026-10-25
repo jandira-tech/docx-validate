@@ -1118,18 +1118,33 @@ those two findings are blocking in Word-valid. Other relationships parts, and
 other shapes of the same codes there, are unobserved: Word-valid demotes them to
 warnings while strict keeps the error. Lenient runs no Word rule. Full, quick and
 named runs report the same findings and severities.
+If unwrapping a part's root through AlternateContent or ProcessContent would
+leave zero or multiple element children, the processor reports error-severity
+`mce-malformed` and returns the part unprocessed
+([#640](https://github.com/jandira-tech/docx-validate/issues/640)). One element
+continues to be unwrapped. The source is unchanged. The stored-root rules keep
+their verdict, including blocking `opc-relationships-structure` for a wrong
+relationships root and `word-document-root` for a wrong main document root.
+Word 16.115 offered recovery for a `_rels/.rels` root AlternateContent whose
+Fallback holds two `Relationship` elements (session 36, `s36c`); the other
+root-wrapped shapes are unobserved. Word-valid and strict return
+findings instead of throwing or reporting `check-crashed`; full, quick and named
+runs agree on their shared checks. Lenient retains its prior findings, including
+its legacy XSD diagnostic for multiple roots and its empty-view diagnostic for
+zero roots.
+
 Root validation, the processor, and the schema walk use these stable codes:
 
-| Code                          | Meaning and profile behavior                                                                                                                                                                                                                                                        |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `word-document-root`          | The main part has a foreign or missing effective root: Word refuses to open it or silently drops all content. Blocking in Word-valid and strict.                                                                                                                                    |
-| `mce-malformed`               | Invalid compatibility structure, such as AlternateContent without a Choice. Blocking in Word-valid and strict in the XML parts under `word/`; in relationships parts only in `word/_rels/document.xml.rels` (session 34, `s34d`), elsewhere a Word-valid warning.                   |
-| `mce-must-understand`         | A declared required namespace is not understood by the selected view. Blocking in Word-valid and strict in the XML parts under `word/`; in relationships parts only in `_rels/.rels` (session 34, `s34c`), elsewhere a Word-valid warning. Word and schema capabilities can differ. |
-| `mce-unbound-prefix`          | A directive names an unbound prefix. Error in lenient/strict schema processing; warning in full Word-valid. A repeated root Ignorable finding is retained once as `ignorable-undeclared`.                                                                                           |
-| `mce-invalid-token`           | An invalid ProcessContent QName. Error in lenient/strict schema processing; warning in full Word-valid.                                                                                                                                                                             |
-| `mce-root-ignored`            | An ignorable root disappears from the schema view. Informational for non-main parts; not emitted by the full Word-valid path.                                                                                                                                                       |
-| `mce-main-root-ignored`       | The required main document root disappears from the schema view. Error in lenient/strict; the Word view reports `word-document-root` for a missing main root.                                                                                                                       |
-| `mce-extension-not-ignorable` | Office extension attributes lack an Ignorable declaration and are removed from the schema view. Warning from schema preprocessing; not emitted by the full Word-valid path.                                                                                                         |
+| Code                          | Meaning and profile behavior                                                                                                                                                                                                                                                                                                 |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `word-document-root`          | The main part has a foreign or missing effective root: Word refuses to open it or silently drops all content. Blocking in Word-valid and strict.                                                                                                                                                                             |
+| `mce-malformed`               | Invalid compatibility structure, including AlternateContent without a Choice or root unwrapping that leaves zero or multiple elements. Blocking in Word-valid and strict in the XML parts under `word/`; in relationships parts only in `word/_rels/document.xml.rels` (session 34, `s34d`), elsewhere a Word-valid warning. |
+| `mce-must-understand`         | A declared required namespace is not understood by the selected view. Blocking in Word-valid and strict in the XML parts under `word/`; in relationships parts only in `_rels/.rels` (session 34, `s34c`), elsewhere a Word-valid warning. Word and schema capabilities can differ.                                          |
+| `mce-unbound-prefix`          | A directive names an unbound prefix. Error in lenient/strict schema processing; warning in full Word-valid. A repeated root Ignorable finding is retained once as `ignorable-undeclared`.                                                                                                                                    |
+| `mce-invalid-token`           | An invalid ProcessContent QName. Error in lenient/strict schema processing; warning in full Word-valid.                                                                                                                                                                                                                      |
+| `mce-root-ignored`            | An ignorable root disappears from the schema view. Informational for non-main parts; not emitted by the full Word-valid path.                                                                                                                                                                                                |
+| `mce-main-root-ignored`       | The required main document root disappears from the schema view. Error in lenient/strict; the Word view reports `word-document-root` for a missing main root.                                                                                                                                                                |
+| `mce-extension-not-ignorable` | Office extension attributes lack an Ignorable declaration and are removed from the schema view. Warning from schema preprocessing; not emitted by the full Word-valid path.                                                                                                                                                  |
 
 Under Word-valid and strict, full DOCX/DOCM runs retain root Ignorable findings
 once as `ignorable-undeclared` even when staging fails. Named Word-valid runs

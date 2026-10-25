@@ -138,23 +138,43 @@ const unboundPrefixIssue = (directive: string, prefix: string): ValidationIssue 
     code: "mce-unbound-prefix",
     message: `Unbound prefix in mc:${directive}: ${prefix}`,
 });
-const unwrap = (element: Element): void => {
-    const parent = element.parentNode!;
-    const next = element.nextSibling;
-    // Detach first: a Document cannot contain both the old and selected roots.
-    parent.removeChild(element);
-    while (element.firstChild) {
-        parent.insertBefore(element.firstChild, next);
-    }
-};
-
 /** Build a validation-only view; source XML and unselected branches remain untouched. */
 export const applyMarkupCompatibility = (
     source: Document,
     opts: { understood: ReadonlySet<string> },
-): { document: Document; issues: ValidationIssue[] } => {
+): { document: Document; issues: ValidationIssue[]; rootUnwrapElementCount?: number } => {
     const document = source.cloneNode(true) as Document;
     const issues: ValidationIssue[] = [];
+    let rootUnwrapElementCount: number | undefined;
+    const unwrap = (element: Element): void => {
+        const parent = element.parentNode!;
+        if (parent.nodeType === 9) {
+            const count = children(element).length;
+            if (count !== 1) {
+                // #640: validate the recursively processed children before moving
+                // any into a Document; a second element throws in xmldom, and
+                // zero leaves no root. Return the stored root so its existing
+                // rules keep the verdict: Word 16.115 offered recovery for a
+                // _rels/.rels root AlternateContent whose Fallback holds two
+                // Relationship elements (session 36, s36c, in
+                // docs/plans/evidence/word-probes-2026-10-24.md). The other
+                // root-wrapped shapes are unobserved.
+                rootUnwrapElementCount = count;
+                issues.push({
+                    severity: "error",
+                    code: "mce-malformed",
+                    message: `Root unwrapping requires exactly one element; processed content has ${count}. The part is left unprocessed.`,
+                });
+                return;
+            }
+        }
+        const next = element.nextSibling;
+        // Detach first: a Document cannot contain both the old and selected roots.
+        parent.removeChild(element);
+        while (element.firstChild) {
+            parent.insertBefore(element.firstChild, next);
+        }
+    };
     const undeclaredExtensions = new Map<string, Set<string>>();
     let extensionAttributeCount = 0;
     const visit = (element: Element, inherited: Context, attributesOnly = false): void => {
@@ -351,5 +371,7 @@ export const applyMarkupCompatibility = (
             message: `Removed ${extensionAttributeCount} attributes from the validation view in non-ignorable Office extension namespaces (${namespaces.join("; ")}). Declare the corresponding prefixes in mc:Ignorable.`,
         });
     }
-    return { document, issues };
+    return rootUnwrapElementCount === undefined
+        ? { document, issues }
+        : { document: source.cloneNode(true) as Document, issues, rootUnwrapElementCount };
 };

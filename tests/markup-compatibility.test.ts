@@ -7,10 +7,17 @@ import { describe, expect, it } from "vitest";
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
-import { applyMarkupCompatibility, STRICT_UNDERSTOOD_NAMESPACES, UNDERSTOOD_NAMESPACES } from "../src/lib/markup-compatibility";
+import {
+    applyMarkupCompatibility,
+    STRICT_UNDERSTOOD_NAMESPACES,
+    UNDERSTOOD_NAMESPACES,
+    WORD_UNDERSTOOD_NAMESPACES,
+} from "../src/lib/markup-compatibility";
 import { defaultSchemasDir } from "../src/scripts/office/validators/base";
 import { NS } from "../src/lib/types";
 import { parseXml, serializeXml, getElementsByTagNameAll } from "../src/lib/xml-helpers";
+
+import { ROOT_MCE_SHAPES, rootMceXml } from "./support/relationships-markup-compatibility-specimens";
 
 const WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
 const WP14 = "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing";
@@ -382,4 +389,47 @@ describe("markup compatibility: understood extension namespaces (#288)", () => {
         expect(serializeXml(document)).toBe(serializeXml(parseXml(xml)));
         expect(issues).toEqual([]);
     });
+});
+
+describe("root unwrapping (#640)", () => {
+    for (const shape of ROOT_MCE_SHAPES) {
+        it.each([0, 1, 2])(`${shape}: returns a usable document with %i selected elements`, (count) => {
+            const content = `<w:document xmlns:w="${NS.W}"><w:body/></w:document>`.repeat(count);
+            const source = parseXml(rootMceXml(shape, content));
+            const before = serializeXml(source);
+            let result: ReturnType<typeof applyMarkupCompatibility> | undefined;
+            expect(() => {
+                result = applyMarkupCompatibility(source, { understood: WORD_UNDERSTOOD_NAMESPACES });
+            }).not.toThrow();
+            expect(serializeXml(source)).toBe(before);
+            expect(result!.document).not.toBe(source);
+            if (count === 1) {
+                expect(result!.issues).toEqual([]);
+                expect(result!.document.documentElement.localName).toBe("document");
+            } else {
+                expect(serializeXml(result!.document)).toBe(before);
+                expect(result!.issues).toEqual([
+                    {
+                        severity: "error",
+                        code: "mce-malformed",
+                        message: `Root unwrapping requires exactly one element; processed content has ${count}. The part is left unprocessed.`,
+                    },
+                ]);
+            }
+        });
+        it(`${shape}: counts roots after recursively processing the selected content`, () => {
+            const xml = rootMceXml(shape, `<x:Drop xmlns:x="urn:x" xmlns:mc="${NS.MC}" mc:Ignorable="x"/><w:document xmlns:w="${NS.W}"/>`);
+            const result = applyMarkupCompatibility(parseXml(xml), { understood: WORD_UNDERSTOOD_NAMESPACES });
+            expect(result.issues).toEqual([]);
+            expect(result.document.documentElement.localName).toBe("document");
+        });
+        it(`${shape}: retains whitespace, comments and processing instructions around one root`, () => {
+            const xml = rootMceXml(shape, ` \n<!--before--><?keep data?><w:document xmlns:w="${NS.W}"/> <!--after-->`);
+            const result = applyMarkupCompatibility(parseXml(xml), { understood: WORD_UNDERSTOOD_NAMESPACES });
+            expect(result.issues).toEqual([]);
+            expect(result.document.documentElement.localName).toBe("document");
+            expect(serializeXml(result.document)).toContain("<!--before--><?keep data?>");
+            expect(serializeXml(result.document)).toContain("<!--after-->");
+        });
+    }
 });

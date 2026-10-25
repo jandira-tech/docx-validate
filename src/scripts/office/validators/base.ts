@@ -1900,6 +1900,24 @@ export class BaseSchemaValidator {
                 : UNDERSTOOD_NAMESPACES;
             const understood = schemaNamespace ? new Set([...baseUnderstood, schemaNamespace]) : baseUnderstood;
             const compatible = applyMarkupCompatibility(dom, { understood });
+            if (this.profile === "lenient" && compatible.rootUnwrapElementCount !== undefined) {
+                // #640 preserves lenient's diagnostics byte for byte. Previously
+                // a multi-root unwrap reached the existing XSD failure path as
+                // this xmldom error; an empty unwrap reported mce-root-ignored.
+                // The shared processor now returns an intact source view with
+                // mce-malformed instead. Keep the old schema adapter's output
+                // here only; Word-valid/strict consume the structured finding.
+                if (compatible.rootUnwrapElementCount > 1) {
+                    throw new Error("Only one element can be added and only after doctype");
+                }
+                issues.push({
+                    severity: "info",
+                    code: "mce-root-ignored",
+                    message: `Root element ${dom.documentElement.tagName} is in an ignorable namespace that is not understood; the part has no content to schema-validate.`,
+                    path: rel,
+                });
+                return "";
+            }
             issues.push(
                 ...compatible.issues.map((issue) => ({
                     ...issue,
