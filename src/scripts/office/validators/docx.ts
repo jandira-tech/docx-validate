@@ -48,7 +48,7 @@
 
 import { promises as fs, readFileSync } from "node:fs";
 import path from "node:path";
-import { isRelationshipsPartName, resolvePartName } from "../../../lib/content-types";
+import { canonicalPartName, isRelationshipsPartName, resolvePartName } from "../../../lib/content-types";
 import { opcNameIssueSeverity } from "../../../lib/mode-policy";
 import { nextSecureLongHexNumber } from "../../../lib/secure-id";
 import type { PackageFormat, ValidationIssue, ValidationResult } from "../../../lib/types";
@@ -56,7 +56,7 @@ import { withoutConsequentialParseFailures } from "../../../lib/parse-failures";
 import { mergeResults } from "../../../lib/types";
 import { promoteFullCheckIssue } from "../../../lib/mode-policy";
 import { propertiesParts } from "../../../lib/properties-parts";
-import { wordReadParts, wordStoryRootParts } from "../../../lib/word-read-parts";
+import { wordReadParts, wordStoryRootParts, wordUnobservedRelationshipTargets } from "../../../lib/word-read-parts";
 import { hasWordRelationshipReference, isWordBlockingIssue } from "./word-blocking";
 import {
     decodeXmlBytes,
@@ -642,14 +642,23 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             wordReadParts(context),
             wordStoryRootParts(context),
         ]);
+        const missingSidecarPart = (issue: ValidationIssue): string | undefined =>
+            issue.severity === "error" && issue.code === "rels-missing-sidecar" ? issue.path : undefined;
+        // Only a missing-sidecar error consults the unobserved-type targets.
+        const unobserved = result.issues.some((issue) => missingSidecarPart(issue) !== undefined)
+            ? await wordUnobservedRelationshipTargets(context)
+            : new Set<string>();
         const issues = result.issues.map((issue): ValidationIssue => {
             if (issue.severity !== "error") return issue;
             // #638, session 35, chunks s35a/s35b: only a conservatively
             // counted reference surviving Word's MC view makes this finding
             // blocking. Keep the issue's identity and serialized shape intact.
-            const effective =
-                issue.code === "rels-missing-sidecar" && issue.path !== undefined ? context.effectiveXml(issue.path) : undefined;
-            const facts = { hasEffectiveRelationshipReference: effective?.ok === true && hasWordRelationshipReference(effective.document) };
+            const part = missingSidecarPart(issue);
+            const effective = part === undefined ? undefined : context.effectiveXml(part);
+            const facts = {
+                hasEffectiveRelationshipReference: effective?.ok === true && hasWordRelationshipReference(effective.document),
+                reachedByUnobservedRelationship: part !== undefined && unobserved.has(canonicalPartName(part.replace(/\\/g, "/"))),
+            };
             if (isWordBlockingIssue(issue, properties, read, storyRoots, facts)) return issue;
             return { ...issue, severity: "warning" };
         });

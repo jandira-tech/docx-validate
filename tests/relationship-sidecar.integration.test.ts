@@ -644,7 +644,7 @@ describe("Word-read processed missing-sidecar references (#638)", { timeout: 120
 });
 
 // Unobserved shapes retain the pre-#638 blocking decision without Word evidence.
-describe("conservative missing-sidecar classification (#638 rework)", () => {
+describe("conservative missing-sidecar classification (#638 rework)", { timeout: 120_000 }, () => {
     it.each([
         [
             "chart",
@@ -711,6 +711,66 @@ describe("conservative missing-sidecar classification (#638 rework)", () => {
                     path: MAIN,
                     message: `Part '${MAIN}' uses relationship references but has no .rels sidecar file`,
                 },
+            ]);
+        });
+    });
+
+    // A part an unobserved Office relationship type names outside word/ was
+    // never shown to Word; it blocked before #638 and keeps blocking. The same
+    // part named by no relationship is unread, as s35a's word/xtra.xml and
+    // docProps/app.xml are, and warns.
+    const CHART = "charts/chart1.xml";
+    const chartParts = (related: boolean): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        [CHART]:
+            `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+            `<c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:r="${R}">` +
+            `<c:chart><c:plotArea><c:layout/></c:plotArea></c:chart><c:externalData r:id="rId1"/></c:chartSpace>`,
+        [CT]: session35Override(CHART, "application/vnd.openxmlformats-officedocument.drawingml.chart+xml"),
+        ...(related
+            ? {
+                  [SIDECAR]: replaceOnce(
+                      MINIMAL_PARTS[SIDECAR]!,
+                      "</Relationships>",
+                      `<Relationship Id="rId9" Type="${R}/chart" Target="../${CHART}"/></Relationships>`,
+                  ),
+              }
+            : {}),
+    });
+    const SIDECAR_MESSAGE = `Part '${CHART}' uses relationship references but has no .rels sidecar file`;
+    it.each([
+        { related: true, blocking: true },
+        { related: false, blocking: false },
+    ])("judges a chart outside word/ with no sidecar, related: $related", async ({ related, blocking }) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "chart.docx");
+            writeFileSync(file, await buildDocx(chartParts(related)));
+            // Computed at bcea63f6 (404b9804's validators), independently of the fix.
+            const rows = [
+                ...(related ? [] : [`error rels-unreferenced@${CHART}: Unreferenced file: ${CHART}`]),
+                `error rels-missing-sidecar@${CHART}: ${SIDECAR_MESSAGE}`,
+                "info latent-styles-missing@word/styles.xml",
+                `error xsd-summary@${CHART}`,
+                `error xsd-error@${CHART}`,
+            ];
+            for (const profile of ["lenient", "strict"] as const) {
+                const result = await validate(file, { profile });
+                expect(
+                    {
+                        valid: result.valid,
+                        issues: result.issues.map(
+                            (finding) =>
+                                `${finding.severity} ${finding.code}@${finding.path ?? ""}` +
+                                (finding.code?.startsWith("rels-") ? `: ${finding.message}` : ""),
+                        ),
+                    },
+                    profile,
+                ).toEqual({ valid: false, issues: rows });
+            }
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(!blocking);
+            expect(result.issues.filter((finding) => finding.code === "rels-missing-sidecar")).toEqual([
+                { severity: blocking ? "error" : "warning", code: "rels-missing-sidecar", path: CHART, message: SIDECAR_MESSAGE },
             ]);
         });
     });

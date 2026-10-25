@@ -253,6 +253,24 @@ describe("isWordBlockingIssue", () => {
         ).toBe(specimen.blocking);
     });
 
+    it.each([
+        { path: "charts/chart1.xml", unobserved: true, reference: true, blocking: true },
+        { path: "word/charts/chart1.xml", unobserved: true, reference: true, blocking: true },
+        { path: "charts/chart1.xml", unobserved: true, reference: false, blocking: false },
+        { path: "charts/chart1.xml", unobserved: false, reference: true, blocking: false },
+        { path: "word/header1.xml", unobserved: true, reference: true, blocking: false },
+    ])(
+        "keeps a missing sidecar blocking in a part an unobserved Office relationship names (#638): $path/$unobserved/$reference",
+        (specimen) => {
+            expect(
+                isWordBlockingIssue(issue("rels-missing-sidecar", { path: specimen.path }), new Set(), new Set(), new Set(), {
+                    hasEffectiveRelationshipReference: specimen.reference,
+                    reachedByUnobservedRelationship: specimen.unobserved,
+                }),
+            ).toBe(specimen.blocking);
+        },
+    );
+
     it("does not infer a missing-sidecar reference from message prose or a part name (#638)", () => {
         expect(
             isWordBlockingIssue(

@@ -971,8 +971,13 @@ keeps `rels-missing-sidecar` as its only finding for a non-empty `r:id`; the
 legacy relationship walk that reports it runs only in full runs, so quick and
 named runs report nothing for that shape.
 Under word-valid for DOCX/DOCM, `rels-missing-sidecar` blocks only when the
-part is a story root or a member of the run's Word-read set, and a counted
-relationship reference survives in its processed markup-compatibility view.
+part is a story root, a member of the run's Word-read set, or a part that a
+known Office relationship of an unobserved type names wherever it is stored,
+and a counted relationship reference survives in its processed
+markup-compatibility view. The Word-read set holds such parts only under
+`word/`; Word was never shown one outside it with a reference and no sidecar,
+so a chart stored as `charts/chart1.xml` and reached by a chart relationship
+keeps the blocking decision it had before #638.
 Session 35, chunks s35a/s35b, observed clean opens for ids in unreferenced
 `word/xtra.xml` (both relationships namespaces), unreferenced `docProps/app.xml`,
 an unreached glossary, on `w:name` in reached styles, and inside an unselected

@@ -22,6 +22,7 @@ import {
 /** Per-issue facts supplied by the caller that owns the processed XML view. */
 export type WordBlockingFacts = {
     hasEffectiveRelationshipReference?: boolean;
+    reachedByUnobservedRelationship?: boolean;
 };
 
 /**
@@ -269,7 +270,11 @@ export const isWordBlockingIssue = (
             // #625, session 33 s33b: story roots retain precedence over the
             // header/footer basename tolerance, wherever the root is stored.
             if (storyRootParts.has(canonical)) return true;
-            return wordReadParts.has(canonical) && !/^word\/(?:header|footer)\d*\.xml$/i.test(issue.path ?? "");
+            // A part an unobserved Office relationship type names keeps the
+            // pre-#638 decision wherever it is stored: Word was never shown
+            // one outside word/ (wordReadParts holds only those under it).
+            const read = wordReadParts.has(canonical) || facts.reachedByUnobservedRelationship === true;
+            return read && !/^word\/(?:header|footer)\d*\.xml$/i.test(issue.path ?? "");
         }
         case "opc-relationships-structure": {
             // #433: Word 16.115 offers recovery for a wrong root or a foreign

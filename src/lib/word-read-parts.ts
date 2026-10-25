@@ -580,28 +580,13 @@ export const wordReadTypedTargets = async (context: ValidationContext): Promise<
     (await wordStoryReadTargets(context))?.targets ?? [];
 
 /**
- * Canonical names of the parts Word reads at open through relationships.
- * Mirrors `propertiesParts`: a package relationships part that does not parse
- * yields nothing (its own diagnostics already block the run, #388), and a
- * main document that does not parse keeps its lazily parsed parts reached —
- * whether it uses them cannot be decided, and no new false negative may open.
+ * Canonical names of the parts a known Office relationship of an unobserved
+ * type names from any relationships part, wherever they are stored: the
+ * unobserved-type pass of `wordReadParts`, before its `word/` filter.
  */
-export const wordReadParts = async (context: ValidationContext): Promise<ReadonlySet<string>> => {
-    const parts = new Set<string>();
-    const story = await wordStoryReadTargets(context);
-    if (story === undefined) {
-        return parts;
-    }
-    const { reach } = story;
+const unobservedRelationshipTargets = (context: ValidationContext, reach: PackageReach): Set<string> => {
     const { names, lookup } = reach;
-    for (const { part } of story.targets) {
-        parts.add(canonicalPartName(part));
-    }
-
-    // Unobserved types keep the old `word/`-folder behaviour: a part under
-    // word/ that a known Office relationship names from anywhere stays
-    // blocking. From any part: a header's image or a settings part's people
-    // list are named this way.
+    const targets = new Set<string>();
     for (const name of names) {
         if (!isRelationshipsPartName(name)) {
             continue;
@@ -623,12 +608,53 @@ export const wordReadParts = async (context: ValidationContext): Promise<Readonl
             if (target === undefined) {
                 continue;
             }
-            const canonical = canonicalPartName(target);
-            if (canonical.startsWith("word/")) {
-                parts.add(canonical);
-            }
+            targets.add(canonicalPartName(target));
+        }
+    }
+    return targets;
+};
+
+/**
+ * Canonical names of the parts Word reads at open through relationships.
+ * Mirrors `propertiesParts`: a package relationships part that does not parse
+ * yields nothing (its own diagnostics already block the run, #388), and a
+ * main document that does not parse keeps its lazily parsed parts reached —
+ * whether it uses them cannot be decided, and no new false negative may open.
+ */
+export const wordReadParts = async (context: ValidationContext): Promise<ReadonlySet<string>> => {
+    const parts = new Set<string>();
+    const story = await wordStoryReadTargets(context);
+    if (story === undefined) {
+        return parts;
+    }
+    const { reach } = story;
+    for (const { part } of story.targets) {
+        parts.add(canonicalPartName(part));
+    }
+
+    // Unobserved types keep the old `word/`-folder behaviour: a part under
+    // word/ that a known Office relationship names from anywhere stays
+    // blocking. From any part: a header's image or a settings part's people
+    // list are named this way.
+    for (const canonical of unobservedRelationshipTargets(context, reach)) {
+        if (canonical.startsWith("word/")) {
+            parts.add(canonical);
         }
     }
 
     return parts;
+};
+
+/**
+ * Canonical names of the parts a known Office relationship of an unobserved
+ * type names, wherever they are stored (#638). `rels-missing-sidecar` blocked
+ * in every part before #638, and Word was never shown such a part outside
+ * `word/` with a reference and no sidecar, so that finding keeps blocking
+ * there: no new false negative opens. `wordReadParts` keeps the `word/`-folder
+ * rule its XML-syntax consumers have used since #437. A package with no main
+ * document yields nothing (its own diagnostics already block the run, #388).
+ */
+export const wordUnobservedRelationshipTargets = async (context: ValidationContext): Promise<ReadonlySet<string>> => {
+    const story = await wordStoryReadTargets(context);
+    return story === undefined ? new Set() : unobservedRelationshipTargets(context, story.reach);
 };
