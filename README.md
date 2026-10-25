@@ -1032,8 +1032,21 @@ known Office relationship of an unobserved type names wherever it is stored,
 and a counted relationship reference survives in its processed
 markup-compatibility view. The Word-read set holds such parts only under
 `word/`; Word was never shown one outside it with a reference and no sidecar,
-so a chart stored as `charts/chart1.xml` and reached by a chart relationship
-keeps the blocking decision it had before #638.
+so an unobserved type's reach keeps the blocking decision it had before #638.
+The chart type is the one exception: session 36 observed that Word 16.115
+never loads a chart that no drawing references — a chart part related from
+the main document's sidecar (`…/relationships/chart`) but referenced by
+nothing opened clean, stored under `word/` and outside it — so a part every
+reaching relationship names through the chart type blocks only when a
+Word-read part's effective XML names one of those relationship Ids
+(`c:chart/@r:id` in a drawing, read in the processed view: a drawing only
+inside an unselected `mc:Choice` opened clean and one inside a selected
+Choice got the recovery offer, session 37 s37b), while a part a second
+relationship type also reaches keeps the reach-based verdict — a known false
+positive for a chart and an image relationship, which s37b opened clean
+([#647](https://github.com/jandira-tech/docx-validate/issues/647))
+([#645](https://github.com/jandira-tech/docx-validate/issues/645); chunks
+s36b/s36d and s37b in the same evidence file).
 Session 35, chunks s35a/s35b, observed clean opens for ids in unreferenced
 `word/xtra.xml` (both relationships namespaces), unreferenced `docProps/app.xml`,
 an unreached glossary, on `w:name` in reached styles, and inside an unselected

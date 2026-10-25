@@ -47,12 +47,16 @@
  *    is not read (clean open), and references from inside a footnote are
  *    not followed (session 16);
  *  - a part under `word/` that any relationship of a KNOWN Office type names
- *    with none of the observed types above (people, chart, image, …). These
+ *    with none of the observed types above (people, image, …). These
  *    are unobserved, so they keep the old `word/`-folder behaviour —
  *    blocking — and open no new false negative. A type has a segment only
  *    when it is exactly an Office relationship-type namespace plus one
  *    segment, so `…/relationships/custom/styles` is an unobserved type too,
- *    not the `styles` type (#519).
+ *    not the `styles` type (#519). The `chart` segment stayed in this set —
+ *    `wordReadParts` is shared by the XML-syntax consumers — but
+ *    `rels-missing-sidecar` alone now judges a chart-only reach by whether a
+ *    Word-read part references the relationship (`wordChartRelationshipSources`,
+ *    #645, session 36).
  *
  * A part two relationship types name yields one entry per type in the
  * typed walks and one typed read per type in `wordReadTypedTargets`, so the
@@ -673,6 +677,85 @@ export const wordReadParts = async (context: ValidationContext, profile?: Profil
     }
 
     return parts;
+};
+
+/**
+ * One relationship that reaches a part through the `…/relationships/chart`
+ * type (Transitional or ISO Strict): the part its relationships part belongs
+ * to, and its `Id`. `source` is `undefined` for `_rels/.rels`, which owns no
+ * part, and for a relationships part that is not a `_rels` sidecar.
+ */
+export type ChartRelationshipSource = {
+    readonly source: string | undefined;
+    readonly id: string;
+};
+
+/**
+ * The `chart`-type relationships that reach `part`, when every internal
+ * relationship that reaches it is of that type — `undefined` otherwise,
+ * including when none does (#645). Session 36 (s36b/s36d) observed that Word
+ * 16.115 never loads a chart no drawing references: a chart part related from
+ * the main document's sidecar but referenced by nothing opened clean, while
+ * the same chart an inline drawing's `c:chart r:id` referenced got the
+ * recovery offer; session 37 (s37b) saw the same split for a drawing only in
+ * an unselected `mc:Choice` (clean) and in a selected one (recovery), so the
+ * caller reads the reference in the processed view. A part a chart and an
+ * image relationship both reach also opened clean (s37b) but stays on the
+ * reach-based rule here (#647). The `chart` segment is the only unobserved
+ * type moved off the reach-based rule; the caller drops the finding to a
+ * warning when no Word-read part's effective XML names one of the returned
+ * Ids, and keeps it when `undefined` leaves the part on the pre-#645 verdict.
+ */
+export const wordChartRelationshipSources = async (
+    context: ValidationContext,
+    part: string,
+    profile?: Profile,
+): Promise<readonly ChartRelationshipSource[] | undefined> => {
+    const reach = await packageReach(context, profile);
+    if (reach === undefined) {
+        return undefined;
+    }
+    const { names, lookup } = reach;
+    // `part` arrives as a finding's stored spelling; `\` reads as `/` as every
+    // resolver here reads it, before the OPC-equivalence key is taken.
+    const canonical = canonicalPartName(part.replace(/\\/g, "/"));
+    const sources: ChartRelationshipSource[] = [];
+    const seen = new Set<string>();
+    let allChart = true;
+    for (const name of names) {
+        if (!isRelationshipsPartName(name)) {
+            continue;
+        }
+        const baseDir = relationshipsBaseDir(name);
+        // The part this relationships part belongs to, when it is a `_rels`
+        // sidecar; `undefined` for `_rels/.rels` (the package's own) and for
+        // a `.rels` name no `_rels` folder owns.
+        const dir = path.posix.dirname(name);
+        const source =
+            path.posix.basename(dir).toLowerCase() === "_rels"
+                ? lookup(path.posix.join(path.posix.dirname(dir), path.posix.basename(name).replace(/\.rels$/i, "")))
+                : undefined;
+        for (const relationship of relationshipsOf(context, name, profile)) {
+            if (relationship.getAttribute("TargetMode") === "External") {
+                continue;
+            }
+            const target = resolveTarget(lookup, baseDir, relationship.getAttribute("Target") ?? "");
+            if (target === undefined || canonicalPartName(target) !== canonical) {
+                continue;
+            }
+            if (officeRelationshipTypeSegment(relationship.getAttribute("Type") ?? "") !== "chart") {
+                allChart = false;
+                continue;
+            }
+            const key = `${source ?? ""}\n${relationship.getAttribute("Id") ?? ""}`;
+            if (seen.has(key)) {
+                continue;
+            }
+            seen.add(key);
+            sources.push({ source, id: relationship.getAttribute("Id") ?? "" });
+        }
+    }
+    return allChart && sources.length > 0 ? sources : undefined;
 };
 
 /**

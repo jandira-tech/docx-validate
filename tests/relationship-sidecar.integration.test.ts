@@ -12,6 +12,7 @@ import { validate } from "../src/scripts/office/validate";
 import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { STORY_FOOTER_XML, glossaryStoryReferenceParts, storyContentType } from "./support/story-content-type-specimens";
+import { chartSpecimenParts, CHART_DRAWING, referencedChartSpecimenParts } from "./support/chart-specimens";
 
 const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 const RS = "http://purl.oclc.org/ooxml/officeDocument/relationships";
@@ -413,6 +414,192 @@ describe.each(["packed", "directory"] as const)("OPC sidecar lookup, %s (#402)",
 // Session 35, chunks s35a/s35b (#638). These reproduce the supplied builders;
 // no Word automation runs here. The comments calibration is an unobserved
 // extension that checks Word-read non-story parts use the same predicate.
+
+// Session 36, chunks s36b/s36d (#645), rebuilt from tests/support/chart-specimens:
+// a chart part whose `c:externalData r:id` names nothing because the chart has
+// no `.rels` beside it, related from the main document's sidecar as `rId9`
+// (`…/relationships/chart`). Word 16.115 opened a related-but-unreferenced
+// chart clean — inside `word/` and outside it — and offered recovery for the
+// same chart an inline drawing's `c:chart r:id` references. No Word automation
+// runs here.
+const CHART_INSIDE = "word/charts/chart1.xml";
+const CHART_OUTSIDE = "charts/chart1.xml";
+const session36Specimens = [
+    {
+        name: "chart-word-related-no-sidecar",
+        part: CHART_INSIDE,
+        blocking: false,
+        parts: () => chartSpecimenParts(CHART_INSIDE, "charts/chart1.xml"),
+    },
+    {
+        name: "chart-outside-word-related-no-sidecar",
+        part: CHART_OUTSIDE,
+        blocking: false,
+        parts: () => chartSpecimenParts(CHART_OUTSIDE, `../${CHART_OUTSIDE}`),
+    },
+    {
+        name: "chart-word-referenced-no-sidecar",
+        part: CHART_INSIDE,
+        blocking: true,
+        parts: () => referencedChartSpecimenParts(CHART_INSIDE, "charts/chart1.xml", true),
+    },
+    {
+        name: "chart-outside-word-referenced-no-sidecar",
+        part: CHART_OUTSIDE,
+        blocking: true,
+        parts: () => referencedChartSpecimenParts(CHART_OUTSIDE, `../${CHART_OUTSIDE}`, true),
+    },
+    {
+        name: "chart-word-referenced-no-externaldata-no-sidecar",
+        part: CHART_INSIDE,
+        blocking: undefined,
+        parts: () => referencedChartSpecimenParts(CHART_INSIDE, "charts/chart1.xml", false),
+    },
+    // Session 37 (s37b) showed Word both boundary shapes. A reference inside
+    // an `mc:Choice` Word never selects cannot load the chart: it opened
+    // clean, and word-valid warns. A chart a second relationship type also
+    // reaches opened clean as well, but keeps the reach-based verdict here:
+    // a known false positive (#647), pinned until its scope is probed.
+    {
+        name: "chart-outside-word-mixed-reach-no-sidecar",
+        part: CHART_OUTSIDE,
+        blocking: true,
+        parts: () => {
+            const parts = chartSpecimenParts(CHART_OUTSIDE, `../${CHART_OUTSIDE}`);
+            return {
+                ...parts,
+                [SIDECAR]: replaceOnce(
+                    parts[SIDECAR]!,
+                    "</Relationships>",
+                    `<Relationship Id="rId8" Type="${R}/image" Target="../${CHART_OUTSIDE}"/></Relationships>`,
+                ),
+            };
+        },
+    },
+    {
+        name: "chart-word-unselected-reference-no-sidecar",
+        part: CHART_INSIDE,
+        blocking: false,
+        parts: () => {
+            const parts = referencedChartSpecimenParts(CHART_INSIDE, "charts/chart1.xml", true);
+            return {
+                ...parts,
+                [MAIN]: replaceOnce(
+                    replaceOnce(parts[MAIN]!, "<w:document ", `<w:document xmlns:foo="urn:foo" `),
+                    CHART_DRAWING,
+                    `<mc:AlternateContent><mc:Choice Requires="foo">${CHART_DRAWING}</mc:Choice><mc:Fallback/></mc:AlternateContent>`,
+                ),
+            };
+        },
+    },
+];
+
+// Lenient and strict expectations captured at aed11e4e, computed from that
+// commit's sources independently of the fix; both profiles produced the
+// identical rows for these specimens.
+const session36Lenient: Record<string, { valid: boolean; issues: string[] }> = {
+    "chart-word-related-no-sidecar": {
+        valid: false,
+        issues: [
+            "error rels-missing-sidecar@word/charts/chart1.xml: Part 'word/charts/chart1.xml' uses relationship references but has no .rels sidecar file",
+            "info latent-styles-missing@word/styles.xml",
+            "error xsd-summary@word/charts/chart1.xml",
+            "error xsd-error@word/charts/chart1.xml",
+        ],
+    },
+    "chart-outside-word-related-no-sidecar": {
+        valid: false,
+        issues: [
+            "error rels-missing-sidecar@charts/chart1.xml: Part 'charts/chart1.xml' uses relationship references but has no .rels sidecar file",
+            "info latent-styles-missing@word/styles.xml",
+            "error xsd-summary@charts/chart1.xml",
+            "error xsd-error@charts/chart1.xml",
+        ],
+    },
+    "chart-word-referenced-no-sidecar": {
+        valid: false,
+        issues: [
+            "error rels-missing-sidecar@word/charts/chart1.xml: Part 'word/charts/chart1.xml' uses relationship references but has no .rels sidecar file",
+            "info latent-styles-missing@word/styles.xml",
+        ],
+    },
+    "chart-outside-word-referenced-no-sidecar": {
+        valid: false,
+        issues: [
+            "error rels-missing-sidecar@charts/chart1.xml: Part 'charts/chart1.xml' uses relationship references but has no .rels sidecar file",
+            "info latent-styles-missing@word/styles.xml",
+        ],
+    },
+    "chart-word-referenced-no-externaldata-no-sidecar": {
+        valid: true,
+        issues: ["info latent-styles-missing@word/styles.xml"],
+    },
+    "chart-outside-word-mixed-reach-no-sidecar": {
+        valid: false,
+        issues: [
+            "error rels-missing-sidecar@charts/chart1.xml: Part 'charts/chart1.xml' uses relationship references but has no .rels sidecar file",
+            "info latent-styles-missing@word/styles.xml",
+            "error xsd-summary@charts/chart1.xml",
+            "error xsd-error@charts/chart1.xml",
+        ],
+    },
+    "chart-word-unselected-reference-no-sidecar": {
+        valid: false,
+        issues: [
+            "error rels-missing-sidecar@word/charts/chart1.xml: Part 'word/charts/chart1.xml' uses relationship references but has no .rels sidecar file",
+            "info latent-styles-missing@word/styles.xml",
+        ],
+    },
+};
+
+describe("chart relationship reach without a reference (#645)", { timeout: 120_000 }, () => {
+    it.each(session36Specimens)("judges $name without changing strict or lenient output", async (specimen) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, `${specimen.name}.docx`);
+            const bytes = await buildDocx(specimen.parts());
+            writeFileSync(file, bytes);
+            for (const profile of ["lenient", "strict"] as const) {
+                const result = await validate(file, { profile });
+                expect(
+                    {
+                        valid: result.valid,
+                        issues: result.issues.map(
+                            (finding) =>
+                                `${finding.severity} ${finding.code}@${finding.path ?? ""}` +
+                                (finding.code?.startsWith("rels-") ? `: ${finding.message}` : ""),
+                        ),
+                    },
+                    profile,
+                ).toEqual(session36Lenient[specimen.name]);
+            }
+            const full = await validate(file, { profile: "word-valid" });
+            expect.soft(full.valid).toBe(specimen.blocking !== true);
+            expect.soft(full.issues.filter((finding) => finding.code === "rels-missing-sidecar")).toEqual(
+                specimen.blocking === undefined
+                    ? []
+                    : [
+                          {
+                              code: "rels-missing-sidecar",
+                              path: specimen.part,
+                              severity: specimen.blocking ? "error" : "warning",
+                              message: `Part '${specimen.part}' uses relationship references but has no .rels sidecar file`,
+                          },
+                      ],
+            );
+            // The legacy walk that produces the finding stays outside named
+            // and quick selections, so a partial run reports nothing here and
+            // stays valid where the full run is.
+            for (const selection of [{ quick: true }, { checks: ["word-header-footer-relationship", "word-hyperlink-relationship"] }]) {
+                const partial = await validate(file, { profile: "word-valid", ...selection });
+                expect(partial.issues.filter((finding) => finding.code === "rels-missing-sidecar")).toEqual([]);
+                expect(errors(full.issues)).toEqual(expect.arrayContaining(errors(partial.issues)));
+                if (full.valid) expect(partial.valid).toBe(true);
+            }
+            expect(readFileSync(file)).toEqual(bytes);
+        });
+    });
+});
+
 const session35Main = (declarations: string, from: string, to: string): string =>
     replaceOnce(replaceOnce(MINIMAL_PARTS[MAIN]!, "<w:document ", `<w:document ${declarations} `), from, to);
 const session35Override = (part: string, type: string): string =>
@@ -718,33 +905,18 @@ describe("conservative missing-sidecar classification (#638 rework)", { timeout:
     // A part an unobserved Office relationship type names outside word/ was
     // never shown to Word; it blocked before #638 and keeps blocking. The same
     // part named by no relationship is unread, as s35a's word/xtra.xml and
-    // docProps/app.xml are, and warns.
+    // docProps/app.xml are, and warns. The chart type is the one exception:
+    // session 36 observed it (#645), so a related-but-unreferenced chart warns
+    // alongside the unrelated shape — the rows below pin both.
     const CHART = "charts/chart1.xml";
-    const chartParts = (related: boolean): Record<string, string> => ({
-        ...MINIMAL_PARTS,
-        [CHART]:
-            `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
-            `<c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:r="${R}">` +
-            `<c:chart><c:plotArea><c:layout/></c:plotArea></c:chart><c:externalData r:id="rId1"/></c:chartSpace>`,
-        [CT]: session35Override(CHART, "application/vnd.openxmlformats-officedocument.drawingml.chart+xml"),
-        ...(related
-            ? {
-                  [SIDECAR]: replaceOnce(
-                      MINIMAL_PARTS[SIDECAR]!,
-                      "</Relationships>",
-                      `<Relationship Id="rId9" Type="${R}/chart" Target="../${CHART}"/></Relationships>`,
-                  ),
-              }
-            : {}),
-    });
     const SIDECAR_MESSAGE = `Part '${CHART}' uses relationship references but has no .rels sidecar file`;
     it.each([
-        { related: true, blocking: true },
+        { related: true, blocking: false },
         { related: false, blocking: false },
     ])("judges a chart outside word/ with no sidecar, related: $related", async ({ related, blocking }) => {
         await withTempDir(async (dir) => {
             const file = path.join(dir, "chart.docx");
-            writeFileSync(file, await buildDocx(chartParts(related)));
+            writeFileSync(file, await buildDocx(chartSpecimenParts(CHART, related ? `../${CHART}` : undefined)));
             // Computed at bcea63f6 (404b9804's validators), independently of the fix.
             const rows = [
                 ...(related ? [] : [`error rels-unreferenced@${CHART}: Unreferenced file: ${CHART}`]),

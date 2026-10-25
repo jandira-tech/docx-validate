@@ -24,6 +24,14 @@ import {
 export type WordBlockingFacts = {
     hasEffectiveRelationshipReference?: boolean;
     reachedByUnobservedRelationship?: boolean;
+    /**
+     * Defined only when every internal relationship reaching the part is a
+     * `…/relationships/chart`: `"referenced"` when a Word-read part's
+     * effective XML names one of those relationship Ids, `"unreferenced"`
+     * when none does (#645, session 36 — Word never loads the chart then).
+     * `undefined` leaves the part on the reach-based verdict.
+     */
+    chartRelationshipReference?: "referenced" | "unreferenced";
 };
 
 /**
@@ -36,20 +44,34 @@ export type WordBlockingFacts = {
  * or compiled on this path. Session 35, chunks s35a/s35b, supplies the w:name
  * and unselected-branch evidence; it did not probe arbitrary extensions.
  */
-export const hasWordRelationshipReference = (document: Document): boolean => {
+export const hasWordRelationshipReference = (document: Document): boolean => wordRelationshipReferenceIds(document).size > 0;
+
+/**
+ * Every non-empty id/embed/link the counting rule above counts, in either
+ * relationships namespace. `rels-missing-sidecar`'s chart case (#645) asks
+ * whether one of these names a chart relationship's Id; the count stays a
+ * non-empty set.
+ */
+export const wordRelationshipReferenceIds = (document: Document): ReadonlySet<string> => {
+    const ids = new Set<string>();
     for (const element of getElementsByTagNameAll(document)) {
         const identity = `{${element.namespaceURI ?? ""}}${element.localName}`;
         const unknown = !SCHEMA_DECLARED_ELEMENTS.has(identity) || SCHEMA_UNRESOLVED_ELEMENTS.has(identity);
         for (const attribute of ["id", "embed", "link"]) {
-            if (
-                (unknown || SCHEMA_REFERENCE_ELEMENTS.get(identity)?.has(attribute)) &&
-                (element.getAttributeNS(NS.R, attribute) ||
-                    element.getAttributeNS("http://purl.oclc.org/ooxml/officeDocument/relationships", attribute))
-            )
-                return true;
+            if (!(unknown || SCHEMA_REFERENCE_ELEMENTS.get(identity)?.has(attribute))) {
+                continue;
+            }
+            for (const value of [
+                element.getAttributeNS(NS.R, attribute),
+                element.getAttributeNS("http://purl.oclc.org/ooxml/officeDocument/relationships", attribute),
+            ]) {
+                if (value) {
+                    ids.add(value);
+                }
+            }
         }
     }
-    return false;
+    return ids;
 };
 
 /**
@@ -290,6 +312,18 @@ export const isWordBlockingIssue = (
             // #625, session 33 s33b: story roots retain precedence over the
             // header/footer basename tolerance, wherever the root is stored.
             if (storyRootParts.has(canonical)) return true;
+            // #645, session 36 s36b/s36d: a part every reaching relationship
+            // names through the `chart` type blocks only when a Word-read
+            // part's effective XML references one of those Ids — Word never
+            // loads a related-but-unreferenced chart and opens clean. The
+            // reference is read in the processed view: a drawing only inside
+            // an unselected mc:Choice opened clean, the same drawing in a
+            // selected one got the recovery offer (session 37 s37b). The
+            // basename exemption still answers first for a named header or
+            // footer.
+            if (facts.chartRelationshipReference !== undefined) {
+                return facts.chartRelationshipReference === "referenced" && !/^word\/(?:header|footer)\d*\.xml$/i.test(issue.path ?? "");
+            }
             // A part an unobserved Office relationship type names keeps the
             // pre-#638 decision wherever it is stored: Word was never shown
             // one outside word/ (wordReadParts holds only those under it).
