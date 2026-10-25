@@ -142,10 +142,11 @@ const unboundPrefixIssue = (directive: string, prefix: string): ValidationIssue 
 export const applyMarkupCompatibility = (
     source: Document,
     opts: { understood: ReadonlySet<string> },
-): { document: Document; issues: ValidationIssue[]; rootUnwrapElementCount?: number } => {
+): { document: Document; issues: ValidationIssue[]; rootUnwrapElementCount?: number; rootUnwrapIssue?: ValidationIssue } => {
     const document = source.cloneNode(true) as Document;
     const issues: ValidationIssue[] = [];
     let rootUnwrapElementCount: number | undefined;
+    let rootUnwrapIssue: ValidationIssue | undefined;
     const unwrap = (element: Element): void => {
         const parent = element.parentNode!;
         if (parent.nodeType === 9) {
@@ -162,11 +163,12 @@ export const applyMarkupCompatibility = (
                 // root and opened clean in the same chunk (#646); other zero-
                 // and multiple-element root shapes are unobserved (#658).
                 rootUnwrapElementCount = count;
-                issues.push({
+                rootUnwrapIssue = {
                     severity: "error",
                     code: "mce-malformed",
                     message: `Root unwrapping requires exactly one element; processed content has ${count}. The part is left unprocessed.`,
-                });
+                };
+                issues.push(rootUnwrapIssue);
                 return;
             }
         }
@@ -375,5 +377,5 @@ export const applyMarkupCompatibility = (
     }
     return rootUnwrapElementCount === undefined
         ? { document, issues }
-        : { document: source.cloneNode(true) as Document, issues, rootUnwrapElementCount };
+        : { document: source.cloneNode(true) as Document, issues, rootUnwrapElementCount, rootUnwrapIssue };
 };

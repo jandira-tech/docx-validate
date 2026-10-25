@@ -256,3 +256,64 @@ describe("invalid root unwrapping (#640)", { timeout: 120_000 }, () => {
         });
     });
 });
+
+// Captured from release/0.53.0-rc.2 (ab2e324f), before #640; every field and its order (#664).
+const LATENT_STYLES_MISSING: ValidationResult["issues"][number] = {
+    severity: "info",
+    message:
+        "word/styles.xml has no <w:latentStyles> block. This is unusual for Word-generated files and indicates the repairer may have regenerated styles from scratch.",
+    path: "word/styles.xml",
+    code: "latent-styles-missing",
+};
+const EMPTY_UNWRAP_LENIENT: Readonly<Record<string, ValidationResult>> = {
+    "word/styles.xml": {
+        valid: false,
+        issues: [
+            LATENT_STYLES_MISSING,
+            { severity: "error", code: "mce-unbound-prefix", message: "Unbound prefix in mc:ProcessContent: zz", path: "word/styles.xml" },
+            {
+                severity: "info",
+                code: "mce-root-ignored",
+                message:
+                    "Root element mc:AlternateContent is in an ignorable namespace that is not understood; the part has no content to schema-validate.",
+                path: "word/styles.xml",
+            },
+        ],
+    },
+    "word/document.xml": {
+        valid: false,
+        issues: [
+            LATENT_STYLES_MISSING,
+            {
+                severity: "error",
+                code: "mce-unbound-prefix",
+                message: "Unbound prefix in mc:ProcessContent: zz",
+                path: "word/document.xml",
+            },
+            {
+                severity: "error",
+                code: "mce-main-root-ignored",
+                message: "Required main document part word/document.xml has no root after markup compatibility processing.",
+                path: "word/document.xml",
+            },
+        ],
+    },
+};
+
+describe("a root that unwraps to nothing keeps the processor's other findings under lenient (#664)", () => {
+    it.each(Object.keys(EMPTY_UNWRAP_LENIENT))("%s", async (part) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "root.docx");
+            // Only an unselected Choice holds the root, and the wrapper's
+            // mc:ProcessContent names an unbound prefix.
+            const root =
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+                `<mc:AlternateContent xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:foo="urn:foo" mc:ProcessContent="zz:Wrap">` +
+                `<mc:Choice Requires="foo">${MINIMAL_PARTS[part]!.replace(/<\?xml[^>]*>\n?/, "")}</mc:Choice></mc:AlternateContent>`;
+            writeFileSync(file, await buildDocx({ ...MINIMAL_PARTS, [part]: root }));
+            const lenient = await resolved(file, "lenient");
+            expect({ valid: lenient.valid, issues: lenient.issues }).toEqual(EMPTY_UNWRAP_LENIENT[part]);
+            expect(JSON.stringify(lenient.issues)).toBe(JSON.stringify(EMPTY_UNWRAP_LENIENT[part]!.issues));
+        });
+    });
+});
