@@ -186,6 +186,19 @@ export interface ValidateOptions {
     xsdValidator?: XsdValidator;
 }
 
+/**
+ * Info finding appended to a packed input's auto-repair result (#649): the
+ * repairs ran on a temporary staged copy that is discarded, so neither the
+ * repairs nor the repair plan describe the file the caller pointed at. A
+ * directory input's write-back reaches its sources, so it gets no disclosure.
+ */
+const PACKED_REPAIR_DISCLOSURE: ValidationIssue = {
+    severity: "info",
+    code: "auto-repair-staged-copy",
+    message:
+        "Auto-repair ran on a temporary staged copy of the packed file; the repairs and repair-plan findings describe that copy, and the source file is unchanged.",
+};
+
 /** Package format a dispatch suffix maps to. `.docm` validates exactly like `.docx`. */
 export function formatForSuffix(suffix: string): PackageFormat {
     if (suffix === ".pptx") return "pptx";
@@ -562,7 +575,18 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         // filesystem cannot hold two parts under one name (#373). The archive
         // still reads, so the findings a partial run computes on it belong in
         // the staging failure (#454).
-        return finish(await runStaged(zip, named, undefined, () => archiveFindings(buf, format, profile, registry)));
+        // A packed input's repairs land in the temporary staging and are
+        // thrown away — only a directory input's write-back reaches the
+        // source — so the result must not read as if the file changed (#649).
+        // The disclosure says a repair ran, so it is added only when one did
+        // (#666): a failed extraction stops before the repair block, and
+        // `.xlsx`, the one accepted suffix without validators, never reaches it.
+        let repairRan = autoRepair && format !== "xlsx";
+        const staged = await runStaged(zip, named, undefined, () => {
+            repairRan = false;
+            return archiveFindings(buf, format, profile, registry);
+        });
+        return finish(repairRan ? { ...staged, issues: [...staged.issues, PACKED_REPAIR_DISCLOSURE] } : staged);
     }
 
     const dir = path.resolve(target);
@@ -1238,27 +1262,29 @@ async function runValidators(
     }
 
     let repairs = 0;
-    let repairDiagnostics: ValidationResult = { valid: true, issues: [] };
+    let beforeIssues: readonly ValidationIssue[] = [];
+    let contentIssues: ValidationIssue[] = [];
     if (opts.autoRepair) {
         const beforeInventory =
             opts.suffix === ".docx" || opts.suffix === ".docm" ? await collectDocxSemanticInventory(unpackedDir, opts.profile) : null;
         const beforeResults = await Promise.all(validators.map((v) => v.validate()));
-        const repairPlanIssues = buildRepairPlanIssues(mergeResults(...beforeResults).issues);
+        beforeIssues = mergeResults(...beforeResults).issues;
         for (const v of validators) {
             repairs += await v.repair();
         }
-        const contentIssues =
+        contentIssues =
             beforeInventory && repairs > 0
                 ? compareDocxSemanticInventories(beforeInventory, await collectDocxSemanticInventory(unpackedDir, opts.profile))
                 : [];
-        repairDiagnostics = mergeResults({
-            valid: [...repairPlanIssues, ...contentIssues].every((i) => i.severity !== "error"),
-            issues: [...repairPlanIssues, ...contentIssues],
-        });
     }
 
     const results = await Promise.all(validators.map((v) => v.validate()));
-    const merged = mergeResults(...results, repairDiagnostics);
+    const after = mergeResults(...results);
+    const repairPlanIssues = opts.autoRepair ? buildRepairPlanIssues(beforeIssues, after.issues) : [];
+    const merged = mergeResults(after, {
+        valid: contentIssues.every((i) => i.severity !== "error"),
+        issues: [...repairPlanIssues, ...contentIssues],
+    });
     // mergeResults drops xsdWalk. Copy the trace off the schema validator
     // after the walk, including the word-valid path that never started XSD.
     return {
@@ -1454,6 +1480,10 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
 
     if (opts.autoRepair && result.repairs > 0) {
         process.stdout.write(`Auto-repaired ${result.repairs} issue(s)\n`);
+    }
+    const stagedDisclosure = result.issues.find((issue) => issue.code === "auto-repair-staged-copy");
+    if (stagedDisclosure !== undefined) {
+        process.stdout.write(`${stagedDisclosure.message}\n`);
     }
 
     // A partial run is not a verdict on the whole document, so it discloses

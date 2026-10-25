@@ -856,7 +856,8 @@ core-properties relationship makes Word offer recovery, and its well-formed cont
 opens clean, so the rule follows the relationship, not the name. Full, quick and named
 runs share this policy; strict verdicts are unchanged.
 External entities are not loaded or expanded; XSD imports resolve through allowed local schema roots.
-Validation leaves source bytes unchanged unless you request `autoRepair`.
+Validation leaves source bytes unchanged unless you request `autoRepair` on an
+unpacked directory; a packed input is repaired only on a discarded staged copy.
 
 Content-type checks, XSD dispatch, and semantic diagnostics find the ZIP stream
 ASCII case-insensitively and retain its stored name in findings. Stream lookup does
@@ -1400,6 +1401,16 @@ file name and delete originals of parts removed by a repair; untouched files and
 dropped duplicate entries remain byte-identical. No forward-slash replacement
 files are added to the input directory. Quick and named-check runs continue to
 read the directory's package view directly ([#374](https://github.com/jandira-tech/docx-validate/issues/374)).
+A packed file (`.docx`/`.docm`/`.pptx`) is different: auto-repair runs on a
+temporary staged copy that is discarded, so the source file's bytes never
+change. The result then carries an `auto-repair-staged-copy` info finding —
+and the CLI prints the same sentence on its own line, after
+`Auto-repaired N issue(s)` when anything was repaired —
+disclosing that the repairs and the repair plan describe the staged copy
+([#649](https://github.com/jandira-tech/docx-validate/issues/649)). It
+appears only when a repair ran: a packed `.xlsx`, which has no validators,
+and a packed file that cannot be extracted get none
+([#666](https://github.com/jandira-tech/docx-validate/issues/666)).
 
 A stored file that cannot be read fails the run with `package-extract-failed`,
 naming the stored file — the package view cannot be staged. This includes a
@@ -1474,6 +1485,28 @@ extraction fails on a NUL-bearing name: omitted work can miss a defect.
 (number of issues auto-repaired when `autoRepair: true`), and
 `xsdWalk: { started, parts, eligible }`. `Validate.run()` and `jubarte.validate()`
 return the shared `ValidationResult`, including metadata, without those extra fields.
+
+With `autoRepair` the run also reports repair outcomes for DOCX/DOCM and PPTX
+([#622](https://github.com/jandira-tech/docx-validate/issues/622)). The plan
+appears in the path API's `validate()` result and in the CLI's `--json`
+output. The CLI's text mode lists error-severity issues only; the one other
+finding it prints is the `auto-repair-staged-copy` disclosure, on its own
+line. The byte APIs (`new Validate().run(bytes)`,
+`jubarte.validate(bytes)`) have no `autoRepair` option, so neither surface
+carries the plan
+([#651](https://github.com/jandira-tech/docx-validate/issues/651)). Non-info
+findings from before repair are grouped by path and code, then compared with
+the same group from that run's post-repair validation
+([#648](https://github.com/jandira-tech/docx-validate/issues/648)).
+Each info-severity plan line gives the original count and says
+"Auto-repair cleared N; M remain": `repair-plan` means none remain,
+`repair-plan-partial` means some cleared and some remain, and
+`repair-plan-unavailable` means none cleared. Remaining findings carry
+"Fix manually: …" when guidance exists — one line lists every distinct
+guidance its survivors carry — or "No manual repair guidance is available."
+otherwise. Counts describe group outcomes, including indirect
+repairs; they do not identify individual occurrences or promise future repairs.
+New post-repair groups remain ordinary validation findings. No repairs are added.
 
 ## Development
 

@@ -24,6 +24,7 @@ import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import { runValidateFromArgv, validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+import { buildRawZip } from "./support/raw-zip";
 import { contentTypeSpecimens } from "./support/word-content-types-specimens";
 import { rels, relation } from "./support/word-rule-test-xml";
 import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
@@ -265,12 +266,85 @@ describe("validate", () => {
             expect(wsAfter.length).toBe(0);
             expect(
                 after.issues.some(
-                    (i) => i.code === "repair-plan" && i.path === "word/document.xml" && i.message.includes("add xml:space='preserve'"),
+                    (i) =>
+                        i.code === "repair-plan" && i.path === "word/document.xml" && i.message.includes("Auto-repair cleared 1; 0 remain"),
                 ),
             ).toBe(true);
             expect(after.issues.some((i) => i.code === "repair-content-preserved")).toBe(true);
 
             // Sanity-check the on-disk file actually got the attribute added.
+            const docXml = await fs.readFile(path.join(unpacked, "word", "document.xml"), "utf8");
+            expect(docXml).toMatch(/xml:space="preserve"/);
+        });
+    });
+
+    it("discloses that auto-repair on a packed file ran on a staged copy (#649)", async () => {
+        await withTempDir(async (tmp) => {
+            const file = path.join(tmp, "packed.docx");
+            await fs.writeFile(
+                file,
+                await buildDocx({
+                    ...MINIMAL_PARTS,
+                    "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(">Hello<", "> Hello <"),
+                }),
+            );
+            const beforeBytes = await fs.readFile(file);
+            const result = await validate(file, { autoRepair: true });
+            expect(result.repairs).toBeGreaterThanOrEqual(1);
+            // The plan reports the repair as cleared, but the repaired bytes
+            // never reach the file — the result must say so.
+            expect(result.issues).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        severity: "info",
+                        code: "auto-repair-staged-copy",
+                        message:
+                            "Auto-repair ran on a temporary staged copy of the packed file; the repairs and repair-plan findings describe that copy, and the source file is unchanged.",
+                    }),
+                ]),
+            );
+            expect(await fs.readFile(file)).toEqual(beforeBytes);
+        });
+    });
+
+    it("claims no auto-repair for a packed .xlsx input, which has no validators (#666)", async () => {
+        await withTempDir(async (tmp) => {
+            const file = path.join(tmp, "packed.xlsx");
+            await fs.writeFile(file, await buildDocx({ ...MINIMAL_PARTS }));
+            const result = await validate(file, { autoRepair: true });
+            // runValidators returns before its repair block, so nothing ran.
+            expect(result.repairs).toBe(0);
+            expect(result.issues).toContainEqual(expect.objectContaining({ code: "unsupported-file-type", severity: "error" }));
+            expect(result.issues.filter((i) => i.code === "auto-repair-staged-copy")).toEqual([]);
+        });
+    });
+
+    it("claims no auto-repair when the packed file cannot be extracted (#666)", async () => {
+        await withTempDir(async (tmp) => {
+            const file = path.join(tmp, "packed.docx");
+            // The archive opens, but no host filesystem holds a 300-character
+            // file name, so the extraction fails before any repair (#454).
+            await fs.writeFile(
+                file,
+                buildRawZip([
+                    ...Object.entries(MINIMAL_PARTS).map(([name, content]) => ({ name, content })),
+                    { name: `word/${"a".repeat(300)}.xml`, content: "<x/>" },
+                ]),
+            );
+            const result = await validate(file, { autoRepair: true });
+            expect(result.repairs).toBe(0);
+            expect(result.issues).toContainEqual(expect.objectContaining({ code: "package-extract-failed", severity: "error" }));
+            expect(result.issues.filter((i) => i.code === "auto-repair-staged-copy")).toEqual([]);
+        });
+    });
+
+    it("keeps directory write-back and emits no staged-copy disclosure (#649)", async () => {
+        await withTempDir(async (tmp) => {
+            const unpacked = path.join(tmp, "unpacked.docx");
+            await writeMinimalDocxDir(unpacked, "<w:body><w:p><w:r><w:t> hello</w:t></w:r></w:p></w:body>");
+            const result = await validate(unpacked, { autoRepair: true });
+            expect(result.repairs).toBeGreaterThanOrEqual(1);
+            expect(result.issues.some((i) => i.code === "auto-repair-staged-copy")).toBe(false);
             const docXml = await fs.readFile(path.join(unpacked, "word", "document.xml"), "utf8");
             expect(docXml).toMatch(/xml:space="preserve"/);
         });

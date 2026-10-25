@@ -71,9 +71,11 @@ export function severityClassFor(category: string): InventorySeverityClass {
 interface RepairPlanGroup {
     path?: string;
     code: string;
-    action: string;
-    supported: boolean;
     count: number;
+    /** Distinct manual guidance strings carried by the group's findings. */
+    actions: Set<string>;
+    /** Findings in the group with no manual guidance. */
+    unguided: number;
 }
 
 export async function collectDocxSemanticInventory(unpackedDir: string, profile: Profile = "lenient"): Promise<DocxSemanticInventory> {
@@ -122,36 +124,69 @@ export function compareDocxSemanticInventories(before: DocxSemanticInventory, af
     ];
 }
 
-export function buildRepairPlanIssues(issues: readonly ValidationIssue[]): ValidationIssue[] {
+/**
+ * Summarize the same auto-repair run's observed outcomes. Groups key on the
+ * finding's (path, code) alone — never the guidance class — so a surviving
+ * finding always keeps its group's "none remain" line away: a `repair-plan`
+ * issue cannot sit beside findings carrying the same path and code (#648).
+ * The surviving findings supply the manual guidance, listed inside the one
+ * line when they differ. Counts decide whether a group cleared, partly
+ * cleared, or remains. This also captures indirect repairs and works for
+ * every format without a capability table.
+ */
+export function buildRepairPlanIssues(before: readonly ValidationIssue[], after: readonly ValidationIssue[]): ValidationIssue[] {
+    const beforeGroups = groupRepairIssues(before);
+    const afterGroups = groupRepairIssues(after);
+    return [...beforeGroups.values()].sort(compareRepairPlanGroups).map((group) => {
+        const survivors = afterGroups.get(groupKey(group.path, group.code));
+        const remaining = survivors?.count ?? 0;
+        // New findings may increase a group; never report a negative clearance.
+        const cleared = Math.max(0, group.count - remaining);
+        const actions = [...(survivors?.actions ?? [])].sort();
+        const unguided = survivors?.unguided ?? 0;
+        const guidance =
+            remaining === 0
+                ? ""
+                : actions.length === 0
+                  ? " No manual repair guidance is available."
+                  : ` Fix manually: ${actions.join("; ")}.` +
+                    (unguided > 0 ? " No manual repair guidance is available for the other remaining issue(s)." : "");
+        return {
+            severity: "info" as const,
+            path: group.path,
+            code: remaining === 0 ? "repair-plan" : cleared > 0 ? "repair-plan-partial" : "repair-plan-unavailable",
+            message: `Before repair found ${group.count} [${group.code}] issue(s). Auto-repair cleared ${cleared}; ${remaining} remain.${guidance}`,
+        };
+    });
+}
+
+function groupKey(partPath: string | undefined, code: string): string {
+    return `${partPath ?? ""}\u0000${code}`;
+}
+
+function groupRepairIssues(issues: readonly ValidationIssue[]): Map<string, RepairPlanGroup> {
     const groups = new Map<string, RepairPlanGroup>();
     for (const issue of issues) {
         if (issue.severity === "info") continue;
         const code = issue.code ?? "uncoded-validation-issue";
         const action = repairActionForIssue(issue);
-        const supported = action !== null;
-        const groupAction = action ?? "no automatic repair is registered; validation will report it again after repair if it remains";
-        const key = `${issue.path ?? ""}\u0000${code}\u0000${supported ? "1" : "0"}\u0000${groupAction}`;
+        const key = groupKey(issue.path, code);
         const existing = groups.get(key);
         if (existing) {
             existing.count += 1;
-            continue;
+            if (action === null) existing.unguided += 1;
+            else existing.actions.add(action);
+        } else {
+            groups.set(key, {
+                path: issue.path,
+                code,
+                count: 1,
+                actions: new Set(action === null ? [] : [action]),
+                unguided: action === null ? 1 : 0,
+            });
         }
-        groups.set(key, {
-            path: issue.path,
-            code,
-            action: groupAction,
-            supported,
-            count: 1,
-        });
     }
-    return [...groups.values()].sort(compareRepairPlanGroups).map((group) => ({
-        severity: "info" as const,
-        path: group.path,
-        code: group.supported ? "repair-plan" : "repair-plan-unavailable",
-        message:
-            `Before repair found ${group.count} [${group.code}] issue(s). ` +
-            (group.supported ? `Auto-repair will ${group.action}.` : `Auto-repair will not change them because ${group.action}.`),
-    }));
+    return groups;
 }
 
 async function collectPackageAsset(file: string, rel: string, inventory: MutableDocxSemanticInventory): Promise<void> {
@@ -638,7 +673,7 @@ function compareCounters(a: DocxSemanticCounter, b: DocxSemanticCounter): number
 }
 
 function compareRepairPlanGroups(a: RepairPlanGroup, b: RepairPlanGroup): number {
-    return (a.path ?? "").localeCompare(b.path ?? "") || a.code.localeCompare(b.code) || a.action.localeCompare(b.action);
+    return (a.path ?? "").localeCompare(b.path ?? "") || a.code.localeCompare(b.code);
 }
 
 function shortRelationshipType(type: string): string {
@@ -646,8 +681,8 @@ function shortRelationshipType(type: string): string {
 }
 
 /**
- * The repair-plan action for an issue's code, or `null` when no repair is
- * registered for it; `buildRepairPlanIssues` groups issues by this action.
+ * Manual guidance only: a non-null action does not imply automatic support.
+ * The planner groups findings by this text and shows it for remaining issues.
  */
 function repairActionForIssue(issue: ValidationIssue): string | null {
     switch (issue.code) {
@@ -656,8 +691,9 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
         case "rels-empty-part":
             return "delete empty relationship sidecar parts that contain no relationships";
         case "id-durable-overflow":
-        case "id-durable-decimal":
             return "rewrite invalid durableId values to in-range values";
+        case "id-durable-decimal":
+            return "write the numbering.xml w16cid:durableId as a decimal number";
         case "id-paraid-overflow":
             return "rewrite over-cap paraId values and propagate the remap to threaded-comment references";
         case "id-textid-overflow":
@@ -669,23 +705,26 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
         case "textid-missing-element":
             return "stamp missing w14:textId anchors on affected paragraphs or table rows";
         case "style-reference-undefined":
-            return "inject canonical definitions for known missing style IDs and leave unknown style IDs reported";
+            return "define the missing styles in word/styles.xml or correct references to existing style IDs";
         case "style-default-missing":
             return "inject canonical implied-default Word style definitions";
         case "comment-thread-commentid-paraid-orphan":
-        case "comment-thread-commentid-missing-paraid":
-        case "comment-thread-commentid-missing-durableid":
         case "comment-thread-durableid-orphan":
-        case "comment-thread-durableid-missing":
             return "align commentsIds/commentsExtensible IDs with comments.xml when the target comment thread is unambiguous";
+        case "comment-thread-commentid-missing-paraid":
+            return "add the schema-required w16cid:paraId attribute to the w16cid:commentId element";
+        case "comment-thread-commentid-missing-durableid":
+            return "add the schema-required w16cid:durableId attribute to the w16cid:commentId element";
+        case "comment-thread-durableid-missing":
+            return "add the schema-required w16cex:durableId attribute to the w16cex:commentExtensible element";
         case "word-drawing-scalar-whitespace":
             return "trim leading and trailing whitespace around scalar DrawingML values";
         case "word-drawing-arc-radius":
-            return "replace non-integer a:arcTo wR and hR radii with integers";
+            return "replace invalid a:arcTo wR and hR radii with non-negative integers";
         case "word-empty-drawing":
             return "remove the empty w:drawing or give it a wp:anchor or wp:inline child";
         case "word-drawing-extent-negative":
-            return "replace each negative wp:extent cx or cy with a positive integer";
+            return "replace each negative wp:extent cx or cy with a non-negative integer";
         case "word-anchor-missing-attribute":
             return "add the missing locked, layoutInCell, or allowOverlap attribute on wp:anchor";
         case "word-position-offset-and-align":
@@ -693,7 +732,7 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
         case "word-sdt-id-empty":
             return "set the empty w:sdtPr/w:id w:val to a number";
         case "word-attached-toolbar-utf8":
-            return "replace each EF BF BD sequence in the attached toolbar that wne:toolbarData references";
+            return "restore the original toolbar bytes in place of each EF BF BD replacement sequence in the part that wne:toolbarData references";
         case "word-row-without-cell":
             return "remove the table row that has no w:tc, or add a cell to it";
         case "word-cell-ends-with-table":
@@ -733,13 +772,13 @@ function xsdRepairAction(issue: ValidationIssue): string | null {
     if (issue.code !== "xsd-error" && issue.code !== "xsd-summary") return null;
     const message = issue.message;
     if (message.includes("}graphic': This element is not expected") || message.includes("}blipFill': This element is not expected")) {
-        return "insert missing inline-picture scaffolding required by WordprocessingML/DrawingML schemas";
+        return "supply the required DrawingML children in schema order for the reported anchor, inline drawing, or picture";
     }
     if (message.includes("Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/picture}spPr")) {
         return "insert missing picture shape properties required by DrawingML schemas";
     }
     if (message.includes("}filetime': '' is not a valid value")) {
-        return "trim invalid whitespace from core document properties that Word expects as scalar values";
+        return "give the custom property a valid xs:dateTime value or remove/correct it";
     }
     return null;
 }
