@@ -7,8 +7,8 @@
  * `getGitWordDiff` runs `git diff` through `spawnSync`, which blocks the
  * event loop, on text extracted from the documents under test. Both
  * attempts share one time budget and capture at most 10 MiB of output
- * (bot PRs #207, #204 and #264; the shared budget answers Sourcery's
- * review on #207, where two fresh 10-second timeouts could block for 20).
+ * (bot PRs #207, #204 and #264; the shared budget answers a review
+ * comment on #207: two fresh 10-second timeouts could block for 20).
  */
 
 import * as childProcess from "node:child_process";
