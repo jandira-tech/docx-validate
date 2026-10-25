@@ -29,11 +29,15 @@ const FOOTER = `<Relationship Id="rIdX" Type="${R}/footer" Target="footer9.xml"/
 const DUP_Z =
     `<Relationship Id="rIdZ" Type="${R}/hyperlink" Target="https://a.example/" TargetMode="External"/>` +
     `<Relationship Id="rIdZ" Type="${R}/hyperlink" Target="https://b.example/" TargetMode="External"/>`;
+/** Session 26's clean header shape: body `w:headerReference` `rIdX` → header relationship → `header9.xml`. */
 const clean = (): Record<string, string> =>
     storyReferenceParts("headerReference", "header", "header9.xml", STORY_HEADER_XML, storyContentType("header"));
 
-// Copy Session 29's builder, including its correctly typed, unreferenced footer.
-// Evidence: docs/plans/evidence/word-probes-2026-10-24.md, s29a/s29b.
+/**
+ * Session 29's builder: the clean shape plus a correctly typed, unreferenced
+ * `footer9.xml`, with `relationships` in place of the header relationship.
+ * Evidence: docs/plans/evidence/word-probes-2026-10-24.md, s29a/s29b.
+ */
 const withFooterPart = (relationships: string): Record<string, string> => {
     const parts = clean();
     parts["word/footer9.xml"] = STORY_FOOTER_XML;
@@ -44,6 +48,7 @@ const withFooterPart = (relationships: string): Record<string, string> => {
     parts[RELS] = parts[RELS]!.replace(HEADER, relationships);
     return parts;
 };
+/** The clean shape with the `rIdZ` pair in `_rels/.rels`; `identical` gives both entries the same Target (s29b). */
 const packageDuplicate = (identical = false): Record<string, string> => {
     const parts = clean();
     parts[PACKAGE_RELS] = parts[PACKAGE_RELS]!.replace(
@@ -52,6 +57,12 @@ const packageDuplicate = (identical = false): Record<string, string> => {
     );
     return parts;
 };
+/**
+ * The main document moved to `word/main.xml`, its package relationship typed
+ * Transitional or, with `strictType`, ISO Strict, and the `rIdZ` pair in its own
+ * `.rels`. With `orphanDuplicate`, an unreached `word/document.xml` stays behind
+ * and the pair goes in its `.rels` instead (s30a).
+ */
 const relocated = (strictType: boolean, orphanDuplicate = false): Record<string, string> => {
     const parts = { ...MINIMAL_PARTS };
     parts["word/main.xml"] = parts[MAIN]!;
@@ -74,11 +85,13 @@ const relocated = (strictType: boolean, orphanDuplicate = false): Record<string,
     parts[sidecar] = parts[sidecar]!.replace("</Relationships>", `${DUP_Z}</Relationships>`);
     return parts;
 };
-// Session 30's reached-glossary shape (#617): session 26's clean glossary
-// footer with the rIdZ pair in the glossary's own sidecar. `reached: false`
-// drops the main document's glossaryDocument relationship, so the glossary
-// stays typed by its Override but no story root reads it. Evidence:
-// docs/plans/evidence/word-probes-2026-10-24.md, s30a.
+/**
+ * Session 30's reached-glossary shape (#617): session 26's clean glossary
+ * footer with the rIdZ pair in the glossary's own sidecar. `reached: false`
+ * drops the main document's glossaryDocument relationship, so the glossary
+ * stays typed by its Override but no story root reads it. Evidence:
+ * docs/plans/evidence/word-probes-2026-10-24.md, s30a.
+ */
 const glossaryDuplicate = (reached = true): Record<string, string> => {
     const parts = glossaryStoryReferenceParts("footerReference", "footer", "footer9.xml", STORY_FOOTER_XML, storyContentType("footer"));
     parts["word/glossary/_rels/document.xml.rels"] = parts["word/glossary/_rels/document.xml.rels"]!.replace(
@@ -89,19 +102,23 @@ const glossaryDuplicate = (reached = true): Record<string, string> => {
     parts[RELS] = parts[RELS]!.replace(`<Relationship Id="rIdG" Type="${R}/glossaryDocument" Target="glossary/document.xml"/>`, "");
     return parts;
 };
-// Session 31's builder (#618): `toBin` renames `<dir>/document.xml` to
-// `document.bin`, with its sidecar, Override and the relationship naming it,
-// so the story root exists under a name the XML-only walk never visits, while
-// Word still reads it and its sidecar. Evidence:
-// docs/plans/evidence/word-probes-2026-10-24.md, s31a.
+// Session 31's builder (#618). Evidence: docs/plans/evidence/word-probes-2026-10-24.md, s31a.
+/** `text` with the one occurrence of `from` replaced; throws when `from` is absent, so a shape cannot silently stay unchanged. */
 const replaceOnce = (text: string, from: string, to: string): string => {
     if (!text.includes(from)) throw new Error(`missing ${from}`);
     return text.replace(from, to);
 };
+/** `parts` with the `rIdZ` pair appended to the relationships part `rels`. */
 const withDup = (parts: Record<string, string>, rels: string): Record<string, string> => ({
     ...parts,
     [rels]: replaceOnce(parts[rels]!, "</Relationships>", `${DUP_Z}</Relationships>`),
 });
+/**
+ * Rename the story root `<dir>/document.xml` to `document.bin`, with its
+ * sidecar, its Override and the relationship in `owner` whose Target is
+ * `target`, so the root exists under a name the XML-only walk never visits,
+ * while Word still reads it and its sidecar.
+ */
 const toBin = (parts: Record<string, string>, dir: string, owner: string, target: string): Record<string, string> => {
     const out: Record<string, string> = { ...parts };
     out[`${dir}/document.bin`] = out[`${dir}/document.xml`]!;
@@ -112,7 +129,9 @@ const toBin = (parts: Record<string, string>, dir: string, owner: string, target
     out[owner] = replaceOnce(out[owner]!, `Target="${target}"`, `Target="${target.replace(/xml$/, "bin")}"`);
     return out;
 };
+/** `MINIMAL_PARTS` with the main document stored as `word/document.bin`. */
 const binMain = (): Record<string, string> => toBin({ ...MINIMAL_PARTS }, "word", PACKAGE_RELS, "word/document.xml");
+/** Session 26's clean glossary footer shape with the glossary stored as `word/glossary/document.bin`. */
 const binGlossary = (): Record<string, string> =>
     toBin(
         glossaryStoryReferenceParts("footerReference", "footer", "footer9.xml", STORY_FOOTER_XML, storyContentType("footer")),
@@ -229,6 +248,7 @@ const SPECIMENS: readonly Specimen[] = [
     { name: "bin-main", parts: binMain, blocking: false, lenientErrors: [] },
     { name: "bin-glossary", parts: binGlossary, blocking: false, lenientErrors: [] },
 ];
+/** The `code@path` key of every error, for subset comparisons between runs. */
 const errorKeys = (issues: readonly ValidationIssue[]): string[] =>
     issues.filter((issue) => issue.severity === "error").map((issue) => `${issue.code}@${issue.path}`);
 

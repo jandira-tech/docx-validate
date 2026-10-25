@@ -1020,6 +1020,7 @@ export class BaseSchemaValidator {
         // loop, or the non-`.xml` owner pass after it (an owner stored under
         // two equivalent spellings must not double-report).
         const judgedRelsFiles = new Set<string>();
+        /** Report each repeated `Id` in the relationships part `relsFile` once, at that part; a part already judged is skipped. */
         const reportDuplicates = (document: Document, relsFile: string): void => {
             if (judgedRelsFiles.has(relsFile)) return;
             judgedRelsFiles.add(relsFile);
@@ -1200,7 +1201,7 @@ export class BaseSchemaValidator {
         // behaviour: with no owner to walk from, only the schema-walking
         // profiles judge it. The package `_rels/.rels` stays with that scan.
         for (const [name] of entries) {
-            if (isXmlPartName(name) || isRelationshipsPartName(name)) continue;
+            if (isXmlPartName(name)) continue;
             const relsPart = findPart(path.posix.join(path.posix.dirname(name), "_rels", `${path.posix.basename(name)}.rels`));
             const relsFile = relsPart === undefined ? undefined : entries.get(relsPart);
             if (relsFile === undefined) continue;
