@@ -11,7 +11,44 @@
  */
 
 import { canonicalPartName, isContentTypesStreamName, PART_NAME_FOLDER_SEGMENT_DOT } from "../../../lib/content-types";
-import type { ValidationIssue } from "../../../lib/types";
+import { NS, type ValidationIssue } from "../../../lib/types";
+import { getElementsByTagNameAll } from "../../../lib/xml-helpers";
+import {
+    SCHEMA_DECLARED_ELEMENTS,
+    SCHEMA_REFERENCE_ELEMENTS,
+    SCHEMA_UNRESOLVED_ELEMENTS,
+} from "../../../lib/relationship-reference-elements";
+
+/** Per-issue facts supplied by the caller that owns the processed XML view. */
+export type WordBlockingFacts = {
+    hasEffectiveRelationshipReference?: boolean;
+};
+
+/**
+ * Count non-empty id/embed/link in either relationships namespace in the
+ * caller's effective XML. Only a schema-declared element with no declaration
+ * carrying that attribute can exclude it (w:name is CT_String). Generated
+ * bundled-XSD sets union ambiguous declarations and both conformance classes;
+ * undeclared elements/namespaces and unresolved types keep counting. Thus
+ * unobserved extensions keep the pre-#638 blocking decision. No XSD is loaded
+ * or compiled on this path. Session 35, chunks s35a/s35b, supplies the w:name
+ * and unselected-branch evidence; it did not probe arbitrary extensions.
+ */
+export const hasWordRelationshipReference = (document: Document): boolean => {
+    for (const element of getElementsByTagNameAll(document)) {
+        const identity = `{${element.namespaceURI ?? ""}}${element.localName}`;
+        const unknown = !SCHEMA_DECLARED_ELEMENTS.has(identity) || SCHEMA_UNRESOLVED_ELEMENTS.has(identity);
+        for (const attribute of ["id", "embed", "link"]) {
+            if (
+                (unknown || SCHEMA_REFERENCE_ELEMENTS.get(identity)?.has(attribute)) &&
+                (element.getAttributeNS(NS.R, attribute) ||
+                    element.getAttributeNS("http://purl.oclc.org/ooxml/officeDocument/relationships", attribute))
+            )
+                return true;
+        }
+    }
+    return false;
+};
 
 /**
  * Whether a part lies under `word/`, comparing part names as OPC does: ASCII
@@ -45,6 +82,7 @@ export const isWordBlockingIssue = (
     propertiesParts: ReadonlySet<string> = new Set(),
     wordReadParts: ReadonlySet<string> = new Set(),
     storyRootParts: ReadonlySet<string> = new Set(),
+    facts: WordBlockingFacts = {},
 ): boolean => {
     switch (issue.code) {
         // NB: run-content-misplaced is NOT Word-blocking — a real Word probe
@@ -218,24 +256,20 @@ export const isWordBlockingIssue = (
         // carries the exact same orphan and opens cleanly in real Word. So an
         // orphan marker does not predict Word rejection; keep it a warning.
         case "rels-missing-sidecar": {
-            // #625, session 33 (s33b): Word judges a story root by the
-            // relationship that reaches it, not by its file name — a main
-            // document, and a reached glossary, each stored as
-            // word/header1.xml with no .rels beside their story reference
-            // get the recovery offer, while the renamed controls open clean.
-            // So a story root's missing sidecar blocks wherever the root is
-            // stored, compared as OPC part names as the rels-id-duplicate
-            // case above compares its sidecar. Every other part keeps the
-            // basename rule unchanged: a genuine word/header1.xml or
-            // word/footer1.xml with no sidecar is Word-tolerated (Word's own
-            // regenerated header-with-rid-no-sidecar output opens clean
-            // carrying the finding), and any other name blocks as before.
-            // The finding itself exists only for parts stored under a .xml
-            // name: a story root stored as word/document.bin is not checked
-            // as XML and never gets one (#620).
+            // #638, session 35, chunks s35a/s35b: Word opens unread parts,
+            // unselected MC branches and rs:id on w:name cleanly, but offers
+            // recovery for rs:id on a footerReference inside sectPrChange.
+            // The caller supplies the processed-reference fact; never infer
+            // it from prose or stored bytes. Generated schema declarations
+            // exclude only known non-references; undeclared elements and
+            // namespaces keep blocking. The finding itself is unchanged.
             const part = issue.path?.replace(/\\/g, "/");
-            if (part !== undefined && storyRootParts.has(canonicalPartName(part))) return true;
-            return !/^word\/(?:header|footer)\d*\.xml$/i.test(issue.path ?? "");
+            if (part === undefined || !facts.hasEffectiveRelationshipReference) return false;
+            const canonical = canonicalPartName(part);
+            // #625, session 33 s33b: story roots retain precedence over the
+            // header/footer basename tolerance, wherever the root is stored.
+            if (storyRootParts.has(canonical)) return true;
+            return wordReadParts.has(canonical) && !/^word\/(?:header|footer)\d*\.xml$/i.test(issue.path ?? "");
         }
         case "opc-relationships-structure": {
             // #433: Word 16.115 offers recovery for a wrong root or a foreign

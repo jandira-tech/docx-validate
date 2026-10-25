@@ -970,19 +970,44 @@ in the same evidence file). In a full run, a part with no relationships part
 keeps `rels-missing-sidecar` as its only finding for a non-empty `r:id`; the
 legacy relationship walk that reports it runs only in full runs, so quick and
 named runs report nothing for that shape.
-Under word-valid for DOCX/DOCM, `rels-missing-sidecar` blocks when the part
-is a story root — the main document or a reached glossary — under any `.xml`
-name, even `word/header1.xml`: Word judges a story root by the
-relationship that reaches it, not by its file name, and session 33 observed
-recovery for both a renamed main document and a renamed reached glossary
+Under word-valid for DOCX/DOCM, `rels-missing-sidecar` blocks only when the
+part is a story root or a member of the run's Word-read set, and a counted
+relationship reference survives in its processed markup-compatibility view.
+Session 35, chunks s35a/s35b, observed clean opens for ids in unreferenced
+`word/xtra.xml` (both relationships namespaces), unreferenced `docProps/app.xml`,
+an unreached glossary, on `w:name` in reached styles, and inside an unselected
+`mc:Choice` (both relationships namespaces). These findings now warn under
+word-valid; strict and lenient output is unchanged
+([#638](https://github.com/jandira-tech/docx-validate/issues/638)). A footer
+reference's Strict relationships id inside `w:sectPrChange` still blocks:
+Word offered recovery for it in s35b.
+
+The processed-reference test uses declaration sets generated from all bundled
+XSDs by `scripts/generate-relationship-reference-elements.ts`, with a test
+that regenerates them in memory to check for drift. The sets follow global
+and local element declarations, element references, type extension and
+restriction bases, and attribute groups. They union declarations sharing an
+element name and map Transitional namespaces to their ISO Strict counterparts.
+A non-empty `id`, `embed` or `link` in either relationships namespace stops
+counting only when the schemas declare the element and no declaration gives
+it that attribute. `w:name` declares only `w:val`, so its added relationship
+id does not qualify. Undeclared elements and namespaces, including extension
+namespaces such as `asvg`, keep counting; an unresolved type also cannot prove
+absence. Charts, ambiguous names with a reference-bearing declaration and
+unobserved extensions retain the previous blocking decision. This conservative
+classification is not fresh Word evidence for those shapes. It loads or
+compiles no XSD during word-valid validation.
+
+A story root — the main document or a reached glossary — keeps precedence
+over the header/footer basename tolerance, under any `.xml` name, even
+`word/header1.xml`: session 33 observed recovery for both renamed roots
 whose `.rels` was gone beside their story reference, while the renamed
 controls opened clean
 ([#625](https://github.com/jandira-tech/docx-validate/issues/625); session 33,
-chunk s33b, in the same evidence file). Every other part keeps the basename
-rule: a genuine `word/header1.xml` or `word/footer1.xml` bearing relationship
-references with no sidecar keeps its word-valid warning — Word's own
-regenerated output opens clean carrying that finding — and any other name
-blocks as before. A story root stored without a `.xml` suffix
+chunk s33b, in the same evidence file). A genuine `word/header1.xml` or
+`word/footer1.xml` bearing relationship references with no sidecar keeps its
+word-valid warning — Word's own regenerated output opens clean carrying
+that finding. A story root stored without a `.xml` suffix
 (`word/document.bin`) is not checked as XML, so it gets no
 `rels-missing-sidecar` at all
 ([#620](https://github.com/jandira-tech/docx-validate/issues/620)).

@@ -57,7 +57,7 @@ import { mergeResults } from "../../../lib/types";
 import { promoteFullCheckIssue } from "../../../lib/mode-policy";
 import { propertiesParts } from "../../../lib/properties-parts";
 import { wordReadParts, wordStoryRootParts } from "../../../lib/word-read-parts";
-import { isWordBlockingIssue } from "./word-blocking";
+import { hasWordRelationshipReference, isWordBlockingIssue } from "./word-blocking";
 import {
     decodeXmlBytes,
     getElementsByTagNameAll,
@@ -643,7 +643,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             wordStoryRootParts(context),
         ]);
         const issues = result.issues.map((issue): ValidationIssue => {
-            if (issue.severity !== "error" || isWordBlockingIssue(issue, properties, read, storyRoots)) return issue;
+            if (issue.severity !== "error") return issue;
+            // #638, session 35, chunks s35a/s35b: only a conservatively
+            // counted reference surviving Word's MC view makes this finding
+            // blocking. Keep the issue's identity and serialized shape intact.
+            const effective =
+                issue.code === "rels-missing-sidecar" && issue.path !== undefined ? context.effectiveXml(issue.path) : undefined;
+            const facts = { hasEffectiveRelationshipReference: effective?.ok === true && hasWordRelationshipReference(effective.document) };
+            if (isWordBlockingIssue(issue, properties, read, storyRoots, facts)) return issue;
             return { ...issue, severity: "warning" };
         });
         return finalize(issues);

@@ -7,7 +7,8 @@ import { describe, expect, it } from "vitest";
 
 import { canonicalPartName } from "../src/lib/content-types";
 import type { ValidationIssue } from "../src/lib/types";
-import { isWordBlockingIssue } from "../src/scripts/office/validators/word-blocking";
+import { parseXml } from "../src/lib/xml-helpers";
+import { hasWordRelationshipReference, isWordBlockingIssue } from "../src/scripts/office/validators/word-blocking";
 
 const issue = (code: string, rest: Partial<ValidationIssue> = {}): ValidationIssue => ({ severity: "error", code, message: "", ...rest });
 
@@ -227,36 +228,40 @@ describe("isWordBlockingIssue", () => {
     });
 
     it.each([
-        ["word/document.xml", true],
-        ["word/header1.xml", false],
-        ["word/FOOTER.xml", false],
-        [undefined, true],
-    ] as const)("judges a missing .rels sidecar for %s as blocking: %s", (path, blocking) => {
-        expect(isWordBlockingIssue(issue("rels-missing-sidecar", { path }))).toBe(blocking);
-    });
-
-    it("blocks a missing .rels sidecar for a story root stored under a header's name (#625)", () => {
-        // Session 33 (s33b): Word judges a story root by the relationship
-        // that reaches it, not by its file name, so a main document — or a
-        // reached glossary — stored as word/header1.xml with no .rels beside
-        // its story reference is refused while the renamed controls open
-        // clean. The story-root set decides, compared as OPC part names; the
-        // basename exemption keeps applying only to parts outside it.
-        const roots = new Set([canonicalPartName("word/header1.xml"), canonicalPartName("word/document.xml")]);
-        expect(isWordBlockingIssue(issue("rels-missing-sidecar", { path: "word/header1.xml" }), new Set(), new Set(), roots)).toBe(true);
-        expect(isWordBlockingIssue(issue("rels-missing-sidecar", { path: "WORD/Header1.XML" }), new Set(), new Set(), roots)).toBe(true);
-        // A header name no story root uses keeps today's exemption, and the
-        // main document keeps blocking with or without the set.
+        { path: "word/document.xml", read: false, story: true, reference: true, blocking: true },
+        { path: "word/document.xml", read: true, story: false, reference: true, blocking: true },
+        { path: "word/document.xml", read: true, story: true, reference: false, blocking: false },
+        { path: "word/styles.xml", read: true, story: false, reference: false, blocking: false },
+        { path: "word/comments.xml", read: true, story: false, reference: true, blocking: true },
+        { path: "word/xtra.xml", read: false, story: false, reference: true, blocking: false },
+        { path: "word/header1.xml", read: true, story: false, reference: true, blocking: false },
+        { path: "word/FOOTER.xml", read: true, story: false, reference: true, blocking: false },
+        { path: "word/header1.xml", read: false, story: true, reference: true, blocking: true },
+        { path: "WORD/%68eader1.XML", read: false, story: true, reference: true, blocking: true },
+        { path: "word/header1.xml", read: true, story: true, reference: false, blocking: false },
+        { path: undefined, read: false, story: false, reference: true, blocking: false },
+    ])("judges a missing sidecar with per-issue processed-reference facts: $path/$read/$story/$reference", (specimen) => {
+        const canonical = canonicalPartName(specimen.path ?? "");
         expect(
             isWordBlockingIssue(
-                issue("rels-missing-sidecar", { path: "word/header1.xml" }),
+                issue("rels-missing-sidecar", { path: specimen.path, message: "arbitrary prose" }),
                 new Set(),
+                new Set(specimen.read ? [canonical] : []),
+                new Set(specimen.story ? [canonical] : []),
+                { hasEffectiveRelationshipReference: specimen.reference },
+            ),
+        ).toBe(specimen.blocking);
+    });
+
+    it("does not infer a missing-sidecar reference from message prose or a part name (#638)", () => {
+        expect(
+            isWordBlockingIssue(
+                issue("rels-missing-sidecar", { path: "word/document.xml", message: "r:id on w:footerReference" }),
                 new Set(),
-                new Set([canonicalPartName("word/document.xml")]),
+                new Set(["word/document.xml"]),
+                new Set(["word/document.xml"]),
             ),
         ).toBe(false);
-        expect(isWordBlockingIssue(issue("rels-missing-sidecar", { path: "word/document.xml" }))).toBe(true);
-        expect(isWordBlockingIssue(issue("rels-missing-sidecar", { path: "word/document.xml" }), new Set(), new Set(), roots)).toBe(true);
     });
 
     it.each([
@@ -332,5 +337,66 @@ describe("isWordBlockingIssue", () => {
             ).toBe(true);
             expect(isWordBlockingIssue(issue("xml-syntax", { path: "customXml/_rels/item1.xml.rels" }), new Set(), noReach)).toBe(false);
         });
+    });
+});
+
+describe("hasWordRelationshipReference", () => {
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const WS = "http://purl.oclc.org/ooxml/wordprocessingml/main";
+    const A = "http://schemas.openxmlformats.org/drawingml/2006/main";
+    const AS = "http://purl.oclc.org/ooxml/drawingml/main";
+    const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    const RS = "http://purl.oclc.org/ooxml/officeDocument/relationships";
+    // Representative declarations exercise inherited WML references,
+    // DrawingML attribute groups and VML, including cross-conformance ids.
+    const references = [
+        [W, "footerReference", "id"],
+        [W, "subDoc", "id"],
+        [W, "top", "id"],
+        [WS, "top", "id"],
+        [WS, "subDoc", "id"],
+        ["http://schemas.openxmlformats.org/drawingml/2006/chart", "chart", "id"],
+        ["http://purl.oclc.org/ooxml/drawingml/chart", "chart", "id"],
+        ["urn:foreign", "footerReference", "id"],
+        [A, "unknown", "embed"],
+        ["http://schemas.microsoft.com/office/drawing/2016/SVG/main", "svgBlip", "embed"],
+        [WS, "headerReference", "id"],
+        [W, "objectLink", "id"],
+        [W, "embedBold", "id"],
+        [W, "hyperlink", "id"],
+        [A, "blip", "embed"],
+        [AS, "blip", "link"],
+        [A, "hlinkClick", "id"],
+        [A, "wavAudioFile", "embed"],
+        [A, "audioFile", "link"],
+        ["urn:schemas-microsoft-com:vml", "imagedata", "id"],
+        ["urn:schemas-microsoft-com:office:office", "OLEObject", "id"],
+    ];
+    it.each(references)("counts a declared or unknown %s %s %s with either relationship namespace", (ns, name, attribute) => {
+        for (const relationship of [R, RS]) {
+            const document = parseXml(`<root><e:${name} xmlns:e="${ns}" xmlns:alias="${relationship}" alias:${attribute}="rId9"/></root>`);
+            expect(hasWordRelationshipReference(document)).toBe(true);
+        }
+    });
+    it.each([
+        [W, "name", "id", "rId9"],
+        [W, "name", "embed", "rId9"],
+        [W, "name", "link", "rId9"],
+        [WS, "name", "id", "rId9"],
+        [W, "footerReference", "embed", "rId9"],
+        [A, "blip", "id", "rId9"],
+        [W, "footerReference", "id", ""],
+    ])("ignores a non-reference %s %s %s=%s", (ns, name, attribute, value) => {
+        const document = parseXml(`<e:${name} xmlns:e="${ns}" xmlns:r="${R}" r:${attribute}="${value}"/>`);
+        expect(hasWordRelationshipReference(document)).toBe(false);
+    });
+    it("counts the root and later descendants but never an id in a foreign namespace", () => {
+        expect(hasWordRelationshipReference(parseXml(`<w:footerReference xmlns:w="${W}" xmlns:r="${RS}" r:id="rId9"/>`))).toBe(true);
+        expect(hasWordRelationshipReference(parseXml(`<w:footerReference xmlns:w="${W}" xmlns:x="urn:foreign" x:id="rId9"/>`))).toBe(false);
+        expect(
+            hasWordRelationshipReference(
+                parseXml(`<root xmlns:w="${W}" xmlns:r="${R}"><w:name r:id="bad"/><w:hyperlink r:id="good"/></root>`),
+            ),
+        ).toBe(true);
     });
 });

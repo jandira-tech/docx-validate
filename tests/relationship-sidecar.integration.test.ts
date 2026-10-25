@@ -409,3 +409,309 @@ describe.each(["packed", "directory"] as const)("OPC sidecar lookup, %s (#402)",
         });
     });
 });
+
+// Session 35, chunks s35a/s35b (#638). These reproduce the supplied builders;
+// no Word automation runs here. The comments calibration is an unobserved
+// extension that checks Word-read non-story parts use the same predicate.
+const session35Main = (declarations: string, from: string, to: string): string =>
+    replaceOnce(replaceOnce(MINIMAL_PARTS[MAIN]!, "<w:document ", `<w:document ${declarations} `), from, to);
+const session35Override = (part: string, type: string): string =>
+    replaceOnce(MINIMAL_PARTS[CT]!, "</Types>", `<Override PartName="/${part}" ContentType="${type}"/></Types>`);
+const session35Specimens = [
+    ...[RS, R].map((namespace, index) => ({
+        name: `unread-xtra-${index === 0 ? "rs" : "r"}-id-no-sidecar`,
+        part: "word/xtra.xml",
+        blocking: false,
+        parts: () => ({
+            ...MINIMAL_PARTS,
+            "word/xtra.xml": `<?xml version="1.0"?><x:root xmlns:x="urn:x" xmlns:r="${namespace}"><x:e r:id="rId9"/></x:root>`,
+        }),
+    })),
+    {
+        name: "unread-app-props-rs-id-no-sidecar",
+        part: "docProps/app.xml",
+        blocking: false,
+        parts: () => ({
+            ...MINIMAL_PARTS,
+            "docProps/app.xml": `<?xml version="1.0"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:rs="${RS}"><Application rs:id="rId9">x</Application></Properties>`,
+            [CT]: session35Override("docProps/app.xml", "application/vnd.openxmlformats-officedocument.extended-properties+xml"),
+        }),
+    },
+    {
+        name: "unreached-glossary-rs-id-no-sidecar",
+        part: GLOSSARY,
+        blocking: false,
+        parts: () => ({
+            ...MINIMAL_PARTS,
+            [GLOSSARY]: `<?xml version="1.0"?><w:glossaryDocument xmlns:w="${WS}" xmlns:rs="${RS}"><w:docParts><w:docPart><w:docPartBody><w:sectPr><w:footerReference w:type="default" rs:id="rId9"/></w:sectPr></w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`,
+            [CT]: session35Override(GLOSSARY, storyContentType("document.glossary")),
+        }),
+    },
+    {
+        name: "styles-rs-id-no-sidecar",
+        part: "word/styles.xml",
+        blocking: false,
+        parts: () => ({
+            ...MINIMAL_PARTS,
+            "word/styles.xml": replaceOnce(
+                replaceOnce(MINIMAL_PARTS["word/styles.xml"]!, "<w:styles ", `<w:styles xmlns:rs="${RS}" `),
+                "<w:name ",
+                '<w:name rs:id="rId9" ',
+            ),
+        }),
+    },
+    ...[RS, R].map((namespace, index) => ({
+        name: `mce-unselected-${index === 0 ? "rs" : "r"}-embed-no-sidecar`,
+        part: MAIN,
+        blocking: false,
+        parts: () =>
+            withoutRels(
+                {
+                    ...MINIMAL_PARTS,
+                    [MAIN]: session35Main(
+                        `xmlns:r="${namespace}" xmlns:foo="urn:foo" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"`,
+                        "<w:sectPr>",
+                        '<mc:AlternateContent><mc:Choice Requires="foo"><w:p><w:r><w:drawing><a:blip r:embed="rId9"/></w:drawing></w:r></w:p></mc:Choice><mc:Fallback/></mc:AlternateContent><w:sectPr>',
+                    ),
+                },
+                SIDECAR,
+            ),
+    })),
+    {
+        name: "sectprchange-rs-id-no-sidecar",
+        part: MAIN,
+        blocking: true,
+        parts: () =>
+            withoutRels(
+                {
+                    ...MINIMAL_PARTS,
+                    [MAIN]: session35Main(
+                        `xmlns:rs="${RS}"`,
+                        "</w:sectPr>",
+                        '<w:sectPrChange w:id="5" w:author="a" w:date="2026-01-01T00:00:00Z"><w:sectPr><w:footerReference w:type="default" rs:id="rId9"/></w:sectPr></w:sectPrChange></w:sectPr>',
+                    ),
+                },
+                SIDECAR,
+            ),
+    },
+    {
+        name: "read-comments-reference-no-sidecar",
+        part: "word/comments.xml",
+        blocking: true,
+        parts: () => ({
+            ...MINIMAL_PARTS,
+            "word/comments.xml": `<w:comments xmlns:w="${W}" xmlns:r="${R}"><w:comment w:id="0" w:author="a"><w:p><w:hyperlink r:id="rId9"><w:r><w:t>Link</w:t></w:r></w:hyperlink></w:p></w:comment></w:comments>`,
+            [MAIN]: MINIMAL_PARTS[MAIN]!.replace(
+                "<w:r><w:t>Hello",
+                '<w:commentRangeStart w:id="0"/><w:commentRangeEnd w:id="0"/><w:r><w:commentReference w:id="0"/></w:r><w:r><w:t>Hello',
+            ),
+            [SIDECAR]: MINIMAL_PARTS[SIDECAR]!.replace(
+                "</Relationships>",
+                `<Relationship Id="rIdC" Type="${R}/comments" Target="comments.xml"/></Relationships>`,
+            ),
+            [CT]: session35Override("word/comments.xml", storyContentType("comments")),
+        }),
+    },
+];
+
+// Lenient expectations from the original RED-time results at 404b9804.
+const session35Lenient: Record<string, { valid: boolean; issues: string[] }> = {
+    "mce-unselected-r-embed-no-sidecar": {
+        valid: false,
+        issues: [
+            "error rels-unreferenced@word/styles.xml: Unreferenced file: word/styles.xml",
+            "error rels-missing-sidecar@word/document.xml: Part 'word/document.xml' uses relationship references but has no .rels sidecar file",
+            "warning paraid-missing-element@word/document.xml",
+            "info latent-styles-missing@word/styles.xml",
+        ],
+    },
+    "mce-unselected-rs-embed-no-sidecar": {
+        valid: false,
+        issues: [
+            "error rels-unreferenced@word/styles.xml: Unreferenced file: word/styles.xml",
+            "error rels-missing-sidecar@word/document.xml: Part 'word/document.xml' uses relationship references but has no .rels sidecar file",
+            "warning paraid-missing-element@word/document.xml",
+            "info latent-styles-missing@word/styles.xml",
+        ],
+    },
+    "read-comments-reference-no-sidecar": {
+        valid: false,
+        issues: [
+            "error rels-missing-sidecar@word/comments.xml: Part 'word/comments.xml' uses relationship references but has no .rels sidecar file",
+            "warning paraid-missing-element@word/comments.xml",
+            "info latent-styles-missing@word/styles.xml",
+        ],
+    },
+    "sectprchange-rs-id-no-sidecar": {
+        valid: false,
+        issues: [
+            "error rels-unreferenced@word/styles.xml: Unreferenced file: word/styles.xml",
+            "error rels-missing-sidecar@word/document.xml: Part 'word/document.xml' uses relationship references but has no .rels sidecar file",
+            "info latent-styles-missing@word/styles.xml",
+            "error xsd-summary@word/document.xml",
+            "error xsd-error@word/document.xml",
+        ],
+    },
+    "styles-rs-id-no-sidecar": {
+        valid: false,
+        issues: [
+            "error rels-missing-sidecar@word/styles.xml: Part 'word/styles.xml' uses relationship references but has no .rels sidecar file",
+            "info latent-styles-missing@word/styles.xml",
+            "error xsd-summary@word/styles.xml",
+            "error xsd-error@word/styles.xml",
+        ],
+    },
+    "unreached-glossary-rs-id-no-sidecar": {
+        valid: false,
+        issues: [
+            "error rels-unreferenced@word/glossary/document.xml: Unreferenced file: word/glossary/document.xml",
+            "error rels-missing-sidecar@word/glossary/document.xml: Part 'word/glossary/document.xml' uses relationship references but has no .rels sidecar file",
+            "info latent-styles-missing@word/styles.xml",
+            "info xsd-strict-skipped@",
+        ],
+    },
+    "unread-app-props-rs-id-no-sidecar": {
+        valid: false,
+        issues: [
+            "error rels-unreferenced@docProps/app.xml: Unreferenced file: docProps/app.xml",
+            "error rels-missing-sidecar@docProps/app.xml: Part 'docProps/app.xml' uses relationship references but has no .rels sidecar file",
+            "info latent-styles-missing@word/styles.xml",
+            "error xsd-summary@docProps/app.xml",
+            "error xsd-error@docProps/app.xml",
+        ],
+    },
+    "unread-xtra-r-id-no-sidecar": {
+        valid: false,
+        issues: [
+            "error rels-unreferenced@word/xtra.xml: Unreferenced file: word/xtra.xml",
+            "error rels-missing-sidecar@word/xtra.xml: Part 'word/xtra.xml' uses relationship references but has no .rels sidecar file",
+            "info latent-styles-missing@word/styles.xml",
+            "error xsd-summary@word/xtra.xml",
+            "error xsd-error@word/xtra.xml",
+        ],
+    },
+    "unread-xtra-rs-id-no-sidecar": {
+        valid: false,
+        issues: [
+            "error rels-unreferenced@word/xtra.xml: Unreferenced file: word/xtra.xml",
+            "error rels-missing-sidecar@word/xtra.xml: Part 'word/xtra.xml' uses relationship references but has no .rels sidecar file",
+            "info latent-styles-missing@word/styles.xml",
+            "error xsd-summary@word/xtra.xml",
+            "error xsd-error@word/xtra.xml",
+        ],
+    },
+};
+
+describe("Word-read processed missing-sidecar references (#638)", { timeout: 120_000 }, () => {
+    it.each(session35Specimens)("judges $name without changing strict or lenient output", async (specimen) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, `${specimen.name}.docx`);
+            const bytes = await buildDocx(specimen.parts());
+            writeFileSync(file, bytes);
+            const lenient = await validate(file, { profile: "lenient" });
+            // Pin findings rather than the registry-dependent result metadata.
+            expect({
+                valid: lenient.valid,
+                issues: lenient.issues.map(
+                    (finding) =>
+                        `${finding.severity} ${finding.code}@${finding.path ?? ""}` +
+                        (finding.code?.startsWith("rels-") ? `: ${finding.message}` : ""),
+                ),
+            }).toEqual(session35Lenient[specimen.name]);
+            const strict = await validate(file, { profile: "strict" });
+            expect(strict.valid).toBe(false);
+            const expected = {
+                code: "rels-missing-sidecar",
+                path: specimen.part,
+                severity: "error",
+                message: `Part '${specimen.part}' uses relationship references but has no .rels sidecar file`,
+            };
+            expect(strict.issues.filter((finding) => finding.code === "rels-missing-sidecar")).toEqual([expected]);
+            const full = await validate(file, { profile: "word-valid" });
+            expect.soft(full.valid).toBe(!specimen.blocking);
+            expect
+                .soft(full.issues.filter((finding) => finding.code === "rels-missing-sidecar"))
+                .toEqual([{ ...expected, severity: specimen.blocking ? "error" : "warning" }]);
+            for (const selection of [{ quick: true }, { checks: ["word-header-footer-relationship", "word-hyperlink-relationship"] }]) {
+                const partial = await validate(file, { profile: "word-valid", ...selection });
+                expect(partial.issues.filter((finding) => finding.code === "rels-missing-sidecar")).toEqual([]);
+                expect(errors(full.issues)).toEqual(expect.arrayContaining(errors(partial.issues)));
+                if (full.valid) expect(partial.valid).toBe(true);
+            }
+            expect(readFileSync(file)).toEqual(bytes);
+        });
+    });
+});
+
+// Unobserved shapes retain the pre-#638 blocking decision without Word evidence.
+describe("conservative missing-sidecar classification (#638 rework)", () => {
+    it.each([
+        [
+            "chart",
+            'xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart"',
+            '<w:r><w:drawing><c:chart r:id="rId9"/></w:drawing></w:r>',
+        ],
+        [
+            "svg",
+            'xmlns:asvg="http://schemas.microsoft.com/office/drawing/2016/SVG/main"',
+            '<w:r><w:drawing><asvg:svgBlip r:embed="rId9"/></w:drawing></w:r>',
+        ],
+        ["unknown", 'xmlns:x="urn:x"', '<x:e r:id="rId9"/>'],
+        ["subdoc", "", '<w:subDoc r:id="rId9"/>'],
+    ])("keeps %s blocking in the main story", async (_name, declaration, content) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "reference.docx");
+            writeFileSync(
+                file,
+                await buildDocx(
+                    withoutRels(
+                        {
+                            ...MINIMAL_PARTS,
+                            [MAIN]: session35Main(`xmlns:r="${R}" ${declaration}`, "<w:sectPr>", `${content}<w:sectPr>`),
+                        },
+                        SIDECAR,
+                    ),
+                ),
+            );
+            // Computed against 404b9804 validator copies, independently of the fix.
+            const lenient = await validate(file, { profile: "lenient" });
+            expect({
+                valid: lenient.valid,
+                issues: lenient.issues.map(
+                    (finding) =>
+                        `${finding.severity} ${finding.code}@${finding.path ?? ""}` +
+                        (finding.code?.startsWith("rels-") ? `: ${finding.message}` : ""),
+                ),
+            }).toEqual({
+                valid: false,
+                issues: [
+                    "error rels-unreferenced@word/styles.xml: Unreferenced file: word/styles.xml",
+                    "error rels-missing-sidecar@word/document.xml: Part 'word/document.xml' uses relationship references but has no .rels sidecar file",
+                    "info latent-styles-missing@word/styles.xml",
+                    "error xsd-summary@word/document.xml",
+                    "error xsd-error@word/document.xml",
+                ],
+            });
+            const strict = await validate(file, { profile: "strict" });
+            expect(strict.valid).toBe(false);
+            expect(strict.issues.filter((finding) => finding.code === "rels-missing-sidecar")).toEqual([
+                {
+                    severity: "error",
+                    code: "rels-missing-sidecar",
+                    path: MAIN,
+                    message: `Part '${MAIN}' uses relationship references but has no .rels sidecar file`,
+                },
+            ]);
+            const result = await validate(file, { profile: "word-valid" });
+            expect.soft(result.valid).toBe(false);
+            expect(result.issues.filter((finding) => finding.code === "rels-missing-sidecar")).toEqual([
+                {
+                    severity: "error",
+                    code: "rels-missing-sidecar",
+                    path: MAIN,
+                    message: `Part '${MAIN}' uses relationship references but has no .rels sidecar file`,
+                },
+            ]);
+        });
+    });
+});
