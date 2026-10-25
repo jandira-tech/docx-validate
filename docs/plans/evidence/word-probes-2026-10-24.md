@@ -1,6 +1,6 @@
 # Real-Word probes, 2026-10-24
 
-Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), what session 26 settled for the items adversarial review AY suspected (#606, #607, #610), what session 27 settled for the relationship types and placements adversarial review AZ left open (#613), what session 28 settled for a hyperlink's relationship type (#614), what session 29 settled for duplicate relationship Ids and `https:` relationship Types (#615, adversarial review BA), what session 30 settled for duplicate relationship Ids outside the package and main-document `.rels` (#617, adversarial review BB), what session 31 settled for duplicate relationship Ids beside a story root stored without a `.xml` suffix (#618, adversarial review BC), and what session 32 settled for a story reference whose `r:id` names no relationship and for a main document stored without a `.xml` suffix (#619, #620, adversarial review BD).
+Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), what session 26 settled for the items adversarial review AY suspected (#606, #607, #610), what session 27 settled for the relationship types and placements adversarial review AZ left open (#613), what session 28 settled for a hyperlink's relationship type (#614), what session 29 settled for duplicate relationship Ids and `https:` relationship Types (#615, adversarial review BA), what session 30 settled for duplicate relationship Ids outside the package and main-document `.rels` (#617, adversarial review BB), what session 31 settled for duplicate relationship Ids beside a story root stored without a `.xml` suffix (#618, adversarial review BC), what session 32 settled for a story reference whose `r:id` names no relationship and for a main document stored without a `.xml` suffix (#619, #620, adversarial review BD), and what session 33 settled for story references with an empty, missing or ISO Strict `r:id`, story roots stored as `word/header1.xml`, and markup compatibility in relationships parts (#623, #624, #625, #631, #632, adversarial reviews BE and BG).
 
 - Word: Microsoft Word for Mac 16.115 (build 16.115.26100424), platform `darwin`.
 - Transport, sessions 1 and 2: `verifyInWord` (`src/lib/word-verifier.ts`). It opens each specimen by path, reads Word's window and dialog state, and never saves.
@@ -209,6 +209,14 @@ Session 32 adds:
 - **#619: Word offers recovery for a story reference whose `r:id` names no relationship.** A body `w:footerReference w:type="default" r:id="rId9"` with `word/_rels/document.xml.rels` present but holding no `rId9` was refused. Word-valid at 6e3cda3e passes it: `word-header-footer-relationship` leaves an `r:id` that names no relationship to `rels-id-missing`, which is strict-only. The same reference with the main document's `.rels` removed was refused too, as word-valid already reports (`rels-missing-sidecar`).
 - **#620: a main document stored as `word/document.bin` is not checked as XML.** Truncated (its closing `</w:body></w:document>` removed), it made Word fail to open the file, as the `.xml` twin does, but word-valid and strict at 6e3cda3e both pass it. Its two footer-reference shapes were refused like their `.xml` twins, and word-valid passes both; strict passes the one whose `.rels` holds no `rId9`.
 
+Session 33 adds:
+
+- **#623: Word refuses a story reference whose `r:id` is empty or missing.** A body `w:headerReference` or `w:footerReference` with `r:id=""` got a recovery offer (the header in `s33a`, the footer in `s33c`). One with no id in either relationships namespace got an open error (the footer in `s33c`, the header in `s33e`). An id in any other namespace counts as none: a footer reference whose only id was `x:id` (`xmlns:x="urn:x"`) got the same open error, dangling or naming a valid footer relationship (`s33d`). Word-valid at 8b79bc78 passes all six; strict catches the id-less ones only through the XSD (`r:id` is required) and passes the empty ones.
+- **#624: a story reference in the ISO Strict relationships namespace needs the sidecar too.** With the main document and styles in the ISO Strict WordprocessingML namespace, a body `w:footerReference r:id="rId9"` whose `r` prefix is bound to the ISO Strict relationships namespace was refused with `word/_rels/document.xml.rels` removed (`s33a`). The same Strict package without the reference opened clean (`s33c`), so the missing sidecar alone is not the cause. With the sidecar kept but holding no `rId9`, the reference was refused as word-valid reports (`s33c`). Word-valid at 8b79bc78 passes the no-sidecar shape, because `rels-missing-sidecar` looks only for Transitional-namespace ids.
+- **#625: Word judges a story root by the relationship that reaches it, not by its name.** A main document, and a reached glossary, each stored as `word/header1.xml` (with its package relationship or glossary relationship, `.rels` and Override renamed with it) opened clean (`s33b`). With no `.rels` beside a footer reference (the main document's body one, or the glossary's own), both were refused, like the ordinary-name glossary calibration. Word-valid at 8b79bc78 passes both renamed shapes, because its `word/header|footer\d*.xml` basename exemption drops `rels-missing-sidecar` there; strict reports it.
+- **#631 refuted: Word reads the ISO Strict `r:id` on a Transitional story reference.** A Transitional `w:footerReference` whose only id was an `rs:id` (`xmlns:rs` bound to the ISO Strict relationships namespace) naming a real footer relationship opened clean, and the PDF Word wrote rendered the footer (`s33c`). Dangling, it got the recovery offer of a dangling Transitional `r:id`, not the open error of a reference with no id. `word-header-footer-relationship` already resolves both namespaces (#606, #619).
+- **#632: Word applies markup compatibility to relationships parts before it judges their children.** In `word/_rels/document.xml.rels`, session 26's footer relationship opened clean, the footer rendered, in three shapes: inside an `mc:Fallback` beside an `mc:Choice` requiring a namespace Word does not understand (`s33d`); inside an `mc:Choice` requiring `w14` with an empty `mc:Fallback` (`s33e`); and kept beside a foreign `<x:Wrap/>` whose prefix the root declares `mc:Ignorable` (`s33e`). `_rels/.rels` with its officeDocument relationship inside such a Fallback opened clean too (`s33e`). A foreign `<x:Wrap/>` left inside the selected Fallback was refused (`s33e`), as #433's undeclared one is. Word-valid at 5cd8ada8 rejects all four clean shapes, through `opc-relationships-structure` (and, for `_rels/.rels`, `word-main-document-part`), which judge the stored XML.
+
 ## Not observed
 
 Session 1. Another session began driving Word by 02:28Z: its first log line is at 02:28:14Z, and its map file was written at 02:27:55Z. Its preflight closes every open document, so rows observed from 02:26Z on were not treated as evidence. Session 2 observed all of them again (below).
@@ -270,6 +278,8 @@ Session 30 ran in the foreground (`s30a` 23:53Z), one driver run. Nothing was se
 Session 31 ran in the foreground (`s31a` 00:26Z on 2026-10-25), one driver run. Nothing was set aside, and every row is attributed by a manifest entry naming its staged file. Before the chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`. No Word process was running, so the driver launched its own (`launched_by_us=True`, `open_documents=0`, `word_pid=39530`). The chunk was built at ceb5c884 with the session 31 builder below.
 
 Session 32 ran in the foreground (`s32a` 01:10Z on 2026-10-25), one driver run. Nothing was set aside, and every row is attributed by a manifest entry naming its staged file. Before the chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`; another session was running its own converter (`bench docx-to-pdf --converter jubarte-rc`), which does not drive Word. No Word process was running, so the driver launched its own (`launched_by_us=True`, `open_documents=0`, `word_pid=74817`). The chunk was built at 6e3cda3e with the session 32 builder below.
+
+Session 33 ran in the foreground, one driver run per chunk (`s33a` 04:45Z, `s33b` 05:03Z, `s33c` 05:13Z, `s33d` 05:15Z and `s33e` 05:21Z on 2026-10-25). Nothing was set aside, and every row is attributed by a manifest entry naming its staged file. Before each chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`; another session was running its own converters (`bench docx-to-pdf` with `jubarte-rc`, and with `soffice`), which do not drive Word. For `s33a`, `s33c`, `s33d` and `s33e` no Word process was running, so the driver launched its own (`launched_by_us=True`, `open_documents=0`; `word_pid=46992`, `63771`, `70432` and `5565`). `s33b` found the Word `s33a` had left (`launched_by_us=False`, `open_documents=0`, `word_pid=98254`). Every run recycled Word after consecutive refusals (`recovery 1`). In `s33a` and `s33b` Word did not quit within 20 s and the driver ended it with `pkill`; in `s33b` the driver then declined Microsoft Error Reporting's "A Force Quit was performed" notice, which reports that quit. `~/Library/Logs/DiagnosticReports` holds no Word report from the session. `s33a` ran under heavy load (the 15-minute load average read 110.8 at 05:03Z) and took 10 min 16 s, so the harness moved it to the background for its last seconds; three of its items ended in an AppleEvent timeout or with no document and no dialog, and are recorded as inconclusive. `s33c` observed all three shapes again. `s33a` and `s33b` were built at 8b79bc78, the head of #611; `s33c`–`s33e` at 5cd8ada8, #611's merge into `release/0.53.0-rc.2`, whose tree is identical. All five were built with the session 33 builder below.
 
 Sessions 4–6 observed `main-relationship-missing` (#380), the #414 `PartName`s with `application/xml`, an escape in a folder segment (#408), a part-level relationships part (#433) and an unreferenced malformed `customXml/item9.xml` (#437). Still to be observed:
 
@@ -1886,6 +1896,92 @@ Adversarial review BD's suspected items on #618: a main document stored as `word
 {"run": "s32a", "name": "footerref-rid-missing", "sha256": "4969aeee012d3c81918e009c35850789f140b302c762caadb09b140e50394b75", "observedAt": "2026-10-25T01:10:58.681Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00003__wfv__footerref-rid-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00003__wfv__footerref-rid-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
 {"run": "s32a", "name": "bin-footerref-rid-missing", "sha256": "8d94ffcffc55cadc13f5bf07e6b0086aef57b577894d5c676d20a1c88f9ca75c", "observedAt": "2026-10-25T01:10:39.867Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__bin-footerref-rid-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__bin-footerref-rid-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
 {"run": "s32a", "name": "s32a-control-minimal-end", "sha256": "a04b2b9a2dd67f365eed13da3044f8c4e0761de0183851dc866f505131e6612f", "observedAt": "2026-10-25T01:11:36+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 33: 04:45Z–05:23Z on 2026-10-25, validator columns at 8b79bc78
+
+Adversarial reviews BE and BG's suspected items on #619 (#623, #624, #625, #631, #632), each between clean controls. `s33c`–`s33e` were built at 5cd8ada8, whose tree is 8b79bc78's, so one pair of validator columns holds for every chunk. Where a specimen renders, the PDF Word wrote says whether Word read the reference: session 26's footer prints "Footer" under the minimal document's "Hello".
+
+| Run    | Observed  | Specimen                                | Issue            | Shape                                                                                                                                                                                                                                                                                                                            | SHA-256 (first 16) | Word           | word-valid at 8b79bc78                                            | strict at 8b79bc78                                                                                                                   |
+| ------ | --------- | --------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `s33a` | 04:55:46Z | `s33a-control-minimal`                  | control          | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                                                                  | `62d6964cbc054c6c` | clean-open     | valid                                                             | valid                                                                                                                                |
+| `s33a` | 04:55:46Z | `footerref-rid-empty`                   | #623             | `MINIMAL_PARTS` with `<w:footerReference w:type="default" r:id=""/>` first in the body `w:sectPr` (`xmlns:r` declared)                                                                                                                                                                                                           | `20d261e8a03fa0f6` | inconclusive   | valid                                                             | valid                                                                                                                                |
+| `s33a` | 04:51:28Z | `headerref-rid-empty`                   | #623             | `MINIMAL_PARTS` with `<w:headerReference w:type="default" r:id=""/>` first in the body `w:sectPr` (`xmlns:r` declared)                                                                                                                                                                                                           | `d5f058acb7650b99` | repair-warning | valid                                                             | valid                                                                                                                                |
+| `s33a` | 04:55:46Z | `footerref-no-rid`                      | #623             | `MINIMAL_PARTS` with `<w:footerReference w:type="default"/>` first in the body `w:sectPr` (`xmlns:r` declared)                                                                                                                                                                                                                   | `610b20aff6b66a83` | inconclusive   | valid                                                             | invalid: `xsd-error`, `xsd-summary`                                                                                                  |
+| `s33a` | 04:55:46Z | `strict-ns-control`                     | #624 control     | `MINIMAL_PARTS` with the main document and styles in the ISO Strict WordprocessingML namespace                                                                                                                                                                                                                                   | `64059786e25ced46` | clean-open     | valid                                                             | valid                                                                                                                                |
+| `s33a` | 04:51:45Z | `strict-ns-footerref-no-sidecar`        | #624             | `MINIMAL_PARTS` with the main document and styles in the ISO Strict WordprocessingML namespace and `<w:footerReference w:type="default" r:id="rId9"/>` first in the body `w:sectPr`, `xmlns:r` bound to the ISO Strict relationships namespace; `word/_rels/document.xml.rels` removed                                           | `ee695800235463de` | repair-warning | valid                                                             | invalid: `rels-unreferenced`                                                                                                         |
+| `s33a` | 04:55:46Z | `strict-ns-footerref-rid-missing`       | #624 calibration | `MINIMAL_PARTS` with the main document and styles in the ISO Strict WordprocessingML namespace and `<w:footerReference w:type="default" r:id="rId9"/>` first in the body `w:sectPr`, `xmlns:r` bound to the ISO Strict relationships namespace; `word/_rels/document.xml.rels` kept, with no `rId9`                              | `ea9e8cbba27cf64d` | inconclusive   | invalid: `word-header-footer-relationship`                        | invalid: `word-header-footer-relationship`                                                                                           |
+| `s33a` | 04:55:46Z | `s33a-control-minimal-end`              | control          | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                                                                  | `0f1790875ce86ac2` | clean-open     | valid                                                             | valid                                                                                                                                |
+| `s33b` | 05:05:06Z | `s33b-control-minimal`                  | control          | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                                                                  | `117da91a4fb5d5a5` | clean-open     | valid                                                             | valid                                                                                                                                |
+| `s33b` | 05:05:06Z | `header1-main-control`                  | #625 control     | `MINIMAL_PARTS`, the main document stored as `word/header1.xml` (its package relationship, `.rels` and Override renamed with it)                                                                                                                                                                                                 | `34112a09b4fc2080` | clean-open     | valid                                                             | valid                                                                                                                                |
+| `s33b` | 05:04:14Z | `header1-main-footerref-no-sidecar`     | #625             | `MINIMAL_PARTS` with `<w:footerReference w:type="default" r:id="rId9"/>` first in the body `w:sectPr` (`xmlns:r` declared), the main document stored as `word/header1.xml` (its package relationship, `.rels` and Override renamed with it); its `.rels` removed                                                                 | `c3b0be9d7e2859a0` | repair-warning | valid                                                             | invalid: `rels-missing-sidecar`, `rels-unreferenced`                                                                                 |
+| `s33b` | 05:05:06Z | `header1-glossary-control`              | #625 control     | session 26's reached glossary (`glossaryStoryReferenceParts`, footer `word/glossary/footer9.xml`), the glossary stored as `word/header1.xml` (its glossary relationship, `.rels` and Override renamed with it)                                                                                                                   | `52db5b7234ab17c6` | clean-open     | valid                                                             | invalid: `paraid-missing-element`                                                                                                    |
+| `s33b` | 05:05:05Z | `header1-glossary-footerref-no-sidecar` | #625             | the same; its `.rels` removed, which leaves the glossary's footer reference dangling                                                                                                                                                                                                                                             | `012d06e4565f3e3b` | repair-warning | valid                                                             | invalid: `paraid-missing-element`, `rels-missing-sidecar`, `rels-unreferenced`                                                       |
+| `s33b` | 05:03:36Z | `glossary-footerref-no-sidecar`         | #625 calibration | session 26's reached glossary (`glossaryStoryReferenceParts`, footer `word/glossary/footer9.xml`) with `word/glossary/_rels/document.xml.rels` removed                                                                                                                                                                           | `91b27f6607ff056b` | repair-warning | invalid: `rels-missing-sidecar`                                   | invalid: `paraid-missing-element`, `rels-missing-sidecar`, `rels-unreferenced`                                                       |
+| `s33b` | 05:05:06Z | `s33b-control-minimal-end`              | control          | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                                                                  | `4cd61da586f4857f` | clean-open     | valid                                                             | valid                                                                                                                                |
+| `s33c` | 05:15:31Z | `s33c-control-minimal`                  | control          | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                                                                  | `2bf7835b89ccd6eb` | clean-open     | valid                                                             | valid                                                                                                                                |
+| `s33c` | 05:14:12Z | `footerref-no-rid`                      | #623             | `MINIMAL_PARTS` with `<w:footerReference w:type="default"/>` first in the body `w:sectPr` (`xmlns:r` declared)                                                                                                                                                                                                                   | `22586d7da00e7bde` | open-error     | valid                                                             | invalid: `xsd-error`, `xsd-summary`                                                                                                  |
+| `s33c` | 05:14:21Z | `footerref-rid-empty`                   | #623             | `MINIMAL_PARTS` with `<w:footerReference w:type="default" r:id=""/>` first in the body `w:sectPr` (`xmlns:r` declared)                                                                                                                                                                                                           | `be5035ebad4664e4` | repair-warning | valid                                                             | valid                                                                                                                                |
+| `s33c` | 05:15:14Z | `strict-ns-footerref-rid-missing`       | #624 calibration | `MINIMAL_PARTS` with the main document and styles in the ISO Strict WordprocessingML namespace and `<w:footerReference w:type="default" r:id="rId9"/>` first in the body `w:sectPr`, `xmlns:r` bound to the ISO Strict relationships namespace; `word/_rels/document.xml.rels` kept, with no `rId9`                              | `94f722cfd23b6fd5` | repair-warning | invalid: `word-header-footer-relationship`                        | invalid: `word-header-footer-relationship`                                                                                           |
+| `s33c` | 05:15:31Z | `strict-ns-no-rels-no-reference`        | #624 isolation   | `MINIMAL_PARTS` with the main document and styles in the ISO Strict WordprocessingML namespace; `word/_rels/document.xml.rels` removed; no reference                                                                                                                                                                             | `1b704859bd7a2a52` | clean-open     | valid                                                             | invalid: `rels-unreferenced`                                                                                                         |
+| `s33c` | 05:14:59Z | `rs-id-dangling`                        | #631             | `MINIMAL_PARTS` with `<w:footerReference w:type="default" rs:id="rId9"/>` first in the body `w:sectPr` (`xmlns:rs` bound to the ISO Strict relationships namespace, no `r` binding)                                                                                                                                              | `5dcdcbfea05fd46a` | repair-warning | invalid: `word-header-footer-relationship`                        | invalid: `word-header-footer-relationship`, `xsd-error`, `xsd-summary`                                                               |
+| `s33c` | 05:15:31Z | `rs-id-valid-footer`                    | #631             | session 26's clean footer (`storyReferenceParts`: `r:id="rIdX"`, a footer relationship to `word/footer1.xml`), its `r:id` replaced by `rs:id="rIdX"` (ISO Strict relationships namespace)                                                                                                                                        | `e985b7ca10dcebe0` | clean-open     | valid                                                             | invalid: `paraid-missing-element`, `xsd-error`, `xsd-summary`                                                                        |
+| `s33c` | 05:15:31Z | `s33c-control-minimal-end`              | control          | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                                                                  | `2bf7835b89ccd6eb` | clean-open     | valid                                                             | valid                                                                                                                                |
+| `s33d` | 05:16:40Z | `s33d-control-minimal`                  | control          | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                                                                  | `2bf7835b89ccd6eb` | clean-open     | valid                                                             | valid                                                                                                                                |
+| `s33d` | 05:16:40Z | `footer-valid-calibration`              | calibration      | session 26's clean footer (`storyReferenceParts`: `r:id="rIdX"`, a footer relationship to `word/footer1.xml`)                                                                                                                                                                                                                    | `c4c60ce37c69eb87` | clean-open     | valid                                                             | invalid: `paraid-missing-element`                                                                                                    |
+| `s33d` | 05:16:40Z | `mce-rels-fallback-footer`              | #632             | the same, with the `rIdX` Relationship moved into `<mc:AlternateContent><mc:Choice Requires="foo"/><mc:Fallback>…</mc:Fallback></mc:AlternateContent>` (`xmlns:foo="urn:foo"`) in `word/_rels/document.xml.rels`                                                                                                                 | `3be051611e976a51` | clean-open     | invalid: `opc-relationships-structure`                            | invalid: `opc-relationships-structure`, `paraid-missing-element`, `rels-id-missing`, `rels-unreferenced`                             |
+| `s33d` | 05:16:18Z | `third-ns-id-dangling`                  | #623 (#632 S-C)  | `MINIMAL_PARTS` with `<w:footerReference w:type="default" x:id="rId9"/>` first in the body `w:sectPr` (`xmlns:x="urn:x"`)                                                                                                                                                                                                        | `4090c9c464c19842` | open-error     | valid                                                             | invalid: `xsd-error`, `xsd-summary`                                                                                                  |
+| `s33d` | 05:16:23Z | `third-ns-id-valid-footer`              | #623 (#632 S-C)  | session 26's clean footer (`storyReferenceParts`: `r:id="rIdX"`, a footer relationship to `word/footer1.xml`), its `r:id` replaced by `x:id="rIdX"` (`xmlns:x="urn:x"`)                                                                                                                                                          | `c208e286b7a17752` | open-error     | valid                                                             | invalid: `paraid-missing-element`, `xsd-error`, `xsd-summary`                                                                        |
+| `s33d` | 05:16:40Z | `s33d-control-minimal-end`              | control          | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                                                                  | `2bf7835b89ccd6eb` | clean-open     | valid                                                             | valid                                                                                                                                |
+| `s33e` | 05:23:20Z | `s33e-control-minimal`                  | control          | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                                                                  | `a01ef3841cc4a9c2` | clean-open     | valid                                                             | valid                                                                                                                                |
+| `s33e` | 05:22:17Z | `headerref-no-rid`                      | #623             | `MINIMAL_PARTS` with `<w:headerReference w:type="default"/>` first in the body `w:sectPr` (`xmlns:r` declared)                                                                                                                                                                                                                   | `32010c227a7ffb7c` | open-error     | valid                                                             | invalid: `xsd-error`, `xsd-summary`                                                                                                  |
+| `s33e` | 05:23:20Z | `mce-package-rels-fallback-main`        | #632             | `MINIMAL_PARTS` with `_rels/.rels`'s officeDocument Relationship moved into `<mc:AlternateContent><mc:Choice Requires="foo"/><mc:Fallback>…</mc:Fallback></mc:AlternateContent>` (`xmlns:foo="urn:foo"`)                                                                                                                         | `d55ee3a1ee7174bc` | clean-open     | invalid: `opc-relationships-structure`, `word-main-document-part` | invalid: `opc-relationships-structure`, `rels-unreferenced`, `word-main-document-part`, `xsd-error`, `xsd-summary`                   |
+| `s33e` | 05:23:20Z | `mce-rels-choice-w14-footer`            | #632             | session 26's clean footer (`storyReferenceParts`: `r:id="rIdX"`, a footer relationship to `word/footer1.xml`), the `rIdX` Relationship moved into `<mc:AlternateContent><mc:Choice Requires="w14">…</mc:Choice><mc:Fallback/></mc:AlternateContent>` (`w14` = `http://schemas.microsoft.com/office/word/2010/wordml`)            | `9b5d6066c5849178` | clean-open     | invalid: `opc-relationships-structure`                            | invalid: `opc-relationships-structure`, `paraid-missing-element`, `rels-id-missing`, `rels-unreferenced`                             |
+| `s33e` | 05:23:20Z | `mce-rels-ignorable-foreign`            | #632             | session 26's clean footer (`storyReferenceParts`: `r:id="rIdX"`, a footer relationship to `word/footer1.xml`), plus a foreign `<x:Wrap/>` after the Relationships, the root declaring `xmlns:x="urn:x"` and `mc:Ignorable="x"`                                                                                                   | `cfa548e94f66d305` | clean-open     | invalid: `opc-relationships-structure`                            | invalid: `opc-relationships-structure`, `paraid-missing-element`                                                                     |
+| `s33e` | 05:22:38Z | `mce-rels-fallback-foreign`             | #632             | session 26's clean footer (`storyReferenceParts`: `r:id="rIdX"`, a footer relationship to `word/footer1.xml`), the `rIdX` Relationship and a foreign `<x:Wrap/>` both moved into `<mc:AlternateContent><mc:Choice Requires="foo"/><mc:Fallback>…</mc:Fallback></mc:AlternateContent>` (`xmlns:foo="urn:foo"`, `xmlns:x="urn:x"`) | `00f74391cdc0863c` | repair-warning | invalid: `opc-relationships-structure`                            | invalid: `opc-relationships-structure`, `paraid-missing-element`, `rels-id-missing`, `rels-unreferenced`, `xsd-error`, `xsd-summary` |
+| `s33e` | 05:23:20Z | `s33e-control-minimal-end`              | control          | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                                                                  | `f18ce8ddd7bf7056` | clean-open     | valid                                                             | valid                                                                                                                                |
+
+<details><summary>Raw records, session 33</summary>
+
+```jsonl
+{"run": "s33a", "name": "s33a-control-minimal", "sha256": "62d6964cbc054c6cc77c060d129973857a0f053b9b005afe7b307f265b9e3de8", "observedAt": "2026-10-25T04:55:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s33a", "name": "footerref-rid-empty", "sha256": "20d261e8a03fa0f6333de99dd3fa06362e6a30fb1f7412b6911c8ffd2f69ef86", "observedAt": "2026-10-25T04:55:46+00:00", "outcome": "other", "item": "failed", "error": "Microsoft Word got an error: AppleEvent timed out.", "dialogs": []}
+{"run": "s33a", "name": "headerref-rid-empty", "sha256": "d5f058acb7650b990dfc2d68d6124f36ea8b580952f24a5e39b823ae71a7bd52", "observedAt": "2026-10-25T04:51:28.203Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00002__wfv__headerref-rid-empty.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00002__wfv__headerref-rid-empty.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__headerref-rid-empty.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s33a", "name": "footerref-no-rid", "sha256": "610b20aff6b66a83a3a8ee8d5c1595b84c22fb09020addbe23cda39bfa2a4d60", "observedAt": "2026-10-25T04:55:46+00:00", "outcome": "other", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00000__wfv__footerref-no-rid.docx; refusing to guess", "dialogs": []}
+{"run": "s33a", "name": "strict-ns-control", "sha256": "64059786e25ced460debcce1d28efe8b39a3a817dc9be7f54b67cd73e1c64fb6", "observedAt": "2026-10-25T04:55:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s33a", "name": "strict-ns-footerref-no-sidecar", "sha256": "ee695800235463de7cf2daf884fd41d0143a59ee6d1725d4302d2f87464ce200", "observedAt": "2026-10-25T04:51:45.864Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00006__wfv__strict-ns-footerref-no-sidecar.docx; refusing to guess", "dialogs": ["'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permissions for the document or drive.\\n* Make sure there is sufficient free memory and disk space.\\n* Open the file with the Text Recovery conver", "\"Word found unreadable content in 00006__wfv__strict-ns-footerref-no-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s33a", "name": "strict-ns-footerref-rid-missing", "sha256": "ea9e8cbba27cf64d690ad50db7b3771d9c6f028f93392c450ee4cca1b192c10b", "observedAt": "2026-10-25T04:55:46+00:00", "outcome": "other", "item": "failed", "error": "Microsoft Word got an error: AppleEvent timed out.", "dialogs": []}
+{"run": "s33a", "name": "s33a-control-minimal-end", "sha256": "0f1790875ce86ac26d5eee297f14432f226e71804acbee5296808a9958280490", "observedAt": "2026-10-25T04:55:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s33b", "name": "s33b-control-minimal", "sha256": "117da91a4fb5d5a5bf4931313277f891f040df4c0a6b08effd2c4c39a1ebb13f", "observedAt": "2026-10-25T05:05:06+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s33b", "name": "header1-main-control", "sha256": "34112a09b4fc2080c6ee80684804679d86af606ff27f73f4181389cba5b18194", "observedAt": "2026-10-25T05:05:06+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s33b", "name": "header1-main-footerref-no-sidecar", "sha256": "c3b0be9d7e2859a0236c9a6e34789ab1ab40e46199c8b4ef260294578a98110c", "observedAt": "2026-10-25T05:04:14.370Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00004__wfv__header1-main-footerref-no-sidecar.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00004__wfv__header1-main-footerref-no-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00004__wfv__header1-main-footerref-no-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s33b", "name": "header1-glossary-control", "sha256": "52db5b7234ab17c646e4d07dd0243fc4aefe0cd20987756be646f5cf27a75324", "observedAt": "2026-10-25T05:05:06+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s33b", "name": "header1-glossary-footerref-no-sidecar", "sha256": "012d06e4565f3e3b7d98f3872f62db2e4951aa9903e01dd9d5cc036befe89a20", "observedAt": "2026-10-25T05:05:05.914Z", "outcome": "repair-warning", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00002__wfv__header1-glossary-footerref-no-sidecar.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00002__wfv__header1-glossary-footerref-no-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'"]}
+{"run": "s33b", "name": "glossary-footerref-no-sidecar", "sha256": "91b27f6607ff056b1ad755f636b9179f6b03b08dfd36b4b7bf4f52da217ea2ff", "observedAt": "2026-10-25T05:03:36.479Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__glossary-footerref-no-sidecar.docx; refusing to guess", "dialogs": ["\"Word found unreadable content in 00000__wfv__glossary-footerref-no-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s33b", "name": "s33b-control-minimal-end", "sha256": "4cd61da586f4857fc15d9e4e62c3dc989f9cb3adec0fb43be0a450076fbf41fa", "observedAt": "2026-10-25T05:05:06+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s33c", "name": "s33c-control-minimal", "sha256": "2bf7835b89ccd6eb9930f55cac357ec14e44cb50a4a83c053aaefa9511e0beae", "observedAt": "2026-10-25T05:15:31+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s33c", "name": "footerref-no-rid", "sha256": "22586d7da00e7bdeaba308120f103e54936934f21b2f8d7778deb2742b2b788f", "observedAt": "2026-10-25T05:14:12.925Z", "outcome": "open-error", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00000__wfv__footerref-no-rid.docx; refusing to guess", "dialogs": ["'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permissions for the document or drive.\\n* Make sure there is sufficient free memory and disk space.\\n* Open the file with the Text Recovery conver", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s33c", "name": "footerref-rid-empty", "sha256": "be5035ebad4664e4c8641946d119849cb1ae8d7e530efd1262ec7d524542251c", "observedAt": "2026-10-25T05:14:21.668Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__footerref-rid-empty.docx; refusing to guess", "dialogs": ["'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permissions for the document or drive.\\n* Make sure there is sufficient free memory and disk space.\\n* Open the file with the Text Recovery conver", "\"Word found unreadable content in 00001__wfv__footerref-rid-empty.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s33c", "name": "strict-ns-footerref-rid-missing", "sha256": "94f722cfd23b6fd589f5d2818f2d1d0e3995a26ed3bc1daf9337ee651c4a295b", "observedAt": "2026-10-25T05:15:14.223Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["\"Word found unreadable content in 00006__wfv__strict-ns-footerref-rid-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s33c", "name": "strict-ns-no-rels-no-reference", "sha256": "1b704859bd7a2a52fcfc518bfed7c8ad0b2d907a5cce4d7d065c661edbcf6cd6", "observedAt": "2026-10-25T05:15:31+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s33c", "name": "rs-id-dangling", "sha256": "5dcdcbfea05fd46aa89f5b855764d2e8a5a64f3275f99ca00ce2e852e6be8f91", "observedAt": "2026-10-25T05:14:59.542Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permissions for the document or drive.\\n* Make sure there is sufficient free memory and disk space.\\n* Open the file with the Text Recovery conver", "\"Word found unreadable content in 00002__wfv__rs-id-dangling.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s33c", "name": "rs-id-valid-footer", "sha256": "e985b7ca10dcebe03394add4b787136119f9f9abbdd68597854a10fa2d1250e9", "observedAt": "2026-10-25T05:15:31+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s33c", "name": "s33c-control-minimal-end", "sha256": "2bf7835b89ccd6eb9930f55cac357ec14e44cb50a4a83c053aaefa9511e0beae", "observedAt": "2026-10-25T05:15:31+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s33d", "name": "s33d-control-minimal", "sha256": "2bf7835b89ccd6eb9930f55cac357ec14e44cb50a4a83c053aaefa9511e0beae", "observedAt": "2026-10-25T05:16:40+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s33d", "name": "footer-valid-calibration", "sha256": "c4c60ce37c69eb87cd2ff5595dbca3349952227eb00bc217f8b2c04e6bef6c69", "observedAt": "2026-10-25T05:16:40+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s33d", "name": "mce-rels-fallback-footer", "sha256": "3be051611e976a51121d7bde1f67b232bd089dbe8524ccbd6fa01708c5b968e8", "observedAt": "2026-10-25T05:16:40+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s33d", "name": "third-ns-id-dangling", "sha256": "4090c9c464c1984207ed12b61d6d07a7c496e1b5edf0774d12fa6c9eac470594", "observedAt": "2026-10-25T05:16:18.532Z", "outcome": "open-error", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00004__wfv__third-ns-id-dangling.docx; refusing to guess", "dialogs": ["'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permissions for the document or drive.\\n* Make sure there is sufficient free memory and disk space.\\n* Open the file with the Text Recovery conver", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s33d", "name": "third-ns-id-valid-footer", "sha256": "c208e286b7a17752fffb18c201258335fbeea9caed1b0533fa3a82f0f70cc99f", "observedAt": "2026-10-25T05:16:23.574Z", "outcome": "open-error", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00005__wfv__third-ns-id-valid-footer.docx; refusing to guess", "dialogs": ["'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permissions for the document or drive.\\n* Make sure there is sufficient free memory and disk space.\\n* Open the file with the Text Recovery conver", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s33d", "name": "s33d-control-minimal-end", "sha256": "2bf7835b89ccd6eb9930f55cac357ec14e44cb50a4a83c053aaefa9511e0beae", "observedAt": "2026-10-25T05:16:40+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s33e", "name": "s33e-control-minimal", "sha256": "a01ef3841cc4a9c20a352c55a5a37fa5014338d12ae59a0c88cca9dcc4d5b1aa", "observedAt": "2026-10-25T05:23:20+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s33e", "name": "headerref-no-rid", "sha256": "32010c227a7ffb7c1014aef0972d8ef61f7bcb67e69fc3c48dee2002a0494aba", "observedAt": "2026-10-25T05:22:17.533Z", "outcome": "open-error", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00000__wfv__headerref-no-rid.docx; refusing to guess", "dialogs": ["\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter.", "'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permissions for the document or drive.\\n* Make sure there is sufficient free memory and disk space.\\n* Open the file with the Text Recovery conver"]}
+{"run": "s33e", "name": "mce-package-rels-fallback-main", "sha256": "d55ee3a1ee7174bcce382111c7c7f583c67ab386df5d4e03e8f0042052e9fad8", "observedAt": "2026-10-25T05:23:20+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s33e", "name": "mce-rels-choice-w14-footer", "sha256": "9b5d6066c5849178cb1fb967ea1012f19b6936b11ef9b1eab7689eec48a85752", "observedAt": "2026-10-25T05:23:20+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s33e", "name": "mce-rels-ignorable-foreign", "sha256": "cfa548e94f66d305749469d3891d5b438e51837d72c05ee336f3b20061588e8a", "observedAt": "2026-10-25T05:23:20+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s33e", "name": "mce-rels-fallback-foreign", "sha256": "00f74391cdc0863c6b83b2de5c1dd1329bf47640a69293ad31e3ca9a8699406a", "observedAt": "2026-10-25T05:22:38.588Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00003__wfv__mce-rels-fallback-foreign.docx; refusing to guess", "dialogs": ["\"Word found unreadable content in 00003__wfv__mce-rels-fallback-foreign.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s33e", "name": "s33e-control-minimal-end", "sha256": "f18ce8ddd7bf7056130e594838744ca3b1f772270d0ae38b1daaa8c49db024be", "observedAt": "2026-10-25T05:23:20+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 ```
 
 </details>
@@ -6516,6 +6612,357 @@ const chunks: Record<string, [string, string, () => Promise<Uint8Array> | Uint8A
         ["footerref-rid-missing", "calibration (.xml twin of review BD S2)", () => buildDocx(footerRef(true))],
         ["bin-footerref-rid-missing", "review BD S2", () => buildDocx(toBin(footerRef(true)))],
         ["s32a-control-minimal-end", "control", control],
+    ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        const r = await validate(path.join(dir, file), { profile });
+        return {
+            valid: r.valid,
+            errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+        };
+    };
+    const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+Session 33's builder (`s33a`–`s33e`) is another standalone script, run the same way, with `CHUNK` naming the chunk:
+
+```ts
+// Session 33 (2026-10-25): adversarial review BE's suspected items on #619 (layer 129, #611), filed as #623, #624, #625.
+// s33a: #623, an empty r:id on a story reference (and a reference with no r:id at all); #624, a dangling footer
+//       reference in the ISO Strict WordprocessingML and relationships namespaces with the main document's .rels
+//       removed, with a clean control of that namespace shape and a calibration that keeps the .rels.
+// s33b: #625, a main document or reached glossary stored as word/header1.xml with a dangling footer reference and no
+//       .rels, each with a clean control of the renamed shape, plus the ordinary reached glossary with no .rels as
+//       calibration.
+// s33c: re-probes of s33a's three inconclusive items; #624's isolation control (ISO Strict namespaces, no .rels and no
+//       reference); #631, review BG's S-B: a Transitional footer reference whose only id is an ISO Strict rs:id, dangling
+//       and naming a valid footer relationship (the PDF's "Footer" text tells whether Word read the attribute).
+// s33d: #632, review BG's S-A (the footer relationship inside mc:AlternateContent's Fallback in the .rels) and S-C (the
+//       id in a third namespace, dangling and naming a valid footer relationship), with session 26's clean footer as
+//       calibration.
+// s33e: what #632's fix and #623's header mirror would otherwise assume: a header reference with no r:id; the
+//       officeDocument relationship in mc:Fallback of _rels/.rels; the footer relationship in an mc:Choice Word
+//       understands (w14), Fallback empty; a foreign child of the document's .rels declared mc:Ignorable; and an
+//       mc:Fallback that yields a foreign element beside the footer relationship.
+// Shapes: tests/support/minimal-docx.ts, tests/support/story-content-type-specimens.ts and reviews BE and BG.
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s33a pnpm exec tsx s33builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import {
+    STORY_FOOTER_XML,
+    glossaryStoryReferenceParts,
+    storyContentType,
+    storyReferenceParts,
+} from "./tests/support/story-content-type-specimens";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const W_STRICT = "http://purl.oclc.org/ooxml/wordprocessingml/main";
+const R_STRICT = "http://purl.oclc.org/ooxml/officeDocument/relationships";
+type Parts = Record<string, string>;
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (!text.includes(from)) throw new Error(`missing ${from}`);
+    return text.replace(from, to);
+};
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const RELS = "word/_rels/document.xml.rels";
+const STYLES = "word/styles.xml";
+
+/** The main document's body sectPr gets `reference` (with `attrs`); `r` is the relationships namespace declared. */
+const withReference = (parts: Parts, reference: string, r = R): Parts => ({
+    ...parts,
+    [MAIN]: replaceOnce(replaceOnce(parts[MAIN]!, "<w:document ", `<w:document xmlns:r="${r}" `), "<w:sectPr>", `<w:sectPr>${reference}`),
+});
+/** Review BE S2: the main document and styles in the ISO Strict WordprocessingML namespace. */
+const strictNamespace = (parts: Parts): Parts => ({
+    ...parts,
+    [MAIN]: parts[MAIN]!.split(W).join(W_STRICT),
+    [STYLES]: parts[STYLES]!.split(W).join(W_STRICT),
+});
+const withoutRels = (parts: Parts, rels = RELS): Parts => {
+    const out = { ...parts };
+    if (out[rels] === undefined) throw new Error(`missing ${rels}`);
+    delete out[rels];
+    return out;
+};
+/** Review BE S2: the main document stored as word/header1.xml, with its .rels, Override and package relationship. */
+const mainAsHeader1 = (parts: Parts): Parts => {
+    const out: Parts = { ...parts };
+    out["word/header1.xml"] = out[MAIN]!;
+    delete out[MAIN];
+    if (out[RELS] !== undefined) {
+        out["word/_rels/header1.xml.rels"] = out[RELS]!;
+        delete out[RELS];
+    }
+    out[CT] = replaceOnce(out[CT]!, 'PartName="/word/document.xml"', 'PartName="/word/header1.xml"');
+    out["_rels/.rels"] = replaceOnce(out["_rels/.rels"]!, 'Target="word/document.xml"', 'Target="word/header1.xml"');
+    return out;
+};
+/** Session 26's clean reached-glossary footer shape. */
+const glossary = (): Parts =>
+    glossaryStoryReferenceParts("footerReference", "footer", "footer9.xml", STORY_FOOTER_XML, storyContentType("footer"));
+const G = "word/glossary/document.xml";
+const GRELS = "word/glossary/_rels/document.xml.rels";
+/** Review BE S2: the reached glossary stored as word/header1.xml, with its .rels (Target adjusted), Override and relationship. */
+const glossaryAsHeader1 = (parts: Parts): Parts => {
+    const out: Parts = { ...parts };
+    out["word/header1.xml"] = out[G]!;
+    delete out[G];
+    if (out[GRELS] !== undefined) {
+        out["word/_rels/header1.xml.rels"] = replaceOnce(out[GRELS]!, 'Target="footer9.xml"', 'Target="glossary/footer9.xml"');
+        delete out[GRELS];
+    }
+    out[CT] = replaceOnce(out[CT]!, 'PartName="/word/glossary/document.xml"', 'PartName="/word/header1.xml"');
+    out[RELS] = replaceOnce(out[RELS]!, 'Target="glossary/document.xml"', 'Target="header1.xml"');
+    return out;
+};
+const FOOTER_RID9 = '<w:footerReference w:type="default" r:id="rId9"/>';
+const control = () => buildDocx(MINIMAL_PARTS);
+/** Session 26's clean main-document footer: the body sectPr's footerReference r:id="rIdX" names a footer relationship to word/footer1.xml. */
+const validFooter = (): Parts =>
+    storyReferenceParts("footerReference", "footer", "footer1.xml", STORY_FOOTER_XML, storyContentType("footer"));
+/** The main document's reference id moved to attribute `qname`, with `xmlns:${prefix}` bound to `uri` on w:document. */
+const idIn = (parts: Parts, from: string, qname: string, prefix: string, uri: string): Parts => ({
+    ...parts,
+    [MAIN]: replaceOnce(replaceOnce(parts[MAIN]!, "<w:document ", `<w:document xmlns:${prefix}="${uri}" `), from, qname),
+});
+/** Review BG S-A: the footer relationship moved into an mc:AlternateContent whose Choice requires a namespace Word does not understand. */
+const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+const footerRelInFallback = (parts: Parts): Parts => {
+    const rel = /<Relationship Id="rIdX"[^>]*\/>/.exec(parts[RELS]!)?.[0];
+    if (!rel) throw new Error("missing rIdX relationship");
+    const rels = replaceOnce(
+        replaceOnce(
+            parts[RELS]!,
+            rel,
+            `<mc:AlternateContent><mc:Choice Requires="foo"/><mc:Fallback>${rel}</mc:Fallback></mc:AlternateContent>`,
+        ),
+        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"',
+        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships" xmlns:mc="${MC}" xmlns:foo="urn:foo"`,
+    );
+    return { ...parts, [RELS]: rels };
+};
+const PR = '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"';
+const W14 = "http://schemas.microsoft.com/office/word/2010/wordml";
+/** The Relationship matched by `id` in `relsPart`, replaced by `wrap(rel)`, with `decls` added to the Relationships root. */
+const wrapRelationship = (parts: Parts, relsPart: string, id: string, wrap: (rel: string) => string, decls: string): Parts => {
+    const rel = new RegExp(`<Relationship Id="${id}"[^>]*/>`).exec(parts[relsPart]!)?.[0];
+    if (!rel) throw new Error(`missing ${id} in ${relsPart}`);
+    return { ...parts, [relsPart]: replaceOnce(replaceOnce(parts[relsPart]!, rel, wrap(rel)), PR, `${PR} ${decls}`) };
+};
+
+const chunks: Record<string, [string, string, () => Promise<Uint8Array> | Uint8Array][]> = {
+    s33a: [
+        ["s33a-control-minimal", "control", control],
+        [
+            "footerref-rid-empty",
+            "#623",
+            () => buildDocx(withReference(MINIMAL_PARTS as Parts, '<w:footerReference w:type="default" r:id=""/>')),
+        ],
+        [
+            "headerref-rid-empty",
+            "#623",
+            () => buildDocx(withReference(MINIMAL_PARTS as Parts, '<w:headerReference w:type="default" r:id=""/>')),
+        ],
+        [
+            "footerref-no-rid",
+            "#623 (no r:id at all)",
+            () => buildDocx(withReference(MINIMAL_PARTS as Parts, '<w:footerReference w:type="default"/>')),
+        ],
+        [
+            "strict-ns-control",
+            "#624 control (ISO Strict namespaces, no reference)",
+            () => buildDocx(strictNamespace(MINIMAL_PARTS as Parts)),
+        ],
+        [
+            "strict-ns-footerref-no-sidecar",
+            "#624",
+            () => buildDocx(withoutRels(withReference(strictNamespace(MINIMAL_PARTS as Parts), FOOTER_RID9, R_STRICT))),
+        ],
+        [
+            "strict-ns-footerref-rid-missing",
+            "#624 calibration (.rels kept)",
+            () => buildDocx(withReference(strictNamespace(MINIMAL_PARTS as Parts), FOOTER_RID9, R_STRICT)),
+        ],
+        ["s33a-control-minimal-end", "control", control],
+    ],
+    s33b: [
+        ["s33b-control-minimal", "control", control],
+        [
+            "header1-main-control",
+            "#625 control (main document as word/header1.xml)",
+            () => buildDocx(mainAsHeader1(MINIMAL_PARTS as Parts)),
+        ],
+        [
+            "header1-main-footerref-no-sidecar",
+            "#625",
+            () => buildDocx(withoutRels(mainAsHeader1(withReference(MINIMAL_PARTS as Parts, FOOTER_RID9)), "word/_rels/header1.xml.rels")),
+        ],
+        ["header1-glossary-control", "#625 control (glossary as word/header1.xml)", () => buildDocx(glossaryAsHeader1(glossary()))],
+        [
+            "header1-glossary-footerref-no-sidecar",
+            "#625",
+            () => buildDocx(withoutRels(glossaryAsHeader1(glossary()), "word/_rels/header1.xml.rels")),
+        ],
+        [
+            "glossary-footerref-no-sidecar",
+            "#625 calibration (ordinary glossary, no .rels)",
+            () => buildDocx(withoutRels(glossary(), GRELS)),
+        ],
+        ["s33b-control-minimal-end", "control", control],
+    ],
+    s33c: [
+        ["s33c-control-minimal", "control", control],
+        [
+            "footerref-no-rid",
+            "#623/#631/#632 (re-probe of s33a: no r:id at all)",
+            () => buildDocx(withReference(MINIMAL_PARTS as Parts, '<w:footerReference w:type="default"/>')),
+        ],
+        [
+            "footerref-rid-empty",
+            "#623 (re-probe of s33a)",
+            () => buildDocx(withReference(MINIMAL_PARTS as Parts, '<w:footerReference w:type="default" r:id=""/>')),
+        ],
+        [
+            "strict-ns-footerref-rid-missing",
+            "#624 calibration (re-probe of s33a, .rels kept)",
+            () => buildDocx(withReference(strictNamespace(MINIMAL_PARTS as Parts), FOOTER_RID9, R_STRICT)),
+        ],
+        [
+            "strict-ns-no-rels-no-reference",
+            "#624 isolation (ISO Strict namespaces, no .rels, no reference)",
+            () => buildDocx(withoutRels(strictNamespace(MINIMAL_PARTS as Parts))),
+        ],
+        [
+            "rs-id-dangling",
+            "#631 (Transitional reference, only rs:id, names no Relationship)",
+            () =>
+                buildDocx(
+                    idIn(
+                        MINIMAL_PARTS as Parts,
+                        "<w:sectPr>",
+                        '<w:sectPr><w:footerReference w:type="default" rs:id="rId9"/>',
+                        "rs",
+                        R_STRICT,
+                    ),
+                ),
+        ],
+        [
+            "rs-id-valid-footer",
+            "#631 twin (only rs:id, names the footer relationship)",
+            () => buildDocx(idIn(validFooter(), ' r:id="rIdX"', ' rs:id="rIdX"', "rs", R_STRICT)),
+        ],
+        ["s33c-control-minimal-end", "control", control],
+    ],
+    s33d: [
+        ["s33d-control-minimal", "control", control],
+        ["footer-valid-calibration", "#631/#632 calibration (session 26's clean footer)", () => buildDocx(validFooter())],
+        [
+            "mce-rels-fallback-footer",
+            "#632 S-A (footer relationship in mc:Fallback of the .rels)",
+            () => buildDocx(footerRelInFallback(validFooter())),
+        ],
+        [
+            "third-ns-id-dangling",
+            "#632 S-C (only x:id in urn:x, names no Relationship)",
+            () =>
+                buildDocx(
+                    idIn(MINIMAL_PARTS as Parts, "<w:sectPr>", '<w:sectPr><w:footerReference w:type="default" x:id="rId9"/>', "x", "urn:x"),
+                ),
+        ],
+        [
+            "third-ns-id-valid-footer",
+            "#632 S-C twin (only x:id, names the footer relationship)",
+            () => buildDocx(idIn(validFooter(), ' r:id="rIdX"', ' x:id="rIdX"', "x", "urn:x")),
+        ],
+        ["s33d-control-minimal-end", "control", control],
+    ],
+    s33e: [
+        ["s33e-control-minimal", "control", control],
+        [
+            "headerref-no-rid",
+            "#623 header mirror (no r:id at all)",
+            () => buildDocx(withReference(MINIMAL_PARTS as Parts, '<w:headerReference w:type="default"/>')),
+        ],
+        [
+            "mce-package-rels-fallback-main",
+            "#632 (officeDocument relationship in mc:Fallback of _rels/.rels)",
+            () =>
+                buildDocx(
+                    wrapRelationship(
+                        MINIMAL_PARTS as Parts,
+                        "_rels/.rels",
+                        "rId1",
+                        (rel) => `<mc:AlternateContent><mc:Choice Requires="foo"/><mc:Fallback>${rel}</mc:Fallback></mc:AlternateContent>`,
+                        `xmlns:mc="${MC}" xmlns:foo="urn:foo"`,
+                    ),
+                ),
+        ],
+        [
+            "mce-rels-choice-w14-footer",
+            "#632 (footer relationship in an understood mc:Choice, empty Fallback)",
+            () =>
+                buildDocx(
+                    wrapRelationship(
+                        validFooter(),
+                        RELS,
+                        "rIdX",
+                        (rel) => `<mc:AlternateContent><mc:Choice Requires="w14">${rel}</mc:Choice><mc:Fallback/></mc:AlternateContent>`,
+                        `xmlns:mc="${MC}" xmlns:w14="${W14}"`,
+                    ),
+                ),
+        ],
+        [
+            "mce-rels-ignorable-foreign",
+            "#632 (foreign child of the document's .rels, its prefix mc:Ignorable)",
+            () =>
+                buildDocx(
+                    wrapRelationship(
+                        validFooter(),
+                        RELS,
+                        "rIdX",
+                        (rel) => `${rel}<x:Wrap/>`,
+                        `xmlns:mc="${MC}" xmlns:x="urn:x" mc:Ignorable="x"`,
+                    ),
+                ),
+        ],
+        [
+            "mce-rels-fallback-foreign",
+            "#632 (mc:Fallback yields a foreign element beside the footer relationship)",
+            () =>
+                buildDocx(
+                    wrapRelationship(
+                        validFooter(),
+                        RELS,
+                        "rIdX",
+                        (rel) =>
+                            `<mc:AlternateContent><mc:Choice Requires="foo"/><mc:Fallback>${rel}<x:Wrap/></mc:Fallback></mc:AlternateContent>`,
+                        `xmlns:mc="${MC}" xmlns:foo="urn:foo" xmlns:x="urn:x"`,
+                    ),
+                ),
+        ],
+        ["s33e-control-minimal-end", "control", control],
     ],
 };
 
