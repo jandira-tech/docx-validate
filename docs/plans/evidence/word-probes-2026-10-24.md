@@ -1,6 +1,6 @@
 # Real-Word probes, 2026-10-24
 
-Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), what session 26 settled for the items adversarial review AY suspected (#606, #607, #610), what session 27 settled for the relationship types and placements adversarial review AZ left open (#613), what session 28 settled for a hyperlink's relationship type (#614), what session 29 settled for duplicate relationship Ids and `https:` relationship Types (#615, adversarial review BA), what session 30 settled for duplicate relationship Ids outside the package and main-document `.rels` (#617, adversarial review BB), what session 31 settled for duplicate relationship Ids beside a story root stored without a `.xml` suffix (#618, adversarial review BC), what session 32 settled for a story reference whose `r:id` names no relationship and for a main document stored without a `.xml` suffix (#619, #620, adversarial review BD), and what session 33 settled for story references with an empty, missing or ISO Strict `r:id`, story roots stored as `word/header1.xml`, and markup compatibility in relationships parts (#623, #624, #625, #631, #632, adversarial reviews BE and BG), what session 34 settled for parts reached only through a relationship markup compatibility selects and for markup-compatibility errors in relationships parts (#634, #635, #636, the adversarial review of #632's fix), and what session 35 settled for the adversarial review of layer 130: relationship ids `rels-missing-sidecar` counts that Word never resolves (#638), and story-reference ids outside the body `w:sectPr`; and what session 36 settled for the adversarial reviews of #636 and layer 131: which relationships parts' markup-compatibility errors Word rejects (#644), a chart no drawing references (#645), and a root-wrapped package relationships part (#640, #646); and what session 37 settled for #644's remaining sidecars and #645's boundary shapes (#647).
+Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), what session 26 settled for the items adversarial review AY suspected (#606, #607, #610), what session 27 settled for the relationship types and placements adversarial review AZ left open (#613), what session 28 settled for a hyperlink's relationship type (#614), what session 29 settled for duplicate relationship Ids and `https:` relationship Types (#615, adversarial review BA), what session 30 settled for duplicate relationship Ids outside the package and main-document `.rels` (#617, adversarial review BB), what session 31 settled for duplicate relationship Ids beside a story root stored without a `.xml` suffix (#618, adversarial review BC), what session 32 settled for a story reference whose `r:id` names no relationship and for a main document stored without a `.xml` suffix (#619, #620, adversarial review BD), and what session 33 settled for story references with an empty, missing or ISO Strict `r:id`, story roots stored as `word/header1.xml`, and markup compatibility in relationships parts (#623, #624, #625, #631, #632, adversarial reviews BE and BG), what session 34 settled for parts reached only through a relationship markup compatibility selects and for markup-compatibility errors in relationships parts (#634, #635, #636, the adversarial review of #632's fix), and what session 35 settled for the adversarial review of layer 130: relationship ids `rels-missing-sidecar` counts that Word never resolves (#638), and story-reference ids outside the body `w:sectPr`; and what session 36 settled for the adversarial reviews of #636 and layer 131: which relationships parts' markup-compatibility errors Word rejects (#644), a chart no drawing references (#645), and a root-wrapped package relationships part (#640, #646); and what session 37 settled for #644's remaining sidecars and #645's boundary shapes (#647); and the package relationships root wrappers #646's fix accepts (session 38).
 
 - Word: Microsoft Word for Mac 16.115 (build 16.115.26100424), platform `darwin`.
 - Transport, sessions 1 and 2: `verifyInWord` (`src/lib/word-verifier.ts`). It opens each specimen by path, reads Word's window and dialog state, and never saves.
@@ -265,6 +265,12 @@ Session 37 adds:
     - The same drawing inside a selected `mc:Choice` (`Requires="w14"`) got a recovery offer, then "Word experienced an error trying to open the file.", as word-valid reports. Without `c:externalData` it opened clean.
 - **#647: a chart reached by a chart and an image relationship, and referenced by nothing, opened clean** (`s37b`). Word-valid rejects it at every commit tested, including 76bb5622, which keeps a part a second relationship type reaches on the reach-based rule.
 
+Session 38 adds:
+
+- **#646: Word resolves the `_rels/.rels` root through markup compatibility** (`s38a`).
+    - A root that resolves to the package part's whole `Relationships` element opened clean in three wrappers: the `mc:AlternateContent` whose Fallback holds it (`s36c`'s shape again, byte-identical part), a selected `mc:Choice` (`Requires="w14"`, empty Fallback), and an Ignorable `mc:ProcessContent` wrapper. `release/0.53.0-rc.2` (ab2e324f) and the layer 132 head (3788f719) reject all three with `opc-relationships-structure`; #646's fix (4295889a) passes them.
+    - The same element in an `mc:Choice` Word does not select (`Requires="foo"`), beside an empty Fallback, leaves no root: Word offered recovery, then "Word experienced an error trying to open the file.". Every commit rejects it.
+
 ## Not observed
 
 Session 1. Another session began driving Word by 02:28Z: its first log line is at 02:28:14Z, and its map file was written at 02:27:55Z. Its preflight closes every open document, so rows observed from 02:26Z on were not treated as evidence. Session 2 observed all of them again (below).
@@ -336,6 +342,8 @@ Session 35 ran in the foreground, one driver run per chunk (`s35a` 06:25Z, `s35b
 Session 36 ran in the foreground, one driver run per chunk (`s36a` 07:29Z, `s36b` 07:31Z, `s36c` 07:32Z, `s36d` 07:35Z and `s36e` 07:36Z on 2026-10-25). Nothing was set aside, and every row is attributed by an alert or a manifest entry naming its staged file. Before each chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`. A Word process (`word_pid=33836`) had been running since 07:03:42Z with no document open; every run used it (`launched_by_us=False`, `open_documents=0`, `started_clean=True`), and no run recycled Word. `~/Library/Logs/DiagnosticReports` holds no Word report from the session. All five chunks were built at dd5a3da2, then the head of layer 131 (`wfv/131-rels-markup-compatibility`), with the session 36 builder below; the validator columns are that commit's. `s36a` and `s36b` were built before `s36c`–`s36e` were added to the builder, and before its verdict helper gained the `try`/`catch` that records `s36c`'s `validate()` throw.
 
 Session 37 ran in the foreground, one driver run per chunk (`s37a` 08:04Z and `s37b` 08:14Z on 2026-10-25). Nothing was set aside, and every row is attributed by an alert or a manifest entry naming its staged file. Before each run, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`. Another session had driven Word until 08:01Z, and again from 08:08Z to 08:12Z. `s37a` used the Word process it left (`word_pid=58661`, running since 08:01:05Z, `launched_by_us=False`, `open_documents=0`, `started_clean=True`); the driver's first attempt at 08:04:04Z refused to run because Word did not answer its document count, and opened nothing. For `s37b` no Word was running, so the driver launched one (`word_pid=94226`, `launched_by_us=True`). During `s37b` the watchdog declined a Microsoft Error Reporting dialog that the driver dated 122 s before the run, a report of the other session's crash, and attributed nothing to it. `~/Library/Logs/DiagnosticReports` holds no Word report from the session. `s37a` was built from #644's lane (840df310 with the fix that became 94d87295) and `s37b` from #645's lane (aed11e4e with the fix that became 76bb5622), with the session 37 builder below. The validator columns were recomputed from the stored specimens at `release/0.53.0-rc.2` (ab2e324f), at the layer 131 head (7cb4041e) and, for `s37b`, at 76bb5622.
+
+Session 38 ran in the foreground, one driver run (`s38a`, 08:54Z on 2026-10-25). Nothing was set aside, and every row is attributed by an alert or a manifest entry naming its staged file. Before the run, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, there was no `word.lock`, and no Word process was running, so the driver launched one (`word_pid=34260`, `launched_by_us=True`, `open_documents=0`, `started_clean=True`). The unselected-Choice row stalled the first pass; the driver recycled Word once and its second pass reproduced the recovery offer and the open error. `~/Library/Logs/DiagnosticReports` holds no Word report from the session. `s38a` was built from #646's lane (aed11e4e with the fix that became 4295889a) with the session 38 builder below. The validator columns were recomputed from the stored specimens at `release/0.53.0-rc.2` (ab2e324f), at the layer 132 head (3788f719) and at 4295889a. Session 37's 76bb5622 is #645's lane commit, which layer 133 carries as 7cb7517c. Both sets of columns were first computed before the stack was rebased onto #664, #666 and #667; recomputed at 3788f719 and 4295889a they match row for row, and so does session 37's 76bb5622 column (`s37b`) at 4295889a.
 
 Sessions 4–6 observed `main-relationship-missing` (#380), the #414 `PartName`s with `application/xml`, an escape in a folder segment (#408), a part-level relationships part (#433) and an unreferenced malformed `customXml/item9.xml` (#437). Still to be observed:
 
@@ -2270,6 +2278,32 @@ The sidecars #644 left unobserved (`s37a`) and the two boundary shapes #645's fi
 {"run": "s37b", "name": "chart-word-selected-reference-no-externaldata", "sha256": "b9b5d1205c90341ab7c5d22dba9dbe889730a4765d79e73542c7a6138eae4826", "observedAt": "2026-10-25T08:14:39+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 {"run": "s37b", "name": "chart-outside-word-mixed-reach-no-sidecar", "sha256": "d9fcab69f2cdbbb8df4017d185aad23cd7328387506cde9bb2b4a1093867e3b9", "observedAt": "2026-10-25T08:14:39+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 {"run": "s37b", "name": "s37b-control-minimal-end", "sha256": "dc259431eeda4c9fe45771633844ea4412d7bc87a8d12371e526e2731feb3e56", "observedAt": "2026-10-25T08:14:39+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 38: 08:54Z–08:57Z on 2026-10-25, validator columns at ab2e324f, 3788f719 and 4295889a
+
+The package relationships root wrappers #646's fix accepts, between clean controls. The driver opens the chunk's files in name order, so the controls ran mid-chunk.
+
+| Run    | Observed  | Specimen                                          | Issue                     | Shape                                                                                                                                                                               | SHA-256 (first 16) | Word           | word-valid at ab2e324f                                            | word-valid at 3788f719                                                             | word-valid at 4295889a                                                             | strict at 4295889a                                                                                                                  |
+| ------ | --------- | ------------------------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `s38a` | 08:56:38Z | `s38a-control-minimal`                            | control                   | `MINIMAL_PARTS`                                                                                                                                                                     | `3ec05e8e7996e6ee` | clean-open     | valid                                                             | valid                                                                              | valid                                                                              | valid                                                                                                                               |
+| `s38a` | 08:56:38Z | `pkgrels-root-ac-fallback-relationships-recheck`  | #646 (observed in `s36c`) | `MINIMAL_PARTS` with `_rels/.rels` stored as `<mc:AlternateContent><mc:Choice Requires="foo"/><mc:Fallback>` holding the package part's `Relationships` element (`foo` = `urn:foo`) | `477a71135e7e7c6e` | clean-open     | invalid: `opc-relationships-structure`, `word-main-document-part` | invalid: `opc-relationships-structure`                                             | valid                                                                              | invalid: `xsd-error`, `xsd-summary`                                                                                                 |
+| `s38a` | 08:56:38Z | `pkgrels-root-ac-choice-relationships`            | #646                      | `MINIMAL_PARTS` with `_rels/.rels` stored as `<mc:AlternateContent><mc:Choice Requires="w14">` holding the package part's `Relationships` element, then `<mc:Fallback/>`            | `ebe5391e4e120d69` | clean-open     | invalid: `opc-relationships-structure`, `word-main-document-part` | invalid: `opc-relationships-structure`                                             | valid                                                                              | invalid: `xsd-error`, `xsd-summary`                                                                                                 |
+| `s38a` | 08:56:38Z | `pkgrels-root-processcontent-relationships`       | #646                      | `MINIMAL_PARTS` with `_rels/.rels` stored as `<x:Wrap mc:Ignorable="x" mc:ProcessContent="x:Wrap">` holding the package part's `Relationships` element (`x` = `urn:x`)              | `61324c68e1ae2230` | clean-open     | invalid: `opc-relationships-structure`, `word-main-document-part` | invalid: `opc-relationships-structure`                                             | valid                                                                              | invalid: `xsd-error`, `xsd-summary`                                                                                                 |
+| `s38a` | 08:55:51Z | `pkgrels-root-ac-unselected-choice-relationships` | #646 (boundary)           | `MINIMAL_PARTS` with `_rels/.rels` stored as `<mc:AlternateContent><mc:Choice Requires="foo">` holding the package part's `Relationships` element, then `<mc:Fallback/>`            | `ee0d75004ccd4625` | repair-warning | invalid: `opc-relationships-structure`, `word-main-document-part` | invalid: `mce-malformed`, `opc-relationships-structure`, `word-main-document-part` | invalid: `mce-malformed`, `opc-relationships-structure`, `word-main-document-part` | invalid: `mce-malformed`, `opc-relationships-structure`, `rels-unreferenced`, `word-main-document-part`, `xsd-error`, `xsd-summary` |
+| `s38a` | 08:56:38Z | `s38a-control-minimal-end`                        | control                   | `MINIMAL_PARTS`                                                                                                                                                                     | `3ec05e8e7996e6ee` | clean-open     | valid                                                             | valid                                                                              | valid                                                                              | valid                                                                                                                               |
+
+<details><summary>Raw records, session 38</summary>
+
+```jsonl
+{"run": "s38a", "name": "s38a-control-minimal", "sha256": "3ec05e8e7996e6ee68774abef26f770376465480e76b39cbce4f992ccbcc9b26", "observedAt": "2026-10-25T08:56:38+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s38a", "name": "pkgrels-root-ac-fallback-relationships-recheck", "sha256": "477a71135e7e7c6e212d31372a6f10c2d3bbe8304aaa9838e9bd7261ecf5bca3", "observedAt": "2026-10-25T08:56:38+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s38a", "name": "pkgrels-root-ac-choice-relationships", "sha256": "ebe5391e4e120d6948711743cc6ba097093ab392c019127e6da449c87a30d64d", "observedAt": "2026-10-25T08:56:38+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s38a", "name": "pkgrels-root-processcontent-relationships", "sha256": "61324c68e1ae2230256d7e2745d77e2d3a896943cc55c1457585a701a19da42d", "observedAt": "2026-10-25T08:56:38+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s38a", "name": "pkgrels-root-ac-unselected-choice-relationships", "sha256": "ee0d75004ccd4625b25873cf6f15725157df44d75e9aedd8147479b64be40a2b", "observedAt": "2026-10-25T08:55:51.964Z", "outcome": "repair-warning", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00002__wfv__pkgrels-root-ac-unselected-choice-relationships.docx; refusing to guess", "dialogs": ["\"Word found unreadable content in 00002__wfv__pkgrels-root-ac-unselected-choice-relationships..... Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "'Word found unreadable content in 00002__wfv__pkgrels-root-ac-unselected-choice-relationships..... Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s38a", "name": "s38a-control-minimal-end", "sha256": "3ec05e8e7996e6ee68774abef26f770376465480e76b39cbce4f992ccbcc9b26", "observedAt": "2026-10-25T08:56:38+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 ```
 
 </details>
@@ -8327,6 +8361,98 @@ for (const [name, issue, make] of specimens) {
     const sha256 = createHash("sha256").update(bytes).digest("hex");
     const verdict = async (profile: "word-valid" | "strict") => {
         // #640: validate() throws on some shapes at the built commit; record the throw instead of stopping.
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+Session 38's builder (`s38a`) is another standalone script, run the same way from #646's lane worktree, with `CHUNK` naming the chunk:
+
+```ts
+// Session 38 (2026-10-25): the package relationships root wrappers #646's fix accepts without evidence. s36c showed
+// Word a _rels/.rels root mc:AlternateContent whose Fallback holds the whole Relationships element (clean open) and
+// one whose Fallback holds two Relationship elements (recovery). #646's lane judges the package part's root on the
+// processed view, so every wrapper that resolves to exactly one Relationships passes, including a selected
+// mc:Choice and an Ignorable mc:ProcessContent wrapper that Word has not been shown. s38a shows Word those two, the
+// s36c clean shape again, and a Choice Word does not select (zero elements, still rejected), between controls.
+// Run from the #646 lane worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s38a pnpm exec tsx s38builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+const W14 = "http://schemas.microsoft.com/office/word/2010/wordml";
+const PACKAGE_RELS = "_rels/.rels";
+const XML_DECLARATION = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
+// The package part's own Relationships element, without its XML declaration.
+const RELATIONSHIPS = MINIMAL_PARTS[PACKAGE_RELS]!.replace(XML_DECLARATION, "");
+if (RELATIONSHIPS === MINIMAL_PARTS[PACKAGE_RELS]) throw new Error("the package part lost its XML declaration");
+const wrapped = (root: string) => buildDocx({ ...MINIMAL_PARTS, [PACKAGE_RELS]: `${XML_DECLARATION}${root}` });
+const control = () => buildDocx({ ...MINIMAL_PARTS });
+
+const chunks: Record<string, Array<[string, string, () => Promise<Uint8Array>]>> = {
+    s38a: [
+        ["s38a-control-minimal", "control", control],
+        [
+            "pkgrels-root-ac-fallback-relationships-recheck",
+            "#646 observed shape (s36c), again",
+            () =>
+                wrapped(
+                    `<mc:AlternateContent xmlns:mc="${MC}" xmlns:foo="urn:foo"><mc:Choice Requires="foo"/><mc:Fallback>${RELATIONSHIPS}</mc:Fallback></mc:AlternateContent>`,
+                ),
+        ],
+        [
+            "pkgrels-root-ac-choice-relationships",
+            "#646 unobserved: selected mc:Choice holds the Relationships element",
+            () =>
+                wrapped(
+                    `<mc:AlternateContent xmlns:mc="${MC}" xmlns:w14="${W14}"><mc:Choice Requires="w14">${RELATIONSHIPS}</mc:Choice><mc:Fallback/></mc:AlternateContent>`,
+                ),
+        ],
+        [
+            "pkgrels-root-processcontent-relationships",
+            "#646 unobserved: Ignorable ProcessContent wrapper holds the Relationships element",
+            () => wrapped(`<x:Wrap xmlns:mc="${MC}" xmlns:x="urn:x" mc:Ignorable="x" mc:ProcessContent="x:Wrap">${RELATIONSHIPS}</x:Wrap>`),
+        ],
+        [
+            "pkgrels-root-ac-unselected-choice-relationships",
+            "#646 boundary: unselected mc:Choice holds it, empty Fallback",
+            () =>
+                wrapped(
+                    `<mc:AlternateContent xmlns:mc="${MC}" xmlns:foo="urn:foo"><mc:Choice Requires="foo">${RELATIONSHIPS}</mc:Choice><mc:Fallback/></mc:AlternateContent>`,
+                ),
+        ],
+        ["s38a-control-minimal-end", "control", control],
+    ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
         try {
             const r = await validate(path.join(dir, file), { profile });
             return {
