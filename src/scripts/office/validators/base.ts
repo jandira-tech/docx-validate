@@ -1741,7 +1741,8 @@ export class BaseSchemaValidator {
      * (#642). `DOCXSchemaValidator.relationshipsView` prefers the run
      * context's `effectiveXml`, so this memo covers only a part the context
      * cannot supply. Reset when the package view may have changed: at the
-     * start of a `validate()` run and when a repair rewrites the package.
+     * start of a `validate()` run, when a repair rewrites the package, and
+     * on every DOCX call outside a run (#654).
      */
     private readonly processedRelationships = new Map<string, Document>();
 

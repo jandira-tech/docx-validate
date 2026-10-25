@@ -424,8 +424,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * applies — exactly the relationships parts — so markup compatibility
      * runs once per part per run (#642). A part the context cannot supply
      * (an unrecognized spelling, a part absent from the package view, or a
-     * refused directory) keeps the validator's own memoized processed
-     * clone. DOCX/DOCM only: PPTX keeps the stored view (#643).
+     * refused directory) keeps the validator's own processed clone,
+     * memoized only within a run (#654). DOCX/DOCM only: PPTX keeps the
+     * stored view (#643).
      */
     protected override relationshipsView(document: Document, part: string): Document {
         if (understoodNamespacesForPart(part) === RELATIONSHIPS_UNDERSTOOD_NAMESPACES) {
@@ -438,6 +439,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                 // A refused directory view falls back to the processed clone.
             }
         }
+        // Outside a run a check method called directly reads the package as
+        // it is now, as `context()` does: a repair such as `repairIgnorable`
+        // can change which branch markup compatibility selects (#654).
+        if (!this.inRun) this.resetProcessedRelationships();
         return this.processedRelationshipsView(document, part);
     }
 

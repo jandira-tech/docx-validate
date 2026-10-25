@@ -17,7 +17,7 @@
  * compatibility per call.
  */
 
-import { writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -27,6 +27,7 @@ import { RELATIONSHIPS_UNDERSTOOD_NAMESPACES } from "../src/lib/markup-compatibi
 import { withTempDir } from "../src/lib/run-cli";
 import type { ValidationIssue } from "../src/lib/types";
 import { validate } from "../src/scripts/office/validate";
+import { DOCXSchemaValidator } from "../src/scripts/office/validators/docx";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { buildPptx, MINIMAL_PPTX_PARTS } from "./support/minimal-pptx";
 import { MCE_DECLARATIONS, fallback, wrapRelationship } from "./support/relationships-markup-compatibility-specimens";
@@ -141,6 +142,46 @@ describe("one markup-compatibility pass per relationships part (#642)", { timeou
             expect(result.valid, JSON.stringify(result.issues)).toBe(true);
             const relationshipsPasses = spy.mock.calls.filter(([, opts]) => opts.understood === RELATIONSHIPS_UNDERSTOOD_NAMESPACES);
             expect(relationshipsPasses).toHaveLength(relsParts.length);
+        });
+    });
+});
+
+/**
+ * #654: outside a `validate()` run a check method called directly reads the
+ * package as it is now, as `context()` does. A stored `c:dummy.bin` makes the
+ * shared context refuse the directory, so the walks take the processed
+ * clone; `repairIgnorable()` then declares `w14`, which moves markup
+ * compatibility from the Fallback (no `Target`) to the complete Choice.
+ */
+describe("the processed relationships view outside a run (#654)", { timeout: 120_000 }, () => {
+    const SIDECAR = "word/_rels/document.xml.rels";
+    const PR = "http://schemas.openxmlformats.org/package/2006/relationships";
+    const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+    const parts: Record<string, string> = {
+        ...MINIMAL_PARTS,
+        "c:dummy.bin": "a stored name the shared context refuses",
+        [SIDECAR]:
+            `<Relationships xmlns="${PR}" xmlns:mc="${MC}" mc:Ignorable="w14"><mc:AlternateContent>` +
+            `<mc:Choice Requires="w14"><Relationship Id="rIdC" Type="${R}/styles" Target="styles.xml"/></mc:Choice>` +
+            `<mc:Fallback><Relationship Id="rIdF" Type="${R}/styles"/></mc:Fallback></mc:AlternateContent></Relationships>`,
+    };
+
+    it.each(["word-valid", "strict"] as const)("%s: a direct check after a repair reads the repaired branch", async (profile) => {
+        await withTempDir(async (dir) => {
+            for (const [part, xml] of Object.entries(parts)) {
+                await mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                await writeFile(path.join(dir, part), xml);
+            }
+            const validator = new DOCXSchemaValidator({ unpackedDir: dir, profile });
+            const before = await validator.validateRelationshipElements();
+            expect(before.issues.map((issue) => `${issue.code}@${issue.path}`)).toEqual([
+                "rels-empty-element@word/_rels/document.xml.rels",
+            ]);
+            expect(await validator.repairIgnorable()).toBe(1);
+            const after = await validator.validateRelationshipElements();
+            expect(after).toEqual(await new DOCXSchemaValidator({ unpackedDir: dir, profile }).validateRelationshipElements());
+            expect(after.valid).toBe(true);
+            expect(after.issues).toEqual([]);
         });
     });
 });
