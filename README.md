@@ -939,8 +939,12 @@ an empty Fallback), which keep the finding because the processor returns the
 stored view there
 ([#646](https://github.com/jandira-tech/docx-validate/issues/646),
 [#640](https://github.com/jandira-tech/docx-validate/issues/640); Word probes
-sessions 36 and 38, `s36c` and `s38a`). Combinations of those wrappers are
-unobserved and follow the same rule.
+sessions 36 and 38, `s36c` and `s38a`). Combinations resolve the same way:
+Word opened six clean in session 39 (`s39b`) — nested Fallback wrappers two
+and three deep, an unselected Choice before a selected one, the first of two
+selected Choices, a wrapper carrying `mc:MustUnderstand="w14"`, and a wrapped
+`Relationships` element with an ignorable child
+([#662](https://github.com/jandira-tech/docx-validate/issues/662)).
 A root-wrapped sidecar is unobserved and keeps the stored-root verdict, as does
 every part under lenient, whose XSD walk judges the stored root. Malformed XML is
 left to `xml-syntax`. The check runs under Word-valid and strict, including quick and

@@ -334,3 +334,43 @@ export const rootUnselectedChoiceRelationshipsParts = (part: string): Record<str
     ...MINIMAL_PARTS,
     [part]: `<mc:AlternateContent ${MCE_DECLARATIONS}><mc:Choice Requires="foo">${storedRelationshipsElement(part)}</mc:Choice><mc:Fallback/></mc:AlternateContent>`,
 });
+
+/** Session 39's compound package-root wrappers (s39b, #662). */
+export const COMPOUND_ROOT_SHAPES = [
+    "nested-fallback",
+    "three-nested-fallback",
+    "multiple-choices",
+    "first-of-two-understood-choices",
+    "mustunderstand-w14",
+    "ignorable-child",
+] as const;
+export type CompoundRootShape = (typeof COMPOUND_ROOT_SHAPES)[number];
+
+/**
+ * #662: a `_rels/.rels` root that combines wrappers markup compatibility
+ * still reduces to the package part's one `Relationships` element. Word
+ * 16.115 opened all six clean (session 39, s39b); the parts match those
+ * specimens byte for byte, declarations included.
+ */
+export const compoundRootRelationshipsParts = (shape: CompoundRootShape): Record<string, string> => {
+    const declarations = `xmlns:mc="${NS.MC}" xmlns:foo="urn:foo" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"`;
+    const plain = storedRelationshipsElement(PACKAGE_RELS);
+    const wrap = (xml: string): string =>
+        `<mc:AlternateContent ${declarations}><mc:Choice Requires="foo"/><mc:Fallback>${xml}</mc:Fallback></mc:AlternateContent>`;
+    const root = {
+        "nested-fallback": () => wrap(wrap(plain)),
+        "three-nested-fallback": () => wrap(wrap(wrap(plain))),
+        "multiple-choices": () =>
+            `<mc:AlternateContent ${declarations}><mc:Choice Requires="foo"/><mc:Choice Requires="w14">${plain}</mc:Choice><mc:Fallback/></mc:AlternateContent>`,
+        "first-of-two-understood-choices": () =>
+            `<mc:AlternateContent ${declarations}><mc:Choice Requires="w14">${plain}</mc:Choice><mc:Choice Requires="w14"><foo:bad/></mc:Choice><mc:Fallback/></mc:AlternateContent>`,
+        "mustunderstand-w14": () => wrap(plain).replace("<mc:AlternateContent ", '<mc:AlternateContent mc:MustUnderstand="w14" '),
+        "ignorable-child": () =>
+            wrap(
+                plain
+                    .replace("<Relationships ", '<Relationships mc:Ignorable="foo" ')
+                    .replace("</Relationships>", "<foo:bad/></Relationships>"),
+            ),
+    }[shape]();
+    return { ...MINIMAL_PARTS, [PACKAGE_RELS]: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n${root}` };
+};

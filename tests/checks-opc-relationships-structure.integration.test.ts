@@ -17,6 +17,8 @@ import {
     rootMceRelationshipsParts,
     rootMceWrappedRelationshipsParts,
     rootUnselectedChoiceRelationshipsParts,
+    COMPOUND_ROOT_SHAPES,
+    compoundRootRelationshipsParts,
 } from "./support/relationships-markup-compatibility-specimens";
 
 const CODE = "opc-relationships-structure";
@@ -228,6 +230,29 @@ const rootWrapperCases = [
             ],
         },
     },
+    // #662: compound wrappers that still resolve to one Relationships
+    // element opened clean too; lenient was captured before #646 (3788f719).
+    ...COMPOUND_ROOT_SHAPES.map((shape) => ({
+        label: `package root behind compound wrappers: ${shape}`,
+        issue: "#662 (session 39 s39b, clean open)",
+        parts: (): Record<string, string> => compoundRootRelationshipsParts(shape),
+        part: PACKAGE,
+        structure: false,
+        mainPart: false,
+        malformed: false,
+        valid: true,
+        xsd: true,
+        lenient: {
+            valid: false,
+            issues: [
+                LATENT_STYLES,
+                { severity: "error", code: "xsd-summary", path: PACKAGE, message: "_rels/.rels: 1 new error(s)" },
+                storedRootXsd(
+                    "  - Element '{http://schemas.openxmlformats.org/markup-compatibility/2006}AlternateContent': No matching global declaration available for the validation root.",
+                ),
+            ],
+        },
+    })),
     {
         label: "root-wrapped sidecar resolving to one Relationships element",
         issue: "unobserved in Word",
