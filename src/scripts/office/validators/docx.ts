@@ -85,6 +85,7 @@ import { contextFromDirectory, openDirectoryContext, packageExtractFailedIssue, 
 import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
 import { WORD_PART_CONTENT_TYPE_MISMATCH, wordPartContentTypeMismatchFindings } from "../checks/word-part-content-type-mismatch";
 import { WORD_PART_CONTENT_TYPE_INEXACT, wordPartContentTypeInexactFindings } from "../checks/word-part-content-type-inexact";
+import { RELATIONSHIPS_UNDERSTOOD_NAMESPACES, understoodNamespacesForPart } from "../../../lib/markup-compatibility";
 
 export { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
 /** OpenXmlPowerTools DocumentBuilder Insert — `PtOpenXml.ptOpenXml` in PtOpenXmlUtil.cs */
@@ -416,6 +417,35 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         return this.runContext;
     }
 
+    /**
+     * The `.rels` part as the non-lenient walks read it (#635): the run
+     * context's `effectiveXml` whenever `understoodNamespacesForPart`
+     * processes `part` with the same understood set `relationshipElements`
+     * applies — exactly the relationships parts — so markup compatibility
+     * runs once per part per run (#642). A part the context cannot supply
+     * (an unrecognized spelling, a part absent from the package view, or a
+     * refused directory) keeps the validator's own processed clone,
+     * memoized only within a run (#654). DOCX/DOCM only: PPTX keeps the
+     * stored view (#643).
+     */
+    protected override relationshipsView(document: Document, part: string): Document {
+        if (understoodNamespacesForPart(part) === RELATIONSHIPS_UNDERSTOOD_NAMESPACES) {
+            try {
+                const effective = this.context().effectiveXml(part);
+                if (effective?.ok === true) {
+                    return effective.document;
+                }
+            } catch {
+                // A refused directory view falls back to the processed clone.
+            }
+        }
+        // Outside a run a check method called directly reads the package as
+        // it is now, as `context()` does: a repair such as `repairIgnorable`
+        // can change which branch markup compatibility selects (#654).
+        if (!this.inRun) this.resetProcessedRelationships();
+        return this.processedRelationshipsView(document, part);
+    }
+
     // ----- top-level entry point ----------------------------------------------
 
     /**
@@ -425,6 +455,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     async validate(): Promise<ValidationResult> {
         this.inRun = true;
         this.runContext = undefined;
+        // A run re-reads the package: the processed relationship views of
+        // the previous run must not outlive it, as `runContext` does not.
+        this.resetProcessedRelationships();
         try {
             return await this.withinBaselineRun(() => this.runEveryCheck());
         } finally {
@@ -546,7 +579,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     private async validateRegisteredWordRules(): Promise<ValidationResult> {
         if (WORD_RULE_CHECKS.length === 0) return { valid: true, issues: [] };
         const rules = new Set(WORD_RULE_CHECKS.map((check) => check.id));
-        const run = await runChecks(this.context(), createDefaultCheckRegistry(), { format: "docx", select: [...rules] });
+        const run = await runChecks(this.context(), createDefaultCheckRegistry(), {
+            format: "docx",
+            select: [...rules],
+            profile: this.profile,
+        });
         // xml-syntax runs as the rules' prerequisite; validateXml already
         // reports its findings, so keep only the rules' own (#307).
         const issues = run.outcomes.filter((outcome) => rules.has(outcome.id)).flatMap((outcome) => outcome.issues);
@@ -594,9 +631,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // inexact check glossaryDocument only (#570). Word-valid and lenient
         // keep the observed sets; under strict an unread lazy part keeps the
         // clause-11.3 wording instead of the Word sentence (#589).
-        const found = await wordPartContentTypeGenericFindings(view, this.profile === "strict" ? "spec" : "observed");
-        const inexact = await wordPartContentTypeInexactFindings(view, this.profile === "strict" ? "spec" : "observed");
-        const mismatch = await wordPartContentTypeMismatchFindings(view, this.profile === "strict" ? "spec" : "observed");
+        const found = await wordPartContentTypeGenericFindings(view, this.profile === "strict" ? "spec" : "observed", this.profile);
+        const inexact = await wordPartContentTypeInexactFindings(view, this.profile === "strict" ? "spec" : "observed", this.profile);
+        const mismatch = await wordPartContentTypeMismatchFindings(view, this.profile === "strict" ? "spec" : "observed", this.profile);
         this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_GENERIC);
         this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_INEXACT);
         this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_MISMATCH);
@@ -638,15 +675,15 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // Resolve each part set once per run and share the blocking predicate
         // with partial validation (#381, #615, #617).
         const [properties, read, storyRoots] = await Promise.all([
-            propertiesParts(context),
-            wordReadParts(context),
-            wordStoryRootParts(context),
+            propertiesParts(context, this.profile),
+            wordReadParts(context, this.profile),
+            wordStoryRootParts(context, this.profile),
         ]);
         const missingSidecarPart = (issue: ValidationIssue): string | undefined =>
             issue.severity === "error" && issue.code === "rels-missing-sidecar" ? issue.path : undefined;
         // Only a missing-sidecar error consults the unobserved-type targets.
         const unobserved = result.issues.some((issue) => missingSidecarPart(issue) !== undefined)
-            ? await wordUnobservedRelationshipTargets(context)
+            ? await wordUnobservedRelationshipTargets(context, this.profile)
             : new Set<string>();
         const issues = result.issues.map((issue): ValidationIssue => {
             if (issue.severity !== "error") return issue;
@@ -815,7 +852,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     // ----- comment markers ----------------------------------------------------
 
     async validateCommentMarkers(): Promise<ValidationResult> {
-        const run = await runChecks(this.context(), createDefaultCheckRegistry(), { format: "docx", select: ["comment-markers"] });
+        const run = await runChecks(this.context(), createDefaultCheckRegistry(), {
+            format: "docx",
+            select: ["comment-markers"],
+            profile: this.profile,
+        });
         this.recordExecutedChecks(run.executed);
         return finalize([...run.issues]);
     }
@@ -1235,7 +1276,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * threaded-comments extension surface.
      */
     async validateCommentThreading(): Promise<ValidationResult> {
-        const run = await runChecks(this.context(), createDefaultCheckRegistry(), { format: "docx", select: ["comment-threading"] });
+        const run = await runChecks(this.context(), createDefaultCheckRegistry(), {
+            format: "docx",
+            select: ["comment-threading"],
+            profile: this.profile,
+        });
         this.recordExecutedChecks(run.executed);
         return finalize(run.issues.map((issue) => promoteFullCheckIssue(issue, this.profile, "docx")));
     }
@@ -1511,7 +1556,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             } catch {
                 continue;
             }
-            const list = this.relationshipElements(dom);
+            const list = this.relationshipElements(dom, name);
             for (let i = 0; i < list.length; i += 1) {
                 const elem = list[i];
                 if (!elem) continue;
@@ -1799,14 +1844,15 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     async validateRelationshipIdStability(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
         for (const xmlFile of this.xmlFiles) {
-            if (!isRelationshipsPartName(this.entryName(xmlFile))) continue;
+            const part = this.entryName(xmlFile);
+            if (!isRelationshipsPartName(part)) continue;
             let dom: Document;
             try {
                 dom = parseXmlBytes(await fs.readFile(xmlFile));
             } catch {
                 continue;
             }
-            const relsList = this.relationshipElements(dom);
+            const relsList = this.relationshipElements(dom, part);
             const ids: number[] = [];
             let allIdsUseRidPattern = true;
             for (let i = 0; i < relsList.length; i += 1) {

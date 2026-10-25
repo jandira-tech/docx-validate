@@ -81,6 +81,7 @@ import { OPC_PART_NAME_ESCAPED_SLASH } from "./checks/opc-part-name-escaped-slas
 import { OPC_PART_NAME_ESCAPED_UNRESERVED } from "./checks/opc-part-name-escaped-unreserved";
 import { CT_OVERRIDE_PARTNAME_INVALID } from "./checks/ct-override-partname";
 import { CT_MARKUP_COMPATIBILITY } from "./checks/ct-markup-compatibility";
+import { isMarkupCompatibilityJudgedPart } from "./checks/word-markup-compatibility";
 import { WORD_PART_CONTENT_TYPE_GENERIC } from "./checks/word-part-content-type-generic";
 import { contextFromArchive, openDirectoryContext, packageExtractFailedIssue, storedNamesRun } from "./package-context";
 import {
@@ -507,7 +508,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     if (targetIsPackedFile) {
         // Defined: the read above already reported an unreadable input.
         const buf = packedBytes!;
-        const envelope = runsWordPackageChecks(profile) ? await zipEnvelopeRun(buf, dispatchSuffix) : EMPTY_ENVELOPE_RUN;
+        const envelope = runsWordPackageChecks(profile) ? await zipEnvelopeRun(buf, dispatchSuffix, profile) : EMPTY_ENVELOPE_RUN;
         let zip: JSZip;
         try {
             zip = await loadCentralNamedArchive(buf);
@@ -738,15 +739,16 @@ function findingsUnderProfile(
     // Full DOCX validation diagnoses root Ignorable prefixes before dropping
     // their MC restatements. Apply those same two steps only when the selected
     // Word compatibility check ran; descendant-only findings remain distinct (#499).
+    // The check judges the XML parts under word/ and every relationships part,
+    // each compared as OPC compares part names (#636, #639), so the pairing
+    // covers both, as the full run's validateNamespaces walk does.
     const outcomes = run.outcomes.map((outcome) => {
         if (outcome.id !== "word-markup-compatibility" || !context || !run.executed.includes(outcome.id)) return outcome;
-        const roots = context.partNames
-            .filter((name) => /^word\/.+\.xml$/i.test(name))
-            .flatMap((name) => {
-                const parsed = context.xml(name);
-                const root = parsed?.ok ? parsed.document.documentElement : undefined;
-                return root ? rootIgnorableIssues(root, name) : [];
-            });
+        const roots = context.partNames.filter(isMarkupCompatibilityJudgedPart).flatMap((name) => {
+            const parsed = context.xml(name);
+            const root = parsed?.ok ? parsed.document.documentElement : undefined;
+            return root ? rootIgnorableIssues(root, name) : [];
+        });
         return { ...outcome, issues: withoutRestatedIgnorablePrefixes({ valid: run.valid, issues: [...roots, ...outcome.issues] }).issues };
     });
     // Equivalent names, escaped unreserved characters, escaped separators and
@@ -806,6 +808,7 @@ async function archiveFindings(
         const run = await runChecks(opened.context, registry, {
             format,
             select,
+            profile,
             // A full lenient run stops at its first malformed part, so the
             // merged run stops where xml-syntax fails (#391).
             ...(profile === "lenient" ? { haltAfterFailing: XML_SYNTAX_CHECK_ID } : {}),
@@ -825,7 +828,11 @@ async function archiveFindings(
         // severity the full run gives it (#437, #488).
         const [properties, read, storyRoots] =
             profile === "word-valid" && format === "docx"
-                ? [await propertiesParts(opened.context), await wordReadParts(opened.context), await wordStoryRootParts(opened.context)]
+                ? [
+                      await propertiesParts(opened.context, profile),
+                      await wordReadParts(opened.context, profile),
+                      await wordStoryRootParts(opened.context, profile),
+                  ]
                 : [new Set<string>(), new Set<string>(), new Set<string>()];
         const issues = findingsUnderProfile(
             { ...run, outcomes, issues: outcomes.flatMap((outcome) => outcome.issues) },
@@ -900,7 +907,10 @@ async function runSelectedChecks(
         );
         const resolved = registry.resolve(select, format);
         const runnableSelect = resolved.filter((id) => runnable.has(id));
-        const run = runnableSelect.length > 0 ? await runChecks(opened.context, registry, { format, select: runnableSelect }) : undefined;
+        const run =
+            runnableSelect.length > 0
+                ? await runChecks(opened.context, registry, { format, select: runnableSelect, profile: mode.profile })
+                : undefined;
         // A refused view has no parts, so no properties part to block (#409).
         const issues = run === undefined ? [] : findingsUnderProfile(run, registry, format, mode.profile, new Set());
         const executed = run?.executed ?? [];
@@ -935,6 +945,7 @@ async function runSelectedChecks(
     const run = await runChecks(opened.context, registry, {
         format,
         select,
+        profile: mode.profile,
         ...(mode.profile === "lenient" ? { haltAfterFailing: XML_SYNTAX_CHECK_ID } : {}),
     });
     const malformed = new Set(
@@ -952,7 +963,11 @@ async function runSelectedChecks(
     // run, as the full DOCX run computes them, so both agree.
     const [properties, read, storyRoots] =
         mode.profile === "word-valid" && format === "docx"
-            ? [await propertiesParts(opened.context), await wordReadParts(opened.context), await wordStoryRootParts(opened.context)]
+            ? [
+                  await propertiesParts(opened.context, mode.profile),
+                  await wordReadParts(opened.context, mode.profile),
+                  await wordStoryRootParts(opened.context, mode.profile),
+              ]
             : [new Set<string>(), new Set<string>(), new Set<string>()];
     const issues = findingsUnderProfile(
         { ...run, outcomes, issues: outcomes.flatMap((outcome) => outcome.issues) },
@@ -1113,6 +1128,7 @@ function runsWordPackageChecks(profile: Profile): boolean {
 async function zipEnvelopeRun(
     archiveBytes: Uint8Array,
     suffix: string,
+    profile: Profile,
 ): Promise<{ issues: ValidationResult["issues"]; executed: readonly string[] }> {
     const format: PackageFormat = suffix === ".pptx" ? "pptx" : suffix === ".xlsx" ? "xlsx" : "docx";
     const context = ValidationContext.fromEntries({}, { source: "archive", archiveBytes });
@@ -1122,7 +1138,7 @@ async function zipEnvelopeRun(
         .list()
         .filter((definition) => definition.archiveOnly === true)
         .map((definition) => definition.id);
-    const run = await runChecks(context, registry, { format, select });
+    const run = await runChecks(context, registry, { format, select, profile });
     return { issues: [...run.issues], executed: [...run.executed] };
 }
 

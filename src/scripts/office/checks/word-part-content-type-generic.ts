@@ -90,7 +90,7 @@ import {
     resolveContentType,
     contentTypeMediaType,
 } from "../../../lib/content-types";
-import type { ValidationIssue } from "../../../lib/types";
+import type { Profile, ValidationIssue } from "../../../lib/types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import type { WordTypedTarget } from "../../../lib/word-read-parts";
 import { glossaryTypedRelationshipTargets, wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
@@ -215,6 +215,7 @@ export type WordGenericContentTypeFinding = {
 export const wordPartContentTypeGenericFindings = async (
     ctx: ValidationContext,
     scope: "observed" | "spec" = "observed",
+    profile?: Profile,
 ): Promise<readonly WordGenericContentTypeFinding[]> => {
     // A missing stream is `ct-missing`; one that does not parse is the
     // XML syntax gate's finding. Neither is judged here.
@@ -231,10 +232,10 @@ export const wordPartContentTypeGenericFindings = async (
     const table = parseContentTypes(parsed.document);
 
     const findings: WordGenericContentTypeFinding[] = [];
-    const targets = await wordTypedRelationshipTargets(ctx, scope === "spec" ? SPEC_SEGMENTS : OBSERVED_SEGMENTS);
+    const targets = await wordTypedRelationshipTargets(ctx, scope === "spec" ? SPEC_SEGMENTS : OBSERVED_SEGMENTS, profile);
     // Sessions 23 and 24 observed recovery for the reached glossary's
     // generic-Default theme and styles (#595, #601); other segments stay unprobed.
-    const glossaryTargets = await glossaryTypedRelationshipTargets(ctx, new Set(["theme", "styles"]));
+    const glossaryTargets = await glossaryTypedRelationshipTargets(ctx, new Set(["theme", "styles"]), profile);
     // One finding per part. A part reached through two relationship types
     // keeps every segment (#593); the message names the segment
     // `REPORTING_SEGMENT_ORDER` ranks first, deterministically, so the
@@ -295,6 +296,6 @@ export const wordPartContentTypeGenericCheck: CheckDefinition = {
     groups: ["content-types"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: async (ctx: ValidationContext): Promise<ValidationIssue[]> =>
-        (await wordPartContentTypeGenericFindings(ctx)).map((finding) => finding.issue),
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> =>
+        (await wordPartContentTypeGenericFindings(ctx, "observed", profile)).map((finding) => finding.issue),
 };

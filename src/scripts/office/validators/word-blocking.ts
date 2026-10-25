@@ -11,6 +11,7 @@
  */
 
 import { canonicalPartName, isContentTypesStreamName, PART_NAME_FOLDER_SEGMENT_DOT } from "../../../lib/content-types";
+import { sidecarOf } from "../../../lib/word-read-parts";
 import { NS, type ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameAll } from "../../../lib/xml-helpers";
 import {
@@ -67,6 +68,25 @@ const isWordFolderPart = (partName: string | undefined): boolean =>
  */
 const isPackageRelationshipsPart = (partName: string | undefined): boolean =>
     partName !== undefined && canonicalPartName(partName) === "_rels/.rels";
+
+/**
+ * Whether a part is one of the XML parts under `word/`, comparing part names
+ * as OPC does: ASCII case-insensitively, with escapes of unreserved
+ * characters decoded. Relationships parts under `word/` end in `.rels` and
+ * are excluded: their markup-compatibility policy is observed per part
+ * (#636), not inherited from the folder.
+ */
+const isWordXmlPart = (partName: string | undefined): boolean =>
+    partName !== undefined && /^word\/.+\.xml$/.test(canonicalPartName(partName));
+
+/**
+ * Whether a part is a reached story root's own relationships part (#644).
+ * Session 36 s36a/s36e: Word offers recovery for malformed compatibility
+ * in the main/glossary sidecar, including a renamed main, but opens a stray
+ * default-name sidecar clean. Reuse the relationship walk's OPC lookup.
+ */
+const isDocumentRelationshipsPart = (partName: string | undefined, storyRootParts: ReadonlySet<string>): boolean =>
+    partName !== undefined && [...storyRootParts].some((root) => sidecarOf([partName], root) !== undefined);
 
 /**
  * Whether `issue` stays an error under `word-valid`: `true` when Word 16.115
@@ -335,9 +355,21 @@ export const isWordBlockingIssue = (
             return issue.message.includes("../customXml/") || /\/_rels\/|\.rels$/i.test(issue.message);
         case "rels-empty-element":
             return issue.message.includes("missing required attribute");
-        case "mce-malformed":
         case "mce-must-understand":
-            return true;
+        case "mce-malformed": {
+            // Word 16.115 offered recovery in the package relationships and
+            // reached main/glossary sidecars (sessions 34 s34c/s34d and 36
+            // s36a/s36b/s36e, #644), including a renamed main. Malformed
+            // siblings in stray/styles/footer (session 36) and
+            // settings/numbering/header (session 37) sidecars opened
+            // clean, as did root MustUnderstand in stray (36) and
+            // styles/footer (37) sidecars. Other sidecars/shapes are
+            // unobserved and keep their warning. XML parts under word/ keep
+            // their existing classification; relationship identity, rather
+            // than the stored default path, determines a story's sidecar.
+            const path = issue.path?.replace(/\\/g, "/");
+            return isWordXmlPart(path) || isPackageRelationshipsPart(path) || isDocumentRelationshipsPart(path, storyRootParts);
+        }
         default:
             return false;
     }

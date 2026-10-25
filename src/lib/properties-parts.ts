@@ -4,6 +4,7 @@
  */
 
 import { canonicalPartName, findEquivalentPart, resolvePartName } from "./content-types";
+import type { Profile } from "./types";
 import type { ValidationContext } from "./validation-context";
 import { getRelationshipChildren } from "./xml-helpers";
 import { checkXmlSyntax } from "./xml-syntax";
@@ -26,8 +27,17 @@ const PROPERTIES_RELATIONSHIP_TYPES: ReadonlySet<string> = new Set([
  * open clean, while a truncated core part stored as props/meta.xml and named by
  * its relationship makes Word offer recovery. Compute once per run and pass the
  * set explicitly to the shared Word-blocking predicate.
+ *
+ * Word follows a core-properties relationship markup compatibility selects
+ * (#634, session 34 s34b): under `word-valid` and `strict` the package
+ * relationships part is read through `context.effectiveXml`, so a
+ * relationship inside an `mc:Fallback` or an understood `mc:Choice` names
+ * its properties part as a direct child does. `getRelationshipChildren`
+ * keeps its direct-children-only rule on that processed DOM (#434).
+ * `lenient` keeps the stored view; a caller with no profile to give reads
+ * what Word reads.
  */
-export const propertiesParts = async (context: ValidationContext): Promise<ReadonlySet<string>> => {
+export const propertiesParts = async (context: ValidationContext, profile?: Profile): Promise<ReadonlySet<string>> => {
     const parts = new Set<string>();
     const name = findEquivalentPart(context.partNames, "_rels/.rels");
     if (name === undefined) {
@@ -39,7 +49,7 @@ export const propertiesParts = async (context: ValidationContext): Promise<Reado
     if (issues.some((issue) => issue.severity === "error")) {
         return parts;
     }
-    const parsed = context.xml(name);
+    const parsed = profile === "lenient" ? context.xml(name) : context.effectiveXml(name);
     if (!parsed?.ok) {
         return parts;
     }

@@ -59,6 +59,7 @@ import {
 } from "../../../lib/content-types";
 import {
     applyMarkupCompatibility,
+    RELATIONSHIPS_UNDERSTOOD_NAMESPACES,
     STRICT_UNDERSTOOD_NAMESPACES,
     UNDERSTOOD_NAMESPACES,
     understoodNamespacesForPart,
@@ -644,6 +645,7 @@ export class BaseSchemaValidator {
         this.xmlFiles.length = 0;
         for (const f of surviving) this.xmlFiles.push(f);
         this.mainDocumentParts = undefined;
+        this.resetProcessedRelationships();
         return repairs;
     }
 
@@ -845,7 +847,7 @@ export class BaseSchemaValidator {
         const issues: ValidationIssue[] = [];
         const entries = packageEntries(this.unpackedDir);
         const names = [...entries.keys()];
-        const relsFiles = [...entries].flatMap(([name, file]) => (isRelationshipsPartName(name) ? [file] : []));
+        const relsFiles = [...entries].flatMap(([name, file]) => (isRelationshipsPartName(name) ? [[name, file] as const] : []));
 
         if (relsFiles.length === 0) {
             return OK_RESULT;
@@ -859,7 +861,7 @@ export class BaseSchemaValidator {
 
         const allReferenced = new Set<string>();
 
-        for (const relsFile of relsFiles) {
+        for (const [relsPart, relsFile] of relsFiles) {
             let dom: Document;
             try {
                 dom = parseXmlBytes(await fs.readFile(relsFile));
@@ -878,7 +880,7 @@ export class BaseSchemaValidator {
             const relsDir = path.dirname(relsFile);
             const broken: string[] = [];
 
-            const rels = this.relationshipElements(dom);
+            const rels = this.relationshipElements(dom, relsPart);
             for (let i = 0; i < rels.length; i += 1) {
                 const rel = rels[i];
                 if (!rel) continue;
@@ -941,9 +943,11 @@ export class BaseSchemaValidator {
 
     async validateRelationshipElements(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const relsFiles = [...packageEntries(this.unpackedDir)].flatMap(([name, file]) => (isRelationshipsPartName(name) ? [file] : []));
+        const relsFiles = [...packageEntries(this.unpackedDir)].flatMap(([name, file]) =>
+            isRelationshipsPartName(name) ? [[name, file] as const] : [],
+        );
 
-        for (const relsFile of relsFiles) {
+        for (const [relsPart, relsFile] of relsFiles) {
             let dom: Document;
             try {
                 dom = parseXmlBytes(await fs.readFile(relsFile));
@@ -951,7 +955,7 @@ export class BaseSchemaValidator {
                 continue;
             }
 
-            const rels = this.relationshipElements(dom);
+            const rels = this.relationshipElements(dom, relsPart);
             for (let i = 0; i < rels.length; i += 1) {
                 const rel = rels[i];
                 if (!rel) continue;
@@ -1022,11 +1026,11 @@ export class BaseSchemaValidator {
         // two equivalent spellings must not double-report).
         const judgedRelsFiles = new Set<string>();
         /** Report each repeated `Id` in the relationships part `relsFile` once, at that part; a part already judged is skipped. */
-        const reportDuplicates = (document: Document, relsFile: string): void => {
+        const reportDuplicates = (document: Document, relsFile: string, part: string): void => {
             if (judgedRelsFiles.has(relsFile)) return;
             judgedRelsFiles.add(relsFile);
             const seen = new Set<string>();
-            for (const relationship of this.relationshipElements(document)) {
+            for (const relationship of this.relationshipElements(document, part)) {
                 const id = relationship.getAttribute("Id");
                 if (!id) continue;
                 if (seen.has(id)) {
@@ -1048,7 +1052,11 @@ export class BaseSchemaValidator {
             const packageRelsFile = packageRels === undefined ? undefined : entries.get(packageRels);
             if (packageRelsFile !== undefined) {
                 try {
-                    reportDuplicates(parseXmlBytes(await fs.readFile(packageRelsFile)), packageRelsFile);
+                    reportDuplicates(
+                        parseXmlBytes(await fs.readFile(packageRelsFile)),
+                        packageRelsFile,
+                        packageRels ?? this.entryName(packageRelsFile),
+                    );
                 } catch {
                     // XML syntax diagnostics already report this part.
                 }
@@ -1109,9 +1117,9 @@ export class BaseSchemaValidator {
                 continue;
             }
 
-            reportDuplicates(relsDom, relsFile);
+            reportDuplicates(relsDom, relsFile, relsPart ?? this.entryName(relsFile));
             const ridToType = new Map<string, string>();
-            const rels = this.relationshipElements(relsDom);
+            const rels = this.relationshipElements(relsDom, relsPart ?? this.entryName(relsFile));
             for (let i = 0; i < rels.length; i += 1) {
                 const rel = rels[i];
                 if (!rel) continue;
@@ -1224,7 +1232,7 @@ export class BaseSchemaValidator {
             const relsFile = relsPart === undefined ? undefined : entries.get(relsPart);
             if (relsFile === undefined) continue;
             try {
-                reportDuplicates(parseXmlBytes(await fs.readFile(relsFile)), relsFile);
+                reportDuplicates(parseXmlBytes(await fs.readFile(relsFile)), relsFile, relsPart ?? this.entryName(relsFile));
             } catch {
                 // XML syntax diagnostics already report this part.
             }
@@ -1513,6 +1521,9 @@ export class BaseSchemaValidator {
         this.xsdWalk.parts = [];
         this.xsdWalk.eligible = 0;
         this.xsdEngineFailures = 0;
+        // The main document comes from the processed package relationships,
+        // which a repair between walks can change (#657).
+        this.mainDocumentParts = undefined;
 
         const noteStrict = (): void => {
             if (strictSkipped) return;
@@ -1700,16 +1711,68 @@ export class BaseSchemaValidator {
         }
     }
 
-    /** Semantic relationship readers use direct children; lenient retains its historical scan. */
-    protected relationshipElements(document: Document): Element[] {
-        return this.profile === "lenient"
-            ? getElementsByTagNameNSAll(document, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship")
-            : getRelationshipChildren(document);
+    /** Semantic relationship readers use the processed direct children; lenient retains its historical scan. */
+    protected relationshipElements(document: Document, part: string): Element[] {
+        if (this.profile === "lenient") {
+            return getElementsByTagNameNSAll(document, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+        }
+        // #635: Word offered recovery for a duplicate split between a direct
+        // child and Fallback (session 34 s34a), and read selected footer/main
+        // relationships (session 33 s33d/s33e); see docs/plans/evidence/word-probes-2026-10-24.md.
+        // The processed view is DOCX/DOCM-only (#643) and built once per
+        // relationships part (#642); relationships nested in foreign
+        // wrappers stay ignored either way.
+        return getRelationshipChildren(this.relationshipsView(document, part));
+    }
+
+    /**
+     * The relationships part `part` as the non-lenient walks read it.
+     * DOCX/DOCM applies markup compatibility — Word 16.115 resolves
+     * `mc:AlternateContent` and `mc:Ignorable` in `.rels` streams (probe
+     * sessions 33–35, docs/plans/evidence/word-probes-2026-10-24.md) —
+     * while PPTX and every other format keeps the stored view: PowerPoint
+     * was never shown markup compatibility in a relationships part (#643).
+     */
+    protected relationshipsView(document: Document, _part: string): Document {
+        return document;
+    }
+
+    /**
+     * The markup-compatibility view of `document`, memoized per part: the
+     * legacy walks would otherwise re-process each `.rels` on every
+     * `relationshipElements` call — five or more passes per part per run
+     * (#642). `DOCXSchemaValidator.relationshipsView` prefers the run
+     * context's `effectiveXml`, so this memo covers only a part the context
+     * cannot supply. Reset when the package view may have changed: at the
+     * start of a `validate()` run, when a repair rewrites the package, and
+     * on every DOCX call outside a run (#654).
+     */
+    private readonly processedRelationships = new Map<string, Document>();
+
+    /** Drop the memoized processed views; call when the package on disk may have changed. */
+    protected resetProcessedRelationships(): void {
+        this.processedRelationships.clear();
+    }
+
+    /**
+     * The processed view `relationshipElements` clones per part when no
+     * shared context view is available, using the same capabilities as
+     * `ctx.effectiveXml`'s `understoodNamespacesForPart` for `.rels`
+     * streams.
+     */
+    protected processedRelationshipsView(document: Document, part: string): Document {
+        const cached = this.processedRelationships.get(part);
+        if (cached) {
+            return cached;
+        }
+        const view = applyMarkupCompatibility(document, { understood: RELATIONSHIPS_UNDERSTOOD_NAMESPACES }).document;
+        this.processedRelationships.set(part, view);
+        return view;
     }
 
     /** Identify the required main part by the package relationship, never its basename. */
     private isMainDocumentPart(xmlFile: string): boolean {
-        // Resolved once per validator: this runs for every part whose root is
+        // Resolved once per XSD walk: this runs for every part whose root is
         // ignored, and a walk per call grows with the square of the part
         // count (#355).
         this.mainDocumentParts ??= this.resolveMainDocumentParts();
@@ -1747,7 +1810,7 @@ export class BaseSchemaValidator {
                 return parts;
             }
             const relationships = parseXmlBytes(readFileSync(relsFile));
-            for (const relationship of this.relationshipElements(relationships)) {
+            for (const relationship of this.relationshipElements(relationships, relsName ?? "_rels/.rels")) {
                 const type = relationship.getAttribute("Type");
                 if (
                     relationship.getAttribute("TargetMode") === "External" ||
@@ -1892,13 +1955,41 @@ export class BaseSchemaValidator {
                 : UNDERSTOOD_NAMESPACES;
             const understood = schemaNamespace ? new Set([...baseUnderstood, schemaNamespace]) : baseUnderstood;
             const compatible = applyMarkupCompatibility(dom, { understood });
-            issues.push(
-                ...compatible.issues.map((issue) => ({
+            const located = (found: readonly ValidationIssue[]): ValidationIssue[] =>
+                found.map((issue) => ({
                     ...issue,
                     path: rel,
                     message: issue.code === "mce-extension-not-ignorable" ? `${rel}: ${issue.message}` : issue.message,
-                })),
-            );
+                }));
+            if (this.profile === "lenient" && compatible.rootUnwrapElementCount !== undefined) {
+                // #640 preserves lenient's diagnostics byte for byte. Previously
+                // a multi-root unwrap reached the existing XSD failure path as
+                // this xmldom error; an empty unwrap reported mce-root-ignored.
+                // The shared processor now returns an intact source view with
+                // mce-malformed instead. Keep the old schema adapter's output
+                // here only; Word-valid/strict consume the structured finding.
+                if (compatible.rootUnwrapElementCount > 1) {
+                    throw new Error("Only one element can be added and only after doctype");
+                }
+                // The processor's other findings stay, in order: only the
+                // root-unwrap mce-malformed becomes the mce-root-ignored the
+                // empty root reported in its place (#664).
+                issues.push(
+                    ...located(
+                        compatible.issues.map((issue) =>
+                            issue === compatible.rootUnwrapIssue
+                                ? {
+                                      severity: "info" as const,
+                                      code: "mce-root-ignored",
+                                      message: `Root element ${dom.documentElement.tagName} is in an ignorable namespace that is not understood; the part has no content to schema-validate.`,
+                                  }
+                                : issue,
+                        ),
+                    ),
+                );
+                return "";
+            }
+            issues.push(...located(compatible.issues));
             return serializeXml(compatible.document, "UTF-8");
         }
 
@@ -1995,7 +2086,7 @@ export class BaseSchemaValidator {
 
     /** Per-file memo for {@link _isStrictXmlFile} — root-namespace sniffing would otherwise re-read each part for eligibility, schema dispatch, and preprocessing. */
     private readonly strictRootCache = new Map<string, boolean>();
-    /** See {@link isMainDocumentPart}; reset when a repair deletes files. */
+    /** See {@link isMainDocumentPart}; reset at the start of every XSD walk (#657) and when a repair deletes files. */
     private mainDocumentParts: ReadonlySet<string> | undefined;
     /**
      * Everything this validator read from `--original` outside a

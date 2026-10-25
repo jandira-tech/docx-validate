@@ -7,16 +7,21 @@
 
 /**
  * Plain-language explanations for the issue codes that the `word-valid` profile
- * treats as Word-blocking (see `isWordBlockingIssue` in `validators/docx.ts`).
+ * treats as Word-blocking, plus advisory compatibility findings (see
+ * `isWordBlockingIssue` in `validators/word-blocking.ts`).
  *
- * Each entry answers two questions for a human reader: *why Microsoft Word
- * refuses to open the document* and *how to fix it*. These are surfaced by the
+ * Each entry explains why Microsoft Word refuses or accepts the markup and
+ * how to fix the defect. These are surfaced by the
  * CLI under each error and are grounded in real-Word probing
  * (`broken-word/FINDINGS.md`, `validation-results/word-probe-all.jsonl`), not the
  * ISO schema — Word is stricter than the OpenXML SDK on some of these and more
  * lenient on others, so the wording reflects Word's actual behaviour.
  */
 export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.freeze({
+    "mce-malformed":
+        "Markup compatibility has an invalid structure. AlternateContent needs Choices with declared, non-empty Requires prefixes followed by at most one Fallback; unwrapping a part root must leave exactly one element. If root unwrapping fails, validation keeps the stored part and its root findings. Word 16.115 offered recovery for a _rels/.rels root that unwraps to two Relationship elements (session 36) and opened clean one whose Fallback holds the Relationships element, which word-valid still rejects through opc-relationships-structure (#646); other zero- and multiple-element root shapes are unobserved. In relationships parts, Word offered recovery for malformed compatibility in _rels/.rels and the main document or reached glossary sidecar, including a renamed main document; a stray, styles, footer, settings, numbering or header sidecar opened clean (sessions 36 and 37). Other sidecars are unobserved and warn under word-valid. Restore a valid stored root and compatibility structure.",
+    "mce-must-understand":
+        "A required namespace is not understood by the selected compatibility view. Word 16.115 offered recovery in _rels/.rels and the main document or reached glossary sidecar, including a renamed main document (sessions 34 and 36); a stray, styles or footer sidecar opened clean (sessions 36 and 37). Other sidecars are unobserved and warn under word-valid. XML parts under word/ keep their blocking classification. Remove the unsupported requirement or use a namespace the selected view understands.",
     "ignorable-undeclared":
         "Word refuses to open the file: mc:Ignorable lists a namespace prefix that is never declared on the element. Declare the prefix (xmlns:…) on the root, or remove it from mc:Ignorable.",
     "word-math-spre-body":
@@ -27,6 +32,8 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
         "The package has no [Content_Types].xml stream, so Word cannot type any part and offers to recover the file. Restore the content-types stream with a Default or Override covering every part.",
     "word-main-document-part":
         "The package needs exactly one internal officeDocument relationship in _rels/.rels targeting an existing main document part. Missing or multiple main relationships make Word offer recovery. Add the missing relationship and its part, or restore a missing target. Remove extra internal officeDocument relationships, even if their targets are identical.",
+    "opc-relationships-markup-compatibility":
+        "Word applies markup compatibility to relationships parts and opened each tested shape of this markup clean (a Fallback over a Choice it does not understand, an understood w14 Choice, and an Ignorable foreign child, in the main document's and the package's relationships); other shapes are untested. For strict OPC conformance, store those Relationship children directly under Relationships and remove the compatibility markup.",
     "word-content-type-invalid":
         "A part's content type in [Content_Types].xml is missing or wrong, so Word cannot load that part. Add the correct <Override>/<Default> content-type entry.",
     "ct-uncovered-part":
@@ -89,7 +96,7 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
         "Comment-threading metadata expected a durableId that is not present. Add it or drop the threading entry.",
     "comment-thread-durableid-duplicate": "Duplicate durableId in comment-threading metadata. Make each unique.",
     "rels-id-duplicate":
-        "Duplicate relationship Ids in _rels/.rels or a story root's relationships — the main document's or a reached glossary document's — make Word offer recovery, even when identical or unreferenced. Keep each Id unique within that relationships part and update any references when renaming it. Duplicates in other relationships parts remain non-blocking under word-valid.",
+        "Duplicate relationship Ids in _rels/.rels or a story root's relationships — the main document's or a reached glossary document's — make Word offer recovery, even when identical or unreferenced. Ids are counted after markup compatibility, including selected Fallback relationships. Keep each Id unique within that relationships part and update any references when renaming it. Duplicates in other relationships parts remain non-blocking under word-valid.",
     "rels-missing-sidecar":
         "A part uses relationship IDs but its _rels sidecar is missing. Word-valid blocks only a Word-read part, or one that a known Office relationship of an unobserved type names, with a counted reference in its processed markup-compatibility view. Generated bundled-schema declarations exclude only known non-references; undeclared elements and namespaces keep counting. A genuine header/footer basename outside the story roots remains tolerated. Other occurrences warn under word-valid. Add the matching .rels file when the reference is used.",
     "rels-broken":

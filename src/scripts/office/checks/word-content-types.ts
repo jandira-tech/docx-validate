@@ -21,7 +21,7 @@ import {
 } from "../../../lib/content-types";
 import { wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
 import type { ValidationContext } from "../../../lib/validation-context";
-import type { ValidationIssue } from "../../../lib/types";
+import type { Profile, ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
 
 const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types";
@@ -52,7 +52,7 @@ export const ctDuplicateDeclarationCheck: CheckDefinition = {
  * Resolve the effective stream through the shared table, like the generic
  * and inexact checks; the package officeDocument relationship names the main.
  */
-const emptyMainContentTypeFindings = async (ctx: ValidationContext): Promise<ValidationIssue[]> => {
+const emptyMainContentTypeFindings = async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> => {
     const stream = findContentTypesStream(ctx.partNames);
     if (stream === undefined) return [];
     const parsed = ctx.effectiveXml(stream);
@@ -60,7 +60,7 @@ const emptyMainContentTypeFindings = async (ctx: ValidationContext): Promise<Val
     const table = parseContentTypes(parsed.document);
     const overrides = getElementsByTagNameNSAll(parsed.document, CONTENT_TYPES_NAMESPACE, "Override");
     const issues: ValidationIssue[] = [];
-    for (const { part } of await wordTypedRelationshipTargets(ctx, new Set(["officeDocument"]))) {
+    for (const { part } of await wordTypedRelationshipTargets(ctx, new Set(["officeDocument"]), profile)) {
         const resolved = resolveContentType(table, part);
         if (resolved?.source !== "override" || resolved.contentType !== "") continue;
         // The table represents a missing ContentType as "" too. Only the
@@ -83,7 +83,7 @@ export const wordContentTypeInvalidCheck: CheckDefinition = {
     groups: ["content-types"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: async (ctx: ValidationContext): Promise<ValidationIssue[]> => {
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
 
         const contentTypesFile = findContentTypesStream(ctx.partNames);
@@ -126,6 +126,6 @@ export const wordContentTypeInvalidCheck: CheckDefinition = {
             }
         }
 
-        return [...issues, ...(await emptyMainContentTypeFindings(ctx))];
+        return [...issues, ...(await emptyMainContentTypeFindings(ctx, profile))];
     },
 };

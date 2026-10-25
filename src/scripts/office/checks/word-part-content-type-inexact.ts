@@ -98,7 +98,7 @@ import {
     partExtension,
     resolveContentType,
 } from "../../../lib/content-types";
-import type { ValidationIssue } from "../../../lib/types";
+import type { Profile, ValidationIssue } from "../../../lib/types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { glossaryTypedRelationshipTargets, wordReadTypedTargets, wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
 import {
@@ -203,11 +203,12 @@ export type WordPartContentTypeFinding = {
 export type WordInexactContentTypeFinding = WordPartContentTypeFinding;
 
 /** Shared typed-target walk: every reaching (part, segment, story root) stays available (#593, #600). */
-export const wordContentTypeTargets = async (ctx: ValidationContext, scope: "observed" | "spec") => {
-    const targets = await wordTypedRelationshipTargets(ctx, scope === "spec" ? SPEC_SEGMENTS : OBSERVED_SEGMENTS);
+export const wordContentTypeTargets = async (ctx: ValidationContext, scope: "observed" | "spec", profile?: Profile) => {
+    const targets = await wordTypedRelationshipTargets(ctx, scope === "spec" ? SPEC_SEGMENTS : OBSERVED_SEGMENTS, profile);
     const glossaryTargets = await glossaryTypedRelationshipTargets(
         ctx,
         scope === "spec" ? GLOSSARY_SPEC_SEGMENTS : GLOSSARY_OBSERVED_SEGMENTS,
+        profile,
     );
     return [...targets, ...glossaryTargets];
 };
@@ -230,6 +231,7 @@ export const expectedContentTypesFor = (segment: string): readonly string[] => {
 export const wordPartContentTypeInexactFindings = async (
     ctx: ValidationContext,
     scope: "observed" | "spec" = "observed",
+    profile?: Profile,
 ): Promise<readonly WordInexactContentTypeFinding[]> => {
     // A missing stream is `ct-missing`; one that does not parse is the
     // XML syntax gate's finding. Neither is judged here.
@@ -245,7 +247,7 @@ export const wordPartContentTypeInexactFindings = async (
     }
     const table = parseContentTypes(parsed.document);
 
-    const merged = await wordContentTypeTargets(ctx, scope);
+    const merged = await wordContentTypeTargets(ctx, scope, profile);
     // Headers, footers, comments, footnotes and endnotes are parsed lazily
     // — only when the document uses them (#516); session 20's specimens
     // reference theirs (#570) — so the typed reads `wordReadTypedTargets`
@@ -264,7 +266,7 @@ export const wordPartContentTypeInexactFindings = async (
     // neither hides the read one nor adds a finding (#593).
     const readKeys = merged.some((target) => target.via === "glossary" || LAZY_OBSERVED_SEGMENTS.has(target.segment))
         ? new Set(
-              (await wordReadTypedTargets(ctx)).map(
+              (await wordReadTypedTargets(ctx, profile)).map(
                   (target) => `${target.via ?? "main"}\n${canonicalPartName(target.part)}\n${target.segment}`,
               ),
           )
@@ -379,6 +381,6 @@ export const wordPartContentTypeInexactCheck: CheckDefinition = {
     groups: ["content-types"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: async (ctx: ValidationContext): Promise<ValidationIssue[]> =>
-        (await wordPartContentTypeInexactFindings(ctx)).map((finding) => finding.issue),
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> =>
+        (await wordPartContentTypeInexactFindings(ctx, "observed", profile)).map((finding) => finding.issue),
 };

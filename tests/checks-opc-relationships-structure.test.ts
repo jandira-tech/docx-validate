@@ -9,6 +9,12 @@ import { NS } from "../src/lib/types";
 import { ValidationContext } from "../src/lib/validation-context";
 import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "../src/scripts/office/checks";
 import { MINIMAL_PARTS } from "./support/minimal-docx";
+import {
+    fallback,
+    MCE_DECLARATIONS,
+    RELATIONSHIPS_MCE_CASES,
+    RELATIONSHIPS_MCE_CODE,
+} from "./support/relationships-markup-compatibility-specimens";
 
 const CODE = "opc-relationships-structure";
 const diagnose = async (parts: Readonly<Record<string, string>>) => {
@@ -18,6 +24,87 @@ const diagnose = async (parts: Readonly<Record<string, string>>) => {
 };
 
 describe(CODE, () => {
+    it.each(RELATIONSHIPS_MCE_CASES)("judges the processed children of $label (#632)", async ({ parts, part, clean }) => {
+        expect(await diagnose(parts)).toEqual([
+            expect.objectContaining({ code: clean ? RELATIONSHIPS_MCE_CODE : CODE, path: part, severity: "error" }),
+        ]);
+    });
+
+    it("states the observed Word behaviour without generalizing it (#632 review finding 5)", async () => {
+        const issues = await diagnose(RELATIONSHIPS_MCE_CASES[0]!.parts);
+        expect(issues).toHaveLength(1);
+        const message = issues[0]!.message;
+        expect(message).toContain("removed or replaced by markup compatibility, leaving only Relationship children");
+        // Word was shown the four shapes of s33d/s33e that this code reports;
+        // each opened clean. Nothing else was tested, so say that, without
+        // internal session ids in user-facing text.
+        expect(message).toContain("Microsoft Word opened each tested shape of this markup clean; other shapes are untested.");
+        expect(message).not.toMatch(/session|s33/);
+        expect(message).not.toContain("Microsoft Word accepts this markup");
+        expect(message).toContain("Strict OPC requires direct Relationship children in the stored XML");
+    });
+
+    it.each([
+        { label: "foreign child in the selected Fallback", content: fallback("<x:Wrap/>"), code: CODE },
+        {
+            label: "foreign child in the understood Choice",
+            content: '<mc:AlternateContent><mc:Choice Requires="w14"><x:Wrap/></mc:Choice><mc:Fallback/></mc:AlternateContent>',
+            code: CODE,
+        },
+        {
+            label: "package-namespace non-Relationship in the Fallback",
+            content: fallback("<Other/>"),
+            code: CODE,
+        },
+        {
+            label: "Ignorable package-namespace non-Relationship",
+            content: `<p:Other xmlns:p="${NS.PR}" mc:Ignorable="p"/>`,
+            code: CODE,
+        },
+        {
+            label: "Ignorable child nested inside a Fallback",
+            content: fallback('<x:Wrap mc:Ignorable="x"/>'),
+            code: RELATIONSHIPS_MCE_CODE,
+        },
+        {
+            label: "AlternateContent selecting nothing",
+            content: '<mc:AlternateContent><mc:Choice Requires="foo"><x:Wrap/></mc:Choice></mc:AlternateContent>',
+            code: RELATIONSHIPS_MCE_CODE,
+        },
+        {
+            label: "foreign child in an unselected branch",
+            content: '<mc:AlternateContent><mc:Choice Requires="foo"><x:Wrap/></mc:Choice><mc:Fallback/></mc:AlternateContent>',
+            code: RELATIONSHIPS_MCE_CODE,
+        },
+    ])("classifies $label without mutating the stored view", async ({ content, code }) => {
+        const xml = `<Relationships xmlns="${NS.PR}" ${MCE_DECLARATIONS}>${content}</Relationships>`;
+        const ctx = ValidationContext.fromEntries({ "_rels/.rels": xml });
+        const before = ctx.xml("_rels/.rels");
+        const serialized = before?.ok ? before.document.toString() : undefined;
+        expect(await createDefaultCheckRegistry().get(CODE)!.run(ctx)).toEqual([
+            expect.objectContaining({ code, path: "_rels/.rels", severity: "error" }),
+        ]);
+        expect(before?.ok && before.document.toString()).toBe(serialized);
+    });
+
+    it("distinguishes a removed sibling from a surviving foreign child", async () => {
+        const xml = `<Relationships xmlns="${NS.PR}" ${MCE_DECLARATIONS}><x:Ignored mc:Ignorable="x"/><x:Wrap/></Relationships>`;
+        const issues = await diagnose({ "_rels/.rels": xml });
+        expect(issues).toHaveLength(2);
+        expect(issues).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ code: RELATIONSHIPS_MCE_CODE, message: expect.stringContaining("Ignored") }),
+                expect.objectContaining({ code: CODE, message: expect.stringContaining("Wrap") }),
+            ]),
+        );
+    });
+
+    it("keeps a wrong raw root blocking even when Ignorable removes it", async () => {
+        expect(await diagnose({ "_rels/.rels": `<x:Relationships ${MCE_DECLARATIONS} mc:Ignorable="x"/>` })).toEqual([
+            expect.objectContaining({ code: CODE, message: expect.stringContaining("root") }),
+        ]);
+    });
+
     it("registers in relationships with XML syntax as a prerequisite", () => {
         expect(WORD_RULE_CHECKS.find((check) => check.id === CODE)).toMatchObject({
             groups: ["relationships"],

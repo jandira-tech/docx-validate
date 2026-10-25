@@ -229,7 +229,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
             }
 
             const validLayoutRids = new Set<string>();
-            const rels = this.relationshipElements(relsDom);
+            const rels = this.relationshipElements(relsDom, this.entryName(relsFile));
             for (let i = 0; i < rels.length; i += 1) {
                 const rel = rels[i];
                 if (!rel) continue;
@@ -296,7 +296,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
                 continue;
             }
 
-            const rels = this.relationshipElements(dom);
+            const rels = this.relationshipElements(dom, this.entryName(relsFile));
             let layoutCount = 0;
             for (let i = 0; i < rels.length; i += 1) {
                 const rel = rels[i];
@@ -357,7 +357,7 @@ export class PPTXSchemaValidator extends BaseSchemaValidator {
                 continue;
             }
 
-            const rels = this.relationshipElements(dom);
+            const rels = this.relationshipElements(dom, this.entryName(relsFile));
             for (let i = 0; i < rels.length; i += 1) {
                 const rel = rels[i];
                 if (!rel) continue;

@@ -10,6 +10,25 @@ import { describe, expect, it } from "vitest";
 import { WORD_ERROR_EXPLANATIONS, explainWordError } from "../src/scripts/office/validators/word-error-explanations";
 
 describe("word error explanations", () => {
+    it.each(["mce-malformed", "mce-must-understand"])("explains %s by reached story roots (#644)", (code) => {
+        const explanation = explainWordError(code);
+        expect(explanation).toContain("_rels/.rels");
+        expect(explanation).toContain("main document");
+        expect(explanation).toContain("glossary");
+        expect(explanation).toContain("stray");
+        expect(explanation).toContain("unobserved");
+    });
+    it("explains relationships markup compatibility with the observed Word behaviour (#632)", () => {
+        const explanation = explainWordError("opc-relationships-markup-compatibility");
+        expect(explanation).toContain("Word");
+        expect(explanation).toContain("markup compatibility");
+        expect(explanation).toContain("opened each tested shape of this markup clean");
+        expect(explanation).toContain("other shapes are untested");
+        expect(explanation).not.toMatch(/session|s33/);
+        expect(explanation).toContain("strict");
+        expect(explanation).toContain("Relationship");
+    });
+
     it("explains the package/story-root duplicate-Id scope and repair (#615, #617)", () => {
         const explanation = explainWordError("rels-id-duplicate");
         expect(explanation).toEqual(expect.stringContaining("_rels/.rels"));
@@ -25,6 +44,12 @@ describe("word error explanations", () => {
             "Give the reference a non-empty r:id naming a Relationship of the matching Type: add that Relationship when none exists, or retype the one it names.",
         );
         expect(explanation).not.toContain("add one with that Id and Type");
+    });
+
+    it("explains duplicates revealed by markup compatibility (#635)", () => {
+        const explanation = explainWordError("rels-id-duplicate");
+        expect(explanation).toContain("markup compatibility");
+        expect(explanation).toContain("Fallback");
     });
 
     it("explains both absent and multiple main relationships (#515)", () => {

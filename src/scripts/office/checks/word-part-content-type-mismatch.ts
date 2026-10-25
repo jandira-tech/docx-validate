@@ -21,7 +21,7 @@ import {
     parseContentTypes,
     resolveContentType,
 } from "../../../lib/content-types";
-import type { ValidationIssue } from "../../../lib/types";
+import type { Profile, ValidationIssue } from "../../../lib/types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { wordReadTypedTargets } from "../../../lib/word-read-parts";
 import { REPORTING_SEGMENT_ORDER } from "./word-part-content-type-generic";
@@ -46,6 +46,7 @@ const MAPPED_MEDIA_TYPES: ReadonlySet<string> = new Set([...SPEC_SEGMENTS].flatM
 export const wordPartContentTypeMismatchFindings = async (
     ctx: ValidationContext,
     scope: "observed" | "spec" = "observed",
+    profile?: Profile,
 ): Promise<readonly WordPartContentTypeFinding[]> => {
     const stream = findContentTypesStream(ctx.partNames);
     if (stream === undefined) return [];
@@ -55,7 +56,7 @@ export const wordPartContentTypeMismatchFindings = async (
     // Unread parts keep every reaching type for the spec scope; parts
     // read through story references are judged only through those segments
     // (#607). Eager relationships keep their existing spec scope.
-    const targets = await wordContentTypeTargets(ctx, "spec");
+    const targets = await wordContentTypeTargets(ctx, "spec", profile);
     const byPart = new Map<string, typeof targets>();
     for (const target of targets) {
         const canonical = canonicalPartName(target.part);
@@ -86,7 +87,7 @@ export const wordPartContentTypeMismatchFindings = async (
         // with staged-directory write-back failures after repair (#412).
         if (swaps.length > 0 || entries.length > 1) {
             readKeys ??= new Set(
-                (await wordReadTypedTargets(ctx)).map(
+                (await wordReadTypedTargets(ctx, profile)).map(
                     (target) => `${target.via ?? "main"}\n${canonicalPartName(target.part)}\n${target.segment}`,
                 ),
             );
@@ -141,6 +142,6 @@ export const wordPartContentTypeMismatchCheck: CheckDefinition = {
     groups: ["content-types"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: async (ctx: ValidationContext): Promise<ValidationIssue[]> =>
-        (await wordPartContentTypeMismatchFindings(ctx)).map((finding) => finding.issue),
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> =>
+        (await wordPartContentTypeMismatchFindings(ctx, "observed", profile)).map((finding) => finding.issue),
 };

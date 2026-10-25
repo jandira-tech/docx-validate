@@ -13,6 +13,10 @@ import { hasWordRelationshipReference, isWordBlockingIssue } from "../src/script
 const issue = (code: string, rest: Partial<ValidationIssue> = {}): ValidationIssue => ({ severity: "error", code, message: "", ...rest });
 
 describe("isWordBlockingIssue", () => {
+    it.each(["_rels/.rels", "word/_rels/document.xml.rels"])("allows markup removed from relationships at %s (#632)", (path) => {
+        expect(isWordBlockingIssue(issue("opc-relationships-markup-compatibility", { path }))).toBe(false);
+    });
+
     it("blocks duplicate relationship Ids in the package and story-root sidecars (#615)", () => {
         // #617 renamed this set to the story roots: every main document plus
         // every reached glossary document. This case keeps a mains-only set.
@@ -132,13 +136,67 @@ describe("isWordBlockingIssue", () => {
         "word-footnote-reference-missing",
         "documentbuilder-insert-unresolved",
         "docprops-boolean-invalid",
-        "mce-malformed",
-        "mce-must-understand",
         // Word 16.115 offers recovery for every duplicate spelling probed (#351).
         "opc-equivalent-part-names",
     ])("keeps %s an error wherever it is found", (code) => {
         expect(isWordBlockingIssue(issue(code))).toBe(true);
     });
+
+    it.each(["word/document.xml", "WORD/footnotes.XML", "word/footnotes.%78ml"])(
+        "keeps the markup-compatibility errors of %s an error under word-valid",
+        (path) => {
+            // The part key compares canonical part names, so the escaped
+            // spelling of a word/*.xml part blocks as its twin does (#639).
+            for (const code of ["mce-malformed", "mce-must-understand"]) {
+                expect(isWordBlockingIssue(issue(code, { path })), `${code} ${path}`).toBe(true);
+            }
+        },
+    );
+
+    it.each(["mce-malformed", "mce-must-understand"])(
+        "%s blocks package and reached story-root sidecars by OPC identity (#644, #639)",
+        (code) => {
+            const roots = new Set(["word/doc2.xml", "word/glossary/document.xml", "stories/main.xml"]);
+            for (const path of [
+                "_rels/.rels",
+                "_RELS/.RELS",
+                "_rels\\.rels",
+                "_rels/.%72els",
+                "word/_rels/doc2.xml.rels",
+                "WORD/_RELS/doc2.xml.RELS",
+                "word/_rels\\doc2.xml.rels",
+                "word/_rels/d%6Fc2.xml.rels",
+                "word/glossary/_rels/document.xml.rels",
+                "stories/_rels/main.xml.rels",
+            ]) {
+                expect.soft(isWordBlockingIssue(issue(code, { path }), new Set(), new Set(), roots), path).toBe(true);
+            }
+            for (const path of [
+                undefined,
+                "word/_rels/document.xml.rels",
+                "word/_rels/styles.xml.rels",
+                "word/_rels/footer1.xml.rels",
+                "word/_rels/header1.xml.rels",
+                "word/_rels/settings.xml.rels",
+                "word/_rels/numbering.xml.rels",
+                "word/glossary/glossary/_rels/document.xml.rels",
+                "docProps/_rels/.rels",
+                "word/_rels/doc2.xml%2Frels",
+            ]) {
+                expect.soft(isWordBlockingIssue(issue(code, { path }), new Set(), new Set(), roots), String(path)).toBe(false);
+            }
+            // No reached story roots means even the default main sidecar is stray.
+            expect(isWordBlockingIssue(issue(code, { path: "word/_rels/document.xml.rels" }))).toBe(false);
+            expect(
+                isWordBlockingIssue(
+                    issue(code, { path: "word/_rels/document.xml.rels" }),
+                    new Set(),
+                    new Set(),
+                    new Set(["word/document.xml"]),
+                ),
+            ).toBe(true);
+        },
+    );
 
     it.each(["run-content-misplaced", "comment-orphan-start", "rels-unreferenced", "paraid-missing-element", "xsd-error", ""])(
         "tolerates %j",
