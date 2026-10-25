@@ -26,7 +26,7 @@
  */
 
 import type { CheckDefinition, CheckRegistry } from "./check-registry";
-import type { PackageFormat, ValidationIssue } from "./types";
+import type { PackageFormat, Profile, ValidationIssue } from "./types";
 import type { ValidationContext } from "./validation-context";
 
 export type CheckStatus = "passed" | "failed" | "skipped" | "unavailable";
@@ -61,6 +61,12 @@ export type RunChecksOptions = {
      * check the halt kept from running is neither executed nor omitted.
      */
     readonly haltAfterFailing?: string;
+    /**
+     * The run's resolved profile, handed to each check's `run`: a check that
+     * reads relationships parts uses the markup-compatibility view under
+     * `word-valid` and `strict`, the stored view under `lenient` (#634).
+     */
+    readonly profile?: Profile;
 };
 
 export const runChecks = async (ctx: ValidationContext, registry: CheckRegistry, opts: RunChecksOptions): Promise<CheckRun> => {
@@ -72,7 +78,7 @@ export const runChecks = async (ctx: ValidationContext, registry: CheckRegistry,
     const byId = new Map<string, CheckOutcome>();
     // Registration order puts every prerequisite before its dependents.
     for (const def of registry.list(opts.format).filter((candidate) => selected.includes(candidate.id))) {
-        const outcome = await runOne(ctx, def, status, byId, registry);
+        const outcome = await runOne(ctx, def, status, byId, registry, opts.profile);
         status.set(def.id, outcome.status);
         byId.set(def.id, outcome);
         outcomes.push(outcome);
@@ -120,6 +126,7 @@ const runOne = async (
     status: ReadonlyMap<string, CheckStatus>,
     outcomes: ReadonlyMap<string, CheckOutcome>,
     registry: CheckRegistry,
+    profile?: Profile,
 ): Promise<CheckOutcome> => {
     if (def.archiveOnly && ctx.archiveBytes === undefined) {
         return { id: def.id, status: "unavailable", issues: [], reason: "needs the packed archive; the package was not loaded from one" };
@@ -143,7 +150,7 @@ const runOne = async (
     }
     let issues: readonly ValidationIssue[];
     try {
-        issues = await def.run(unparseable.size > 0 ? ctx.withUnparseable(unparseable) : ctx);
+        issues = await def.run(unparseable.size > 0 ? ctx.withUnparseable(unparseable) : ctx, profile);
     } catch (err) {
         issues = [
             {

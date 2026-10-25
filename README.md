@@ -818,7 +818,10 @@ in the package relationships part. Word reads properties through those relations
 Word 16.115 offers recovery for all three defects in the referenced `docProps/core.xml`,
 `docProps/app.xml`, and `docProps/custom.xml` specimens
 ([#409](https://github.com/jandira-tech/docx-validate/issues/409)). The relationship types
-include the legacy core spelling and Strict extended/custom spellings. Targets resolve
+include the legacy core spelling and Strict extended/custom spellings. A properties
+relationship inside an `mc:Fallback` or an understood `mc:Choice` names the part as a
+direct child does ([#634](https://github.com/jandira-tech/docx-validate/issues/634)).
+Targets resolve
 from the package root (a leading `/` is allowed; external targets are ignored), and
 part names compare by OPC equivalence, including the stored `_rels/.rels` spelling.
 Missing or unreadable package relationships yield no properties targets; an unreadable
@@ -921,10 +924,24 @@ with its relationship in an unknown-Choice Fallback, in a `w14` Choice, and besi
 an Ignorable foreign child; it also opened the package with its main relationship
 in a Fallback. A foreign child left in that Fallback prompted recovery (Word probes
 session 33, `s33d`/`s33e`; [#632](https://github.com/jandira-tech/docx-validate/issues/632)).
-Properties discovery, hyperlink and toolbar resolution, duplicate counts, and
-the validators' semantic relationship checks likewise use direct children under
-Word-valid and strict. Legacy lenient traversal and raw repair-inventory collection
-remain unchanged.
+The same processed view drives reachability: the parts Word reads (the
+Word-read parts, the story roots and the properties parts) are found through
+the relationships markup compatibility selects, so a part reached only through
+a relationship inside an `mc:Fallback` or an understood `mc:Choice` blocks
+Word-valid exactly as its directly related twin does. Word 16.115 refused a
+truncated main document behind a Fallback `officeDocument` relationship (open
+error), and offered recovery for that Fallback main document's zero-byte
+relationships part, for a truncated `docProps/core.xml` behind a Fallback
+core-properties relationship, and for a footer typed as a header whose
+relationship sat in the Fallback — each beside its direct-relationship twin,
+which it refused identically (session 34, `s34a`/`s34b`;
+[#634](https://github.com/jandira-tech/docx-validate/issues/634)). A
+relationship nested inside a foreign wrapper that survives processing stays
+unfollowed ([#434](https://github.com/jandira-tech/docx-validate/issues/434)).
+Hyperlink and toolbar resolution and duplicate counts read the processed view
+too; the validators' semantic relationship checks still use the stored view's
+direct children under Word-valid and strict. Legacy lenient traversal and raw
+repair-inventory collection remain unchanged.
 
 Word 16.115 (build 16.115.26100424, macOS, 2026-10-24) offered recovery for all
 three minimal package mutations: a foreign sibling with every relationship

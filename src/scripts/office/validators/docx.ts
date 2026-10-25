@@ -546,7 +546,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     private async validateRegisteredWordRules(): Promise<ValidationResult> {
         if (WORD_RULE_CHECKS.length === 0) return { valid: true, issues: [] };
         const rules = new Set(WORD_RULE_CHECKS.map((check) => check.id));
-        const run = await runChecks(this.context(), createDefaultCheckRegistry(), { format: "docx", select: [...rules] });
+        const run = await runChecks(this.context(), createDefaultCheckRegistry(), {
+            format: "docx",
+            select: [...rules],
+            profile: this.profile,
+        });
         // xml-syntax runs as the rules' prerequisite; validateXml already
         // reports its findings, so keep only the rules' own (#307).
         const issues = run.outcomes.filter((outcome) => rules.has(outcome.id)).flatMap((outcome) => outcome.issues);
@@ -594,9 +598,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // inexact check glossaryDocument only (#570). Word-valid and lenient
         // keep the observed sets; under strict an unread lazy part keeps the
         // clause-11.3 wording instead of the Word sentence (#589).
-        const found = await wordPartContentTypeGenericFindings(view, this.profile === "strict" ? "spec" : "observed");
-        const inexact = await wordPartContentTypeInexactFindings(view, this.profile === "strict" ? "spec" : "observed");
-        const mismatch = await wordPartContentTypeMismatchFindings(view, this.profile === "strict" ? "spec" : "observed");
+        const found = await wordPartContentTypeGenericFindings(view, this.profile === "strict" ? "spec" : "observed", this.profile);
+        const inexact = await wordPartContentTypeInexactFindings(view, this.profile === "strict" ? "spec" : "observed", this.profile);
+        const mismatch = await wordPartContentTypeMismatchFindings(view, this.profile === "strict" ? "spec" : "observed", this.profile);
         this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_GENERIC);
         this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_INEXACT);
         this.recordExecutedCheck(WORD_PART_CONTENT_TYPE_MISMATCH);
@@ -638,15 +642,15 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // Resolve each part set once per run and share the blocking predicate
         // with partial validation (#381, #615, #617).
         const [properties, read, storyRoots] = await Promise.all([
-            propertiesParts(context),
-            wordReadParts(context),
-            wordStoryRootParts(context),
+            propertiesParts(context, this.profile),
+            wordReadParts(context, this.profile),
+            wordStoryRootParts(context, this.profile),
         ]);
         const missingSidecarPart = (issue: ValidationIssue): string | undefined =>
             issue.severity === "error" && issue.code === "rels-missing-sidecar" ? issue.path : undefined;
         // Only a missing-sidecar error consults the unobserved-type targets.
         const unobserved = result.issues.some((issue) => missingSidecarPart(issue) !== undefined)
-            ? await wordUnobservedRelationshipTargets(context)
+            ? await wordUnobservedRelationshipTargets(context, this.profile)
             : new Set<string>();
         const issues = result.issues.map((issue): ValidationIssue => {
             if (issue.severity !== "error") return issue;
@@ -815,7 +819,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     // ----- comment markers ----------------------------------------------------
 
     async validateCommentMarkers(): Promise<ValidationResult> {
-        const run = await runChecks(this.context(), createDefaultCheckRegistry(), { format: "docx", select: ["comment-markers"] });
+        const run = await runChecks(this.context(), createDefaultCheckRegistry(), {
+            format: "docx",
+            select: ["comment-markers"],
+            profile: this.profile,
+        });
         this.recordExecutedChecks(run.executed);
         return finalize([...run.issues]);
     }
@@ -1235,7 +1243,11 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * threaded-comments extension surface.
      */
     async validateCommentThreading(): Promise<ValidationResult> {
-        const run = await runChecks(this.context(), createDefaultCheckRegistry(), { format: "docx", select: ["comment-threading"] });
+        const run = await runChecks(this.context(), createDefaultCheckRegistry(), {
+            format: "docx",
+            select: ["comment-threading"],
+            profile: this.profile,
+        });
         this.recordExecutedChecks(run.executed);
         return finalize(run.issues.map((issue) => promoteFullCheckIssue(issue, this.profile, "docx")));
     }

@@ -507,7 +507,7 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
     if (targetIsPackedFile) {
         // Defined: the read above already reported an unreadable input.
         const buf = packedBytes!;
-        const envelope = runsWordPackageChecks(profile) ? await zipEnvelopeRun(buf, dispatchSuffix) : EMPTY_ENVELOPE_RUN;
+        const envelope = runsWordPackageChecks(profile) ? await zipEnvelopeRun(buf, dispatchSuffix, profile) : EMPTY_ENVELOPE_RUN;
         let zip: JSZip;
         try {
             zip = await loadCentralNamedArchive(buf);
@@ -806,6 +806,7 @@ async function archiveFindings(
         const run = await runChecks(opened.context, registry, {
             format,
             select,
+            profile,
             // A full lenient run stops at its first malformed part, so the
             // merged run stops where xml-syntax fails (#391).
             ...(profile === "lenient" ? { haltAfterFailing: XML_SYNTAX_CHECK_ID } : {}),
@@ -825,7 +826,11 @@ async function archiveFindings(
         // severity the full run gives it (#437, #488).
         const [properties, read, storyRoots] =
             profile === "word-valid" && format === "docx"
-                ? [await propertiesParts(opened.context), await wordReadParts(opened.context), await wordStoryRootParts(opened.context)]
+                ? [
+                      await propertiesParts(opened.context, profile),
+                      await wordReadParts(opened.context, profile),
+                      await wordStoryRootParts(opened.context, profile),
+                  ]
                 : [new Set<string>(), new Set<string>(), new Set<string>()];
         const issues = findingsUnderProfile(
             { ...run, outcomes, issues: outcomes.flatMap((outcome) => outcome.issues) },
@@ -900,7 +905,10 @@ async function runSelectedChecks(
         );
         const resolved = registry.resolve(select, format);
         const runnableSelect = resolved.filter((id) => runnable.has(id));
-        const run = runnableSelect.length > 0 ? await runChecks(opened.context, registry, { format, select: runnableSelect }) : undefined;
+        const run =
+            runnableSelect.length > 0
+                ? await runChecks(opened.context, registry, { format, select: runnableSelect, profile: mode.profile })
+                : undefined;
         // A refused view has no parts, so no properties part to block (#409).
         const issues = run === undefined ? [] : findingsUnderProfile(run, registry, format, mode.profile, new Set());
         const executed = run?.executed ?? [];
@@ -935,6 +943,7 @@ async function runSelectedChecks(
     const run = await runChecks(opened.context, registry, {
         format,
         select,
+        profile: mode.profile,
         ...(mode.profile === "lenient" ? { haltAfterFailing: XML_SYNTAX_CHECK_ID } : {}),
     });
     const malformed = new Set(
@@ -952,7 +961,11 @@ async function runSelectedChecks(
     // run, as the full DOCX run computes them, so both agree.
     const [properties, read, storyRoots] =
         mode.profile === "word-valid" && format === "docx"
-            ? [await propertiesParts(opened.context), await wordReadParts(opened.context), await wordStoryRootParts(opened.context)]
+            ? [
+                  await propertiesParts(opened.context, mode.profile),
+                  await wordReadParts(opened.context, mode.profile),
+                  await wordStoryRootParts(opened.context, mode.profile),
+              ]
             : [new Set<string>(), new Set<string>(), new Set<string>()];
     const issues = findingsUnderProfile(
         { ...run, outcomes, issues: outcomes.flatMap((outcome) => outcome.issues) },
@@ -1113,6 +1126,7 @@ function runsWordPackageChecks(profile: Profile): boolean {
 async function zipEnvelopeRun(
     archiveBytes: Uint8Array,
     suffix: string,
+    profile: Profile,
 ): Promise<{ issues: ValidationResult["issues"]; executed: readonly string[] }> {
     const format: PackageFormat = suffix === ".pptx" ? "pptx" : suffix === ".xlsx" ? "xlsx" : "docx";
     const context = ValidationContext.fromEntries({}, { source: "archive", archiveBytes });
@@ -1122,7 +1136,7 @@ async function zipEnvelopeRun(
         .list()
         .filter((definition) => definition.archiveOnly === true)
         .map((definition) => definition.id);
-    const run = await runChecks(context, registry, { format, select });
+    const run = await runChecks(context, registry, { format, select, profile });
     return { issues: [...run.issues], executed: [...run.executed] };
 }
 

@@ -27,7 +27,7 @@ export async function storedNamesRun(
         .list(format)
         .filter((definition) => definition.storedNamesOnly === true)
         .map((definition) => definition.id);
-    const run = await runChecks(context, registry, { format, select });
+    const run = await runChecks(context, registry, { format, select, profile });
     return {
         issues: run.issues.map((issue) => ({
             ...issue,

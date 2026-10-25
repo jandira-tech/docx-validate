@@ -22,7 +22,7 @@
  * prerequisite.
  */
 
-import type { PackageFormat, ValidationIssue } from "./types";
+import type { PackageFormat, Profile, ValidationIssue } from "./types";
 import type { ValidationContext } from "./validation-context";
 
 /**
@@ -70,7 +70,13 @@ export type CheckDefinition = {
      * when the archive opens but its package view is refused (#420).
      */
     readonly storedNamesOnly?: boolean;
-    readonly run: (ctx: ValidationContext) => readonly ValidationIssue[] | Promise<readonly ValidationIssue[]>;
+    /**
+     * `profile` is the run's resolved profile when the scheduler was given
+     * one: a check that reads relationships parts judges them in the stored
+     * view under `lenient` and in the markup-compatibility view under
+     * `word-valid` and `strict` (#634).
+     */
+    readonly run: (ctx: ValidationContext, profile?: Profile) => readonly ValidationIssue[] | Promise<readonly ValidationIssue[]>;
 };
 
 /** A selection named checks (or groups) the registry does not know. */

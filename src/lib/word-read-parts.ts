@@ -70,12 +70,28 @@
  * and numbering, #562); session 20 (the glossary's theme is read too,
  * while its customXml and a nested glossaryDocument are observed, not
  * read, #569).
+ *
+ * The relationships these walks read are the ones markup compatibility
+ * selects (#634, session 34 s34a/s34b): Word follows a relationship inside
+ * an `mc:Fallback` — or an understood `mc:Choice` — exactly as it does a
+ * direct child, so a truncated main document behind a Fallback
+ * `officeDocument` relationship gets the open error its direct twin gets,
+ * and so do the parts it and the package relationships reach. Under
+ * `word-valid` and `strict` each relationships part is read through
+ * `context.effectiveXml` (`understoodNamespacesForPart` keeps the
+ * relationships vocabulary understood, #493); `getRelationshipChildren`
+ * keeps its direct-children-only rule on that processed DOM, so a
+ * relationship nested inside a foreign wrapper that survives processing
+ * stays unfollowed (#434). `lenient` keeps the stored view, so it reports
+ * what it always reported; a caller that passes no profile reads what Word
+ * reads.
  */
 
 import path from "node:path";
 
 import { canonicalPartName, equivalentPartLookup, findEquivalentPart, isRelationshipsPartName } from "./content-types";
-import type { ValidationContext } from "./validation-context";
+import type { Profile } from "./types";
+import type { ValidationContext, XmlPart } from "./validation-context";
 import { getElementsByTagNameNSAll, getRelationshipChildren } from "./xml-helpers";
 import { checkXmlSyntax } from "./xml-syntax";
 
@@ -184,12 +200,22 @@ const resolveTarget = (lookup: (partName: string) => string | undefined, baseDir
 const sidecarOf = (names: readonly string[], part: string): string | undefined =>
     findEquivalentPart(names, path.posix.join(path.posix.dirname(part), "_rels", `${path.posix.basename(part)}.rels`));
 
-/** Each relationship a part's relationships part holds, with its parsed DOM, or `undefined`. */
-const relationshipsOf = (context: ValidationContext, relsPart: string | undefined): readonly Element[] => {
+/**
+ * The relationships part as the run's profile reads it: the stored DOM
+ * under `lenient`, the markup-compatibility view `effectiveXml` builds
+ * otherwise (#632, #634) — these helpers model what Word reads, so a
+ * caller with no profile to give gets Word's view, and only lenient opts
+ * into the stored one.
+ */
+const relationshipsXml = (context: ValidationContext, part: string, profile?: Profile): XmlPart | undefined =>
+    profile === "lenient" ? context.xml(part) : context.effectiveXml(part);
+
+/** Each relationship a part's relationships part holds, with the DOM the profile reads, or `undefined`. */
+const relationshipsOf = (context: ValidationContext, relsPart: string | undefined, profile?: Profile): readonly Element[] => {
     if (relsPart === undefined) {
         return [];
     }
-    const parsed = context.xml(relsPart);
+    const parsed = relationshipsXml(context, relsPart, profile);
     return parsed?.ok ? getRelationshipChildren(parsed.document) : [];
 };
 
@@ -235,7 +261,7 @@ type PackageReach = {
  * missing or does not parse yields nothing: its own diagnostics already block
  * the run, and no view should trust relationships the DOM parser recovered.
  */
-const packageReach = async (context: ValidationContext): Promise<PackageReach | undefined> => {
+const packageReach = async (context: ValidationContext, profile?: Profile): Promise<PackageReach | undefined> => {
     const names = context.partNames;
     const lookup = equivalentPartLookup(names);
     const packageRelsName = findEquivalentPart(names, "_rels/.rels");
@@ -246,7 +272,7 @@ const packageReach = async (context: ValidationContext): Promise<PackageReach | 
     if (bytes === undefined || (await checkXmlSyntax(bytes, packageRelsName)).some((issue) => issue.severity === "error")) {
         return undefined;
     }
-    const packageRels = context.xml(packageRelsName);
+    const packageRels = relationshipsXml(context, packageRelsName, profile);
     if (!packageRels?.ok) {
         return undefined;
     }
@@ -296,8 +322,9 @@ export type WordTypedTarget = {
 export const wordTypedRelationshipTargets = async (
     context: ValidationContext,
     segments: ReadonlySet<string>,
+    profile?: Profile,
 ): Promise<readonly WordTypedTarget[]> => {
-    const reach = await packageReach(context);
+    const reach = await packageReach(context, profile);
     if (reach === undefined) {
         return [];
     }
@@ -324,7 +351,7 @@ export const wordTypedRelationshipTargets = async (
     }
     const wanted = new Set(namedSegments);
     for (const mainPart of reach.mainParts) {
-        for (const relationship of relationshipsOf(context, sidecarOf(reach.names, mainPart))) {
+        for (const relationship of relationshipsOf(context, sidecarOf(reach.names, mainPart), profile)) {
             if (relationship.getAttribute("TargetMode") === "External") {
                 continue;
             }
@@ -360,8 +387,9 @@ export const wordTypedRelationshipTargets = async (
 export const glossaryTypedRelationshipTargets = async (
     context: ValidationContext,
     segments: ReadonlySet<string>,
+    profile?: Profile,
 ): Promise<readonly WordTypedTarget[]> => {
-    const reach = await packageReach(context);
+    const reach = await packageReach(context, profile);
     if (reach === undefined) {
         return [];
     }
@@ -373,7 +401,7 @@ export const glossaryTypedRelationshipTargets = async (
     // discovery `wordReadParts` makes for its second story-root pass.
     const glossaries = new Map<string, string>();
     for (const mainPart of reach.mainParts) {
-        for (const relationship of relationshipsOf(context, sidecarOf(reach.names, mainPart))) {
+        for (const relationship of relationshipsOf(context, sidecarOf(reach.names, mainPart), profile)) {
             if (relationship.getAttribute("TargetMode") === "External") {
                 continue;
             }
@@ -389,7 +417,7 @@ export const glossaryTypedRelationshipTargets = async (
     const targets: WordTypedTarget[] = [];
     const seen = new Set<string>();
     for (const glossary of glossaries.values()) {
-        for (const relationship of relationshipsOf(context, sidecarOf(reach.names, glossary))) {
+        for (const relationship of relationshipsOf(context, sidecarOf(reach.names, glossary), profile)) {
             if (relationship.getAttribute("TargetMode") === "External") {
                 continue;
             }
@@ -438,6 +466,7 @@ const storyRootReadParts = async (
     root: string,
     eagerTypes: ReadonlySet<string>,
     via?: "glossary",
+    profile?: Profile,
 ): Promise<readonly WordTypedTarget[]> => {
     const typed = (part: string, segment: string): WordTypedTarget => (via === undefined ? { part, segment } : { part, segment, via });
     const targets: WordTypedTarget[] = [typed(root, "officeDocument")];
@@ -477,7 +506,7 @@ const storyRootReadParts = async (
     };
 
     const baseDir = path.posix.dirname(root);
-    for (const relationship of relationshipsOf(context, sidecar)) {
+    for (const relationship of relationshipsOf(context, sidecar, profile)) {
         if (relationship.getAttribute("TargetMode") === "External") {
             continue;
         }
@@ -508,8 +537,9 @@ const storyRootReadParts = async (
  */
 const wordStoryReadTargets = async (
     context: ValidationContext,
+    profile?: Profile,
 ): Promise<{ readonly targets: readonly WordTypedTarget[]; readonly reach: PackageReach } | undefined> => {
-    const reach = await packageReach(context);
+    const reach = await packageReach(context, profile);
     if (reach === undefined) {
         return undefined;
     }
@@ -519,7 +549,7 @@ const wordStoryReadTargets = async (
     // the second story-root pass below (#539).
     const glossaryParts = new Map<string, string>();
     for (const mainPart of reach.mainParts) {
-        for (const target of await storyRootReadParts(context, reach, mainPart, EAGER_TYPES)) {
+        for (const target of await storyRootReadParts(context, reach, mainPart, EAGER_TYPES, undefined, profile)) {
             targets.push(target);
             if (target.segment === "glossaryDocument") {
                 glossaryParts.set(canonicalPartName(target.part), target.part);
@@ -540,7 +570,7 @@ const wordStoryReadTargets = async (
     // fails byte-level XML checks leaves usage unknown, as an unparseable
     // main does (#536), so its lazy targets stay reached.
     for (const glossaryPart of glossaryParts.values()) {
-        targets.push(...(await storyRootReadParts(context, reach, glossaryPart, GLOSSARY_EAGER_TYPES, "glossary")));
+        targets.push(...(await storyRootReadParts(context, reach, glossaryPart, GLOSSARY_EAGER_TYPES, "glossary", profile)));
     }
     return { targets, reach };
 };
@@ -555,9 +585,9 @@ const wordStoryReadTargets = async (
  * resolver — and an unreached glossary stays absent, as a header or an
  * orphan `word/document.xml` does.
  */
-export const wordStoryRootParts = async (context: ValidationContext): Promise<ReadonlySet<string>> => {
+export const wordStoryRootParts = async (context: ValidationContext, profile?: Profile): Promise<ReadonlySet<string>> => {
     const parts = new Set<string>();
-    for (const target of (await wordStoryReadTargets(context))?.targets ?? []) {
+    for (const target of (await wordStoryReadTargets(context, profile))?.targets ?? []) {
         // Only a story root itself is typed `officeDocument`; no relationship
         // segment can add another such entry.
         if (target.segment === "officeDocument") {
@@ -576,15 +606,15 @@ export const wordStoryRootParts = async (context: ValidationContext): Promise<Re
  * part read through two types yields an entry per type, in document order.
  * The unobserved-type pass adds no typed read and stays in `wordReadParts`.
  */
-export const wordReadTypedTargets = async (context: ValidationContext): Promise<readonly WordTypedTarget[]> =>
-    (await wordStoryReadTargets(context))?.targets ?? [];
+export const wordReadTypedTargets = async (context: ValidationContext, profile?: Profile): Promise<readonly WordTypedTarget[]> =>
+    (await wordStoryReadTargets(context, profile))?.targets ?? [];
 
 /**
  * Canonical names of the parts a known Office relationship of an unobserved
  * type names from any relationships part, wherever they are stored: the
  * unobserved-type pass of `wordReadParts`, before its `word/` filter.
  */
-const unobservedRelationshipTargets = (context: ValidationContext, reach: PackageReach): Set<string> => {
+const unobservedRelationshipTargets = (context: ValidationContext, reach: PackageReach, profile?: Profile): Set<string> => {
     const { names, lookup } = reach;
     const targets = new Set<string>();
     for (const name of names) {
@@ -592,7 +622,7 @@ const unobservedRelationshipTargets = (context: ValidationContext, reach: Packag
             continue;
         }
         const baseDir = relationshipsBaseDir(name);
-        for (const relationship of relationshipsOf(context, name)) {
+        for (const relationship of relationshipsOf(context, name, profile)) {
             if (relationship.getAttribute("TargetMode") === "External") {
                 continue;
             }
@@ -621,9 +651,9 @@ const unobservedRelationshipTargets = (context: ValidationContext, reach: Packag
  * main document that does not parse keeps its lazily parsed parts reached —
  * whether it uses them cannot be decided, and no new false negative may open.
  */
-export const wordReadParts = async (context: ValidationContext): Promise<ReadonlySet<string>> => {
+export const wordReadParts = async (context: ValidationContext, profile?: Profile): Promise<ReadonlySet<string>> => {
     const parts = new Set<string>();
-    const story = await wordStoryReadTargets(context);
+    const story = await wordStoryReadTargets(context, profile);
     if (story === undefined) {
         return parts;
     }
@@ -636,7 +666,7 @@ export const wordReadParts = async (context: ValidationContext): Promise<Readonl
     // word/ that a known Office relationship names from anywhere stays
     // blocking. From any part: a header's image or a settings part's people
     // list are named this way.
-    for (const canonical of unobservedRelationshipTargets(context, reach)) {
+    for (const canonical of unobservedRelationshipTargets(context, reach, profile)) {
         if (canonical.startsWith("word/")) {
             parts.add(canonical);
         }
@@ -654,7 +684,7 @@ export const wordReadParts = async (context: ValidationContext): Promise<Readonl
  * rule its XML-syntax consumers have used since #437. A package with no main
  * document yields nothing (its own diagnostics already block the run, #388).
  */
-export const wordUnobservedRelationshipTargets = async (context: ValidationContext): Promise<ReadonlySet<string>> => {
-    const story = await wordStoryReadTargets(context);
-    return story === undefined ? new Set() : unobservedRelationshipTargets(context, story.reach);
+export const wordUnobservedRelationshipTargets = async (context: ValidationContext, profile?: Profile): Promise<ReadonlySet<string>> => {
+    const story = await wordStoryReadTargets(context, profile);
+    return story === undefined ? new Set() : unobservedRelationshipTargets(context, story.reach, profile);
 };

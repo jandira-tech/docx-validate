@@ -88,4 +88,46 @@ describe("propertiesParts", () => {
     ])("returns no properties for unreadable package relationships: %j", async (xml) => {
         expect(await propertiesParts(context(xml))).toEqual(new Set());
     });
+
+    /**
+     * Word follows the relationships markup compatibility selects (#634,
+     * session 34 s34b): a core-properties relationship inside an
+     * `mc:Fallback`, or an understood `mc:Choice`, names the properties part
+     * exactly as a direct child does. Under lenient the stored view is kept,
+     * so a wrapped relationship is followed nowhere new.
+     */
+    const MCE_RELS = `xmlns:mc="${NS.MC}" xmlns:foo="urn:foo" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"`;
+    const mceRelationships = (xml: string): string => `<Relationships xmlns="${NS.PR}" ${MCE_RELS}>${xml}</Relationships>`;
+    const mceContext = (xml: string): ValidationContext =>
+        ValidationContext.fromEntries({ "_rels/.rels": xml, "docProps/core.xml": "<core/>" });
+    const FALLBACK = (content: string): string =>
+        `<mc:AlternateContent><mc:Choice Requires="foo"/><mc:Fallback>${content}</mc:Fallback></mc:AlternateContent>`;
+    const CHOICE = (content: string, fallbackContent = ""): string =>
+        `<mc:AlternateContent><mc:Choice Requires="w14">${content}</mc:Choice><mc:Fallback>${fallbackContent}</mc:Fallback></mc:AlternateContent>`;
+
+    it("follows the core-properties relationship an mc:Fallback selects", async () => {
+        expect(await propertiesParts(mceContext(mceRelationships(FALLBACK(relationship("docProps/core.xml")))))).toEqual(
+            new Set(["docprops/core.xml"]),
+        );
+    });
+
+    it("follows the core-properties relationship an understood w14 mc:Choice selects", async () => {
+        expect(await propertiesParts(mceContext(mceRelationships(CHOICE(relationship("docProps/core.xml")))))).toEqual(
+            new Set(["docprops/core.xml"]),
+        );
+    });
+
+    it("does not follow a core-properties relationship in an unselected mc:Choice", async () => {
+        const xml = mceRelationships(
+            `<mc:AlternateContent><mc:Choice Requires="foo">${relationship("docProps/core.xml")}</mc:Choice><mc:Fallback/></mc:AlternateContent>`,
+        );
+        expect(await propertiesParts(mceContext(xml))).toEqual(new Set());
+        expect(await propertiesParts(mceContext(xml), "lenient")).toEqual(new Set());
+    });
+
+    it("keeps the stored view under lenient: a Fallback relationship is not followed", async () => {
+        const xml = mceRelationships(FALLBACK(relationship("docProps/core.xml")));
+        expect(await propertiesParts(mceContext(xml), "lenient")).toEqual(new Set());
+        expect(await propertiesParts(mceContext(xml))).toEqual(new Set(["docprops/core.xml"]));
+    });
 });

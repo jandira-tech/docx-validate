@@ -65,7 +65,7 @@
 
 import type { CheckDefinition } from "../../../lib/check-registry";
 import { canonicalPartName, equivalentPartLookup } from "../../../lib/content-types";
-import type { ValidationIssue } from "../../../lib/types";
+import type { Profile, ValidationIssue } from "../../../lib/types";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
 import path from "node:path";
 import type { ValidationContext } from "../../../lib/validation-context";
@@ -138,14 +138,14 @@ export const wordHeaderFooterRelationshipCheck: CheckDefinition = {
      * Transitional or ISO Strict URI. Only findings for non-empty ids carry
      * the element identity the full run's hand-off pairs on.
      */
-    run: async (ctx: ValidationContext): Promise<ValidationIssue[]> => {
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
         const findPart = equivalentPartLookup(ctx.partNames);
 
         const relationshipNamespaces = [OFFICE_RELATIONSHIPS_NAMESPACE, "http://purl.oclc.org/ooxml/officeDocument/relationships"];
         // The story roots session 26 observed: every main document, and every
         // glossary a main-document glossaryDocument relationship reaches.
-        const roots = await wordTypedRelationshipTargets(ctx, new Set(["officeDocument", "glossaryDocument"]));
+        const roots = await wordTypedRelationshipTargets(ctx, new Set(["officeDocument", "glossaryDocument"]), profile);
         const seen = new Set<string>();
         for (const root of roots) {
             const partName = canonicalPartName(root.part);

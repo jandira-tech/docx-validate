@@ -39,6 +39,8 @@ import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
 import { BYTE_REJECTED_MAIN_PARTS } from "./support/word-profile-regression-specimens";
+import { STORY_FOOTER_XML, storyContentType, storyReferenceParts } from "./support/story-content-type-specimens";
+import { DOCUMENT_RELS, fallback, PACKAGE_RELS, wrapRelationship } from "./support/relationships-markup-compatibility-specimens";
 
 const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
@@ -1447,6 +1449,70 @@ describe("wordReadParts: byte-rejected main usage (#536)", () => {
         },
         60_000,
     );
+});
+
+/**
+ * Word reads the relationships markup compatibility selects (#634, session
+ * 34 s34a/s34b): a relationship inside an `mc:Fallback` — or an understood
+ * `mc:Choice` — reaches its part exactly as a direct child does, while the
+ * stored view of the same relationships part shows no `Relationship` child
+ * there. Under word-valid and strict the reachability helpers read each
+ * relationships part through `context.effectiveXml`; under lenient they keep
+ * the stored view, so a wrapped relationship is followed nowhere it was not
+ * followed before.
+ */
+describe("wordReadParts: relationships markup compatibility (#634)", () => {
+    const PACKAGE_READ = new Set(["word/document.xml", "word/styles.xml", "word/_rels/document.xml.rels"]);
+    const FOOTER_PARTS = storyReferenceParts("footerReference", "footer", "footer1.xml", STORY_FOOTER_XML, storyContentType("footer"));
+
+    it("follows the package officeDocument relationship an mc:Fallback selects", async () => {
+        const parts = wrapRelationship({ ...MINIMAL_PARTS }, PACKAGE_RELS, "rId1", fallback);
+        const context = ValidationContext.fromEntries(parts);
+        expect(await wordReadParts(context)).toEqual(PACKAGE_READ);
+        expect(await wordTypedRelationshipTargets(context, new Set(["officeDocument"]))).toEqual([
+            { part: "word/document.xml", segment: "officeDocument" },
+        ]);
+    });
+
+    it("follows a footer relationship an understood w14 mc:Choice selects", async () => {
+        const parts = wrapRelationship(
+            FOOTER_PARTS,
+            DOCUMENT_RELS,
+            "rIdX",
+            (rel) => `<mc:AlternateContent><mc:Choice Requires="w14">${rel}</mc:Choice><mc:Fallback/></mc:AlternateContent>`,
+        );
+        const read = await wordReadParts(ValidationContext.fromEntries(parts));
+        expect(read).toContain("word/footer1.xml");
+    });
+
+    it("does not follow a relationship in an unselected mc:Choice", async () => {
+        const parts = wrapRelationship(
+            FOOTER_PARTS,
+            DOCUMENT_RELS,
+            "rIdX",
+            (rel) => `<mc:AlternateContent><mc:Choice Requires="foo">${rel}</mc:Choice><mc:Fallback/></mc:AlternateContent>`,
+        );
+        const context = ValidationContext.fromEntries(parts);
+        expect(await wordReadParts(context)).not.toContain("word/footer1.xml");
+        expect(await wordReadParts(context, "lenient")).not.toContain("word/footer1.xml");
+    });
+
+    it("keeps the stored view under lenient: a Fallback relationship is not followed", async () => {
+        const parts = wrapRelationship({ ...MINIMAL_PARTS }, PACKAGE_RELS, "rId1", fallback);
+        const context = ValidationContext.fromEntries(parts);
+        expect(await wordReadParts(context, "lenient")).toEqual(new Set());
+        expect(await wordTypedRelationshipTargets(context, new Set(["officeDocument"]), "lenient")).toEqual([]);
+        expect(await wordReadParts(context)).toEqual(PACKAGE_READ);
+    });
+
+    it("keeps a foreign wrapper's nested relationship unfollowed in the processed view (#434)", async () => {
+        const parts = wrapRelationship({ ...MINIMAL_PARTS }, PACKAGE_RELS, "rId1", (rel) => fallback(`<x:Wrap>${rel}</x:Wrap>`));
+        // The selected Fallback holds a foreign wrapper, not a Relationship
+        // child: the officeDocument relationship inside it stays unfollowed,
+        // so the package has no readable main document.
+        const context = ValidationContext.fromEntries(parts);
+        expect(await wordReadParts(context)).toEqual(new Set());
+    });
 });
 
 /**
