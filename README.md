@@ -1475,6 +1475,15 @@ extraction fails on a NUL-bearing name: omitted work can miss a defect.
 `xsdWalk: { started, parts, eligible }`. `Validate.run()` and `jubarte.validate()`
 return the shared `ValidationResult`, including metadata, without those extra fields.
 
+With `autoRepair` the run also reports a pre-repair plan. Each plan issue is
+`repair-plan` — "Auto-repair will …" — only for an issue code a `repair()`
+pass actually changes (the exported `AUTO_REPAIRED_ISSUE_CODES`, plus the
+`xsd-error` messages the inline-picture scaffold repair covers); every other
+finding is `repair-plan-unavailable`. An unavailable finding that has a
+registered manual action carries it as a "Fix manually: …" hint; one without
+keeps the generic "no automatic repair is registered" wording
+([#622](https://github.com/jandira-tech/docx-validate/issues/622)).
+
 ## Development
 
 ```bash

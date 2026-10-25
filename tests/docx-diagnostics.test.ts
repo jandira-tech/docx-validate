@@ -8,7 +8,12 @@ import {
     collectDocxSemanticInventory,
     compareDocxSemanticInventories,
     severityClassFor,
+    AUTO_REPAIRED_ISSUE_CODES,
 } from "../src/scripts/office/validators/docx-diagnostics";
+import { fileURLToPath } from "node:url";
+
+import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+import { validate } from "../src/scripts/office/validate";
 
 const W_NS = `xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"`;
 
@@ -260,5 +265,387 @@ it.each(["[CONTENT_TYPES].XML", "[content_types].xml"])("inventories declaration
             expect.objectContaining({ path: name, label: "default 'application/octet-stream'", count: 1 }),
             expect.objectContaining({ path: name, label: "override 'application/xml'", count: 1 }),
         ]);
+    });
+});
+
+/*
+ * #622 — the pre-repair plan must say "Auto-repair will …" only for codes a
+ * `repair()` pass actually changes. Every code `repairActionForIssue` maps to
+ * a manual action is covered below: one specimen per code, validated with
+ * `autoRepair`, asserting `repair-plan` only when the finding is gone after
+ * repair and `repair-plan-unavailable` (carrying the manual action as
+ * guidance) otherwise.
+ */
+describe("repair plan vs repair() coverage (#622)", () => {
+    const W14_NS = `xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"`;
+    const W16CID_NS = `xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid"`;
+    const W16CEX_NS = `xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex"`;
+    const R_NS = `xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"`;
+    const R_URI = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    const WP_NS = `xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"`;
+    const A_URI = "http://schemas.openxmlformats.org/drawingml/2006/main";
+    const PIC_URI = "http://schemas.openxmlformats.org/drawingml/2006/picture";
+    const RELS_NS = `xmlns="http://schemas.openxmlformats.org/package/2006/relationships"`;
+    const WMLT = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+    const BROKEN_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "fixtures", "broken");
+
+    const PAIRED_IDS = `w14:paraId="11111111" w14:textId="11111111"`;
+    const SECT =
+        `<w:sectPr><w:pgSz w:w="12240" w:h="15840"/>` +
+        `<w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/></w:sectPr>`;
+
+    /** MINIMAL_PARTS-shaped main document with `body` inserted before the sectPr. */
+    const specDoc = (
+        body: string,
+        rootAttrs = `${W14_NS} xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="w14" ${R_NS}`,
+    ): string =>
+        `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+        `<w:document ${W_NS} ${rootAttrs}><w:body><w:p ${PAIRED_IDS}><w:r><w:t>Hello</w:t></w:r></w:p>${body}${SECT}</w:body></w:document>`;
+
+    const addOverride = (ct: string, part: string, type: string): string =>
+        ct.replace("</Types>", `<Override PartName="/${part}" ContentType="${type}"/></Types>`);
+    const addDefault = (ct: string, ext: string, type: string): string =>
+        ct.replace("</Types>", `<Default Extension="${ext}" ContentType="${type}"/></Types>`);
+    const addDocRel = (relsPart: string, id: string, typeSuffix: string, target: string): string =>
+        relsPart.replace("</Relationships>", `<Relationship Id="${id}" Type="${R_URI}/${typeSuffix}" Target="${target}"/></Relationships>`);
+
+    const COMMENTS_XML =
+        `<?xml version="1.0"?><w:comments ${W_NS} ${W14_NS}>` +
+        `<w:comment w:id="0" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A"><w:p w14:paraId="11111111"/></w:comment></w:comments>`;
+    const COMMENT_MARKERS = `<w:p ${PAIRED_IDS}><w:commentRangeStart w:id="0"/>x<w:commentRangeEnd w:id="0"/><w:r><w:commentReference w:id="0"/></w:r></w:p>`;
+    const commentsIdsXml = (inner: string): string => `<?xml version="1.0"?><w16cid:commentsIds ${W16CID_NS}>${inner}</w16cid:commentsIds>`;
+    const commentsExtensibleXml = (inner: string): string =>
+        `<?xml version="1.0"?><w16cex:commentsExtensible ${W16CEX_NS}>${inner}</w16cex:commentsExtensible>`;
+
+    /** MINIMAL_PARTS plus comments.xml and the optional threading parts, wired by content types. */
+    function withCommentParts(opts: { ids?: string; extensible?: string }): Record<string, string> {
+        const parts: Record<string, string> = {
+            ...MINIMAL_PARTS,
+            "word/document.xml": specDoc(COMMENT_MARKERS),
+            "word/comments.xml": COMMENTS_XML,
+        };
+        parts["[Content_Types].xml"] = addOverride(parts["[Content_Types].xml"]!, "word/comments.xml", `${WMLT}.comments+xml`);
+        if (opts.ids !== undefined) {
+            parts["word/commentsIds.xml"] = opts.ids;
+            parts["[Content_Types].xml"] = addOverride(parts["[Content_Types].xml"]!, "word/commentsIds.xml", `${WMLT}.commentsIds+xml`);
+        }
+        if (opts.extensible !== undefined) {
+            parts["word/commentsExtensible.xml"] = opts.extensible;
+            parts["[Content_Types].xml"] = addOverride(
+                parts["[Content_Types].xml"]!,
+                "word/commentsExtensible.xml",
+                `${WMLT}.commentsExtensible+xml`,
+            );
+        }
+        return parts;
+    }
+
+    const inlinePicBody =
+        `<w:p ${PAIRED_IDS}><w:r><w:drawing><wp:inline ${WP_NS}>` +
+        `<a:graphic xmlns:a="${A_URI}"><a:graphicData uri="${PIC_URI}">` +
+        `<pic:pic xmlns:pic="${PIC_URI}">` +
+        `<pic:nvPicPr><pic:cNvPr id="1" name="image1.png"/><pic:cNvPicPr/></pic:nvPicPr>` +
+        `<pic:blipFill><a:blip xmlns:a="${A_URI}" r:embed="rId9"/><a:stretch xmlns:a="${A_URI}"><a:fillRect/></a:stretch></pic:blipFill>` +
+        `<pic:spPr><a:xfrm xmlns:a="${A_URI}"><a:off x="0" y="0"/><a:ext cx="100" cy="100"/></a:xfrm>` +
+        `<a:prstGeom xmlns:a="${A_URI}" prst="rect"><a:avLst/></a:prstGeom></pic:spPr>` +
+        `</pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
+
+    /** `wp:inline` whose a:graphic precedes the required wp:extent/wp:docPr — repairInlinePictureScaffolds' case. */
+    function scaffoldSpecimen(): Record<string, string | Uint8Array> {
+        const parts: Record<string, string | Uint8Array> = {
+            ...MINIMAL_PARTS,
+            "word/document.xml": specDoc(inlinePicBody),
+            "word/media/image1.png": new Uint8Array([0x89, 0x50, 0x4e, 0x47]),
+        };
+        parts["[Content_Types].xml"] = addDefault(parts["[Content_Types].xml"] as string, "png", "image/png");
+        parts["word/_rels/document.xml.rels"] = addDocRel(
+            parts["word/_rels/document.xml.rels"] as string,
+            "rId9",
+            "image",
+            "media/image1.png",
+        );
+        return parts;
+    }
+
+    const numberingParts = (durableId: string): Record<string, string> => {
+        const parts: Record<string, string> = { ...MINIMAL_PARTS };
+        parts["[Content_Types].xml"] = addOverride(parts["[Content_Types].xml"]!, "word/numbering.xml", `${WMLT}.numbering+xml`);
+        parts["word/_rels/document.xml.rels"] = addDocRel(parts["word/_rels/document.xml.rels"]!, "rId2", "numbering", "numbering.xml");
+        parts["word/numbering.xml"] =
+            `<?xml version="1.0"?><w:numbering ${W_NS} ${W16CID_NS}>` +
+            `<w:abstractNum w:abstractNumId="0" w16cid:durableId="${durableId}"/><w:num w:numId="1" w:abstractNumId="0"/></w:numbering>`;
+        return parts;
+    };
+
+    interface RepairPlanCase {
+        code: string;
+        /** "repaired" = in AUTO_REPAIRED_ISSUE_CODES; "unavailable" = action string but no repair(). */
+        expected: "repaired" | "unavailable";
+        profile?: "word-valid" | "strict" | "lenient";
+        parts?: Record<string, string | Uint8Array>;
+        fixture?: string;
+    }
+
+    const REPAIR_PLAN_CASES: RepairPlanCase[] = [
+        {
+            code: "ws-missing-preserve",
+            expected: "repaired",
+            parts: { ...MINIMAL_PARTS, "word/document.xml": specDoc(`<w:p ${PAIRED_IDS}><w:r><w:t> lead</w:t></w:r></w:p>`) },
+        },
+        {
+            code: "rels-empty-part",
+            expected: "repaired",
+            parts: {
+                ...MINIMAL_PARTS,
+                "word/_rels/styles.xml.rels": `<?xml version="1.0"?><Relationships ${RELS_NS}></Relationships>`,
+            },
+        },
+        {
+            code: "id-durable-overflow",
+            expected: "repaired",
+            parts: withCommentParts({ ids: commentsIdsXml(`<w16cid:commentId w16cid:paraId="11111111" w16cid:durableId="FFFFFFFF"/>`) }),
+        },
+        { code: "id-durable-decimal", expected: "repaired", parts: numberingParts("ABCDEF") },
+        {
+            code: "id-paraid-overflow",
+            expected: "repaired",
+            parts: { ...MINIMAL_PARTS, "word/document.xml": specDoc(`<w:p ${W14_NS} w14:paraId="FFFFFFFF" w14:textId="00000001"/>`) },
+        },
+        {
+            code: "id-textid-overflow",
+            expected: "repaired",
+            parts: { ...MINIMAL_PARTS, "word/document.xml": specDoc(`<w:p ${W14_NS} w14:paraId="00000001" w14:textId="FFFFFFFF"/>`) },
+        },
+        {
+            code: "ignorable-undeclared",
+            expected: "repaired",
+            parts: {
+                ...MINIMAL_PARTS,
+                "word/document.xml": specDoc(
+                    "",
+                    `${W14_NS} xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="w14 w15"`,
+                ),
+            },
+        },
+        { code: "paraid-missing-element", expected: "repaired", parts: { ...MINIMAL_PARTS, "word/document.xml": specDoc(`<w:p/>`) } },
+        {
+            code: "textid-missing-element",
+            expected: "repaired",
+            parts: { ...MINIMAL_PARTS, "word/document.xml": specDoc(`<w:p ${W14_NS} w14:paraId="00000001"/>`) },
+        },
+        {
+            code: "style-reference-undefined",
+            expected: "repaired",
+            parts: {
+                ...MINIMAL_PARTS,
+                "word/document.xml": specDoc(
+                    `<w:p ${PAIRED_IDS}><w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:t>x</w:t></w:r></w:p>`,
+                ),
+            },
+        },
+        {
+            code: "style-default-missing",
+            expected: "repaired",
+            parts: {
+                ...MINIMAL_PARTS,
+                "word/styles.xml": MINIMAL_PARTS["word/styles.xml"]!.replace(
+                    `<w:style w:type="numbering" w:default="1" w:styleId="NoList"><w:name w:val="No List"/></w:style>`,
+                    "",
+                ),
+            },
+        },
+        {
+            code: "comment-thread-commentid-paraid-orphan",
+            expected: "repaired",
+            parts: withCommentParts({ ids: commentsIdsXml(`<w16cid:commentId w16cid:paraId="DEADBEEF" w16cid:durableId="22222222"/>`) }),
+        },
+        {
+            code: "comment-thread-commentid-missing-paraid",
+            expected: "unavailable",
+            parts: withCommentParts({ ids: commentsIdsXml(`<w16cid:commentId w16cid:durableId="22222222"/>`) }),
+        },
+        {
+            code: "comment-thread-commentid-missing-durableid",
+            expected: "unavailable",
+            parts: withCommentParts({ ids: commentsIdsXml(`<w16cid:commentId w16cid:paraId="11111111"/>`) }),
+        },
+        {
+            code: "comment-thread-durableid-orphan",
+            expected: "repaired",
+            parts: withCommentParts({
+                ids: commentsIdsXml(`<w16cid:commentId w16cid:paraId="11111111" w16cid:durableId="22222222"/>`),
+                extensible: commentsExtensibleXml(`<w16cex:commentExtensible w16cex:durableId="DEADBEEF"/>`),
+            }),
+        },
+        {
+            code: "comment-thread-durableid-missing",
+            expected: "unavailable",
+            parts: withCommentParts({
+                ids: commentsIdsXml(`<w16cid:commentId w16cid:paraId="11111111" w16cid:durableId="22222222"/>`),
+                extensible: commentsExtensibleXml(`<w16cex:commentExtensible/>`),
+            }),
+        },
+        {
+            code: "word-drawing-scalar-whitespace",
+            expected: "repaired",
+            parts: { ...MINIMAL_PARTS, "word/document.xml": specDoc(`<wp:posOffset ${WP_NS}> 1 </wp:posOffset>`) },
+        },
+        { code: "word-drawing-arc-radius", expected: "unavailable", fixture: "package.drawing-arc-radius.docx" },
+        { code: "word-empty-drawing", expected: "unavailable", fixture: "package.word-empty-drawing.docx" },
+        { code: "word-drawing-extent-negative", expected: "unavailable", fixture: "package.word-drawing-extent-negative.docx" },
+        {
+            code: "word-anchor-missing-attribute",
+            expected: "unavailable",
+            parts: {
+                ...MINIMAL_PARTS,
+                "word/document.xml": specDoc(
+                    `<w:p ${PAIRED_IDS}><w:r><w:drawing><wp:anchor ${WP_NS} locked="0" layoutInCell="1"/></w:drawing></w:r></w:p>`,
+                ),
+            },
+        },
+        {
+            code: "word-position-offset-and-align",
+            expected: "unavailable",
+            parts: {
+                ...MINIMAL_PARTS,
+                "word/document.xml": specDoc(
+                    `<w:p ${PAIRED_IDS}><w:r><w:drawing><wp:anchor ${WP_NS} locked="0" layoutInCell="1" allowOverlap="1">` +
+                        `<wp:positionH><wp:posOffset>1</wp:posOffset><wp:align>left</wp:align></wp:positionH>` +
+                        `<wp:positionV><wp:posOffset>1</wp:posOffset></wp:positionV>` +
+                        `</wp:anchor></w:drawing></w:r></w:p>`,
+                ),
+            },
+        },
+        { code: "word-sdt-id-empty", expected: "unavailable", fixture: "package.word-sdt-id-empty.docx" },
+        { code: "word-attached-toolbar-utf8", expected: "unavailable", fixture: "package.word-attached-toolbar-utf8.docx" },
+        { code: "word-row-without-cell", expected: "unavailable", fixture: "package.word-row-without-cell.docx" },
+        { code: "word-cell-ends-with-table", expected: "unavailable", fixture: "package.word-cell-ends-with-table.docx" },
+        { code: "word-numbering-picture-bullet", expected: "unavailable", fixture: "package.word-numbering-picture-bullet.docx" },
+        { code: "word-footnote-reference-missing", expected: "unavailable", fixture: "package.word-footnote-reference-missing.docx" },
+        { code: "word-textbox-deleted-text", expected: "unavailable", fixture: "package.word-textbox-deleted-text.docx" },
+        { code: "word-move-from-deleted-text", expected: "unavailable", fixture: "package.word-move-from-deleted-text.docx" },
+        { code: "word-choice-requires-undeclared", expected: "unavailable", fixture: "package.word-choice-requires-undeclared.docx" },
+        {
+            code: "ct-uncovered-part",
+            expected: "unavailable",
+            parts: { ...MINIMAL_PARTS, "word/media/image1": new Uint8Array([0x89, 0x50, 0x4e, 0x47]) },
+        },
+        { code: "word-text-contains-paragraph", expected: "unavailable", fixture: "package.word-text-contains-paragraph.docx" },
+        {
+            code: "word-hyperlink-relationship",
+            expected: "unavailable",
+            parts: { ...MINIMAL_PARTS, "word/document.xml": specDoc(`<w:hyperlink r:id="rId9"><w:r><w:t>link</w:t></w:r></w:hyperlink>`) },
+        },
+        {
+            code: "word-header-footer-relationship",
+            expected: "unavailable",
+            parts: (() => {
+                // The session-32 shape from the issue: xmlns:r on w:document,
+                // a footerReference r:id="rId9" first in the body sectPr, and
+                // document.xml.rels kept without rId9.
+                const parts: Record<string, string> = { ...MINIMAL_PARTS };
+                parts["word/document.xml"] = parts["word/document.xml"]!.replace(
+                    `<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"`,
+                    `<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ${R_NS}`,
+                ).replace("<w:sectPr>", `<w:sectPr><w:footerReference w:type="default" r:id="rId9"/>`);
+                return parts;
+            })(),
+        },
+        { code: "word-duplicate-theme-relationship", expected: "unavailable", fixture: "package.word-duplicate-theme.docx" },
+        { code: "word-duplicate-font-table-relationship", expected: "unavailable", fixture: "package.word-duplicate-font-table.docx" },
+        { code: "word-duplicate-web-settings-relationship", expected: "unavailable", fixture: "package.word-duplicate-web-settings.docx" },
+        { code: "word-duplicate-settings-relationship", expected: "unavailable", fixture: "package.word-duplicate-settings.docx" },
+        { code: "xsd-error", expected: "repaired", profile: "strict", parts: scaffoldSpecimen() },
+        { code: "xsd-error", expected: "repaired", profile: "lenient", parts: scaffoldSpecimen() },
+        {
+            // repairCorePropertiesWhitespace / repairExtendedPropertiesWhitespace
+            // only trim app.xml/core.xml scalars; an empty vt:filetime in
+            // docProps/custom.xml keeps the finding, so the plan must not
+            // promise this repair.
+            code: "xsd-error",
+            expected: "unavailable",
+            profile: "strict",
+            parts: (() => {
+                const parts: Record<string, string> = { ...MINIMAL_PARTS };
+                parts["[Content_Types].xml"] = addOverride(
+                    parts["[Content_Types].xml"]!,
+                    "docProps/custom.xml",
+                    "application/vnd.openxmlformats-officedocument.custom-properties+xml",
+                );
+                parts["_rels/.rels"] = parts["_rels/.rels"]!.replace(
+                    "</Relationships>",
+                    `<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/custom-properties" Target="docProps/custom.xml"/></Relationships>`,
+                );
+                parts["docProps/custom.xml"] =
+                    `<?xml version="1.0"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" ` +
+                    `xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">` +
+                    `<property fmtid="{D5CDD505-2E9C-101B-9997-08002B2CF9AE}" pid="2" name="p"><vt:filetime/></property></Properties>`;
+                return parts;
+            })(),
+        },
+    ];
+
+    it.each(REPAIR_PLAN_CASES)("plans [$expected] for $code", { timeout: 60_000 }, async (c) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, `${c.code}.docx`);
+            if (c.fixture) {
+                await fs.copyFile(path.join(BROKEN_DIR, c.fixture), file);
+            } else {
+                await fs.writeFile(file, await buildDocx(c.parts!));
+            }
+            const result = await validate(file, { profile: c.profile ?? "word-valid", autoRepair: true });
+            const plans = result.issues.filter(
+                (i) => (i.code === "repair-plan" || i.code === "repair-plan-unavailable") && i.message.includes(`[${c.code}]`),
+            );
+            expect(plans.length).toBeGreaterThan(0);
+            if (c.expected === "repaired") {
+                expect(AUTO_REPAIRED_ISSUE_CODES).toContain(c.code);
+                for (const plan of plans) {
+                    expect(plan.code).toBe("repair-plan");
+                    expect(plan.message).toContain("Auto-repair will ");
+                }
+                expect(result.repairs).toBeGreaterThan(0);
+                expect(result.issues.some((i) => i.code === c.code)).toBe(false);
+            } else {
+                // xsd-error is in the table but message-gated: only the
+                // scaffold messages are repaired, so skip the membership
+                // assertion for it.
+                if (c.code !== "xsd-error") expect(AUTO_REPAIRED_ISSUE_CODES).not.toContain(c.code);
+                for (const plan of plans) {
+                    expect(plan.code).toBe("repair-plan-unavailable");
+                    // Never "Auto-repair will <action>" — only the negated form.
+                    expect(plan.message).not.toMatch(/Auto-repair will (?!not\b)/);
+                    expect(plan.message).toContain("Auto-repair will not");
+                    expect(plan.message).toContain("Fix manually:");
+                }
+                expect(result.issues.some((i) => i.code === c.code)).toBe(true);
+            }
+        });
+    });
+
+    it("keeps every AUTO_REPAIRED_ISSUE_CODES entry backed by a guidance action, without duplicates", () => {
+        expect(new Set(AUTO_REPAIRED_ISSUE_CODES).size).toBe(AUTO_REPAIRED_ISSUE_CODES.length);
+        const xsdMessage = "}graphic': This element is not expected";
+        for (const code of AUTO_REPAIRED_ISSUE_CODES) {
+            const [plan] = buildRepairPlanIssues([
+                { severity: "error", path: "word/document.xml", code, message: code === "xsd-error" ? xsdMessage : "synthetic" },
+            ]);
+            expect(plan?.code).toBe("repair-plan");
+            expect(plan?.message).toContain("Auto-repair will ");
+        }
+    });
+
+    it("carries the manual action as guidance on unavailable codes", () => {
+        const plans = buildRepairPlanIssues([
+            { severity: "error", path: "word/document.xml", code: "word-hyperlink-relationship", message: "synthetic" },
+            { severity: "error", path: "word/document.xml", code: "comment-orphan-start", message: "no action" },
+        ]);
+        const hyperlink = plans.find((i) => i.message.includes("[word-hyperlink-relationship]"));
+        expect(hyperlink?.code).toBe("repair-plan-unavailable");
+        expect(hyperlink?.message).toContain("point the w:hyperlink r:id");
+        expect(hyperlink?.message).toContain("Fix manually:");
+        const uncoded = plans.find((i) => i.message.includes("[comment-orphan-start]"));
+        expect(uncoded?.code).toBe("repair-plan-unavailable");
+        expect(uncoded?.message).toContain("no automatic repair is registered");
     });
 });

@@ -68,12 +68,60 @@ export function severityClassFor(category: string): InventorySeverityClass {
     return SEVERITY_CLASS_BY_CATEGORY[category] ?? "content";
 }
 
+/**
+ * The issue codes a `repair()` pass actually changes, proven end-to-end in
+ * `tests/docx-diagnostics.test.ts`: `BaseSchemaValidator.repair` covers the
+ * whitespace-preservation and empty-`.rels` codes; `DOCXSchemaValidator.repair`
+ * covers the rest. `xsd-error` is included only for the DrawingML
+ * scaffold messages (`repairInlinePictureScaffolds`); every other schema
+ * finding, the `xsd-summary` row, and each code with a manual
+ * `repairActionForIssue` hint but no repair is absent so
+ * `buildRepairPlanIssues` never promises an "Auto-repair will" for them.
+ */
+export const AUTO_REPAIRED_ISSUE_CODES: readonly string[] = [
+    "ws-missing-preserve",
+    "rels-empty-part",
+    "id-durable-overflow",
+    "id-durable-decimal",
+    "id-paraid-overflow",
+    "id-textid-overflow",
+    "ignorable-undeclared",
+    "paraid-missing-element",
+    "textid-missing-element",
+    "style-reference-undefined",
+    "style-default-missing",
+    "comment-thread-commentid-paraid-orphan",
+    "comment-thread-durableid-orphan",
+    "word-drawing-scalar-whitespace",
+    "xsd-error",
+];
+
 interface RepairPlanGroup {
     path?: string;
     code: string;
-    action: string;
+    action: string | null;
     supported: boolean;
     count: number;
+}
+
+const AUTO_REPAIRED_CODES = new Set(AUTO_REPAIRED_ISSUE_CODES);
+
+/**
+ * The `xsd-error` messages `repairInlinePictureScaffolds` actually fixes.
+ * Other schema findings — including the empty `vt:filetime` message
+ * `repairActionForIssue` keeps as a manual hint — get no "Auto-repair will"
+ * because no repair pass changes them.
+ */
+const AUTO_REPAIRED_XSD_ERROR_MARKERS = [
+    "}graphic': This element is not expected",
+    "}blipFill': This element is not expected",
+    "Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/picture}spPr",
+];
+
+/** Whether a `repair()` pass changes this issue — the source of the plan's `supported` flag. */
+function autoRepairSupportsIssue(issue: ValidationIssue): boolean {
+    if (issue.code === "xsd-error") return AUTO_REPAIRED_XSD_ERROR_MARKERS.some((marker) => issue.message.includes(marker));
+    return issue.code !== undefined && AUTO_REPAIRED_CODES.has(issue.code);
 }
 
 export async function collectDocxSemanticInventory(unpackedDir: string, profile: Profile = "lenient"): Promise<DocxSemanticInventory> {
@@ -128,9 +176,8 @@ export function buildRepairPlanIssues(issues: readonly ValidationIssue[]): Valid
         if (issue.severity === "info") continue;
         const code = issue.code ?? "uncoded-validation-issue";
         const action = repairActionForIssue(issue);
-        const supported = action !== null;
-        const groupAction = action ?? "no automatic repair is registered; validation will report it again after repair if it remains";
-        const key = `${issue.path ?? ""}\u0000${code}\u0000${supported ? "1" : "0"}\u0000${groupAction}`;
+        const supported = action !== null && autoRepairSupportsIssue(issue);
+        const key = `${issue.path ?? ""}\u0000${code}\u0000${supported ? "1" : "0"}\u0000${action ?? ""}`;
         const existing = groups.get(key);
         if (existing) {
             existing.count += 1;
@@ -139,7 +186,7 @@ export function buildRepairPlanIssues(issues: readonly ValidationIssue[]): Valid
         groups.set(key, {
             path: issue.path,
             code,
-            action: groupAction,
+            action,
             supported,
             count: 1,
         });
@@ -150,7 +197,11 @@ export function buildRepairPlanIssues(issues: readonly ValidationIssue[]): Valid
         code: group.supported ? "repair-plan" : "repair-plan-unavailable",
         message:
             `Before repair found ${group.count} [${group.code}] issue(s). ` +
-            (group.supported ? `Auto-repair will ${group.action}.` : `Auto-repair will not change them because ${group.action}.`),
+            (group.supported
+                ? `Auto-repair will ${group.action}.`
+                : group.action !== null
+                  ? `Auto-repair will not change them because no automatic repair is registered. Fix manually: ${group.action}.`
+                  : "Auto-repair will not change them because no automatic repair is registered; validation will report it again after repair if it remains."),
     }));
 }
 
@@ -638,7 +689,7 @@ function compareCounters(a: DocxSemanticCounter, b: DocxSemanticCounter): number
 }
 
 function compareRepairPlanGroups(a: RepairPlanGroup, b: RepairPlanGroup): number {
-    return (a.path ?? "").localeCompare(b.path ?? "") || a.code.localeCompare(b.code) || a.action.localeCompare(b.action);
+    return (a.path ?? "").localeCompare(b.path ?? "") || a.code.localeCompare(b.code) || (a.action ?? "").localeCompare(b.action ?? "");
 }
 
 function shortRelationshipType(type: string): string {
@@ -646,8 +697,13 @@ function shortRelationshipType(type: string): string {
 }
 
 /**
- * The repair-plan action for an issue's code, or `null` when no repair is
- * registered for it; `buildRepairPlanIssues` groups issues by this action.
+ * The manual repair guidance for an issue's code, or `null` when no
+ * guidance is registered for it; `buildRepairPlanIssues` groups issues by
+ * this action. A non-null action does NOT mean `repair()` performs it —
+ * `buildRepairPlanIssues` prints "Auto-repair will" only for issues
+ * {@link autoRepairSupportsIssue} covers (`AUTO_REPAIRED_ISSUE_CODES`, plus
+ * the scaffold `xsd-error` messages); every other action is carried on the
+ * `repair-plan-unavailable` issue as a "Fix manually:" hint.
  */
 function repairActionForIssue(issue: ValidationIssue): string | null {
     switch (issue.code) {
