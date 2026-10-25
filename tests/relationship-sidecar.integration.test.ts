@@ -645,8 +645,11 @@ describe("chart sources Word was shown in session 39 (#661)", { timeout: 120_000
             const strict = await validate(file, { profile: "strict" });
             expect(strict.valid).toBe(false);
             expect(strict.issues).toContainEqual(missingSidecar("error"));
+            // The legacy missing-sidecar walk is not a registered check, so
+            // partial runs omit it and keep only the #381 one-way contract (#663).
             for (const selection of [{ quick: true }, { checks: ["relationships"] }]) {
                 const partial = await validate(file, { profile: "word-valid", ...selection });
+                expect(partial.issues.filter((finding) => finding.code === "rels-missing-sidecar")).toEqual([]);
                 expect(errors(full.issues)).toEqual(expect.arrayContaining(errors(partial.issues)));
                 if (full.valid) expect(partial.valid).toBe(true);
             }
