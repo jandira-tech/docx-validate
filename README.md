@@ -967,15 +967,33 @@ parses, as Word 16.115 offered recovery for a body `w:footerReference`
 `r:id="rId9"` beside a kept `word/_rels/document.xml.rels` holding no `rId9`
 ([#619](https://github.com/jandira-tech/docx-validate/issues/619); session 32
 in the same evidence file); a part with no relationships part keeps
-`rels-missing-sidecar` as its only finding. The finding is an error under
+`rels-missing-sidecar` as its only finding for a non-empty `r:id`.
+An empty or missing id in both relationships namespaces is this check's
+finding regardless of whether the sidecar exists or parses
+([#623](https://github.com/jandira-tech/docx-validate/issues/623)). Session 33
+observed Word 16.115 offer recovery for `r:id=""` on a header or footer
+reference in the main document's body `w:sectPr` (s33a/s33c), and report an
+error opening the file when either reference has no id (s33c/s33e). An id
+in a third namespace counts as missing, even when it names a real footer
+relationship (s33d). An ISO Strict relationships id naming a real footer
+relationship on a Transitional reference opens clean and renders the footer
+(s33c, #631 refuted). The check applies to the same placements and story
+roots as before; session 33 observed these empty/missing shapes only in the
+main document's body `w:sectPr`, while sessions 26/27 established the footing
+for the other placements and reached glossaries. Set a non-empty id in
+either relationships namespace naming a Relationship of the required Type,
+or add one with that Id and Type. Strict also keeps the XSD error for a
+missing `r:id`. The finding is an error under
 strict and Word-blocking under word-valid for DOCX/DOCM; lenient runs no Word
 rule. In a full word-valid or strict run neither `rels-id-mismatch` nor
 `rels-id-missing` repeats an element this check reported — the run drops that
-duplicate, pairing the two findings by the element identity both checks
+duplicate for a non-empty id, pairing the two findings by the element identity both checks
 register on the issue (part path, namespace URI, local name, raw `r:id` and
 the namespace the `r:id` was read in), never by message text — while `validateAllRelationshipIds()` called on its own
 still reports every `rels-id-mismatch` and `rels-id-missing` (#612, #616,
-#619). A glossary no main-document relationship reaches keeps its
+#619). Empty/missing-id findings register no such identity, because the
+legacy walk reads only truthy ids and reports neither shape.
+A glossary no main-document relationship reaches keeps its
 `rels-id-mismatch` or `rels-id-missing` under strict (Word does not read it,
 so word-valid stays silent), and lenient keeps every one of them.
 Full, quick and named Word-valid runs agree (#381).

@@ -26,7 +26,7 @@ import type { ValidationIssue } from "../src/lib/types";
 import { ValidationContext } from "../src/lib/validation-context";
 import { withTempDir } from "../src/lib/run-cli";
 import { WORD_HEADER_FOOTER_RELATIONSHIP, wordHeaderFooterRelationshipCheck } from "../src/scripts/office/checks/word-header-footer";
-import { registerStoryReferenceIdentity } from "../src/scripts/office/story-reference-identity";
+import { registerStoryReferenceIdentity, storyReferenceIdentity } from "../src/scripts/office/story-reference-identity";
 import { validate } from "../src/scripts/office/validate";
 import * as docxValidators from "../src/scripts/office/validators/docx";
 import {
@@ -580,13 +580,6 @@ describe("word-header-footer-relationship check runner", () => {
                     "_rels/.rels": rels(`<Relationship Id="rId1" Type="${R}/officeDocument" Target="word/document.xml"/>`),
                     "word/document.xml": document('<w:sectPr><w:headerReference w:type="default" r:id="rIdH"/></w:sectPr>'),
                 }),
-            ),
-        ).toEqual([]);
-        expect(
-            await wordHeaderFooterRelationshipCheck.run(
-                ValidationContext.fromEntries(
-                    mainPackage('<w:sectPr><w:headerReference w:type="default"/></w:sectPr>', relation("rIdH", "footer")),
-                ),
             ),
         ).toEqual([]);
     });
@@ -1152,4 +1145,229 @@ describe("#619: a story reference whose r:id names no Relationship (Word 16.115 
             expect(found[0]?.message).toBe("<footerReference> r:id references non-existent relationship 'rId9' (valid IDs: rId1)");
         });
     });
+});
+
+/** Session 33 (#623): only the relationships-namespace id attribute changes. */
+const invalidReferenceIdParts = (reference: "headerReference" | "footerReference", kind: "empty" | "missing"): Record<string, string> => {
+    const parts = danglingReferenceParts(reference, "");
+    if (kind === "missing") parts["word/document.xml"] = parts["word/document.xml"]!.replace(' r:id=""', "");
+    return parts;
+};
+
+const cleanFooterParts = (): Record<string, string> =>
+    storyReferenceParts("footerReference", "footer", "footer1.xml", STORY_FOOTER_XML, T("footer"));
+
+const foreignReferenceIdParts = (realRelationship: boolean): Record<string, string> => {
+    const parts = realRelationship ? cleanFooterParts() : danglingReferenceParts("footerReference");
+    parts["word/document.xml"] = parts["word/document.xml"]!.replace("<w:document ", '<w:document xmlns:x="urn:x" ').replace(
+        " r:id=",
+        " x:id=",
+    );
+    return parts;
+};
+
+/** Exact repair guidance, including the two relationship Types and the observed dialog. */
+const invalidReferenceIdMessage = (reference: "headerReference" | "footerReference", kind: "empty" | "missing"): string => {
+    const segment = reference === "headerReference" ? "header" : "footer";
+    return (
+        `<w:${reference}> has ${kind === "empty" ? "an empty" : "a missing"} r:id; ` +
+        `a w:${reference} needs a Relationship of Type ${REL}/${segment} (or the ISO Strict ${STRICT_REL}/${segment}). ` +
+        (kind === "empty" ? "Microsoft Word offers to recover the file. " : "Microsoft Word cannot open the file. ") +
+        "Set a non-empty r:id naming such a Relationship, or add one with that Id and Type."
+    );
+};
+
+const IDLESS_SHAPES = [
+    {
+        name: "headerref-rid-empty",
+        reference: "headerReference",
+        kind: "empty",
+        parts: () => invalidReferenceIdParts("headerReference", "empty"),
+    },
+    {
+        name: "footerref-rid-empty",
+        reference: "footerReference",
+        kind: "empty",
+        parts: () => invalidReferenceIdParts("footerReference", "empty"),
+    },
+    {
+        name: "headerref-no-rid",
+        reference: "headerReference",
+        kind: "missing",
+        parts: () => invalidReferenceIdParts("headerReference", "missing"),
+    },
+    {
+        name: "footerref-no-rid",
+        reference: "footerReference",
+        kind: "missing",
+        parts: () => invalidReferenceIdParts("footerReference", "missing"),
+    },
+    { name: "third-ns-id-dangling", reference: "footerReference", kind: "missing", parts: () => foreignReferenceIdParts(false) },
+    { name: "third-ns-id-valid-footer", reference: "footerReference", kind: "missing", parts: () => foreignReferenceIdParts(true) },
+] as const;
+
+const LEGACY_REFERENCE_CODES = new Set(["rels-id-missing", "rels-missing-sidecar", "rels-id-mismatch"]);
+
+describe("#623: empty and missing story reference ids (Word 16.115 session 33)", { timeout: 240_000 }, () => {
+    it.each(IDLESS_SHAPES)("word-valid reports exactly one finding with the observed reaction: $name", async (specimen) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, `${specimen.name}.docx`);
+            writeFileSync(file, await buildDocx(specimen.parts()));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            expect(result.issues.filter((issue) => issue.code === CODE)).toEqual([
+                {
+                    severity: "error",
+                    code: CODE,
+                    path: "word/document.xml",
+                    message: invalidReferenceIdMessage(specimen.reference, specimen.kind),
+                },
+            ]);
+            expect(result.issues.filter((issue) => LEGACY_REFERENCE_CODES.has(issue.code ?? ""))).toEqual([]);
+        });
+    });
+
+    it.each(["empty", "missing"] as const)("strict reports the %s id, retaining the missing-id XSD error", async (kind) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, `${kind}.docx`);
+            writeFileSync(file, await buildDocx(invalidReferenceIdParts("footerReference", kind)));
+            const result = await validate(file, { profile: "strict" });
+            expect(result.valid).toBe(false);
+            expect(result.issues.filter((issue) => issue.code === CODE)).toHaveLength(1);
+            expect(result.issues.some((issue) => issue.code === "xsd-error" && issue.message.includes("required"))).toBe(
+                kind === "missing",
+            );
+        });
+    });
+
+    it.each(["r", "rs"] as const)("the clean footer with %s:id stays word-valid valid (#631 calibration)", async (prefix) => {
+        await withTempDir(async (dir) => {
+            const parts = cleanFooterParts();
+            parts["word/document.xml"] = parts["word/document.xml"]!.replace(
+                "<w:document ",
+                `<w:document xmlns:rs="${STRICT_REL}" `,
+            ).replace(' r:id="rIdX"', ` ${prefix}:id="rIdX"`);
+            const file = path.join(dir, "calibration.docx");
+            writeFileSync(file, await buildDocx(parts));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(true);
+            expect(result.issues.filter((issue) => issue.code === CODE)).toEqual([]);
+        });
+    });
+
+    describe.each(["empty", "missing"] as const)("%s id", (kind) => {
+        it.each(["absent", "unparseable"] as const)("reports the attribute defect with an %s sidecar", async (sidecar) => {
+            await withTempDir(async (dir) => {
+                const parts = invalidReferenceIdParts("footerReference", kind);
+                if (sidecar === "absent") delete parts["word/_rels/document.xml.rels"];
+                else parts["word/_rels/document.xml.rels"] = "<Relationships";
+                const file = path.join(dir, "sidecar.docx");
+                writeFileSync(file, await buildDocx(parts));
+                const result = await validate(file, { profile: "word-valid" });
+                expect(result.valid).toBe(false);
+                expect(result.issues.filter((issue) => issue.code === CODE)).toEqual([
+                    {
+                        severity: "error",
+                        code: CODE,
+                        path: "word/document.xml",
+                        message: invalidReferenceIdMessage("footerReference", kind),
+                    },
+                ]);
+                expect(result.issues.filter((issue) => LEGACY_REFERENCE_CODES.has(issue.code ?? ""))).toEqual([]);
+                if (sidecar === "unparseable") expect(result.issues.some((issue) => issue.code === "xml-syntax")).toBe(true);
+            });
+        });
+
+        it("judges a reached glossary and stays silent on an unreached glossary", async () => {
+            await withTempDir(async (dir) => {
+                const parts = glossaryStoryReferenceParts("footerReference", "footer", "footer9.xml", STORY_FOOTER_XML, T("footer"));
+                parts["word/glossary/document.xml"] = parts["word/glossary/document.xml"]!.replace(
+                    ' r:id="rIdF"',
+                    kind === "empty" ? ' r:id=""' : "",
+                );
+                const file = path.join(dir, "glossary.docx");
+                writeFileSync(file, await buildDocx(parts));
+                const reached = await validate(file, { profile: "word-valid" });
+                expect(reached.valid).toBe(false);
+                expect(reached.issues.filter((issue) => issue.code === CODE)).toEqual([
+                    {
+                        severity: "error",
+                        code: CODE,
+                        path: "word/glossary/document.xml",
+                        message: invalidReferenceIdMessage("footerReference", kind),
+                    },
+                ]);
+                parts["word/_rels/document.xml.rels"] = MINIMAL_PARTS["word/_rels/document.xml.rels"]!;
+                writeFileSync(file, await buildDocx(parts));
+                const unreached = await validate(file, { profile: "word-valid" });
+                expect(unreached.valid).toBe(true);
+                expect(unreached.issues.filter((issue) => issue.code === CODE)).toEqual([]);
+            });
+        });
+
+        it("named and full word-valid runs agree (#381)", async () => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "partial.docx");
+                writeFileSync(file, await buildDocx(invalidReferenceIdParts("footerReference", kind)));
+                const full = await validate(file, { profile: "word-valid" });
+                const partial = await validate(file, { profile: "word-valid", checks: [CODE] });
+                expect(full.issues.filter((issue) => issue.code === CODE)).toHaveLength(1);
+                expect(partial.valid).toBe(false);
+                expect(partial.issues.filter((issue) => issue.code === CODE)).toEqual(full.issues.filter((issue) => issue.code === CODE));
+            });
+        });
+
+        it("a standalone legacy relationship walk reports no duplicate under any profile", async () => {
+            await withTempDir(async (dir) => {
+                const unpacked = writeUnpacked(path.join(dir, "legacy"), invalidReferenceIdParts("footerReference", kind));
+                for (const profile of ["word-valid", "strict", "lenient"] as const) {
+                    const result = await new DOCXSchemaValidator({ unpackedDir: unpacked, profile }).validateAllRelationshipIds();
+                    expect(result, profile).toEqual({ valid: true, issues: [] });
+                }
+            });
+        });
+
+        it("lenient retains its existing XSD-only behavior and runs no Word rule", async () => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "lenient.docx");
+                writeFileSync(file, await buildDocx(invalidReferenceIdParts("footerReference", kind)));
+                const result = await validate(file, { profile: "lenient" });
+                expect(result.valid).toBe(kind === "empty");
+                expect(result.issues.filter((issue) => issue.code === CODE || LEGACY_REFERENCE_CODES.has(issue.code ?? ""))).toEqual([]);
+                expect(result.issues.filter((issue) => issue.severity === "error").map((issue) => issue.code)).toEqual(
+                    kind === "empty" ? [] : ["xsd-summary", "xsd-error"],
+                );
+                if (kind === "missing") expect(result.issues.find((issue) => issue.code === "xsd-error")?.message).toContain("required");
+            });
+        });
+    });
+
+    it.each(['r:id=""', 'rs:id=""', 'r:id="" rs:id=""', ""])("registers no pairing identity for %s", async (attributes) => {
+        const ctx = ValidationContext.fromEntries(
+            mainPackage(`<w:sectPr><w:headerReference w:type="default" ${attributes}/></w:sectPr>`, relation("rIdH", "footer")),
+        );
+        const issues = await wordHeaderFooterRelationshipCheck.run(ctx);
+        expect(issues).toEqual([
+            {
+                severity: "error",
+                code: CODE,
+                path: "word/document.xml",
+                message: invalidReferenceIdMessage("headerReference", attributes ? "empty" : "missing"),
+            },
+        ]);
+        expect(storyReferenceIdentity(issues[0]!)).toBeUndefined();
+    });
+
+    it.each(['r:id="" rs:id="rIdF"', 'r:id="rIdF" rs:id=""'])(
+        "uses the non-empty id when the other namespace is empty: %s",
+        async (attributes) => {
+            const ctx = ValidationContext.fromEntries(
+                mainPackage(
+                    `<w:sectPr><w:footerReference w:type="default" ${attributes}/></w:sectPr>`,
+                    relation("rIdF", "footer", "", "footer9.xml"),
+                ),
+            );
+            expect(await wordHeaderFooterRelationshipCheck.run(ctx)).toEqual([]);
+        },
+    );
 });
