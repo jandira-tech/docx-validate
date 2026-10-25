@@ -645,6 +645,10 @@ function shortRelationshipType(type: string): string {
     return type.split("/").filter(Boolean).pop() ?? type;
 }
 
+/**
+ * The repair-plan action for an issue's code, or `null` when no repair is
+ * registered for it; `buildRepairPlanIssues` groups issues by this action.
+ */
 function repairActionForIssue(issue: ValidationIssue): string | null {
     switch (issue.code) {
         case "ws-missing-preserve":

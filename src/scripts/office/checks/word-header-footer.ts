@@ -111,6 +111,13 @@ export const wordHeaderFooterRelationshipCheck: CheckDefinition = {
     groups: ["relationships"],
     formats: ["docx"],
     requires: ["xml-syntax"],
+    /**
+     * One error per story `w:headerReference`/`w:footerReference` whose
+     * `r:id` names no Relationship in its part's present, parseable
+     * relationships part, or names one whose Type is not the accepted
+     * Transitional or ISO Strict URI, each carrying the element identity the
+     * full run's hand-off pairs on.
+     */
     run: async (ctx: ValidationContext): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
         const findPart = equivalentPartLookup(ctx.partNames);
