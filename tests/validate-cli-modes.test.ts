@@ -549,6 +549,8 @@ describe("validate CLI: conflicting selectors are rejected", { timeout: 120_000 
         ["--strict", "--checks", "tables"],
         ["--strict", "--profile", "lenient"],
         ["--strict", "--profile", "word-valid"],
+        ["--auto-repair", "--quick"],
+        ["--auto-repair", "--checks", "tables"],
     ];
 
     for (const selectors of CONFLICTS) {
@@ -574,6 +576,8 @@ describe("validate API: conflicting selectors throw a typed error", () => {
         { options: { strict: true, checks: ["tables"] }, message: /strict/i },
         { options: { strict: true, profile: "lenient" }, message: /strict/i },
         { options: { strict: true, profile: "word-valid" }, message: /strict/i },
+        { options: { autoRepair: true, quick: true }, message: /auto-repair/i },
+        { options: { autoRepair: true, checks: ["tables"] }, message: /auto-repair/i },
     ];
 
     for (const { options, message } of CONFLICTS) {

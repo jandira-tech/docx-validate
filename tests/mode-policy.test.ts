@@ -142,6 +142,11 @@ describe("assertModeCoherent", () => {
         { quick: true, profile: "lenient" },
         // `--checks ""` names nothing, so there is nothing to conflict with.
         { quick: true, checks: [] },
+        { autoRepair: true },
+        { autoRepair: true, strict: true },
+        { autoRepair: true, profile: "lenient" },
+        { autoRepair: true, checks: [] },
+        { autoRepair: false, quick: true },
     ];
 
     for (const request of ACCEPTED) {
@@ -158,6 +163,10 @@ describe("assertModeCoherent", () => {
         { request: { strict: true, profile: "word-valid" }, message: /--strict with --profile word-valid/ },
         { request: { profile: "strict", quick: true }, message: /profile 'strict' with --quick or --checks/ },
         { request: { profile: "strict", checks: ["tables"] }, message: /profile 'strict' with --quick or --checks/ },
+        // A partial run never repairs, so asking it to is refused rather than ignored (#652).
+        { request: { autoRepair: true, quick: true }, message: /--auto-repair with --quick or --checks/ },
+        { request: { autoRepair: true, checks: ["tables"] }, message: /--auto-repair with --quick or --checks/ },
+        { request: { autoRepair: true, quick: true, profile: "lenient" }, message: /--auto-repair with --quick or --checks/ },
     ];
 
     for (const { request, message } of REJECTED) {

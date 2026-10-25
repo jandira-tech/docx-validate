@@ -1345,7 +1345,11 @@ export function buildValidateCommand(): Command {
             "Path to original file (.docx/.docm/.pptx/.xlsx). If omitted, all XSD errors are reported and redlining validation is skipped.",
         )
         .option("-v, --verbose", "Enable verbose output", false)
-        .option("--auto-repair", "Automatically repair common issues (hex IDs, whitespace preservation)", false)
+        .option(
+            "--auto-repair",
+            "Automatically repair common issues (hex IDs, whitespace preservation); full runs only, not with --quick or --checks",
+            false,
+        )
         .option("--author <name>", "Author name for redlining validation (required when --original is provided)")
         .option(
             "--profile <profile>",
@@ -1416,7 +1420,7 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
     // Reject contradictory selectors before any validation work, so the caller
     // gets one clear line instead of a verdict on a run they did not ask for.
     try {
-        assertModeCoherent({ profile: opts.profile, strict: opts.strict, quick: opts.quick, checks });
+        assertModeCoherent({ profile: opts.profile, strict: opts.strict, quick: opts.quick, checks, autoRepair: opts.autoRepair });
     } catch (err) {
         process.stderr.write(`${err instanceof Error ? err.message : String(err)}\n`);
         return 1;
@@ -1440,6 +1444,7 @@ export async function runValidateFromArgv(argv: readonly string[]): Promise<numb
         strict: opts.strict,
         quick: opts.quick,
         checks,
+        autoRepair: opts.autoRepair,
     }).profile;
     if (!isPartialRequest({ quick: opts.quick, checks }) && profileWalksSchemas(format, profile)) {
         try {

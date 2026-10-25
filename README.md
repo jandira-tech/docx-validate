@@ -266,8 +266,10 @@ formats other than their default `.docx` (for example, `.pptx` or `.docm`).
   reading a file or starting XML/XSD engines. `--help` also needs no engine startup.
 - `--strict` / `{ strict: true }` is shorthand for `profile: "strict"`. Strict
   rejects partial selection; `--quick` and `--checks` are mutually exclusive.
-  `--strict` also rejects an explicit profile other than `strict`. API conflicts
-  throw `ModeConflictError`; CLI configuration errors exit 1.
+  `--strict` also rejects an explicit profile other than `strict`. A partial run
+  never repairs, so `--auto-repair` / `autoRepair: true` with `--quick` or
+  `--checks` is refused rather than ignored (#652). API conflicts throw
+  `ModeConflictError`; CLI configuration errors exit 1.
 - Partial runs perform no XSD validation and report `omittedChecks`. A successful
   partial run prints “Selected checks passed”, followed by counts, never “All
   validations PASSED!”, even when it omitted no registered check (a PPTX or XLSX
