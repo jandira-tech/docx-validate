@@ -1521,6 +1521,9 @@ export class BaseSchemaValidator {
         this.xsdWalk.parts = [];
         this.xsdWalk.eligible = 0;
         this.xsdEngineFailures = 0;
+        // The main document comes from the processed package relationships,
+        // which a repair between walks can change (#657).
+        this.mainDocumentParts = undefined;
 
         const noteStrict = (): void => {
             if (strictSkipped) return;
@@ -1769,7 +1772,7 @@ export class BaseSchemaValidator {
 
     /** Identify the required main part by the package relationship, never its basename. */
     private isMainDocumentPart(xmlFile: string): boolean {
-        // Resolved once per validator: this runs for every part whose root is
+        // Resolved once per XSD walk: this runs for every part whose root is
         // ignored, and a walk per call grows with the square of the part
         // count (#355).
         this.mainDocumentParts ??= this.resolveMainDocumentParts();
@@ -2073,7 +2076,7 @@ export class BaseSchemaValidator {
 
     /** Per-file memo for {@link _isStrictXmlFile} — root-namespace sniffing would otherwise re-read each part for eligibility, schema dispatch, and preprocessing. */
     private readonly strictRootCache = new Map<string, boolean>();
-    /** See {@link isMainDocumentPart}; reset when a repair deletes files. */
+    /** See {@link isMainDocumentPart}; reset at the start of every XSD walk (#657) and when a repair deletes files. */
     private mainDocumentParts: ReadonlySet<string> | undefined;
     /**
      * Everything this validator read from `--original` outside a

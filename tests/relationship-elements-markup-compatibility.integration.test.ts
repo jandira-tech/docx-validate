@@ -193,3 +193,50 @@ describe("the processed relationships view outside a run (#654)", { timeout: 120
         });
     });
 });
+
+/**
+ * #657: the XSD walk's main document comes from `_rels/.rels` read through
+ * Word's markup compatibility view, so a repair can change it. Its
+ * `officeDocument` relationship is in an `mc:Choice Requires="w14"` (to
+ * `word/doc2.xml`) with a Fallback to `word/document.xml`, whose root is
+ * ignorable, and `w14` is undeclared until `repairIgnorable()` declares it.
+ * Main, that root is `mce-main-root-ignored`; not main, `mce-root-ignored`.
+ */
+describe("the main document after a repair (#657)", { timeout: 120_000 }, () => {
+    const PR = "http://schemas.openxmlformats.org/package/2006/relationships";
+    const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+    const MAIN = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
+    const parts: Record<string, string> = {
+        ...MINIMAL_PARTS,
+        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+            "</Types>",
+            `<Override PartName="/word/doc2.xml" ContentType="${MAIN}"/></Types>`,
+        ),
+        "_rels/.rels":
+            `<Relationships xmlns="${PR}" xmlns:mc="${MC}" mc:Ignorable="w14"><mc:AlternateContent>` +
+            `<mc:Choice Requires="w14"><Relationship Id="rId1" Type="${R}/officeDocument" Target="word/doc2.xml"/></mc:Choice>` +
+            `<mc:Fallback><Relationship Id="rId2" Type="${R}/officeDocument" Target="word/document.xml"/></mc:Fallback>` +
+            `</mc:AlternateContent></Relationships>`,
+        "word/document.xml": `<x:document xmlns:x="urn:x" xmlns:mc="${MC}" mc:Ignorable="x"/>`,
+        "word/doc2.xml": MINIMAL_PARTS["word/document.xml"]!,
+    };
+    const rootFindings = (result: { issues: readonly ValidationIssue[] }): string[] =>
+        result.issues
+            .filter((issue) => issue.code === "mce-main-root-ignored" || issue.code === "mce-root-ignored")
+            .map((issue) => `${issue.severity}:${issue.code}@${issue.path}`);
+
+    it.each(["validateAgainstXsd", "validate"] as const)("strict: %s after a repair reads the repaired main document", async (method) => {
+        await withTempDir(async (dir) => {
+            for (const [part, xml] of Object.entries(parts)) {
+                await mkdir(path.dirname(path.join(dir, part)), { recursive: true });
+                await writeFile(path.join(dir, part), xml);
+            }
+            const validator = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
+            expect(rootFindings(await validator.validateAgainstXsd())).toEqual(["error:mce-main-root-ignored@word/document.xml"]);
+            expect(await validator.repairIgnorable()).toBe(1);
+            const after = rootFindings(await validator[method]());
+            expect(after).toEqual(rootFindings(await new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" })[method]()));
+            expect(after).toEqual(["info:mce-root-ignored@word/document.xml"]);
+        });
+    });
+});
