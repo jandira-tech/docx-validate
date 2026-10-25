@@ -961,16 +961,23 @@ story's, so the check judges the relationship Type alone
 [#613](https://github.com/jandira-tech/docx-validate/issues/613); sessions 26
 and 27, chunks s26a/s26b/s26c and s27a/s27b/s27c, in
 `docs/plans/evidence/word-probes-2026-10-24.md`).
-A reference whose `r:id` names no Relationship stays `rels-id-missing`'s
-finding. The finding is an error under strict and Word-blocking under
-word-valid for DOCX/DOCM; lenient runs no Word rule. In a full word-valid or
-strict run `rels-id-mismatch` does not repeat an element this check reported
-— the run drops that duplicate, pairing the two findings by the element
-identity both checks register on the issue (part path, namespace URI, local
-name and raw `r:id`), never by message text — while `validateAllRelationshipIds()` called
-on its own still reports every mismatch (#612, #616). A glossary no main-document
-relationship reaches keeps its `rels-id-mismatch` under strict (Word does
-not read it, so word-valid stays silent), and lenient keeps every mismatch.
+A reference whose `r:id` names no Relationship in the part's own relationships
+part is this check's finding too — when that relationships part exists and
+parses, as Word 16.115 offered recovery for a body `w:footerReference`
+`r:id="rId9"` beside a kept `word/_rels/document.xml.rels` holding no `rId9`
+([#619](https://github.com/jandira-tech/docx-validate/issues/619); session 32
+in the same evidence file); a part with no relationships part keeps
+`rels-missing-sidecar` as its only finding. The finding is an error under
+strict and Word-blocking under word-valid for DOCX/DOCM; lenient runs no Word
+rule. In a full word-valid or strict run neither `rels-id-mismatch` nor
+`rels-id-missing` repeats an element this check reported — the run drops that
+duplicate, pairing the two findings by the element identity both checks
+register on the issue (part path, namespace URI, local name and raw `r:id`),
+never by message text — while `validateAllRelationshipIds()` called on its own
+still reports every `rels-id-mismatch` and `rels-id-missing` (#612, #616,
+#619). A glossary no main-document relationship reaches keeps its
+`rels-id-mismatch` or `rels-id-missing` under strict (Word does not read it,
+so word-valid stays silent), and lenient keeps every one of them.
 Full, quick and named Word-valid runs agree (#381).
 
 `word-markup-compatibility` reports processor errors for XML parts under `word/`.

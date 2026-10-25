@@ -4,13 +4,15 @@
  */
 
 /**
- * `word-header-footer-relationship` (#606, #613): a `w:headerReference` or
+ * `word-header-footer-relationship` (#606, #613, #619): a `w:headerReference` or
  * `w:footerReference` in the main document's body sectPr, or in a reached
  * glossary's docPartBody sectPr, whose `r:id` names a relationship whose Type
  * is not exactly the Transitional or the ISO Strict `header` (respectively
  * `footer`) relationship URI makes Word 16.115 offer recovery (sessions 26
  * and 27 — chunks s26a/s26b/s26c and s27a/s27b/s27c — in
- * docs/plans/evidence/word-probes-2026-10-24.md). Every session 26 specimen
+ * docs/plans/evidence/word-probes-2026-10-24.md), and so does a reference
+ * whose `r:id` names no Relationship at all while the part's relationships
+ * part exists and parses (session 32, #619). Every session 26 specimen
  * below copies the exact shape of the session 26 builders; every session 27
  * specimen takes the clean session 26 shape and replaces only the
  * relationship Type.
@@ -272,27 +274,6 @@ describe("word-header-footer-relationship (#606, Word 16.115 session 26)", { tim
                 ).toBe(true);
                 expect(strict.issues.some((issue) => issue.code === CODE)).toBe(false);
             });
-        });
-    });
-
-    it("leaves an unresolvable r:id to rels-id-missing", async () => {
-        await withTempDir(async (dir) => {
-            const file = path.join(dir, "missing-rid.docx");
-            writeFileSync(
-                file,
-                await buildDocx({
-                    ...MINIMAL_PARTS,
-                    "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
-                        `<w:document xmlns:w="${W}"`,
-                        `<w:document xmlns:w="${W}" xmlns:r="${REL}"`,
-                    ).replace("<w:sectPr>", `<w:sectPr><w:headerReference w:type="default" r:id="rIdNone"/>`),
-                }),
-            );
-            const wordValid = await validate(file, { profile: "word-valid" });
-            expect(wordValid.issues.some((issue) => issue.code === CODE)).toBe(false);
-            const strict = await validate(file, { profile: "strict" });
-            expect(strict.issues.some((issue) => issue.code === "rels-id-missing" && issue.message.includes("headerReference"))).toBe(true);
-            expect(strict.issues.some((issue) => issue.code === CODE)).toBe(false);
         });
     });
 
@@ -765,6 +746,49 @@ describe("#612: rels-id-mismatch reports every mismatch; full runs deduplicate",
             expect(result.issues).toEqual([otherPart, otherRid, otherElement, otherNamespace]);
         });
 
+        /**
+         * `validateAllRelationshipIds`' missing-id issue for an element, with
+         * the structured identity base.ts registers (#619).
+         */
+        const relsMissing = (
+            part: string,
+            localName: "headerReference" | "footerReference",
+            rid: string,
+            namespaceURI = W,
+        ): ValidationIssue => {
+            const issue: ValidationIssue = {
+                severity: "error",
+                code: "rels-id-missing",
+                path: part,
+                message: "missing prose the helper never parses (#619)",
+            };
+            registerStoryReferenceIdentity(issue, { part, namespaceURI, localName, rid });
+            return issue;
+        };
+
+        it("drops a rels-id-missing paired by identity with a Word finding (#619)", () => {
+            const missing = relsMissing("word/document.xml", "footerReference", "rId9");
+            const result = withoutRepeatedHeaderFooterFindings(
+                { valid: false, issues: [missing] },
+                { valid: false, issues: [wordFinding("word/document.xml", "footerReference", "rId9")] },
+            );
+            expect(result.issues).toEqual([]);
+        });
+
+        it("keeps a rels-id-missing with no registered identity (#619)", () => {
+            const stranger: ValidationIssue = {
+                severity: "error",
+                code: "rels-id-missing",
+                path: "word/document.xml",
+                message: "a producer that registered nothing (#619)",
+            };
+            const result = withoutRepeatedHeaderFooterFindings(
+                { valid: false, issues: [stranger] },
+                { valid: false, issues: [wordFinding("word/document.xml", "footerReference", "rId9")] },
+            );
+            expect(result.issues).toEqual([stranger]);
+        });
+
         it("keeps a finding with no registered identity", () => {
             const stranger: ValidationIssue = {
                 severity: "error",
@@ -864,6 +888,212 @@ describe("#616: the hand-off carries structured identity, never message prose", 
                     profile,
                 ).toHaveLength(1);
             }
+        });
+    });
+});
+
+/**
+ * Session 32's #619 shape: the MINIMAL_PARTS main document with `xmlns:r`
+ * declared, whose body sectPr's `reference` names `rid` — a Relationship no
+ * Id in the kept sidecar carries. Word 16.115 offered recovery for the
+ * footer shape and for the same package without the sidecar; see
+ * docs/plans/evidence/word-probes-2026-10-24.md, "Session 32".
+ */
+const danglingReferenceParts = (reference: "headerReference" | "footerReference", rid = "rId9"): Record<string, string> => ({
+    ...MINIMAL_PARTS,
+    "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+        `<w:document xmlns:w="${W}"`,
+        `<w:document xmlns:w="${W}" xmlns:r="${REL}"`,
+    ).replace("<w:sectPr>", `<w:sectPr><w:${reference} w:type="default" r:id="${rid}"/>`),
+});
+
+describe("#619: a story reference whose r:id names no Relationship (Word 16.115 session 32)", { timeout: 240_000 }, () => {
+    it("word-valid and strict report exactly one Word rule finding and no rels-id-missing (the footer shape)", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "footerref-no-relationship.docx");
+            writeFileSync(file, await buildDocx(danglingReferenceParts("footerReference")));
+            for (const profile of ["word-valid", "strict"] as const) {
+                const result = await validate(file, { profile });
+                const found = result.issues.filter((issue) => issue.code === CODE);
+                expect(result.valid, profile).toBe(false);
+                expect(found, profile).toHaveLength(1);
+                expect(found[0]?.severity, profile).toBe("error");
+                expect(found[0]?.path, profile).toBe("word/document.xml");
+                expect(found[0]?.message, profile).toContain("<w:footerReference>");
+                expect(found[0]?.message, profile).toContain('r:id="rId9"');
+                expect(found[0]?.message, profile).toContain("no Relationship with Id 'rId9'");
+                expect(
+                    result.issues.filter((issue) => issue.code === "rels-id-missing"),
+                    profile,
+                ).toEqual([]);
+            }
+        });
+    });
+
+    it("the w:headerReference mirror behaves alike", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "headerref-no-relationship.docx");
+            writeFileSync(file, await buildDocx(danglingReferenceParts("headerReference")));
+            for (const profile of ["word-valid", "strict"] as const) {
+                const result = await validate(file, { profile });
+                const found = result.issues.filter((issue) => issue.code === CODE);
+                expect(result.valid, profile).toBe(false);
+                expect(found, profile).toHaveLength(1);
+                expect(found[0]?.path, profile).toBe("word/document.xml");
+                expect(found[0]?.message, profile).toContain("<w:headerReference>");
+                expect(found[0]?.message, profile).toContain("no Relationship with Id 'rId9'");
+                expect(
+                    result.issues.filter((issue) => issue.code === "rels-id-missing"),
+                    profile,
+                ).toEqual([]);
+            }
+        });
+    });
+
+    it("judges a reached glossary's reference against the glossary's own .rels", async () => {
+        await withTempDir(async (dir) => {
+            const parts = glossaryStoryReferenceParts("headerReference", "footer", "footer9.xml", STORY_FOOTER_XML, T("footer"));
+            // The sidecar keeps its footer relationship, under an Id the
+            // reference does not name.
+            parts["word/glossary/_rels/document.xml.rels"] = parts["word/glossary/_rels/document.xml.rels"]!.replace(
+                'Id="rIdF"',
+                'Id="rIdOther"',
+            );
+            const file = path.join(dir, "glossary-no-relationship.docx");
+            writeFileSync(file, await buildDocx(parts));
+            const wordValid = await validate(file, { profile: "word-valid" });
+            const found = wordValid.issues.filter((issue) => issue.code === CODE);
+            expect(found).toHaveLength(1);
+            expect(found[0]?.path).toBe("word/glossary/document.xml");
+            expect(found[0]?.message).toContain("<w:headerReference>");
+            expect(found[0]?.message).toContain("no Relationship with Id 'rIdF'");
+            const strict = await validate(file, { profile: "strict" });
+            expect(strict.issues.filter((issue) => issue.code === CODE && issue.path === "word/glossary/document.xml")).toHaveLength(1);
+            expect(
+                strict.issues.filter((issue) => issue.code === "rels-id-missing" && issue.path === "word/glossary/document.xml"),
+            ).toEqual([]);
+        });
+    });
+
+    it("a part with no relationships part stays rels-missing-sidecar's alone", async () => {
+        await withTempDir(async (dir) => {
+            const parts = danglingReferenceParts("footerReference");
+            delete parts["word/_rels/document.xml.rels"];
+            const file = path.join(dir, "no-sidecar.docx");
+            writeFileSync(file, await buildDocx(parts));
+            for (const profile of ["word-valid", "strict"] as const) {
+                const result = await validate(file, { profile });
+                expect(
+                    result.issues.filter((issue) => issue.code === CODE),
+                    profile,
+                ).toEqual([]);
+                expect(
+                    result.issues.some((issue) => issue.code === "rels-missing-sidecar"),
+                    profile,
+                ).toBe(true);
+            }
+        });
+    });
+
+    it("a foreign-namespace reference keeps its rels-id-missing under strict", async () => {
+        await withTempDir(async (dir) => {
+            // The Word rule judges exact Word expanded names, so it never
+            // reports urn:x's footerReference; the missing finding must
+            // survive the full run's hand-off.
+            const parts = danglingReferenceParts("footerReference");
+            parts["word/document.xml"] = parts["word/document.xml"]!.replace(
+                `<w:document xmlns:w="${W}"`,
+                `<w:document xmlns:w="${W}" xmlns:x="urn:x"`,
+            ).replace("<w:footerReference", "<x:footerReference");
+            const file = path.join(dir, "foreign-namespace-dangling.docx");
+            writeFileSync(file, await buildDocx(parts));
+            for (const profile of ["word-valid", "strict"] as const) {
+                const result = await validate(file, { profile });
+                expect(
+                    result.issues.filter((issue) => issue.code === CODE),
+                    profile,
+                ).toEqual([]);
+            }
+            const strict = await validate(file, { profile: "strict" });
+            expect(
+                strict.issues.filter((issue) => issue.code === "rels-id-missing" && issue.message.includes("footerReference")),
+            ).toHaveLength(1);
+        });
+    });
+
+    it("a standalone validateAllRelationshipIds call still reports the rels-id-missing", async () => {
+        await withTempDir(async (dir) => {
+            const unpacked = writeUnpacked(path.join(dir, "dangling"), danglingReferenceParts("footerReference"));
+            for (const profile of ["word-valid", "strict", "lenient"] as const) {
+                const result = await new DOCXSchemaValidator({ unpackedDir: unpacked, profile }).validateAllRelationshipIds();
+                const found = result.issues.filter((issue) => issue.code === "rels-id-missing");
+                expect(found, profile).toHaveLength(1);
+                expect(found[0]?.path, profile).toBe("word/document.xml");
+                expect(found[0]?.message, profile).toBe(
+                    "<footerReference> r:id references non-existent relationship 'rId9' (valid IDs: rId1)",
+                );
+                expect(result.valid, profile).toBe(false);
+            }
+        });
+    });
+
+    it("an unreached glossary's dangling reference keeps its rels-id-missing under strict", async () => {
+        await withTempDir(async (dir) => {
+            // The glossary shape whose reference names nothing in the
+            // glossary's .rels, but the main document relates no glossary:
+            // Word does not read it, so only the legacy check judges it.
+            const parts: Record<string, string> = {
+                ...glossaryStoryReferenceParts("headerReference", "footer", "footer9.xml", STORY_FOOTER_XML, T("footer")),
+                "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!,
+            };
+            parts["word/glossary/_rels/document.xml.rels"] = parts["word/glossary/_rels/document.xml.rels"]!.replace(
+                'Id="rIdF"',
+                'Id="rIdOther"',
+            );
+            const file = path.join(dir, "unreached-glossary-no-relationship.docx");
+            writeFileSync(file, await buildDocx(parts));
+            for (const profile of ["word-valid", "strict"] as const) {
+                const result = await validate(file, { profile });
+                expect(
+                    result.issues.filter((issue) => issue.code === CODE),
+                    profile,
+                ).toEqual([]);
+            }
+            const strict = await validate(file, { profile: "strict" });
+            expect(
+                strict.issues.filter((issue) => issue.code === "rels-id-missing" && issue.path === "word/glossary/document.xml"),
+            ).toHaveLength(1);
+        });
+    });
+
+    it("quick and named runs agree with the full word-valid run (#381)", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "footerref-no-relationship.docx");
+            writeFileSync(file, await buildDocx(danglingReferenceParts("footerReference")));
+            const full = await validate(file, { profile: "word-valid" });
+            const expected = full.issues.filter((issue) => issue.code === CODE);
+            expect(expected).toHaveLength(1);
+            for (const selection of [{ quick: true }, { checks: ["relationships"] }, { checks: [CODE] }]) {
+                const partial = await validate(file, { profile: "word-valid", ...selection });
+                const tag = JSON.stringify(selection);
+                expect(partial.valid, tag).toBe(false);
+                expect(
+                    partial.issues.filter((issue) => issue.code === CODE),
+                    tag,
+                ).toEqual(expected);
+            }
+        });
+    });
+
+    it("lenient keeps the rels-id-missing and runs no Word rule", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "footerref-no-relationship.docx");
+            writeFileSync(file, await buildDocx(danglingReferenceParts("footerReference")));
+            const lenient = await validate(file, { profile: "lenient" });
+            expect(lenient.issues.some((issue) => issue.code === CODE)).toBe(false);
+            const found = lenient.issues.filter((issue) => issue.code === "rels-id-missing");
+            expect(found).toHaveLength(1);
+            expect(found[0]?.message).toBe("<footerReference> r:id references non-existent relationship 'rId9' (valid IDs: rId1)");
         });
     });
 });

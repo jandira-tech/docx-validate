@@ -1008,8 +1008,8 @@ export class BaseSchemaValidator {
      * elements its Word rule already reported back to that rule
      * (`withoutRepeatedHeaderFooterFindings` in docx.ts), through the
      * structured story reference identity this method registers on each
-     * `headerReference`/`footerReference` mismatch (#616) — never through
-     * the message prose.
+     * `headerReference`/`footerReference` mismatch (#616) and on each such
+     * `rels-id-missing` (#619) — never through the message prose.
      */
     async validateAllRelationshipIds(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
@@ -1145,14 +1145,26 @@ export class BaseSchemaValidator {
                     if (!ridToType.has(ridAttr)) {
                         const valid = [...ridToType.keys()].sort().slice(0, 5).join(", ");
                         const ellipsis = ridToType.size > 5 ? "..." : "";
-                        issues.push({
+                        const issue: ValidationIssue = {
                             severity: "error",
                             message:
                                 `<${elemName}> r:${attrName} references non-existent relationship '${ridAttr}' ` +
                                 `(valid IDs: ${valid}${ellipsis})`,
                             path: this.relPath(xmlFile),
                             code: "rels-id-missing",
-                        });
+                        };
+                        // #619: the full run's Word-rule hand-off pairs this
+                        // copy with the rule's finding through the registered
+                        // element identity, never the prose.
+                        if (attrName === "id" && isStoryReferenceLocalName(elemName)) {
+                            registerStoryReferenceIdentity(issue, {
+                                part: this.relPath(xmlFile),
+                                namespaceURI: elem.namespaceURI ?? "",
+                                localName: elemName,
+                                rid: ridAttr,
+                            });
+                        }
+                        issues.push(issue);
                     } else if (attrName === "id" && Object.keys(this.elementRelationshipTypes).length > 0) {
                         const expectedType = this._getExpectedRelationshipType(elemName);
                         if (expectedType) {

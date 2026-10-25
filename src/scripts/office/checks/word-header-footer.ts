@@ -24,12 +24,19 @@
  * relationship's type decides, so this check judges the Type alone and never
  * resolves the target.
  *
- * A reference whose `r:id` names no Relationship stays `rels-id-missing`'s
- * finding. In a full word-valid or strict run each element this check
- * reports yields one finding, this check's: the run drops the matching
- * `rels-id-mismatch` for it (#612; `withoutRepeatedHeaderFooterFindings` in
- * validators/docx.ts), paired through the structured element identity the
- * check registers on the issue, never message prose (#616). Everywhere else `rels-id-mismatch` keeps the element —
+ * A reference whose `r:id` names no Relationship in the part's own
+ * relationships part makes Word 16.115 offer recovery too, once that
+ * relationships part exists and parses (#619; session 32): a `w:footerReference`
+ * `r:id="rId9"` in the body `w:sectPr` beside a kept
+ * `word/_rels/document.xml.rels` holding no `rId9` was refused. A part with
+ * no relationships part is `rels-missing-sidecar`'s finding alone; an
+ * unparseable one is diagnosed by xml-syntax. In a full word-valid or strict
+ * run each element this check reports yields one finding, this check's: the
+ * run drops the matching `rels-id-mismatch` — or, for an `r:id` naming no
+ * Relationship, `rels-id-missing` — copy of it (#612, #619;
+ * `withoutRepeatedHeaderFooterFindings` in validators/docx.ts), paired through
+ * the structured element identity the check registers on the issue, never
+ * message prose (#616). Everywhere else those codes keep the element —
  * a standalone `validateAllRelationshipIds()` call, a foreign-namespace
  * `x:headerReference` this check does not match, a glossary no
  * main-document relationship reaches, and lenient, which runs no Word rule
@@ -69,23 +76,25 @@ const ACCEPTED_RELATIONSHIP_TYPES: Readonly<Record<"header" | "footer", readonly
 
 /**
  * Each relationship id the part's own sidecar names, with its Type. An
- * absent sidecar leaves every id unresolved (`rels-id-missing`'s business);
- * an unparseable one is diagnosed by xml-syntax.
+ * absent sidecar returns `undefined` (`rels-missing-sidecar`'s business); an
+ * unparseable one returns `null` and is diagnosed by xml-syntax; a present,
+ * parseable one returns its Ids, possibly none, so an `r:id` naming none of
+ * them is this check's finding (#619).
  */
 const relationshipTypes = (
     ctx: ValidationContext,
     xmlFile: string,
     findPart: (partName: string) => string | undefined,
-): Map<string, string> | null => {
+): Map<string, string> | null | undefined => {
     const relsFile = findPart(path.posix.join(path.posix.dirname(xmlFile), "_rels", `${path.posix.basename(xmlFile)}.rels`));
-    const parsed = relsFile === undefined ? undefined : ctx.effectiveXml(relsFile);
-    if (parsed && !parsed.ok) {
+    if (relsFile === undefined) {
+        return undefined;
+    }
+    const parsed = ctx.effectiveXml(relsFile);
+    if (!parsed?.ok) {
         return null;
     }
     const out = new Map<string, string>();
-    if (!parsed) {
-        return out;
-    }
     for (const rel of getRelationshipChildren(parsed.document)) {
         const id = rel.getAttribute("Id");
         if (!id) {
@@ -122,11 +131,12 @@ export const wordHeaderFooterRelationshipCheck: CheckDefinition = {
                 continue;
             }
             const types = relationshipTypes(ctx, root.part, findPart);
-            if (types === null) {
+            if (types === null || types === undefined) {
                 continue;
             }
             for (const ns of WORD_PARAGRAPH_NAMESPACES) {
                 for (const { localName, expected } of REFERENCES) {
+                    const [transitionalType, strictType] = ACCEPTED_RELATIONSHIP_TYPES[expected];
                     for (const elem of getElementsByTagNameNSAll(parsed.document, ns, localName)) {
                         let rid: string | null = null;
                         for (const relNs of relationshipNamespaces) {
@@ -136,14 +146,30 @@ export const wordHeaderFooterRelationshipCheck: CheckDefinition = {
                                 break;
                             }
                         }
-                        // No r:id, or an r:id naming no Relationship: never
-                        // this check's finding (rels-id-missing owns it).
+                        // No r:id: never this check's finding.
                         if (rid === null) continue;
                         const type = types.get(rid);
+                        // An r:id naming no Relationship of a part whose
+                        // sidecar exists and parses: this check's finding
+                        // (#619). A part with no sidecar is
+                        // rels-missing-sidecar's alone.
                         if (type === undefined) {
+                            const issue: ValidationIssue = {
+                                severity: "error",
+                                message:
+                                    `<w:${localName}> r:id="${rid}" names no Relationship with Id '${rid}'; ` +
+                                    `a w:${localName} needs a Relationship of Type ${transitionalType} (or the ISO Strict ${strictType}). ` +
+                                    "Microsoft Word offers to recover the file. Point the r:id at such a Relationship, or add one with that Id and Type.",
+                                path: root.part,
+                                code: WORD_HEADER_FOOTER_RELATIONSHIP,
+                            };
+                            // #619: the full run's hand-off pairs this finding
+                            // with rels-id-missing's copy through the
+                            // registered element identity, never the prose.
+                            registerStoryReferenceIdentity(issue, { part: root.part, namespaceURI: ns, localName, rid });
+                            issues.push(issue);
                             continue;
                         }
-                        const [transitionalType, strictType] = ACCEPTED_RELATIONSHIP_TYPES[expected];
                         if (type === transitionalType || type === strictType) {
                             continue;
                         }

@@ -462,9 +462,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         const contentTypes = this.validateContentTypes();
         // #612: the relationship-id walk is captured by name because a full
         // non-lenient run hands the story reference elements its Word rule
-        // already reported back to that rule, dropping rels-id-mismatch's
+        // already reported back to that rule, dropping rels-id-mismatch's —
+        // and, for an r:id naming no Relationship, rels-id-missing's (#619) —
         // copy of each (withoutRepeatedHeaderFooterFindings). Called on its
-        // own, validateAllRelationshipIds keeps every mismatch.
+        // own, validateAllRelationshipIds keeps every finding.
         const relationshipIds = this.validateAllRelationshipIds();
         const checks: Array<Promise<ValidationResult>> = [
             this.validateNamespaces(),
@@ -2807,9 +2808,10 @@ export function withoutRepeatedCompatibilityFindings(schema: ValidationResult, r
  * A full non-lenient run reports each story `w:headerReference`/
  * `w:footerReference` the `word-header-footer-relationship` rule judged
  * once — through that rule — so the same run's `validateAllRelationshipIds`
- * result drops its `rels-id-mismatch` copy of each reported element (#612).
- * The pairing is the structured identity both producers registered on the
- * issue object when they created it (#616): part path (normalized on
+ * result drops its `rels-id-mismatch` copy, and for an `r:id` naming no
+ * Relationship its `rels-id-missing` copy, of each reported element (#612,
+ * #619). The pairing is the structured identity both producers registered on
+ * the issue object when they created it (#616): part path (normalized on
  * registration, as `withoutRepeatedCompatibilityFindings` compares paths),
  * element namespace URI, local name and raw `r:id` all match, and findings
  * pair one-for-one — two identical elements are both dropped only by two
@@ -2818,8 +2820,8 @@ export function withoutRepeatedCompatibilityFindings(schema: ValidationResult, r
  * mismatch. A finding without a registered identity — another producer, or
  * a copy made between producer and helper — is never dropped. Where the
  * Word rule stays silent — a foreign-namespace `x:headerReference`, a
- * glossary no main-document relationship reaches — the mismatch stays, and
- * `validateAllRelationshipIds` called on its own reports every mismatch.
+ * glossary no main-document relationship reaches — the legacy findings stay,
+ * and `validateAllRelationshipIds` called on its own reports every one.
  */
 export function withoutRepeatedHeaderFooterFindings(relationshipIds: ValidationResult, rules: ValidationResult): ValidationResult {
     const key = (identity: StoryReferenceIdentity): string =>
@@ -2832,7 +2834,7 @@ export function withoutRepeatedHeaderFooterFindings(relationshipIds: ValidationR
         reported.set(key(identity), (reported.get(key(identity)) ?? 0) + 1);
     }
     const issues = relationshipIds.issues.filter((issue) => {
-        if (issue.code !== "rels-id-mismatch") return true;
+        if (issue.code !== "rels-id-mismatch" && issue.code !== "rels-id-missing") return true;
         const identity = storyReferenceIdentity(issue);
         if (!identity) return true;
         const remaining = reported.get(key(identity)) ?? 0;
