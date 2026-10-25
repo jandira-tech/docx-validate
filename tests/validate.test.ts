@@ -24,6 +24,7 @@ import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import { runValidateFromArgv, validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+import { buildRawZip } from "./support/raw-zip";
 import { contentTypeSpecimens } from "./support/word-content-types-specimens";
 import { rels, relation } from "./support/word-rule-test-xml";
 import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
@@ -303,6 +304,37 @@ describe("validate", () => {
                 ]),
             );
             expect(await fs.readFile(file)).toEqual(beforeBytes);
+        });
+    });
+
+    it("claims no auto-repair for a packed .xlsx input, which has no validators (#666)", async () => {
+        await withTempDir(async (tmp) => {
+            const file = path.join(tmp, "packed.xlsx");
+            await fs.writeFile(file, await buildDocx({ ...MINIMAL_PARTS }));
+            const result = await validate(file, { autoRepair: true });
+            // runValidators returns before its repair block, so nothing ran.
+            expect(result.repairs).toBe(0);
+            expect(result.issues).toContainEqual(expect.objectContaining({ code: "unsupported-file-type", severity: "error" }));
+            expect(result.issues.filter((i) => i.code === "auto-repair-staged-copy")).toEqual([]);
+        });
+    });
+
+    it("claims no auto-repair when the packed file cannot be extracted (#666)", async () => {
+        await withTempDir(async (tmp) => {
+            const file = path.join(tmp, "packed.docx");
+            // The archive opens, but no host filesystem holds a 300-character
+            // file name, so the extraction fails before any repair (#454).
+            await fs.writeFile(
+                file,
+                buildRawZip([
+                    ...Object.entries(MINIMAL_PARTS).map(([name, content]) => ({ name, content })),
+                    { name: `word/${"a".repeat(300)}.xml`, content: "<x/>" },
+                ]),
+            );
+            const result = await validate(file, { autoRepair: true });
+            expect(result.repairs).toBe(0);
+            expect(result.issues).toContainEqual(expect.objectContaining({ code: "package-extract-failed", severity: "error" }));
+            expect(result.issues.filter((i) => i.code === "auto-repair-staged-copy")).toEqual([]);
         });
     });
 

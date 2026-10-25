@@ -575,11 +575,18 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
         // filesystem cannot hold two parts under one name (#373). The archive
         // still reads, so the findings a partial run computes on it belong in
         // the staging failure (#454).
-        const staged = await runStaged(zip, named, undefined, () => archiveFindings(buf, format, profile, registry));
         // A packed input's repairs land in the temporary staging and are
         // thrown away — only a directory input's write-back reaches the
         // source — so the result must not read as if the file changed (#649).
-        return finish(autoRepair ? { ...staged, issues: [...staged.issues, PACKED_REPAIR_DISCLOSURE] } : staged);
+        // The disclosure says a repair ran, so it is added only when one did
+        // (#666): a failed extraction stops before the repair block, and
+        // `.xlsx`, the one accepted suffix without validators, never reaches it.
+        let repairRan = autoRepair && format !== "xlsx";
+        const staged = await runStaged(zip, named, undefined, () => {
+            repairRan = false;
+            return archiveFindings(buf, format, profile, registry);
+        });
+        return finish(repairRan ? { ...staged, issues: [...staged.issues, PACKED_REPAIR_DISCLOSURE] } : staged);
     }
 
     const dir = path.resolve(target);

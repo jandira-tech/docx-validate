@@ -1406,7 +1406,10 @@ temporary staged copy that is discarded, so the source file's bytes never
 change. The result then carries an `auto-repair-staged-copy` info finding —
 and the CLI prints the same sentence next to `Auto-repaired N issue(s)` —
 disclosing that the repairs and the repair plan describe the staged copy
-([#649](https://github.com/jandira-tech/docx-validate/issues/649)).
+([#649](https://github.com/jandira-tech/docx-validate/issues/649)). It
+appears only when a repair ran: a packed `.xlsx`, which has no validators,
+and a packed file that cannot be extracted get none
+([#666](https://github.com/jandira-tech/docx-validate/issues/666)).
 
 A stored file that cannot be read fails the run with `package-extract-failed`,
 naming the stored file — the package view cannot be staged. This includes a
