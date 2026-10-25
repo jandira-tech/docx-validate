@@ -84,6 +84,7 @@ import { isXmlPartName, XML_SYNTAX_CHECK_ID } from "../checks/xml";
 import { CT_OVERRIDE_PARTNAME_WORD_REFUSED, ctOverridePartnameWordRefusedCheck } from "../checks/ct-override-partname-word-refused";
 import { CT_OVERRIDE_PARTNAME_INVALID, ctOverridePartnameInvalidCheck } from "../checks/ct-override-partname";
 import { ctDuplicateDeclarationCheck } from "../checks/word-content-types";
+import { isStoryReferenceLocalName, registerStoryReferenceIdentity } from "../story-reference-identity";
 import { loadCentralNamedArchive } from "../../../lib/zip-central-names";
 import { CT_MARKUP_COMPATIBILITY, ctMarkupCompatibilityCheck } from "../checks/ct-markup-compatibility";
 import type JSZip from "jszip";
@@ -999,10 +1000,59 @@ export class BaseSchemaValidator {
         return finalize(issues);
     }
 
+    /**
+     * Reports every mismatched `r:id` it finds, under every profile: this
+     * method knows nothing about the registered Word checks, so a caller
+     * composing it directly gets the full legacy finding set (#612). A full
+     * `DOCXSchemaValidator.validate()` run hands the story reference
+     * elements its Word rule already reported back to that rule
+     * (`withoutRepeatedHeaderFooterFindings` in docx.ts), through the
+     * structured story reference identity this method registers on each
+     * `headerReference`/`footerReference` mismatch (#616) and on each such
+     * `rels-id-missing` (#619) — never through the message prose.
+     */
     async validateAllRelationshipIds(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
         const entries = packageEntries(this.unpackedDir);
         const findPart = equivalentPartLookup([...entries.keys()]);
+        // #618: every relationships part is judged exactly once, whichever
+        // walk reaches it first — the package scan below, the `.xml` owner
+        // loop, or the non-`.xml` owner pass after it (an owner stored under
+        // two equivalent spellings must not double-report).
+        const judgedRelsFiles = new Set<string>();
+        /** Report each repeated `Id` in the relationships part `relsFile` once, at that part; a part already judged is skipped. */
+        const reportDuplicates = (document: Document, relsFile: string): void => {
+            if (judgedRelsFiles.has(relsFile)) return;
+            judgedRelsFiles.add(relsFile);
+            const seen = new Set<string>();
+            for (const relationship of this.relationshipElements(document)) {
+                const id = relationship.getAttribute("Id");
+                if (!id) continue;
+                if (seen.has(id)) {
+                    issues.push({
+                        severity: "error",
+                        message: `Duplicate relationship ID '${id}' (IDs must be unique)`,
+                        path: this.relPath(relsFile),
+                        code: "rels-id-duplicate",
+                    });
+                }
+                seen.add(id);
+            }
+        };
+        // The package has no owner part, so neither owner walk below ever
+        // visits its relationships. Lenient retains its historical XSD-only
+        // diagnosis here (#615); XML checks own missing/malformed parts.
+        if (this.profile !== "lenient") {
+            const packageRels = findPart("_rels/.rels");
+            const packageRelsFile = packageRels === undefined ? undefined : entries.get(packageRels);
+            if (packageRelsFile !== undefined) {
+                try {
+                    reportDuplicates(parseXmlBytes(await fs.readFile(packageRelsFile)), packageRelsFile);
+                } catch {
+                    // XML syntax diagnostics already report this part.
+                }
+            }
+        }
 
         for (const xmlFile of this.xmlFiles) {
             const part = this.entryName(xmlFile);
@@ -1055,6 +1105,7 @@ export class BaseSchemaValidator {
                 continue;
             }
 
+            reportDuplicates(relsDom, relsFile);
             const ridToType = new Map<string, string>();
             const rels = this.relationshipElements(relsDom);
             for (let i = 0; i < rels.length; i += 1) {
@@ -1063,14 +1114,6 @@ export class BaseSchemaValidator {
                 const rid = rel.getAttribute("Id");
                 const relType = rel.getAttribute("Type") ?? "";
                 if (!rid) continue;
-                if (ridToType.has(rid)) {
-                    issues.push({
-                        severity: "error",
-                        message: `Duplicate relationship ID '${rid}' (IDs must be unique)`,
-                        path: this.relPath(relsFile),
-                        code: "rels-id-duplicate",
-                    });
-                }
                 const typeName = relType.includes("/") ? (relType.split("/").pop() ?? relType) : relType;
                 ridToType.set(rid, typeName);
             }
@@ -1102,31 +1145,84 @@ export class BaseSchemaValidator {
                     if (!ridToType.has(ridAttr)) {
                         const valid = [...ridToType.keys()].sort().slice(0, 5).join(", ");
                         const ellipsis = ridToType.size > 5 ? "..." : "";
-                        issues.push({
+                        const issue: ValidationIssue = {
                             severity: "error",
                             message:
                                 `<${elemName}> r:${attrName} references non-existent relationship '${ridAttr}' ` +
                                 `(valid IDs: ${valid}${ellipsis})`,
                             path: this.relPath(xmlFile),
                             code: "rels-id-missing",
-                        });
+                        };
+                        // #619: the full run's Word-rule hand-off pairs this
+                        // copy with the rule's finding through the registered
+                        // element identity, never the prose.
+                        if (attrName === "id" && isStoryReferenceLocalName(elemName)) {
+                            registerStoryReferenceIdentity(issue, {
+                                part: this.relPath(xmlFile),
+                                namespaceURI: elem.namespaceURI ?? "",
+                                localName: elemName,
+                                rid: ridAttr,
+                                ridNamespaceURI: rNs,
+                            });
+                        }
+                        issues.push(issue);
                     } else if (attrName === "id" && Object.keys(this.elementRelationshipTypes).length > 0) {
                         const expectedType = this._getExpectedRelationshipType(elemName);
                         if (expectedType) {
                             const actualType = ridToType.get(ridAttr) ?? "";
                             if (!actualType.toLowerCase().includes(expectedType)) {
-                                issues.push({
+                                const issue: ValidationIssue = {
                                     severity: "error",
                                     message:
                                         `<${elemName}> references '${ridAttr}' which points to '${actualType}' ` +
                                         `but should point to a '${expectedType}' relationship`,
                                     path: this.relPath(xmlFile),
                                     code: "rels-id-mismatch",
-                                });
+                                };
+                                // #616: the full run's Word-rule hand-off pairs
+                                // this copy with the rule's finding through the
+                                // registered element identity, never the prose.
+                                if (isStoryReferenceLocalName(elemName)) {
+                                    registerStoryReferenceIdentity(issue, {
+                                        part: this.relPath(xmlFile),
+                                        namespaceURI: elem.namespaceURI ?? "",
+                                        localName: elemName,
+                                        rid: ridAttr,
+                                        ridNamespaceURI: rNs,
+                                    });
+                                }
+                                issues.push(issue);
                             }
                         }
                     }
                 }
+            }
+        }
+
+        // #618: `this.xmlFiles` holds only parts whose names end in `.xml` or
+        // `.rels` (the constructor's `isXmlPartName` filter), so the loop
+        // above never visits the sidecar of an owner stored under any other
+        // name — yet Word reads a story root stored as `word/document.bin` or
+        // `word/glossary/document.bin` and offers recovery for duplicate Ids
+        // in its sidecar (session 31, s31a). Walk every remaining owner that
+        // exists in the package, whatever its suffix, and judge its sidecar
+        // through the same `reportDuplicates`, exactly once per relationships
+        // part. Nothing else follows the owner here: it is never parsed as
+        // XML, so it gets no `rels-missing-sidecar`/`rels-id-*` walk of its
+        // own content, and a sidecar that does not parse yields no finding —
+        // the XML syntax checks own that diagnosis, as in the package scan
+        // above. A `.rels` whose owner is not in the package keeps today's
+        // behaviour: with no owner to walk from, only the schema-walking
+        // profiles judge it. The package `_rels/.rels` stays with that scan.
+        for (const [name] of entries) {
+            if (isXmlPartName(name)) continue;
+            const relsPart = findPart(path.posix.join(path.posix.dirname(name), "_rels", `${path.posix.basename(name)}.rels`));
+            const relsFile = relsPart === undefined ? undefined : entries.get(relsPart);
+            if (relsFile === undefined) continue;
+            try {
+                reportDuplicates(parseXmlBytes(await fs.readFile(relsFile)), relsFile);
+            } catch {
+                // XML syntax diagnostics already report this part.
             }
         }
 

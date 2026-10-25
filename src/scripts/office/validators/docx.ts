@@ -56,7 +56,7 @@ import { withoutConsequentialParseFailures } from "../../../lib/parse-failures";
 import { mergeResults } from "../../../lib/types";
 import { promoteFullCheckIssue } from "../../../lib/mode-policy";
 import { propertiesParts } from "../../../lib/properties-parts";
-import { wordReadParts } from "../../../lib/word-read-parts";
+import { wordReadParts, wordStoryRootParts } from "../../../lib/word-read-parts";
 import { isWordBlockingIssue } from "./word-blocking";
 import {
     decodeXmlBytes,
@@ -78,6 +78,8 @@ import {
 import { runChecks } from "../../../lib/check-scheduler";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "../checks/index";
+import { WORD_HEADER_FOOTER_RELATIONSHIP } from "../checks/word-header-footer";
+import { type StoryReferenceIdentity, storyReferenceIdentity } from "../story-reference-identity";
 import { WORD_PART_CONTENT_TYPE_GENERIC, wordPartContentTypeGenericFindings } from "../checks/word-part-content-type-generic";
 import { contextFromDirectory, openDirectoryContext, packageExtractFailedIssue, storedNamesRun } from "../package-context";
 import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
@@ -458,6 +460,13 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             }));
 
         const contentTypes = this.validateContentTypes();
+        // #612: the relationship-id walk is captured by name because a full
+        // non-lenient run hands the story reference elements its Word rule
+        // already reported back to that rule, dropping rels-id-mismatch's —
+        // and, for an r:id naming no Relationship, rels-id-missing's (#619) —
+        // copy of each (withoutRepeatedHeaderFooterFindings). Called on its
+        // own, validateAllRelationshipIds keeps every finding.
+        const relationshipIds = this.validateAllRelationshipIds();
         const checks: Array<Promise<ValidationResult>> = [
             this.validateNamespaces(),
             this.validateUniqueIds(),
@@ -470,7 +479,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
             this.validateWhitespacePreservation(),
             this.validateDeletions(),
             this.validateInsertions(),
-            this.validateAllRelationshipIds(),
+            relationshipIds,
             this.validateIdConstraints(),
             this.validateCommentMarkers(),
             this.validateCommentThreading(),
@@ -495,10 +504,22 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // Strict runs the same Word-proven rules at their native severity.
         const wordRules = this.profile === "lenient" ? undefined : this.validateRegisteredWordRules();
         if (wordRules) checks.push(wordRules);
+        // #612: in a full non-lenient run each element the Word rule reported
+        // yields one finding, the Word rule's, so the settled relationship-id
+        // result drops its copy. Lenient runs no Word rule and keeps every
+        // mismatch.
+        const handOffStoryReferences = (results: ValidationResult[]): ValidationResult[] => {
+            if (wordRules === undefined) return results;
+            const rules = results[checks.indexOf(wordRules)]!;
+            const rels = results[checks.indexOf(relationshipIds)]!;
+            return results.map((result) => (result === rels ? withoutRepeatedHeaderFooterFindings(rels, rules) : result));
+        };
         if (this.profile === "word-valid") {
             // Word-valid judges what Word reads through structural checks
             // alone: no schema is compiled or walked.
-            return this.applyWordValidProfile(withoutRestatedIgnorablePrefixes(mergeResults(xmlOk, ...(await settle(checks)))));
+            return this.applyWordValidProfile(
+                withoutRestatedIgnorablePrefixes(mergeResults(xmlOk, ...handOffStoryReferences(await settle(checks)))),
+            );
         }
 
         const xsd = this.validateAgainstXsd();
@@ -510,7 +531,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         return withoutRestatedIgnorablePrefixes(
             mergeResults(
                 xmlOk,
-                ...results.map((result) => (result === schema ? withoutRepeatedCompatibilityFindings(schema, rules) : result)),
+                ...handOffStoryReferences(results).map((result) =>
+                    result === schema ? withoutRepeatedCompatibilityFindings(schema, rules) : result,
+                ),
             ),
         );
     }
@@ -602,13 +625,25 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         );
     }
 
+    /**
+     * The `word-valid` view of a full run: every error that does not predict a
+     * Word refusal or recovery offer ({@link isWordBlockingIssue}) becomes a
+     * warning, judged against this package's properties parts, Word-read parts
+     * and story roots. Runs after the story-reference hand-off, so the
+     * pairing in `withoutRepeatedHeaderFooterFindings` sees the producers'
+     * own issue objects.
+     */
     private async applyWordValidProfile(result: ValidationResult): Promise<ValidationResult> {
         const context = this.context();
-        // Both reachability sets are computed once per run, from the shared
-        // context, and given to the one predicate every issue passes through.
-        const [properties, read] = await Promise.all([propertiesParts(context), wordReadParts(context)]);
+        // Resolve each part set once per run and share the blocking predicate
+        // with partial validation (#381, #615, #617).
+        const [properties, read, storyRoots] = await Promise.all([
+            propertiesParts(context),
+            wordReadParts(context),
+            wordStoryRootParts(context),
+        ]);
         const issues = result.issues.map((issue): ValidationIssue => {
-            if (issue.severity !== "error" || isWordBlockingIssue(issue, properties, read)) return issue;
+            if (issue.severity !== "error" || isWordBlockingIssue(issue, properties, read, storyRoots)) return issue;
             return { ...issue, severity: "warning" };
         });
         return finalize(issues);
@@ -2767,6 +2802,49 @@ export function withoutRepeatedCompatibilityFindings(schema: ValidationResult, r
         return false;
     });
     return { valid: schema.valid, issues };
+}
+
+/**
+ * A full non-lenient run reports each story `w:headerReference`/
+ * `w:footerReference` the `word-header-footer-relationship` rule judged
+ * once — through that rule — so the same run's `validateAllRelationshipIds`
+ * result drops its `rels-id-mismatch` copy, and for an `r:id` naming no
+ * Relationship its `rels-id-missing` copy, of each reported element (#612,
+ * #619). The pairing is the structured identity both producers registered on
+ * the issue object when they created it (#616): part path (normalized on
+ * registration, as `withoutRepeatedCompatibilityFindings` compares paths),
+ * element namespace URI, local name, raw `r:id` and the namespace URI the
+ * `r:id` was read in all match, so an `mc:Choice` reference whose ISO Strict
+ * `r:id` the Word rule judged never consumes its `mc:Fallback` twin's
+ * Transitional finding (review BE F1). Findings pair one-for-one — two
+ * identical elements are both dropped only by two Word-rule findings. The former message-prose pairing let a quoted `r:id`
+ * double the report and a crafted `r:id` consume a foreign element's only
+ * mismatch. A finding without a registered identity — another producer, or
+ * a copy made between producer and helper — is never dropped. Where the
+ * Word rule stays silent — a foreign-namespace `x:headerReference`, a
+ * glossary no main-document relationship reaches — the legacy findings stay,
+ * and `validateAllRelationshipIds` called on its own reports every one.
+ */
+export function withoutRepeatedHeaderFooterFindings(relationshipIds: ValidationResult, rules: ValidationResult): ValidationResult {
+    const key = (identity: StoryReferenceIdentity): string =>
+        `${identity.part}\u0000${identity.namespaceURI}\u0000${identity.localName}\u0000${identity.rid}\u0000${identity.ridNamespaceURI}`;
+    const reported = new Map<string, number>();
+    for (const issue of rules.issues) {
+        if (issue.code !== WORD_HEADER_FOOTER_RELATIONSHIP) continue;
+        const identity = storyReferenceIdentity(issue);
+        if (!identity) continue;
+        reported.set(key(identity), (reported.get(key(identity)) ?? 0) + 1);
+    }
+    const issues = relationshipIds.issues.filter((issue) => {
+        if (issue.code !== "rels-id-mismatch" && issue.code !== "rels-id-missing") return true;
+        const identity = storyReferenceIdentity(issue);
+        if (!identity) return true;
+        const remaining = reported.get(key(identity)) ?? 0;
+        if (remaining === 0) return true;
+        reported.set(key(identity), remaining - 1);
+        return false;
+    });
+    return { valid: relationshipIds.valid, issues };
 }
 
 function directChild(parent: Element, namespaceURI: string, local: string): Element | null {

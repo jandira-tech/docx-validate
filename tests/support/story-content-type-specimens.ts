@@ -84,3 +84,78 @@ export const footerWithHeaderRelationship = (
     }
     return parts;
 };
+
+const GLOSSARY_TYPE = storyContentType("document.glossary");
+const relsBody = (body: string): string =>
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${body}</Relationships>`;
+
+/** Session 26's story payloads (#606). */
+export const STORY_HEADER_XML = `<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header</w:t></w:r></w:p></w:hdr>`;
+export const STORY_FOOTER_XML = `<w:ftr xmlns:w="${W}"><w:p><w:r><w:t>Footer</w:t></w:r></w:p></w:ftr>`;
+
+/** Session 26's `docWith` shape (#606): the main document's body sectPr carries the reference. */
+const docWithStoryReference = (reference: "headerReference" | "footerReference", id = "rIdX"): string =>
+    MINIMAL_PARTS["word/document.xml"]!.replace(`<w:document xmlns:w="${W}"`, `<w:document xmlns:w="${W}" xmlns:r="${R}"`).replace(
+        "<w:sectPr>",
+        `<w:sectPr><w:${reference} w:type="default" r:id="${id}"/>`,
+    );
+
+/**
+ * Session 26's `mainPart` shape (#606): the sectPr `reference` names rIdX, a
+ * `segment`-type relationship to `word/file`, typed `type`.
+ */
+export const storyReferenceParts = (
+    reference: "headerReference" | "footerReference",
+    segment: string,
+    file: string,
+    xml: string,
+    type: string,
+): Record<string, string> => ({
+    ...MINIMAL_PARTS,
+    "word/document.xml": docWithStoryReference(reference),
+    [`word/${file}`]: xml,
+    "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+        "</Relationships>",
+        `<Relationship Id="rIdX" Type="${R}/${segment}" Target="${file}"/></Relationships>`,
+    ),
+    "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+        "</Types>",
+        `<Override PartName="/word/${file}" ContentType="${type}"/></Types>`,
+    ),
+});
+
+/** Session 26's `headerRefToStyles` shape (#606): the sectPr headerReference names rId1, the styles relationship MINIMAL_PARTS already carries. */
+export const storyReferenceToOwnStylesParts = (): Record<string, string> => ({
+    ...MINIMAL_PARTS,
+    "word/document.xml": docWithStoryReference("headerReference", "rId1"),
+});
+
+/**
+ * Session 26's `glossaryRef` shape (#606): a reached glossary's docPartBody
+ * sectPr carries the `reference` (rIdF), rIdF a `relType` relationship to
+ * `word/glossary/file`.
+ */
+export const glossaryStoryReferenceParts = (
+    reference: "headerReference" | "footerReference",
+    relType: string,
+    file: string,
+    xml: string,
+    type: string,
+): Record<string, string> => ({
+    ...MINIMAL_PARTS,
+    "word/glossary/document.xml":
+        `<w:glossaryDocument xmlns:w="${W}" xmlns:r="${R}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+        `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+        `<w:docPartBody><w:p><w:r><w:t>Part</w:t></w:r></w:p><w:sectPr><w:${reference} w:type="default" r:id="rIdF"/></w:sectPr></w:docPartBody>` +
+        `</w:docPart></w:docParts></w:glossaryDocument>`,
+    "word/glossary/_rels/document.xml.rels": relsBody(`<Relationship Id="rIdF" Type="${R}/${relType}" Target="${file}"/>`),
+    [`word/glossary/${file}`]: xml,
+    "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+        "</Relationships>",
+        `<Relationship Id="rIdG" Type="${R}/glossaryDocument" Target="glossary/document.xml"/></Relationships>`,
+    ),
+    "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+        "</Types>",
+        `<Override PartName="/word/glossary/document.xml" ContentType="${GLOSSARY_TYPE}"/><Override PartName="/word/glossary/${file}" ContentType="${type}"/></Types>`,
+    ),
+});

@@ -36,7 +36,9 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
     "word-text-contains-paragraph":
         "A w:t text run contains a w:p paragraph. Word cannot open the file. Move the paragraph out of the text run.",
     "word-hyperlink-relationship":
-        "A w:hyperlink r:id does not reference a Relationship whose Type ends in /hyperlink and whose TargetMode is External. Word offers to recover the file. Add that relationship, or remove the r:id.",
+        "A w:hyperlink r:id does not reference a Relationship whose Type is the Transitional or the ISO Strict hyperlink URI with TargetMode External. Word offers to recover the file. Add that relationship, or remove the r:id.",
+    "word-header-footer-relationship":
+        "A w:headerReference or w:footerReference names no Relationship with its r:id, or names a Relationship whose Type is neither the Transitional nor the ISO Strict URI the reference needs. Word offers to recover the file. Point the r:id at a Relationship of the matching type, add one with that Id, or retype that Relationship.",
     "word-duplicate-theme-relationship":
         "A relationships part lists more than one theme. Word offers to recover the file. Keep a single theme relationship.",
     "word-duplicate-font-table-relationship":
@@ -86,6 +88,8 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
     "comment-thread-durableid-missing":
         "Comment-threading metadata expected a durableId that is not present. Add it or drop the threading entry.",
     "comment-thread-durableid-duplicate": "Duplicate durableId in comment-threading metadata. Make each unique.",
+    "rels-id-duplicate":
+        "Duplicate relationship Ids in _rels/.rels or a story root's relationships — the main document's or a reached glossary document's — make Word offer recovery, even when identical or unreferenced. Keep each Id unique within that relationships part and update any references when renaming it. Duplicates in other relationships parts remain non-blocking under word-valid.",
     "rels-missing-sidecar":
         "A part uses relationship IDs but its _rels sidecar is missing, so Word cannot resolve the targets. Add the matching .rels file.",
     "rels-broken":

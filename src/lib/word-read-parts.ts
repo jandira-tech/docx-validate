@@ -283,12 +283,6 @@ export type WordTypedTarget = {
     readonly via?: "glossary";
 };
 
-/** Canonical names of the main document parts, wherever they are stored. */
-export const wordMainDocumentParts = async (context: ValidationContext): Promise<ReadonlySet<string>> => {
-    const reach = await packageReach(context);
-    return new Set((reach?.mainParts ?? []).map(canonicalPartName));
-};
-
 /**
  * The parts the named relationship segments reach (#432): every main document
  * (`officeDocument`), and the target of every main-document relationship of
@@ -549,6 +543,28 @@ const wordStoryReadTargets = async (
         targets.push(...(await storyRootReadParts(context, reach, glossaryPart, GLOSSARY_EAGER_TYPES, "glossary")));
     }
     return { targets, reach };
+};
+
+/**
+ * Canonical names of the story roots Word reads at open: every main
+ * document, wherever it is stored, plus every glossary document a
+ * main-document `glossaryDocument` relationship reaches. Each is a root
+ * whose own relationships part Word reads (#514, #549), so a duplicate Id
+ * there makes Word offer recovery as the main document's does (#617,
+ * session 30). Reads the one story-root traversal above — no second glossary
+ * resolver — and an unreached glossary stays absent, as a header or an
+ * orphan `word/document.xml` does.
+ */
+export const wordStoryRootParts = async (context: ValidationContext): Promise<ReadonlySet<string>> => {
+    const parts = new Set<string>();
+    for (const target of (await wordStoryReadTargets(context))?.targets ?? []) {
+        // Only a story root itself is typed `officeDocument`; no relationship
+        // segment can add another such entry.
+        if (target.segment === "officeDocument") {
+            parts.add(canonicalPartName(target.part));
+        }
+    }
+    return parts;
 };
 
 /**

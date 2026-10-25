@@ -12,6 +12,47 @@ import { isWordBlockingIssue } from "../src/scripts/office/validators/word-block
 const issue = (code: string, rest: Partial<ValidationIssue> = {}): ValidationIssue => ({ severity: "error", code, message: "", ...rest });
 
 describe("isWordBlockingIssue", () => {
+    it("blocks duplicate relationship Ids in the package and story-root sidecars (#615)", () => {
+        // #617 renamed this set to the story roots: every main document plus
+        // every reached glossary document. This case keeps a mains-only set.
+        const roots = new Set([canonicalPartName("word/main.xml"), canonicalPartName("stories/body.xml")]);
+        const read = new Set(["word/_rels/header9.xml.rels"]);
+        for (const path of ["_rels/.rels", "_RELS/.RELS", "_rels\\.rels", "word/_rels/main.xml.rels", "STORIES/_RELS/body.xml.RELS"]) {
+            expect.soft(isWordBlockingIssue(issue("rels-id-duplicate", { path }), new Set(), read, roots), path).toBe(true);
+        }
+        for (const path of [
+            undefined,
+            "word/_rels/document.xml.rels",
+            "word/_rels/header9.xml.rels",
+            "word/glossary/_rels/document.xml.rels",
+        ]) {
+            expect.soft(isWordBlockingIssue(issue("rels-id-duplicate", { path }), new Set(), read, roots), path).toBe(false);
+        }
+    });
+
+    it("blocks duplicate relationship Ids in a reached glossary's own sidecar (#617)", () => {
+        // Session 30 (s30a): Word 16.115 offered recovery for the rIdZ pair in
+        // a reached glossary's sidecar, so a glossary a main-document
+        // glossaryDocument relationship reaches is a story root whose sidecar
+        // blocks; an unreached glossary's sidecar keeps its word-valid warning.
+        const roots = new Set([canonicalPartName("word/document.xml"), canonicalPartName("word/glossary/document.xml")]);
+        for (const path of ["word/glossary/_rels/document.xml.rels", "WORD/GLOSSARY/_RELS/document.xml.RELS"]) {
+            expect.soft(isWordBlockingIssue(issue("rels-id-duplicate", { path }), new Set(), new Set(), roots), path).toBe(true);
+        }
+        const mainsOnly = new Set([canonicalPartName("word/document.xml")]);
+        expect(
+            isWordBlockingIssue(
+                issue("rels-id-duplicate", { path: "word/glossary/_rels/document.xml.rels" }),
+                new Set(),
+                new Set(),
+                mainsOnly,
+            ),
+        ).toBe(false);
+        expect(
+            isWordBlockingIssue(issue("rels-id-duplicate", { path: "word/_rels/header9.xml.rels" }), new Set(), new Set(), mainsOnly),
+        ).toBe(false);
+    });
+
     it("blocks relationships structure in the package relationships part and under word/ (#433)", () => {
         // Word 16.115 offers recovery for a foreign element in _rels/.rels and in
         // word/_rels/document.xml.rels (session 4c); other sidecars are unobserved.
@@ -80,6 +121,8 @@ describe("isWordBlockingIssue", () => {
         "word-choice-requires-undeclared",
         "word-text-contains-paragraph",
         "word-hyperlink-relationship",
+        // Word 16.115 offers recovery for every story-reference type mismatch probed (#606, session 26).
+        "word-header-footer-relationship",
         "word-duplicate-theme-relationship",
         "word-duplicate-font-table-relationship",
         "word-duplicate-web-settings-relationship",

@@ -1,6 +1,6 @@
 # Real-Word probes, 2026-10-24
 
-Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), and what session 26 settled for the items adversarial review AY suspected (#606, #607, #610).
+Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), what session 26 settled for the items adversarial review AY suspected (#606, #607, #610), what session 27 settled for the relationship types and placements adversarial review AZ left open (#613), what session 28 settled for a hyperlink's relationship type (#614), what session 29 settled for duplicate relationship Ids and `https:` relationship Types (#615, adversarial review BA), what session 30 settled for duplicate relationship Ids outside the package and main-document `.rels` (#617, adversarial review BB), what session 31 settled for duplicate relationship Ids beside a story root stored without a `.xml` suffix (#618, adversarial review BC), and what session 32 settled for a story reference whose `r:id` names no relationship and for a main document stored without a `.xml` suffix (#619, #620, adversarial review BD).
 
 - Word: Microsoft Word for Mac 16.115 (build 16.115.26100424), platform `darwin`.
 - Transport, sessions 1 and 2: `verifyInWord` (`src/lib/word-verifier.ts`). It opens each specimen by path, reads Word's window and dialog state, and never saves.
@@ -175,9 +175,39 @@ Session 25 adds, for the drift the Validator Diff Report flagged on #322 (#271):
 
 Session 26 adds, for the items adversarial review AY (#602) left for a probe:
 
-- **#606: Word refuses a `w:headerReference` whose `r:id` names a footer-type relationship.** It offers recovery whether the target is a `w:hdr` part typed `footer+xml`, `footer+xml; charset=utf-8`, `header+xml` or `styles+xml`, or a well-formed `w:ftr` part typed `footer+xml`. The relationship type is the cause: a story part whose root is the other story's element, reached through a matching reference and relationship (a `w:hdr` part as a footer, a `w:ftr` part as a header), opens clean. The mirror (`w:footerReference` naming a header relationship) and glossary references were not probed.
+- **#606: Word refuses a `w:headerReference` whose `r:id` names a footer-type relationship.** It offers recovery whether the target is a `w:hdr` part typed `footer+xml`, `footer+xml; charset=utf-8`, `header+xml` or `styles+xml`, or a well-formed `w:ftr` part typed `footer+xml`. The relationship type is the cause: a story part whose root is the other story's element, reached through a matching reference and relationship (a `w:hdr` part as a footer, a `w:ftr` part as a header), opens clean. `s26c` widens it: the mirror (a `w:footerReference` naming a header relationship), the same references in a reached glossary's `w:docPartBody` `w:sectPr`, and a `w:headerReference` naming the styles relationship are all refused, and the matching glossary footer opens clean. In the main document and in a reached glossary, a header or footer reference whose relationship is of another type makes Word offer recovery.
 - **#607: an unused header relationship does not change what Word parses.** A footer the body reads through `w:footerReference`, which an unreferenced header relationship also targets, is refused when typed `header+xml` and opens clean when typed `footer+xml`.
 - **#610: a glossary header typed `footer+xml` is refused,** like session 24's glossary footer typed `header+xml`.
+
+Session 27 adds, for the items adversarial review AZ (#611) left for a probe:
+
+- **#613: Word accepts exactly two relationship Types for a header or footer reference.** For a body `w:headerReference`, the Transitional `http://schemas.openxmlformats.org/officeDocument/2006/relationships/header` and the ISO Strict `http://purl.oclc.org/ooxml/officeDocument/relationships/header` open clean. `http://example.com/header`, `…/relationships/custom/header`, `…/relationships/HEADER`, the URI padded with spaces or wrapped in tab and newline character references, and the bare `header` are all refused. The footer side is the same (`s27c`). Word-valid at 9eb10acb passed `http://example.com/…` and `…/custom/…`, because its check tested only the end of the Type.
+- **A duplicate relationship Id with entries of different types was refused in both orders.** In each specimen one entry's target also had a content type that disagreed with that entry's relationship type, so session 27 cannot separate the duplicate Id from that mismatch. Session 29 separates them (below).
+- **The relationship type also decides in a paragraph-level `w:pPr/w:sectPr` and inside a `w:sectPrChange`.** A `w:headerReference` naming a footer relationship is refused in either place. The same reference naming a header relationship opens clean inside a `w:sectPrChange`, although `CT_SectPrBase` has no header reference, so strict still rejects it on schema.
+
+Session 28 adds:
+
+- **#614: Word accepts exactly two relationship Types for a `w:hyperlink`, too.** With TargetMode `External`, the Transitional `http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink` and the ISO Strict `http://purl.oclc.org/ooxml/officeDocument/relationships/hyperlink` open clean. `http://example.com/hyperlink`, `…/relationships/custom/hyperlink` and `…/relationships/HYPERLINK` are refused. Word-valid and strict at 9eb10acb passed the first two refused Types, because `word-hyperlink-relationship` tested only the end of the Type.
+
+Session 29 adds:
+
+- **#615: Word refuses any duplicate relationship Id in the main document's relationships part and in the package relationships part.** In `word/_rels/document.xml.rels`, Word refused a header reference's Id naming a footer relationship first and a header relationship last, the reverse order, the same header relationship listed twice, and two unreferenced External hyperlink relationships sharing an Id; every target was correctly typed. Two unreferenced hyperlink relationships sharing an Id in `_rels/.rels` were refused too. The same pair in a header part's own `word/_rels/header9.xml.rels` opened clean. Word-valid at 4a5926d3 passed every refused specimen except `headerref-dup-id-header-first-footer-last`, whose last entry `word-header-footer-relationship` rejects.
+- **Review BA's S1: the `https:` spelling is refused.** The Transitional header, footer and hyperlink Types with `https:` in place of `http:` were all refused, as word-valid and strict at 4a5926d3 already report.
+
+Session 30 adds:
+
+- **#617: Word refuses a duplicate relationship Id in a reached glossary's own relationships part.** Two unreferenced External hyperlink relationships sharing an Id in `word/glossary/_rels/document.xml.rels`, in session 26's clean glossary footer shape, were refused; the shape without them opened clean. Word-valid at 77d01c46 passes it, because #615 blocks only the package and main-document `.rels`.
+- **Review BB's S2: a duplicate Id in the relationships part of a document Word does not reach opens clean.** With the main document moved to `word/main.xml`, the same pair in an orphan `word/_rels/document.xml.rels` (beside an orphan `word/document.xml`) opened clean, as did the shape without it and the moved main document alone.
+- **#615's resolution of the main document is right.** The same pair in the moved main document's own `word/_rels/main.xml.rels` was refused, as word-valid at 77d01c46 reports.
+
+Session 31 adds:
+
+- **#618: Word refuses a duplicate relationship Id beside a story root stored as `.bin`.** With the main document stored as `word/document.bin`, two unreferenced External hyperlink relationships sharing an Id in `word/_rels/document.bin.rels` were refused; so was the same pair in `word/glossary/_rels/document.bin.rels` with session 26's glossary stored as `word/glossary/document.bin`. Both renamed shapes opened clean without the pair. No profile at ceb5c884 reports `rels-id-duplicate` for either, because the duplicate walk visits only the `.rels` of owners whose names end in `.xml`; word-valid passes both.
+
+Session 32 adds:
+
+- **#619: Word offers recovery for a story reference whose `r:id` names no relationship.** A body `w:footerReference w:type="default" r:id="rId9"` with `word/_rels/document.xml.rels` present but holding no `rId9` was refused. Word-valid at 6e3cda3e passes it: `word-header-footer-relationship` leaves an `r:id` that names no relationship to `rels-id-missing`, which is strict-only. The same reference with the main document's `.rels` removed was refused too, as word-valid already reports (`rels-missing-sidecar`).
+- **#620: a main document stored as `word/document.bin` is not checked as XML.** Truncated (its closing `</w:body></w:document>` removed), it made Word fail to open the file, as the `.xml` twin does, but word-valid and strict at 6e3cda3e both pass it. Its two footer-reference shapes were refused like their `.xml` twins, and word-valid passes both; strict passes the one whose `.rels` holds no `rId9`.
 
 ## Not observed
 
@@ -227,7 +257,19 @@ Session 24 ran in the foreground (`s24a` 18:10Z–18:12Z, `s24b` 18:12Z), one dr
 
 Session 25 ran in the foreground (`s25a` 18:37Z), one driver run. Nothing was set aside, and every row is attributed by a manifest entry naming its staged file; the watchdog saw no alert. Before the chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock` (a first guard matched codex's command line, whose prompt text mentions osascript, and was rerun on executable names). The preflight found a Word process the driver had not launched, with no open document (`word_pid=81589`, `launched_by_us=False`, `open_documents=0`). The specimens are the checked-in fixtures, copied byte for byte; no builder was used.
 
-Session 26 ran in the foreground (`s26a` 19:15Z, `s26b` 20:54Z), one driver run per chunk. Nothing was set aside, and every row is attributed by a manifest entry naming its staged file; the watchdog saw no alert. Before each chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`. Both preflights found a Word process the driver had not launched, with no open document (`word_pid=81589`, `launched_by_us=False`, `open_documents=0`). Both chunks were built at af20d641 with the session 26 builder below.
+Session 26 ran in the foreground (`s26a` 19:15Z, `s26b` 20:54Z, `s26c` 21:01Z), one driver run per chunk. Nothing was set aside, and every row is attributed by a manifest entry naming its staged file; the watchdog saw no alert. Before each chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`. All three preflights found a Word process the driver had not launched, with no open document (`word_pid=81589`, `launched_by_us=False`, `open_documents=0`). All three chunks were built at af20d641 with the session 26 builder below.
+
+Session 27 ran in the foreground (`s27a` 22:11Z, `s27b` 22:12Z, `s27c` 22:13Z), one driver run per chunk. Nothing was set aside, and every row is attributed by a manifest entry naming its staged file. Before each chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`. All three preflights found a Word process the driver had not launched, with no open document (`word_pid=81589`, `launched_by_us=False`, `open_documents=0`). All three chunks were built at 9eb10acb with the session 27 builder below; `s27b` was rebuilt once, before it ran, to add the Strict-URI specimen.
+
+Session 28 ran in the foreground (`s28a` 22:25Z), one driver run. Nothing was set aside, and every row is attributed by a manifest entry naming its staged file. Before the chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`. The preflight found a Word process the driver had not launched, with no open document (`word_pid=81589`, `launched_by_us=False`, `open_documents=0`). The chunk was built at 9eb10acb with the session 28 builder below.
+
+Session 29 ran in the foreground (`s29a` 22:57Z, `s29b` 23:01Z), one driver run per chunk. Nothing was set aside, and every row is attributed by a manifest entry naming its staged file. Before each chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`. No Word process was running either, so the driver launched its own each time (`launched_by_us=True`, `open_documents=0`; `word_pid=72831`, then `85379`). Both chunks were built at 4a5926d3 with the session 29 builder below.
+
+Session 30 ran in the foreground (`s30a` 23:53Z), one driver run. Nothing was set aside, and every row is attributed by a manifest entry naming its staged file. Before the chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`; another session's Word batch had ended at 23:53Z. No Word process was running, so the driver launched its own (`launched_by_us=True`, `open_documents=0`, `word_pid=40732`), and recycled it once after the two refusals (`recovery 1`). The chunk was built at 77d01c46 with the session 30 builder below.
+
+Session 31 ran in the foreground (`s31a` 00:26Z on 2026-10-25), one driver run. Nothing was set aside, and every row is attributed by a manifest entry naming its staged file. Before the chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`. No Word process was running, so the driver launched its own (`launched_by_us=True`, `open_documents=0`, `word_pid=39530`). The chunk was built at ceb5c884 with the session 31 builder below.
+
+Session 32 ran in the foreground (`s32a` 01:10Z on 2026-10-25), one driver run. Nothing was set aside, and every row is attributed by a manifest entry naming its staged file. Before the chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`; another session was running its own converter (`bench docx-to-pdf --converter jubarte-rc`), which does not drive Word. No Word process was running, so the driver launched its own (`launched_by_us=True`, `open_documents=0`, `word_pid=74817`). The chunk was built at 6e3cda3e with the session 32 builder below.
 
 Sessions 4–6 observed `main-relationship-missing` (#380), the #414 `PartName`s with `application/xml`, an escape in a folder segment (#408), a part-level relationships part (#433) and an unreferenced malformed `customXml/item9.xml` (#437). Still to be observed:
 
@@ -1572,27 +1614,35 @@ The fixtures whose profile-less verdict the Validator Diff Report on #322 flagge
 
 </details>
 
-### Session 26: 19:15Z and 20:54Z, validator columns at af20d641
+### Session 26: 19:15Z, 20:54Z and 21:01Z, validator columns at af20d641
 
-The shapes adversarial review AY of #602 suspected (S-A, S-B) and the glossary header its finding F3 says session 24 never ran. `s26b` isolates S-A after `s26a` showed every `w:headerReference` through a footer relationship refused. af20d641 and its re-parented copy 697f9405 have the same tree.
+The shapes adversarial review AY of #602 suspected (S-A, S-B) and the glossary header its finding F3 says session 24 never ran. `s26b` isolates S-A after `s26a` showed every `w:headerReference` through a footer relationship refused; `s26c` probes the shapes #606 left open. af20d641 and its re-parented copy 697f9405 have the same tree.
 
-| Run    | Observed  | Specimen                                     | Issue        | Shape                                                                                                                                     | SHA-256 (first 16) | Word           | word-valid at af20d641                     | strict at af20d641                                                                       |
-| ------ | --------- | -------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| `s26a` | 19:19:19Z | `s26a-control-minimal`                       | control      | `MINIMAL_PARTS`                                                                                                                           | `74e942d9e276512e` | clean-open     | valid                                      | valid                                                                                    |
-| `s26a` | 19:18:28Z | `headerref-footer-rel-typed-footer-exact`    | #606         | body `w:headerReference` → footer relationship → `w:hdr` part, typed `footer+xml`                                                         | `ad88d9fb907fb2a7` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `rels-id-mismatch`                                    |
-| `s26a` | 19:17:39Z | `headerref-footer-rel-typed-footer-charset`  | #606         | the same, typed `footer+xml; charset=utf-8`                                                                                               | `8f48f8951350d6ff` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `rels-id-mismatch`, `word-part-content-type-inexact`  |
-| `s26a` | 19:19:17Z | `headerref-footer-rel-typed-header-exact`    | #606         | the same, typed `header+xml`                                                                                                              | `74288497762a4e8b` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `rels-id-mismatch`, `word-part-content-type-mismatch` |
-| `s26a` | 19:15:56Z | `footer-read-unused-header-rel-typed-header` | #607         | body `w:footerReference` → footer relationship → `w:ftr` part, which an unreferenced header relationship also targets, typed `header+xml` | `266e0d3ef8b10063` | repair-warning | valid                                      | invalid: `paraid-missing-element`                                                        |
-| `s26a` | 19:19:19Z | `footer-read-unused-header-rel-typed-footer` | #607 control | the same, typed `footer+xml`                                                                                                              | `51dc05ced962318f` | clean-open     | valid                                      | invalid: `paraid-missing-element`                                                        |
-| `s26a` | 19:16:48Z | `glossary-header-typed-footer-exact`         | #610         | a reached glossary's `w:docPartBody` `w:sectPr` `w:headerReference` → header relationship → `w:hdr` part, typed `footer+xml`              | `72d8ea23105b9b55` | repair-warning | invalid: `word-part-content-type-mismatch` | invalid: `paraid-missing-element`, `word-part-content-type-mismatch`                     |
-| `s26a` | 19:19:19Z | `s26a-control-minimal-end`                   | control      | `MINIMAL_PARTS`                                                                                                                           | `74e942d9e276512e` | clean-open     | valid                                      | valid                                                                                    |
-| `s26b` | 20:55:30Z | `s26b-control-minimal`                       | control      | `MINIMAL_PARTS`                                                                                                                           | `b00d699b9917b644` | clean-open     | valid                                      | valid                                                                                    |
-| `s26b` | 20:55:30Z | `headerref-header-rel-hdr-typed-header`      | #606 control | body `w:headerReference` → header relationship → `w:hdr` part, typed `header+xml`                                                         | `cc35191a6e3962f0` | clean-open     | valid                                      | invalid: `paraid-missing-element`                                                        |
-| `s26b` | 20:54:34Z | `headerref-footer-rel-ftr-typed-footer`      | #606         | body `w:headerReference` → footer relationship → `w:ftr` part, typed `footer+xml`                                                         | `07627be2f4abc499` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `rels-id-mismatch`                                    |
-| `s26b` | 20:55:30Z | `footerref-footer-rel-hdr-typed-footer`      | #606 control | body `w:footerReference` → footer relationship → `w:hdr` part, typed `footer+xml`                                                         | `057656e77a3123dd` | clean-open     | valid                                      | invalid: `paraid-missing-element`                                                        |
-| `s26b` | 20:55:30Z | `headerref-header-rel-ftr-typed-header`      | #606 control | body `w:headerReference` → header relationship → `w:ftr` part, typed `header+xml`                                                         | `b2d7f02e99a8f0b5` | clean-open     | valid                                      | invalid: `paraid-missing-element`                                                        |
-| `s26b` | 20:55:27Z | `headerref-footer-rel-hdr-typed-styles`      | #606         | body `w:headerReference` → footer relationship → `w:hdr` part, typed `styles+xml`                                                         | `ce63cb6fc4a34403` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `rels-id-mismatch`, `word-part-content-type-mismatch` |
-| `s26b` | 20:55:30Z | `s26b-control-minimal-end`                   | control      | `MINIMAL_PARTS`                                                                                                                           | `b00d699b9917b644` | clean-open     | valid                                      | valid                                                                                    |
+| Run    | Observed  | Specimen                                         | Issue        | Shape                                                                                                                                     | SHA-256 (first 16) | Word           | word-valid at af20d641                     | strict at af20d641                                                                       |
+| ------ | --------- | ------------------------------------------------ | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| `s26a` | 19:19:19Z | `s26a-control-minimal`                           | control      | `MINIMAL_PARTS`                                                                                                                           | `74e942d9e276512e` | clean-open     | valid                                      | valid                                                                                    |
+| `s26a` | 19:18:28Z | `headerref-footer-rel-typed-footer-exact`        | #606         | body `w:headerReference` → footer relationship → `w:hdr` part, typed `footer+xml`                                                         | `ad88d9fb907fb2a7` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `rels-id-mismatch`                                    |
+| `s26a` | 19:17:39Z | `headerref-footer-rel-typed-footer-charset`      | #606         | the same, typed `footer+xml; charset=utf-8`                                                                                               | `8f48f8951350d6ff` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `rels-id-mismatch`, `word-part-content-type-inexact`  |
+| `s26a` | 19:19:17Z | `headerref-footer-rel-typed-header-exact`        | #606         | the same, typed `header+xml`                                                                                                              | `74288497762a4e8b` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `rels-id-mismatch`, `word-part-content-type-mismatch` |
+| `s26a` | 19:15:56Z | `footer-read-unused-header-rel-typed-header`     | #607         | body `w:footerReference` → footer relationship → `w:ftr` part, which an unreferenced header relationship also targets, typed `header+xml` | `266e0d3ef8b10063` | repair-warning | valid                                      | invalid: `paraid-missing-element`                                                        |
+| `s26a` | 19:19:19Z | `footer-read-unused-header-rel-typed-footer`     | #607 control | the same, typed `footer+xml`                                                                                                              | `51dc05ced962318f` | clean-open     | valid                                      | invalid: `paraid-missing-element`                                                        |
+| `s26a` | 19:16:48Z | `glossary-header-typed-footer-exact`             | #610         | a reached glossary's `w:docPartBody` `w:sectPr` `w:headerReference` → header relationship → `w:hdr` part, typed `footer+xml`              | `72d8ea23105b9b55` | repair-warning | invalid: `word-part-content-type-mismatch` | invalid: `paraid-missing-element`, `word-part-content-type-mismatch`                     |
+| `s26a` | 19:19:19Z | `s26a-control-minimal-end`                       | control      | `MINIMAL_PARTS`                                                                                                                           | `74e942d9e276512e` | clean-open     | valid                                      | valid                                                                                    |
+| `s26b` | 20:55:30Z | `s26b-control-minimal`                           | control      | `MINIMAL_PARTS`                                                                                                                           | `b00d699b9917b644` | clean-open     | valid                                      | valid                                                                                    |
+| `s26b` | 20:55:30Z | `headerref-header-rel-hdr-typed-header`          | #606 control | body `w:headerReference` → header relationship → `w:hdr` part, typed `header+xml`                                                         | `cc35191a6e3962f0` | clean-open     | valid                                      | invalid: `paraid-missing-element`                                                        |
+| `s26b` | 20:54:34Z | `headerref-footer-rel-ftr-typed-footer`          | #606         | body `w:headerReference` → footer relationship → `w:ftr` part, typed `footer+xml`                                                         | `07627be2f4abc499` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `rels-id-mismatch`                                    |
+| `s26b` | 20:55:30Z | `footerref-footer-rel-hdr-typed-footer`          | #606 control | body `w:footerReference` → footer relationship → `w:hdr` part, typed `footer+xml`                                                         | `057656e77a3123dd` | clean-open     | valid                                      | invalid: `paraid-missing-element`                                                        |
+| `s26b` | 20:55:30Z | `headerref-header-rel-ftr-typed-header`          | #606 control | body `w:headerReference` → header relationship → `w:ftr` part, typed `header+xml`                                                         | `b2d7f02e99a8f0b5` | clean-open     | valid                                      | invalid: `paraid-missing-element`                                                        |
+| `s26b` | 20:55:27Z | `headerref-footer-rel-hdr-typed-styles`          | #606         | body `w:headerReference` → footer relationship → `w:hdr` part, typed `styles+xml`                                                         | `ce63cb6fc4a34403` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `rels-id-mismatch`, `word-part-content-type-mismatch` |
+| `s26b` | 20:55:30Z | `s26b-control-minimal-end`                       | control      | `MINIMAL_PARTS`                                                                                                                           | `b00d699b9917b644` | clean-open     | valid                                      | valid                                                                                    |
+| `s26c` | 21:02:53Z | `s26c-control-minimal`                           | control      | `MINIMAL_PARTS`                                                                                                                           | `078366e639a13560` | clean-open     | valid                                      | valid                                                                                    |
+| `s26c` | 21:02:33Z | `footerref-header-rel-hdr-typed-header`          | #606         | body `w:footerReference` → header relationship → `w:hdr` part, typed `header+xml`                                                         | `dd1ea45a5e504eb9` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `rels-id-mismatch`                                    |
+| `s26c` | 21:02:26Z | `footerref-header-rel-ftr-typed-footer`          | #606         | body `w:footerReference` → header relationship → `w:ftr` part, typed `footer+xml`                                                         | `de506dada5751c0f` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `rels-id-mismatch`, `word-part-content-type-mismatch` |
+| `s26c` | 21:02:47Z | `glossary-headerref-footer-rel-ftr-typed-footer` | #606         | glossary `w:headerReference` → footer relationship → `w:ftr` part, typed `footer+xml`                                                     | `7796d049d97df892` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `rels-id-mismatch`                                    |
+| `s26c` | 21:02:37Z | `glossary-footerref-header-rel-hdr-typed-header` | #606         | glossary `w:footerReference` → header relationship → `w:hdr` part, typed `header+xml`                                                     | `e356d53c331df5f6` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `rels-id-mismatch`                                    |
+| `s26c` | 21:02:53Z | `glossary-footerref-footer-rel-ftr-typed-footer` | #606 control | glossary `w:footerReference` → footer relationship → `w:ftr` part, typed `footer+xml`                                                     | `a04de026ef8ff770` | clean-open     | valid                                      | invalid: `paraid-missing-element`                                                        |
+| `s26c` | 21:02:51Z | `headerref-styles-rel`                           | #606         | body `w:headerReference` naming `MINIMAL_PARTS`' styles relationship `rId1`                                                               | `190d0251b66682b4` | repair-warning | valid                                      | invalid: `rels-id-mismatch`                                                              |
+| `s26c` | 21:02:53Z | `s26c-control-minimal-end`                       | control      | `MINIMAL_PARTS`                                                                                                                           | `078366e639a13560` | clean-open     | valid                                      | valid                                                                                    |
 
 <details><summary>Raw records, session 26</summary>
 
@@ -1612,6 +1662,230 @@ The shapes adversarial review AY of #602 suspected (S-A, S-B) and the glossary h
 {"run": "s26b", "name": "headerref-header-rel-ftr-typed-header", "sha256": "b2d7f02e99a8f0b5a528a888a8c9c87836011b3143614261ac32a31907fd5235", "observedAt": "2026-10-24T20:55:30+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 {"run": "s26b", "name": "headerref-footer-rel-hdr-typed-styles", "sha256": "ce63cb6fc4a344038c441f67cdbce7131624efd33ad99cca3525c3c2418b6401", "observedAt": "2026-10-24T20:55:27.694Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["\"Word found unreadable content in 00002__wfv__headerref-footer-rel-hdr-typed-styles.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
 {"run": "s26b", "name": "s26b-control-minimal-end", "sha256": "b00d699b9917b6447d83dea6e64f81dcdc6346784ec9d2a5f83e8319f111861f", "observedAt": "2026-10-24T20:55:30+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s26c", "name": "s26c-control-minimal", "sha256": "078366e639a135606430fccdb4b2089242ca43724ca68e2ee2ddc340b8b4aab2", "observedAt": "2026-10-24T21:02:53+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s26c", "name": "footerref-header-rel-hdr-typed-header", "sha256": "dd1ea45a5e504eb9b24c7400d9db2e45ec929d674e91b592db133a79a660a4c2", "observedAt": "2026-10-24T21:02:33.018Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["\"Word found unreadable content in 00001__wfv__footerref-header-rel-hdr-typed-header.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s26c", "name": "footerref-header-rel-ftr-typed-footer", "sha256": "de506dada5751c0fa4414bdaa3945815a03c058d926c15f198532d8259b4ebae", "observedAt": "2026-10-24T21:02:26.880Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__footerref-header-rel-ftr-typed-footer.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__footerref-header-rel-ftr-typed-footer.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s26c", "name": "glossary-headerref-footer-rel-ftr-typed-footer", "sha256": "7796d049d97df89254be8f0bcc4ce7383cf84de33bf0f647adb732a81df2b7db", "observedAt": "2026-10-24T21:02:47.266Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00004__wfv__glossary-headerref-footer-rel-ftr-typed-footer.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00004__wfv__glossary-headerref-footer-rel-ftr-typed-footer.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s26c", "name": "glossary-footerref-header-rel-hdr-typed-header", "sha256": "e356d53c331df5f6f128659348bad3d36ebd57758527290856ded442b870cb26", "observedAt": "2026-10-24T21:02:37.389Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00003__wfv__glossary-footerref-header-rel-hdr-typed-header.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00003__wfv__glossary-footerref-header-rel-hdr-typed-header.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s26c", "name": "glossary-footerref-footer-rel-ftr-typed-footer", "sha256": "a04de026ef8ff7702858bc2267c971aa50c27c64b3d1818b7a2f2fa5f2d73a04", "observedAt": "2026-10-24T21:02:53+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s26c", "name": "headerref-styles-rel", "sha256": "190d0251b66682b41d3f2bdcea46583011a76c60cf19153d9e5dc1617cb1a671", "observedAt": "2026-10-24T21:02:51.554Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00005__wfv__headerref-styles-rel.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00005__wfv__headerref-styles-rel.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s26c", "name": "s26c-control-minimal-end", "sha256": "078366e639a135606430fccdb4b2089242ca43724ca68e2ee2ddc340b8b4aab2", "observedAt": "2026-10-24T21:02:53+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 27: 22:11Z–22:14Z, validator columns at 9eb10acb
+
+The relationship Types, duplicate Ids and placements adversarial review AZ of #611 suspected (S1–S3), and the placements layer 129's check judges without a session 26 observation. `s27c` repeats on the footer side the URI results of `s27a` and `s27b`.
+
+| Run    | Observed  | Specimen                                  | Issue             | Shape                                                                                                                                                 | SHA-256 (first 16) | Word           | word-valid at 9eb10acb                     | strict at 9eb10acb                                                                                                    |
+| ------ | --------- | ----------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| `s27a` | 22:12:17Z | `s27a-control-minimal`                    | control           | `MINIMAL_PARTS`                                                                                                                                       | `869e695282c0ac34` | clean-open     | valid                                      | valid                                                                                                                 |
+| `s27a` | 22:12:06Z | `headerref-header-rel-type-padded`        | #613              | the clean session 26 shape (body `w:headerReference` → header relationship → `w:hdr` part, typed `header+xml`), Type padded with a space on each side | `e41055eb54be1bc8` | repair-warning | invalid: `word-header-footer-relationship` | invalid: `paraid-missing-element`, `word-header-footer-relationship`                                                  |
+| `s27a` | 22:12:10Z | `headerref-header-rel-type-tab-newline`   | #613              | the same, Type wrapped in `&#x9;` … `&#xA;`                                                                                                           | `06d301d30ccebff4` | repair-warning | invalid: `word-header-footer-relationship` | invalid: `paraid-missing-element`, `word-header-footer-relationship`                                                  |
+| `s27a` | 22:12:15Z | `headerref-header-rel-type-upper`         | #613              | the same, Type `…/relationships/HEADER`                                                                                                               | `625316b0531f4d31` | repair-warning | invalid: `word-header-footer-relationship` | invalid: `paraid-missing-element`, `word-header-footer-relationship`                                                  |
+| `s27a` | 22:12:02Z | `headerref-header-rel-type-example-com`   | #613              | the same, Type `http://example.com/header`                                                                                                            | `4ec88fbfeb764714` | repair-warning | valid                                      | invalid: `paraid-missing-element`                                                                                     |
+| `s27a` | 22:11:58Z | `headerref-header-rel-type-custom-header` | #613              | the same, Type `…/relationships/custom/header`                                                                                                        | `45b7ce68b4ef8874` | repair-warning | valid                                      | invalid: `paraid-missing-element`                                                                                     |
+| `s27a` | 22:11:53Z | `headerref-duplicate-id-last-footer`      | AZ S3             | the clean session 26 shape plus a second Relationship with its Id, Type footer, listed last                                                           | `d006527d1b64576d` | repair-warning | invalid: `word-header-footer-relationship` | invalid: `paraid-missing-element`, `rels-id-duplicate`, `word-header-footer-relationship`, `xsd-error`, `xsd-summary` |
+| `s27a` | 22:12:17Z | `s27a-control-minimal-end`                | control           | `MINIMAL_PARTS`                                                                                                                                       | `869e695282c0ac34` | clean-open     | valid                                      | valid                                                                                                                 |
+| `s27b` | 22:13:11Z | `s27b-control-minimal`                    | control           | `MINIMAL_PARTS`                                                                                                                                       | `7abfb1d3fe2e35cd` | clean-open     | valid                                      | valid                                                                                                                 |
+| `s27b` | 22:12:56Z | `headerref-duplicate-id-last-header`      | AZ S3             | body `w:headerReference` → footer relationship → `w:ftr` part, typed `footer+xml`, plus a second Relationship with its Id, Type header, listed last   | `8501b69a53e7b536` | repair-warning | invalid: `word-part-content-type-mismatch` | invalid: `paraid-missing-element`, `rels-id-duplicate`, `word-part-content-type-mismatch`, `xsd-error`, `xsd-summary` |
+| `s27b` | 22:13:04Z | `headerref-footer-rel-paragraph-sectpr`   | placement         | body `w:headerReference` → footer relationship → `w:ftr` part, the reference in a paragraph's `w:pPr/w:sectPr`                                        | `6c823d54915a0fdc` | repair-warning | invalid: `word-header-footer-relationship` | invalid: `paraid-missing-element`, `word-header-footer-relationship`                                                  |
+| `s27b` | 22:13:00Z | `headerref-footer-rel-in-sectprchange`    | placement         | the same reference in the `w:sectPr` of a `w:sectPrChange` (last child of the body `w:sectPr`)                                                        | `a4a142d57e2cd709` | repair-warning | invalid: `word-header-footer-relationship` | invalid: `paraid-missing-element`, `word-header-footer-relationship`, `xsd-error`, `xsd-summary`                      |
+| `s27b` | 22:13:11Z | `headerref-header-rel-in-sectprchange`    | placement control | the clean session 26 shape, the reference in the `w:sectPr` of a `w:sectPrChange`                                                                     | `cb5eeab3d602f7aa` | clean-open     | valid                                      | invalid: `paraid-missing-element`, `xsd-error`, `xsd-summary`                                                         |
+| `s27b` | 22:13:08Z | `headerref-header-rel-type-bare`          | #613              | the clean session 26 shape, Type `header`                                                                                                             | `bd620b2afd27ce6e` | repair-warning | invalid: `word-header-footer-relationship` | invalid: `paraid-missing-element`, `word-header-footer-relationship`                                                  |
+| `s27b` | 22:13:11Z | `headerref-header-rel-type-strict-uri`    | #613 control      | the clean session 26 shape, Type `http://purl.oclc.org/ooxml/officeDocument/relationships/header`                                                     | `cad89fe4e31c3318` | clean-open     | valid                                      | invalid: `paraid-missing-element`                                                                                     |
+| `s27b` | 22:13:11Z | `s27b-control-minimal-end`                | control           | `MINIMAL_PARTS`                                                                                                                                       | `7abfb1d3fe2e35cd` | clean-open     | valid                                      | valid                                                                                                                 |
+| `s27c` | 22:14:14Z | `s27c-control-minimal`                    | control           | `MINIMAL_PARTS`                                                                                                                                       | `247b8c451e5e9b85` | clean-open     | valid                                      | valid                                                                                                                 |
+| `s27c` | 22:14:08Z | `footerref-footer-rel-type-example-com`   | #613              | body `w:footerReference` → footer relationship → `w:ftr` part, typed `footer+xml`, Type `http://example.com/footer`                                   | `a7f89c43b69aa6eb` | repair-warning | valid                                      | invalid: `paraid-missing-element`                                                                                     |
+| `s27c` | 22:14:03Z | `footerref-footer-rel-type-custom-footer` | #613              | the same, Type `…/relationships/custom/footer`                                                                                                        | `51d8d414915e2626` | repair-warning | valid                                      | invalid: `paraid-missing-element`                                                                                     |
+| `s27c` | 22:14:12Z | `footerref-footer-rel-type-upper`         | #613              | the same, Type `…/relationships/FOOTER`                                                                                                               | `2139a90eff15b632` | repair-warning | invalid: `word-header-footer-relationship` | invalid: `paraid-missing-element`, `word-header-footer-relationship`                                                  |
+| `s27c` | 22:14:14Z | `footerref-footer-rel-type-strict-uri`    | #613 control      | the same, Type `http://purl.oclc.org/ooxml/officeDocument/relationships/footer`                                                                       | `f7f1b2166e9c0ed0` | clean-open     | valid                                      | invalid: `paraid-missing-element`                                                                                     |
+| `s27c` | 22:14:14Z | `footerref-footer-rel-ftr-typed-footer`   | #613 control      | the same, Type unchanged (Transitional)                                                                                                               | `1117edc61cf701f4` | clean-open     | valid                                      | invalid: `paraid-missing-element`                                                                                     |
+| `s27c` | 22:14:14Z | `s27c-control-minimal-end`                | control           | `MINIMAL_PARTS`                                                                                                                                       | `df85a4aa94a79dbc` | clean-open     | valid                                      | valid                                                                                                                 |
+
+<details><summary>Raw records, session 27</summary>
+
+```jsonl
+{"run": "s27a", "name": "s27a-control-minimal", "sha256": "869e695282c0ac349050743139f8f286e5112bbc9702e3f846f93b9da80e08e5", "observedAt": "2026-10-24T22:12:17+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s27a", "name": "headerref-header-rel-type-padded", "sha256": "e41055eb54be1bc81b49bbdaa40b07f7a5018a59bd23750f621045536766e63a", "observedAt": "2026-10-24T22:12:06.617Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00003__wfv__headerref-header-rel-type-padded.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00003__wfv__headerref-header-rel-type-padded.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s27a", "name": "headerref-header-rel-type-tab-newline", "sha256": "06d301d30ccebff49015103e5a0379260f6df6b450e4a79e67bfcbdf8cbe5069", "observedAt": "2026-10-24T22:12:10.818Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00004__wfv__headerref-header-rel-type-tab-newline.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00004__wfv__headerref-header-rel-type-tab-newline.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s27a", "name": "headerref-header-rel-type-upper", "sha256": "625316b0531f4d31dc24a1950d66783e46730ea1517d74925b261fbcec45a224", "observedAt": "2026-10-24T22:12:15.051Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00005__wfv__headerref-header-rel-type-upper.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00005__wfv__headerref-header-rel-type-upper.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s27a", "name": "headerref-header-rel-type-example-com", "sha256": "4ec88fbfeb7647143d4f641e2027302c49dbcdf4fa0470c9fed8833ec909cf64", "observedAt": "2026-10-24T22:12:02.383Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00002__wfv__headerref-header-rel-type-example-com.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__headerref-header-rel-type-example-com.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s27a", "name": "headerref-header-rel-type-custom-header", "sha256": "45b7ce68b4ef887497ad13c1f67ae7ae779a5a988b9855bfefc50f6632bf8361", "observedAt": "2026-10-24T22:11:58.158Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00001__wfv__headerref-header-rel-type-custom-header.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00001__wfv__headerref-header-rel-type-custom-header.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s27a", "name": "headerref-duplicate-id-last-footer", "sha256": "d006527d1b64576dfbe75aed4bf820e3949849a8c47f2d7db41fb09a94625222", "observedAt": "2026-10-24T22:11:53.940Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__headerref-duplicate-id-last-footer.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__headerref-duplicate-id-last-footer.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s27a", "name": "s27a-control-minimal-end", "sha256": "869e695282c0ac349050743139f8f286e5112bbc9702e3f846f93b9da80e08e5", "observedAt": "2026-10-24T22:12:17+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s27b", "name": "s27b-control-minimal", "sha256": "7abfb1d3fe2e35cdb4e0f1118ee4bb472c2ad3523f184c8465bdb089711c62ac", "observedAt": "2026-10-24T22:13:11+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s27b", "name": "headerref-duplicate-id-last-header", "sha256": "8501b69a53e7b536da079c3f5b1b1fe2b6da6450164eac3edf75e7dcde48dbe5", "observedAt": "2026-10-24T22:12:56.199Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__headerref-duplicate-id-last-header.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__headerref-duplicate-id-last-header.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s27b", "name": "headerref-footer-rel-paragraph-sectpr", "sha256": "6c823d54915a0fdcc7c05cd4b8162b9b01270f9f4989f913c40b1f1fc92d73c8", "observedAt": "2026-10-24T22:13:04.626Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00002__wfv__headerref-footer-rel-paragraph-sectpr.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__headerref-footer-rel-paragraph-sectpr.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s27b", "name": "headerref-footer-rel-in-sectprchange", "sha256": "a4a142d57e2cd709b15be7894c8de53d65ac753efdf4b9ce3229ce7a7908d6a7", "observedAt": "2026-10-24T22:13:00.423Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00001__wfv__headerref-footer-rel-in-sectprchange.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00001__wfv__headerref-footer-rel-in-sectprchange.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s27b", "name": "headerref-header-rel-in-sectprchange", "sha256": "cb5eeab3d602f7aabc7f8c824f7ff93bbcf2d8a88d91429dc8048dcec93bc8c4", "observedAt": "2026-10-24T22:13:11+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s27b", "name": "headerref-header-rel-type-bare", "sha256": "bd620b2afd27ce6e9c99bd3cb083c083cd1a5852bebfb4c1e02f63153a655498", "observedAt": "2026-10-24T22:13:08.815Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00004__wfv__headerref-header-rel-type-bare.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00004__wfv__headerref-header-rel-type-bare.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s27b", "name": "headerref-header-rel-type-strict-uri", "sha256": "cad89fe4e31c33188e2feaa5658dc1826baa0f43e44683d1fcb2384483b01c00", "observedAt": "2026-10-24T22:13:11+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s27b", "name": "s27b-control-minimal-end", "sha256": "7abfb1d3fe2e35cdb4e0f1118ee4bb472c2ad3523f184c8465bdb089711c62ac", "observedAt": "2026-10-24T22:13:11+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s27c", "name": "s27c-control-minimal", "sha256": "247b8c451e5e9b85565cf5036c81edd8b71d2e1819c1c889c5a34747f1194c5d", "observedAt": "2026-10-24T22:14:14+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s27c", "name": "footerref-footer-rel-type-example-com", "sha256": "a7f89c43b69aa6eb06452bfc07348bfb299c2cfec3172a6e5ba9cf8b956b2d14", "observedAt": "2026-10-24T22:14:08.025Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00002__wfv__footerref-footer-rel-type-example-com.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__footerref-footer-rel-type-example-com.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s27c", "name": "footerref-footer-rel-type-custom-footer", "sha256": "51d8d414915e262683906b760e7705cc5d01fbc0d890414d151abea2e10ea2cf", "observedAt": "2026-10-24T22:14:03.812Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00001__wfv__footerref-footer-rel-type-custom-footer.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00001__wfv__footerref-footer-rel-type-custom-footer.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s27c", "name": "footerref-footer-rel-type-upper", "sha256": "2139a90eff15b632ec6b14031c3a8212f20236ef2a48f32b182d83c8414e3130", "observedAt": "2026-10-24T22:14:12.593Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00004__wfv__footerref-footer-rel-type-upper.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00004__wfv__footerref-footer-rel-type-upper.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s27c", "name": "footerref-footer-rel-type-strict-uri", "sha256": "f7f1b2166e9c0ed098e45464ba4e8c7b7c916754cf3f72bcd07499875ed28ca9", "observedAt": "2026-10-24T22:14:14+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s27c", "name": "footerref-footer-rel-ftr-typed-footer", "sha256": "1117edc61cf701f4d9f10d9ab003946433e3665179e7f2d1eff8cdef44c40816", "observedAt": "2026-10-24T22:14:14+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s27c", "name": "s27c-control-minimal-end", "sha256": "df85a4aa94a79dbc90c0055b29fcd0b09784214f4797722221e92c9c5d85978d", "observedAt": "2026-10-24T22:14:14+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 28: 22:25Z–22:28Z, validator columns at 9eb10acb
+
+Whether Word reads a hyperlink's relationship Type exactly, as session 27 found it does for header and footer references (#614).
+
+| Run    | Observed  | Specimen                              | Issue        | Shape                                                                                                                                  | SHA-256 (first 16) | Word           | word-valid at 9eb10acb                 | strict at 9eb10acb                     |
+| ------ | --------- | ------------------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------------------------------- | -------------------------------------- |
+| `s28a` | 22:27:27Z | `s28a-control-minimal`                | control      | `MINIMAL_PARTS`                                                                                                                        | `79625c5d0847832d` | clean-open     | valid                                  | valid                                  |
+| `s28a` | 22:27:27Z | `hyperlink-rel-type-transitional`     | #614 control | `MINIMAL_PARTS` plus a body `w:hyperlink r:id="rIdH"` → External relationship to `https://example.org/`, Type unchanged (Transitional) | `660a32ca683f9b8f` | clean-open     | valid                                  | valid                                  |
+| `s28a` | 22:27:27Z | `hyperlink-rel-type-strict-uri`       | #614 control | the same, Type `http://purl.oclc.org/ooxml/officeDocument/relationships/hyperlink`                                                     | `c6b42a909bcfda00` | clean-open     | valid                                  | valid                                  |
+| `s28a` | 22:26:38Z | `hyperlink-rel-type-example-com`      | #614         | the same, Type `http://example.com/hyperlink`                                                                                          | `72403616105b52b2` | repair-warning | valid                                  | valid                                  |
+| `s28a` | 22:25:40Z | `hyperlink-rel-type-custom-hyperlink` | #614         | the same, Type `…/relationships/custom/hyperlink`                                                                                      | `96829b01ea8a331e` | repair-warning | valid                                  | valid                                  |
+| `s28a` | 22:26:49Z | `hyperlink-rel-type-upper`            | #614         | the same, Type `…/relationships/HYPERLINK`                                                                                             | `b555e1aca1415647` | repair-warning | invalid: `word-hyperlink-relationship` | invalid: `word-hyperlink-relationship` |
+| `s28a` | 22:27:27Z | `s28a-control-minimal-end`            | control      | `MINIMAL_PARTS`                                                                                                                        | `79625c5d0847832d` | clean-open     | valid                                  | valid                                  |
+
+<details><summary>Raw records, session 28</summary>
+
+```jsonl
+{"run": "s28a", "name": "s28a-control-minimal", "sha256": "79625c5d0847832dc083e20bedcfaac2b054c8e0ac28145797a2735e66af2ee5", "observedAt": "2026-10-24T22:27:27+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s28a", "name": "hyperlink-rel-type-transitional", "sha256": "660a32ca683f9b8f976bd26015581a1783b8a75d3ad1629557b7767876ca631d", "observedAt": "2026-10-24T22:27:27+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s28a", "name": "hyperlink-rel-type-strict-uri", "sha256": "c6b42a909bcfda0014871b38fc8e3b0d22027efe5e2e05b982073458e40749d6", "observedAt": "2026-10-24T22:27:27+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s28a", "name": "hyperlink-rel-type-example-com", "sha256": "72403616105b52b2d454770c5cb867ce0cf06df2eeb573ebd9572d80bf422c93", "observedAt": "2026-10-24T22:26:38.165Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__hyperlink-rel-type-example-com.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00001__wfv__hyperlink-rel-type-example-com.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00001__wfv__hyperlink-rel-type-example-com.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s28a", "name": "hyperlink-rel-type-custom-hyperlink", "sha256": "96829b01ea8a331e75dfb30e446105b57c35d4e2c5261760b8e4494836ff2691", "observedAt": "2026-10-24T22:25:40.247Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__hyperlink-rel-type-custom-hyperlink.docx; refusing to guess", "dialogs": ["\"Word found unreadable content in 00000__wfv__hyperlink-rel-type-custom-hyperlink.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s28a", "name": "hyperlink-rel-type-upper", "sha256": "b555e1aca141564743e018977c057a55c7102a0aa7a24fa186845661776bb80f", "observedAt": "2026-10-24T22:26:49.547Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["\"Word found unreadable content in 00004__wfv__hyperlink-rel-type-upper.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s28a", "name": "s28a-control-minimal-end", "sha256": "79625c5d0847832dc083e20bedcfaac2b054c8e0ac28145797a2735e66af2ee5", "observedAt": "2026-10-24T22:27:27+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 29: 22:57Z–23:05Z, validator columns at 4a5926d3
+
+Duplicate relationship Ids without session 27's content-type confound (CodeRabbit's comment 4368831374 on #611, #615), and adversarial review BA's suspected `https:` Types (S1).
+
+| Run    | Observed  | Specimen                                          | Issue        | Shape                                                                                                                                                                                                                                                                                         | SHA-256 (first 16) | Word           | word-valid at 4a5926d3                     | strict at 4a5926d3                                                                                                    |
+| ------ | --------- | ------------------------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| `s29a` | 23:00:01Z | `s29a-control-minimal`                            | control      | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                               | `c88a5c2fa28c6fef` | clean-open     | valid                                      | valid                                                                                                                 |
+| `s29a` | 22:58:03Z | `headerref-dup-id-footer-first-header-last`       | #615         | the clean session 26 shape (body `w:headerReference` `rIdX` → header relationship → `header9.xml`, a `w:hdr` typed `header+xml`) plus a `footer9.xml` (`w:ftr`, typed `footer+xml`); `document.xml.rels` lists `rIdX` → footer (`footer9.xml`) first and `rIdX` → header (`header9.xml`) last | `66450bf9b2ad6ae8` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `rels-id-duplicate`, `xsd-error`, `xsd-summary`                                    |
+| `s29a` | 22:59:04Z | `headerref-dup-id-header-first-footer-last`       | #615         | the same, header first and footer last                                                                                                                                                                                                                                                        | `a496f8130d77f2b5` | repair-warning | invalid: `word-header-footer-relationship` | invalid: `paraid-missing-element`, `rels-id-duplicate`, `word-header-footer-relationship`, `xsd-error`, `xsd-summary` |
+| `s29a` | 22:59:58Z | `headerref-dup-id-header-twice`                   | #615         | the same, `rIdX` → header (`header9.xml`) twice                                                                                                                                                                                                                                               | `b6134671593da6ff` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `rels-id-duplicate`, `rels-unreferenced`, `xsd-error`, `xsd-summary`               |
+| `s29a` | 22:57:10Z | `dup-id-unreferenced-hyperlinks`                  | #615         | the same with one `rIdX` → header, plus two unreferenced External hyperlink relationships sharing `rIdZ`                                                                                                                                                                                      | `200dfe224785da37` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `rels-id-duplicate`, `rels-unreferenced`, `xsd-error`, `xsd-summary`               |
+| `s29a` | 23:00:01Z | `headerref-header-rel-with-footer-part`           | control      | the same with one `rIdX` → header and nothing else                                                                                                                                                                                                                                            | `70094b63b06ebbfa` | clean-open     | valid                                      | invalid: `paraid-missing-element`, `rels-unreferenced`                                                                |
+| `s29a` | 23:00:01Z | `s29a-control-minimal-end`                        | control      | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                               | `c88a5c2fa28c6fef` | clean-open     | valid                                      | valid                                                                                                                 |
+| `s29b` | 23:04:23Z | `s29b-control-minimal`                            | control      | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                               | `2dbc2f882a291f2d` | clean-open     | valid                                      | valid                                                                                                                 |
+| `s29b` | 23:03:25Z | `headerref-header-rel-type-https`                 | review BA S1 | the clean session 26 shape, Type `https://schemas.openxmlformats.org/officeDocument/2006/relationships/header`                                                                                                                                                                                | `701c0cae94f2045c` | repair-warning | invalid: `word-header-footer-relationship` | invalid: `paraid-missing-element`, `word-header-footer-relationship`                                                  |
+| `s29b` | 23:02:23Z | `footerref-footer-rel-type-https`                 | review BA S1 | the clean footer shape (`w:footerReference` → footer relationship → `w:ftr` typed `footer+xml`), Type `https://…/footer`                                                                                                                                                                      | `4b8c16ddd86b56eb` | repair-warning | invalid: `word-header-footer-relationship` | invalid: `paraid-missing-element`, `word-header-footer-relationship`                                                  |
+| `s29b` | 23:03:35Z | `hyperlink-rel-type-https`                        | review BA S1 | session 28's hyperlink shape, Type `https://…/hyperlink`                                                                                                                                                                                                                                      | `a9ccebe9434410ed` | repair-warning | invalid: `word-hyperlink-relationship`     | invalid: `word-hyperlink-relationship`                                                                                |
+| `s29b` | 23:01:29Z | `dup-id-package-rels-unreferenced-hyperlinks`     | #615         | the clean session 26 shape plus two unreferenced External hyperlink relationships sharing `rIdZ` in `_rels/.rels`                                                                                                                                                                             | `85e22167da2e4eb8` | repair-warning | valid                                      | invalid: `paraid-missing-element`, `xsd-error`, `xsd-summary`                                                         |
+| `s29b` | 23:04:23Z | `dup-id-header-part-rels-unreferenced-hyperlinks` | #615         | the clean session 26 shape plus `word/_rels/header9.xml.rels` holding two unreferenced External hyperlink relationships sharing `rIdZ`                                                                                                                                                        | `fcf47cd10f419818` | clean-open     | valid                                      | invalid: `paraid-missing-element`, `rels-id-duplicate`, `xsd-error`, `xsd-summary`                                    |
+| `s29b` | 23:04:23Z | `s29b-control-minimal-end`                        | control      | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                               | `2dbc2f882a291f2d` | clean-open     | valid                                      | valid                                                                                                                 |
+
+<details><summary>Raw records, session 29</summary>
+
+```jsonl
+{"run": "s29a", "name": "s29a-control-minimal", "sha256": "c88a5c2fa28c6fef4c6a97ddea1ad0e186ef7bae0aaa96163f8f1d11b924542f", "observedAt": "2026-10-24T23:00:01+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s29a", "name": "headerref-dup-id-footer-first-header-last", "sha256": "66450bf9b2ad6ae893fb1b503615422495c76904f25e2914910e3fe9e1acec18", "observedAt": "2026-10-24T22:58:03.631Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__headerref-dup-id-footer-first-header-last.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00001__wfv__headerref-dup-id-footer-first-header-last.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00001__wfv__headerref-dup-id-footer-first-header-last.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s29a", "name": "headerref-dup-id-header-first-footer-last", "sha256": "a496f8130d77f2b59e30844bc7dd57d32bdb2b429484a43760dea9b01b859200", "observedAt": "2026-10-24T22:59:04.084Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00002__wfv__headerref-dup-id-header-first-footer-last.docx; refusing to guess", "dialogs": ["\"Word found unreadable content in 00002__wfv__headerref-dup-id-header-first-footer-last.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s29a", "name": "headerref-dup-id-header-twice", "sha256": "b6134671593da6ff59f42c013870aac52f808e6c747b5d5e418a36025cd157c3", "observedAt": "2026-10-24T22:59:58.265Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00003__wfv__headerref-dup-id-header-twice.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00003__wfv__headerref-dup-id-header-twice.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00003__wfv__headerref-dup-id-header-twice.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s29a", "name": "dup-id-unreferenced-hyperlinks", "sha256": "200dfe224785da37b01fbc70d9553c1af40fbf03f8696794aba0683862152f0b", "observedAt": "2026-10-24T22:57:10.435Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__dup-id-unreferenced-hyperlinks.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00000__wfv__dup-id-unreferenced-hyperlinks.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__dup-id-unreferenced-hyperlinks.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s29a", "name": "headerref-header-rel-with-footer-part", "sha256": "70094b63b06ebbfa0e073975ff0318a27eadd4aba82c722d54ad0470b90fe8ac", "observedAt": "2026-10-24T23:00:01+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s29a", "name": "s29a-control-minimal-end", "sha256": "c88a5c2fa28c6fef4c6a97ddea1ad0e186ef7bae0aaa96163f8f1d11b924542f", "observedAt": "2026-10-24T23:00:01+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s29b", "name": "s29b-control-minimal", "sha256": "2dbc2f882a291f2df9267ce3deebfa24f3e62a3f2b6e9959abfef65ac636a98d", "observedAt": "2026-10-24T23:04:23+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s29b", "name": "headerref-header-rel-type-https", "sha256": "701c0cae94f2045cb084b1fed30d12d781e1b859d8153139c42c9f9b3ff42e79", "observedAt": "2026-10-24T23:03:25.056Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00003__wfv__headerref-header-rel-type-https.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00003__wfv__headerref-header-rel-type-https.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00003__wfv__headerref-header-rel-type-https.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s29b", "name": "footerref-footer-rel-type-https", "sha256": "4b8c16ddd86b56eb5aa77aeacc62e3a48363259cc248283e050d1319795ad6ef", "observedAt": "2026-10-24T23:02:23.793Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00002__wfv__footerref-footer-rel-type-https.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00002__wfv__footerref-footer-rel-type-https.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__footerref-footer-rel-type-https.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s29b", "name": "hyperlink-rel-type-https", "sha256": "a9ccebe9434410edac0046eb257c58f661bb31d5658b384fcff8c3c6e2203cfc", "observedAt": "2026-10-24T23:03:35.777Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["\"Word found unreadable content in 00004__wfv__hyperlink-rel-type-https.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permissions for the document or drive.\\n* Make sure there is sufficient free memory and disk space.\\n* Open the file with the Text Recovery conver", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s29b", "name": "dup-id-package-rels-unreferenced-hyperlinks", "sha256": "85e22167da2e4eb88ca32e6e3f8629baa8f4e4862af2fe4708d0d55157a8da23", "observedAt": "2026-10-24T23:01:29.727Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__dup-id-package-rels-unreferenced-hyperlinks.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00001__wfv__dup-id-package-rels-unreferenced-hyperlinks.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00001__wfv__dup-id-package-rels-unreferenced-hyperlinks.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s29b", "name": "dup-id-header-part-rels-unreferenced-hyperlinks", "sha256": "fcf47cd10f419818fab322c3ad2ff5694927ed2bf8085c780fb162e9a0c0a7d4", "observedAt": "2026-10-24T23:04:23+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s29b", "name": "s29b-control-minimal-end", "sha256": "2dbc2f882a291f2df9267ce3deebfa24f3e62a3f2b6e9959abfef65ac636a98d", "observedAt": "2026-10-24T23:04:23+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 30: 23:53Z–23:54Z, validator columns at 77d01c46
+
+Adversarial review BB's suspected items on #615: a duplicate relationship Id in a reached glossary's `.rels` (S1, #617) and in the `.rels` of a document Word does not reach (S2), and the moved main document #615 resolves.
+
+| Run    | Observed  | Specimen                                         | Issue               | Shape                                                                                                                                                                                                              | SHA-256 (first 16) | Word           | word-valid at 77d01c46       | strict at 77d01c46                                                                                  |
+| ------ | --------- | ------------------------------------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------ | -------------- | ---------------------------- | --------------------------------------------------------------------------------------------------- |
+| `s30a` | 23:54:31Z | `s30a-control-minimal`                           | control             | `MINIMAL_PARTS`                                                                                                                                                                                                    | `4220be34a673ce8b` | clean-open     | valid                        | valid                                                                                               |
+| `s30a` | 23:54:31Z | `glossary-footerref-footer-rel-ftr-typed-footer` | control             | session 26's clean glossary footer shape (a glossary `w:footerReference` `rIdF` → footer relationship → `word/glossary/footer9.xml`, a `w:ftr` typed `footer+xml`)                                                 | `01abfee9a5282750` | clean-open     | valid                        | invalid: `paraid-missing-element`                                                                   |
+| `s30a` | 23:53:53Z | `dup-id-glossary-sidecar`                        | #617 (review BB S1) | the same plus two unreferenced External hyperlink relationships sharing `rIdZ` in `word/glossary/_rels/document.xml.rels`                                                                                          | `f10d8c7646699480` | repair-warning | valid                        | invalid: `paraid-missing-element`, `rels-id-duplicate`, `xsd-error`, `xsd-summary`                  |
+| `s30a` | 23:54:31Z | `relocated-main-transitional`                    | control             | `MINIMAL_PARTS` with the main document moved to `word/main.xml` (package relationship and Override retargeted)                                                                                                     | `231e9873ec77f2b5` | clean-open     | valid                        | valid                                                                                               |
+| `s30a` | 23:54:31Z | `relocated-main-orphan-sidecar`                  | control             | the same plus an unreached `word/document.xml` and `word/_rels/document.xml.rels` (copies of the originals)                                                                                                        | `7ffd994eaebdc175` | clean-open     | valid                        | invalid: `ct-undeclared-part`, `rels-unreferenced`                                                  |
+| `s30a` | 23:54:31Z | `dup-id-non-main-document-sidecar`               | review BB S2        | the same plus two unreferenced External hyperlink relationships sharing `rIdZ` in the orphan `word/_rels/document.xml.rels`                                                                                        | `7c240516e15e401b` | clean-open     | valid                        | invalid: `ct-undeclared-part`, `rels-id-duplicate`, `rels-unreferenced`, `xsd-error`, `xsd-summary` |
+| `s30a` | 23:54:18Z | `dup-id-relocated-main-transitional`             | #615                | `MINIMAL_PARTS` with the main document moved to `word/main.xml` (package relationship and Override retargeted) plus two unreferenced External hyperlink relationships sharing `rIdZ` in `word/_rels/main.xml.rels` | `cf7b780037c2c6b5` | repair-warning | invalid: `rels-id-duplicate` | invalid: `rels-id-duplicate`, `xsd-error`, `xsd-summary`                                            |
+| `s30a` | 23:54:31Z | `s30a-control-minimal-end`                       | control             | `MINIMAL_PARTS`                                                                                                                                                                                                    | `4220be34a673ce8b` | clean-open     | valid                        | valid                                                                                               |
+
+<details><summary>Raw records, session 30</summary>
+
+```jsonl
+{"run": "s30a", "name": "s30a-control-minimal", "sha256": "4220be34a673ce8bc1b4d4c2d3c580bde680b5d8e4f39ab8cf6a8ecb6d96e8e5", "observedAt": "2026-10-24T23:54:31+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s30a", "name": "glossary-footerref-footer-rel-ftr-typed-footer", "sha256": "01abfee9a52827505b04378fd2e1ab01f84995cdc9bf8265b6b5c5c73f509053", "observedAt": "2026-10-24T23:54:31+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s30a", "name": "dup-id-glossary-sidecar", "sha256": "f10d8c7646699480d16fcd6e2526cda71065c5a68075842649004e3e4266f109", "observedAt": "2026-10-24T23:53:53.791Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__dup-id-glossary-sidecar.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00000__wfv__dup-id-glossary-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__dup-id-glossary-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s30a", "name": "relocated-main-transitional", "sha256": "231e9873ec77f2b57b002b3a4ce8e464c54e5302f09bb0dcba61bca6ea3b60a6", "observedAt": "2026-10-24T23:54:31+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s30a", "name": "relocated-main-orphan-sidecar", "sha256": "7ffd994eaebdc1757d4574d9efe3eef15fcd04672600b7813547b525ca6f715c", "observedAt": "2026-10-24T23:54:31+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s30a", "name": "dup-id-non-main-document-sidecar", "sha256": "7c240516e15e401bfee04e3a3483f0bb6cc8d74254f8a7e1da60e9f9d6bb5ef7", "observedAt": "2026-10-24T23:54:31+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s30a", "name": "dup-id-relocated-main-transitional", "sha256": "cf7b780037c2c6b566eca03a44e84404697665bd08c942e1cb8404790256bf93", "observedAt": "2026-10-24T23:54:18.359Z", "outcome": "repair-warning", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00002__wfv__dup-id-relocated-main-transitional.docx; refusing to guess", "dialogs": ["\"Word found unreadable content in 00002__wfv__dup-id-relocated-main-transitional.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "'Word found unreadable content in 00002__wfv__dup-id-relocated-main-transitional.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'"]}
+{"run": "s30a", "name": "s30a-control-minimal-end", "sha256": "4220be34a673ce8bc1b4d4c2d3c580bde680b5d8e4f39ab8cf6a8ecb6d96e8e5", "observedAt": "2026-10-24T23:54:31+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 31: 00:26Z on 2026-10-25, validator columns at ceb5c884
+
+Adversarial review BC's suspected item on #617: duplicate relationship Ids beside a main document or a reached glossary stored without a `.xml` suffix (S1, #618).
+
+| Run    | Observed  | Specimen                      | Issue               | Shape                                                                                                                                                                | SHA-256 (first 16) | Word           | word-valid at ceb5c884 | strict at ceb5c884                                            |
+| ------ | --------- | ----------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | ---------------------- | ------------------------------------------------------------- |
+| `s31a` | 00:26:46Z | `s31a-control-minimal`        | control             | `MINIMAL_PARTS`                                                                                                                                                      | `42040cd5e6236bba` | clean-open     | valid                  | valid                                                         |
+| `s31a` | 00:26:46Z | `bin-main`                    | control             | `MINIMAL_PARTS` with the main document stored as `word/document.bin` (package relationship, Override and sidecar renamed with it)                                    | `c7e3e0ac3cacc9e3` | clean-open     | valid                  | valid                                                         |
+| `s31a` | 00:26:44Z | `dup-id-bin-main-sidecar`     | #618 (review BC S1) | the same plus two unreferenced External hyperlink relationships sharing `rIdZ` in `word/_rels/document.bin.rels`                                                     | `646d74ac90722184` | repair-warning | valid                  | invalid: `xsd-error`, `xsd-summary`                           |
+| `s31a` | 00:26:46Z | `bin-glossary`                | control             | session 26's clean glossary footer shape with the glossary stored as `word/glossary/document.bin` (main-document relationship, Override and sidecar renamed with it) | `e7da83dbb8652152` | clean-open     | valid                  | invalid: `paraid-missing-element`                             |
+| `s31a` | 00:26:34Z | `dup-id-bin-glossary-sidecar` | #618 (review BC S1) | the same plus two unreferenced External hyperlink relationships sharing `rIdZ` in `word/glossary/_rels/document.bin.rels`                                            | `9cffc98ee7d0ed36` | repair-warning | valid                  | invalid: `paraid-missing-element`, `xsd-error`, `xsd-summary` |
+| `s31a` | 00:26:46Z | `s31a-control-minimal-end`    | control             | `MINIMAL_PARTS`                                                                                                                                                      | `42040cd5e6236bba` | clean-open     | valid                  | valid                                                         |
+
+<details><summary>Raw records, session 31</summary>
+
+```jsonl
+{"run": "s31a", "name": "s31a-control-minimal", "sha256": "42040cd5e6236bbac1acff975cec03791c5e6ca85c41d7e2cd71d47f2b8bf0aa", "observedAt": "2026-10-25T00:26:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s31a", "name": "bin-main", "sha256": "c7e3e0ac3cacc9e34bee93099058f514928da263e8655fa24ed873f03bbb0aa6", "observedAt": "2026-10-25T00:26:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s31a", "name": "dup-id-bin-main-sidecar", "sha256": "646d74ac90722184ade62383362f5a6a88c438f3f67d94833264abb61a433bf3", "observedAt": "2026-10-25T00:26:44.295Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00003__wfv__dup-id-bin-main-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00003__wfv__dup-id-bin-main-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s31a", "name": "bin-glossary", "sha256": "e7da83dbb8652152e4db328fa8e07716e1847cba0029aabef48d63a2f4016e45", "observedAt": "2026-10-25T00:26:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s31a", "name": "dup-id-bin-glossary-sidecar", "sha256": "9cffc98ee7d0ed36cbf1cde2138596ba51bdd24fa5967556caafb903b02ab980", "observedAt": "2026-10-25T00:26:34.209Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00002__wfv__dup-id-bin-glossary-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__dup-id-bin-glossary-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s31a", "name": "s31a-control-minimal-end", "sha256": "42040cd5e6236bbac1acff975cec03791c5e6ca85c41d7e2cd71d47f2b8bf0aa", "observedAt": "2026-10-25T00:26:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 32: 01:10Z on 2026-10-25, validator columns at 6e3cda3e
+
+Adversarial review BD's suspected items on #618: a main document stored as `word/document.bin` that is malformed or whose footer reference names no relationship (S1, S2, #620), with `.xml` twins, one of which found #619.
+
+| Run    | Observed  | Specimen                       | Issue               | Shape                                                                                                                                                                           | SHA-256 (first 16) | Word           | word-valid at 6e3cda3e          | strict at 6e3cda3e                                   |
+| ------ | --------- | ------------------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | ------------------------------- | ---------------------------------------------------- |
+| `s32a` | 01:11:36Z | `s32a-control-minimal`         | control             | `MINIMAL_PARTS`                                                                                                                                                                 | `a04b2b9a2dd67f36` | clean-open     | valid                           | valid                                                |
+| `s32a` | 01:11:14Z | `main-truncated`               | calibration         | `MINIMAL_PARTS` with the main document's closing `</w:body></w:document>` removed                                                                                               | `2fc91055bcc3cd1d` | open-error     | invalid: `xml-syntax`           | invalid: `xml-syntax`                                |
+| `s32a` | 01:10:54Z | `bin-main-truncated`           | #620 (review BD S1) | the same, stored as `word/document.bin` (package relationship, Override and `.rels` renamed with it)                                                                            | `5267572bb13cdb09` | open-error     | valid                           | valid                                                |
+| `s32a` | 01:11:10Z | `footerref-rid-no-sidecar`     | calibration         | `MINIMAL_PARTS` with `<w:footerReference w:type="default" r:id="rId9"/>` first in the body `w:sectPr` (`xmlns:r` declared) and `word/_rels/document.xml.rels` removed           | `903c4db913c067af` | repair-warning | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `rels-unreferenced` |
+| `s32a` | 01:10:50Z | `bin-footerref-rid-no-sidecar` | #620 (review BD S2) | the same, stored as `word/document.bin` (package relationship, Override and `.rels` renamed with it)                                                                            | `8881f8614c3db73d` | repair-warning | valid                           | invalid: `rels-unreferenced`                         |
+| `s32a` | 01:10:58Z | `footerref-rid-missing`        | #619                | `MINIMAL_PARTS` with `<w:footerReference w:type="default" r:id="rId9"/>` first in the body `w:sectPr` (`xmlns:r` declared); `word/_rels/document.xml.rels` kept, with no `rId9` | `4969aeee012d3c81` | repair-warning | valid                           | invalid: `rels-id-missing`                           |
+| `s32a` | 01:10:39Z | `bin-footerref-rid-missing`    | #620 (review BD S2) | the same, stored as `word/document.bin` (package relationship, Override and `.rels` renamed with it)                                                                            | `8d94ffcffc55cadc` | repair-warning | valid                           | valid                                                |
+| `s32a` | 01:11:36Z | `s32a-control-minimal-end`     | control             | `MINIMAL_PARTS`                                                                                                                                                                 | `a04b2b9a2dd67f36` | clean-open     | valid                           | valid                                                |
+
+<details><summary>Raw records, session 32</summary>
+
+```jsonl
+{"run": "s32a", "name": "s32a-control-minimal", "sha256": "a04b2b9a2dd67f365eed13da3044f8c4e0761de0183851dc866f505131e6612f", "observedAt": "2026-10-25T01:11:36+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s32a", "name": "main-truncated", "sha256": "2fc91055bcc3cd1d4e8e82cd09cc5a56f6026660ab6718fdcccb73c1e9c88da3", "observedAt": "2026-10-25T01:11:14.632Z", "outcome": "open-error", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00005__wfv__main-truncated.docx; refusing to guess", "dialogs": ["'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permissions for the document or drive.\\n* Make sure there is sufficient free memory and disk space.\\n* Open the file with the Text Recovery conver", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s32a", "name": "bin-main-truncated", "sha256": "5267572bb13cdb09dc4c53c149c410e2ad9882d934a21cf77d7802368c9fcca6", "observedAt": "2026-10-25T01:10:54.305Z", "outcome": "open-error", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00002__wfv__bin-main-truncated.docx; refusing to guess", "dialogs": ["'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permissions for the document or drive.\\n* Make sure there is sufficient free memory and disk space.\\n* Open the file with the Text Recovery conver", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s32a", "name": "footerref-rid-no-sidecar", "sha256": "903c4db913c067af9c8a6e7403b4ae2835c662ade89679d81cb929a555a4f885", "observedAt": "2026-10-25T01:11:10.339Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00004__wfv__footerref-rid-no-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00004__wfv__footerref-rid-no-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s32a", "name": "bin-footerref-rid-no-sidecar", "sha256": "8881f8614c3db73dce86b8d28a6ecd7560941ed75968e6e78d4eaa8161a15e98", "observedAt": "2026-10-25T01:10:50.022Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00001__wfv__bin-footerref-rid-no-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00001__wfv__bin-footerref-rid-no-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s32a", "name": "footerref-rid-missing", "sha256": "4969aeee012d3c81918e009c35850789f140b302c762caadb09b140e50394b75", "observedAt": "2026-10-25T01:10:58.681Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00003__wfv__footerref-rid-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00003__wfv__footerref-rid-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s32a", "name": "bin-footerref-rid-missing", "sha256": "8d94ffcffc55cadc13f5bf07e6b0086aef57b577894d5c676d20a1c88f9ca75c", "observedAt": "2026-10-25T01:10:39.867Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__bin-footerref-rid-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__bin-footerref-rid-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s32a", "name": "s32a-control-minimal-end", "sha256": "a04b2b9a2dd67f365eed13da3044f8c4e0761de0183851dc866f505131e6612f", "observedAt": "2026-10-25T01:11:36+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 ```
 
 </details>
@@ -5533,6 +5807,742 @@ const specimens: [string, string, () => Promise<Uint8Array> | Uint8Array][] = [
     ],
     ["s26b-control-minimal-end", "control", () => buildDocx(P)],
 ];
+```
+
+`s26c` was built the same way, with this header line, two helpers and this specimens list:
+
+```ts
+// Session 26, chunk s26c (2026-10-24): #606's unprobed shapes (the mirror, glossary references, an unrelated type).
+/** A reached glossary whose docPartBody sectPr carries `ref` (r:id rIdF), rIdF of type `relType` to word/glossary/`file`. */
+const glossaryRef = (ref: "headerReference" | "footerReference", relType: string, file: string, xml: string, type: string) =>
+    buildDocx({
+        ...P,
+        "word/glossary/document.xml": glossaryWithFooterRef().replace(
+            `<w:footerReference w:type="default" r:id="rIdF"/>`,
+            `<w:${ref} w:type="default" r:id="rIdF"/>`,
+        ),
+        "word/glossary/_rels/document.xml.rels": relsPart(`<Relationship Id="rIdF" Type="${REL}/${relType}" Target="${file}"/>`),
+        [`word/glossary/${file}`]: xml,
+        "word/_rels/document.xml.rels": rels(`<Relationship Id="rIdG" Type="${REL}/glossaryDocument" Target="glossary/document.xml"/>`),
+        "[Content_Types].xml": ct(
+            `<Override PartName="/word/glossary/document.xml" ContentType="${GLOSSARY_TYPE}"/>${ov(`word/glossary/${file}`, type)}`,
+        ),
+    });
+/** The main document's body sectPr carries a headerReference naming rId1, MINIMAL_PARTS' styles relationship. */
+const headerRefToStyles = () => buildDocx({ ...P, "word/document.xml": docWith("", `<w:headerReference w:type="default" r:id="rId1"/>`) });
+
+const specimens: [string, string, () => Promise<Uint8Array> | Uint8Array][] = [
+    ["s26c-control-minimal", "control", () => buildDocx(P)],
+    [
+        "footerref-header-rel-hdr-typed-header",
+        "#606 mirror",
+        () => mainPart({ segment: "header", file: "header9.xml", xml: HEADER, type: T("header"), doc: USED.footer.doc }),
+    ],
+    [
+        "footerref-header-rel-ftr-typed-footer",
+        "#606 mirror",
+        () => mainPart({ segment: "header", file: "footer9.xml", xml: FOOTER, type: T("footer"), doc: USED.footer.doc }),
+    ],
+    [
+        "glossary-headerref-footer-rel-ftr-typed-footer",
+        "#606 glossary",
+        () => glossaryRef("headerReference", "footer", "footer9.xml", FOOTER, T("footer")),
+    ],
+    [
+        "glossary-footerref-header-rel-hdr-typed-header",
+        "#606 glossary mirror",
+        () => glossaryRef("footerReference", "header", "header9.xml", HEADER, T("header")),
+    ],
+    [
+        "glossary-footerref-footer-rel-ftr-typed-footer",
+        "control",
+        () => glossaryRef("footerReference", "footer", "footer9.xml", FOOTER, T("footer")),
+    ],
+    ["headerref-styles-rel", "#606 unrelated type", () => headerRefToStyles()],
+    ["s26c-control-minimal-end", "control", () => buildDocx(P)],
+];
+```
+
+Session 27's builder (`s27a`–`s27c`) is another standalone script, run the same way, with `CHUNK` naming the chunk:
+
+```ts
+// Session 27 (2026-10-24): the items adversarial review AZ (layer 129, #611) left for a Word probe, plus the
+// placements layer 129's check judges without a session 26 observation.
+// s27a: S1/S2 — a body headerReference naming a header relationship to a w:hdr part typed header+xml (the clean
+//       session 26 shape, `headerref-header-rel-hdr-typed-header`) whose relationship Type is padded with spaces,
+//       wrapped in tab/newline character references, upper-cased (`…/HEADER`), `http://example.com/header`, or
+//       `…/relationships/custom/header`; S3 — the same clean shape plus a second Relationship with the same Id rIdX,
+//       Type footer, listed last.
+// s27b: S3 mirror — the session 26 refused shape (headerReference → footer relationship rIdX to a w:ftr part) plus a
+//       second rIdX of Type header listed last; the refused shape with its reference moved into a paragraph-level
+//       w:pPr/w:sectPr, or into the w:sectPr of a w:sectPrChange (with the clean shape moved there as its control: the
+//       schema's CT_SectPrBase has no header reference at all); the clean shape with relationship Type "header" (no URI),
+//       or the ISO Strict header relationship URI (http://purl.oclc.org/ooxml/officeDocument/relationships/header).
+// s27c: the footer side of s27a/s27b's URI results — a body footerReference naming a footer relationship to a w:ftr part
+//       typed footer+xml whose Type is `http://example.com/footer`, `…/relationships/custom/footer`, `…/FOOTER`, or the
+//       ISO Strict footer URI, with the unmodified shape as a control.
+// Shapes: tests/support/story-content-type-specimens.ts at 9eb10acb (`storyReferenceParts`), as review AZ's probe-az.
+// Run from a worktree root at 9eb10acb as a copy: BUILD_DIR=<chunk>/src CHUNK=s27a|s27b|s27c pnpm exec tsx s27builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { STORY_FOOTER_XML, STORY_HEADER_XML, storyContentType, storyReferenceParts } from "./tests/support/story-content-type-specimens";
+import { validate } from "./src/scripts/office/validate";
+
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+type Parts = Record<string, string>;
+const REF = `<w:headerReference w:type="default" r:id="rIdX"/>`;
+const clean = (): Parts => storyReferenceParts("headerReference", "header", "header9.xml", STORY_HEADER_XML, storyContentType("header"));
+const refused = (): Parts => storyReferenceParts("headerReference", "footer", "footer9.xml", STORY_FOOTER_XML, storyContentType("footer"));
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (!text.includes(from)) throw new Error(`missing ${from}`);
+    return text.replace(from, to);
+};
+const edit = (parts: Parts, file: string, from: string, to: string): Parts => ({ ...parts, [file]: replaceOnce(parts[file]!, from, to) });
+const RELS = "word/_rels/document.xml.rels";
+const DOC = "word/document.xml";
+const retype = (type: string) => edit(clean(), RELS, `Type="${R}/header"`, `Type="${type}"`);
+const control = () => buildDocx(MINIMAL_PARTS);
+/** The body sectPr's reference moved into a w:sectPrChange, its last child (CT_SectPr), inside that change's w:sectPr. */
+const inSectPrChange = (parts: Parts): Parts =>
+    edit(
+        edit(parts, DOC, REF, ""),
+        DOC,
+        "</w:sectPr></w:body>",
+        `<w:sectPrChange w:id="1" w:author="A" w:date="2026-10-24T00:00:00Z"><w:sectPr>${REF}</w:sectPr></w:sectPrChange></w:sectPr></w:body>`,
+    );
+
+const cleanFooter = (): Parts =>
+    storyReferenceParts("footerReference", "footer", "footer9.xml", STORY_FOOTER_XML, storyContentType("footer"));
+const retypeFooter = (type: string) => edit(cleanFooter(), RELS, `Type="${R}/footer"`, `Type="${type}"`);
+
+const chunks: Record<string, [string, string, () => Promise<Uint8Array> | Uint8Array][]> = {
+    s27a: [
+        ["s27a-control-minimal", "control", control],
+        ["headerref-header-rel-type-padded", "AZ S1", () => buildDocx(retype(` ${R}/header `))],
+        ["headerref-header-rel-type-tab-newline", "AZ S1", () => buildDocx(retype(`&#x9;${R}/header&#xA;`))],
+        ["headerref-header-rel-type-upper", "AZ S2", () => buildDocx(retype(`${R}/HEADER`))],
+        ["headerref-header-rel-type-example-com", "AZ S2", () => buildDocx(retype("http://example.com/header"))],
+        ["headerref-header-rel-type-custom-header", "AZ S2", () => buildDocx(retype(`${R}/custom/header`))],
+        [
+            "headerref-duplicate-id-last-footer",
+            "AZ S3",
+            () =>
+                buildDocx(
+                    edit(
+                        clean(),
+                        RELS,
+                        "</Relationships>",
+                        `<Relationship Id="rIdX" Type="${R}/footer" Target="header9.xml"/></Relationships>`,
+                    ),
+                ),
+        ],
+        ["s27a-control-minimal-end", "control", control],
+    ],
+    s27b: [
+        ["s27b-control-minimal", "control", control],
+        [
+            "headerref-duplicate-id-last-header",
+            "AZ S3 mirror",
+            () =>
+                buildDocx(
+                    edit(
+                        refused(),
+                        RELS,
+                        "</Relationships>",
+                        `<Relationship Id="rIdX" Type="${R}/header" Target="footer9.xml"/></Relationships>`,
+                    ),
+                ),
+        ],
+        [
+            "headerref-footer-rel-paragraph-sectpr",
+            "placement",
+            () => {
+                const p = edit(refused(), DOC, REF, "");
+                return buildDocx(edit(p, DOC, "<w:r>", `<w:pPr><w:sectPr>${REF}</w:sectPr></w:pPr><w:r>`));
+            },
+        ],
+        ["headerref-footer-rel-in-sectprchange", "placement", () => buildDocx(inSectPrChange(refused()))],
+        ["headerref-header-rel-in-sectprchange", "placement control", () => buildDocx(inSectPrChange(clean()))],
+        ["headerref-header-rel-type-bare", "AZ S2", () => buildDocx(retype("header"))],
+        [
+            "headerref-header-rel-type-strict-uri",
+            "AZ S2",
+            () => buildDocx(retype("http://purl.oclc.org/ooxml/officeDocument/relationships/header")),
+        ],
+        ["s27b-control-minimal-end", "control", control],
+    ],
+    s27c: [
+        ["s27c-control-minimal", "control", control],
+        ["footerref-footer-rel-type-example-com", "AZ S2 footer", () => buildDocx(retypeFooter("http://example.com/footer"))],
+        ["footerref-footer-rel-type-custom-footer", "AZ S2 footer", () => buildDocx(retypeFooter(`${R}/custom/footer`))],
+        ["footerref-footer-rel-type-upper", "AZ S2 footer", () => buildDocx(retypeFooter(`${R}/FOOTER`))],
+        [
+            "footerref-footer-rel-type-strict-uri",
+            "AZ S2 footer",
+            () => buildDocx(retypeFooter("http://purl.oclc.org/ooxml/officeDocument/relationships/footer")),
+        ],
+        ["footerref-footer-rel-ftr-typed-footer", "control (session 26 clean footer shape)", () => buildDocx(cleanFooter())],
+        ["s27c-control-minimal-end", "control", control],
+    ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        const r = await validate(path.join(dir, file), { profile });
+        return {
+            valid: r.valid,
+            errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+        };
+    };
+    const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid}`,
+    );
+}
+```
+
+Session 28's builder (`s28a`) is another standalone script, run the same way:
+
+```ts
+// Session 28 (2026-10-24): does Word read a w:hyperlink's relationship Type exactly, as session 27 found for header and
+// footer references (#613)? `word-hyperlink-relationship` (src/scripts/office/checks/word-hyperlink.ts) accepts any
+// Type that ends in /hyperlink with TargetMode External.
+// s28a: `MINIMAL_PARTS` with a body w:hyperlink r:id="rIdH" naming an External relationship to https://example.org/
+//       whose Type is the Transitional hyperlink URI (control), the ISO Strict hyperlink URI,
+//       `http://example.com/hyperlink`, `…/relationships/custom/hyperlink`, or `…/relationships/HYPERLINK`.
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s28a pnpm exec tsx s28builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+type Parts = Record<string, string>;
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (!text.includes(from)) throw new Error(`missing ${from}`);
+    return text.replace(from, to);
+};
+const RELS = "word/_rels/document.xml.rels";
+const DOC = "word/document.xml";
+const hyperlink = (type: string): Parts => {
+    const parts: Parts = { ...(MINIMAL_PARTS as Parts) };
+    parts[DOC] = replaceOnce(
+        replaceOnce(parts[DOC]!, "<w:document ", `<w:document xmlns:r="${R}" `),
+        "<w:r><w:t>Hello</w:t></w:r>",
+        `<w:r><w:t>Hello</w:t></w:r><w:hyperlink r:id="rIdH"><w:r><w:t>link</w:t></w:r></w:hyperlink>`,
+    );
+    parts[RELS] = replaceOnce(
+        parts[RELS]!,
+        "</Relationships>",
+        `<Relationship Id="rIdH" Type="${type}" Target="https://example.org/" TargetMode="External"/></Relationships>`,
+    );
+    return parts;
+};
+const control = () => buildDocx(MINIMAL_PARTS);
+
+const chunks: Record<string, [string, string, () => Promise<Uint8Array> | Uint8Array][]> = {
+    s28a: [
+        ["s28a-control-minimal", "control", control],
+        ["hyperlink-rel-type-transitional", "control", () => buildDocx(hyperlink(`${R}/hyperlink`))],
+        [
+            "hyperlink-rel-type-strict-uri",
+            "#613 class",
+            () => buildDocx(hyperlink("http://purl.oclc.org/ooxml/officeDocument/relationships/hyperlink")),
+        ],
+        ["hyperlink-rel-type-example-com", "#613 class", () => buildDocx(hyperlink("http://example.com/hyperlink"))],
+        ["hyperlink-rel-type-custom-hyperlink", "#613 class", () => buildDocx(hyperlink(`${R}/custom/hyperlink`))],
+        ["hyperlink-rel-type-upper", "#613 class", () => buildDocx(hyperlink(`${R}/HYPERLINK`))],
+        ["s28a-control-minimal-end", "control", control],
+    ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        const r = await validate(path.join(dir, file), { profile });
+        return {
+            valid: r.valid,
+            errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+        };
+    };
+    const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+Session 29's builder (`s29a`, `s29b`) is another standalone script, run the same way, with `CHUNK` naming the chunk:
+
+```ts
+// Session 29 (2026-10-24): duplicate relationship Ids without a content-type confound. Session 27's duplicate-Id
+// specimens each had one entry whose target's content type disagreed with that entry's relationship type, so they
+// cannot tell a duplicate Id from a type/content mismatch. CodeRabbit's review of #611 (comment 4368831374) asked about
+// a header reference whose Id names a footer relationship first and a header relationship last.
+// s29a: the clean session 26 shape (body w:headerReference r:id="rIdX" → header relationship → `header9.xml`, a w:hdr
+//       typed header+xml) plus a correctly typed `footer9.xml` (w:ftr, footer+xml) and, under the same Id rIdX:
+//       a footer relationship to footer9.xml listed first (header last); listed last (header first); a second header
+//       relationship to header9.xml (same type, same target); and, with no second rIdX, two unreferenced External
+//       hyperlink relationships sharing the Id rIdZ.
+// s29b: review BA's S1 — the Transitional header, footer and hyperlink Types spelled with `https:` (session 26's clean
+//       shapes and session 28's hyperlink shape otherwise) — and two unreferenced External hyperlink relationships
+//       sharing the Id rIdZ in the package `_rels/.rels`, or in the header part's own `word/_rels/header9.xml.rels`.
+// Shapes: tests/support/story-content-type-specimens.ts (`storyReferenceParts`).
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s29a|s29b pnpm exec tsx s29builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { STORY_FOOTER_XML, STORY_HEADER_XML, storyContentType, storyReferenceParts } from "./tests/support/story-content-type-specimens";
+import { validate } from "./src/scripts/office/validate";
+
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+type Parts = Record<string, string>;
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (!text.includes(from)) throw new Error(`missing ${from}`);
+    return text.replace(from, to);
+};
+const RELS = "word/_rels/document.xml.rels";
+const CT = "[Content_Types].xml";
+const HEADER_REL = `<Relationship Id="rIdX" Type="${R}/header" Target="header9.xml"/>`;
+const FOOTER_REL = `<Relationship Id="rIdX" Type="${R}/footer" Target="footer9.xml"/>`;
+/** The clean shape plus a correctly typed footer9.xml; `rels` replaces the header relationship. */
+const withFooterPart = (rels: string): Parts => {
+    const parts: Parts = {
+        ...storyReferenceParts("headerReference", "header", "header9.xml", STORY_HEADER_XML, storyContentType("header")),
+    };
+    parts["word/footer9.xml"] = STORY_FOOTER_XML;
+    parts[CT] = replaceOnce(
+        parts[CT]!,
+        "</Types>",
+        `<Override PartName="/word/footer9.xml" ContentType="${storyContentType("footer")}"/></Types>`,
+    );
+    parts[RELS] = replaceOnce(parts[RELS]!, HEADER_REL, rels);
+    return parts;
+};
+const control = () => buildDocx(MINIMAL_PARTS);
+const clean = (): Parts => ({
+    ...storyReferenceParts("headerReference", "header", "header9.xml", STORY_HEADER_XML, storyContentType("header")),
+});
+const edit = (parts: Parts, file: string, from: string, to: string): Parts => ({ ...parts, [file]: replaceOnce(parts[file]!, from, to) });
+const retype = (parts: Parts, from: string, to: string): Parts => edit(parts, RELS, `Type="${from}"`, `Type="${to}"`);
+/** Two unreferenced External hyperlink relationships sharing the Id rIdZ. */
+const DUP_Z =
+    `<Relationship Id="rIdZ" Type="${R}/hyperlink" Target="https://a.example/" TargetMode="External"/>` +
+    `<Relationship Id="rIdZ" Type="${R}/hyperlink" Target="https://b.example/" TargetMode="External"/>`;
+/** Session 28's shape: MINIMAL_PARTS plus a body w:hyperlink r:id="rIdH" naming an External relationship of `type`. */
+const hyperlink = (type: string): Parts => {
+    const parts: Parts = { ...(MINIMAL_PARTS as Parts) };
+    parts["word/document.xml"] = replaceOnce(
+        replaceOnce(parts["word/document.xml"]!, "<w:document ", `<w:document xmlns:r="${R}" `),
+        "<w:r><w:t>Hello</w:t></w:r>",
+        `<w:r><w:t>Hello</w:t></w:r><w:hyperlink r:id="rIdH"><w:r><w:t>link</w:t></w:r></w:hyperlink>`,
+    );
+    return edit(
+        parts,
+        RELS,
+        "</Relationships>",
+        `<Relationship Id="rIdH" Type="${type}" Target="https://example.org/" TargetMode="External"/></Relationships>`,
+    );
+};
+
+const chunks: Record<string, [string, string, () => Promise<Uint8Array> | Uint8Array][]> = {
+    s29a: [
+        ["s29a-control-minimal", "control", control],
+        ["headerref-dup-id-footer-first-header-last", "CR 4368831374", () => buildDocx(withFooterPart(FOOTER_REL + HEADER_REL))],
+        ["headerref-dup-id-header-first-footer-last", "CR 4368831374 mirror", () => buildDocx(withFooterPart(HEADER_REL + FOOTER_REL))],
+        ["headerref-dup-id-header-twice", "duplicate, same type and target", () => buildDocx(withFooterPart(HEADER_REL + HEADER_REL))],
+        [
+            "dup-id-unreferenced-hyperlinks",
+            "duplicate, unreferenced",
+            () =>
+                buildDocx(
+                    withFooterPart(
+                        HEADER_REL +
+                            `<Relationship Id="rIdZ" Type="${R}/hyperlink" Target="https://a.example/" TargetMode="External"/>` +
+                            `<Relationship Id="rIdZ" Type="${R}/hyperlink" Target="https://b.example/" TargetMode="External"/>`,
+                    ),
+                ),
+        ],
+        [
+            "headerref-header-rel-with-footer-part",
+            "control (clean shape plus the unreferenced footer9.xml)",
+            () => buildDocx(withFooterPart(HEADER_REL)),
+        ],
+        ["s29a-control-minimal-end", "control", control],
+    ],
+    s29b: [
+        ["s29b-control-minimal", "control", control],
+        [
+            "headerref-header-rel-type-https",
+            "review BA S1",
+            () => buildDocx(retype(clean(), `${R}/header`, `${R.replace("http:", "https:")}/header`)),
+        ],
+        [
+            "footerref-footer-rel-type-https",
+            "review BA S1",
+            () =>
+                buildDocx(
+                    retype(
+                        storyReferenceParts("footerReference", "footer", "footer9.xml", STORY_FOOTER_XML, storyContentType("footer")),
+                        `${R}/footer`,
+                        `${R.replace("http:", "https:")}/footer`,
+                    ),
+                ),
+        ],
+        ["hyperlink-rel-type-https", "review BA S1", () => buildDocx(hyperlink(`${R.replace("http:", "https:")}/hyperlink`))],
+        [
+            "dup-id-package-rels-unreferenced-hyperlinks",
+            "duplicate, package .rels",
+            () => buildDocx(edit(clean(), "_rels/.rels", "</Relationships>", DUP_Z + "</Relationships>")),
+        ],
+        [
+            "dup-id-header-part-rels-unreferenced-hyperlinks",
+            "duplicate, header part .rels",
+            () =>
+                buildDocx({
+                    ...clean(),
+                    "word/_rels/header9.xml.rels": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${DUP_Z}</Relationships>`,
+                }),
+        ],
+        ["s29b-control-minimal-end", "control", control],
+    ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        const r = await validate(path.join(dir, file), { profile });
+        return {
+            valid: r.valid,
+            errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+        };
+    };
+    const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+Session 30's builder (`s30a`) is another standalone script, run the same way, with `CHUNK` naming the chunk:
+
+```ts
+// Session 30 (2026-10-24): adversarial review BB's suspected items on #615 (layer 129, #611). Session 29 found Word
+// refusing duplicate relationship Ids in the package and main-document .rels, and opening a header part's own .rels
+// with duplicates clean. Unobserved: a reached glossary's own .rels (S1), a word/_rels/document.xml.rels that belongs
+// to no main document (S2), and a relocated main document's own .rels (the validator extends the rule to it).
+// s30a: session 26's clean glossary footer shape (`glossaryStoryReferenceParts`) as a control, and with two
+//       unreferenced External hyperlink relationships sharing rIdZ in `word/glossary/_rels/document.xml.rels`;
+//       the main document moved to `word/main.xml` (package relationship and Override retargeted) alone (control),
+//       with an orphan
+//       `word/document.xml` and `word/_rels/document.xml.rels`, without (control) and with the rIdZ pair in that
+//       orphan sidecar; and the moved main document with the rIdZ pair in its own `word/_rels/main.xml.rels`.
+// Shapes: tests/support/story-content-type-specimens.ts and tests/relationship-ids.integration.test.ts (`relocated`).
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s30a pnpm exec tsx s30builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { STORY_FOOTER_XML, glossaryStoryReferenceParts, storyContentType } from "./tests/support/story-content-type-specimens";
+import { validate } from "./src/scripts/office/validate";
+
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+type Parts = Record<string, string>;
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (!text.includes(from)) throw new Error(`missing ${from}`);
+    return text.replace(from, to);
+};
+const MAIN = "word/document.xml";
+const RELS = "word/_rels/document.xml.rels";
+const CT = "[Content_Types].xml";
+const PACKAGE_RELS = "_rels/.rels";
+/** Two unreferenced External hyperlink relationships sharing the Id rIdZ. */
+const DUP_Z =
+    `<Relationship Id="rIdZ" Type="${R}/hyperlink" Target="https://a.example/" TargetMode="External"/>` +
+    `<Relationship Id="rIdZ" Type="${R}/hyperlink" Target="https://b.example/" TargetMode="External"/>`;
+const withDup = (parts: Parts, rels: string): Parts => ({
+    ...parts,
+    [rels]: replaceOnce(parts[rels]!, "</Relationships>", `${DUP_Z}</Relationships>`),
+});
+const glossary = (): Parts => ({
+    ...glossaryStoryReferenceParts("footerReference", "footer", "footer9.xml", STORY_FOOTER_XML, storyContentType("footer")),
+});
+/** The main document moved to word/main.xml; with `orphan`, an unreached word/document.xml and its sidecar stay behind. */
+const relocated = (orphan: boolean): Parts => {
+    const parts: Parts = { ...(MINIMAL_PARTS as Parts) };
+    parts["word/main.xml"] = parts[MAIN]!;
+    parts["word/_rels/main.xml.rels"] = parts[RELS]!;
+    delete parts[MAIN];
+    delete parts[RELS];
+    parts[CT] = replaceOnce(parts[CT]!, "/word/document.xml", "/word/main.xml");
+    parts[PACKAGE_RELS] = replaceOnce(parts[PACKAGE_RELS]!, "word/document.xml", "word/main.xml");
+    if (orphan) {
+        parts[MAIN] = MINIMAL_PARTS[MAIN]!;
+        parts[RELS] = MINIMAL_PARTS[RELS]!;
+    }
+    return parts;
+};
+const control = () => buildDocx(MINIMAL_PARTS);
+
+const chunks: Record<string, [string, string, () => Promise<Uint8Array> | Uint8Array][]> = {
+    s30a: [
+        ["s30a-control-minimal", "control", control],
+        ["glossary-footerref-footer-rel-ftr-typed-footer", "control (session 26 clean glossary footer)", () => buildDocx(glossary())],
+        ["dup-id-glossary-sidecar", "review BB S1", () => buildDocx(withDup(glossary(), "word/glossary/_rels/document.xml.rels"))],
+        ["relocated-main-transitional", "control (main document moved to word/main.xml)", () => buildDocx(relocated(false))],
+        ["relocated-main-orphan-sidecar", "control (review BB S2 shape, no duplicate)", () => buildDocx(relocated(true))],
+        ["dup-id-non-main-document-sidecar", "review BB S2", () => buildDocx(withDup(relocated(true), RELS))],
+        ["dup-id-relocated-main-transitional", "#615 extension", () => buildDocx(withDup(relocated(false), "word/_rels/main.xml.rels"))],
+        ["s30a-control-minimal-end", "control", control],
+    ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        const r = await validate(path.join(dir, file), { profile });
+        return {
+            valid: r.valid,
+            errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+        };
+    };
+    const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+Session 31's builder (`s31a`) is another standalone script, run the same way, with `CHUNK` naming the chunk:
+
+```ts
+// Session 31 (2026-10-25): adversarial review BC's suspected item on #617 (layer 129, #611). The duplicate relationship
+// Id walk (validateAllRelationshipIds) visits only the .rels of owners whose names end in .xml, so a story root stored
+// under another extension carries duplicate Ids no profile reports as rels-id-duplicate. Session 16 observed a correctly
+// typed main document stored as word/document.bin open clean; nobody has observed duplicate Ids beside such a root.
+// s31a: MINIMAL_PARTS with the main document renamed word/document.bin (package relationship, Override and sidecar
+//       renamed with it), without (control) and with two unreferenced External hyperlink relationships sharing rIdZ in
+//       word/_rels/document.bin.rels; session 26's clean glossary footer shape with the glossary renamed
+//       word/glossary/document.bin (main-document relationship, Override and sidecar renamed with it), without
+//       (control) and with the rIdZ pair in word/glossary/_rels/document.bin.rels.
+// Shapes: tests/support/story-content-type-specimens.ts and review BC's suffix-bc.tmp.mts.
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s31a pnpm exec tsx s31builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { STORY_FOOTER_XML, glossaryStoryReferenceParts, storyContentType } from "./tests/support/story-content-type-specimens";
+import { validate } from "./src/scripts/office/validate";
+
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+type Parts = Record<string, string>;
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (!text.includes(from)) throw new Error(`missing ${from}`);
+    return text.replace(from, to);
+};
+const CT = "[Content_Types].xml";
+/** Two unreferenced External hyperlink relationships sharing the Id rIdZ. */
+const DUP_Z =
+    `<Relationship Id="rIdZ" Type="${R}/hyperlink" Target="https://a.example/" TargetMode="External"/>` +
+    `<Relationship Id="rIdZ" Type="${R}/hyperlink" Target="https://b.example/" TargetMode="External"/>`;
+const withDup = (parts: Parts, rels: string): Parts => ({
+    ...parts,
+    [rels]: replaceOnce(parts[rels]!, "</Relationships>", `${DUP_Z}</Relationships>`),
+});
+/** Rename a story root `<dir>/document.xml` to `<dir>/document.bin`, with its sidecar, Override and the relationship naming it. */
+const toBin = (parts: Parts, dir: string, owner: string, target: string): Parts => {
+    const out: Parts = { ...parts };
+    out[`${dir}/document.bin`] = out[`${dir}/document.xml`]!;
+    out[`${dir}/_rels/document.bin.rels`] = out[`${dir}/_rels/document.xml.rels`]!;
+    delete out[`${dir}/document.xml`];
+    delete out[`${dir}/_rels/document.xml.rels`];
+    out[CT] = replaceOnce(out[CT]!, `PartName="/${dir}/document.xml"`, `PartName="/${dir}/document.bin"`);
+    out[owner] = replaceOnce(out[owner]!, `Target="${target}"`, `Target="${target.replace(/xml$/, "bin")}"`);
+    return out;
+};
+const binMain = (): Parts => toBin(MINIMAL_PARTS as Parts, "word", "_rels/.rels", "word/document.xml");
+const binGlossary = (): Parts =>
+    toBin(
+        glossaryStoryReferenceParts("footerReference", "footer", "footer9.xml", STORY_FOOTER_XML, storyContentType("footer")),
+        "word/glossary",
+        "word/_rels/document.xml.rels",
+        "glossary/document.xml",
+    );
+const control = () => buildDocx(MINIMAL_PARTS);
+
+const chunks: Record<string, [string, string, () => Promise<Uint8Array> | Uint8Array][]> = {
+    s31a: [
+        ["s31a-control-minimal", "control", control],
+        ["bin-main", "control (main document stored as word/document.bin)", () => buildDocx(binMain())],
+        ["dup-id-bin-main-sidecar", "review BC S1", () => buildDocx(withDup(binMain(), "word/_rels/document.bin.rels"))],
+        ["bin-glossary", "control (glossary stored as word/glossary/document.bin)", () => buildDocx(binGlossary())],
+        ["dup-id-bin-glossary-sidecar", "review BC S1", () => buildDocx(withDup(binGlossary(), "word/glossary/_rels/document.bin.rels"))],
+        ["s31a-control-minimal-end", "control", control],
+    ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        const r = await validate(path.join(dir, file), { profile });
+        return {
+            valid: r.valid,
+            errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+        };
+    };
+    const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+Session 32's builder (`s32a`) is another standalone script, run the same way, with `CHUNK` naming the chunk:
+
+```ts
+// Session 32 (2026-10-25): adversarial review BD's suspected items on #618 (layer 129, #611). Every XML check is gated on
+// a part name ending in .xml, so a main document stored as word/document.bin is never parsed: a malformed one, or one
+// whose r:id names no relationship, passes every profile. Session 31 showed Word reads such a main document's sidecar.
+// s32a: MINIMAL_PARTS with the main document truncated (its closing `</w:body></w:document>` removed), stored as
+//       word/document.xml (calibration) and as word/document.bin (package relationship, Override and sidecar renamed);
+//       the main document's sectPr given a `w:footerReference w:type="default" r:id="rId9"` (xmlns:r declared), with its
+//       .rels removed, or kept without an rId9, each stored as .xml (calibration) and as .bin.
+// Shapes: tests/support/minimal-docx.ts and review BD's report.
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s32a pnpm exec tsx s32builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+type Parts = Record<string, string>;
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (!text.includes(from)) throw new Error(`missing ${from}`);
+    return text.replace(from, to);
+};
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const RELS = "word/_rels/document.xml.rels";
+/** Rename the main document to word/document.bin, with its sidecar (when present), Override and package relationship. */
+const toBin = (parts: Parts): Parts => {
+    const out: Parts = { ...parts };
+    out["word/document.bin"] = out[MAIN]!;
+    delete out[MAIN];
+    if (out[RELS] !== undefined) {
+        out["word/_rels/document.bin.rels"] = out[RELS]!;
+        delete out[RELS];
+    }
+    out[CT] = replaceOnce(out[CT]!, 'PartName="/word/document.xml"', 'PartName="/word/document.bin"');
+    out["_rels/.rels"] = replaceOnce(out["_rels/.rels"]!, 'Target="word/document.xml"', 'Target="word/document.bin"');
+    return out;
+};
+const truncated = (): Parts => ({ ...(MINIMAL_PARTS as Parts), [MAIN]: replaceOnce(MINIMAL_PARTS[MAIN]!, "</w:body></w:document>", "") });
+/** The main document's sectPr references footer rId9; `sidecar: false` removes its .rels, otherwise the .rels has no rId9. */
+const footerRef = (sidecar: boolean): Parts => {
+    const parts: Parts = { ...(MINIMAL_PARTS as Parts) };
+    parts[MAIN] = replaceOnce(
+        replaceOnce(parts[MAIN]!, "<w:document ", `<w:document xmlns:r="${R}" `),
+        "<w:sectPr>",
+        '<w:sectPr><w:footerReference w:type="default" r:id="rId9"/>',
+    );
+    if (!sidecar) delete parts[RELS];
+    return parts;
+};
+const control = () => buildDocx(MINIMAL_PARTS);
+
+const chunks: Record<string, [string, string, () => Promise<Uint8Array> | Uint8Array][]> = {
+    s32a: [
+        ["s32a-control-minimal", "control", control],
+        ["main-truncated", "calibration (.xml twin of review BD S1)", () => buildDocx(truncated())],
+        ["bin-main-truncated", "review BD S1", () => buildDocx(toBin(truncated()))],
+        ["footerref-rid-no-sidecar", "calibration (.xml twin of review BD S2)", () => buildDocx(footerRef(false))],
+        ["bin-footerref-rid-no-sidecar", "review BD S2", () => buildDocx(toBin(footerRef(false)))],
+        ["footerref-rid-missing", "calibration (.xml twin of review BD S2)", () => buildDocx(footerRef(true))],
+        ["bin-footerref-rid-missing", "review BD S2", () => buildDocx(toBin(footerRef(true)))],
+        ["s32a-control-minimal-end", "control", control],
+    ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        const r = await validate(path.join(dir, file), { profile });
+        return {
+            valid: r.valid,
+            errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+        };
+    };
+    const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
 ```
 
 </details>

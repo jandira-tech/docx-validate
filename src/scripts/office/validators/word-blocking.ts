@@ -30,10 +30,21 @@ const isWordFolderPart = (partName: string | undefined): boolean =>
 const isPackageRelationshipsPart = (partName: string | undefined): boolean =>
     partName !== undefined && canonicalPartName(partName) === "_rels/.rels";
 
+/**
+ * Whether `issue` stays an error under `word-valid`: `true` when Word 16.115
+ * is observed to refuse or offer to recover a file carrying it. The three sets
+ * hold canonical part names, computed once per run by the caller:
+ * `propertiesParts` (the core, app and custom properties parts the package
+ * relationships name, `propertiesParts()`), `wordReadParts` (the parts Word
+ * reads at open, `wordReadParts()`) and `storyRootParts` (every main document
+ * plus every reached glossary document, `wordStoryRootParts()`). An empty set
+ * makes the findings that depend on it non-blocking.
+ */
 export const isWordBlockingIssue = (
     issue: ValidationIssue,
     propertiesParts: ReadonlySet<string> = new Set(),
     wordReadParts: ReadonlySet<string> = new Set(),
+    storyRootParts: ReadonlySet<string> = new Set(),
 ): boolean => {
     switch (issue.code) {
         // NB: run-content-misplaced is NOT Word-blocking — a real Word probe
@@ -119,6 +130,14 @@ export const isWordBlockingIssue = (
         case "word-choice-requires-undeclared":
         case "word-text-contains-paragraph":
         case "word-hyperlink-relationship":
+        // Word 16.115 offers recovery for a story sectPr's w:headerReference or
+        // w:footerReference whose r:id names a relationship of another type —
+        // header→footer, footer→header, a reached glossary's references, and an
+        // unrelated type such as styles — while a matching reference and
+        // relationship opens clean even when the target's root element is the
+        // other story's (#606; session 26 in
+        // docs/plans/evidence/word-probes-2026-10-24.md).
+        case "word-header-footer-relationship":
         case "word-duplicate-theme-relationship":
         case "word-duplicate-font-table-relationship":
         case "word-duplicate-web-settings-relationship":
@@ -176,6 +195,22 @@ export const isWordBlockingIssue = (
         // Session 24: a read header/footer declared with the other story's type (#600).
         case "word-part-content-type-mismatch":
             return true;
+        case "rels-id-duplicate": {
+            // #615, #617: Word 16.115 offers recovery for duplicate Ids in
+            // the package relationships part and in the sidecar of a story
+            // root — the main document and every glossary a main-document
+            // `glossaryDocument` relationship reaches — even unreferenced or
+            // identical (sessions 29 and 30, s29a/s29b and s30a in
+            // docs/plans/evidence/word-probes-2026-10-24.md). A header's own
+            // sidecar opened CLEAN (session 29) and so did an orphan
+            // `word/document.xml`'s (session 30): every other sidecar keeps
+            // its strict error and word-valid warning, even if Word reads
+            // their owner.
+            const part = issue.path?.replace(/\\/g, "/");
+            if (isPackageRelationshipsPart(part)) return true;
+            const source = part === undefined ? undefined : canonicalPartName(part).match(/^(.*\/)?_rels\/([^/]+)\.rels$/);
+            return source !== undefined && source !== null && storyRootParts.has(`${source[1] ?? ""}${source[2]}`);
+        }
         // NB: comment-orphan-start/end and comment-marker-missing are NOT
         // promoted here. Empirically Word TOLERATES an orphan comment-range
         // marker (a commentRangeStart with no End, referencing a missing

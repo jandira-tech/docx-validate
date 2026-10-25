@@ -192,6 +192,29 @@ Empty-part auto-repair retains its exact lowercase `.rels` scope. The trace desc
 `schemas/iso-strict/` schemas. Lenient skips those parts with the info-level
 `xsd-strict-skipped`; Word-valid emits no XSD skip issue because it runs no XSD.
 
+Full DOCX/DOCM validation reports duplicate relationship `Id` values as
+`rels-id-duplicate`, judging the relationships part of every owner part in
+the package, whatever the owner's name suffix. Under `word-valid`, duplicates
+block opening only in the
+package relationships part (`_rels/.rels`) and the relationships part of a
+story root: the main document, resolved through the package's Transitional or
+ISO Strict `officeDocument` relationship wherever it is stored, and every
+glossary document a main-document `glossaryDocument` relationship reaches.
+Word 16.115 offers recovery even for identical or unreferenced duplicates
+there; a header part's own duplicate unreferenced hyperlinks opened clean, and
+so did the same pair in an orphan `word/document.xml` sidecar no main document
+owns, while a reached glossary's own sidecar was refused, as was the same pair
+in the sidecar of a main document or reached glossary stored as
+`document.bin` ([#615](https://github.com/jandira-tech/docx-validate/issues/615), session 29,
+[#617](https://github.com/jandira-tech/docx-validate/issues/617), session
+30, and [#618](https://github.com/jandira-tech/docx-validate/issues/618), session
+31, in [the Word probe
+evidence](docs/plans/evidence/word-probes-2026-10-24.md)). Other sidecars
+retain their strict error and Word-valid warning, and a `.rels` whose owner
+part is not in the package is not judged by this walk. Lenient keeps its
+existing sidecar errors and XSD-only package diagnosis. This legacy ID walk is
+outside the named-check registry, so named and quick runs omit it.
+
 Named checks and quick checks use the same options in the path and byte APIs:
 
 ```ts
@@ -402,7 +425,7 @@ names and input bytes unchanged.
 | `tables`                  | `word-grid-column-attributes`, `word-cell-margin-order`, `word-table-properties-required`, `word-table-properties-misplaced`, `word-row-without-cell`, `word-cell-ends-with-table`                                                                                                                                                                  |
 | `drawings`                | `word-textbox-content-namespace`, `word-drawing-extent-missing`, `word-drawing-extent-misplaced`, `word-picture-nvpicpr-missing`, `word-picture-sppr-missing`, `word-empty-drawing`, `word-anchor-missing-attribute`, `word-position-offset-and-align`, `word-drawing-scalar-whitespace`, `word-drawing-arc-radius`, `word-drawing-extent-negative` |
 | `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`, `ct-override-partname-invalid`, `ct-override-partname-word-refused`, `ct-markup-compatibility`, `word-part-content-type-generic`, `word-part-content-type-inexact`, `word-part-content-type-mismatch`                                                                                      |
-| `relationships`           | `word-duplicate-theme-relationship`, `word-duplicate-font-table-relationship`, `word-duplicate-web-settings-relationship`, `word-duplicate-settings-relationship`, `word-hyperlink-relationship`, `word-main-document-part`, `opc-relationships-structure`                                                                                          |
+| `relationships`           | `word-duplicate-theme-relationship`, `word-duplicate-font-table-relationship`, `word-duplicate-web-settings-relationship`, `word-duplicate-settings-relationship`, `word-hyperlink-relationship`, `word-header-footer-relationship`, `word-main-document-part`, `opc-relationships-structure`                                                       |
 | `tracked-changes`         | `word-textbox-deleted-text`, `word-move-from-deleted-text`                                                                                                                                                                                                                                                                                          |
 | `settings`                | `word-custom-property-filetime-empty`, `word-attached-toolbar-utf8`                                                                                                                                                                                                                                                                                 |
 | `xml`                     | `word-markup-compatibility`, `word-document-root`, `word-choice-requires-undeclared`                                                                                                                                                                                                                                                                |
@@ -901,6 +924,61 @@ SHA-256 prefixes from the [recorded Word probes](docs/plans/evidence/word-probes
 the unchanged minimal control (`0160dfc1db4c5ce1`) opened cleanly. A foreign element
 appended to `word/_rels/document.xml.rels` got recovery too (`e7dae629d3e792a1`,
 session 4), beside a clean control (`f67e18fa7a50dae1`).
+
+`word-hyperlink-relationship` requires every `w:hyperlink` with an `r:id` in
+a story part to name a relationship whose Type is exactly the Transitional or
+the ISO Strict hyperlink relationship URI, with TargetMode `External`. Word
+16.115 accepts exactly those two Types, byte for byte, and offers recovery for
+`http://example.com/hyperlink`, `…/relationships/custom/hyperlink` and
+`…/relationships/HYPERLINK` alike; a hyperlink relationship without
+TargetMode still warns
+([#614](https://github.com/jandira-tech/docx-validate/issues/614); session 28,
+chunk s28a, in
+[docs/plans/evidence/word-probes-2026-10-24.md](docs/plans/evidence/word-probes-2026-10-24.md)).
+The finding is an error, and Word-blocking, under word-valid and strict;
+lenient runs no Word rule.
+
+`word-header-footer-relationship` requires every `w:headerReference` and
+`w:footerReference` in a story root's `w:sectPr` to name a relationship whose
+Type is exactly the Transitional or the ISO Strict header (respectively
+footer) relationship URI. The story roots are
+every main document and every glossary a main-document `glossaryDocument`
+relationship reaches, and the reference resolves in that part's own
+relationships part, in either relationship namespace. Word 16.115 offers
+recovery for every refused shape probed: header→footer and footer→header
+relationships in the main document's body `w:sectPr` (whether the target's
+root was `w:hdr` or `w:ftr`, typed with the other story's content type, a
+parameterized footer type, or styles), both mirrors from a reached glossary's
+`w:docPartBody` `w:sectPr`, a `w:headerReference` naming the main
+document's own styles relationship, and every other Type tried in place of
+the two accepted URIs — `http://example.com/header`,
+`…/relationships/custom/header`, `…/relationships/HEADER`, the URI padded
+with spaces, wrapped in tab and newline character references, and the bare
+`header`, the footer pair likewise (#613). A matching reference and
+relationship opens clean even when the target's root element is the other
+story's, so the check judges the relationship Type alone
+([#606](https://github.com/jandira-tech/docx-validate/issues/606),
+[#613](https://github.com/jandira-tech/docx-validate/issues/613); sessions 26
+and 27, chunks s26a/s26b/s26c and s27a/s27b/s27c, in
+`docs/plans/evidence/word-probes-2026-10-24.md`).
+A reference whose `r:id` names no Relationship in the part's own relationships
+part is this check's finding too — when that relationships part exists and
+parses, as Word 16.115 offered recovery for a body `w:footerReference`
+`r:id="rId9"` beside a kept `word/_rels/document.xml.rels` holding no `rId9`
+([#619](https://github.com/jandira-tech/docx-validate/issues/619); session 32
+in the same evidence file); a part with no relationships part keeps
+`rels-missing-sidecar` as its only finding. The finding is an error under
+strict and Word-blocking under word-valid for DOCX/DOCM; lenient runs no Word
+rule. In a full word-valid or strict run neither `rels-id-mismatch` nor
+`rels-id-missing` repeats an element this check reported — the run drops that
+duplicate, pairing the two findings by the element identity both checks
+register on the issue (part path, namespace URI, local name, raw `r:id` and
+the namespace the `r:id` was read in), never by message text — while `validateAllRelationshipIds()` called on its own
+still reports every `rels-id-mismatch` and `rels-id-missing` (#612, #616,
+#619). A glossary no main-document relationship reaches keeps its
+`rels-id-mismatch` or `rels-id-missing` under strict (Word does not read it,
+so word-valid stays silent), and lenient keeps every one of them.
+Full, quick and named Word-valid runs agree (#381).
 
 `word-markup-compatibility` reports processor errors for XML parts under `word/`.
 Root validation, the processor, and the schema walk use these stable codes:

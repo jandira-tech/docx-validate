@@ -795,6 +795,82 @@ describe("BaseSchemaValidator", () => {
                 expect(result.valid).toBe(true);
             });
         });
+
+        it("flags a duplicate rId in the sidecar of an owner not named *.xml (#618)", async () => {
+            await withTempDir(async (dir) => {
+                // Word reads a story root stored as word/document.bin and its
+                // sidecar (session 31, s31a), so the duplicate-Id walk must
+                // reach the sidecar whatever the owner's suffix — without
+                // starting to parse the owner as XML.
+                await writeFile(path.join(dir, "word", "document.bin"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
+                await writeFile(
+                    path.join(dir, "word", "_rels", "document.bin.rels"),
+                    `${RELS_HEADER}` +
+                        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>` +
+                        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml"/>` +
+                        `</Relationships>`,
+                );
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateAllRelationshipIds();
+                expect(result.valid).toBe(false);
+                expect(result.issues.some((i) => i.code === "rels-id-duplicate" && i.message.includes("rId1"))).toBe(true);
+                // The .bin owner is never parsed as XML: no r:id walk of its own.
+                expect(
+                    result.issues.some((i) =>
+                        ["rels-missing-sidecar", "rels-id-parse", "rels-id-missing", "rels-id-mismatch"].includes(i.code ?? ""),
+                    ),
+                ).toBe(false);
+            });
+        });
+
+        it("judges one relationships part exactly once for equivalent owner spellings (#618)", async () => {
+            await withTempDir(async (dir) => {
+                // `word/document.%78ml` is another spelling of
+                // `word/document.xml`; both reach the same stored sidecar, so
+                // the duplicate must be reported once, not once per owner.
+                await writeFile(path.join(dir, "word", "document.xml"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
+                await writeFile(
+                    path.join(dir, "word", "document.%78ml"),
+                    `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`,
+                );
+                await writeFile(
+                    path.join(dir, "word", "_rels", "document.xml.rels"),
+                    `${RELS_HEADER}` +
+                        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>` +
+                        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml"/>` +
+                        `</Relationships>`,
+                );
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateAllRelationshipIds();
+                expect(result.issues.filter((i) => i.code === "rels-id-duplicate")).toHaveLength(1);
+            });
+        });
+
+        it("reports nothing for an unparseable non-XML owner sidecar or a sidecar with no owner (#618)", async () => {
+            await withTempDir(async (dir) => {
+                // A sidecar that does not parse yields no finding here — the
+                // XML syntax checks own that diagnosis — and a sidecar whose
+                // owner is not in the package is never visited, as before.
+                await writeFile(path.join(dir, "word", "document.bin"), `<?xml version="1.0"?><w:document ${W_NS}><w:body/></w:document>`);
+                await writeFile(
+                    path.join(dir, "word", "_rels", "document.bin.rels"),
+                    `${RELS_HEADER}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`,
+                );
+                await writeFile(
+                    path.join(dir, "word", "_rels", "orphan.xml.rels"),
+                    `${RELS_HEADER}` +
+                        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+                        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>` +
+                        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml"/>` +
+                        `</Relationships>`,
+                );
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateAllRelationshipIds();
+                expect(result.issues).toEqual([]);
+            });
+        });
     });
 
     describe("validateRelationshipElements", () => {

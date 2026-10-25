@@ -6,10 +6,18 @@
 /**
  * A `w:hyperlink` whose `r:id` does not name an external hyperlink
  * relationship makes Word offer to recover the file. One such element is
- * enough. Removing the `r:id`, or adding a Relationship with Type ending
- * in `/hyperlink` and TargetMode `External`, opens clean. A hyperlink
- * relationship without TargetMode, and an external relationship of
+ * enough. Removing the `r:id`, or adding a Relationship with the Transitional
+ * or the ISO Strict hyperlink Type and TargetMode `External`, opens clean. A
+ * hyperlink relationship without TargetMode, and an external relationship of
  * another type, still warn. A hyperlink with no `r:id` is left alone.
+ *
+ * Word session 28 (#614; chunk s28a in
+ * docs/plans/evidence/word-probes-2026-10-24.md) pinned the accepted Types to
+ * exactly two, byte for byte: the Transitional and ISO Strict hyperlink URIs
+ * below open clean, while `http://example.com/hyperlink`,
+ * `…/relationships/custom/hyperlink` and `…/relationships/HYPERLINK` are
+ * refused. The old `endsWith("/hyperlink")` test passed the first two of
+ * those, so the check now requires exact membership in the two accepted URIs.
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
@@ -21,6 +29,19 @@ import type { ValidationContext } from "../../../lib/validation-context";
 import { getElementsByTagNameNSAll, getRelationshipChildren } from "../../../lib/xml-helpers";
 
 const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+
+/**
+ * Session 28 (#614): the only relationship Types Word 16.115 accepts for a
+ * `w:hyperlink`, byte for byte — the Transitional URI first, then its ISO
+ * Strict counterpart. Every other Type is refused, `…/custom/hyperlink`,
+ * `http://example.com/hyperlink` and `…/HYPERLINK` included.
+ */
+const ACCEPTED_HYPERLINK_RELATIONSHIP_TYPES: readonly [string, string] = [
+    `${OFFICE_RELATIONSHIPS_NAMESPACE}/hyperlink`,
+    "http://purl.oclc.org/ooxml/officeDocument/relationships/hyperlink",
+];
+
+const isAcceptedHyperlinkRelationshipType = (type: string): boolean => ACCEPTED_HYPERLINK_RELATIONSHIP_TYPES.includes(type);
 
 /** An absent sidecar leaves every id unresolved; an unparseable sidecar is diagnosed by xml-syntax. */
 const externalHyperlinkRelationshipIds = (
@@ -44,7 +65,7 @@ const externalHyperlinkRelationshipIds = (
         }
         const type = rel.getAttribute("Type") ?? "";
         const targetMode = rel.getAttribute("TargetMode") ?? "";
-        out.set(id, { type, targetMode, externalHyperlink: type.endsWith("/hyperlink") && targetMode === "External" });
+        out.set(id, { type, targetMode, externalHyperlink: isAcceptedHyperlinkRelationshipType(type) && targetMode === "External" });
     }
     return out;
 };
@@ -91,7 +112,7 @@ export const wordHyperlinkRelationshipCheck: CheckDefinition = {
                     let why: string;
                     if (!rel) {
                         why = `no Relationship with Id '${rid}'`;
-                    } else if (!rel.type.endsWith("/hyperlink")) {
+                    } else if (!isAcceptedHyperlinkRelationshipType(rel.type)) {
                         why = `Relationship '${rid}' has Type '${rel.type || "(none)"}'`;
                     } else {
                         why = `Relationship '${rid}' has TargetMode '${rel.targetMode || "(none)"}'`;
@@ -101,7 +122,8 @@ export const wordHyperlinkRelationshipCheck: CheckDefinition = {
                         message:
                             `<w:hyperlink> r:id="${rid}" does not reference an external hyperlink relationship (${why}). ` +
                             "Microsoft Word offers to recover the file. " +
-                            "Use a Relationship whose Type ends in /hyperlink and whose TargetMode is External, or remove the r:id.",
+                            `Use a Relationship of Type ${ACCEPTED_HYPERLINK_RELATIONSHIP_TYPES[0]} ` +
+                            `(or the ISO Strict ${ACCEPTED_HYPERLINK_RELATIONSHIP_TYPES[1]}) with TargetMode External, or remove the r:id.`,
                         path: xmlFile,
                         code: "word-hyperlink-relationship",
                     });
