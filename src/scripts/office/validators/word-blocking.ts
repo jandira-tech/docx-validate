@@ -11,6 +11,7 @@
  */
 
 import { canonicalPartName, isContentTypesStreamName, PART_NAME_FOLDER_SEGMENT_DOT } from "../../../lib/content-types";
+import { sidecarOf } from "../../../lib/word-read-parts";
 import { NS, type ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameAll } from "../../../lib/xml-helpers";
 import {
@@ -79,14 +80,13 @@ const isWordXmlPart = (partName: string | undefined): boolean =>
     partName !== undefined && /^word\/.+\.xml$/.test(canonicalPartName(partName));
 
 /**
- * Whether a part is the main document's relationships part at its default
- * spelling, compared as OPC compares part names. Word 16.115 offered
- * recovery for an AlternateContent whose mc:Choice Requires prefix is
- * undeclared there (session 34, s34d, #636). A main document stored under
- * another name keeps an unobserved warning, as every other sidecar does.
+ * Whether a part is a reached story root's own relationships part (#644).
+ * Session 36 s36a/s36e: Word offers recovery for malformed compatibility
+ * in the main/glossary sidecar, including a renamed main, but opens a stray
+ * default-name sidecar clean. Reuse the relationship walk's OPC lookup.
  */
-const isDocumentRelationshipsPart = (partName: string | undefined): boolean =>
-    partName !== undefined && canonicalPartName(partName) === "word/_rels/document.xml.rels";
+const isDocumentRelationshipsPart = (partName: string | undefined, storyRootParts: ReadonlySet<string>): boolean =>
+    partName !== undefined && [...storyRootParts].some((root) => sidecarOf([partName], root) !== undefined);
 
 /**
  * Whether `issue` stays an error under `word-valid`: `true` when Word 16.115
@@ -355,25 +355,20 @@ export const isWordBlockingIssue = (
             return issue.message.includes("../customXml/") || /\/_rels\/|\.rels$/i.test(issue.message);
         case "rels-empty-element":
             return issue.message.includes("missing required attribute");
-        case "mce-must-understand": {
-            // Word 16.115 offered recovery for mc:MustUnderstand of a
-            // namespace it does not understand on the _rels/.rels root and,
-            // declined, reported an open error (session 34, s34c, #636); the
-            // XML parts under word/ keep the blocking classification this
-            // code had when only they were judged. Every other relationships
-            // part is unobserved and only warns under word-valid.
-            const path = issue.path?.replace(/\\/g, "/");
-            return isWordXmlPart(path) || isPackageRelationshipsPart(path);
-        }
+        case "mce-must-understand":
         case "mce-malformed": {
-            // Word 16.115 offered recovery for an mc:Choice whose Requires
-            // prefix is undeclared in word/_rels/document.xml.rels (session
-            // 34, s34d, #636); the XML parts under word/ keep their blocking
-            // classification. Other mce-malformed shapes in that part share
-            // the code and are unobserved; the package relationships part and
-            // every other sidecar are unobserved too and only warn.
+            // Word 16.115 offered recovery in the package relationships and
+            // reached main/glossary sidecars (sessions 34 s34c/s34d and 36
+            // s36a/s36b/s36e, #644), including a renamed main. Malformed
+            // siblings in stray/styles/footer (session 36) and
+            // settings/numbering/header (session 37) sidecars opened
+            // clean, as did root MustUnderstand in stray (36) and
+            // styles/footer (37) sidecars. Other sidecars/shapes are
+            // unobserved and keep their warning. XML parts under word/ keep
+            // their existing classification; relationship identity, rather
+            // than the stored default path, determines a story's sidecar.
             const path = issue.path?.replace(/\\/g, "/");
-            return isWordXmlPart(path) || isDocumentRelationshipsPart(path);
+            return isWordXmlPart(path) || isPackageRelationshipsPart(path) || isDocumentRelationshipsPart(path, storyRootParts);
         }
         default:
             return false;

@@ -151,44 +151,50 @@ describe("isWordBlockingIssue", () => {
         },
     );
 
-    it("blocks mc:MustUnderstand on the package relationships part only (#636, s34c)", () => {
-        // Word 16.115 offered recovery for mc:MustUnderstand of an unknown
-        // namespace on the _rels/.rels root, then failed to open the file
-        // (session 34, s34c, docs/plans/evidence/word-probes-2026-10-24.md).
-        for (const path of ["_rels/.rels", "_RELS/.RELS", "_rels\\.rels", "_rels/.%72els"]) {
-            expect.soft(isWordBlockingIssue(issue("mce-must-understand", { path })), path).toBe(true);
-        }
-        // Unobserved: every other relationships part only warns under word-valid.
-        for (const path of [
-            undefined,
-            "word/_rels/document.xml.rels",
-            "word/_rels/header1.xml.rels",
-            "word/glossary/_rels/document.xml.rels",
-            "docProps/_rels/.rels",
-        ]) {
-            expect.soft(isWordBlockingIssue(issue("mce-must-understand", { path })), String(path)).toBe(false);
-        }
-    });
-
-    it("blocks mce-malformed in the main document's relationships part only (#636, s34d)", () => {
-        // Word 16.115 offered recovery for an AlternateContent whose Choice
-        // Requires prefix is undeclared in word/_rels/document.xml.rels
-        // (session 34, s34d). Other mce-malformed shapes in that part share
-        // the code and are unobserved; every other relationships part is
-        // unobserved too and only warns under word-valid.
-        for (const path of ["word/_rels/document.xml.rels", "WORD/_RELS/document.xml.RELS", "word/_rels\\document.xml.rels"]) {
-            expect.soft(isWordBlockingIssue(issue("mce-malformed", { path })), path).toBe(true);
-        }
-        for (const path of [
-            undefined,
-            "_rels/.rels",
-            "word/_rels/header1.xml.rels",
-            "word/glossary/_rels/document.xml.rels",
-            "docProps/_rels/.rels",
-        ]) {
-            expect.soft(isWordBlockingIssue(issue("mce-malformed", { path })), String(path)).toBe(false);
-        }
-    });
+    it.each(["mce-malformed", "mce-must-understand"])(
+        "%s blocks package and reached story-root sidecars by OPC identity (#644, #639)",
+        (code) => {
+            const roots = new Set(["word/doc2.xml", "word/glossary/document.xml", "stories/main.xml"]);
+            for (const path of [
+                "_rels/.rels",
+                "_RELS/.RELS",
+                "_rels\\.rels",
+                "_rels/.%72els",
+                "word/_rels/doc2.xml.rels",
+                "WORD/_RELS/doc2.xml.RELS",
+                "word/_rels\\doc2.xml.rels",
+                "word/_rels/d%6Fc2.xml.rels",
+                "word/glossary/_rels/document.xml.rels",
+                "stories/_rels/main.xml.rels",
+            ]) {
+                expect.soft(isWordBlockingIssue(issue(code, { path }), new Set(), new Set(), roots), path).toBe(true);
+            }
+            for (const path of [
+                undefined,
+                "word/_rels/document.xml.rels",
+                "word/_rels/styles.xml.rels",
+                "word/_rels/footer1.xml.rels",
+                "word/_rels/header1.xml.rels",
+                "word/_rels/settings.xml.rels",
+                "word/_rels/numbering.xml.rels",
+                "word/glossary/glossary/_rels/document.xml.rels",
+                "docProps/_rels/.rels",
+                "word/_rels/doc2.xml%2Frels",
+            ]) {
+                expect.soft(isWordBlockingIssue(issue(code, { path }), new Set(), new Set(), roots), String(path)).toBe(false);
+            }
+            // No reached story roots means even the default main sidecar is stray.
+            expect(isWordBlockingIssue(issue(code, { path: "word/_rels/document.xml.rels" }))).toBe(false);
+            expect(
+                isWordBlockingIssue(
+                    issue(code, { path: "word/_rels/document.xml.rels" }),
+                    new Set(),
+                    new Set(),
+                    new Set(["word/document.xml"]),
+                ),
+            ).toBe(true);
+        },
+    );
 
     it.each(["run-content-misplaced", "comment-orphan-start", "rels-unreferenced", "paraid-missing-element", "xsd-error", ""])(
         "tolerates %j",

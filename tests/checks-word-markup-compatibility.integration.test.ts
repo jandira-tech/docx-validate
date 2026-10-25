@@ -12,6 +12,7 @@ import { validate } from "../src/scripts/office/validate";
 import { buildDocx } from "./support/minimal-docx";
 import {
     RELATIONSHIPS_MCE_CASES,
+    STORY_RELS_MCE_CASES,
     documentRelsChoiceUndeclaredPrefix,
     documentRelsRootMustUnderstand,
     packageRelsRootMustUnderstand,
@@ -61,12 +62,10 @@ describe("markup compatibility in relationships parts (#636, #381)", () => {
         {
             label: "mce-rels-sidecar-root-mustunderstand",
             parts: documentRelsRootMustUnderstand,
-            // Unobserved: session 34 probed mc:MustUnderstand only on
-            // _rels/.rels (s34c), so this finding keeps its word-valid
-            // warning instead of inheriting that part's blocking rule.
+            // Session 36 s36b observed recovery on the main sidecar too (#644).
             code: "mce-must-understand",
             part: SIDECAR,
-            wordValidBlocks: false,
+            wordValidBlocks: true,
             lenient: [
                 "error:mce-must-understand@word/_rels/document.xml.rels",
                 "info:latent-styles-missing@word/styles.xml",
@@ -95,8 +94,8 @@ describe("markup compatibility in relationships parts (#636, #381)", () => {
                 expect(strict.valid).toBe(false);
 
                 // Session 34 s34d also loses the footer relationship, so the
-                // existing finding stays beside the new one. The unobserved
-                // sidecar shape keeps its relationship, so it has none.
+                // existing finding stays beside the new one. The sidecar-root
+                // shape keeps its relationship, so it has none.
                 if (code === "mce-malformed") {
                     expect(wordValid.issues.filter((issue) => issue.code === "word-header-footer-relationship")).toEqual([
                         expect.objectContaining({ severity: "error", path: "word/document.xml" }),
@@ -141,4 +140,238 @@ describe("markup compatibility in relationships parts (#636, #381)", () => {
             });
         },
     );
+});
+
+// Captured from unchanged 840df310 production sources before the #644 fix.
+// Explicit values preserve message text, positions, ordering and validity.
+const lenientIssues: readonly ValidationIssue[] = [
+    {
+        severity: "info",
+        message:
+            "word/styles.xml has no <w:latentStyles> block. This is unusual for Word-generated files and indicates the repairer may have regenerated styles from scratch.",
+        path: "word/styles.xml",
+        code: "latent-styles-missing",
+    },
+    {
+        severity: "error",
+        code: "mce-malformed",
+        message: "AlternateContent requires Choices with declared Requires prefixes, followed by at most one Fallback.",
+        path: "word/_rels/document.xml.rels",
+    },
+    {
+        severity: "error",
+        message: "_rels/.rels: 1 new error(s)",
+        path: "_rels/.rels",
+        code: "xsd-summary",
+    },
+    {
+        severity: "error",
+        message:
+            "  - Element '{http://schemas.openxmlformats.org/markup-compatibility/2006}AlternateContent': This element is not expected. Expected is ( {http://schemas.openxmlformats.org/package/2006/relationships}Relationship ).",
+        path: "_rels/.rels",
+        code: "xsd-error",
+    },
+    {
+        severity: "warning",
+        message:
+            "1 <w:p> element(s) lack a w14:paraId. Word stamps one on every paragraph and table row as the anchor for tracked-changes / comment-range infrastructure.",
+        path: "word/glossary/document.xml",
+        code: "paraid-missing-element",
+    },
+    {
+        severity: "warning",
+        message:
+            "1 <w:p> element(s) lack a w14:paraId. Word stamps one on every paragraph and table row as the anchor for tracked-changes / comment-range infrastructure.",
+        path: "word/glossary/footer9.xml",
+        code: "paraid-missing-element",
+    },
+    {
+        severity: "error",
+        code: "mce-malformed",
+        message: "AlternateContent requires Choices with declared Requires prefixes, followed by at most one Fallback.",
+        path: "word/glossary/_rels/document.xml.rels",
+    },
+    {
+        severity: "error",
+        message: "Unreferenced file: word/document.xml",
+        path: "word/document.xml",
+        code: "rels-unreferenced",
+    },
+    {
+        severity: "error",
+        message: "File with <document> root not declared in [Content_Types].xml",
+        path: "word/document.xml",
+        code: "ct-undeclared-part",
+    },
+    {
+        severity: "error",
+        code: "mce-must-understand",
+        message: "Required namespace is not understood: foo",
+        path: "word/_rels/document.xml.rels",
+    },
+    {
+        severity: "error",
+        code: "mce-malformed",
+        message: "AlternateContent requires Choices with declared Requires prefixes, followed by at most one Fallback.",
+        path: "word/_rels/styles.xml.rels",
+    },
+    {
+        severity: "warning",
+        message:
+            "1 <w:p> element(s) lack a w14:paraId. Word stamps one on every paragraph and table row as the anchor for tracked-changes / comment-range infrastructure.",
+        path: "word/footer1.xml",
+        code: "paraid-missing-element",
+    },
+    {
+        severity: "error",
+        code: "mce-malformed",
+        message: "AlternateContent requires Choices with declared Requires prefixes, followed by at most one Fallback.",
+        path: "word/_rels/footer1.xml.rels",
+    },
+    {
+        severity: "error",
+        code: "mce-malformed",
+        message: "AlternateContent requires Choices with declared Requires prefixes, followed by at most one Fallback.",
+        path: "word/_rels/doc2.xml.rels",
+    },
+    {
+        severity: "error",
+        code: "mce-must-understand",
+        message: "Required namespace is not understood: foo",
+        path: "word/_rels/doc2.xml.rels",
+    },
+    {
+        severity: "error",
+        code: "mce-must-understand",
+        message: "Required namespace is not understood: foo",
+        path: "word/glossary/_rels/document.xml.rels",
+    },
+    {
+        severity: "error",
+        message:
+            "  - Element '{http://schemas.openxmlformats.org/package/2006/relationships}Relationships', attribute '{http://schemas.openxmlformats.org/markup-compatibility/2006}MustUnderstand': The attribute '{http://schemas.openxmlformats.org/markup-compatibility/200...",
+        path: "_rels/.rels",
+        code: "xsd-error",
+    },
+    {
+        severity: "error",
+        message:
+            "  - Element '{http://schemas.openxmlformats.org/package/2006/relationships}Relationship', attribute '{http://schemas.openxmlformats.org/markup-compatibility/2006}MustUnderstand': The attribute '{http://schemas.openxmlformats.org/markup-compatibility/2006...",
+        path: "_rels/.rels",
+        code: "xsd-error",
+    },
+];
+const lenientBaseline: Readonly<Record<string, { valid: boolean; indices: readonly number[] }>> = {
+    "docrels-mc-malformed-sibling": {
+        valid: false,
+        indices: [0, 1],
+    },
+    "pkgrels-mc-malformed-sibling": {
+        valid: false,
+        indices: [0, 2, 3],
+    },
+    "glossary-rels-mc-malformed-sibling": {
+        valid: false,
+        indices: [4, 5, 0, 6],
+    },
+    "stray-docrels-mc-malformed-sibling": {
+        valid: false,
+        indices: [7, 8, 0, 1],
+    },
+    "docrels-root-mustunderstand": {
+        valid: false,
+        indices: [0, 9],
+    },
+    "styles-rels-mc-malformed-sibling": {
+        valid: false,
+        indices: [0, 10],
+    },
+    "footer-rels-mc-malformed-sibling": {
+        valid: false,
+        indices: [11, 0, 12],
+    },
+    "renamed-main-control": {
+        valid: true,
+        indices: [0],
+    },
+    "renamed-main-rels-mc-malformed-sibling": {
+        valid: false,
+        indices: [0, 13],
+    },
+    "renamed-main-rels-root-mustunderstand": {
+        valid: false,
+        indices: [0, 14],
+    },
+    "stray-docrels-root-mustunderstand": {
+        valid: false,
+        indices: [7, 8, 0, 9],
+    },
+    "glossary-rels-root-mustunderstand": {
+        valid: false,
+        indices: [4, 5, 0, 15],
+    },
+    packageRelsRootMustUnderstand: {
+        valid: false,
+        indices: [0, 2, 16],
+    },
+    documentRelsChoiceUndeclaredPrefix: {
+        valid: false,
+        indices: [11, 0, 1],
+    },
+    "pkgrels-relationship-mustunderstand": {
+        valid: false,
+        indices: [0, 2, 17],
+    },
+    "docrels-mc-fallback-only": {
+        valid: false,
+        indices: [0, 1],
+    },
+    "docrels-mc-foreign-branch": {
+        valid: false,
+        indices: [0, 1],
+    },
+};
+
+describe("story-root relationships MCE classification (#644, session 36)", () => {
+    for (const suffix of ["docx", "docm"]) {
+        it.each(STORY_RELS_MCE_CASES)(
+            `${suffix}: $label keeps the observed verdict across full, quick and named runs`,
+            async ({ parts, code, part, blocks, label }) => {
+                await withTempDir(async (dir) => {
+                    const file = path.join(dir, `specimen.${suffix}`);
+                    const bytes = await buildDocx(parts());
+                    await writeFile(file, bytes);
+                    let fullMce: ValidationIssue[] = [];
+                    for (const selection of [{}, { quick: true }, { checks: [CODE] }]) {
+                        const result = await validate(file, { profile: "word-valid", ...selection });
+                        expect.soft(result.valid, JSON.stringify(selection)).toBe(!blocks);
+                        const findings = mce(result.issues);
+                        expect
+                            .soft(findings, JSON.stringify(selection))
+                            .toEqual(
+                                code === undefined
+                                    ? []
+                                    : [expect.objectContaining({ code, path: part, severity: blocks ? "error" : "warning" })],
+                            );
+                        if (!("quick" in selection) && !("checks" in selection)) fullMce = findings;
+                        else expect.soft(findings).toEqual(fullMce);
+                    }
+                    const strict = await validate(file, { profile: "strict" });
+                    expect.soft(strict.valid).toBe(code === undefined);
+                    expect
+                        .soft(mce(strict.issues))
+                        .toEqual(code === undefined ? [] : [expect.objectContaining({ code, path: part, severity: "error" })]);
+                    const lenient = await validate(file, { profile: "lenient" });
+                    const baseline = lenientBaseline[label]!;
+                    expect.soft(JSON.stringify({ valid: lenient.valid, issues: lenient.issues })).toBe(
+                        JSON.stringify({
+                            valid: baseline.valid,
+                            issues: baseline.indices.map((index) => lenientIssues[index]),
+                        }),
+                    );
+                    expect(await readFile(file)).toEqual(bytes);
+                });
+            },
+        );
+    }
 });

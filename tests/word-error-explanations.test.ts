@@ -10,6 +10,14 @@ import { describe, expect, it } from "vitest";
 import { WORD_ERROR_EXPLANATIONS, explainWordError } from "../src/scripts/office/validators/word-error-explanations";
 
 describe("word error explanations", () => {
+    it.each(["mce-malformed", "mce-must-understand"])("explains %s by reached story roots (#644)", (code) => {
+        const explanation = explainWordError(code);
+        expect(explanation).toContain("_rels/.rels");
+        expect(explanation).toContain("main document");
+        expect(explanation).toContain("glossary");
+        expect(explanation).toContain("stray");
+        expect(explanation).toContain("unobserved");
+    });
     it("explains relationships markup compatibility with the observed Word behaviour (#632)", () => {
         const explanation = explainWordError("opc-relationships-markup-compatibility");
         expect(explanation).toContain("Word");

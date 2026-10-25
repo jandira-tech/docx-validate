@@ -197,7 +197,7 @@ const resolveTarget = (lookup: (partName: string) => string | undefined, baseDir
 };
 
 /** The relationships part of a source part, found by OPC part-name equivalence. */
-const sidecarOf = (names: readonly string[], part: string): string | undefined =>
+export const sidecarOf = (names: readonly string[], part: string): string | undefined =>
     findEquivalentPart(names, path.posix.join(path.posix.dirname(part), "_rels", `${path.posix.basename(part)}.rels`));
 
 /**
