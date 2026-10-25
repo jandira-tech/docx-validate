@@ -228,6 +228,11 @@ or `rels-unreferenced` findings ([#635](https://github.com/jandira-tech/docx-val
 reports stored relationships markup compatibility and schema defects. Lenient
 keeps its raw traversal and existing findings.
 
+The processed view is DOCX/DOCM-only: every observation behind it is Word
+opening `.docx` files, and PowerPoint was never shown markup compatibility in a
+relationships part, so PPTX keeps the stored view under every profile
+([#643](https://github.com/jandira-tech/docx-validate/issues/643)).
+
 Named checks and quick checks use the same options in the path and byte APIs:
 
 ```ts

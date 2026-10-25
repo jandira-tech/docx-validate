@@ -59,7 +59,6 @@ import {
 } from "../../../lib/content-types";
 import {
     applyMarkupCompatibility,
-    RELATIONSHIPS_UNDERSTOOD_NAMESPACES,
     STRICT_UNDERSTOOD_NAMESPACES,
     UNDERSTOOD_NAMESPACES,
     understoodNamespacesForPart,
@@ -846,7 +845,7 @@ export class BaseSchemaValidator {
         const issues: ValidationIssue[] = [];
         const entries = packageEntries(this.unpackedDir);
         const names = [...entries.keys()];
-        const relsFiles = [...entries].flatMap(([name, file]) => (isRelationshipsPartName(name) ? [file] : []));
+        const relsFiles = [...entries].flatMap(([name, file]) => (isRelationshipsPartName(name) ? [[name, file] as const] : []));
 
         if (relsFiles.length === 0) {
             return OK_RESULT;
@@ -860,7 +859,7 @@ export class BaseSchemaValidator {
 
         const allReferenced = new Set<string>();
 
-        for (const relsFile of relsFiles) {
+        for (const [relsPart, relsFile] of relsFiles) {
             let dom: Document;
             try {
                 dom = parseXmlBytes(await fs.readFile(relsFile));
@@ -879,7 +878,7 @@ export class BaseSchemaValidator {
             const relsDir = path.dirname(relsFile);
             const broken: string[] = [];
 
-            const rels = this.relationshipElements(dom);
+            const rels = this.relationshipElements(dom, relsPart);
             for (let i = 0; i < rels.length; i += 1) {
                 const rel = rels[i];
                 if (!rel) continue;
@@ -942,9 +941,11 @@ export class BaseSchemaValidator {
 
     async validateRelationshipElements(): Promise<ValidationResult> {
         const issues: ValidationIssue[] = [];
-        const relsFiles = [...packageEntries(this.unpackedDir)].flatMap(([name, file]) => (isRelationshipsPartName(name) ? [file] : []));
+        const relsFiles = [...packageEntries(this.unpackedDir)].flatMap(([name, file]) =>
+            isRelationshipsPartName(name) ? [[name, file] as const] : [],
+        );
 
-        for (const relsFile of relsFiles) {
+        for (const [relsPart, relsFile] of relsFiles) {
             let dom: Document;
             try {
                 dom = parseXmlBytes(await fs.readFile(relsFile));
@@ -952,7 +953,7 @@ export class BaseSchemaValidator {
                 continue;
             }
 
-            const rels = this.relationshipElements(dom);
+            const rels = this.relationshipElements(dom, relsPart);
             for (let i = 0; i < rels.length; i += 1) {
                 const rel = rels[i];
                 if (!rel) continue;
@@ -1023,11 +1024,11 @@ export class BaseSchemaValidator {
         // two equivalent spellings must not double-report).
         const judgedRelsFiles = new Set<string>();
         /** Report each repeated `Id` in the relationships part `relsFile` once, at that part; a part already judged is skipped. */
-        const reportDuplicates = (document: Document, relsFile: string): void => {
+        const reportDuplicates = (document: Document, relsFile: string, part: string): void => {
             if (judgedRelsFiles.has(relsFile)) return;
             judgedRelsFiles.add(relsFile);
             const seen = new Set<string>();
-            for (const relationship of this.relationshipElements(document)) {
+            for (const relationship of this.relationshipElements(document, part)) {
                 const id = relationship.getAttribute("Id");
                 if (!id) continue;
                 if (seen.has(id)) {
@@ -1049,7 +1050,11 @@ export class BaseSchemaValidator {
             const packageRelsFile = packageRels === undefined ? undefined : entries.get(packageRels);
             if (packageRelsFile !== undefined) {
                 try {
-                    reportDuplicates(parseXmlBytes(await fs.readFile(packageRelsFile)), packageRelsFile);
+                    reportDuplicates(
+                        parseXmlBytes(await fs.readFile(packageRelsFile)),
+                        packageRelsFile,
+                        packageRels ?? this.entryName(packageRelsFile),
+                    );
                 } catch {
                     // XML syntax diagnostics already report this part.
                 }
@@ -1110,9 +1115,9 @@ export class BaseSchemaValidator {
                 continue;
             }
 
-            reportDuplicates(relsDom, relsFile);
+            reportDuplicates(relsDom, relsFile, relsPart ?? this.entryName(relsFile));
             const ridToType = new Map<string, string>();
-            const rels = this.relationshipElements(relsDom);
+            const rels = this.relationshipElements(relsDom, relsPart ?? this.entryName(relsFile));
             for (let i = 0; i < rels.length; i += 1) {
                 const rel = rels[i];
                 if (!rel) continue;
@@ -1225,7 +1230,7 @@ export class BaseSchemaValidator {
             const relsFile = relsPart === undefined ? undefined : entries.get(relsPart);
             if (relsFile === undefined) continue;
             try {
-                reportDuplicates(parseXmlBytes(await fs.readFile(relsFile)), relsFile);
+                reportDuplicates(parseXmlBytes(await fs.readFile(relsFile)), relsFile, relsPart ?? this.entryName(relsFile));
             } catch {
                 // XML syntax diagnostics already report this part.
             }
@@ -1702,17 +1707,28 @@ export class BaseSchemaValidator {
     }
 
     /** Semantic relationship readers use the processed direct children; lenient retains its historical scan. */
-    protected relationshipElements(document: Document): Element[] {
+    protected relationshipElements(document: Document, part: string): Element[] {
         if (this.profile === "lenient") {
             return getElementsByTagNameNSAll(document, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
         }
         // #635: Word offered recovery for a duplicate split between a direct
         // child and Fallback (session 34 s34a), and read selected footer/main
         // relationships (session 33 s33d/s33e); see docs/plans/evidence/word-probes-2026-10-24.md.
-        // Use the same capabilities as ctx.effectiveXml's understoodNamespacesForPart
-        // for .rels streams, and still ignore relationships nested in foreign wrappers.
-        const view = applyMarkupCompatibility(document, { understood: RELATIONSHIPS_UNDERSTOOD_NAMESPACES });
-        return getRelationshipChildren(view.document);
+        // The processed view is DOCX/DOCM-only (#643); relationships nested
+        // in foreign wrappers stay ignored either way.
+        return getRelationshipChildren(this.relationshipsView(document, part));
+    }
+
+    /**
+     * The relationships part `part` as the non-lenient walks read it.
+     * DOCX/DOCM applies markup compatibility — Word 16.115 resolves
+     * `mc:AlternateContent` and `mc:Ignorable` in `.rels` streams (probe
+     * sessions 33–35, docs/plans/evidence/word-probes-2026-10-24.md) —
+     * while PPTX and every other format keeps the stored view: PowerPoint
+     * was never shown markup compatibility in a relationships part (#643).
+     */
+    protected relationshipsView(document: Document, _part: string): Document {
+        return document;
     }
 
     /** Identify the required main part by the package relationship, never its basename. */
@@ -1755,7 +1771,7 @@ export class BaseSchemaValidator {
                 return parts;
             }
             const relationships = parseXmlBytes(readFileSync(relsFile));
-            for (const relationship of this.relationshipElements(relationships)) {
+            for (const relationship of this.relationshipElements(relationships, relsName ?? "_rels/.rels")) {
                 const type = relationship.getAttribute("Type");
                 if (
                     relationship.getAttribute("TargetMode") === "External" ||
