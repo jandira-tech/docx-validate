@@ -215,6 +215,19 @@ part is not in the package is not judged by this walk. Lenient keeps its
 existing sidecar errors and XSD-only package diagnosis. This legacy ID walk is
 outside the named-check registry, so named and quick runs omit it.
 
+Under Word-valid and strict, the legacy relationship walks read direct
+`Relationship` children after markup compatibility, using the same relationships
+namespace capabilities as the named checks. Duplicate IDs split between a direct
+child and a selected Fallback are counted together; unselected Choice relationships
+do not supply IDs, types or referenced targets. Word 16.115 offered recovery for
+the package duplicate in session 34, `s34a`; the analogous split in a story-root
+sidecar is unobserved in Word. The selected footer and main relationships that
+opened clean in session 33, `s33d`/`s33e`, no longer draw false `rels-id-missing`
+or `rels-unreferenced` findings ([#635](https://github.com/jandira-tech/docx-validate/issues/635),
+[Word probe evidence](docs/plans/evidence/word-probes-2026-10-24.md)). Strict still
+reports stored relationships markup compatibility and schema defects. Lenient
+keeps its raw traversal and existing findings.
+
 Named checks and quick checks use the same options in the path and byte APIs:
 
 ```ts

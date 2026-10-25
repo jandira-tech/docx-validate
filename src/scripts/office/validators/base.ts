@@ -59,6 +59,7 @@ import {
 } from "../../../lib/content-types";
 import {
     applyMarkupCompatibility,
+    RELATIONSHIPS_UNDERSTOOD_NAMESPACES,
     STRICT_UNDERSTOOD_NAMESPACES,
     UNDERSTOOD_NAMESPACES,
     understoodNamespacesForPart,
@@ -1700,11 +1701,18 @@ export class BaseSchemaValidator {
         }
     }
 
-    /** Semantic relationship readers use direct children; lenient retains its historical scan. */
+    /** Semantic relationship readers use the processed direct children; lenient retains its historical scan. */
     protected relationshipElements(document: Document): Element[] {
-        return this.profile === "lenient"
-            ? getElementsByTagNameNSAll(document, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship")
-            : getRelationshipChildren(document);
+        if (this.profile === "lenient") {
+            return getElementsByTagNameNSAll(document, PACKAGE_RELATIONSHIPS_NAMESPACE, "Relationship");
+        }
+        // #635: Word offered recovery for a duplicate split between a direct
+        // child and Fallback (session 34 s34a), and read selected footer/main
+        // relationships (session 33 s33d/s33e); see docs/plans/evidence/word-probes-2026-10-24.md.
+        // Use the same capabilities as ctx.effectiveXml's understoodNamespacesForPart
+        // for .rels streams, and still ignore relationships nested in foreign wrappers.
+        const view = applyMarkupCompatibility(document, { understood: RELATIONSHIPS_UNDERSTOOD_NAMESPACES });
+        return getRelationshipChildren(view.document);
     }
 
     /** Identify the required main part by the package relationship, never its basename. */

@@ -35,6 +35,12 @@ describe("word error explanations", () => {
         expect(explanation).not.toContain("add one with that Id and Type");
     });
 
+    it("explains duplicates revealed by markup compatibility (#635)", () => {
+        const explanation = explainWordError("rels-id-duplicate");
+        expect(explanation).toContain("markup compatibility");
+        expect(explanation).toContain("Fallback");
+    });
+
     it("explains both absent and multiple main relationships (#515)", () => {
         const explanation = explainWordError("word-main-document-part");
         expect(explanation).toContain("exactly one internal officeDocument relationship");
