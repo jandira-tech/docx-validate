@@ -1404,7 +1404,8 @@ read the directory's package view directly ([#374](https://github.com/jandira-te
 A packed file (`.docx`/`.docm`/`.pptx`) is different: auto-repair runs on a
 temporary staged copy that is discarded, so the source file's bytes never
 change. The result then carries an `auto-repair-staged-copy` info finding —
-and the CLI prints the same sentence next to `Auto-repaired N issue(s)` —
+and the CLI prints the same sentence on its own line, after
+`Auto-repaired N issue(s)` when anything was repaired —
 disclosing that the repairs and the repair plan describe the staged copy
 ([#649](https://github.com/jandira-tech/docx-validate/issues/649)). It
 appears only when a repair ran: a packed `.xlsx`, which has no validators,
@@ -1488,9 +1489,11 @@ return the shared `ValidationResult`, including metadata, without those extra fi
 With `autoRepair` the run also reports repair outcomes for DOCX/DOCM and PPTX
 ([#622](https://github.com/jandira-tech/docx-validate/issues/622)). The plan
 appears in the path API's `validate()` result and in the CLI's `--json`
-output; the CLI's text mode prints only error-severity issues, and the byte
-APIs (`new Validate().run(bytes)`, `jubarte.validate(bytes)`) have no
-`autoRepair` option, so neither surface carries the plan
+output. The CLI's text mode lists error-severity issues only; the one other
+finding it prints is the `auto-repair-staged-copy` disclosure, on its own
+line. The byte APIs (`new Validate().run(bytes)`,
+`jubarte.validate(bytes)`) have no `autoRepair` option, so neither surface
+carries the plan
 ([#651](https://github.com/jandira-tech/docx-validate/issues/651)). Non-info
 findings from before repair are grouped by path and code, then compared with
 the same group from that run's post-repair validation

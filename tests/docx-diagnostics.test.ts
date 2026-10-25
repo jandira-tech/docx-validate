@@ -821,4 +821,12 @@ describe("buildRepairPlanIssues migration notes (#651)", () => {
         expect(migration).toContain("buildRepairPlanIssues");
         expect(migration).toContain("repair-plan");
     });
+
+    it("throws the TypeError the migration guide names for the old one-argument call (#667)", async () => {
+        const migration = await fs.readFile(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "MIGRATION.md"), "utf-8");
+        // The engine's wording is not quoted; only the error class is.
+        expect(migration.replace(/\s+/g, " ")).toContain("the old one-argument call throws a `TypeError`");
+        const oneArgument = buildRepairPlanIssues as unknown as (issues: readonly ValidationIssue[]) => unknown;
+        expect(() => oneArgument([{ severity: "error", code: "x", message: "m" }])).toThrow(TypeError);
+    });
 });
