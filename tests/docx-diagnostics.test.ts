@@ -127,6 +127,50 @@ describe("docx diagnostics", () => {
         });
     });
 
+    // Adapted from bot PR #198's test. collectText labels text by its
+    // enclosing tracked change or comment; these shapes pin each label and
+    // the precedence between them (ins, del, moveFrom, moveTo, comment).
+    it("labels text by its enclosing tracked change or comment, in a fixed precedence", async () => {
+        await withTempDir(async (dir) => {
+            const root = path.join(dir, "u");
+            await writeXml(
+                path.join(root, "word", "document.xml"),
+                doc(
+                    `<w:p>` +
+                        `<w:fldSimple w:instr="PAGE"/><w:fldSimple/>` +
+                        `<w:del><w:r><w:instrText>deleted field</w:instrText></w:r></w:del>` +
+                        `<w:r><w:instrText>visible field</w:instrText></w:r>` +
+                        `<w:r><w:delInstrText>delInstrText</w:delInstrText><w:delText>gone</w:delText><w:t></w:t></w:r>` +
+                        `<w:moveFrom><w:r><w:t>moveFrom</w:t></w:r><w:ins><w:r><w:t>ins in move</w:t></w:r></w:ins></w:moveFrom>` +
+                        `<w:moveTo><w:del><w:r><w:t>del</w:t></w:r></w:del><w:r><w:t>moveTo</w:t></w:r></w:moveTo>` +
+                        `<w:ins><x:wrap xmlns:x="urn:example"><w:r><w:t>wrapped</w:t></w:r></x:wrap></w:ins>` +
+                        `<w:r><w:t>plain</w:t></w:r>` +
+                        `</w:p>`,
+                ),
+            );
+            await writeXml(
+                path.join(root, "word", "comments.xml"),
+                `<?xml version="1.0"?><w:comments ${W_NS}><w:comment w:id="0"><w:p><w:moveFrom><w:r><w:t>moved note</w:t></w:r></w:moveFrom><w:r><w:t>note</w:t></w:r></w:p></w:comment></w:comments>`,
+            );
+            const inventory = await collectDocxSemanticInventory(root);
+            const text = new Map<string, number>();
+            for (const counter of inventory.counters.values()) {
+                if (counter.category === "text") text.set(counter.label, (text.get(counter.label) ?? 0) + counter.count);
+            }
+
+            expect(Object.fromEntries(text)).toEqual({
+                "field instruction": 4 + 13, // PAGE, visible field
+                "deleted field instruction": 13 + 12, // deleted field, delInstrText
+                "deleted text": 4 + 3, // gone, del inside moveTo
+                "moved-from text": 8 + 10, // moveFrom, moved note
+                "moved-to text": 6, // moveTo
+                "inserted text": 11 + 7, // ins in move, wrapped
+                "comment text": 4, // note
+                "visible text": 5, // plain
+            });
+        });
+    });
+
     it("counts in-run atomic marks by type and excludes tab-stop definitions", async () => {
         await withTempDir(async (dir) => {
             const root = path.join(dir, "u");

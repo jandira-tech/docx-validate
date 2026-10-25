@@ -38,6 +38,16 @@ import { loadCentralNamedArchive } from "../../../lib/zip-central-names";
 
 const ELEMENT_NODE = 1;
 
+/**
+ * Limits for the `git diff` calls behind `getGitWordDiff`. `spawnSync`
+ * blocks the event loop on text taken from the documents under test, so
+ * both attempts share one wall-clock budget, and each captures at most
+ * 10 MiB of output (Node's default is 1 MiB). A diff that exceeds either
+ * limit is reported like a missing git.
+ */
+const GIT_DIFF_BUDGET_MS = 10_000;
+const GIT_DIFF_MAX_BUFFER = 10 * 1024 * 1024;
+
 export interface RedliningOptions {
     unpackedDir: string;
     originalDocx: string;
@@ -257,14 +267,18 @@ async function generateDetailedDiff(originalText: string, modifiedText: string, 
  * post-`@@` content lines on success, `null` on git failure. Mirrors
  * `_get_git_word_diff` — first attempt uses `--word-diff-regex=.` (per-char
  * granularity); if that yields nothing, retries without the regex (line
- * granularity).
+ * granularity). The retry gets only what is left of `GIT_DIFF_BUDGET_MS`.
  */
 export async function getGitWordDiff(originalText: string, modifiedText: string): Promise<string | null> {
     return withTempDir((tempDir) => {
         const origFile = path.join(tempDir, "original.txt");
         const modFile = path.join(tempDir, "modified.txt");
         return Promise.all([fs.writeFile(origFile, originalText, "utf8"), fs.writeFile(modFile, modifiedText, "utf8")]).then(() => {
-            const granular = runGitDiff(["diff", "--word-diff=plain", "--word-diff-regex=.", "-U0", "--no-index", origFile, modFile]);
+            const deadline = Date.now() + GIT_DIFF_BUDGET_MS;
+            const granular = runGitDiff(
+                ["diff", "--word-diff=plain", "--word-diff-regex=.", "-U0", "--no-index", origFile, modFile],
+                deadline,
+            );
             if (granular !== null && granular.trim() !== "") {
                 const filtered = filterDiffContent(granular);
                 if (filtered) {
@@ -272,7 +286,7 @@ export async function getGitWordDiff(originalText: string, modifiedText: string)
                 }
             }
 
-            const wordLevel = runGitDiff(["diff", "--word-diff=plain", "-U0", "--no-index", origFile, modFile]);
+            const wordLevel = runGitDiff(["diff", "--word-diff=plain", "-U0", "--no-index", origFile, modFile], deadline);
             if (wordLevel !== null && wordLevel.trim() !== "") {
                 return filterDiffContent(wordLevel);
             }
@@ -282,9 +296,13 @@ export async function getGitWordDiff(originalText: string, modifiedText: string)
     });
 }
 
-function runGitDiff(args: string[]): string | null {
+function runGitDiff(args: string[], deadline: number): string | null {
+    const timeout = deadline - Date.now();
+    if (timeout <= 0) {
+        return null;
+    }
     try {
-        const result = spawnSync("git", args, { encoding: "utf8" });
+        const result = spawnSync("git", args, { encoding: "utf8", timeout, maxBuffer: GIT_DIFF_MAX_BUFFER });
         if (result.error) {
             return null;
         }

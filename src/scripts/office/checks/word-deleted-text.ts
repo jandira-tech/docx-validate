@@ -22,64 +22,77 @@ import type { CheckDefinition } from "../../../lib/check-registry";
 import type { ValidationContext } from "../../../lib/validation-context";
 import type { ValidationIssue } from "../../../lib/types";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
-import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
 
 const MC_NAMESPACE = "http://schemas.openxmlformats.org/markup-compatibility/2006";
 
-const hasMoveFromAncestor = (node: Node): boolean => {
-    let parent = node.parentNode;
-    while (parent && parent.nodeType === 1) {
-        const elem = parent as Element;
-        const local = elem.localName || elem.tagName.split(":").pop() || "";
-        if (local === "moveFrom" && WORD_PARAGRAPH_NAMESPACES.includes(elem.namespaceURI ?? "")) {
-            return true;
+const localNameOf = (elem: Element): string => elem.localName || elem.tagName.split(":").pop() || "";
+
+const isWordElement = (elem: Element, local: string): boolean =>
+    localNameOf(elem) === local && WORD_PARAGRAPH_NAMESPACES.includes(elem.namespaceURI ?? "");
+
+interface TextBoxFrame {
+    node: Node;
+    inTextBox: boolean;
+    /** A w:del encloses the node inside its innermost text box. */
+    deleted: boolean;
+    inFallback: boolean;
+}
+
+/**
+ * The w:delText and w:delInstrText elements inside a w:txbxContent that no
+ * w:del within that text box wraps, outside any mc:Fallback. One walk
+ * carries the enclosing state down the tree; walking every deleted-text
+ * element's ancestors took 2.3-3.6x as long (bot PR #199).
+ */
+const textBoxDeletedText = (dom: Document): Element[] => {
+    const found: Element[] = [];
+    const stack: TextBoxFrame[] = [{ node: dom, inTextBox: false, deleted: false, inFallback: false }];
+    while (stack.length > 0) {
+        const frame = stack.pop();
+        if (frame === undefined) break;
+        let { inTextBox, deleted, inFallback } = frame;
+        if (frame.node.nodeType === 1 /* ELEMENT_NODE */) {
+            const elem = frame.node as Element;
+            if (isWordElement(elem, "txbxContent")) {
+                inTextBox = true;
+                deleted = false;
+            } else if (isWordElement(elem, "del")) {
+                deleted = true;
+            } else if (localNameOf(elem) === "Fallback" && elem.namespaceURI === MC_NAMESPACE) {
+                inFallback = true;
+            } else if (inTextBox && !deleted && !inFallback && (isWordElement(elem, "delText") || isWordElement(elem, "delInstrText"))) {
+                found.push(elem);
+            }
         }
-        parent = parent.parentNode;
+        for (let child = frame.node.lastChild; child; child = child.previousSibling) {
+            if (child.nodeType === 1 /* ELEMENT_NODE */) stack.push({ node: child, inTextBox, deleted, inFallback });
+        }
     }
-    return false;
+    return found;
 };
 
-const hasTextBoxContentAncestor = (node: Node): boolean => {
-    let parent = node.parentNode;
-    while (parent && parent.nodeType === 1) {
-        const elem = parent as Element;
-        const local = elem.localName || elem.tagName.split(":").pop() || "";
-        if (local === "txbxContent" && WORD_PARAGRAPH_NAMESPACES.includes(elem.namespaceURI ?? "")) {
-            return true;
+/** The w:delText elements inside a w:moveFrom, found in one walk. */
+const moveFromDeletedText = (dom: Document): Element[] => {
+    const found: Element[] = [];
+    const stack: [Node, boolean][] = [[dom, false]];
+    while (stack.length > 0) {
+        const frame = stack.pop();
+        if (frame === undefined) break;
+        const [node, enclosed] = frame;
+        let inMoveFrom = enclosed;
+        if (node.nodeType === 1 /* ELEMENT_NODE */) {
+            const elem = node as Element;
+            if (isWordElement(elem, "moveFrom")) {
+                inMoveFrom = true;
+            } else if (inMoveFrom && isWordElement(elem, "delText")) {
+                found.push(elem);
+            }
         }
-        parent = parent.parentNode;
+        for (let child = node.lastChild; child; child = child.previousSibling) {
+            if (child.nodeType === 1 /* ELEMENT_NODE */) stack.push([child, inMoveFrom]);
+        }
     }
-    return false;
-};
-
-const hasTextBoxDeletionAncestor = (node: Node): boolean => {
-    let parent = node.parentNode;
-    while (parent && parent.nodeType === 1) {
-        const elem = parent as Element;
-        const local = elem.localName || elem.tagName.split(":").pop() || "";
-        const ns = elem.namespaceURI ?? "";
-        if (local === "txbxContent" && WORD_PARAGRAPH_NAMESPACES.includes(ns)) {
-            return false;
-        }
-        if (local === "del" && WORD_PARAGRAPH_NAMESPACES.includes(ns)) {
-            return true;
-        }
-        parent = parent.parentNode;
-    }
-    return false;
-};
-
-const hasMarkupCompatibilityFallbackAncestor = (node: Node): boolean => {
-    let parent = node.parentNode;
-    while (parent && parent.nodeType === 1) {
-        const elem = parent as Element;
-        const local = elem.localName || elem.tagName.split(":").pop() || "";
-        if (local === "Fallback" && elem.namespaceURI === MC_NAMESPACE) {
-            return true;
-        }
-        parent = parent.parentNode;
-    }
-    return false;
+    return found;
 };
 
 export const wordTextboxDeletedTextCheck: CheckDefinition = {
@@ -96,30 +109,15 @@ export const wordTextboxDeletedTextCheck: CheckDefinition = {
             if (!parsed?.ok) {
                 continue;
             }
-            const dom = parsed.document;
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                for (const local of ["delText", "delInstrText"] as const) {
-                    const nodes = getElementsByTagNameNSAll(dom, ns, local);
-                    for (const node of nodes) {
-                        if (!node || !hasTextBoxContentAncestor(node)) {
-                            continue;
-                        }
-                        if (hasMarkupCompatibilityFallbackAncestor(node)) {
-                            continue;
-                        }
-                        if (hasTextBoxDeletionAncestor(node)) {
-                            continue;
-                        }
-                        issues.push({
-                            severity: "error",
-                            message:
-                                "A text box contains deleted text. Microsoft Word offers to recover the file. " +
-                                "Remove the w:delText or w:delInstrText from the text box.",
-                            path: xmlFile,
-                            code: "word-textbox-deleted-text",
-                        });
-                    }
-                }
+            for (const _node of textBoxDeletedText(parsed.document)) {
+                issues.push({
+                    severity: "error",
+                    message:
+                        "A text box contains deleted text. Microsoft Word offers to recover the file. " +
+                        "Remove the w:delText or w:delInstrText from the text box.",
+                    path: xmlFile,
+                    code: "word-textbox-deleted-text",
+                });
             }
         }
 
@@ -141,22 +139,15 @@ export const wordMoveFromDeletedTextCheck: CheckDefinition = {
             if (!parsed?.ok) {
                 continue;
             }
-            const dom = parsed.document;
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const nodes = getElementsByTagNameNSAll(dom, ns, "delText");
-                for (const node of nodes) {
-                    if (!node || !hasMoveFromAncestor(node)) {
-                        continue;
-                    }
-                    issues.push({
-                        severity: "error",
-                        message:
-                            "A move source contains deleted text. Microsoft Word offers to recover the file. " +
-                            "Use w:t inside w:moveFrom, not w:delText.",
-                        path: xmlFile,
-                        code: "word-move-from-deleted-text",
-                    });
-                }
+            for (const _node of moveFromDeletedText(parsed.document)) {
+                issues.push({
+                    severity: "error",
+                    message:
+                        "A move source contains deleted text. Microsoft Word offers to recover the file. " +
+                        "Use w:t inside w:moveFrom, not w:delText.",
+                    path: xmlFile,
+                    code: "word-move-from-deleted-text",
+                });
             }
         }
 
