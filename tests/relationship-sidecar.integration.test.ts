@@ -12,7 +12,15 @@ import { validate } from "../src/scripts/office/validate";
 import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { STORY_FOOTER_XML, glossaryStoryReferenceParts, storyContentType } from "./support/story-content-type-specimens";
-import { chartSpecimenParts, CHART_DRAWING, referencedChartSpecimenParts } from "./support/chart-specimens";
+import {
+    chartSpecimenParts,
+    CHART_DRAWING,
+    equivalentTargetChartSpecimenParts,
+    fallbackChartSpecimenParts,
+    referencedChartSpecimenParts,
+    storyChartSpecimenParts,
+    twoChartRelationshipsSpecimenParts,
+} from "./support/chart-specimens";
 
 const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 const RS = "http://purl.oclc.org/ooxml/officeDocument/relationships";
@@ -596,6 +604,52 @@ describe("chart relationship reach without a reference (#645)", { timeout: 120_0
                 if (full.valid) expect(partial.valid).toBe(true);
             }
             expect(readFileSync(file)).toEqual(bytes);
+        });
+    });
+});
+
+// Session 39 (s39a/s39c, #661): the chart sources #645's rule reaches beyond
+// sessions 36-37. Word 16.115 opened each unreferenced shape clean and offered
+// recovery for each referenced twin, so the relationship's use, not the
+// relating part, decides. The helpers rebuild the stored specimens' parts.
+const session39ChartSpecimens = [
+    ...(["header", "footnote", "glossary"] as const).flatMap((source) => [
+        { name: `chart-${source}-unreferenced`, blocking: false, parts: () => storyChartSpecimenParts(source, false) },
+        { name: `chart-${source}-referenced`, blocking: true, parts: () => storyChartSpecimenParts(source, true) },
+    ]),
+    { name: "chart-unselected-fallback", blocking: false, parts: () => fallbackChartSpecimenParts(false) },
+    { name: "chart-selected-fallback", blocking: true, parts: () => fallbackChartSpecimenParts(true) },
+    { name: "chart-two-relationships-no-references", blocking: false, parts: () => twoChartRelationshipsSpecimenParts(false) },
+    { name: "chart-two-relationships-one-reference", blocking: true, parts: () => twoChartRelationshipsSpecimenParts(true) },
+    { name: "chart-equivalent-target-unreferenced", blocking: false, parts: () => equivalentTargetChartSpecimenParts(false) },
+    { name: "chart-equivalent-target-referenced", blocking: true, parts: () => equivalentTargetChartSpecimenParts(true) },
+];
+
+describe("chart sources Word was shown in session 39 (#661)", { timeout: 120_000 }, () => {
+    it.each(session39ChartSpecimens)("$name follows the Word observation", async (specimen) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, `${specimen.name}.docx`);
+            writeFileSync(file, await buildDocx(specimen.parts()));
+            const missingSidecar = (severity: "error" | "warning") => ({
+                code: "rels-missing-sidecar",
+                path: CHART_INSIDE,
+                severity,
+                message: `Part '${CHART_INSIDE}' uses relationship references but has no .rels sidecar file`,
+            });
+            const full = await validate(file, { profile: "word-valid" });
+            expect(full.valid).toBe(!specimen.blocking);
+            expect(full.issues.filter((finding) => finding.code === "rels-missing-sidecar")).toEqual([
+                missingSidecar(specimen.blocking ? "error" : "warning"),
+            ]);
+            // Strict keeps the finding an error whichever way Word went.
+            const strict = await validate(file, { profile: "strict" });
+            expect(strict.valid).toBe(false);
+            expect(strict.issues).toContainEqual(missingSidecar("error"));
+            for (const selection of [{ quick: true }, { checks: ["relationships"] }]) {
+                const partial = await validate(file, { profile: "word-valid", ...selection });
+                expect(errors(full.issues)).toEqual(expect.arrayContaining(errors(partial.issues)));
+                if (full.valid) expect(partial.valid).toBe(true);
+            }
         });
     });
 });

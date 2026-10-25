@@ -1064,6 +1064,13 @@ positive for a chart and an image relationship, which s37b opened clean
 ([#647](https://github.com/jandira-tech/docx-validate/issues/647))
 ([#645](https://github.com/jandira-tech/docx-validate/issues/645); chunks
 s36b/s36d and s37b in the same evidence file).
+Session 39 (s39a, s39c) showed Word the rule beyond the main document's
+sidecar: an unused chart relationship from a referenced header's sidecar or
+from a reached glossary's footnotes part or document, two unused chart
+relationships to one part, a relationship targeting an OPC-equivalent
+spelling of the chart's name, and a drawing only in an `mc:Fallback` Word
+does not select all opened clean, and each shape's referenced twin got the
+recovery offer ([#661](https://github.com/jandira-tech/docx-validate/issues/661)).
 Session 35, chunks s35a/s35b, observed clean opens for ids in unreferenced
 `word/xtra.xml` (both relationships namespaces), unreferenced `docProps/app.xml`,
 an unreached glossary, on `w:name` in reached styles, and inside an unselected
