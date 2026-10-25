@@ -20,6 +20,7 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
+import { extractZipEntries } from "../src/lib/zip-path";
 import {
     DOCXSchemaValidator,
     WORD_2006_NAMESPACE,
@@ -526,13 +527,7 @@ describe("DOCXSchemaValidator", () => {
             const fixturePath = path.join(__dirname, "fixtures/broken/endnotes.paraid-overflow.docx");
             await withTempDir(async (dir) => {
                 const buf = await fs.readFile(fixturePath);
-                const zip = await JSZip.loadAsync(buf);
-                for (const [entryName, entry] of Object.entries(zip.files)) {
-                    if (entry.dir) continue;
-                    const dest = path.join(dir, entryName);
-                    await fs.mkdir(path.dirname(dest), { recursive: true });
-                    await fs.writeFile(dest, await entry.async("nodebuffer"));
-                }
+                await extractZipEntries(await JSZip.loadAsync(buf), dir);
 
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const before = await v.validateIdConstraints();
@@ -748,13 +743,7 @@ describe("DOCXSchemaValidator", () => {
             const fixturePath = path.join(__dirname, "fixtures/broken/sample-document.id-overflow.docx");
             await withTempDir(async (dir) => {
                 const buf = await fs.readFile(fixturePath);
-                const zip = await JSZip.loadAsync(buf);
-                for (const [entryName, entry] of Object.entries(zip.files)) {
-                    if (entry.dir) continue;
-                    const dest = path.join(dir, entryName);
-                    await fs.mkdir(path.dirname(dest), { recursive: true });
-                    await fs.writeFile(dest, await entry.async("nodebuffer"));
-                }
+                await extractZipEntries(await JSZip.loadAsync(buf), dir);
 
                 const v = new DOCXSchemaValidator({ unpackedDir: dir });
                 const repairs = await v.repairParaId();
@@ -951,13 +940,7 @@ describe("DOCXSchemaValidator", () => {
             const fixturePath = path.join(__dirname, "fixtures/broken/sample-document.broken-tables.docx");
             await withTempDir(async (dir) => {
                 const buf = await fs.readFile(fixturePath);
-                const zip = await JSZip.loadAsync(buf);
-                for (const [entryName, entry] of Object.entries(zip.files)) {
-                    if (entry.dir) continue;
-                    const dest = path.join(dir, entryName);
-                    await fs.mkdir(path.dirname(dest), { recursive: true });
-                    await fs.writeFile(dest, await entry.async("nodebuffer"));
-                }
+                await extractZipEntries(await JSZip.loadAsync(buf), dir);
                 const v = new DOCXSchemaValidator({ unpackedDir: dir, profile: "strict" });
                 const before = await v.validateStyleReferences();
                 expect(before.valid).toBe(false);
