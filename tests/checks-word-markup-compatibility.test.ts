@@ -11,6 +11,7 @@ import { wordMarkupCompatibilityCheck as check } from "../src/scripts/office/che
 const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
 const W14 = "http://schemas.microsoft.com/office/word/2010/wordml";
+const PR = "http://schemas.openxmlformats.org/package/2006/relationships";
 const ROOT = `xmlns:w="${W}" xmlns:mc="${MC}" xmlns:w14="${W14}" xmlns:e="urn:future"`;
 const document = (body: string, attributes = "") => `<w:document ${ROOT}${attributes}><w:body>${body}</w:body></w:document>`;
 const FALLBACK_ONLY = "<mc:AlternateContent><mc:Fallback><w:p/></mc:Fallback></mc:AlternateContent>";
@@ -51,14 +52,44 @@ describe("markup compatibility as Word processes it", () => {
         expect(await check.run(ctx)).toEqual([]);
     });
 
-    it("reports errors only, and judges only the XML parts under word/", async () => {
+    it("reports errors only, judging the XML parts under word/ and no other folder", async () => {
         const ctx = ValidationContext.fromEntries({
             // An Office extension attribute outside mc:Ignorable is a warning
             // of the schema view, not a Word rejection.
             "word/settings.xml": `<w:settings ${ROOT} w14:foo="1"/>`,
             "docProps/custom.xml": document(FALLBACK_ONLY),
-            "word/_rels/document.xml.rels": document(FALLBACK_ONLY),
+            "customXml/item1.xml": document(FALLBACK_ONLY),
             "word/styles.xml": document(FALLBACK_ONLY).replace("</w:document>", ""),
+        });
+        expect(await check.run(ctx)).toEqual([]);
+    });
+
+    it("judges the markup compatibility of relationships parts (#636)", async () => {
+        const ctx = ValidationContext.fromEntries({
+            // Session 34 s34c: mc:MustUnderstand of an unknown namespace on
+            // the _rels/.rels root, which Word 16.115 refused.
+            "_rels/.rels": `<Relationships xmlns="${PR}" xmlns:mc="${MC}" xmlns:foo="urn:foo" mc:MustUnderstand="foo"/>`,
+            // Session 34 s34d: an undeclared Requires prefix in the main
+            // document's sidecar, which Word 16.115 refused.
+            "word/_rels/document.xml.rels":
+                `<Relationships xmlns="${PR}" xmlns:mc="${MC}">` +
+                `<mc:AlternateContent><mc:Choice Requires="nope"><Relationship Id="rId1" Type="urn:t" Target="x.xml"/></mc:Choice>` +
+                `<mc:Fallback/></mc:AlternateContent></Relationships>`,
+            // Unobserved part, still reported: the profile decides severity.
+            "word/_rels/header1.xml.rels": `<Relationships xmlns="${PR}" xmlns:mc="${MC}" xmlns:foo="urn:foo" mc:MustUnderstand="foo"/>`,
+        });
+        expect(await check.run(ctx)).toEqual([
+            expect.objectContaining({ code: "mce-must-understand", severity: "error", path: "_rels/.rels" }),
+            expect.objectContaining({ code: "mce-malformed", severity: "error", path: "word/_rels/document.xml.rels" }),
+            expect.objectContaining({ code: "mce-must-understand", severity: "error", path: "word/_rels/header1.xml.rels" }),
+        ]);
+    });
+
+    it("reports relationships-part errors only, keeping warnings to the schema view", async () => {
+        const ctx = ValidationContext.fromEntries({
+            // An Office extension attribute outside mc:Ignorable is a warning
+            // of the schema view, not a Word rejection.
+            "word/_rels/header1.xml.rels": `<Relationships xmlns="${PR}" xmlns:chart="http://schemas.microsoft.com/office/2011/relationships/chart" chart:foo="1"/>`,
         });
         expect(await check.run(ctx)).toEqual([]);
     });

@@ -29,7 +29,7 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
     "word-main-document-part":
         "The package needs exactly one internal officeDocument relationship in _rels/.rels targeting an existing main document part. Missing or multiple main relationships make Word offer recovery. Add the missing relationship and its part, or restore a missing target. Remove extra internal officeDocument relationships, even if their targets are identical.",
     "opc-relationships-markup-compatibility":
-        "Word applies markup compatibility to relationships parts and accepts this removed or replaced child because only Relationship children remain. For strict OPC conformance, store those Relationship children directly under Relationships and remove the compatibility markup.",
+        "Word applies markup compatibility to relationships parts and opened each tested shape of this markup clean (a Fallback over a Choice it does not understand, an understood w14 Choice, and an Ignorable foreign child, in the main document's and the package's relationships); other shapes are untested. For strict OPC conformance, store those Relationship children directly under Relationships and remove the compatibility markup.",
     "word-content-type-invalid":
         "A part's content type in [Content_Types].xml is missing or wrong, so Word cannot load that part. Add the correct <Override>/<Default> content-type entry.",
     "ct-uncovered-part":

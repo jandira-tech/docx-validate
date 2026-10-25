@@ -10,10 +10,13 @@ import { describe, expect, it } from "vitest";
 import { WORD_ERROR_EXPLANATIONS, explainWordError } from "../src/scripts/office/validators/word-error-explanations";
 
 describe("word error explanations", () => {
-    it("explains relationships markup compatibility as a strict defect Word accepts (#632)", () => {
+    it("explains relationships markup compatibility with the observed Word behaviour (#632)", () => {
         const explanation = explainWordError("opc-relationships-markup-compatibility");
         expect(explanation).toContain("Word");
         expect(explanation).toContain("markup compatibility");
+        expect(explanation).toContain("opened each tested shape of this markup clean");
+        expect(explanation).toContain("other shapes are untested");
+        expect(explanation).not.toMatch(/session|s33/);
         expect(explanation).toContain("strict");
         expect(explanation).toContain("Relationship");
     });

@@ -30,6 +30,20 @@ describe(CODE, () => {
         ]);
     });
 
+    it("states the observed Word behaviour without generalizing it (#632 review finding 5)", async () => {
+        const issues = await diagnose(RELATIONSHIPS_MCE_CASES[0]!.parts);
+        expect(issues).toHaveLength(1);
+        const message = issues[0]!.message;
+        expect(message).toContain("removed or replaced by markup compatibility, leaving only Relationship children");
+        // Word was shown the four shapes of s33d/s33e that this code reports;
+        // each opened clean. Nothing else was tested, so say that, without
+        // internal session ids in user-facing text.
+        expect(message).toContain("Microsoft Word opened each tested shape of this markup clean; other shapes are untested.");
+        expect(message).not.toMatch(/session|s33/);
+        expect(message).not.toContain("Microsoft Word accepts this markup");
+        expect(message).toContain("Strict OPC requires direct Relationship children in the stored XML");
+    });
+
     it.each([
         { label: "foreign child in the selected Fallback", content: fallback("<x:Wrap/>"), code: CODE },
         {

@@ -78,7 +78,7 @@ export const opcRelationshipsStructureCheck: CheckDefinition = {
                     code: "opc-relationships-markup-compatibility",
                     path: part,
                     severity: "error",
-                    message: `Stored child {${element.namespaceURI ?? ""}}${element.localName} in Relationships is removed or replaced by markup compatibility, leaving only Relationship children. Microsoft Word accepts this markup; strict OPC requires direct Relationship children in the stored XML.`,
+                    message: `Stored child {${element.namespaceURI ?? ""}}${element.localName} in Relationships is removed or replaced by markup compatibility, leaving only Relationship children. Microsoft Word opened each tested shape of this markup clean; other shapes are untested. Strict OPC requires direct Relationship children in the stored XML.`,
                 });
             }
         }

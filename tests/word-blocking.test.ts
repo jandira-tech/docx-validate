@@ -136,12 +136,58 @@ describe("isWordBlockingIssue", () => {
         "word-footnote-reference-missing",
         "documentbuilder-insert-unresolved",
         "docprops-boolean-invalid",
-        "mce-malformed",
-        "mce-must-understand",
         // Word 16.115 offers recovery for every duplicate spelling probed (#351).
         "opc-equivalent-part-names",
     ])("keeps %s an error wherever it is found", (code) => {
         expect(isWordBlockingIssue(issue(code))).toBe(true);
+    });
+
+    it.each(["word/document.xml", "WORD/footnotes.XML"])(
+        "keeps the markup-compatibility errors of %s an error under word-valid",
+        (path) => {
+            for (const code of ["mce-malformed", "mce-must-understand"]) {
+                expect(isWordBlockingIssue(issue(code, { path })), `${code} ${path}`).toBe(true);
+            }
+        },
+    );
+
+    it("blocks mc:MustUnderstand on the package relationships part only (#636, s34c)", () => {
+        // Word 16.115 offered recovery for mc:MustUnderstand of an unknown
+        // namespace on the _rels/.rels root, then failed to open the file
+        // (session 34, s34c, docs/plans/evidence/word-probes-2026-10-24.md).
+        for (const path of ["_rels/.rels", "_RELS/.RELS", "_rels\\.rels", "_rels/.%72els"]) {
+            expect.soft(isWordBlockingIssue(issue("mce-must-understand", { path })), path).toBe(true);
+        }
+        // Unobserved: every other relationships part only warns under word-valid.
+        for (const path of [
+            undefined,
+            "word/_rels/document.xml.rels",
+            "word/_rels/header1.xml.rels",
+            "word/glossary/_rels/document.xml.rels",
+            "docProps/_rels/.rels",
+        ]) {
+            expect.soft(isWordBlockingIssue(issue("mce-must-understand", { path })), String(path)).toBe(false);
+        }
+    });
+
+    it("blocks mce-malformed in the main document's relationships part only (#636, s34d)", () => {
+        // Word 16.115 offered recovery for an AlternateContent whose Choice
+        // Requires prefix is undeclared in word/_rels/document.xml.rels
+        // (session 34, s34d). Other mce-malformed shapes in that part share
+        // the code and are unobserved; every other relationships part is
+        // unobserved too and only warns under word-valid.
+        for (const path of ["word/_rels/document.xml.rels", "WORD/_RELS/document.xml.RELS", "word/_rels\\document.xml.rels"]) {
+            expect.soft(isWordBlockingIssue(issue("mce-malformed", { path })), path).toBe(true);
+        }
+        for (const path of [
+            undefined,
+            "_rels/.rels",
+            "word/_rels/header1.xml.rels",
+            "word/glossary/_rels/document.xml.rels",
+            "docProps/_rels/.rels",
+        ]) {
+            expect.soft(isWordBlockingIssue(issue("mce-malformed", { path })), String(path)).toBe(false);
+        }
     });
 
     it.each(["run-content-misplaced", "comment-orphan-start", "rels-unreferenced", "paraid-missing-element", "xsd-error", ""])(

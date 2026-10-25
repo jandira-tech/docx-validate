@@ -81,6 +81,7 @@ import { OPC_PART_NAME_ESCAPED_SLASH } from "./checks/opc-part-name-escaped-slas
 import { OPC_PART_NAME_ESCAPED_UNRESERVED } from "./checks/opc-part-name-escaped-unreserved";
 import { CT_OVERRIDE_PARTNAME_INVALID } from "./checks/ct-override-partname";
 import { CT_MARKUP_COMPATIBILITY } from "./checks/ct-markup-compatibility";
+import { isMarkupCompatibilityJudgedPart } from "./checks/word-markup-compatibility";
 import { WORD_PART_CONTENT_TYPE_GENERIC } from "./checks/word-part-content-type-generic";
 import { contextFromArchive, openDirectoryContext, packageExtractFailedIssue, storedNamesRun } from "./package-context";
 import {
@@ -738,15 +739,16 @@ function findingsUnderProfile(
     // Full DOCX validation diagnoses root Ignorable prefixes before dropping
     // their MC restatements. Apply those same two steps only when the selected
     // Word compatibility check ran; descendant-only findings remain distinct (#499).
+    // The check judges the XML parts under word/ and every relationships part
+    // (#636), so the pairing covers both, as the full run's validateNamespaces
+    // walk does.
     const outcomes = run.outcomes.map((outcome) => {
         if (outcome.id !== "word-markup-compatibility" || !context || !run.executed.includes(outcome.id)) return outcome;
-        const roots = context.partNames
-            .filter((name) => /^word\/.+\.xml$/i.test(name))
-            .flatMap((name) => {
-                const parsed = context.xml(name);
-                const root = parsed?.ok ? parsed.document.documentElement : undefined;
-                return root ? rootIgnorableIssues(root, name) : [];
-            });
+        const roots = context.partNames.filter(isMarkupCompatibilityJudgedPart).flatMap((name) => {
+            const parsed = context.xml(name);
+            const root = parsed?.ok ? parsed.document.documentElement : undefined;
+            return root ? rootIgnorableIssues(root, name) : [];
+        });
         return { ...outcome, issues: withoutRestatedIgnorablePrefixes({ valid: run.valid, issues: [...roots, ...outcome.issues] }).issues };
     });
     // Equivalent names, escaped unreserved characters, escaped separators and

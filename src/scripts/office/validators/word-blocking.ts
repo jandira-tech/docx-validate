@@ -69,6 +69,26 @@ const isPackageRelationshipsPart = (partName: string | undefined): boolean =>
     partName !== undefined && canonicalPartName(partName) === "_rels/.rels";
 
 /**
+ * Whether a part is one of the XML parts under `word/`, comparing part names
+ * as OPC does: ASCII case-insensitively, with escapes of unreserved
+ * characters decoded. Relationships parts under `word/` end in `.rels` and
+ * are excluded: their markup-compatibility policy is observed per part
+ * (#636), not inherited from the folder.
+ */
+const isWordXmlPart = (partName: string | undefined): boolean =>
+    partName !== undefined && /^word\/.+\.xml$/.test(canonicalPartName(partName));
+
+/**
+ * Whether a part is the main document's relationships part at its default
+ * spelling, compared as OPC compares part names. Word 16.115 offered
+ * recovery for an AlternateContent whose mc:Choice Requires prefix is
+ * undeclared there (session 34, s34d, #636). A main document stored under
+ * another name keeps an unobserved warning, as every other sidecar does.
+ */
+const isDocumentRelationshipsPart = (partName: string | undefined): boolean =>
+    partName !== undefined && canonicalPartName(partName) === "word/_rels/document.xml.rels";
+
+/**
  * Whether `issue` stays an error under `word-valid`: `true` when Word 16.115
  * is observed to refuse or offer to recover a file carrying it. The three sets
  * hold canonical part names, computed once per run by the caller:
@@ -335,9 +355,26 @@ export const isWordBlockingIssue = (
             return issue.message.includes("../customXml/") || /\/_rels\/|\.rels$/i.test(issue.message);
         case "rels-empty-element":
             return issue.message.includes("missing required attribute");
-        case "mce-malformed":
-        case "mce-must-understand":
-            return true;
+        case "mce-must-understand": {
+            // Word 16.115 offered recovery for mc:MustUnderstand of a
+            // namespace it does not understand on the _rels/.rels root and,
+            // declined, reported an open error (session 34, s34c, #636); the
+            // XML parts under word/ keep the blocking classification this
+            // code had when only they were judged. Every other relationships
+            // part is unobserved and only warns under word-valid.
+            const path = issue.path?.replace(/\\/g, "/");
+            return isWordXmlPart(path) || isPackageRelationshipsPart(path);
+        }
+        case "mce-malformed": {
+            // Word 16.115 offered recovery for an mc:Choice whose Requires
+            // prefix is undeclared in word/_rels/document.xml.rels (session
+            // 34, s34d, #636); the XML parts under word/ keep their blocking
+            // classification. Other mce-malformed shapes in that part share
+            // the code and are unobserved; the package relationships part and
+            // every other sidecar are unobserved too and only warn.
+            const path = issue.path?.replace(/\\/g, "/");
+            return isWordXmlPart(path) || isDocumentRelationshipsPart(path);
+        }
         default:
             return false;
     }

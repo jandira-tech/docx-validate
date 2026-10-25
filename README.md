@@ -932,10 +932,11 @@ still nested inside foreign wrappers ([#433](https://github.com/jandira-tech/doc
 removes or replaces with only direct `Relationship` children (including an empty
 replacement). Word-valid warns; strict keeps an error because stored OPC
 relationships allow no such children. A foreign child left in a selected branch
-still gets `opc-relationships-structure`. Word 16.115 opened the footer cleanly
-with its relationship in an unknown-Choice Fallback, in a `w14` Choice, and beside
-an Ignorable foreign child; it also opened the package with its main relationship
-in a Fallback. A foreign child left in that Fallback prompted recovery (Word probes
+still gets `opc-relationships-structure`. Word 16.115 opened each of the four
+probed shapes of this class cleanly — the footer with its relationship in an
+unknown-Choice Fallback, in a `w14` Choice, and beside an Ignorable foreign
+child, and the package with its main relationship in a Fallback; other shapes
+are unobserved. A foreign child left in that Fallback prompted recovery (Word probes
 session 33, `s33d`/`s33e`; [#632](https://github.com/jandira-tech/docx-validate/issues/632)).
 The same processed view drives reachability: the parts Word reads (the
 Word-read parts, the story roots and the properties parts) are found through
@@ -951,10 +952,16 @@ which it refused identically (session 34, `s34a`/`s34b`;
 [#634](https://github.com/jandira-tech/docx-validate/issues/634)). A
 relationship nested inside a foreign wrapper that survives processing stays
 unfollowed ([#434](https://github.com/jandira-tech/docx-validate/issues/434)).
-Hyperlink and toolbar resolution and duplicate counts read the processed view
-too; the validators' semantic relationship checks still use the stored view's
-direct children under Word-valid and strict. Legacy lenient traversal and raw
-repair-inventory collection remain unchanged.
+Word also honours markup-compatibility errors in relationships parts:
+`mc:MustUnderstand` of a namespace it does not understand on the `_rels/.rels`
+root, and an `mc:Choice` whose `Requires` prefix is undeclared in
+`word/_rels/document.xml.rels`, each prompted recovery (session 34, `s34c`/`s34d`;
+[#636](https://github.com/jandira-tech/docx-validate/issues/636)). The
+`word-markup-compatibility` check reports those findings (see below).
+Hyperlink and toolbar resolution, duplicate counts and the validators' semantic
+relationship checks (#635, above) read the processed view too, still taking
+direct children only, under Word-valid and strict. Legacy lenient traversal and
+raw repair-inventory collection remain unchanged.
 
 Word 16.115 (build 16.115.26100424, macOS, 2026-10-24) offered recovery for all
 three minimal package mutations: a foreign sibling with every relationship
@@ -1099,19 +1106,30 @@ does not trigger this finding. Counting Strict `embed` and `link` attributes
 extends the existing Transitional rule on the same footing; those shapes
 were not observed in Word in this session.
 
-`word-markup-compatibility` reports processor errors for XML parts under `word/`.
+`word-markup-compatibility` reports processor errors for the XML parts under
+`word/` and for every relationships part, at the stored part name
+([#636](https://github.com/jandira-tech/docx-validate/issues/636)). Word 16.115
+applies markup compatibility to relationships parts before judging their children
+(session 33, `s33d`/`s33e`) and honours its errors there: `mc:MustUnderstand` of a
+namespace it does not understand on the `_rels/.rels` root (session 34, `s34c`)
+and an `mc:Choice` whose `Requires` prefix is undeclared in
+`word/_rels/document.xml.rels` (session 34, `s34d`) each prompted recovery, so
+those two findings are blocking in Word-valid. Other relationships parts, and
+other shapes of the same codes there, are unobserved: Word-valid demotes them to
+warnings while strict keeps the error. Lenient runs no Word rule. Full, quick and
+named runs report the same findings and severities.
 Root validation, the processor, and the schema walk use these stable codes:
 
-| Code                          | Meaning and profile behavior                                                                                                                                                              |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `word-document-root`          | The main part has a foreign or missing effective root: Word refuses to open it or silently drops all content. Blocking in Word-valid and strict.                                          |
-| `mce-malformed`               | Invalid compatibility structure, such as AlternateContent without a Choice. Blocking in Word-valid and strict.                                                                            |
-| `mce-must-understand`         | A declared required namespace is not understood by the selected view. Blocking in Word-valid and strict; Word and schema capabilities can differ.                                         |
-| `mce-unbound-prefix`          | A directive names an unbound prefix. Error in lenient/strict schema processing; warning in full Word-valid. A repeated root Ignorable finding is retained once as `ignorable-undeclared`. |
-| `mce-invalid-token`           | An invalid ProcessContent QName. Error in lenient/strict schema processing; warning in full Word-valid.                                                                                   |
-| `mce-root-ignored`            | An ignorable root disappears from the schema view. Informational for non-main parts; not emitted by the full Word-valid path.                                                             |
-| `mce-main-root-ignored`       | The required main document root disappears from the schema view. Error in lenient/strict; the Word view reports `word-document-root` for a missing main root.                             |
-| `mce-extension-not-ignorable` | Office extension attributes lack an Ignorable declaration and are removed from the schema view. Warning from schema preprocessing; not emitted by the full Word-valid path.               |
+| Code                          | Meaning and profile behavior                                                                                                                                                                                                                                                        |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `word-document-root`          | The main part has a foreign or missing effective root: Word refuses to open it or silently drops all content. Blocking in Word-valid and strict.                                                                                                                                    |
+| `mce-malformed`               | Invalid compatibility structure, such as AlternateContent without a Choice. Blocking in Word-valid and strict in the XML parts under `word/`; in relationships parts only in `word/_rels/document.xml.rels` (session 34, `s34d`), elsewhere a Word-valid warning.                   |
+| `mce-must-understand`         | A declared required namespace is not understood by the selected view. Blocking in Word-valid and strict in the XML parts under `word/`; in relationships parts only in `_rels/.rels` (session 34, `s34c`), elsewhere a Word-valid warning. Word and schema capabilities can differ. |
+| `mce-unbound-prefix`          | A directive names an unbound prefix. Error in lenient/strict schema processing; warning in full Word-valid. A repeated root Ignorable finding is retained once as `ignorable-undeclared`.                                                                                           |
+| `mce-invalid-token`           | An invalid ProcessContent QName. Error in lenient/strict schema processing; warning in full Word-valid.                                                                                                                                                                             |
+| `mce-root-ignored`            | An ignorable root disappears from the schema view. Informational for non-main parts; not emitted by the full Word-valid path.                                                                                                                                                       |
+| `mce-main-root-ignored`       | The required main document root disappears from the schema view. Error in lenient/strict; the Word view reports `word-document-root` for a missing main root.                                                                                                                       |
+| `mce-extension-not-ignorable` | Office extension attributes lack an Ignorable declaration and are removed from the schema view. Warning from schema preprocessing; not emitted by the full Word-valid path.                                                                                                         |
 
 Under Word-valid and strict, full DOCX/DOCM runs retain root Ignorable findings
 once as `ignorable-undeclared` even when staging fails. Named Word-valid runs

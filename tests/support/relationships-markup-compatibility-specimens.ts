@@ -32,6 +32,42 @@ export const wrapRelationship = (
 
 const footer = storyReferenceParts("footerReference", "footer", "footer1.xml", STORY_FOOTER_XML, storyContentType("footer"));
 
+const MUST_UNDERSTAND_DECLARATIONS = `xmlns:mc="${NS.MC}" xmlns:foo="urn:foo" mc:MustUnderstand="foo"`;
+
+const withRootDeclarations = (parts: Readonly<Record<string, string>>, part: string, declarations: string): Record<string, string> => ({
+    ...parts,
+    [part]: parts[part]!.replace("<Relationships ", `<Relationships ${declarations} `),
+});
+
+/**
+ * Session 34 s34c (#636): `mc:MustUnderstand` of a namespace Word does not
+ * understand on the `_rels/.rels` root. Word 16.115 offered recovery and,
+ * declined, reported an open error; the control opened clean.
+ */
+export const packageRelsRootMustUnderstand = (): Record<string, string> =>
+    withRootDeclarations(MINIMAL_PARTS, PACKAGE_RELS, MUST_UNDERSTAND_DECLARATIONS);
+
+/**
+ * Session 34 s34d (#636): session 26's footer relationship inside an
+ * `mc:Choice` whose `Requires` prefix is undeclared, with an empty Fallback —
+ * an `mce-malformed` AlternateContent. Word 16.115 offered recovery.
+ */
+export const documentRelsChoiceUndeclaredPrefix = (): Record<string, string> =>
+    wrapRelationship(
+        footer,
+        DOCUMENT_RELS,
+        "rIdX",
+        (rel) => `<mc:AlternateContent><mc:Choice Requires="nope">${rel}</mc:Choice><mc:Fallback/></mc:AlternateContent>`,
+    );
+
+/**
+ * Unobserved in Word: the same `mc:MustUnderstand` on the main document's
+ * own sidecar root. Session 34 probed `mc:MustUnderstand` only on
+ * `_rels/.rels` (s34c), so this shape keeps its word-valid warning.
+ */
+export const documentRelsRootMustUnderstand = (): Record<string, string> =>
+    withRootDeclarations(footer, DOCUMENT_RELS, MUST_UNDERSTAND_DECLARATIONS);
+
 /** The five relationship shapes observed in Word 16.115, without saved fixture files. */
 export const RELATIONSHIPS_MCE_CASES = [
     {
