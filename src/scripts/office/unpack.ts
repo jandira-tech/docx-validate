@@ -40,7 +40,7 @@ import JSZip from "jszip";
 
 import { commanderExitCode, runCli } from "../../lib/run-cli";
 import { parseXml, prettyXml } from "../../lib/xml-helpers";
-import { extractZipEntries } from "../../lib/zip-path";
+import { escapeControlCharacters, extractZipEntries } from "../../lib/zip-path";
 import { mergeRuns } from "./helpers/merge-runs";
 import { simplifyRedlines } from "./helpers/simplify-redlines";
 
@@ -92,20 +92,31 @@ export async function unpack(inputFile: string, outputDir: string, opts: UnpackO
     }
 
     try {
-        await fs.mkdir(outputPath, { recursive: true });
+        // The first folder this call creates, if any: a failed extraction
+        // removes it, so the caller finds the file system as it was (#675).
+        const createdOutput = await fs.mkdir(outputPath, { recursive: true });
+        const removeCreatedOutput = async (): Promise<void> => {
+            if (createdOutput !== undefined) await fs.rm(createdOutput, { recursive: true, force: true });
+        };
 
         const buf = await fs.readFile(inputPath);
         let zip: JSZip;
         try {
             zip = await JSZip.loadAsync(buf);
         } catch {
+            await removeCreatedOutput();
             return {
                 ok: false,
                 message: `Error: ${inputFile} is not a valid Office file`,
             };
         }
 
-        await extractAll(zip, outputPath);
+        try {
+            await extractAll(zip, outputPath);
+        } catch (err) {
+            await removeCreatedOutput();
+            throw err;
+        }
 
         const xmlFiles = await collectXmlFiles(outputPath);
         for (const xmlFile of xmlFiles) {
@@ -138,7 +149,8 @@ export async function unpack(inputFile: string, outputDir: string, opts: UnpackO
         return { ok: true, message };
     } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
-        return { ok: false, message: `Error unpacking: ${msg}` };
+        // File-system errors quote the path an entry name built.
+        return { ok: false, message: `Error unpacking: ${escapeControlCharacters(msg)}` };
     }
 }
 

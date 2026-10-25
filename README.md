@@ -1317,6 +1317,16 @@ await unpack("./contract.docx", "./unpacked");
 await pack("./unpacked", "./contract.modified.docx");
 ```
 
+`unpack` checks every entry before it writes one (#675). It refuses, writing
+nothing, an entry whose stored name leaves the output directory, even one JSZip
+would load inside it (`../evil.txt` loads as `evil.txt`; #676), and an entry
+whose destination runs through a symbolic link already in the output directory.
+The output directory itself may be a link. When a read or write fails part way,
+`unpack` removes the files and folders it created, including the output
+directory when it created it; a file it overwrote keeps the new bytes. Messages
+print control and bidirectional formatting characters in entry names as `\u{…}`
+escapes.
+
 ### Drive the CLIs programmatically
 
 If you want the CLI behaviour (commander parsing, exit codes, the same status

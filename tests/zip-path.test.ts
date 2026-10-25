@@ -21,8 +21,9 @@ import JSZip from "jszip";
 import { describe, expect, it, vi } from "vitest";
 
 import { withTempDir } from "../src/lib/run-cli";
-import { extractPackageParts, resolveSafeZipEntry } from "../src/lib/zip-path";
+import { escapeControlCharacters, extractPackageParts, extractZipEntries, resolveSafeZipEntry } from "../src/lib/zip-path";
 import { poisonEntry } from "./support/poison-entry";
+import { buildRawZip } from "./support/raw-zip";
 
 describe("resolveSafeZipEntry", () => {
     it("returns the resolved path for a nested package entry", () => {
@@ -62,6 +63,129 @@ describe("resolveSafeZipEntry", () => {
     it("allows a contained entry whose name begins with dots", () => {
         const out = path.resolve("/tmp/docx-out");
         expect(resolveSafeZipEntry(out, "..metadata/item.xml")).toBe(path.resolve(out, "..metadata/item.xml"));
+    });
+
+    it("escapes control characters in the refused name, so it cannot drive the terminal that prints it (#675)", () => {
+        const out = path.resolve("/tmp/docx-out");
+        expect(() => resolveSafeZipEntry(out, "../\u001b[2J\nevil\u202e.txt")).toThrow(
+            "Refusing to extract entry outside output dir: ../\\u{1b}[2J\\u{a}evil\\u{202e}.txt",
+        );
+    });
+});
+
+describe("escapeControlCharacters", () => {
+    it("leaves printable names unchanged, including non-ASCII letters", () => {
+        expect(escapeControlCharacters("word/média/图像 1.png")).toBe("word/média/图像 1.png");
+    });
+
+    it("escapes C0 and C1 controls, DEL and bidirectional formatting characters", () => {
+        expect(escapeControlCharacters("a\u0000b\tc\u007fd\u0085e\u200ff\u2066g")).toBe(
+            "a\\u{0}b\\u{9}c\\u{7f}d\\u{85}e\\u{200f}f\\u{2066}g",
+        );
+    });
+});
+
+describe("extractZipEntries (#675)", () => {
+    // Raw archives store only the named entries: JSZip's own writer adds a
+    // folder entry for every parent, and one for `../` loads as `/`.
+    const zipOf = (entries: readonly (readonly [string, string])[]): Promise<JSZip> =>
+        JSZip.loadAsync(buildRawZip(entries.map(([name, content]) => ({ name, content }))));
+    const entriesUnder = (dir: string): string[] =>
+        readdirSync(dir, { recursive: true, withFileTypes: true })
+            .map((entry) => path.relative(dir, path.join(entry.parentPath, entry.name)).split(path.sep).join("/"))
+            .sort();
+
+    it.each(["../evil.txt", "word/../../evil.txt"])(
+        "refuses the stored name %j, which JSZip loads as evil.txt inside the output directory (#676)",
+        async (name) => {
+            await withTempDir(async (dir) => {
+                const out = path.join(dir, "out");
+                await fsPromises.mkdir(out);
+                const extraction = extractZipEntries(await zipOf([[name, "x"]]), out);
+                await expect(extraction).rejects.toThrow(`Refusing to extract entry outside output dir: ${name}`);
+                expect(entriesUnder(out)).toEqual([]);
+            });
+        },
+    );
+
+    it("keeps extracting a stored name that resolves inside the output directory", async () => {
+        await withTempDir(async (dir) => {
+            const out = path.join(dir, "out");
+            await extractZipEntries(await zipOf([["a/../b.txt", "x"]]), out);
+            expect(readFileSync(path.join(out, "b.txt"), "utf8")).toBe("x");
+        });
+    });
+
+    it("writes nothing when a later entry is refused", async () => {
+        await withTempDir(async (dir) => {
+            const out = path.join(dir, "out");
+            const zip = await zipOf([
+                ["word/document.xml", "<d/>"],
+                ["docProps/core.xml", "<c/>"],
+                ["../evil.txt", "x"],
+            ]);
+            await expect(extractZipEntries(zip, out)).rejects.toThrow(/outside output dir/);
+            expect(existsSync(out)).toBe(false);
+        });
+    });
+
+    it("refuses to write through a symbolic link already below the output directory, writing nothing", async () => {
+        await withTempDir(async (dir) => {
+            const out = path.join(dir, "out");
+            const elsewhere = path.join(dir, "elsewhere");
+            await fsPromises.mkdir(out);
+            await fsPromises.mkdir(elsewhere);
+            await fsPromises.symlink(elsewhere, path.join(out, "word"), "dir");
+            const zip = await zipOf([
+                ["[Content_Types].xml", "<t/>"],
+                ["word/document.xml", "<d/>"],
+            ]);
+            await expect(extractZipEntries(zip, out)).rejects.toThrow("Refusing to extract word/document.xml: word is a symbolic link");
+            expect(entriesUnder(elsewhere)).toEqual([]);
+            expect(entriesUnder(out)).toEqual(["word"]);
+        });
+    });
+
+    it("refuses to write over a symbolic link that names the entry itself", async () => {
+        await withTempDir(async (dir) => {
+            const out = path.join(dir, "out");
+            const target = path.join(dir, "target.txt");
+            await fsPromises.mkdir(out);
+            await fsPromises.writeFile(target, "keep");
+            await fsPromises.symlink(target, path.join(out, "evil.xml"), "file");
+            await expect(extractZipEntries(await zipOf([["evil.xml", "x"]]), out)).rejects.toThrow(
+                "Refusing to extract evil.xml: evil.xml is a symbolic link",
+            );
+            expect(readFileSync(target, "utf8")).toBe("keep");
+        });
+    });
+
+    it("extracts into an output directory that is itself a symbolic link: the caller chose it", async () => {
+        await withTempDir(async (dir) => {
+            const real = path.join(dir, "real");
+            const out = path.join(dir, "out");
+            await fsPromises.mkdir(real);
+            await fsPromises.symlink(real, out, "dir");
+            await extractZipEntries(await zipOf([["word/document.xml", "<d/>"]]), out);
+            expect(readFileSync(path.join(real, "word", "document.xml"), "utf8")).toBe("<d/>");
+        });
+    });
+
+    it("removes what it created, and only that, when a later entry cannot be read", async () => {
+        await withTempDir(async (dir) => {
+            const out = path.join(dir, "out");
+            await fsPromises.mkdir(path.join(out, "word"), { recursive: true });
+            await fsPromises.writeFile(path.join(out, "notes.txt"), "mine");
+            await fsPromises.writeFile(path.join(out, "word", "keep.xml"), "mine");
+            const zip = new JSZip();
+            zip.file("word/document.xml", "<d/>");
+            zip.file("word/media/image1.png", "png");
+            zip.file("docProps/core.xml", "<c/>");
+            zip.file("z/broken.xml", "<b/>".repeat(64));
+            const archive = poisonEntry(await zip.generateAsync({ type: "uint8array", compression: "DEFLATE" }), "z/broken.xml");
+            await expect(extractZipEntries(await JSZip.loadAsync(archive), out)).rejects.toThrow();
+            expect(entriesUnder(out)).toEqual(["notes.txt", "word", "word/keep.xml"]);
+        });
     });
 });
 
