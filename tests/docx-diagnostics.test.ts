@@ -281,6 +281,7 @@ it.each(["[CONTENT_TYPES].XML", "[content_types].xml"])("inventories declaration
  * repair and `repair-plan-unavailable` (carrying the manual action as
  * guidance) otherwise.
  */
+
 describe("repair plan vs repair() coverage (#622)", () => {
     const W14_NS = `xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"`;
     const W16CID_NS = `xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid"`;
@@ -719,5 +720,51 @@ describe("repair plan vs repair() coverage (#622)", () => {
         expect(plan.code).toBe("repair-plan-unavailable");
         expect(plan.message).toContain("Auto-repair cleared 0; 2 remain");
         expect(buildRepairPlanIssues([], [issue])).toEqual([]);
+    });
+});
+
+// #650 — guidance strings must name the actual fix for the defect the code reports.
+describe("repair plan manual guidance wording (#650)", () => {
+    it.each([
+        ["comment-thread-commentid-missing-paraid", "add the schema-required w16cid:paraId attribute to the w16cid:commentId element"],
+        [
+            "comment-thread-commentid-missing-durableid",
+            "add the schema-required w16cid:durableId attribute to the w16cid:commentId element",
+        ],
+        ["comment-thread-durableid-missing", "add the schema-required w16cex:durableId attribute to the w16cex:commentExtensible element"],
+    ])("missing required attribute guidance for %s says to add the attribute", (code, guidance) => {
+        const issue: ValidationIssue = { severity: "error", path: "word/commentsIds.xml", code, message: "synthetic" };
+        const [plan] = buildRepairPlanIssues([issue], [issue]);
+        expect(plan.code).toBe("repair-plan-unavailable");
+        expect(plan.message).toContain(`Fix manually: ${guidance}.`);
+        // The attribute is absent, so there is no id to "align".
+        expect(plan.message).not.toContain("align commentsIds/commentsExtensible IDs");
+    });
+
+    it.each([["comment-thread-commentid-paraid-orphan"], ["comment-thread-durableid-orphan"]])(
+        "orphan guidance for %s still names the alignment fix",
+        (code) => {
+            const issue: ValidationIssue = { severity: "error", code, message: "synthetic" };
+            const [plan] = buildRepairPlanIssues([issue], [issue]);
+            expect(plan.message).toContain(
+                "align commentsIds/commentsExtensible IDs with comments.xml when the target comment thread is unambiguous",
+            );
+        },
+    );
+
+    it("id-durable-decimal names the decimal radix, not a range defect", () => {
+        const issue: ValidationIssue = { severity: "error", path: "word/numbering.xml", code: "id-durable-decimal", message: "synthetic" };
+        const [plan] = buildRepairPlanIssues([issue], [issue]);
+        expect(plan.code).toBe("repair-plan-unavailable");
+        expect(plan.message).toContain("Fix manually: write the numbering.xml w16cid:durableId as a decimal number.");
+        expect(plan.message).not.toContain("in-range");
+    });
+
+    it("word-drawing-extent-negative says non-negative, as ST_PositiveCoordinate allows 0", () => {
+        const issue: ValidationIssue = { severity: "error", code: "word-drawing-extent-negative", message: "synthetic" };
+        const [plan] = buildRepairPlanIssues([issue], [issue]);
+        expect(plan.code).toBe("repair-plan-unavailable");
+        expect(plan.message).toContain("Fix manually: replace each negative wp:extent cx or cy with a non-negative integer.");
+        expect(plan.message).not.toContain("positive integer");
     });
 });

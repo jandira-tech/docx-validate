@@ -670,8 +670,9 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
         case "rels-empty-part":
             return "delete empty relationship sidecar parts that contain no relationships";
         case "id-durable-overflow":
-        case "id-durable-decimal":
             return "rewrite invalid durableId values to in-range values";
+        case "id-durable-decimal":
+            return "write the numbering.xml w16cid:durableId as a decimal number";
         case "id-paraid-overflow":
             return "rewrite over-cap paraId values and propagate the remap to threaded-comment references";
         case "id-textid-overflow":
@@ -687,11 +688,14 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
         case "style-default-missing":
             return "inject canonical implied-default Word style definitions";
         case "comment-thread-commentid-paraid-orphan":
-        case "comment-thread-commentid-missing-paraid":
-        case "comment-thread-commentid-missing-durableid":
         case "comment-thread-durableid-orphan":
-        case "comment-thread-durableid-missing":
             return "align commentsIds/commentsExtensible IDs with comments.xml when the target comment thread is unambiguous";
+        case "comment-thread-commentid-missing-paraid":
+            return "add the schema-required w16cid:paraId attribute to the w16cid:commentId element";
+        case "comment-thread-commentid-missing-durableid":
+            return "add the schema-required w16cid:durableId attribute to the w16cid:commentId element";
+        case "comment-thread-durableid-missing":
+            return "add the schema-required w16cex:durableId attribute to the w16cex:commentExtensible element";
         case "word-drawing-scalar-whitespace":
             return "trim leading and trailing whitespace around scalar DrawingML values";
         case "word-drawing-arc-radius":
@@ -699,7 +703,7 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
         case "word-empty-drawing":
             return "remove the empty w:drawing or give it a wp:anchor or wp:inline child";
         case "word-drawing-extent-negative":
-            return "replace each negative wp:extent cx or cy with a positive integer";
+            return "replace each negative wp:extent cx or cy with a non-negative integer";
         case "word-anchor-missing-attribute":
             return "add the missing locked, layoutInCell, or allowOverlap attribute on wp:anchor";
         case "word-position-offset-and-align":
