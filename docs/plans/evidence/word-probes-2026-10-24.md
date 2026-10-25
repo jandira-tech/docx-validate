@@ -1,6 +1,6 @@
 # Real-Word probes, 2026-10-24
 
-Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), what session 26 settled for the items adversarial review AY suspected (#606, #607, #610), what session 27 settled for the relationship types and placements adversarial review AZ left open (#613), what session 28 settled for a hyperlink's relationship type (#614), what session 29 settled for duplicate relationship Ids and `https:` relationship Types (#615, adversarial review BA), what session 30 settled for duplicate relationship Ids outside the package and main-document `.rels` (#617, adversarial review BB), and what session 31 settled for duplicate relationship Ids beside a story root stored without a `.xml` suffix (#618, adversarial review BC).
+Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), what session 26 settled for the items adversarial review AY suspected (#606, #607, #610), what session 27 settled for the relationship types and placements adversarial review AZ left open (#613), what session 28 settled for a hyperlink's relationship type (#614), what session 29 settled for duplicate relationship Ids and `https:` relationship Types (#615, adversarial review BA), what session 30 settled for duplicate relationship Ids outside the package and main-document `.rels` (#617, adversarial review BB), what session 31 settled for duplicate relationship Ids beside a story root stored without a `.xml` suffix (#618, adversarial review BC), and what session 32 settled for a story reference whose `r:id` names no relationship and for a main document stored without a `.xml` suffix (#619, #620, adversarial review BD).
 
 - Word: Microsoft Word for Mac 16.115 (build 16.115.26100424), platform `darwin`.
 - Transport, sessions 1 and 2: `verifyInWord` (`src/lib/word-verifier.ts`). It opens each specimen by path, reads Word's window and dialog state, and never saves.
@@ -204,6 +204,11 @@ Session 31 adds:
 
 - **#618: Word refuses a duplicate relationship Id beside a story root stored as `.bin`.** With the main document stored as `word/document.bin`, two unreferenced External hyperlink relationships sharing an Id in `word/_rels/document.bin.rels` were refused; so was the same pair in `word/glossary/_rels/document.bin.rels` with session 26's glossary stored as `word/glossary/document.bin`. Both renamed shapes opened clean without the pair. No profile at ceb5c884 reports `rels-id-duplicate` for either, because the duplicate walk visits only the `.rels` of owners whose names end in `.xml`; word-valid passes both.
 
+Session 32 adds:
+
+- **#619: Word offers recovery for a story reference whose `r:id` names no relationship.** A body `w:footerReference w:type="default" r:id="rId9"` with `word/_rels/document.xml.rels` present but holding no `rId9` was refused. Word-valid at 6e3cda3e passes it: `word-header-footer-relationship` leaves an `r:id` that names no relationship to `rels-id-missing`, which is strict-only. The same reference with the main document's `.rels` removed was refused too, as word-valid already reports (`rels-missing-sidecar`).
+- **#620: a main document stored as `word/document.bin` is not checked as XML.** Truncated (its closing `</w:body></w:document>` removed), it made Word fail to open the file, as the `.xml` twin does, but word-valid and strict at 6e3cda3e both pass it. Its two footer-reference shapes were refused like their `.xml` twins, and word-valid passes both; strict passes the one whose `.rels` holds no `rId9`.
+
 ## Not observed
 
 Session 1. Another session began driving Word by 02:28Z: its first log line is at 02:28:14Z, and its map file was written at 02:27:55Z. Its preflight closes every open document, so rows observed from 02:26Z on were not treated as evidence. Session 2 observed all of them again (below).
@@ -263,6 +268,8 @@ Session 29 ran in the foreground (`s29a` 22:57Z, `s29b` 23:01Z), one driver run 
 Session 30 ran in the foreground (`s30a` 23:53Z), one driver run. Nothing was set aside, and every row is attributed by a manifest entry naming its staged file. Before the chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`; another session's Word batch had ended at 23:53Z. No Word process was running, so the driver launched its own (`launched_by_us=True`, `open_documents=0`, `word_pid=40732`), and recycled it once after the two refusals (`recovery 1`). The chunk was built at 77d01c46 with the session 30 builder below.
 
 Session 31 ran in the foreground (`s31a` 00:26Z on 2026-10-25), one driver run. Nothing was set aside, and every row is attributed by a manifest entry naming its staged file. Before the chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`. No Word process was running, so the driver launched its own (`launched_by_us=True`, `open_documents=0`, `word_pid=39530`). The chunk was built at ceb5c884 with the session 31 builder below.
+
+Session 32 ran in the foreground (`s32a` 01:10Z on 2026-10-25), one driver run. Nothing was set aside, and every row is attributed by a manifest entry naming its staged file. Before the chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`; another session was running its own converter (`bench docx-to-pdf --converter jubarte-rc`), which does not drive Word. No Word process was running, so the driver launched its own (`launched_by_us=True`, `open_documents=0`, `word_pid=74817`). The chunk was built at 6e3cda3e with the session 32 builder below.
 
 Sessions 4–6 observed `main-relationship-missing` (#380), the #414 `PartName`s with `application/xml`, an escape in a folder segment (#408), a part-level relationships part (#433) and an unreferenced malformed `customXml/item9.xml` (#437). Still to be observed:
 
@@ -1849,6 +1856,36 @@ Adversarial review BC's suspected item on #617: duplicate relationship Ids besid
 {"run": "s31a", "name": "bin-glossary", "sha256": "e7da83dbb8652152e4db328fa8e07716e1847cba0029aabef48d63a2f4016e45", "observedAt": "2026-10-25T00:26:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 {"run": "s31a", "name": "dup-id-bin-glossary-sidecar", "sha256": "9cffc98ee7d0ed36cbf1cde2138596ba51bdd24fa5967556caafb903b02ab980", "observedAt": "2026-10-25T00:26:34.209Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00002__wfv__dup-id-bin-glossary-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__dup-id-bin-glossary-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
 {"run": "s31a", "name": "s31a-control-minimal-end", "sha256": "42040cd5e6236bbac1acff975cec03791c5e6ca85c41d7e2cd71d47f2b8bf0aa", "observedAt": "2026-10-25T00:26:46+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 32: 01:10Z on 2026-10-25, validator columns at 6e3cda3e
+
+Adversarial review BD's suspected items on #618: a main document stored as `word/document.bin` that is malformed or whose footer reference names no relationship (S1, S2, #620), with `.xml` twins, one of which found #619.
+
+| Run    | Observed  | Specimen                       | Issue               | Shape                                                                                                                                                                           | SHA-256 (first 16) | Word           | word-valid at 6e3cda3e          | strict at 6e3cda3e                                   |
+| ------ | --------- | ------------------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | ------------------------------- | ---------------------------------------------------- |
+| `s32a` | 01:11:36Z | `s32a-control-minimal`         | control             | `MINIMAL_PARTS`                                                                                                                                                                 | `a04b2b9a2dd67f36` | clean-open     | valid                           | valid                                                |
+| `s32a` | 01:11:14Z | `main-truncated`               | calibration         | `MINIMAL_PARTS` with the main document's closing `</w:body></w:document>` removed                                                                                               | `2fc91055bcc3cd1d` | open-error     | invalid: `xml-syntax`           | invalid: `xml-syntax`                                |
+| `s32a` | 01:10:54Z | `bin-main-truncated`           | #620 (review BD S1) | the same, stored as `word/document.bin` (package relationship, Override and `.rels` renamed with it)                                                                            | `5267572bb13cdb09` | open-error     | valid                           | valid                                                |
+| `s32a` | 01:11:10Z | `footerref-rid-no-sidecar`     | calibration         | `MINIMAL_PARTS` with `<w:footerReference w:type="default" r:id="rId9"/>` first in the body `w:sectPr` (`xmlns:r` declared) and `word/_rels/document.xml.rels` removed           | `903c4db913c067af` | repair-warning | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `rels-unreferenced` |
+| `s32a` | 01:10:50Z | `bin-footerref-rid-no-sidecar` | #620 (review BD S2) | the same, stored as `word/document.bin` (package relationship, Override and `.rels` renamed with it)                                                                            | `8881f8614c3db73d` | repair-warning | valid                           | invalid: `rels-unreferenced`                         |
+| `s32a` | 01:10:58Z | `footerref-rid-missing`        | #619                | `MINIMAL_PARTS` with `<w:footerReference w:type="default" r:id="rId9"/>` first in the body `w:sectPr` (`xmlns:r` declared); `word/_rels/document.xml.rels` kept, with no `rId9` | `4969aeee012d3c81` | repair-warning | valid                           | invalid: `rels-id-missing`                           |
+| `s32a` | 01:10:39Z | `bin-footerref-rid-missing`    | #620 (review BD S2) | the same, stored as `word/document.bin` (package relationship, Override and `.rels` renamed with it)                                                                            | `8d94ffcffc55cadc` | repair-warning | valid                           | valid                                                |
+| `s32a` | 01:11:36Z | `s32a-control-minimal-end`     | control             | `MINIMAL_PARTS`                                                                                                                                                                 | `a04b2b9a2dd67f36` | clean-open     | valid                           | valid                                                |
+
+<details><summary>Raw records, session 32</summary>
+
+```jsonl
+{"run": "s32a", "name": "s32a-control-minimal", "sha256": "a04b2b9a2dd67f365eed13da3044f8c4e0761de0183851dc866f505131e6612f", "observedAt": "2026-10-25T01:11:36+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s32a", "name": "main-truncated", "sha256": "2fc91055bcc3cd1d4e8e82cd09cc5a56f6026660ab6718fdcccb73c1e9c88da3", "observedAt": "2026-10-25T01:11:14.632Z", "outcome": "open-error", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00005__wfv__main-truncated.docx; refusing to guess", "dialogs": ["'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permissions for the document or drive.\\n* Make sure there is sufficient free memory and disk space.\\n* Open the file with the Text Recovery conver", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s32a", "name": "bin-main-truncated", "sha256": "5267572bb13cdb09dc4c53c149c410e2ad9882d934a21cf77d7802368c9fcca6", "observedAt": "2026-10-25T01:10:54.305Z", "outcome": "open-error", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00002__wfv__bin-main-truncated.docx; refusing to guess", "dialogs": ["'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permissions for the document or drive.\\n* Make sure there is sufficient free memory and disk space.\\n* Open the file with the Text Recovery conver", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s32a", "name": "footerref-rid-no-sidecar", "sha256": "903c4db913c067af9c8a6e7403b4ae2835c662ade89679d81cb929a555a4f885", "observedAt": "2026-10-25T01:11:10.339Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00004__wfv__footerref-rid-no-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00004__wfv__footerref-rid-no-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s32a", "name": "bin-footerref-rid-no-sidecar", "sha256": "8881f8614c3db73dce86b8d28a6ecd7560941ed75968e6e78d4eaa8161a15e98", "observedAt": "2026-10-25T01:10:50.022Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00001__wfv__bin-footerref-rid-no-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00001__wfv__bin-footerref-rid-no-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s32a", "name": "footerref-rid-missing", "sha256": "4969aeee012d3c81918e009c35850789f140b302c762caadb09b140e50394b75", "observedAt": "2026-10-25T01:10:58.681Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00003__wfv__footerref-rid-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00003__wfv__footerref-rid-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s32a", "name": "bin-footerref-rid-missing", "sha256": "8d94ffcffc55cadc13f5bf07e6b0086aef57b577894d5c676d20a1c88f9ca75c", "observedAt": "2026-10-25T01:10:39.867Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00000__wfv__bin-footerref-rid-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__bin-footerref-rid-missing.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s32a", "name": "s32a-control-minimal-end", "sha256": "a04b2b9a2dd67f365eed13da3044f8c4e0761de0183851dc866f505131e6612f", "observedAt": "2026-10-25T01:11:36+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 ```
 
 </details>
@@ -6386,6 +6423,99 @@ const chunks: Record<string, [string, string, () => Promise<Uint8Array> | Uint8A
         ["bin-glossary", "control (glossary stored as word/glossary/document.bin)", () => buildDocx(binGlossary())],
         ["dup-id-bin-glossary-sidecar", "review BC S1", () => buildDocx(withDup(binGlossary(), "word/glossary/_rels/document.bin.rels"))],
         ["s31a-control-minimal-end", "control", control],
+    ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        const r = await validate(path.join(dir, file), { profile });
+        return {
+            valid: r.valid,
+            errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+        };
+    };
+    const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+Session 32's builder (`s32a`) is another standalone script, run the same way, with `CHUNK` naming the chunk:
+
+```ts
+// Session 32 (2026-10-25): adversarial review BD's suspected items on #618 (layer 129, #611). Every XML check is gated on
+// a part name ending in .xml, so a main document stored as word/document.bin is never parsed: a malformed one, or one
+// whose r:id names no relationship, passes every profile. Session 31 showed Word reads such a main document's sidecar.
+// s32a: MINIMAL_PARTS with the main document truncated (its closing `</w:body></w:document>` removed), stored as
+//       word/document.xml (calibration) and as word/document.bin (package relationship, Override and sidecar renamed);
+//       the main document's sectPr given a `w:footerReference w:type="default" r:id="rId9"` (xmlns:r declared), with its
+//       .rels removed, or kept without an rId9, each stored as .xml (calibration) and as .bin.
+// Shapes: tests/support/minimal-docx.ts and review BD's report.
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s32a pnpm exec tsx s32builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+type Parts = Record<string, string>;
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (!text.includes(from)) throw new Error(`missing ${from}`);
+    return text.replace(from, to);
+};
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const RELS = "word/_rels/document.xml.rels";
+/** Rename the main document to word/document.bin, with its sidecar (when present), Override and package relationship. */
+const toBin = (parts: Parts): Parts => {
+    const out: Parts = { ...parts };
+    out["word/document.bin"] = out[MAIN]!;
+    delete out[MAIN];
+    if (out[RELS] !== undefined) {
+        out["word/_rels/document.bin.rels"] = out[RELS]!;
+        delete out[RELS];
+    }
+    out[CT] = replaceOnce(out[CT]!, 'PartName="/word/document.xml"', 'PartName="/word/document.bin"');
+    out["_rels/.rels"] = replaceOnce(out["_rels/.rels"]!, 'Target="word/document.xml"', 'Target="word/document.bin"');
+    return out;
+};
+const truncated = (): Parts => ({ ...(MINIMAL_PARTS as Parts), [MAIN]: replaceOnce(MINIMAL_PARTS[MAIN]!, "</w:body></w:document>", "") });
+/** The main document's sectPr references footer rId9; `sidecar: false` removes its .rels, otherwise the .rels has no rId9. */
+const footerRef = (sidecar: boolean): Parts => {
+    const parts: Parts = { ...(MINIMAL_PARTS as Parts) };
+    parts[MAIN] = replaceOnce(
+        replaceOnce(parts[MAIN]!, "<w:document ", `<w:document xmlns:r="${R}" `),
+        "<w:sectPr>",
+        '<w:sectPr><w:footerReference w:type="default" r:id="rId9"/>',
+    );
+    if (!sidecar) delete parts[RELS];
+    return parts;
+};
+const control = () => buildDocx(MINIMAL_PARTS);
+
+const chunks: Record<string, [string, string, () => Promise<Uint8Array> | Uint8Array][]> = {
+    s32a: [
+        ["s32a-control-minimal", "control", control],
+        ["main-truncated", "calibration (.xml twin of review BD S1)", () => buildDocx(truncated())],
+        ["bin-main-truncated", "review BD S1", () => buildDocx(toBin(truncated()))],
+        ["footerref-rid-no-sidecar", "calibration (.xml twin of review BD S2)", () => buildDocx(footerRef(false))],
+        ["bin-footerref-rid-no-sidecar", "review BD S2", () => buildDocx(toBin(footerRef(false)))],
+        ["footerref-rid-missing", "calibration (.xml twin of review BD S2)", () => buildDocx(footerRef(true))],
+        ["bin-footerref-rid-missing", "review BD S2", () => buildDocx(toBin(footerRef(true)))],
+        ["s32a-control-minimal-end", "control", control],
     ],
 };
 
