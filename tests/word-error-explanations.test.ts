@@ -10,10 +10,11 @@ import { describe, expect, it } from "vitest";
 import { WORD_ERROR_EXPLANATIONS, explainWordError } from "../src/scripts/office/validators/word-error-explanations";
 
 describe("word error explanations", () => {
-    it("explains the package/main duplicate-Id scope and repair (#615)", () => {
+    it("explains the package/story-root duplicate-Id scope and repair (#615, #617)", () => {
         const explanation = explainWordError("rels-id-duplicate");
         expect(explanation).toEqual(expect.stringContaining("_rels/.rels"));
         expect(explanation).toContain("main document");
+        expect(explanation).toContain("glossary");
         expect(explanation).toContain("unreferenced");
         expect(explanation).toContain("unique");
     });

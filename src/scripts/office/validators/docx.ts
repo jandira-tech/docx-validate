@@ -56,7 +56,7 @@ import { withoutConsequentialParseFailures } from "../../../lib/parse-failures";
 import { mergeResults } from "../../../lib/types";
 import { promoteFullCheckIssue } from "../../../lib/mode-policy";
 import { propertiesParts } from "../../../lib/properties-parts";
-import { wordMainDocumentParts, wordReadParts } from "../../../lib/word-read-parts";
+import { wordReadParts, wordStoryRootParts } from "../../../lib/word-read-parts";
 import { isWordBlockingIssue } from "./word-blocking";
 import {
     decodeXmlBytes,
@@ -627,14 +627,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     private async applyWordValidProfile(result: ValidationResult): Promise<ValidationResult> {
         const context = this.context();
         // Resolve each part set once per run and share the blocking predicate
-        // with partial validation (#381, #615).
-        const [properties, read, main] = await Promise.all([
+        // with partial validation (#381, #615, #617).
+        const [properties, read, storyRoots] = await Promise.all([
             propertiesParts(context),
             wordReadParts(context),
-            wordMainDocumentParts(context),
+            wordStoryRootParts(context),
         ]);
         const issues = result.issues.map((issue): ValidationIssue => {
-            if (issue.severity !== "error" || isWordBlockingIssue(issue, properties, read, main)) return issue;
+            if (issue.severity !== "error" || isWordBlockingIssue(issue, properties, read, storyRoots)) return issue;
             return { ...issue, severity: "warning" };
         });
         return finalize(issues);

@@ -194,16 +194,21 @@ Empty-part auto-repair retains its exact lowercase `.rels` scope. The trace desc
 
 Full DOCX/DOCM validation reports duplicate relationship `Id` values as
 `rels-id-duplicate`. Under `word-valid`, duplicates block opening only in the
-package relationships part (`_rels/.rels`) and the main document's own
-relationships part. The main document is resolved through the package's
-Transitional or ISO Strict `officeDocument` relationship, wherever it is stored.
-Word 16.115 offers recovery even for identical or unreferenced duplicates there;
-a header part's own duplicate unreferenced hyperlinks opened clean
-([#615](https://github.com/jandira-tech/docx-validate/issues/615), session 29 in
-[the Word probe evidence](docs/plans/evidence/word-probes-2026-10-24.md)). Other
-sidecars retain their strict error and Word-valid warning. Lenient keeps its
-existing sidecar errors and XSD-only package diagnosis. This legacy ID walk is
-outside the named-check registry, so named and quick runs omit it.
+package relationships part (`_rels/.rels`) and the relationships part of a
+story root: the main document, resolved through the package's Transitional or
+ISO Strict `officeDocument` relationship wherever it is stored, and every
+glossary document a main-document `glossaryDocument` relationship reaches.
+Word 16.115 offers recovery even for identical or unreferenced duplicates
+there; a header part's own duplicate unreferenced hyperlinks opened clean, and
+so did the same pair in an orphan `word/document.xml` sidecar no main document
+owns, while a reached glossary's own sidecar was refused
+([#615](https://github.com/jandira-tech/docx-validate/issues/615), session 29,
+and [#617](https://github.com/jandira-tech/docx-validate/issues/617), session
+30, in [the Word probe
+evidence](docs/plans/evidence/word-probes-2026-10-24.md)). Other sidecars
+retain their strict error and Word-valid warning. Lenient keeps its existing
+sidecar errors and XSD-only package diagnosis. This legacy ID walk is outside
+the named-check registry, so named and quick runs omit it.
 
 Named checks and quick checks use the same options in the path and byte APIs:
 

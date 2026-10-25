@@ -34,7 +34,7 @@ export const isWordBlockingIssue = (
     issue: ValidationIssue,
     propertiesParts: ReadonlySet<string> = new Set(),
     wordReadParts: ReadonlySet<string> = new Set(),
-    mainDocumentParts: ReadonlySet<string> = new Set(),
+    storyRootParts: ReadonlySet<string> = new Set(),
 ): boolean => {
     switch (issue.code) {
         // NB: run-content-misplaced is NOT Word-blocking — a real Word probe
@@ -186,16 +186,20 @@ export const isWordBlockingIssue = (
         case "word-part-content-type-mismatch":
             return true;
         case "rels-id-duplicate": {
-            // #615: Word 16.115 offers recovery for duplicate Ids in the
-            // package and main-document relationships, even unreferenced or
-            // identical (session 29, s29a/s29b in
-            // docs/plans/evidence/word-probes-2026-10-24.md). The header's own
-            // sidecar opened CLEAN: other sidecars keep their strict error
-            // and word-valid warning, even if Word reads their owner.
+            // #615, #617: Word 16.115 offers recovery for duplicate Ids in
+            // the package relationships part and in the sidecar of a story
+            // root — the main document and every glossary a main-document
+            // `glossaryDocument` relationship reaches — even unreferenced or
+            // identical (sessions 29 and 30, s29a/s29b and s30a in
+            // docs/plans/evidence/word-probes-2026-10-24.md). A header's own
+            // sidecar opened CLEAN (session 29) and so did an orphan
+            // `word/document.xml`'s (session 30): every other sidecar keeps
+            // its strict error and word-valid warning, even if Word reads
+            // their owner.
             const part = issue.path?.replace(/\\/g, "/");
             if (isPackageRelationshipsPart(part)) return true;
             const source = part === undefined ? undefined : canonicalPartName(part).match(/^(.*\/)?_rels\/([^/]+)\.rels$/);
-            return source !== undefined && source !== null && mainDocumentParts.has(`${source[1] ?? ""}${source[2]}`);
+            return source !== undefined && source !== null && storyRootParts.has(`${source[1] ?? ""}${source[2]}`);
         }
         // NB: comment-orphan-start/end and comment-marker-missing are NOT
         // promoted here. Empirically Word TOLERATES an orphan comment-range

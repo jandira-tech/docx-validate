@@ -89,7 +89,7 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
         "Comment-threading metadata expected a durableId that is not present. Add it or drop the threading entry.",
     "comment-thread-durableid-duplicate": "Duplicate durableId in comment-threading metadata. Make each unique.",
     "rels-id-duplicate":
-        "Duplicate relationship Ids in _rels/.rels or the main document part's relationships make Word offer recovery, even when identical or unreferenced. Keep each Id unique within that relationships part and update any references when renaming it. Duplicates in other relationships parts remain non-blocking under word-valid.",
+        "Duplicate relationship Ids in _rels/.rels or a story root's relationships — the main document's or a reached glossary document's — make Word offer recovery, even when identical or unreferenced. Keep each Id unique within that relationships part and update any references when renaming it. Duplicates in other relationships parts remain non-blocking under word-valid.",
     "rels-missing-sidecar":
         "A part uses relationship IDs but its _rels sidecar is missing, so Word cannot resolve the targets. Add the matching .rels file.",
     "rels-broken":

@@ -11,7 +11,13 @@ import { withTempDir } from "../src/lib/run-cli";
 import type { ValidationIssue } from "../src/lib/types";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
-import { STORY_FOOTER_XML, STORY_HEADER_XML, storyContentType, storyReferenceParts } from "./support/story-content-type-specimens";
+import {
+    STORY_FOOTER_XML,
+    STORY_HEADER_XML,
+    glossaryStoryReferenceParts,
+    storyContentType,
+    storyReferenceParts,
+} from "./support/story-content-type-specimens";
 
 const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 const MAIN = "word/document.xml";
@@ -66,6 +72,21 @@ const relocated = (strictType: boolean, orphanDuplicate = false): Record<string,
         parts[RELS] = MINIMAL_PARTS[RELS]!;
     }
     parts[sidecar] = parts[sidecar]!.replace("</Relationships>", `${DUP_Z}</Relationships>`);
+    return parts;
+};
+// Session 30's reached-glossary shape (#617): session 26's clean glossary
+// footer with the rIdZ pair in the glossary's own sidecar. `reached: false`
+// drops the main document's glossaryDocument relationship, so the glossary
+// stays typed by its Override but no story root reads it. Evidence:
+// docs/plans/evidence/word-probes-2026-10-24.md, s30a.
+const glossaryDuplicate = (reached = true): Record<string, string> => {
+    const parts = glossaryStoryReferenceParts("footerReference", "footer", "footer9.xml", STORY_FOOTER_XML, storyContentType("footer"));
+    parts["word/glossary/_rels/document.xml.rels"] = parts["word/glossary/_rels/document.xml.rels"]!.replace(
+        "</Relationships>",
+        `${DUP_Z}</Relationships>`,
+    );
+    if (reached) return parts;
+    parts[RELS] = parts[RELS]!.replace(`<Relationship Id="rIdG" Type="${R}/glossaryDocument" Target="glossary/document.xml"/>`, "");
     return parts;
 };
 
@@ -146,11 +167,25 @@ const SPECIMENS: readonly Specimen[] = [
     },
     { name: "dup-id-relocated-main-strict", parts: () => relocated(true), duplicatePath: "word/_rels/main.xml.rels", blocking: true },
     { name: "dup-id-non-main-document-sidecar", parts: () => relocated(false, true), duplicatePath: RELS, blocking: false },
+    {
+        name: "dup-id-glossary-sidecar",
+        parts: () => glossaryDuplicate(),
+        duplicatePath: "word/glossary/_rels/document.xml.rels",
+        blocking: true,
+        lenientErrors: ["rels-id-duplicate", ...SCHEMA_ERRORS],
+    },
+    {
+        name: "dup-id-unreached-glossary-sidecar",
+        parts: () => glossaryDuplicate(false),
+        duplicatePath: "word/glossary/_rels/document.xml.rels",
+        blocking: false,
+        lenientErrors: ["rels-unreferenced", "rels-id-duplicate", ...SCHEMA_ERRORS],
+    },
 ];
 const errorKeys = (issues: readonly ValidationIssue[]): string[] =>
     issues.filter((issue) => issue.severity === "error").map((issue) => `${issue.code}@${issue.path}`);
 
-describe.each(["packed", "directory"] as const)("duplicate relationship Id scope, %s (#615)", { timeout: 120_000 }, (input) => {
+describe.each(["packed", "directory"] as const)("duplicate relationship Id scope, %s (#615, #617)", { timeout: 120_000 }, (input) => {
     it.each(SPECIMENS)("$name: full profile findings and partial error-subset parity", async (specimen) => {
         await withTempDir(async (dir) => {
             const target = path.join(dir, `${specimen.name}.docx`);
