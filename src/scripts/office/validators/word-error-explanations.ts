@@ -7,10 +7,11 @@
 
 /**
  * Plain-language explanations for the issue codes that the `word-valid` profile
- * treats as Word-blocking (see `isWordBlockingIssue` in `validators/docx.ts`).
+ * treats as Word-blocking, plus advisory compatibility findings (see
+ * `isWordBlockingIssue` in `validators/word-blocking.ts`).
  *
- * Each entry answers two questions for a human reader: *why Microsoft Word
- * refuses to open the document* and *how to fix it*. These are surfaced by the
+ * Each entry explains why Microsoft Word refuses or accepts the markup and
+ * how to fix the defect. These are surfaced by the
  * CLI under each error and are grounded in real-Word probing
  * (`broken-word/FINDINGS.md`, `validation-results/word-probe-all.jsonl`), not the
  * ISO schema — Word is stricter than the OpenXML SDK on some of these and more
@@ -27,6 +28,8 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
         "The package has no [Content_Types].xml stream, so Word cannot type any part and offers to recover the file. Restore the content-types stream with a Default or Override covering every part.",
     "word-main-document-part":
         "The package needs exactly one internal officeDocument relationship in _rels/.rels targeting an existing main document part. Missing or multiple main relationships make Word offer recovery. Add the missing relationship and its part, or restore a missing target. Remove extra internal officeDocument relationships, even if their targets are identical.",
+    "opc-relationships-markup-compatibility":
+        "Word applies markup compatibility to relationships parts and accepts this removed or replaced child because only Relationship children remain. For strict OPC conformance, store those Relationship children directly under Relationships and remove the compatibility markup.",
     "word-content-type-invalid":
         "A part's content type in [Content_Types].xml is missing or wrong, so Word cannot load that part. Add the correct <Override>/<Default> content-type entry.",
     "ct-uncovered-part":

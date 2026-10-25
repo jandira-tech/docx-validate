@@ -8,6 +8,7 @@ import { describe, expect, it } from "vitest";
 import { ValidationContext } from "../src/lib/validation-context";
 import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "../src/scripts/office/checks";
 import { MINIMAL_PARTS } from "./support/minimal-docx";
+import { fallback, PACKAGE_RELS, wrapRelationship } from "./support/relationships-markup-compatibility-specimens";
 
 const CODE = "word-main-document-part";
 const PR = "http://schemas.openxmlformats.org/package/2006/relationships";
@@ -27,6 +28,20 @@ const mainPartIssues = async (parts: Readonly<Record<string, string>>) => {
 };
 
 describe(CODE, () => {
+    it("finds the main relationship in the selected package Fallback (#632)", async () => {
+        expect(await mainPartIssues(wrapRelationship(MINIMAL_PARTS, PACKAGE_RELS, "rId1", fallback))).toEqual([]);
+    });
+
+    it("does not find a main relationship when AlternateContent selects nothing (#632)", async () => {
+        const parts = wrapRelationship(
+            MINIMAL_PARTS,
+            PACKAGE_RELS,
+            "rId1",
+            (rel) => `<mc:AlternateContent><mc:Choice Requires="foo">${rel}</mc:Choice></mc:AlternateContent>`,
+        );
+        expect(await mainPartIssues(parts)).toEqual([expect.objectContaining({ code: CODE, path: PACKAGE_RELS, severity: "error" })]);
+    });
+
     it("does not count a nested main relationship (#434)", async () => {
         const rels = MINIMAL_PARTS["_rels/.rels"]!.replace(/(<Relationship\s[^>]*\/>)/, '<x:Wrap xmlns:x="urn:x">$1</x:Wrap>');
         expect(await mainPartIssues({ ...MINIMAL_PARTS, "_rels/.rels": rels })).toEqual([

@@ -9,6 +9,7 @@ import { runChecks } from "../src/lib/check-scheduler";
 import { ValidationContext } from "../src/lib/validation-context";
 import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
 import { MINIMAL_PARTS } from "./support/minimal-docx";
+import { fallback, PACKAGE_RELS, wrapRelationship } from "./support/relationships-markup-compatibility-specimens";
 
 const CODE = "word-document-root";
 const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
@@ -29,6 +30,11 @@ const rootIssues = async (parts: Readonly<Record<string, string>>) => {
 };
 
 describe(CODE, () => {
+    it("judges the main root through the selected package Fallback (#632)", async () => {
+        const parts = wrapRelationship({ ...MINIMAL_PARTS, "word/document.xml": FOREIGN }, PACKAGE_RELS, "rId1", fallback);
+        expect(await rootIssues(parts)).toEqual([expect.objectContaining({ code: CODE, path: "word/document.xml", severity: "error" })]);
+    });
+
     it("does not judge a main root through a nested package relationship (#434)", async () => {
         const rels = MINIMAL_PARTS["_rels/.rels"]!.replace(/(<Relationship\s[^>]*\/>)/, '<x:Wrap xmlns:x="urn:x">$1</x:Wrap>');
         expect(await rootIssues({ ...MINIMAL_PARTS, "_rels/.rels": rels, "word/document.xml": FOREIGN })).toEqual([]);

@@ -13,6 +13,10 @@ import { hasWordRelationshipReference, isWordBlockingIssue } from "../src/script
 const issue = (code: string, rest: Partial<ValidationIssue> = {}): ValidationIssue => ({ severity: "error", code, message: "", ...rest });
 
 describe("isWordBlockingIssue", () => {
+    it.each(["_rels/.rels", "word/_rels/document.xml.rels"])("allows markup removed from relationships at %s (#632)", (path) => {
+        expect(isWordBlockingIssue(issue("opc-relationships-markup-compatibility", { path }))).toBe(false);
+    });
+
     it("blocks duplicate relationship Ids in the package and story-root sidecars (#615)", () => {
         // #617 renamed this set to the story roots: every main document plus
         // every reached glossary document. This case keeps a mains-only set.

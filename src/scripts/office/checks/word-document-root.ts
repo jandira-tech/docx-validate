@@ -39,7 +39,7 @@ export const wordDocumentRootCheck: CheckDefinition = {
     run: (ctx): ValidationIssue[] => {
         // The package relationships part is found by OPC equivalence, so
         // `_RELS/.RELS` names it too, as the schema walk finds it (#364).
-        const relationships = ctx.xml(findEquivalentPart(ctx.partNames, "_rels/.rels") ?? "_rels/.rels");
+        const relationships = ctx.effectiveXml(findEquivalentPart(ctx.partNames, "_rels/.rels") ?? "_rels/.rels");
         if (!relationships?.ok) return [];
 
         const issues: ValidationIssue[] = [];
@@ -108,7 +108,8 @@ export const wordMainDocumentPartCheck: CheckDefinition = {
                 },
             ];
         }
-        const relationships = ctx.xml(relationshipsPart);
+        // Word selects the package relationship through MCE too (#632, session 33 s33e).
+        const relationships = ctx.effectiveXml(relationshipsPart);
         if (!relationships?.ok) return [];
 
         const mainRelationships = getRelationshipChildren(relationships.document).filter(

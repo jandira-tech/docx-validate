@@ -902,15 +902,25 @@ so that finding is Word-blocking too (#435).
 
 `opc-relationships-structure` requires every relationships part to have a
 `Relationships` root in the package-relationships namespace and only `Relationship`
-elements in that namespace as direct children. It reports one finding for a wrong
-root, or one per offending child, at the stored part name. Malformed XML is left
+elements in that namespace as direct children after Word's markup compatibility
+processing. It reports one finding for a wrong stored root, or one per surviving
+offending child, at the stored part name. Malformed XML is left
 to `xml-syntax`. The check runs under Word-valid and strict, including quick and
 named relationships selections; explicit lenient keeps its existing checks.
 Word-valid blocks malformed package relationships (`_rels/.rels`, compared by OPC
 part-name equivalence) and malformed relationships parts under `word/`, and warns on
-other sidecars, which have no Word evidence yet. Strict reports errors on all of them. Main-part discovery also ignores nested
-relationships ([#433](https://github.com/jandira-tech/docx-validate/issues/433),
+other sidecars, which have no Word evidence yet. Strict reports errors on all of them. Main-part discovery uses the processed package relationships and ignores relationships
+still nested inside foreign wrappers ([#433](https://github.com/jandira-tech/docx-validate/issues/433),
 [#434](https://github.com/jandira-tech/docx-validate/issues/434)).
+`opc-relationships-markup-compatibility` reports each stored child that processing
+removes or replaces with only direct `Relationship` children (including an empty
+replacement). Word-valid warns; strict keeps an error because stored OPC
+relationships allow no such children. A foreign child left in a selected branch
+still gets `opc-relationships-structure`. Word 16.115 opened the footer cleanly
+with its relationship in an unknown-Choice Fallback, in a `w14` Choice, and beside
+an Ignorable foreign child; it also opened the package with its main relationship
+in a Fallback. A foreign child left in that Fallback prompted recovery (Word probes
+session 33, `s33d`/`s33e`; [#632](https://github.com/jandira-tech/docx-validate/issues/632)).
 Properties discovery, hyperlink and toolbar resolution, duplicate counts, and
 the validators' semantic relationship checks likewise use direct children under
 Word-valid and strict. Legacy lenient traversal and raw repair-inventory collection
