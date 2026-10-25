@@ -193,6 +193,7 @@ const MC_NAMESPACE = "http://schemas.openxmlformats.org/markup-compatibility/200
 export const XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace";
 export const PACKAGE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/relationships";
 export const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+export const STRICT_OFFICE_RELATIONSHIPS_NAMESPACE = "http://purl.oclc.org/ooxml/officeDocument/relationships";
 const MAIN_CONTENT_FOLDERS = new Set(["word", "ppt", "xl"]);
 
 const asciiLowerCase = (text: string): string => text.replace(/[A-Z]/g, (letter) => letter.toLowerCase());
@@ -1061,7 +1062,10 @@ export class BaseSchemaValidator {
             const relsPart = findPart(path.posix.join(path.posix.dirname(part), "_rels", `${path.posix.basename(part)}.rels`));
             const relsFile = relsPart === undefined ? undefined : entries.get(relsPart);
 
-            // Gap 4: flag XML parts that use r:id attributes but have no .rels sidecar.
+            // Gap 4: flag XML parts that use relationship references but have no .rels sidecar.
+            // #624: session 33 (s33a, s33c) in docs/plans/evidence/word-probes-2026-10-24.md:
+            // Word refuses a Strict footer reference without its sidecar, but
+            // opens the same Strict package clean when it has no reference.
             if (!relsFile) {
                 let xmlDomCheck: Document;
                 try {
@@ -1069,13 +1073,13 @@ export class BaseSchemaValidator {
                 } catch {
                     continue;
                 }
-                const rNs = OFFICE_RELATIONSHIPS_NAMESPACE;
+                const relationshipNamespaces = [OFFICE_RELATIONSHIPS_NAMESPACE, STRICT_OFFICE_RELATIONSHIPS_NAMESPACE];
                 const xmlRootCheck = xmlDomCheck.documentElement;
                 if (!xmlRootCheck) continue;
                 let hasRidRef = false;
                 outer: for (const elem of iterElements(xmlRootCheck)) {
                     for (const attrName of ["id", "embed", "link"] as const) {
-                        if (elem.getAttributeNS(rNs, attrName)) {
+                        if (relationshipNamespaces.some((ns) => elem.getAttributeNS(ns, attrName))) {
                             hasRidRef = true;
                             break outer;
                         }
@@ -1084,7 +1088,7 @@ export class BaseSchemaValidator {
                 if (hasRidRef) {
                     issues.push({
                         severity: "error",
-                        message: `Part '${this.relPath(xmlFile)}' uses r:id relationship references but has no .rels sidecar file`,
+                        message: `Part '${this.relPath(xmlFile)}' uses relationship references but has no .rels sidecar file`,
                         path: this.relPath(xmlFile),
                         code: "rels-missing-sidecar",
                     });

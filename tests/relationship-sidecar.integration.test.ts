@@ -9,9 +9,13 @@ import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
 import type { ValidationIssue } from "../src/lib/types";
 import { validate } from "../src/scripts/office/validate";
+import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 
 const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const RS = "http://purl.oclc.org/ooxml/officeDocument/relationships";
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const WS = "http://purl.oclc.org/ooxml/wordprocessingml/main";
 const ESCAPED_NAME = "opc-part-name-escaped-unreserved";
 const MAIN = "word/document.xml";
 const SIDECAR = "word/_rels/document.xml.rels";
@@ -54,6 +58,70 @@ const imageParts = (extension: string): Record<string, string> => ({
 });
 const errors = (issues: readonly ValidationIssue[]): string[] =>
     issues.filter((issue) => issue.severity === "error").map((issue) => `${issue.code}@${issue.path}`);
+
+describe("relationship references without a sidecar (#624)", () => {
+    // Session 33, s33a/s33c: rewrite only document/styles WML, preserving
+    // MINIMAL_PARTS' package relationships and content types as observed.
+    const noSidecar = (strict: boolean, reference = ""): Record<string, string> => {
+        const parts = Object.fromEntries(Object.entries(MINIMAL_PARTS).filter(([name]) => name !== SIDECAR));
+        if (strict) {
+            for (const part of [MAIN, "word/styles.xml"]) parts[part] = parts[part]!.replaceAll(W, WS);
+        }
+        if (reference) {
+            parts[MAIN] = parts[MAIN]!.replace("<w:document ", `<w:document xmlns:r="${strict ? RS : R}" `).replace(
+                "<w:sectPr>",
+                `<w:sectPr>${reference}`,
+            );
+        }
+        return parts;
+    };
+    const footerReference = '<w:footerReference w:type="default" r:id="rId9"/>';
+
+    it.each([
+        { strict: true, label: "s33a ISO Strict" },
+        { strict: false, label: "session 32 Transitional twin" },
+    ])("rejects $label with exactly one missing-sidecar finding", async ({ strict }) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "footer-reference.docx");
+            writeFileSync(file, await buildDocx(noSidecar(strict, footerReference)));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            expect(errors(result.issues)).toEqual([`rels-missing-sidecar@${MAIN}`]);
+            expect(result.issues.filter((issue) => issue.code === "rels-missing-sidecar")).toEqual([
+                expect.objectContaining({ path: MAIN, severity: "error" }),
+            ]);
+            // No sidecar belongs to the legacy walk alone, including s33a.
+            expect(result.issues.filter((issue) => issue.code === "word-header-footer-relationship")).toEqual([]);
+        });
+    });
+
+    it("keeps s33c ISO Strict without a sidecar or reference valid", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "no-reference.docx");
+            writeFileSync(file, await buildDocx(noSidecar(true)));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(true);
+            expect(result.issues.filter((issue) => issue.code === "rels-missing-sidecar")).toEqual([]);
+        });
+    });
+
+    // Same-footing namespace extension, not Word-observed: a Strict embed/link
+    // alone on a descendant of a Transitional part still needs a sidecar.
+    it.each(["embed", "link"] as const)("reports an ISO Strict r:%s in a Transitional part", async (attribute) => {
+        await withTempDir(async (dir) => {
+            mkdirSync(path.join(dir, "word"));
+            writeFileSync(
+                path.join(dir, MAIN),
+                `<w:document xmlns:w="${W}"><w:body><w:p><w:r><w:drawing>` +
+                    `<a:blip xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:rs="${RS}" rs:${attribute}="rId9"/>` +
+                    "</w:drawing></w:r></w:p></w:body></w:document>",
+            );
+            const result = await new BaseSchemaValidator({ unpackedDir: dir }).validateAllRelationshipIds();
+            expect(result.valid).toBe(false);
+            expect(result.issues).toEqual([expect.objectContaining({ code: "rels-missing-sidecar", path: MAIN, severity: "error" })]);
+        });
+    });
+});
 
 describe.each(["packed", "directory"] as const)("OPC sidecar lookup, %s (#402)", { timeout: 120_000 }, (input) => {
     // Filesystem and ZIP operations are integration-only. Snapshot every file,

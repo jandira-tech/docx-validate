@@ -980,6 +980,18 @@ still reports every `rels-id-mismatch` and `rels-id-missing` (#612, #616,
 so word-valid stays silent), and lenient keeps every one of them.
 Full, quick and named Word-valid runs agree (#381).
 
+`rels-missing-sidecar` reports a part that uses a non-empty `id`, `embed` or
+`link` attribute in either the Transitional or ISO Strict relationships
+namespace but has no `.rels` sidecar. Session 33 observed Word 16.115 offer
+recovery for a Strict document's body `w:footerReference` with a Strict
+`r:id="rId9"` and no sidecar (`s33a`), while the same Strict package without
+the reference opened clean (`s33c`)
+([#624](https://github.com/jandira-tech/docx-validate/issues/624);
+`docs/plans/evidence/word-probes-2026-10-24.md`). A missing sidecar alone
+does not trigger this finding. Counting Strict `embed` and `link` attributes
+extends the existing Transitional rule on the same footing; those shapes
+were not observed in Word in this session.
+
 `word-markup-compatibility` reports processor errors for XML parts under `word/`.
 Root validation, the processor, and the schema walk use these stable codes:
 
