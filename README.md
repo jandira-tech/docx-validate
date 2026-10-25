@@ -179,7 +179,13 @@ schemas under `word-valid`, so `schemaCompleted` is always `false`. Full `lenien
 can stop a lenient run before XSD. The XML part list uses OPC-equivalent
 extensions: ASCII case is ignored and unreserved escapes are decoded, so `.XML`,
 `.RELS` and `.%72els` parts are seen by the passes that iterate that list and by
-the XSD walk. DOCX relationships validation passes use the same OPC-equivalent
+the XSD walk. It also holds every other part `[Content_Types].xml` declares
+with an XML type (`application/xml`, `text/xml`, or an `application/…+xml`
+type), whatever its name: Word reads a part by its relationship and content
+type, so a main document stored as `word/document.bin` under the main
+document's Override is checked as `word/document.xml` would be, and Word 16.115
+refuses it truncated (#620, session 32). Image types such as `image/svg+xml`
+are not XML parts here. DOCX relationships validation passes use the same OPC-equivalent
 `.rels` predicate. Relationship-id and hyperlink checks also resolve sidecars
 by OPC part-name equivalence in packed and directory inputs, including full,
 named and quick runs: a `.RELS` sidecar resolves like `.rels`, matching Word

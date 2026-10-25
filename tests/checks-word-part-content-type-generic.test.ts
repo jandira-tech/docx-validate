@@ -617,7 +617,7 @@ it("names the Word main-document content types, including the macro-enabled one,
 describe("generic renamed main parts (#535)", () => {
     it.each(GENERIC_RENAMED_MAIN_PARTS)(
         "retains strict's error for $part typed by $contentType",
-        async ({ part, parts }) => {
+        async ({ part, parts, strictCode }) => {
             await withTempDir(async (dir) => {
                 const file = path.join(dir, "specimen.docx");
                 writeFileSync(file, await buildDocx(parts));
@@ -625,7 +625,9 @@ describe("generic renamed main parts (#535)", () => {
                 const strict = await validate(file, { profile: "strict" });
                 expect(word.valid).toBe(false);
                 expect(strict.valid && !word.valid, "strict success must imply word-valid success").toBe(false);
-                expect(strict.issues).toContainEqual(expect.objectContaining({ code: ID, path: part, severity: "error" }));
+                expect(strict.issues).toContainEqual(expect.objectContaining({ code: strictCode, path: part, severity: "error" }));
+                // Replaced, the generic finding is not reported twice.
+                expect(strict.issues.some((issue) => issue.code === ID && issue.path === part)).toBe(strictCode === ID);
             });
         },
         60_000,
@@ -1852,7 +1854,10 @@ describe("word-part-content-type-inexact (#550)", { timeout: 120_000 }, () => {
             expect(inexactFindings(strict.issues)).toEqual([]);
             expect(strict.issues.some((issue) => issue.code === "ct-undeclared-part" && issue.path === "word/document.xml")).toBe(true);
 
-            // A renamed main the base pass skips keeps its error (#535).
+            // A renamed main the base pass reaches by its XML content type
+            // is rejected there too, so the inexact finding is dropped as it
+            // is for word/document.xml (#620; #535 kept it while that pass
+            // skipped every name without an .xml suffix).
             const renamed: Parts = { ...MINIMAL_PARTS };
             delete renamed["word/document.xml"];
             delete renamed["word/_rels/document.xml.rels"];
@@ -1868,8 +1873,9 @@ describe("word-part-content-type-inexact (#550)", { timeout: 120_000 }, () => {
             const binFile = path.join(dir, "renamed.docx");
             writeFileSync(binFile, await buildDocx(renamed));
             const renamedStrict = await validate(binFile, { profile: "strict" });
+            expect(inexactFindings(renamedStrict.issues)).toEqual([]);
             expect(renamedStrict.issues).toContainEqual(
-                expect.objectContaining({ code: PID, path: "word/document.bin", severity: "error" }),
+                expect.objectContaining({ code: "ct-undeclared-part", path: "word/document.bin", severity: "error" }),
             );
         });
     }, 60_000);

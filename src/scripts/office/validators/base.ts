@@ -81,7 +81,7 @@ import {
 } from "../../../lib/xml-helpers";
 import { checkXmlSyntax } from "../../../lib/xml-syntax";
 import { resolveSafeZipEntry } from "../../../lib/zip-path";
-import { isXmlPartName, XML_SYNTAX_CHECK_ID } from "../checks/xml";
+import { XML_SYNTAX_CHECK_ID, xmlPartNames } from "../checks/xml";
 import { CT_OVERRIDE_PARTNAME_WORD_REFUSED, ctOverridePartnameWordRefusedCheck } from "../checks/ct-override-partname-word-refused";
 import { CT_OVERRIDE_PARTNAME_INVALID, ctOverridePartnameInvalidCheck } from "../checks/ct-override-partname";
 import { ctDuplicateDeclarationCheck } from "../checks/word-content-types";
@@ -467,7 +467,7 @@ export class BaseSchemaValidator {
         this.originalFile = opts.originalFile ? path.resolve(opts.originalFile) : null;
         this.verbose = opts.verbose ?? false;
         this.schemasDir = opts.schemasDir ?? defaultSchemasDir();
-        this.xmlFiles = [...packageEntries(this.unpackedDir)].flatMap(([name, file]) => (isXmlPartName(name) ? [file] : []));
+        this.xmlFiles = xmlPackageEntries(this.unpackedDir).map(([, file]) => file);
         this.profile = opts.profile ?? DEFAULT_PROFILE;
         this.xsdValidatorRef = opts.xsdValidator;
     }
@@ -727,8 +727,7 @@ export class BaseSchemaValidator {
         // their extension: `word/COMMENTS.XML` is no less an XML part (#390).
         // Findings name the part, as that check's do, so a file stored as
         // `word\\foo.xml` is judged as the `word/` part it is (review Q).
-        for (const [part, xmlFile] of packageEntries(this.unpackedDir)) {
-            if (!isXmlPartName(part)) continue;
+        for (const [part, xmlFile] of xmlPackageEntries(this.unpackedDir)) {
             let raw: Buffer;
             try {
                 raw = await fs.readFile(xmlFile);
@@ -1221,10 +1220,10 @@ export class BaseSchemaValidator {
             }
         }
 
-        // #618: `this.xmlFiles` holds only parts whose names end in `.xml` or
-        // `.rels` (the constructor's `isXmlPartName` filter), so the loop
-        // above never visits the sidecar of an owner stored under any other
-        // name — yet Word reads a story root stored as `word/document.bin` or
+        // #618: `this.xmlFiles` holds the parts named as XML or declared with
+        // an XML content type (#620), so the loop above never visits the
+        // sidecar of an owner stored under another name with another type —
+        // yet Word reads a story root stored as `word/document.bin` or
         // `word/glossary/document.bin` and offers recovery for duplicate Ids
         // in its sidecar (session 31, s31a). Walk every remaining owner that
         // exists in the package, whatever its suffix, and judge its sidecar
@@ -1236,8 +1235,9 @@ export class BaseSchemaValidator {
         // above. A `.rels` whose owner is not in the package keeps today's
         // behaviour: with no owner to walk from, only the schema-walking
         // profiles judge it. The package `_rels/.rels` stays with that scan.
-        for (const [name] of entries) {
-            if (isXmlPartName(name)) continue;
+        const xmlFiles = new Set(this.xmlFiles);
+        for (const [name, file] of entries) {
+            if (xmlFiles.has(file)) continue;
             const relsPart = findPart(path.posix.join(path.posix.dirname(name), "_rels", `${path.posix.basename(name)}.rels`));
             const relsFile = relsPart === undefined ? undefined : entries.get(relsPart);
             if (relsFile === undefined) continue;
@@ -2216,6 +2216,23 @@ export class BaseSchemaValidator {
  */
 export function packageEntries(dir: string, extensions?: ReadonlyArray<string>): Map<string, string> {
     return indexByPartName(walkFiles(dir, extensions).map((file) => [path.relative(dir, file).split(path.sep).join("/"), file] as const));
+}
+
+/**
+ * The {@link packageEntries} of `dir` the XML passes judge, `xml-syntax`'s
+ * parts (`xmlPartNames`): by name, or by an XML content type whatever the
+ * name (#620).
+ */
+function xmlPackageEntries(dir: string): [string, string][] {
+    const entries = packageEntries(dir);
+    const xmlParts = xmlPartNames([...entries.keys()], (part) => {
+        try {
+            return readFileSync(entries.get(part)!);
+        } catch {
+            return undefined;
+        }
+    });
+    return [...entries].filter(([part]) => xmlParts.has(part));
 }
 
 /** A stored entry `walkDirectory` cannot read, with the reason naming its kind (#426). */

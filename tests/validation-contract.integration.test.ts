@@ -3967,7 +3967,7 @@ describe("validation contract: portable collisions include strict (#441)", () =>
 describe("validation contract: generic renamed main parts (#535, #381)", () => {
     it.each(GENERIC_RENAMED_MAIN_PARTS)(
         "rejects $part typed by $contentType in full and selected runs",
-        async ({ part, parts }) => {
+        async ({ part, parts, strictCode }) => {
             await withTempDir(async (dir) => {
                 const file = path.join(dir, "specimen.docx");
                 writeFileSync(file, await buildDocx(parts));
@@ -3976,7 +3976,7 @@ describe("validation contract: generic renamed main parts (#535, #381)", () => {
                 const strict = await validate(file, { profile: "strict" });
                 expect(word.valid).toBe(false);
                 expect(strict.valid && !word.valid, "strict success must imply word-valid success").toBe(false);
-                expect(strict.issues).toContainEqual(expect.objectContaining({ code, path: part, severity: "error" }));
+                expect(strict.issues).toContainEqual(expect.objectContaining({ code: strictCode, path: part, severity: "error" }));
                 for (const selection of [{ quick: true }, { checks: [code] }, { checks: ["content-types"] }]) {
                     const partial = await validate(file, { profile: "word-valid", ...selection });
                     expect(partial.valid).toBe(word.valid);
