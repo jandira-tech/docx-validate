@@ -89,6 +89,37 @@ const glossaryDuplicate = (reached = true): Record<string, string> => {
     parts[RELS] = parts[RELS]!.replace(`<Relationship Id="rIdG" Type="${R}/glossaryDocument" Target="glossary/document.xml"/>`, "");
     return parts;
 };
+// Session 31's builder (#618): `toBin` renames `<dir>/document.xml` to
+// `document.bin`, with its sidecar, Override and the relationship naming it,
+// so the story root exists under a name the XML-only walk never visits, while
+// Word still reads it and its sidecar. Evidence:
+// docs/plans/evidence/word-probes-2026-10-24.md, s31a.
+const replaceOnce = (text: string, from: string, to: string): string => {
+    if (!text.includes(from)) throw new Error(`missing ${from}`);
+    return text.replace(from, to);
+};
+const withDup = (parts: Record<string, string>, rels: string): Record<string, string> => ({
+    ...parts,
+    [rels]: replaceOnce(parts[rels]!, "</Relationships>", `${DUP_Z}</Relationships>`),
+});
+const toBin = (parts: Record<string, string>, dir: string, owner: string, target: string): Record<string, string> => {
+    const out: Record<string, string> = { ...parts };
+    out[`${dir}/document.bin`] = out[`${dir}/document.xml`]!;
+    out[`${dir}/_rels/document.bin.rels`] = out[`${dir}/_rels/document.xml.rels`]!;
+    delete out[`${dir}/document.xml`];
+    delete out[`${dir}/_rels/document.xml.rels`];
+    out[CT] = replaceOnce(out[CT]!, `PartName="/${dir}/document.xml"`, `PartName="/${dir}/document.bin"`);
+    out[owner] = replaceOnce(out[owner]!, `Target="${target}"`, `Target="${target.replace(/xml$/, "bin")}"`);
+    return out;
+};
+const binMain = (): Record<string, string> => toBin({ ...MINIMAL_PARTS }, "word", PACKAGE_RELS, "word/document.xml");
+const binGlossary = (): Record<string, string> =>
+    toBin(
+        glossaryStoryReferenceParts("footerReference", "footer", "footer9.xml", STORY_FOOTER_XML, storyContentType("footer")),
+        "word/glossary",
+        RELS,
+        "glossary/document.xml",
+    );
 
 interface Specimen {
     name: string;
@@ -181,11 +212,27 @@ const SPECIMENS: readonly Specimen[] = [
         blocking: false,
         lenientErrors: ["rels-unreferenced", "rels-id-duplicate", ...SCHEMA_ERRORS],
     },
+    {
+        name: "dup-id-bin-main-sidecar",
+        parts: () => withDup(binMain(), "word/_rels/document.bin.rels"),
+        duplicatePath: "word/_rels/document.bin.rels",
+        blocking: true,
+        lenientErrors: ["rels-id-duplicate", ...SCHEMA_ERRORS],
+    },
+    {
+        name: "dup-id-bin-glossary-sidecar",
+        parts: () => withDup(binGlossary(), "word/glossary/_rels/document.bin.rels"),
+        duplicatePath: "word/glossary/_rels/document.bin.rels",
+        blocking: true,
+        lenientErrors: ["rels-id-duplicate", ...SCHEMA_ERRORS],
+    },
+    { name: "bin-main", parts: binMain, blocking: false, lenientErrors: [] },
+    { name: "bin-glossary", parts: binGlossary, blocking: false, lenientErrors: [] },
 ];
 const errorKeys = (issues: readonly ValidationIssue[]): string[] =>
     issues.filter((issue) => issue.severity === "error").map((issue) => `${issue.code}@${issue.path}`);
 
-describe.each(["packed", "directory"] as const)("duplicate relationship Id scope, %s (#615, #617)", { timeout: 120_000 }, (input) => {
+describe.each(["packed", "directory"] as const)("duplicate relationship Id scope, %s (#615, #617, #618)", { timeout: 120_000 }, (input) => {
     it.each(SPECIMENS)("$name: full profile findings and partial error-subset parity", async (specimen) => {
         await withTempDir(async (dir) => {
             const target = path.join(dir, `${specimen.name}.docx`);

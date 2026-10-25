@@ -1015,7 +1015,14 @@ export class BaseSchemaValidator {
         const issues: ValidationIssue[] = [];
         const entries = packageEntries(this.unpackedDir);
         const findPart = equivalentPartLookup([...entries.keys()]);
+        // #618: every relationships part is judged exactly once, whichever
+        // walk reaches it first — the package scan below, the `.xml` owner
+        // loop, or the non-`.xml` owner pass after it (an owner stored under
+        // two equivalent spellings must not double-report).
+        const judgedRelsFiles = new Set<string>();
         const reportDuplicates = (document: Document, relsFile: string): void => {
+            if (judgedRelsFiles.has(relsFile)) return;
+            judgedRelsFiles.add(relsFile);
             const seen = new Set<string>();
             for (const relationship of this.relationshipElements(document)) {
                 const id = relationship.getAttribute("Id");
@@ -1031,7 +1038,7 @@ export class BaseSchemaValidator {
                 seen.add(id);
             }
         };
-        // The package has no owner XML part, so the sidecar walk below never
+        // The package has no owner part, so neither owner walk below ever
         // visits its relationships. Lenient retains its historical XSD-only
         // diagnosis here (#615); XML checks own missing/malformed parts.
         if (this.profile !== "lenient") {
@@ -1174,6 +1181,33 @@ export class BaseSchemaValidator {
                         }
                     }
                 }
+            }
+        }
+
+        // #618: `this.xmlFiles` holds only parts whose names end in `.xml` or
+        // `.rels` (the constructor's `isXmlPartName` filter), so the loop
+        // above never visits the sidecar of an owner stored under any other
+        // name — yet Word reads a story root stored as `word/document.bin` or
+        // `word/glossary/document.bin` and offers recovery for duplicate Ids
+        // in its sidecar (session 31, s31a). Walk every remaining owner that
+        // exists in the package, whatever its suffix, and judge its sidecar
+        // through the same `reportDuplicates`, exactly once per relationships
+        // part. Nothing else follows the owner here: it is never parsed as
+        // XML, so it gets no `rels-missing-sidecar`/`rels-id-*` walk of its
+        // own content, and a sidecar that does not parse yields no finding —
+        // the XML syntax checks own that diagnosis, as in the package scan
+        // above. A `.rels` whose owner is not in the package keeps today's
+        // behaviour: with no owner to walk from, only the schema-walking
+        // profiles judge it. The package `_rels/.rels` stays with that scan.
+        for (const [name] of entries) {
+            if (isXmlPartName(name) || isRelationshipsPartName(name)) continue;
+            const relsPart = findPart(path.posix.join(path.posix.dirname(name), "_rels", `${path.posix.basename(name)}.rels`));
+            const relsFile = relsPart === undefined ? undefined : entries.get(relsPart);
+            if (relsFile === undefined) continue;
+            try {
+                reportDuplicates(parseXmlBytes(await fs.readFile(relsFile)), relsFile);
+            } catch {
+                // XML syntax diagnostics already report this part.
             }
         }
 

@@ -193,7 +193,9 @@ Empty-part auto-repair retains its exact lowercase `.rels` scope. The trace desc
 `xsd-strict-skipped`; Word-valid emits no XSD skip issue because it runs no XSD.
 
 Full DOCX/DOCM validation reports duplicate relationship `Id` values as
-`rels-id-duplicate`. Under `word-valid`, duplicates block opening only in the
+`rels-id-duplicate`, judging the relationships part of every owner part in
+the package, whatever the owner's name suffix. Under `word-valid`, duplicates
+block opening only in the
 package relationships part (`_rels/.rels`) and the relationships part of a
 story root: the main document, resolved through the package's Transitional or
 ISO Strict `officeDocument` relationship wherever it is stored, and every
@@ -201,14 +203,17 @@ glossary document a main-document `glossaryDocument` relationship reaches.
 Word 16.115 offers recovery even for identical or unreferenced duplicates
 there; a header part's own duplicate unreferenced hyperlinks opened clean, and
 so did the same pair in an orphan `word/document.xml` sidecar no main document
-owns, while a reached glossary's own sidecar was refused
-([#615](https://github.com/jandira-tech/docx-validate/issues/615), session 29,
-and [#617](https://github.com/jandira-tech/docx-validate/issues/617), session
-30, in [the Word probe
+owns, while a reached glossary's own sidecar was refused, as was the same pair
+in the sidecar of a main document or reached glossary stored as
+`document.bin` ([#615](https://github.com/jandira-tech/docx-validate/issues/615), session 29,
+[#617](https://github.com/jandira-tech/docx-validate/issues/617), session
+30, and [#618](https://github.com/jandira-tech/docx-validate/issues/618), session
+31, in [the Word probe
 evidence](docs/plans/evidence/word-probes-2026-10-24.md)). Other sidecars
-retain their strict error and Word-valid warning. Lenient keeps its existing
-sidecar errors and XSD-only package diagnosis. This legacy ID walk is outside
-the named-check registry, so named and quick runs omit it.
+retain their strict error and Word-valid warning, and a `.rels` whose owner
+part is not in the package is not judged by this walk. Lenient keeps its
+existing sidecar errors and XSD-only package diagnosis. This legacy ID walk is
+outside the named-check registry, so named and quick runs omit it.
 
 Named checks and quick checks use the same options in the path and byte APIs:
 
