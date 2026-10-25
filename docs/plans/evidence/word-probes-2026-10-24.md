@@ -1,6 +1,6 @@
 # Real-Word probes, 2026-10-24
 
-Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), what session 26 settled for the items adversarial review AY suspected (#606, #607, #610), what session 27 settled for the relationship types and placements adversarial review AZ left open (#613), what session 28 settled for a hyperlink's relationship type (#614), what session 29 settled for duplicate relationship Ids and `https:` relationship Types (#615, adversarial review BA), what session 30 settled for duplicate relationship Ids outside the package and main-document `.rels` (#617, adversarial review BB), what session 31 settled for duplicate relationship Ids beside a story root stored without a `.xml` suffix (#618, adversarial review BC), what session 32 settled for a story reference whose `r:id` names no relationship and for a main document stored without a `.xml` suffix (#619, #620, adversarial review BD), and what session 33 settled for story references with an empty, missing or ISO Strict `r:id`, story roots stored as `word/header1.xml`, and markup compatibility in relationships parts (#623, #624, #625, #631, #632, adversarial reviews BE and BG), and what session 35 settled for the adversarial review of layer 130: relationship ids `rels-missing-sidecar` counts that Word never resolves (#638), and story-reference ids outside the body `w:sectPr`.
+Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), what session 26 settled for the items adversarial review AY suspected (#606, #607, #610), what session 27 settled for the relationship types and placements adversarial review AZ left open (#613), what session 28 settled for a hyperlink's relationship type (#614), what session 29 settled for duplicate relationship Ids and `https:` relationship Types (#615, adversarial review BA), what session 30 settled for duplicate relationship Ids outside the package and main-document `.rels` (#617, adversarial review BB), what session 31 settled for duplicate relationship Ids beside a story root stored without a `.xml` suffix (#618, adversarial review BC), what session 32 settled for a story reference whose `r:id` names no relationship and for a main document stored without a `.xml` suffix (#619, #620, adversarial review BD), and what session 33 settled for story references with an empty, missing or ISO Strict `r:id`, story roots stored as `word/header1.xml`, and markup compatibility in relationships parts (#623, #624, #625, #631, #632, adversarial reviews BE and BG), what session 34 settled for parts reached only through a relationship markup compatibility selects and for markup-compatibility errors in relationships parts (#634, #635, #636, the adversarial review of #632's fix), and what session 35 settled for the adversarial review of layer 130: relationship ids `rels-missing-sidecar` counts that Word never resolves (#638), and story-reference ids outside the body `w:sectPr`.
 
 - Word: Microsoft Word for Mac 16.115 (build 16.115.26100424), platform `darwin`.
 - Transport, sessions 1 and 2: `verifyInWord` (`src/lib/word-verifier.ts`). It opens each specimen by path, reads Word's window and dialog state, and never saves.
@@ -217,6 +217,12 @@ Session 33 adds:
 - **#631 refuted: Word reads the ISO Strict `r:id` on a Transitional story reference.** A Transitional `w:footerReference` whose only id was an `rs:id` (`xmlns:rs` bound to the ISO Strict relationships namespace) naming a real footer relationship opened clean, and the PDF Word wrote rendered the footer (`s33c`). Dangling, it got the recovery offer of a dangling Transitional `r:id`, not the open error of a reference with no id. `word-header-footer-relationship` already resolves both namespaces (#606, #619).
 - **#632: Word applies markup compatibility to relationships parts before it judges their children.** In `word/_rels/document.xml.rels`, session 26's footer relationship opened clean, the footer rendered, in three shapes: inside an `mc:Fallback` beside an `mc:Choice` requiring a namespace Word does not understand (`s33d`); inside an `mc:Choice` requiring `w14` with an empty `mc:Fallback` (`s33e`); and kept beside a foreign `<x:Wrap/>` whose prefix the root declares `mc:Ignorable` (`s33e`). `_rels/.rels` with its officeDocument relationship inside such a Fallback opened clean too (`s33e`). A foreign `<x:Wrap/>` left inside the selected Fallback was refused (`s33e`), as #433's undeclared one is. Word-valid at 5cd8ada8 rejects all four clean shapes, through `opc-relationships-structure` (and, for `_rels/.rels`, `word-main-document-part`), which judge the stored XML.
 
+Session 34 adds:
+
+- **#634: Word reads a part reached through a relationship markup compatibility selects, and refuses its defects as it does through a direct relationship.** Each specimen moved one relationship into `<mc:AlternateContent><mc:Choice Requires="foo"/><mc:Fallback>…</mc:Fallback></mc:AlternateContent>` and gave the part it reaches a defect; each ran beside its direct-relationship twin. A truncated main document reached through `_rels/.rels`'s Fallback officeDocument relationship got an open error, as its twin did (`s34a`). With that Fallback main document, a zero-byte `word/_rels/document.xml.rels` got a recovery offer, as its twin did (`s34a`). A truncated `docProps/core.xml` reached through a Fallback core-properties relationship got a recovery offer, as its twin did (`s34b`). Session 26's footer typed as a header (#600), its relationship in the Fallback of `word/_rels/document.xml.rels`, got a recovery offer, as its twin did (`s34b`). Word-valid at ef5d8107 (layer 131, #632's fix) passes all four wrapped shapes and rejects every twin: `word-read-parts` and `properties-parts` read the stored `.rels`, so the reached parts are not Word-read and their errors are demoted. Before #632's fix the stored `mc:AlternateContent` child was itself a blocking `opc-relationships-structure` error.
+- **#635: Word judges relationship Ids in the processed relationships part.** `_rels/.rels` holding a direct `rId1` (officeDocument) and a second `rId1` (styles) inside the Fallback got a recovery offer, as two direct `rId1` did (`s34a`; #615's session 29 class). Word-valid at ef5d8107 passes it: the legacy relationship walk collects the stored direct children only, and finds no duplicate.
+- **#636: Word honours markup-compatibility errors in relationships parts.** `mc:MustUnderstand="foo"` (`xmlns:foo="urn:foo"`, a namespace Word does not understand) on the `_rels/.rels` root got a recovery offer and, after it was declined, "Word experienced an error trying to open the file."; Word's process then exited (`s34c`, probed alone beside a clean control after Word went down twice during `s34b`). Word-valid at ef5d8107 passes it with no finding. Session 26's footer relationship inside an `mc:Choice` whose `Requires` prefix is undeclared, with an empty Fallback, got a recovery offer (`s34d`); word-valid already rejects it, through `word-header-footer-relationship`, because the relationship disappears.
+
 Session 35 adds:
 
 - **#638: Word does not resolve every relationship id `rels-missing-sidecar` counts.** Each specimen had a non-empty relationship id and no `.rels` beside its part, and Word opened each clean while word-valid at 9ac8d583 rejected each with a blocking `rels-missing-sidecar`. In parts Word does not read (`s35a`): an unreferenced `word/xtra.xml` holding an ISO Strict `rs:id`, and its Transitional `r:id` twin; a `docProps/app.xml` no relationship names, holding an `rs:id`; an ISO Strict glossary no `glossaryDocument` relationship reaches, holding an `rs:id` footer reference. In a part Word reads (`s35a`): `rs:id` on `w:name` in `word/styles.xml`, an element the schema gives no relationship attribute. In the main document with its `.rels` removed (`s35b`): an `a:blip` `rs:embed` inside an `mc:Choice` whose `Requires` Word does not understand, beside an empty `mc:Fallback`, and its Transitional `r:embed` twin. The Transitional twins blocked before #624 too; #624 exposed the ISO Strict shapes.
@@ -286,6 +292,8 @@ Session 31 ran in the foreground (`s31a` 00:26Z on 2026-10-25), one driver run. 
 Session 32 ran in the foreground (`s32a` 01:10Z on 2026-10-25), one driver run. Nothing was set aside, and every row is attributed by a manifest entry naming its staged file. Before the chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`; another session was running its own converter (`bench docx-to-pdf --converter jubarte-rc`), which does not drive Word. No Word process was running, so the driver launched its own (`launched_by_us=True`, `open_documents=0`, `word_pid=74817`). The chunk was built at 6e3cda3e with the session 32 builder below.
 
 Session 33 ran in the foreground, one driver run per chunk (`s33a` 04:45Z, `s33b` 05:03Z, `s33c` 05:13Z, `s33d` 05:15Z and `s33e` 05:21Z on 2026-10-25). Nothing was set aside, and every row is attributed by a manifest entry naming its staged file. Before each chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`; another session was running its own converters (`bench docx-to-pdf` with `jubarte-rc`, and with `soffice`), which do not drive Word. For `s33a`, `s33c`, `s33d` and `s33e` no Word process was running, so the driver launched its own (`launched_by_us=True`, `open_documents=0`; `word_pid=46992`, `63771`, `70432` and `5565`). `s33b` found the Word `s33a` had left (`launched_by_us=False`, `open_documents=0`, `word_pid=98254`). Every run recycled Word after consecutive refusals (`recovery 1`). In `s33a` and `s33b` Word did not quit within 20 s and the driver ended it with `pkill`; in `s33b` the driver then declined Microsoft Error Reporting's "A Force Quit was performed" notice, which reports that quit. `~/Library/Logs/DiagnosticReports` holds no Word report from the session. `s33a` ran under heavy load (the 15-minute load average read 110.8 at 05:03Z) and took 10 min 16 s, so the harness moved it to the background for its last seconds; three of its items ended in an AppleEvent timeout or with no document and no dialog, and are recorded as inconclusive. `s33c` observed all three shapes again. `s33a` and `s33b` were built at 8b79bc78, the head of #611; `s33c`–`s33e` at 5cd8ada8, #611's merge into `release/0.53.0-rc.2`, whose tree is identical. All five were built with the session 33 builder below.
+
+Session 34 ran in the foreground, one driver run per chunk (`s34a` 06:02Z, `s34b` 06:05Z, `s34c` 06:09Z and `s34d` 06:09Z on 2026-10-25). Nothing was set aside, and every row is attributed by a manifest entry naming its staged file. Before each chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, there was no `word.lock`, and no Word process was running, so the driver launched its own each time (`launched_by_us=True`, `open_documents=0`; `word_pid=80094`, `90299`, `9024` and `11548`). `s34a` recycled Word once after three documents in a row came back empty (`recovery 1`, Word quit on request). In `s34b` Word's connection failed ("Connection is invalid") twice around its items 4 and 5, `mce-rels-choice-undeclared-prefix` and `mce-rels-root-mustunderstand`, and the driver relaunched Word; because neither item could be credited with that, `s34c` and `s34d` probed each alone beside a control. In `s34c` Word's process exited after the declined recovery offer and the open error; the driver relaunched it and the control opened clean. `~/Library/Logs/DiagnosticReports` holds no Word report from the session. All four chunks were built at ef5d8107, then the head of layer 131 (`wfv/131-rels-markup-compatibility`: #632's fix on layer 130 at 9ac8d583), with the session 34 builder below; the validator columns are that commit's. Layer 131 was later rebased onto layer 130's head, where #632's fix is c526805a with the same change.
 
 Session 35 ran in the foreground, one driver run per chunk (`s35a` 06:25Z, `s35b` 06:26Z and `s35c` 06:27Z on 2026-10-25). An earlier `s35a` attempt at 06:15Z was set aside without evidence: another session had launched Word at 06:13Z and its `osascript` was running, Word did not answer Apple events within 90 s, and no specimen was opened. Before each recorded chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, there was no `word.lock`, and no Word process was running, so the driver launched its own each time (`launched_by_us=True`; `word_pid=65098`, `68407` and `71367`). In `s35a` the newly launched Word reported one open document (`open_documents=1`, `started_clean=False`), which the driver's preflight closed before the first specimen; `s35b` and `s35c` started clean. `s35b` recycled Word twice (`recovery 1` and `recovery 2`, Word quit on request each time) because the refused specimens open no document; each of its four refused specimens got the same reaction on both passes. `~/Library/Logs/DiagnosticReports` holds no Word report from the session. All three chunks were built at 9ac8d583, then the head of layer 130 (`wfv/130-story-reference-ids`, PR #637), with the session 35 builder below; the validator columns are that commit's.
 
@@ -1990,6 +1998,60 @@ Adversarial reviews BE and BG's suspected items on #619 (#623, #624, #625, #631,
 {"run": "s33e", "name": "mce-rels-ignorable-foreign", "sha256": "cfa548e94f66d305749469d3891d5b438e51837d72c05ee336f3b20061588e8a", "observedAt": "2026-10-25T05:23:20+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 {"run": "s33e", "name": "mce-rels-fallback-foreign", "sha256": "00f74391cdc0863c6b83b2de5c1dd1329bf47640a69293ad31e3ca9a8699406a", "observedAt": "2026-10-25T05:22:38.588Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00003__wfv__mce-rels-fallback-foreign.docx; refusing to guess", "dialogs": ["\"Word found unreadable content in 00003__wfv__mce-rels-fallback-foreign.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
 {"run": "s33e", "name": "s33e-control-minimal-end", "sha256": "f18ce8ddd7bf7056130e594838744ca3b1f772270d0ae38b1daaa8c49db024be", "observedAt": "2026-10-25T05:23:20+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 34: 06:02Z–06:09Z on 2026-10-25, validator columns at ef5d8107
+
+The adversarial review of #632's fix (empryo devin/swe-2), findings 1, 2 and 4 (#634, #635, #636), each wrapped shape beside its direct twin and between clean controls. The specimens sort before their chunk's controls, so each chunk's two controls ran last.
+
+| Run    | Observed  | Specimen                            | Issue            | Shape                                                                                                                                                                                                                                                                                                               | SHA-256 (first 16) | Word                        | word-valid at ef5d8107                     | strict at ef5d8107                                                                                                                                   |
+| ------ | --------- | ----------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | --------------------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `s34a` | 06:05:12Z | `s34a-control-minimal`              | control          | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                                                     | `478df25aa6503642` | clean-open                  | valid                                      | valid                                                                                                                                                |
+| `s34a` | 06:04:21Z | `mce-fallback-main-malformed-doc`   | #634             | `MINIMAL_PARTS` with `_rels/.rels`'s officeDocument Relationship moved into `<mc:AlternateContent><mc:Choice Requires="foo"/><mc:Fallback>…</mc:Fallback></mc:AlternateContent>` (`xmlns:foo="urn:foo"`); `word/document.xml` truncated to `<w:document …><w:body><w:p>`                                            | `5de3536778f4a45c` | open-error                  | valid                                      | invalid: `opc-relationships-markup-compatibility`, `rels-unreferenced`, `xml-syntax`, `xsd-error`, `xsd-summary`                                     |
+| `s34a` | 06:04:05Z | `direct-main-malformed-doc`         | #634 twin        | `MINIMAL_PARTS` with `word/document.xml` truncated to `<w:document …><w:body><w:p>`                                                                                                                                                                                                                                 | `5614b876b20a59da` | open-error                  | invalid: `xml-syntax`                      | invalid: `xml-syntax`                                                                                                                                |
+| `s34a` | 06:04:26Z | `mce-fallback-main-zerobyte-rels`   | #634             | `MINIMAL_PARTS` with `_rels/.rels`'s officeDocument Relationship moved into `<mc:AlternateContent><mc:Choice Requires="foo"/><mc:Fallback>…</mc:Fallback></mc:AlternateContent>` (`xmlns:foo="urn:foo"`); `word/_rels/document.xml.rels` zero bytes                                                                 | `79ee3843a83ef05c` | repair-warning              | valid                                      | invalid: `opc-relationships-markup-compatibility`, `rels-id-parse`, `rels-unreferenced`, `xml-syntax`, `xsd-error`, `xsd-summary`                    |
+| `s34a` | 06:04:11Z | `direct-main-zerobyte-rels`         | #634 twin        | `MINIMAL_PARTS` with `word/_rels/document.xml.rels` zero bytes                                                                                                                                                                                                                                                      | `c4f0d4f910599079` | repair-warning              | invalid: `xml-syntax`                      | invalid: `rels-id-parse`, `rels-unreferenced`, `xml-syntax`                                                                                          |
+| `s34a` | 06:04:36Z | `mce-fallback-split-duplicate-id`   | #635             | `MINIMAL_PARTS` with `_rels/.rels` holding a direct `rId1` officeDocument Relationship and an `rId1` styles Relationship inside `<mc:AlternateContent><mc:Choice Requires="foo"/><mc:Fallback>…</mc:Fallback></mc:AlternateContent>` (`xmlns:foo="urn:foo"`)                                                        | `e3635fd614c69c58` | repair-warning              | valid                                      | invalid: `opc-relationships-markup-compatibility`, `xsd-error`, `xsd-summary`                                                                        |
+| `s34a` | 06:03:10Z | `direct-duplicate-id`               | #635 twin        | `MINIMAL_PARTS` with `_rels/.rels` holding two direct `rId1` Relationships (officeDocument, styles)                                                                                                                                                                                                                 | `5d4151891441e71b` | repair-warning              | invalid: `rels-id-duplicate`               | invalid: `rels-id-duplicate`, `xsd-error`, `xsd-summary`                                                                                             |
+| `s34a` | 06:05:12Z | `s34a-control-minimal-end`          | control          | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                                                     | `39a5184664dcf46f` | clean-open                  | valid                                      | valid                                                                                                                                                |
+| `s34b` | 06:08:28Z | `s34b-control-minimal`              | control          | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                                                     | `39a5184664dcf46f` | clean-open                  | valid                                      | valid                                                                                                                                                |
+| `s34b` | 06:07:21Z | `mce-fallback-malformed-coreprops`  | #634             | `MINIMAL_PARTS` with a core-properties Relationship (`rIdC`) to `docProps/core.xml`, its Override added, and `docProps/core.xml` truncated inside `dc:title`; the Relationship inside `<mc:AlternateContent><mc:Choice Requires="foo"/><mc:Fallback>…</mc:Fallback></mc:AlternateContent>` (`xmlns:foo="urn:foo"`)  | `e371880140b48156` | repair-warning              | valid                                      | invalid: `opc-relationships-markup-compatibility`, `rels-unreferenced`, `xml-syntax`, `xsd-error`, `xsd-summary`                                     |
+| `s34b` | 06:06:23Z | `direct-malformed-coreprops`        | #634 twin        | `MINIMAL_PARTS` with a core-properties Relationship (`rIdC`) to `docProps/core.xml`, its Override added, and `docProps/core.xml` truncated inside `dc:title`; the Relationship direct                                                                                                                               | `f7930cf3cc8f6f7b` | repair-warning              | invalid: `xml-syntax`                      | invalid: `xml-syntax`                                                                                                                                |
+| `s34b` | 06:07:11Z | `mce-fallback-footer-header-ct`     | #634             | session 26's footer (`storyReferenceParts`: `r:id="rIdX"` to `word/footer1.xml`) whose Override types it as a header; the `rIdX` Relationship inside `<mc:AlternateContent><mc:Choice Requires="foo"/><mc:Fallback>…</mc:Fallback></mc:AlternateContent>` (`xmlns:foo="urn:foo"`) in `word/_rels/document.xml.rels` | `0da480e77533fc65` | repair-warning              | valid                                      | invalid: `opc-relationships-markup-compatibility`, `paraid-missing-element`, `rels-id-missing`, `rels-unreferenced`                                  |
+| `s34b` | 06:05:30Z | `direct-footer-header-ct`           | #634 twin (#600) | session 26's footer (`storyReferenceParts`: `r:id="rIdX"` to `word/footer1.xml`) whose Override types it as a header; the Relationship direct                                                                                                                                                                       | `5b931e0c8dd4fd2e` | repair-warning              | invalid: `word-part-content-type-mismatch` | invalid: `paraid-missing-element`, `word-part-content-type-mismatch`                                                                                 |
+| `s34b` | 06:08:28Z | `mce-rels-root-mustunderstand`      | #636             | `MINIMAL_PARTS` with `xmlns:mc`, `xmlns:foo="urn:foo"` and `mc:MustUnderstand="foo"` on the `_rels/.rels` root                                                                                                                                                                                                      | `c27cdf562eda5210` | Word crashed (inconclusive) | valid                                      | invalid: `xsd-error`, `xsd-summary`                                                                                                                  |
+| `s34b` | 06:08:25Z | `mce-rels-choice-undeclared-prefix` | #636             | session 26's clean footer, the `rIdX` Relationship moved into `<mc:AlternateContent><mc:Choice Requires="nope">…</mc:Choice><mc:Fallback/></mc:AlternateContent>`, `nope` undeclared                                                                                                                                | `fe8c495cf8d607d3` | repair-warning              | invalid: `word-header-footer-relationship` | invalid: `mce-malformed`, `opc-relationships-markup-compatibility`, `paraid-missing-element`, `rels-unreferenced`, `word-header-footer-relationship` |
+| `s34b` | 06:08:28Z | `s34b-control-minimal-end`          | control          | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                                                     | `a9d7b233ab836929` | clean-open                  | valid                                      | valid                                                                                                                                                |
+| `s34c` | 06:09:15Z | `mce-rels-root-mustunderstand`      | #636             | `MINIMAL_PARTS` with `xmlns:mc`, `xmlns:foo="urn:foo"` and `mc:MustUnderstand="foo"` on the `_rels/.rels` root                                                                                                                                                                                                      | `84f47433da625890` | repair-warning              | valid                                      | invalid: `xsd-error`, `xsd-summary`                                                                                                                  |
+| `s34c` | 06:09:20Z | `s34c-control-minimal`              | control          | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                                                     | `340f2f996aa63965` | clean-open                  | valid                                      | valid                                                                                                                                                |
+| `s34d` | 06:09:37Z | `mce-rels-choice-undeclared-prefix` | #636             | session 26's clean footer, the `rIdX` Relationship moved into `<mc:AlternateContent><mc:Choice Requires="nope">…</mc:Choice><mc:Fallback/></mc:AlternateContent>`, `nope` undeclared                                                                                                                                | `961d1b7b77cd7379` | repair-warning              | invalid: `word-header-footer-relationship` | invalid: `mce-malformed`, `opc-relationships-markup-compatibility`, `paraid-missing-element`, `rels-unreferenced`, `word-header-footer-relationship` |
+| `s34d` | 06:09:40Z | `s34d-control-minimal`              | control          | `MINIMAL_PARTS`                                                                                                                                                                                                                                                                                                     | `340f2f996aa63965` | clean-open                  | valid                                      | valid                                                                                                                                                |
+
+<details><summary>Raw records, session 34</summary>
+
+```jsonl
+{"run": "s34a", "name": "s34a-control-minimal", "sha256": "478df25aa65036422ba1ff97c2f62f2fa5d862e73ed1cf45d7a10693faf8efe7", "observedAt": "2026-10-25T06:05:12+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s34a", "name": "mce-fallback-main-malformed-doc", "sha256": "5de3536778f4a45ce7aa7d790725e31e6cc5b5193f709fffca031bd4680cc8f7", "observedAt": "2026-10-25T06:04:21.999Z", "outcome": "open-error", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00003__wfv__mce-fallback-main-malformed-doc.docx; refusing to guess", "dialogs": ["'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permissions for the document or drive.\\n* Make sure there is sufficient free memory and disk space.\\n* Open the file with the Text Recovery conver", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s34a", "name": "direct-main-malformed-doc", "sha256": "5614b876b20a59da5b1bce7aebf782c1f94fe1df1312c71c6507500e841e2ade", "observedAt": "2026-10-25T06:04:05.865Z", "outcome": "open-error", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00001__wfv__direct-main-malformed-doc.docx; refusing to guess", "dialogs": ["\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter.", "'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permissions for the document or drive.\\n* Make sure there is sufficient free memory and disk space.\\n* Open the file with the Text Recovery conver"]}
+{"run": "s34a", "name": "mce-fallback-main-zerobyte-rels", "sha256": "79ee3843a83ef05cd8b4c1ec8ca2a2a2d40a23de83831049b3925d0fcdeaf13f", "observedAt": "2026-10-25T06:04:26.370Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00004__wfv__mce-fallback-main-zerobyte-rels.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00004__wfv__mce-fallback-main-zerobyte-rels.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s34a", "name": "direct-main-zerobyte-rels", "sha256": "c4f0d4f9105990792c2e769df5c74d0d8b1f7ec35f128dd800c9c4b5543f19a0", "observedAt": "2026-10-25T06:04:11.461Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00002__wfv__direct-main-zerobyte-rels.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__direct-main-zerobyte-rels.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s34a", "name": "mce-fallback-split-duplicate-id", "sha256": "e3635fd614c69c58252ef8dc8a056e7e6370f484732f882fb39a5d79fb978702", "observedAt": "2026-10-25T06:04:36.532Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["'Word found unreadable content in 00005__wfv__mce-fallback-split-duplicate-id.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00005__wfv__mce-fallback-split-duplicate-id.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s34a", "name": "direct-duplicate-id", "sha256": "5d4151891441e71bcfb059a5f0030481a8cf7271d858de3a66561a613c072d55", "observedAt": "2026-10-25T06:03:10.531Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__direct-duplicate-id.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00000__wfv__direct-duplicate-id.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__direct-duplicate-id.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s34a", "name": "s34a-control-minimal-end", "sha256": "39a5184664dcf46feced009d5fbc12807f7800a5eee395108534b221fe546759", "observedAt": "2026-10-25T06:05:12+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s34b", "name": "s34b-control-minimal", "sha256": "39a5184664dcf46feced009d5fbc12807f7800a5eee395108534b221fe546759", "observedAt": "2026-10-25T06:08:28+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s34b", "name": "mce-fallback-malformed-coreprops", "sha256": "e371880140b48156a9c87644968628508ec3c682dce46e89b0e8214620b30b5f", "observedAt": "2026-10-25T06:07:21.647Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it", "dialogs": ["\"Word found unreadable content in 00003__wfv__mce-fallback-malformed-coreprops.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s34b", "name": "direct-malformed-coreprops", "sha256": "f7930cf3cc8f6f7b2e7913f053f9f721a0a0b3ba1e9fe9692ee56deccef5db00", "observedAt": "2026-10-25T06:06:23.924Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__direct-malformed-coreprops.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00001__wfv__direct-malformed-coreprops.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00001__wfv__direct-malformed-coreprops.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s34b", "name": "mce-fallback-footer-header-ct", "sha256": "0da480e77533fc650883fea0180895f6495a6953c94646348e85f5139c9770a0", "observedAt": "2026-10-25T06:07:11.503Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00002__wfv__mce-fallback-footer-header-ct.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00002__wfv__mce-fallback-footer-header-ct.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00002__wfv__mce-fallback-footer-header-ct.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s34b", "name": "direct-footer-header-ct", "sha256": "5b931e0c8dd4fd2e5c574ee45660528a27a52a458558519db1a9fb060ad1cb7d", "observedAt": "2026-10-25T06:05:30.970Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__direct-footer-header-ct.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00000__wfv__direct-footer-header-ct.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__direct-footer-header-ct.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s34b", "name": "mce-rels-root-mustunderstand", "sha256": "c27cdf562eda521047daa8837452c1f317d79201743e414e326d20a312eaee8c", "observedAt": "2026-10-25T06:08:28+00:00", "outcome": "other", "item": "failed", "error": "Word crashed on it in 2 passes: Microsoft Word got an error: Connection is invalid.", "dialogs": []}
+{"run": "s34b", "name": "mce-rels-choice-undeclared-prefix", "sha256": "fe8c495cf8d607d3a471116852f000bb7ffc30ecbd866d2d78eb61c0faa93d50", "observedAt": "2026-10-25T06:08:25.192Z", "outcome": "repair-warning", "item": "failed", "error": "Word crashed on it in 2 passes: Microsoft Word got an error: Connection is invalid.", "dialogs": ["'Word found unreadable content in 00004__wfv__mce-rels-choice-undeclared-prefix.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'"]}
+{"run": "s34b", "name": "s34b-control-minimal-end", "sha256": "a9d7b233ab8369294f489aad08dcf1ab6523d73562e4fec47fbcf06556093bd6", "observedAt": "2026-10-25T06:08:28+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s34c", "name": "mce-rels-root-mustunderstand", "sha256": "84f47433da625890a859ebf325b8ac5491084099639218393bed9db03819b0e4", "observedAt": "2026-10-25T06:09:15.927Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__mce-rels-root-mustunderstand.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00000__wfv__mce-rels-root-mustunderstand.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__mce-rels-root-mustunderstand.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s34c", "name": "s34c-control-minimal", "sha256": "340f2f996aa63965aa62581a1a14a94816ca9ac4e31e46eadeaae268485658aa", "observedAt": "2026-10-25T06:09:20+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s34d", "name": "mce-rels-choice-undeclared-prefix", "sha256": "961d1b7b77cd7379bf3ec017e94fe90b119a1b16da2972ae79bc6f93442dfcf3", "observedAt": "2026-10-25T06:09:37.741Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__mce-rels-choice-undeclared-prefix.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00000__wfv__mce-rels-choice-undeclared-prefix.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__mce-rels-choice-undeclared-prefix.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s34d", "name": "s34d-control-minimal", "sha256": "340f2f996aa63965aa62581a1a14a94816ca9ac4e31e46eadeaae268485658aa", "observedAt": "2026-10-25T06:09:40+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 ```
 
 </details>
@@ -7023,6 +7085,221 @@ const chunks: Record<string, [string, string, () => Promise<Uint8Array> | Uint8A
                 ),
         ],
         ["s33e-control-minimal-end", "control", control],
+    ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        const r = await validate(path.join(dir, file), { profile });
+        return {
+            valid: r.valid,
+            errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+        };
+    };
+    const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+Session 34's builder (`s34a`–`s34d`) is another standalone script, run the same way from the layer 131 worktree, with `CHUNK` naming the chunk:
+
+```ts
+// Session 34 (2026-10-25): adversarial review of #632's fix (45abe57e, layer 131) by empryo devin/swe-2, findings 1, 2
+// and 4. Before that fix a raw mc:AlternateContent child of a .rels part was a blocking opc-relationships-structure
+// error; after it, readers that still read the stored .rels (word-read-parts' relationshipsOf/packageReach,
+// properties-parts, validateAllRelationshipIds) miss a relationship that markup compatibility selects, so a defect
+// reached only through it is demoted under word-valid. Each wrapped specimen moves one relationship into
+// <mc:AlternateContent><mc:Choice Requires="foo"/><mc:Fallback>…</mc:Fallback></mc:AlternateContent> (Word follows it:
+// s33d/s33e) and carries a defect Word refuses when the relationship is direct; its direct twin runs beside it.
+// s34a: C, a malformed main document reached through the Fallback officeDocument relationship; D, a zero-byte
+//       word/_rels/document.xml.rels beside that main document; E, _rels/.rels holding a direct rId1 (officeDocument)
+//       and a Fallback rId1 (styles), a duplicate Id only in the processed view; each with its direct twin.
+// s34b: F, a malformed docProps/core.xml reached through a Fallback core-properties relationship; H, session 26's
+//       footer typed as a header (#600) with its relationship in the Fallback; each with its direct twin; I,
+//       mc:MustUnderstand="foo" on the _rels/.rels root (review finding 4); L, the footer relationship in an mc:Choice
+//       whose Requires prefix is undeclared, Fallback empty (an mce-malformed AlternateContent; review finding 4).
+// s34c/s34d: I and L each alone beside a control, after Word crashed during s34b.
+// Shapes: reviews/review-632 probe.mts and controls.mts; tests/support/{minimal-docx,story-content-type-specimens,
+// relationships-markup-compatibility-specimens}.ts at layer 131.
+// Run from the layer 131 worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s34a pnpm exec tsx s34builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { STORY_FOOTER_XML, storyContentType, storyReferenceParts } from "./tests/support/story-content-type-specimens";
+import {
+    DOCUMENT_RELS,
+    MCE_DECLARATIONS,
+    PACKAGE_RELS,
+    fallback,
+    wrapRelationship,
+} from "./tests/support/relationships-markup-compatibility-specimens";
+import { validate } from "./src/scripts/office/validate";
+
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+const CT_CORE = "application/vnd.openxmlformats-package.core-properties+xml";
+type Parts = Record<string, string>;
+const MALFORMED_MAIN = `<?xml version="1.0"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p>`;
+const MALFORMED_CORE = `<?xml version="1.0"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties"><dc:title xmlns:dc="http://purl.org/dc/elements/1.1/">broken`;
+const CORE_REL = `<Relationship Id="rIdC" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>`;
+const OFFICE_REL = `<Relationship Id="rId1" Type="${R}/officeDocument" Target="word/document.xml"/>`;
+const relsWith = (body: string, declarations = "") =>
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"${declarations ? ` ${declarations}` : ""}>${body}</Relationships>`;
+const withCore = (rels: string): Parts => ({
+    ...MINIMAL_PARTS,
+    [PACKAGE_RELS]: rels,
+    "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+        "</Types>",
+        `<Override PartName="/docProps/core.xml" ContentType="${CT_CORE}"/></Types>`,
+    ),
+    "docProps/core.xml": MALFORMED_CORE,
+});
+const footer = (ct: "footer" | "header") =>
+    storyReferenceParts("footerReference", "footer", "footer1.xml", STORY_FOOTER_XML, storyContentType(ct));
+const mainInFallback = () => wrapRelationship({ ...MINIMAL_PARTS }, PACKAGE_RELS, "rId1", fallback);
+const control = () => buildDocx({ ...MINIMAL_PARTS });
+
+const chunks: Record<string, Array<[string, string, () => Promise<Uint8Array>]>> = {
+    s34a: [
+        ["s34a-control-minimal", "control", control],
+        [
+            "mce-fallback-main-malformed-doc",
+            "#634 (review 632 C: malformed main document, officeDocument relationship in Fallback)",
+            () => buildDocx({ ...mainInFallback(), "word/document.xml": MALFORMED_MAIN }),
+        ],
+        [
+            "direct-main-malformed-doc",
+            "#634 twin (C: malformed main document, direct relationship)",
+            () => buildDocx({ ...MINIMAL_PARTS, "word/document.xml": MALFORMED_MAIN }),
+        ],
+        [
+            "mce-fallback-main-zerobyte-rels",
+            "#634 (review 632 D: zero-byte main .rels, officeDocument relationship in Fallback)",
+            () => buildDocx({ ...mainInFallback(), [DOCUMENT_RELS]: "" }),
+        ],
+        [
+            "direct-main-zerobyte-rels",
+            "#634 twin (D: zero-byte main .rels, direct relationship)",
+            () => buildDocx({ ...MINIMAL_PARTS, [DOCUMENT_RELS]: "" }),
+        ],
+        [
+            "mce-fallback-split-duplicate-id",
+            "review 632 E (direct rId1 officeDocument plus Fallback rId1 styles in _rels/.rels)",
+            () =>
+                buildDocx({
+                    ...MINIMAL_PARTS,
+                    [PACKAGE_RELS]: relsWith(
+                        OFFICE_REL + fallback(`<Relationship Id="rId1" Type="${R}/styles" Target="word/styles.xml"/>`),
+                        MCE_DECLARATIONS,
+                    ),
+                }),
+        ],
+        [
+            "direct-duplicate-id",
+            "review 632 E twin (two direct rId1 in _rels/.rels)",
+            () =>
+                buildDocx({
+                    ...MINIMAL_PARTS,
+                    [PACKAGE_RELS]: relsWith(OFFICE_REL + `<Relationship Id="rId1" Type="${R}/styles" Target="word/styles.xml"/>`),
+                }),
+        ],
+        ["s34a-control-minimal-end", "control", control],
+    ],
+    s34b: [
+        ["s34b-control-minimal", "control", control],
+        [
+            "mce-fallback-malformed-coreprops",
+            "#634 (review 632 F: malformed core properties, relationship in Fallback)",
+            () => buildDocx(withCore(relsWith(OFFICE_REL + fallback(CORE_REL), MCE_DECLARATIONS))),
+        ],
+        [
+            "direct-malformed-coreprops",
+            "#634 twin (F: malformed core properties, direct relationship)",
+            () => buildDocx(withCore(relsWith(OFFICE_REL + CORE_REL))),
+        ],
+        [
+            "mce-fallback-footer-header-ct",
+            "#634 (review 632 H: footer typed as a header, relationship in Fallback)",
+            () => buildDocx(wrapRelationship(footer("header"), DOCUMENT_RELS, "rIdX", fallback)),
+        ],
+        [
+            "direct-footer-header-ct",
+            "#634 twin (H: footer typed as a header, direct relationship; #600)",
+            () => buildDocx(footer("header")),
+        ],
+        [
+            "mce-rels-root-mustunderstand",
+            "review 632 finding 4 (mc:MustUnderstand of an unknown namespace on the _rels/.rels root)",
+            () =>
+                buildDocx({
+                    ...MINIMAL_PARTS,
+                    [PACKAGE_RELS]: MINIMAL_PARTS[PACKAGE_RELS]!.replace(
+                        "<Relationships ",
+                        `<Relationships xmlns:mc="${MC}" xmlns:foo="urn:foo" mc:MustUnderstand="foo" `,
+                    ),
+                }),
+        ],
+        [
+            "mce-rels-choice-undeclared-prefix",
+            "review 632 finding 4 (footer relationship in an mc:Choice whose Requires prefix is undeclared, empty Fallback)",
+            () =>
+                buildDocx(
+                    wrapRelationship(
+                        footer("footer"),
+                        DOCUMENT_RELS,
+                        "rIdX",
+                        (rel) => `<mc:AlternateContent><mc:Choice Requires="nope">${rel}</mc:Choice><mc:Fallback/></mc:AlternateContent>`,
+                    ),
+                ),
+        ],
+        ["s34b-control-minimal-end", "control", control],
+    ],
+    // s34b: Word crashed ("Connection is invalid") twice around its items 4 and 5, so neither of the two finding-4 shapes
+    // can be credited with it. Re-probe each alone beside a control.
+    s34c: [
+        [
+            "mce-rels-root-mustunderstand",
+            "review 632 finding 4 (re-probe alone)",
+            () =>
+                buildDocx({
+                    ...MINIMAL_PARTS,
+                    [PACKAGE_RELS]: MINIMAL_PARTS[PACKAGE_RELS]!.replace(
+                        "<Relationships ",
+                        `<Relationships xmlns:mc="${MC}" xmlns:foo="urn:foo" mc:MustUnderstand="foo" `,
+                    ),
+                }),
+        ],
+        ["s34c-control-minimal", "control", control],
+    ],
+    s34d: [
+        [
+            "mce-rels-choice-undeclared-prefix",
+            "review 632 finding 4 (re-probe alone)",
+            () =>
+                buildDocx(
+                    wrapRelationship(
+                        footer("footer"),
+                        DOCUMENT_RELS,
+                        "rIdX",
+                        (rel) => `<mc:AlternateContent><mc:Choice Requires="nope">${rel}</mc:Choice><mc:Fallback/></mc:AlternateContent>`,
+                    ),
+                ),
+        ],
+        ["s34d-control-minimal", "control", control],
     ],
 };
 
