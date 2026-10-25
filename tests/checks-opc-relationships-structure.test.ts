@@ -12,8 +12,14 @@ import { MINIMAL_PARTS } from "./support/minimal-docx";
 import {
     fallback,
     MCE_DECLARATIONS,
+    PACKAGE_RELS,
     RELATIONSHIPS_MCE_CASES,
     RELATIONSHIPS_MCE_CODE,
+    ROOT_MCE_SHAPES,
+    rootMceRelationshipsParts,
+    rootMceWrappedRelationshipsParts,
+    rootMceXml,
+    rootUnselectedChoiceRelationshipsParts,
 } from "./support/relationships-markup-compatibility-specimens";
 
 const CODE = "opc-relationships-structure";
@@ -102,6 +108,59 @@ describe(CODE, () => {
     it("keeps a wrong raw root blocking even when Ignorable removes it", async () => {
         expect(await diagnose({ "_rels/.rels": `<x:Relationships ${MCE_DECLARATIONS} mc:Ignorable="x"/>` })).toEqual([
             expect.objectContaining({ code: CODE, message: expect.stringContaining("root") }),
+        ]);
+    });
+
+    it.each(ROOT_MCE_SHAPES)(
+        "accepts a package relationships root that a %s wrapper resolves to one Relationships element (#646)",
+        async (shape) => {
+            const parts = rootMceWrappedRelationshipsParts(PACKAGE_RELS, shape);
+            const ctx = ValidationContext.fromEntries(parts);
+            const before = ctx.xml(PACKAGE_RELS);
+            const serialized = before?.ok ? before.document.toString() : undefined;
+            expect(await diagnose(parts)).toEqual([]);
+            expect(before?.ok && before.document.toString()).toBe(serialized);
+        },
+    );
+
+    it.each(["_RELS/.RELS", "_rels/.%72els"])(
+        "accepts the resolved root under the equivalent package-relationships spelling %s (#646)",
+        async (part) => {
+            const wrapped = rootMceWrappedRelationshipsParts(PACKAGE_RELS)[PACKAGE_RELS]!;
+            const parts = Object.fromEntries(Object.entries(MINIMAL_PARTS).filter(([name]) => name !== PACKAGE_RELS));
+            expect(await diagnose({ ...parts, [part]: wrapped })).toEqual([]);
+        },
+    );
+
+    it("still reports a surviving foreign child through the resolved root (#646)", async () => {
+        const rels = `<Relationships xmlns="${NS.PR}"><Relationship Id="rId1" Type="${NS.R}/officeDocument" Target="word/document.xml"/><x:Wrap/></Relationships>`;
+        expect(await diagnose({ ...MINIMAL_PARTS, "_rels/.rels": rootMceXml("fallback", rels) })).toEqual([
+            expect.objectContaining({ code: CODE, path: "_rels/.rels", severity: "error", message: expect.stringContaining("Wrap") }),
+        ]);
+    });
+
+    it.each([
+        { label: "two Relationship elements", parts: () => rootMceRelationshipsParts(PACKAGE_RELS, "fallback") },
+        { label: "a single foreign element", parts: () => ({ ...MINIMAL_PARTS, "_rels/.rels": rootMceXml("fallback", "<x:Foo/>") }) },
+        { label: "no element at all", parts: () => ({ ...MINIMAL_PARTS, "_rels/.rels": rootMceXml("fallback", "") }) },
+        {
+            label: "no element, its Relationships in an unselected Choice",
+            parts: () => rootUnselectedChoiceRelationshipsParts(PACKAGE_RELS),
+        },
+    ])("keeps the wrong-root finding when the package root resolves to $label (#640, #646)", async ({ parts }) => {
+        expect(await diagnose(parts())).toEqual([
+            expect.objectContaining({ code: CODE, path: PACKAGE_RELS, severity: "error", message: expect.stringContaining("root") }),
+        ]);
+    });
+
+    it("keeps the stored-root verdict for a root-wrapped sidecar, which Word was not shown (#646)", async () => {
+        expect(await diagnose(rootMceWrappedRelationshipsParts("word/_rels/document.xml.rels"))).toEqual([
+            expect.objectContaining({
+                code: CODE,
+                path: "word/_rels/document.xml.rels",
+                severity: "error",
+                message: expect.stringContaining("root"),
+            }),
         ]);
     });
 

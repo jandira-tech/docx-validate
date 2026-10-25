@@ -306,3 +306,71 @@ export const STORY_RELS_MCE_CASES = [
             ),
     },
 ] as const;
+
+/** The part's own `Relationships` element, without the XML declaration, for root wrappers. */
+const storedRelationshipsElement = (part: string): string => MINIMAL_PARTS[part]!.replace(/^<\?xml[^>]*\?>\n?/, "");
+
+/**
+ * #646: a relationships part whose stored root wraps the part's whole
+ * `Relationships` element, so markup compatibility resolves the root to
+ * exactly one element. Word 16.115 opened each `_rels/.rels` shape clean:
+ * the `fallback` wrapper in session 36 (s36c, sha256 95a33fb1bbc883d4…) and
+ * again in session 38 (s38a), and the selected `choice` and the Ignorable
+ * `process-content` wrapper in session 38 (s38a). Word's specimens declared
+ * only the prefixes each uses. A root-wrapped sidecar is unobserved.
+ */
+export const rootMceWrappedRelationshipsParts = (part: string, shape: RootMceShape = "fallback"): Record<string, string> => ({
+    ...MINIMAL_PARTS,
+    [part]: rootMceXml(shape, storedRelationshipsElement(part)),
+});
+
+/**
+ * #646 boundary: the part's whole `Relationships` element in an `mc:Choice`
+ * markup compatibility does not select, beside an empty Fallback, so the
+ * root resolves to no element. Word 16.115 offered recovery for the
+ * `_rels/.rels` shape and then failed to open it (session 38, s38a).
+ */
+export const rootUnselectedChoiceRelationshipsParts = (part: string): Record<string, string> => ({
+    ...MINIMAL_PARTS,
+    [part]: `<mc:AlternateContent ${MCE_DECLARATIONS}><mc:Choice Requires="foo">${storedRelationshipsElement(part)}</mc:Choice><mc:Fallback/></mc:AlternateContent>`,
+});
+
+/** Session 39's compound package-root wrappers (s39b, #662). */
+export const COMPOUND_ROOT_SHAPES = [
+    "nested-fallback",
+    "three-nested-fallback",
+    "multiple-choices",
+    "first-of-two-understood-choices",
+    "mustunderstand-w14",
+    "ignorable-child",
+] as const;
+export type CompoundRootShape = (typeof COMPOUND_ROOT_SHAPES)[number];
+
+/**
+ * #662: a `_rels/.rels` root that combines wrappers markup compatibility
+ * still reduces to the package part's one `Relationships` element. Word
+ * 16.115 opened all six clean (session 39, s39b); the parts match those
+ * specimens byte for byte, declarations included.
+ */
+export const compoundRootRelationshipsParts = (shape: CompoundRootShape): Record<string, string> => {
+    const declarations = `xmlns:mc="${NS.MC}" xmlns:foo="urn:foo" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"`;
+    const plain = storedRelationshipsElement(PACKAGE_RELS);
+    const wrap = (xml: string): string =>
+        `<mc:AlternateContent ${declarations}><mc:Choice Requires="foo"/><mc:Fallback>${xml}</mc:Fallback></mc:AlternateContent>`;
+    const root = {
+        "nested-fallback": () => wrap(wrap(plain)),
+        "three-nested-fallback": () => wrap(wrap(wrap(plain))),
+        "multiple-choices": () =>
+            `<mc:AlternateContent ${declarations}><mc:Choice Requires="foo"/><mc:Choice Requires="w14">${plain}</mc:Choice><mc:Fallback/></mc:AlternateContent>`,
+        "first-of-two-understood-choices": () =>
+            `<mc:AlternateContent ${declarations}><mc:Choice Requires="w14">${plain}</mc:Choice><mc:Choice Requires="w14"><foo:bad/></mc:Choice><mc:Fallback/></mc:AlternateContent>`,
+        "mustunderstand-w14": () => wrap(plain).replace("<mc:AlternateContent ", '<mc:AlternateContent mc:MustUnderstand="w14" '),
+        "ignorable-child": () =>
+            wrap(
+                plain
+                    .replace("<Relationships ", '<Relationships mc:Ignorable="foo" ')
+                    .replace("</Relationships>", "<foo:bad/></Relationships>"),
+            ),
+    }[shape]();
+    return { ...MINIMAL_PARTS, [PACKAGE_RELS]: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n${root}` };
+};

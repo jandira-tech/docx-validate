@@ -329,6 +329,44 @@ describe("isWordBlockingIssue", () => {
         },
     );
 
+    it.each([
+        // #645, session 36 (s36b/s36d): a part every reaching relationship
+        // names through `…/relationships/chart` blocks only when a Word-read
+        // part's effective XML references one of those Ids.
+        { path: "word/charts/chart1.xml", unobserved: true, reference: true, story: false, chart: "referenced", blocking: true },
+        { path: "charts/chart1.xml", unobserved: true, reference: true, story: false, chart: "referenced", blocking: true },
+        { path: "word/charts/chart1.xml", unobserved: true, reference: true, story: false, chart: "unreferenced", blocking: false },
+        { path: "charts/chart1.xml", unobserved: true, reference: true, story: false, chart: "unreferenced", blocking: false },
+        // A chart-only part that is a story root keeps the story-root
+        // precedence (#625), and a genuine header/footer keeps its basename
+        // tolerance even when referenced.
+        { path: "charts/chart1.xml", unobserved: true, reference: true, story: true, chart: "unreferenced", blocking: true },
+        { path: "word/header1.xml", unobserved: true, reference: true, story: false, chart: "referenced", blocking: false },
+        // A non-chart part reached the same way stays as today: the
+        // unreferenced chart-only rule never applies to it.
+        { path: "word/xtra.xml", unobserved: true, reference: true, story: false, chart: "unreferenced", blocking: false },
+        { path: "word/xtra.xml", unobserved: true, reference: true, story: false, chart: "referenced", blocking: true },
+        // The fact stays undefined for a part any non-chart relationship
+        // reaches, or for an unrelated part, so reach alone decides.
+        { path: "word/charts/chart1.xml", unobserved: true, reference: true, story: false, chart: undefined, blocking: true },
+        { path: "word/xtra.xml", unobserved: false, reference: true, story: false, chart: undefined, blocking: false },
+    ] as const)("judges a chart-only missing sidecar by whether the relationship is referenced (#645): $path/$chart", (specimen) => {
+        const canonical = canonicalPartName(specimen.path);
+        expect(
+            isWordBlockingIssue(
+                issue("rels-missing-sidecar", { path: specimen.path }),
+                new Set(),
+                new Set(),
+                new Set(specimen.story ? [canonical] : []),
+                {
+                    hasEffectiveRelationshipReference: specimen.reference,
+                    reachedByUnobservedRelationship: specimen.unobserved,
+                    chartRelationshipReference: specimen.chart,
+                },
+            ),
+        ).toBe(specimen.blocking);
+    });
+
     it("does not infer a missing-sidecar reference from message prose or a part name (#638)", () => {
         expect(
             isWordBlockingIssue(

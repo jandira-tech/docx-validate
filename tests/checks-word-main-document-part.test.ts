@@ -8,7 +8,13 @@ import { describe, expect, it } from "vitest";
 import { ValidationContext } from "../src/lib/validation-context";
 import { createDefaultCheckRegistry, WORD_RULE_CHECKS } from "../src/scripts/office/checks";
 import { MINIMAL_PARTS } from "./support/minimal-docx";
-import { fallback, PACKAGE_RELS, wrapRelationship } from "./support/relationships-markup-compatibility-specimens";
+import {
+    fallback,
+    PACKAGE_RELS,
+    rootMceRelationshipsParts,
+    rootMceWrappedRelationshipsParts,
+    wrapRelationship,
+} from "./support/relationships-markup-compatibility-specimens";
 
 const CODE = "word-main-document-part";
 const PR = "http://schemas.openxmlformats.org/package/2006/relationships";
@@ -30,6 +36,16 @@ const mainPartIssues = async (parts: Readonly<Record<string, string>>) => {
 describe(CODE, () => {
     it("finds the main relationship in the selected package Fallback (#632)", async () => {
         expect(await mainPartIssues(wrapRelationship(MINIMAL_PARTS, PACKAGE_RELS, "rId1", fallback))).toEqual([]);
+    });
+
+    it("finds the main relationship through a package root wrapper that resolves to one Relationships element (#646)", async () => {
+        expect(await mainPartIssues(rootMceWrappedRelationshipsParts(PACKAGE_RELS))).toEqual([]);
+    });
+
+    it("keeps rejecting a package root wrapper that resolves to two Relationship elements (#640)", async () => {
+        expect(await mainPartIssues(rootMceRelationshipsParts(PACKAGE_RELS, "fallback"))).toEqual([
+            expect.objectContaining({ code: CODE, path: PACKAGE_RELS, severity: "error" }),
+        ]);
     });
 
     it("does not find a main relationship when AlternateContent selects nothing (#632)", async () => {
