@@ -4664,7 +4664,7 @@
             "relativePath": "external/docx4j/NumberingImplicitNumId.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["paraid-missing-element", "rels-broken"]
+                "errorCodes": ["paraid-missing-element"]
             },
             "lenient": {
                 "valid": false,
@@ -5166,7 +5166,7 @@
             "relativePath": "external/superdoc/behavior/sd-2517-localized-heading-styles.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["id-paraid-overflow", "id-textid-overflow", "paraid-missing-element", "rels-broken", "style-default-missing"]
+                "errorCodes": ["id-paraid-overflow", "id-textid-overflow", "paraid-missing-element", "style-default-missing"]
             },
             "lenient": {
                 "valid": false,
@@ -7849,8 +7849,8 @@
         {
             "relativePath": "external/superdoc/super-editor/sd-2534-collab-export.docx",
             "strict": {
-                "valid": false,
-                "errorCodes": ["rels-broken"]
+                "valid": true,
+                "errorCodes": []
             },
             "lenient": {
                 "valid": false,

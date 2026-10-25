@@ -896,6 +896,10 @@ export class BaseSchemaValidator {
                 const target = rel.getAttribute("Target");
                 if (!target) continue;
                 if (target.startsWith("http") || target.startsWith("mailto:")) continue;
+                // An External target names a resource outside the package, never
+                // a part (ECMA-376 Part 2 §9.3), so it is not resolved as one.
+                // Lenient keeps its historical scan, pinned byte for byte (#665).
+                if (this.profile !== "lenient" && rel.getAttribute("TargetMode") === "External") continue;
 
                 let targetPath: string;
                 if (target.startsWith("/")) {

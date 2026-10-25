@@ -241,6 +241,19 @@ or `rels-unreferenced` findings ([#635](https://github.com/jandira-tech/docx-val
 reports stored relationships markup compatibility and schema defects. Lenient
 keeps its raw traversal and existing findings.
 
+Under Word-valid and strict, the file-reference walk behind `rels-broken` and
+`rels-unreferenced` also skips `TargetMode="External"` relationships: an External
+target names a resource outside the package, never a part (ECMA-376 Part 2 §9.3),
+so a `file:///…`, UNC or `ftp://` target — such as the `attachedTemplate`
+relationship Word writes to a local template — is no longer resolved as a package
+path and reported as a broken reference. Word 16.115 opened External hyperlinks
+to `file:///missing.rels`, `file:///C:/docs/_rels/missing.xml` and
+`../customXml/missing.xml` clean, as direct children and inside a selected `w14`
+Choice, and one a `w:hyperlink` names; these are the targets Word-valid's
+`rels-broken` still blocked, so they no longer block (Word probes session 40,
+`s40a`/`s40b`). Lenient keeps its historical scan, which skips only `http…` and
+`mailto:` targets ([#665](https://github.com/jandira-tech/docx-validate/issues/665)).
+
 The processed view is DOCX/DOCM-only: every observation behind it is Word
 opening `.docx` files, and PowerPoint was never shown markup compatibility in a
 relationships part, so PPTX keeps the stored view under every profile
