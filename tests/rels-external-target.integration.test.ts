@@ -109,7 +109,10 @@ describe("TargetMode=External targets are not package paths (#665)", () => {
     ] as const)("still resolves a target whose TargetMode is %s as a part, under every profile", async (_label, targetMode) => {
         for (const profile of ["strict", "word-valid", "lenient"] as const) {
             const { valid, broken } = await run(withHyperlink("missing.pdf", "direct", targetMode), profile);
-            expect(broken.map((issue) => issue.message), profile).toEqual(["Broken reference to missing.pdf"]);
+            expect(
+                broken.map((issue) => issue.message),
+                profile,
+            ).toEqual(["Broken reference to missing.pdf"]);
             expect(valid, profile).toBe(profile === "word-valid");
         }
     });
