@@ -14,6 +14,7 @@
  */
 
 import { chmodSync, mkdirSync, symlinkSync, writeFileSync } from "node:fs";
+import JSZip from "jszip";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -395,6 +396,46 @@ describe("validate CLI: rejected invocations", { timeout: 120_000 }, () => {
         });
 
         expect(run.stdout).toMatch(/Auto-repaired [1-9]\d* issue\(s\)/);
+    });
+
+    it("discloses that --auto-repair on a packed file staged a copy and left the source unchanged (#649)", async () => {
+        const run = await withTempDir(async (dir) => {
+            const file = path.join(dir, "leading-space.docx");
+            writeFileSync(
+                file,
+                await buildDocx({
+                    ...MINIMAL_PARTS,
+                    "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace("<w:t>Hello</w:t>", "<w:t> Hello</w:t>"),
+                }),
+            );
+            return capture([file, "--auto-repair"]);
+        });
+
+        expect(run.stdout).toMatch(/Auto-repaired [1-9]\d* issue\(s\)/);
+        expect(run.stdout).toContain(
+            "Auto-repair ran on a temporary staged copy of the packed file; the repairs and repair-plan findings describe that copy, and the source file is unchanged.",
+        );
+    });
+
+    it("prints no staged-copy disclosure for a directory input (#649)", async () => {
+        const run = await withTempDir(async (dir) => {
+            const unpacked = path.join(dir, "unpacked.docx");
+            const zip = await buildDocx({
+                ...MINIMAL_PARTS,
+                "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace("<w:t>Hello</w:t>", "<w:t> Hello</w:t>"),
+            });
+            const loaded = await new JSZip().loadAsync(zip);
+            for (const [name, entry] of Object.entries(loaded.files)) {
+                if (entry.dir) continue;
+                const target = path.join(unpacked, name);
+                mkdirSync(path.dirname(target), { recursive: true });
+                writeFileSync(target, await entry.async("nodebuffer"));
+            }
+            return capture([unpacked, "--auto-repair"]);
+        });
+
+        expect(run.stdout).toMatch(/Auto-repaired [1-9]\d* issue\(s\)/);
+        expect(run.stdout).not.toContain("staged copy");
     });
 
     it("exits 1 with one line when --original is given without --author", async () => {

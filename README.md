@@ -856,7 +856,8 @@ core-properties relationship makes Word offer recovery, and its well-formed cont
 opens clean, so the rule follows the relationship, not the name. Full, quick and named
 runs share this policy; strict verdicts are unchanged.
 External entities are not loaded or expanded; XSD imports resolve through allowed local schema roots.
-Validation leaves source bytes unchanged unless you request `autoRepair`.
+Validation leaves source bytes unchanged unless you request `autoRepair` on an
+unpacked directory; a packed input is repaired only on a discarded staged copy.
 
 Content-type checks, XSD dispatch, and semantic diagnostics find the ZIP stream
 ASCII case-insensitively and retain its stored name in findings. Stream lookup does
@@ -1400,6 +1401,12 @@ file name and delete originals of parts removed by a repair; untouched files and
 dropped duplicate entries remain byte-identical. No forward-slash replacement
 files are added to the input directory. Quick and named-check runs continue to
 read the directory's package view directly ([#374](https://github.com/jandira-tech/docx-validate/issues/374)).
+A packed file (`.docx`/`.docm`/`.pptx`) is different: auto-repair runs on a
+temporary staged copy that is discarded, so the source file's bytes never
+change. The result then carries an `auto-repair-staged-copy` info finding —
+and the CLI prints the same sentence next to `Auto-repaired N issue(s)` —
+disclosing that the repairs and the repair plan describe the staged copy
+([#649](https://github.com/jandira-tech/docx-validate/issues/649)).
 
 A stored file that cannot be read fails the run with `package-extract-failed`,
 naming the stored file — the package view cannot be staged. This includes a

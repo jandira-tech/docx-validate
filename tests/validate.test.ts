@@ -277,6 +277,47 @@ describe("validate", () => {
         });
     });
 
+    it("discloses that auto-repair on a packed file ran on a staged copy (#649)", async () => {
+        await withTempDir(async (tmp) => {
+            const file = path.join(tmp, "packed.docx");
+            await fs.writeFile(
+                file,
+                await buildDocx({
+                    ...MINIMAL_PARTS,
+                    "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(">Hello<", "> Hello <"),
+                }),
+            );
+            const beforeBytes = await fs.readFile(file);
+            const result = await validate(file, { autoRepair: true });
+            expect(result.repairs).toBeGreaterThanOrEqual(1);
+            // The plan reports the repair as cleared, but the repaired bytes
+            // never reach the file — the result must say so.
+            expect(result.issues).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        severity: "info",
+                        code: "auto-repair-staged-copy",
+                        message:
+                            "Auto-repair ran on a temporary staged copy of the packed file; the repairs and repair-plan findings describe that copy, and the source file is unchanged.",
+                    }),
+                ]),
+            );
+            expect(await fs.readFile(file)).toEqual(beforeBytes);
+        });
+    });
+
+    it("keeps directory write-back and emits no staged-copy disclosure (#649)", async () => {
+        await withTempDir(async (tmp) => {
+            const unpacked = path.join(tmp, "unpacked.docx");
+            await writeMinimalDocxDir(unpacked, "<w:body><w:p><w:r><w:t> hello</w:t></w:r></w:p></w:body>");
+            const result = await validate(unpacked, { autoRepair: true });
+            expect(result.repairs).toBeGreaterThanOrEqual(1);
+            expect(result.issues.some((i) => i.code === "auto-repair-staged-copy")).toBe(false);
+            const docXml = await fs.readFile(path.join(unpacked, "word", "document.xml"), "utf8");
+            expect(docXml).toMatch(/xml:space="preserve"/);
+        });
+    });
+
     it("dispatches by --original suffix when target is a bare directory", async () => {
         await withTempDir(async (tmp) => {
             const unpacked = path.join(tmp, "unpacked");
