@@ -972,8 +972,8 @@ strict and Word-blocking under word-valid for DOCX/DOCM; lenient runs no Word
 rule. In a full word-valid or strict run neither `rels-id-mismatch` nor
 `rels-id-missing` repeats an element this check reported — the run drops that
 duplicate, pairing the two findings by the element identity both checks
-register on the issue (part path, namespace URI, local name and raw `r:id`),
-never by message text — while `validateAllRelationshipIds()` called on its own
+register on the issue (part path, namespace URI, local name, raw `r:id` and
+the namespace the `r:id` was read in), never by message text — while `validateAllRelationshipIds()` called on its own
 still reports every `rels-id-mismatch` and `rels-id-missing` (#612, #616,
 #619). A glossary no main-document relationship reaches keeps its
 `rels-id-mismatch` or `rels-id-missing` under strict (Word does not read it,

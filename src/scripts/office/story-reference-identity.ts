@@ -10,8 +10,9 @@
  * `word-header-footer-relationship` rule (checks/word-header-footer.ts) can
  * both report the same `headerReference`/`footerReference` element. A full
  * non-lenient run keeps the Word rule's finding and drops the legacy
- * `rels-id-mismatch` copy through `withoutRepeatedHeaderFooterFindings`
- * (validators/docx.ts). An `r:id` is well-formed XML with any character in
+ * `rels-id-mismatch` copy (#616), or the `rels-id-missing` copy for an
+ * `r:id` naming no Relationship (#619), through
+ * `withoutRepeatedHeaderFooterFindings` (validators/docx.ts). An `r:id` is well-formed XML with any character in
  * it, so the hand-off must never parse the two findings' message prose:
  * quoted ids defeated the former regexes (a double report) and a crafted
  * `r:id` could imitate another element's message prefix (a silent loss).
@@ -35,14 +36,20 @@ export const isStoryReferenceLocalName = (name: string): name is StoryReferenceL
 /**
  * The story reference element a finding names: the part path (backslashes
  * normalized to `/`, as `withoutRepeatedCompatibilityFindings` compares
- * paths), the element's namespace URI, its local name, and the raw `r:id`
- * attribute value.
+ * paths), the element's namespace URI, its local name, the raw `r:id`
+ * attribute value, and the namespace URI that attribute was read in. The
+ * Word rule reads the markup-compatibility view and both relationships
+ * namespaces, the legacy walk the raw part and only the Transitional one,
+ * so an `mc:Choice` reference with an ISO Strict `r:id` and its
+ * `mc:Fallback` twin with a Transitional one differ only in that last
+ * field (review BE F1).
  */
 export interface StoryReferenceIdentity {
     readonly part: string;
     readonly namespaceURI: string;
     readonly localName: StoryReferenceLocalName;
     readonly rid: string;
+    readonly ridNamespaceURI: string;
 }
 
 /** Identity by issue object, so a copied issue is an unregistered issue (#616). */

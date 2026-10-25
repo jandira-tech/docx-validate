@@ -2813,9 +2813,11 @@ export function withoutRepeatedCompatibilityFindings(schema: ValidationResult, r
  * #619). The pairing is the structured identity both producers registered on
  * the issue object when they created it (#616): part path (normalized on
  * registration, as `withoutRepeatedCompatibilityFindings` compares paths),
- * element namespace URI, local name and raw `r:id` all match, and findings
- * pair one-for-one — two identical elements are both dropped only by two
- * Word-rule findings. The former message-prose pairing let a quoted `r:id`
+ * element namespace URI, local name, raw `r:id` and the namespace URI the
+ * `r:id` was read in all match, so an `mc:Choice` reference whose ISO Strict
+ * `r:id` the Word rule judged never consumes its `mc:Fallback` twin's
+ * Transitional finding (review BE F1). Findings pair one-for-one — two
+ * identical elements are both dropped only by two Word-rule findings. The former message-prose pairing let a quoted `r:id`
  * double the report and a crafted `r:id` consume a foreign element's only
  * mismatch. A finding without a registered identity — another producer, or
  * a copy made between producer and helper — is never dropped. Where the
@@ -2825,7 +2827,7 @@ export function withoutRepeatedCompatibilityFindings(schema: ValidationResult, r
  */
 export function withoutRepeatedHeaderFooterFindings(relationshipIds: ValidationResult, rules: ValidationResult): ValidationResult {
     const key = (identity: StoryReferenceIdentity): string =>
-        `${identity.part}\u0000${identity.namespaceURI}\u0000${identity.localName}\u0000${identity.rid}`;
+        `${identity.part}\u0000${identity.namespaceURI}\u0000${identity.localName}\u0000${identity.rid}\u0000${identity.ridNamespaceURI}`;
     const reported = new Map<string, number>();
     for (const issue of rules.issues) {
         if (issue.code !== WORD_HEADER_FOOTER_RELATIONSHIP) continue;

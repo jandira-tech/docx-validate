@@ -146,10 +146,12 @@ export const wordHeaderFooterRelationshipCheck: CheckDefinition = {
                     const [transitionalType, strictType] = ACCEPTED_RELATIONSHIP_TYPES[expected];
                     for (const elem of getElementsByTagNameNSAll(parsed.document, ns, localName)) {
                         let rid: string | null = null;
+                        let ridNamespaceURI = "";
                         for (const relNs of relationshipNamespaces) {
                             const value = elem.getAttributeNS(relNs, "id");
                             if (value) {
                                 rid = value;
+                                ridNamespaceURI = relNs;
                                 break;
                             }
                         }
@@ -173,7 +175,7 @@ export const wordHeaderFooterRelationshipCheck: CheckDefinition = {
                             // #619: the full run's hand-off pairs this finding
                             // with rels-id-missing's copy through the
                             // registered element identity, never the prose.
-                            registerStoryReferenceIdentity(issue, { part: root.part, namespaceURI: ns, localName, rid });
+                            registerStoryReferenceIdentity(issue, { part: root.part, namespaceURI: ns, localName, rid, ridNamespaceURI });
                             issues.push(issue);
                             continue;
                         }
@@ -192,7 +194,7 @@ export const wordHeaderFooterRelationshipCheck: CheckDefinition = {
                         // #616: the full run's hand-off pairs this finding with
                         // rels-id-mismatch's copy through the registered element
                         // identity, never the message prose.
-                        registerStoryReferenceIdentity(issue, { part: root.part, namespaceURI: ns, localName, rid });
+                        registerStoryReferenceIdentity(issue, { part: root.part, namespaceURI: ns, localName, rid, ridNamespaceURI });
                         issues.push(issue);
                     }
                 }

@@ -682,6 +682,7 @@ describe("#612: rels-id-mismatch reports every mismatch; full runs deduplicate",
             localName: "headerReference" | "footerReference",
             rid: string,
             namespaceURI = W,
+            ridNamespaceURI = REL,
         ): ValidationIssue => {
             const issue: ValidationIssue = {
                 severity: "error",
@@ -689,7 +690,7 @@ describe("#612: rels-id-mismatch reports every mismatch; full runs deduplicate",
                 path: part,
                 message: "mismatch prose the helper never parses (#616)",
             };
-            registerStoryReferenceIdentity(issue, { part, namespaceURI, localName, rid });
+            registerStoryReferenceIdentity(issue, { part, namespaceURI, localName, rid, ridNamespaceURI });
             return issue;
         };
 
@@ -699,6 +700,7 @@ describe("#612: rels-id-mismatch reports every mismatch; full runs deduplicate",
             localName: "headerReference" | "footerReference",
             rid: string,
             namespaceURI = W,
+            ridNamespaceURI = REL,
         ): ValidationIssue => {
             const issue: ValidationIssue = {
                 severity: "error",
@@ -706,7 +708,7 @@ describe("#612: rels-id-mismatch reports every mismatch; full runs deduplicate",
                 path: part,
                 message: "word-rule prose the helper never parses (#616)",
             };
-            registerStoryReferenceIdentity(issue, { part, namespaceURI, localName, rid });
+            registerStoryReferenceIdentity(issue, { part, namespaceURI, localName, rid, ridNamespaceURI });
             return issue;
         };
 
@@ -755,6 +757,7 @@ describe("#612: rels-id-mismatch reports every mismatch; full runs deduplicate",
             localName: "headerReference" | "footerReference",
             rid: string,
             namespaceURI = W,
+            ridNamespaceURI = REL,
         ): ValidationIssue => {
             const issue: ValidationIssue = {
                 severity: "error",
@@ -762,7 +765,7 @@ describe("#612: rels-id-mismatch reports every mismatch; full runs deduplicate",
                 path: part,
                 message: "missing prose the helper never parses (#619)",
             };
-            registerStoryReferenceIdentity(issue, { part, namespaceURI, localName, rid });
+            registerStoryReferenceIdentity(issue, { part, namespaceURI, localName, rid, ridNamespaceURI });
             return issue;
         };
 
@@ -773,6 +776,15 @@ describe("#612: rels-id-mismatch reports every mismatch; full runs deduplicate",
                 { valid: false, issues: [wordFinding("word/document.xml", "footerReference", "rId9")] },
             );
             expect(result.issues).toEqual([]);
+        });
+
+        it("keeps a rels-id-missing whose r:id sits in another attribute namespace (review BE F1)", () => {
+            const fallback = relsMissing("word/document.xml", "footerReference", "rId9", W, REL);
+            const result = withoutRepeatedHeaderFooterFindings(
+                { valid: false, issues: [fallback] },
+                { valid: false, issues: [wordFinding("word/document.xml", "footerReference", "rId9", W, STRICT_REL)] },
+            );
+            expect(result.issues).toEqual([fallback]);
         });
 
         it("keeps a rels-id-missing with no registered identity (#619)", () => {
@@ -1082,6 +1094,50 @@ describe("#619: a story reference whose r:id names no Relationship (Word 16.115 
                     tag,
                 ).toEqual(expected);
             }
+        });
+    });
+
+    /**
+     * Review BE F1: the Word rule reads the markup-compatibility view, where
+     * the Choice's footerReference carries its id in the ISO Strict
+     * relationships namespace; the legacy walk reads the raw part and only
+     * the Transitional one, so it reports the Fallback's footerReference.
+     * The two findings name different elements and must both survive.
+     */
+    const choiceFallbackParts = (rid: string): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+            `<w:document xmlns:w="${W}"`,
+            `<w:document xmlns:w="${W}" xmlns:r="${REL}" xmlns:rs="${STRICT_REL}"`,
+        ).replace(
+            "<w:sectPr>",
+            `<w:sectPr><mc:AlternateContent><mc:Choice Requires="w14"><w:footerReference w:type="default" rs:id="${rid}"/></mc:Choice>` +
+                `<mc:Fallback><w:footerReference w:type="default" r:id="${rid}"/></mc:Fallback></mc:AlternateContent>`,
+        ),
+    });
+
+    it("a Choice's Strict rs:id does not consume the Fallback's Transitional rels-id-missing (review BE F1)", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "choice-fallback-missing.docx");
+            writeFileSync(file, await buildDocx(choiceFallbackParts("rId9")));
+            const strict = await validate(file, { profile: "strict" });
+            expect(strict.issues.filter((issue) => issue.code === CODE)).toHaveLength(1);
+            expect(
+                strict.issues.filter((issue) => issue.code === "rels-id-missing" && issue.message.includes("footerReference")),
+            ).toHaveLength(1);
+        });
+    });
+
+    it("a Choice's Strict rs:id does not consume the Fallback's Transitional rels-id-mismatch (review BE F1, #616)", async () => {
+        await withTempDir(async (dir) => {
+            // rId1 is MINIMAL_PARTS' styles relationship: a mismatch for both.
+            const file = path.join(dir, "choice-fallback-mismatch.docx");
+            writeFileSync(file, await buildDocx(choiceFallbackParts("rId1")));
+            const strict = await validate(file, { profile: "strict" });
+            expect(strict.issues.filter((issue) => issue.code === CODE)).toHaveLength(1);
+            expect(
+                strict.issues.filter((issue) => issue.code === "rels-id-mismatch" && issue.message.includes("footerReference")),
+            ).toHaveLength(1);
         });
     });
 

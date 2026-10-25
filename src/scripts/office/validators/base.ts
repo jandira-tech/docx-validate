@@ -1162,6 +1162,7 @@ export class BaseSchemaValidator {
                                 namespaceURI: elem.namespaceURI ?? "",
                                 localName: elemName,
                                 rid: ridAttr,
+                                ridNamespaceURI: rNs,
                             });
                         }
                         issues.push(issue);
@@ -1187,6 +1188,7 @@ export class BaseSchemaValidator {
                                         namespaceURI: elem.namespaceURI ?? "",
                                         localName: elemName,
                                         rid: ridAttr,
+                                        ridNamespaceURI: rNs,
                                     });
                                 }
                                 issues.push(issue);
