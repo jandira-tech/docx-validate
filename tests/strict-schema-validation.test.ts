@@ -213,7 +213,10 @@ describe("strict profile — Dublin Core core properties", () => {
             );
             const result = await validate(file, { profile: "strict" });
             expect(result.issues.some((i) => i.code === "xsd-schema-load-failed")).toBe(false);
-            expect(result.issues.every((i) => !i.message.includes("dublincore.org") && !i.message.includes("purl.org/dc/"))).toBe(true);
+            for (const issue of result.issues) {
+                expect(issue.message).not.toContain("dublincore.org");
+                expect(issue.message).not.toContain("purl.org/dc/");
+            }
             expect(result.valid).toBe(true);
         });
     }, 60_000);

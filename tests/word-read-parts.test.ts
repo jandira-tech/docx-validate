@@ -312,7 +312,7 @@ describe("wordReadParts (#437)", () => {
         };
         const reached = await wordReadParts(ValidationContext.fromEntries(external));
         expect(reached.has(canonicalPartName("https:/example.com/settings.xml"))).toBe(false);
-        expect([...reached].some((part) => part.includes("example.com"))).toBe(false);
+        for (const part of reached) expect(part).not.toContain("example.com");
     });
 
     it("resolves a target relative to the main document's folder", async () => {

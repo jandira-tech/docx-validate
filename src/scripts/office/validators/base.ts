@@ -544,7 +544,7 @@ export class BaseSchemaValidator {
             if (!isRelationshipsPartName(this.entryName(xmlFile))) continue;
             let dom: Document;
             try {
-                dom = parseXmlBytes(await fs.readFile(xmlFile));
+                dom = await this.readPartDom(xmlFile);
             } catch {
                 // Malformed rels files surface elsewhere via xml-syntax /
                 // rels-broken codes; don't double-report here.
@@ -755,7 +755,7 @@ export class BaseSchemaValidator {
         for (const xmlFile of this.xmlFiles) {
             let dom: Document;
             try {
-                dom = parseXmlBytes(await fs.readFile(xmlFile));
+                dom = await this.readPartDom(xmlFile);
             } catch {
                 continue;
             }
@@ -864,7 +864,7 @@ export class BaseSchemaValidator {
         for (const [relsPart, relsFile] of relsFiles) {
             let dom: Document;
             try {
-                dom = parseXmlBytes(await fs.readFile(relsFile));
+                dom = await this.readPartDom(relsFile);
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -950,7 +950,7 @@ export class BaseSchemaValidator {
         for (const [relsPart, relsFile] of relsFiles) {
             let dom: Document;
             try {
-                dom = parseXmlBytes(await fs.readFile(relsFile));
+                dom = await this.readPartDom(relsFile);
             } catch {
                 continue;
             }
@@ -1053,7 +1053,7 @@ export class BaseSchemaValidator {
             if (packageRelsFile !== undefined) {
                 try {
                     reportDuplicates(
-                        parseXmlBytes(await fs.readFile(packageRelsFile)),
+                        await this.readPartDom(packageRelsFile),
                         packageRelsFile,
                         packageRels ?? this.entryName(packageRelsFile),
                     );
@@ -1077,7 +1077,7 @@ export class BaseSchemaValidator {
             if (!relsFile) {
                 let xmlDomCheck: Document;
                 try {
-                    xmlDomCheck = parseXmlBytes(await fs.readFile(xmlFile));
+                    xmlDomCheck = await this.readPartDom(xmlFile);
                 } catch {
                     continue;
                 }
@@ -1106,7 +1106,7 @@ export class BaseSchemaValidator {
 
             let relsDom: Document;
             try {
-                relsDom = parseXmlBytes(await fs.readFile(relsFile));
+                relsDom = await this.readPartDom(relsFile);
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -1132,7 +1132,7 @@ export class BaseSchemaValidator {
 
             let xmlDom: Document;
             try {
-                xmlDom = parseXmlBytes(await fs.readFile(xmlFile));
+                xmlDom = await this.readPartDom(xmlFile);
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -1232,7 +1232,7 @@ export class BaseSchemaValidator {
             const relsFile = relsPart === undefined ? undefined : entries.get(relsPart);
             if (relsFile === undefined) continue;
             try {
-                reportDuplicates(parseXmlBytes(await fs.readFile(relsFile)), relsFile, relsPart ?? this.entryName(relsFile));
+                reportDuplicates(await this.readPartDom(relsFile), relsFile, relsPart ?? this.entryName(relsFile));
             } catch {
                 // XML syntax diagnostics already report this part.
             }
@@ -1285,7 +1285,7 @@ export class BaseSchemaValidator {
 
         let dom: Document;
         try {
-            dom = parseXmlBytes(await fs.readFile(entries.get(contentTypesName)!));
+            dom = await this.readPartDom(entries.get(contentTypesName)!);
         } catch (err) {
             return {
                 valid: false,
@@ -1357,7 +1357,7 @@ export class BaseSchemaValidator {
             }
 
             try {
-                const root = parseXmlBytes(await fs.readFile(xmlFile)).documentElement;
+                const root = (await this.readPartDom(xmlFile)).documentElement;
                 if (!root) continue;
                 const rootName = localName(root.tagName ?? root.nodeName);
                 // A declarable root must be covered by an <Override PartName>
@@ -2125,6 +2125,39 @@ export class BaseSchemaValidator {
     }
 
     /**
+     * Parse a part file for a check that only reads the DOM. Inside a
+     * `validate()` run every such check shares one parse of the same bytes:
+     * a full DOCX run otherwise parses `word/document.xml` once per check,
+     * about fifteen times, which took a 2 MB document past 30 seconds on CI.
+     * The file is re-read and its bytes compared on every call, so a part
+     * written during the run is parsed afresh, and a parse failure is replayed
+     * to every caller that reads the same bytes. Outside a run every call
+     * parses fresh, as before.
+     *
+     * Callers must not mutate the result. A check that rewrites its DOM
+     * (`validateUniqueIds` strips AlternateContent) parses its own copy.
+     */
+    protected async readPartDom(file: string): Promise<Document> {
+        const bytes = await fs.readFile(file);
+        const run = baselineRunStore.getStore();
+        if (run === undefined) return parseXmlBytes(bytes);
+        run.partDoms ??= new Map();
+        const parsed = run.partDoms.get(file);
+        if (parsed !== undefined && parsed.bytes.equals(bytes)) {
+            if (parsed.dom === undefined) throw parsed.error;
+            return parsed.dom;
+        }
+        try {
+            const dom = parseXmlBytes(bytes);
+            run.partDoms.set(file, { bytes, dom });
+            return dom;
+        } catch (error) {
+            run.partDoms.set(file, { bytes, error });
+            throw error;
+        }
+    }
+
+    /**
      * The `--original` archive, read from disk and loaded once per
      * `validate()` run — baseline subtraction consults it for every XSD-failed
      * part, and each call otherwise re-reads and re-parses the archive (#481).
@@ -2457,6 +2490,8 @@ export interface BaselineState {
     documentRoot?: Element | null;
     /** True once loading `word/document.xml` was attempted and failed. */
     documentRootFailed?: boolean;
+    /** This run's parsed part files, by path; see {@link BaseSchemaValidator.readPartDom}. */
+    partDoms?: Map<string, { bytes: Buffer; dom?: Document; error?: unknown }>;
 }
 
 /** Per-`validate()`-invocation baseline scope; see {@link BaselineState} (#520). */

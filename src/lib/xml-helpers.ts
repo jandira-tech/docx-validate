@@ -228,8 +228,80 @@ export const prettyXml = (node: Node, indent = "  "): string => {
  *
  * Use `"*"` as the namespace to match across all namespaces (mirrors
  * `Document.getElementsByTagName('*')`).
+ *
+ * A query rooted at a Document reads an index of its elements once a second
+ * query finds the document unchanged since the first: a full DOCX run asks
+ * the same main document for one element name after another, hundreds of
+ * walks that dominated a 2 MB document's validation time. A caller that
+ * changes the document between queries keeps the plain walk instead of
+ * rebuilding the index for each one.
  */
 export const getElementsByTagNameNSAll = (root: Document | Element, namespaceURI: string, localName: string): Element[] => {
+    if (root.nodeType === 9 /* DOCUMENT_NODE */) {
+        const index = documentElementIndex(root as Document);
+        if (index !== undefined) {
+            if (namespaceURI === "*" && localName === "*") return index.all.slice();
+            if (namespaceURI !== "*" && localName !== "*") return index.byName.get(namespaceURI)?.get(localName)?.slice() ?? [];
+            return index.all.filter(
+                (elem) =>
+                    (namespaceURI === "*" || elem.namespaceURI === namespaceURI) && (localName === "*" || elem.localName === localName),
+            );
+        }
+    }
+    return walkElements(root, namespaceURI, localName);
+};
+
+/** Every descendant element of a document in document order, and the same grouped by namespace and local name. */
+interface DocumentElementIndex {
+    /** The document's mutation counter when the index was built. */
+    readonly inc: number;
+    readonly all: Element[];
+    readonly byName: Map<string | null, Map<string, Element[]>>;
+}
+
+const documentElementIndexes = new WeakMap<Document, DocumentElementIndex>();
+
+/** The mutation counter each document had at its last query that walked instead of reading an index. */
+const documentWalkedAt = new WeakMap<Document, number>();
+
+/**
+ * The element index of `document`, current as of its last change, or
+ * undefined when the caller should walk. @xmldom increments the private
+ * `_inc` counter on every child or attribute change of a node the document
+ * owns, which is what its own live NodeLists key their caches on; without
+ * that counter there is no index and callers walk. The index is built on the
+ * second query that sees the same counter, so a caller that changes the
+ * document between queries pays one walk per query, as without an index.
+ */
+const documentElementIndex = (document: Document): DocumentElementIndex | undefined => {
+    const inc = (document as Document & { _inc?: unknown })._inc;
+    if (typeof inc !== "number") return undefined;
+    const cached = documentElementIndexes.get(document);
+    if (cached?.inc === inc) return cached;
+    if (documentWalkedAt.get(document) !== inc) {
+        documentWalkedAt.set(document, inc);
+        return undefined;
+    }
+    const all = walkElements(document, "*", "*");
+    const byName = new Map<string | null, Map<string, Element[]>>();
+    for (const elem of all) {
+        let byLocal = byName.get(elem.namespaceURI);
+        if (byLocal === undefined) {
+            byLocal = new Map();
+            byName.set(elem.namespaceURI, byLocal);
+        }
+        const name = elem.localName ?? "";
+        const list = byLocal.get(name);
+        if (list === undefined) byLocal.set(name, [elem]);
+        else list.push(elem);
+    }
+    const index = { inc, all, byName };
+    documentElementIndexes.set(document, index);
+    return index;
+};
+
+/** The stack-based DFS behind {@link getElementsByTagNameNSAll}: matching descendants of `root` in document order. */
+const walkElements = (root: Document | Element, namespaceURI: string, localName: string): Element[] => {
     const out: Element[] = [];
     const stack: Node[] = [root];
 
