@@ -67,7 +67,9 @@ const assertNoLinkBelow = async (root: string, destination: string, entryName: s
         } catch (err) {
             // Nothing on disk from here down, or a file where a folder is
             // needed, which the write itself then refuses.
-            if ((err as NodeJS.ErrnoException).code === "ENOENT" || (err as NodeJS.ErrnoException).code === "ENOTDIR") return;
+            if ((err as NodeJS.ErrnoException).code === "ENOENT" || (err as NodeJS.ErrnoException).code === "ENOTDIR") {
+                return;
+            }
             throw err;
         }
         if (stat.isSymbolicLink()) {
@@ -96,7 +98,9 @@ export const extractZipEntries = async (zip: JSZip, outputDir: string): Promise<
     const entries: { name: string; resolved: string; file: JSZip.JSZipObject }[] = [];
     zip.forEach((relativePath, file) => {
         const stored = (file as JSZip.JSZipObject & { unsafeOriginalName?: string }).unsafeOriginalName;
-        if (stored !== undefined) resolveSafeZipEntry(root, stored);
+        if (stored !== undefined) {
+            resolveSafeZipEntry(root, stored);
+        }
         entries.push({ name: relativePath, resolved: resolveSafeZipEntry(root, relativePath), file });
     });
     for (const { name, resolved } of entries) {
@@ -106,8 +110,12 @@ export const extractZipEntries = async (zip: JSZip, outputDir: string): Promise<
     try {
         for (const { resolved, file } of entries) {
             const folder = await fs.mkdir(file.dir ? resolved : path.dirname(resolved), { recursive: true });
-            if (folder !== undefined) created.push(folder);
-            if (file.dir) continue;
+            if (folder !== undefined) {
+                created.push(folder);
+            }
+            if (file.dir) {
+                continue;
+            }
             const content = await file.async("nodebuffer");
             try {
                 await fs.writeFile(resolved, content, { flag: "wx" });

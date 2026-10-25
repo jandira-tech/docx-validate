@@ -36,7 +36,7 @@ import { DOCUMENT_RELS, MCE_DECLARATIONS } from "./support/relationships-markup-
 const HYPERLINK = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
 
 /** The minimal package plus one hyperlink relationship to `target`, a direct child or inside a selected w14 Choice. */
-const withHyperlink = (target: string, placement: "direct" | "choice", targetMode: string | null = "External") => {
+const withHyperlink = (target: string, placement: "direct" | "choice", targetMode: string | null = "External"): Record<string, string> => {
     const mode = targetMode === null ? "" : ` TargetMode="${targetMode}"`;
     const relationship = `<Relationship Id="rId9" Type="${HYPERLINK}" Target="${target}"${mode}/>`;
     const content =
