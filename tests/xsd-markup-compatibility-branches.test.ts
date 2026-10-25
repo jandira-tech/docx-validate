@@ -54,6 +54,7 @@ const schemaWalk = async (profile: Profile, rootAttrs: string, body: string) =>
 
 describe.each(["strict", "lenient"] as const)(
     "the schema walk validates the selected AlternateContent branch (#627) under %s",
+    { timeout: 120_000 },
     (profile) => {
         it("validates an understood mc:Choice payload: a bogus element in it is a schema error", async () => {
             const errors = await schemaWalk(

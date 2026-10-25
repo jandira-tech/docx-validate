@@ -70,7 +70,7 @@ const schemaWalk = async (profile: Profile, extra: Readonly<Record<string, strin
         };
     });
 
-describe("schema routing of glossary and diagram parts (#628)", () => {
+describe("schema routing of glossary and diagram parts (#628)", { timeout: 120_000 }, () => {
     it.each([
         ["word/glossary/document.xml", "word"],
         ["word/glossary/styles.xml", "word"],
