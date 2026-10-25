@@ -231,7 +231,9 @@ keeps its raw traversal and existing findings.
 The processed view is DOCX/DOCM-only: every observation behind it is Word
 opening `.docx` files, and PowerPoint was never shown markup compatibility in a
 relationships part, so PPTX keeps the stored view under every profile
-([#643](https://github.com/jandira-tech/docx-validate/issues/643)).
+([#643](https://github.com/jandira-tech/docx-validate/issues/643)). A DOCX run
+builds each relationships part's view once, through the run context's cached
+`effectiveXml` ([#642](https://github.com/jandira-tech/docx-validate/issues/642)).
 
 Named checks and quick checks use the same options in the path and byte APIs:
 

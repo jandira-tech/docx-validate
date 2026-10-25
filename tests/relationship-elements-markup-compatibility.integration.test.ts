@@ -11,12 +11,19 @@
  * a relationships part with markup compatibility, so a PPTX keeps the stored
  * relationships view under every profile — f166c0a1's verdicts — while the
  * DOCX specimens stay processed.
+ *
+ * A DOCX run processes each relationships part once (#642): the walks share
+ * the run context's cached `effectiveXml` view rather than re-running markup
+ * compatibility per call.
  */
 
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { isRelationshipsPartName } from "../src/lib/content-types";
+import * as markupCompatibility from "../src/lib/markup-compatibility";
+import { RELATIONSHIPS_UNDERSTOOD_NAMESPACES } from "../src/lib/markup-compatibility";
 import { withTempDir } from "../src/lib/run-cli";
 import type { ValidationIssue } from "../src/lib/types";
 import { validate } from "../src/scripts/office/validate";
@@ -44,6 +51,10 @@ const pinned = (issues: readonly ValidationIssue[]) =>
     issues.map((issue) => ({ severity: issue.severity, code: issue.code, path: issue.path, message: issue.message }));
 const matching = (issues: readonly ValidationIssue[], ...codes: string[]): ValidationIssue[] =>
     issues.filter((issue) => codes.includes(issue.code ?? ""));
+
+afterEach(() => {
+    vi.restoreAllMocks();
+});
 
 describe("PPTX relationships parts keep the stored view under every profile (#643)", { timeout: 120_000 }, () => {
     it.each(["word-valid", "strict"] as const)(
@@ -103,6 +114,33 @@ describe("PPTX relationships parts keep the stored view under every profile (#64
             const result = await validate(file, { profile: "word-valid" });
             expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
             expect(result.valid).toBe(true);
+        });
+    });
+});
+
+describe("one markup-compatibility pass per relationships part (#642)", { timeout: 120_000 }, () => {
+    // A third relationships part beside MINIMAL_PARTS' two: an external-only
+    // sidecar for a customXml part that is not in the package, so it adds no
+    // finding and the package stays clean.
+    const parts: Record<string, string> = {
+        ...MINIMAL_PARTS,
+        "customXml/_rels/item1.xml.rels":
+            `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+            `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+            `<Relationship Id="rId1" Type="${R}/hyperlink" Target="https://example.com/" TargetMode="External"/>` +
+            `</Relationships>`,
+    };
+    const relsParts = Object.keys(parts).filter(isRelationshipsPartName);
+
+    it.each(["word-valid", "strict"] as const)("%s: a full run processes each relationships part once", async (profile) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "specimen.docx");
+            await writeFile(file, await buildDocx(parts));
+            const spy = vi.spyOn(markupCompatibility, "applyMarkupCompatibility");
+            const result = await validate(file, { profile });
+            expect(result.valid, JSON.stringify(result.issues)).toBe(true);
+            const relationshipsPasses = spy.mock.calls.filter(([, opts]) => opts.understood === RELATIONSHIPS_UNDERSTOOD_NAMESPACES);
+            expect(relationshipsPasses).toHaveLength(relsParts.length);
         });
     });
 });

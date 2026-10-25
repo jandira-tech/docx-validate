@@ -85,7 +85,7 @@ import { contextFromDirectory, openDirectoryContext, packageExtractFailedIssue, 
 import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
 import { WORD_PART_CONTENT_TYPE_MISMATCH, wordPartContentTypeMismatchFindings } from "../checks/word-part-content-type-mismatch";
 import { WORD_PART_CONTENT_TYPE_INEXACT, wordPartContentTypeInexactFindings } from "../checks/word-part-content-type-inexact";
-import { RELATIONSHIPS_UNDERSTOOD_NAMESPACES, applyMarkupCompatibility } from "../../../lib/markup-compatibility";
+import { RELATIONSHIPS_UNDERSTOOD_NAMESPACES, understoodNamespacesForPart } from "../../../lib/markup-compatibility";
 
 export { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES, WORD_STRICT_NAMESPACE } from "../word-namespaces";
 /** OpenXmlPowerTools DocumentBuilder Insert — `PtOpenXml.ptOpenXml` in PtOpenXmlUtil.cs */
@@ -418,15 +418,27 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     }
 
     /**
-     * The `.rels` part as the non-lenient walks read it (#635): Word 16.115
-     * resolves markup compatibility in relationships parts (probe sessions
-     * 33–35, docs/plans/evidence/word-probes-2026-10-24.md), so DOCX/DOCM
-     * read the processed view with the capabilities `ctx.effectiveXml`'s
-     * `understoodNamespacesForPart` uses for `.rels` streams. PPTX keeps the
-     * stored view (#643).
+     * The `.rels` part as the non-lenient walks read it (#635): the run
+     * context's `effectiveXml` whenever `understoodNamespacesForPart`
+     * processes `part` with the same understood set `relationshipElements`
+     * applies — exactly the relationships parts — so markup compatibility
+     * runs once per part per run (#642). A part the context cannot supply
+     * (an unrecognized spelling, a part absent from the package view, or a
+     * refused directory) keeps the validator's own memoized processed
+     * clone. DOCX/DOCM only: PPTX keeps the stored view (#643).
      */
-    protected override relationshipsView(document: Document, _part: string): Document {
-        return applyMarkupCompatibility(document, { understood: RELATIONSHIPS_UNDERSTOOD_NAMESPACES }).document;
+    protected override relationshipsView(document: Document, part: string): Document {
+        if (understoodNamespacesForPart(part) === RELATIONSHIPS_UNDERSTOOD_NAMESPACES) {
+            try {
+                const effective = this.context().effectiveXml(part);
+                if (effective?.ok === true) {
+                    return effective.document;
+                }
+            } catch {
+                // A refused directory view falls back to the processed clone.
+            }
+        }
+        return this.processedRelationshipsView(document, part);
     }
 
     // ----- top-level entry point ----------------------------------------------
@@ -438,6 +450,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     async validate(): Promise<ValidationResult> {
         this.inRun = true;
         this.runContext = undefined;
+        // A run re-reads the package: the processed relationship views of
+        // the previous run must not outlive it, as `runContext` does not.
+        this.resetProcessedRelationships();
         try {
             return await this.withinBaselineRun(() => this.runEveryCheck());
         } finally {

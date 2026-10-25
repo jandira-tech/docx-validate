@@ -59,6 +59,7 @@ import {
 } from "../../../lib/content-types";
 import {
     applyMarkupCompatibility,
+    RELATIONSHIPS_UNDERSTOOD_NAMESPACES,
     STRICT_UNDERSTOOD_NAMESPACES,
     UNDERSTOOD_NAMESPACES,
     understoodNamespacesForPart,
@@ -644,6 +645,7 @@ export class BaseSchemaValidator {
         this.xmlFiles.length = 0;
         for (const f of surviving) this.xmlFiles.push(f);
         this.mainDocumentParts = undefined;
+        this.resetProcessedRelationships();
         return repairs;
     }
 
@@ -1714,8 +1716,9 @@ export class BaseSchemaValidator {
         // #635: Word offered recovery for a duplicate split between a direct
         // child and Fallback (session 34 s34a), and read selected footer/main
         // relationships (session 33 s33d/s33e); see docs/plans/evidence/word-probes-2026-10-24.md.
-        // The processed view is DOCX/DOCM-only (#643); relationships nested
-        // in foreign wrappers stay ignored either way.
+        // The processed view is DOCX/DOCM-only (#643) and built once per
+        // relationships part (#642); relationships nested in foreign
+        // wrappers stay ignored either way.
         return getRelationshipChildren(this.relationshipsView(document, part));
     }
 
@@ -1729,6 +1732,38 @@ export class BaseSchemaValidator {
      */
     protected relationshipsView(document: Document, _part: string): Document {
         return document;
+    }
+
+    /**
+     * The markup-compatibility view of `document`, memoized per part: the
+     * legacy walks would otherwise re-process each `.rels` on every
+     * `relationshipElements` call — five or more passes per part per run
+     * (#642). `DOCXSchemaValidator.relationshipsView` prefers the run
+     * context's `effectiveXml`, so this memo covers only a part the context
+     * cannot supply. Reset when the package view may have changed: at the
+     * start of a `validate()` run and when a repair rewrites the package.
+     */
+    private readonly processedRelationships = new Map<string, Document>();
+
+    /** Drop the memoized processed views; call when the package on disk may have changed. */
+    protected resetProcessedRelationships(): void {
+        this.processedRelationships.clear();
+    }
+
+    /**
+     * The processed view `relationshipElements` clones per part when no
+     * shared context view is available, using the same capabilities as
+     * `ctx.effectiveXml`'s `understoodNamespacesForPart` for `.rels`
+     * streams.
+     */
+    protected processedRelationshipsView(document: Document, part: string): Document {
+        const cached = this.processedRelationships.get(part);
+        if (cached) {
+            return cached;
+        }
+        const view = applyMarkupCompatibility(document, { understood: RELATIONSHIPS_UNDERSTOOD_NAMESPACES }).document;
+        this.processedRelationships.set(part, view);
+        return view;
     }
 
     /** Identify the required main part by the package relationship, never its basename. */
