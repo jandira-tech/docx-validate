@@ -927,13 +927,30 @@ so that finding is Word-blocking too (#435).
 `opc-relationships-structure` requires every relationships part to have a
 `Relationships` root in the package-relationships namespace and only `Relationship`
 elements in that namespace as direct children after Word's markup compatibility
-processing. It reports one finding for a wrong stored root, or one per surviving
-offending child, at the stored part name. Malformed XML is left
-to `xml-syntax`. The check runs under Word-valid and strict, including quick and
+processing. It reports one finding for a wrong root, or one per surviving
+offending child, at the stored part name. The root is judged on the processed
+view in the package relationships part (`_rels/.rels`, compared by OPC part-name
+equivalence): Word 16.115 opened a root that markup compatibility resolves to
+exactly one `Relationships` element clean, whether an `mc:AlternateContent`
+Fallback, a selected `mc:Choice` or an Ignorable `mc:ProcessContent` wrapper
+holds it. It offered recovery for a root resolving to two `Relationship`
+elements or to none (the `Relationships` element in an unselected Choice beside
+an empty Fallback), which keep the finding because the processor returns the
+stored view there
+([#646](https://github.com/jandira-tech/docx-validate/issues/646),
+[#640](https://github.com/jandira-tech/docx-validate/issues/640); Word probes
+sessions 36 and 38, `s36c` and `s38a`). Combinations of those wrappers are
+unobserved and follow the same rule.
+A root-wrapped sidecar is unobserved and keeps the stored-root verdict, as does
+every part under lenient, whose XSD walk judges the stored root. Malformed XML is
+left to `xml-syntax`. The check runs under Word-valid and strict, including quick and
 named relationships selections; explicit lenient keeps its existing checks.
-Word-valid blocks malformed package relationships (`_rels/.rels`, compared by OPC
-part-name equivalence) and malformed relationships parts under `word/`, and warns on
-other sidecars, which have no Word evidence yet. Strict reports errors on all of them. Main-part discovery uses the processed package relationships and ignores relationships
+Word-valid blocks malformed package relationships and malformed relationships
+parts under `word/`, and warns on
+other sidecars, which have no Word evidence yet. Strict reports errors on all of
+them; under strict and lenient the XSD walk still judges the stored
+`_rels/.rels` root, so a root wrapper the Word rule accepts stays invalid there.
+Main-part discovery uses the processed package relationships and ignores relationships
 still nested inside foreign wrappers ([#433](https://github.com/jandira-tech/docx-validate/issues/433),
 [#434](https://github.com/jandira-tech/docx-validate/issues/434)).
 `opc-relationships-markup-compatibility` reports each stored child that processing
@@ -1158,12 +1175,18 @@ leave zero or multiple element children, the processor reports error-severity
 ([#640](https://github.com/jandira-tech/docx-validate/issues/640)). One element
 continues to be unwrapped. The source is unchanged. The stored-root rules keep
 their verdict, including blocking `opc-relationships-structure` for a wrong
-relationships root and `word-document-root` for a wrong main document root.
+relationships root and `word-document-root` for a wrong main document root —
+except the package relationships part's root, which `opc-relationships-structure`
+judges on the processed view
+([#646](https://github.com/jandira-tech/docx-validate/issues/646)).
 Word 16.115 offered recovery for a `_rels/.rels` root AlternateContent whose
-Fallback holds two `Relationship` elements (session 36, `s36c`) and opened clean
-one whose Fallback holds the `Relationships` element, which Word-valid still
-rejects with `opc-relationships-structure` ([#646](https://github.com/jandira-tech/docx-validate/issues/646)). Other zero- and
-multiple-element root shapes are unobserved. Word-valid and strict return
+Fallback holds two `Relationship` elements (session 36, `s36c`) and for one that
+unwraps to none, its `Relationships` element in an unselected Choice beside an
+empty Fallback (session 38, `s38a`); both keep their blocking
+`opc-relationships-structure`. Roots that unwrap to the `Relationships` element
+opened clean and pass Word-valid
+([#646](https://github.com/jandira-tech/docx-validate/issues/646)). Other zero-
+and multiple-element root shapes are unobserved. Word-valid and strict return
 findings instead of throwing or reporting `check-crashed`; full, quick and named
 runs agree on their shared checks. Lenient retains its prior findings, including
 its legacy XSD diagnostic for multiple roots and its empty-view diagnostic for

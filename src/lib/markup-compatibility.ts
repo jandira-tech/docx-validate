@@ -158,10 +158,12 @@ export const applyMarkupCompatibility = (
                 // rules keep the verdict: Word 16.115 offered recovery for a
                 // _rels/.rels root AlternateContent whose Fallback holds two
                 // Relationship elements (session 36, s36c, in
-                // docs/plans/evidence/word-probes-2026-10-24.md). One whose
-                // Fallback holds the Relationships element unwraps to a single
-                // root and opened clean in the same chunk (#646); other zero-
-                // and multiple-element root shapes are unobserved (#658).
+                // docs/plans/evidence/word-probes-2026-10-24.md), and for one
+                // that unwraps to none, its Relationships element in an
+                // unselected Choice (session 38, s38a). One whose Fallback
+                // holds the Relationships element unwraps to a single root and
+                // opened clean in the same chunk (#646); other zero- and
+                // multiple-element root shapes are unobserved (#658).
                 rootUnwrapElementCount = count;
                 rootUnwrapIssue = {
                     severity: "error",

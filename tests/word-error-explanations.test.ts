@@ -18,6 +18,12 @@ describe("word error explanations", () => {
         expect(explanation).toContain("stray");
         expect(explanation).toContain("unobserved");
     });
+    it("explains a package root that unwraps to the Relationships element as accepted (#646)", () => {
+        const explanation = explainWordError("mce-malformed");
+        expect(explanation).not.toContain("still rejects");
+        expect(explanation).toContain("opened clean roots that unwrap to the Relationships element, which word-valid accepts (#646)");
+        expect(explanation).toContain("unwraps to none");
+    });
     it("explains relationships markup compatibility with the observed Word behaviour (#632)", () => {
         const explanation = explainWordError("opc-relationships-markup-compatibility");
         expect(explanation).toContain("Word");

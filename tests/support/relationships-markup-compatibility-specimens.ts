@@ -306,3 +306,31 @@ export const STORY_RELS_MCE_CASES = [
             ),
     },
 ] as const;
+
+/** The part's own `Relationships` element, without the XML declaration, for root wrappers. */
+const storedRelationshipsElement = (part: string): string => MINIMAL_PARTS[part]!.replace(/^<\?xml[^>]*\?>\n?/, "");
+
+/**
+ * #646: a relationships part whose stored root wraps the part's whole
+ * `Relationships` element, so markup compatibility resolves the root to
+ * exactly one element. Word 16.115 opened each `_rels/.rels` shape clean:
+ * the `fallback` wrapper in session 36 (s36c, sha256 95a33fb1bbc883d4…) and
+ * again in session 38 (s38a), and the selected `choice` and the Ignorable
+ * `process-content` wrapper in session 38 (s38a). Word's specimens declared
+ * only the prefixes each uses. A root-wrapped sidecar is unobserved.
+ */
+export const rootMceWrappedRelationshipsParts = (part: string, shape: RootMceShape = "fallback"): Record<string, string> => ({
+    ...MINIMAL_PARTS,
+    [part]: rootMceXml(shape, storedRelationshipsElement(part)),
+});
+
+/**
+ * #646 boundary: the part's whole `Relationships` element in an `mc:Choice`
+ * markup compatibility does not select, beside an empty Fallback, so the
+ * root resolves to no element. Word 16.115 offered recovery for the
+ * `_rels/.rels` shape and then failed to open it (session 38, s38a).
+ */
+export const rootUnselectedChoiceRelationshipsParts = (part: string): Record<string, string> => ({
+    ...MINIMAL_PARTS,
+    [part]: `<mc:AlternateContent ${MCE_DECLARATIONS}><mc:Choice Requires="foo">${storedRelationshipsElement(part)}</mc:Choice><mc:Fallback/></mc:AlternateContent>`,
+});

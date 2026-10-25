@@ -11,7 +11,13 @@ import { withTempDir } from "../src/lib/run-cli";
 import type { ValidationIssue } from "../src/lib/types";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
-import { RELATIONSHIPS_MCE_CASES, RELATIONSHIPS_MCE_CODE } from "./support/relationships-markup-compatibility-specimens";
+import {
+    RELATIONSHIPS_MCE_CASES,
+    RELATIONSHIPS_MCE_CODE,
+    rootMceRelationshipsParts,
+    rootMceWrappedRelationshipsParts,
+    rootUnselectedChoiceRelationshipsParts,
+} from "./support/relationships-markup-compatibility-specimens";
 
 const CODE = "opc-relationships-structure";
 const PACKAGE = "_rels/.rels";
@@ -143,5 +149,204 @@ describe("relationships structure profile and selection parity (#433, #434, #381
                 });
             });
         }
+    }
+});
+
+// Captured from aed11e4e before #646's fix; lenient output must stay byte-identical.
+const LATENT_STYLES = {
+    severity: "info",
+    code: "latent-styles-missing",
+    path: "word/styles.xml",
+    message:
+        "word/styles.xml has no <w:latentStyles> block. This is unusual for Word-generated files and indicates the repairer may have regenerated styles from scratch.",
+} as const;
+const storedRootXsd = (message: string): ValidationIssue => ({
+    severity: "error",
+    code: "xsd-error",
+    path: PACKAGE,
+    message,
+});
+const rootWrapperCases = [
+    {
+        label: "package root resolving to one Relationships element",
+        issue: "#646 (session 36 s36c, clean open)",
+        parts: (): Record<string, string> => rootMceWrappedRelationshipsParts(PACKAGE),
+        part: PACKAGE,
+        structure: false,
+        mainPart: false,
+        malformed: false,
+        valid: true,
+        xsd: true,
+        lenient: {
+            valid: false,
+            issues: [
+                LATENT_STYLES,
+                { severity: "error", code: "xsd-summary", path: PACKAGE, message: "_rels/.rels: 1 new error(s)" },
+                storedRootXsd(
+                    "  - Element '{http://schemas.openxmlformats.org/markup-compatibility/2006}AlternateContent': No matching global declaration available for the validation root.",
+                ),
+            ],
+        },
+    },
+    {
+        label: "package root whose selected Choice holds the Relationships element",
+        issue: "#646 (session 38 s38a, clean open)",
+        parts: (): Record<string, string> => rootMceWrappedRelationshipsParts(PACKAGE, "choice"),
+        part: PACKAGE,
+        structure: false,
+        mainPart: false,
+        malformed: false,
+        valid: true,
+        xsd: true,
+        lenient: {
+            valid: false,
+            issues: [
+                LATENT_STYLES,
+                { severity: "error", code: "xsd-summary", path: PACKAGE, message: "_rels/.rels: 1 new error(s)" },
+                storedRootXsd(
+                    "  - Element '{http://schemas.openxmlformats.org/markup-compatibility/2006}AlternateContent': No matching global declaration available for the validation root.",
+                ),
+            ],
+        },
+    },
+    {
+        label: "package root whose Ignorable ProcessContent wrapper holds the Relationships element",
+        issue: "#646 (session 38 s38a, clean open)",
+        parts: (): Record<string, string> => rootMceWrappedRelationshipsParts(PACKAGE, "process-content"),
+        part: PACKAGE,
+        structure: false,
+        mainPart: false,
+        malformed: false,
+        valid: true,
+        xsd: true,
+        lenient: {
+            valid: false,
+            issues: [
+                LATENT_STYLES,
+                { severity: "error", code: "xsd-summary", path: PACKAGE, message: "_rels/.rels: 1 new error(s)" },
+                storedRootXsd("  - Element '{urn:x}Wrap': No matching global declaration available for the validation root."),
+            ],
+        },
+    },
+    {
+        label: "root-wrapped sidecar resolving to one Relationships element",
+        issue: "unobserved in Word",
+        parts: (): Record<string, string> => rootMceWrappedRelationshipsParts(SIDECAR),
+        part: SIDECAR,
+        structure: true,
+        mainPart: false,
+        malformed: false,
+        valid: false,
+        xsd: false,
+        lenient: {
+            valid: true,
+            issues: [LATENT_STYLES],
+        },
+    },
+    {
+        label: "package root resolving to two Relationship elements",
+        issue: "#640 (session 36 s36c, recovery offered)",
+        parts: (): Record<string, string> => rootMceRelationshipsParts(PACKAGE, "fallback"),
+        part: PACKAGE,
+        structure: true,
+        mainPart: true,
+        malformed: true,
+        valid: false,
+        xsd: true,
+        lenient: {
+            valid: false,
+            issues: [
+                LATENT_STYLES,
+                {
+                    severity: "info",
+                    code: "rel-ids-sequential",
+                    path: PACKAGE,
+                    message: "Relationship Id values in _rels/.rels are sequential from rId1 (likely regenerated by the repairer).",
+                },
+                { severity: "error", code: "xsd-summary", path: PACKAGE, message: "_rels/.rels: 1 new error(s)" },
+                storedRootXsd(
+                    "  - Element '{http://schemas.openxmlformats.org/markup-compatibility/2006}AlternateContent': No matching global declaration available for the validation root.",
+                ),
+            ],
+        },
+    },
+    {
+        label: "package root whose unselected Choice holds the Relationships element",
+        issue: "#646 boundary (session 38 s38a, recovery offered)",
+        parts: (): Record<string, string> => rootUnselectedChoiceRelationshipsParts(PACKAGE),
+        part: PACKAGE,
+        structure: true,
+        mainPart: true,
+        malformed: true,
+        valid: false,
+        xsd: true,
+        lenient: {
+            valid: false,
+            issues: [
+                LATENT_STYLES,
+                { severity: "error", code: "xsd-summary", path: PACKAGE, message: "_rels/.rels: 1 new error(s)" },
+                storedRootXsd(
+                    "  - Element '{http://schemas.openxmlformats.org/markup-compatibility/2006}AlternateContent': No matching global declaration available for the validation root.",
+                ),
+            ],
+        },
+    },
+] as const;
+
+describe("relationships root markup compatibility (#646, #640, #381)", () => {
+    for (const suffix of ["docx", "docm"] as const) {
+        it.each(rootWrapperCases)(`${suffix}: $label ($issue)`, async (specimen) => {
+            await withTempDir(async (dir) => {
+                const built = specimen.parts();
+                const parts =
+                    suffix === "docm"
+                        ? {
+                              ...built,
+                              "[Content_Types].xml": built["[Content_Types].xml"]!.replaceAll(
+                                  "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml",
+                                  "application/vnd.ms-word.document.macroEnabled.main+xml",
+                              ),
+                          }
+                        : built;
+                const file = path.join(dir, `specimen.${suffix}`);
+                const bytes = await buildDocx(parts);
+                await writeFile(file, bytes);
+                const full = await validate(file, { profile: "word-valid" });
+                expect(full.valid).toBe(specimen.valid);
+                expect(structures(full.issues)).toEqual(
+                    specimen.structure ? [expect.objectContaining({ path: specimen.part, severity: "error" })] : [],
+                );
+                expect(full.issues.filter((issue) => issue.code === "word-main-document-part")).toEqual(
+                    specimen.mainPart ? [expect.objectContaining({ path: PACKAGE, severity: "error" })] : [],
+                );
+                expect(full.issues.filter((issue) => issue.code === "mce-malformed")).toEqual(
+                    specimen.malformed ? [expect.objectContaining({ path: PACKAGE })] : [],
+                );
+                if (specimen.valid) expect(full.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+                for (const selection of [{ quick: true }, { checks: ["relationships"] }, { checks: [CODE, "word-main-document-part"] }]) {
+                    const partial = await validate(file, { profile: "word-valid", ...selection });
+                    expect(partial.valid).toBe(full.valid);
+                    expect(structures(partial.issues)).toEqual(structures(full.issues));
+                    expect(partial.issues.filter((issue) => issue.code === "word-main-document-part")).toEqual(
+                        full.issues.filter((issue) => issue.code === "word-main-document-part"),
+                    );
+                    expect([...errors(partial.issues)].filter((pair) => !errors(full.issues).has(pair))).toEqual([]);
+                }
+                const strict = await validate(file, { profile: "strict" });
+                expect(strict.valid).toBe(false);
+                expect(structures(strict.issues)).toEqual(structures(full.issues));
+                expect(strict.issues.filter((issue) => issue.code === "word-main-document-part")).toEqual(
+                    full.issues.filter((issue) => issue.code === "word-main-document-part"),
+                );
+                // Strict keeps every word-valid error and the stored-root XSD verdict.
+                expect([...errors(full.issues)].filter((pair) => !errors(strict.issues).has(pair))).toEqual([]);
+                expect(strict.issues.filter((issue) => issue.code === "xsd-error")).toEqual(
+                    specimen.xsd ? [expect.objectContaining({ path: PACKAGE })] : [],
+                );
+                const lenient = await validate(file, { profile: "lenient" });
+                expect({ valid: lenient.valid, issues: lenient.issues }).toEqual(specimen.lenient);
+                expect(await readFile(file)).toEqual(bytes);
+            });
+        });
     }
 });
