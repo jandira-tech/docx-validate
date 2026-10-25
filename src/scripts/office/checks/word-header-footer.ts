@@ -29,10 +29,28 @@
  * relationships part exists and parses (#619; session 32): a `w:footerReference`
  * `r:id="rId9"` in the body `w:sectPr` beside a kept
  * `word/_rels/document.xml.rels` holding no `rId9` was refused. A part with
- * no relationships part is `rels-missing-sidecar`'s finding alone; an
- * unparseable one is diagnosed by xml-syntax. In a full word-valid or strict
- * run each element this check reports yields one finding, this check's: the
- * run drops the matching `rels-id-mismatch` — or, for an `r:id` naming no
+ * no relationships part keeps a non-empty `r:id` as
+ * `rels-missing-sidecar`'s finding alone; an unparseable one is diagnosed by
+ * xml-syntax for lookups.
+ *
+ * An empty or missing id in both relationships namespaces is this check's
+ * finding even without a parseable sidecar (#623; session 33, chunks
+ * s33a/s33c/s33d/s33e in the same evidence file). Word 16.115 offered
+ * recovery for empty `r:id` on header and footer references in the main
+ * document's body `w:sectPr`, and reported an error opening the file for
+ * either reference with no id. A footer reference whose only id was in a
+ * third namespace got the same open error, whether dangling or naming a
+ * real footer relationship. A non-empty ISO Strict relationships id on a
+ * Transitional reference naming a real footer relationship opened clean
+ * and rendered the footer (#631 refuted). Other placements and reached
+ * glossaries are on the same footing as sessions 26/27; session 33 observed
+ * the empty/missing shapes only in the main document's body `w:sectPr`.
+ * These findings register no pairing identity: the legacy walk reads only
+ * truthy ids and reports neither shape.
+ *
+ * In a full word-valid or strict
+ * run each element this check reports yields one relationship finding, this
+ * check's: the run drops the matching `rels-id-mismatch` — or, for an `r:id` naming no
  * Relationship, `rels-id-missing` — copy of it (#612, #619;
  * `withoutRepeatedHeaderFooterFindings` in validators/docx.ts), paired through
  * the structured element identity the check registers on the issue, never
@@ -41,7 +59,8 @@
  * `x:headerReference` this check does not match, a glossary no
  * main-document relationship reaches, and lenient, which runs no Word rule
  * (Word does not read an unreached glossary, so word-valid stays silent
- * there).
+ * there). Strict also keeps the schema's own `xsd-error` for a reference with
+ * no `r:id`, which the XSD requires; it carries no identity to pair.
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
@@ -113,10 +132,11 @@ export const wordHeaderFooterRelationshipCheck: CheckDefinition = {
     requires: ["xml-syntax"],
     /**
      * One error per story `w:headerReference`/`w:footerReference` whose
-     * `r:id` names no Relationship in its part's present, parseable
+     * `r:id` is empty or missing, independently of the sidecar (#623), or
+     * names no Relationship in its part's present, parseable
      * relationships part, or names one whose Type is not the accepted
-     * Transitional or ISO Strict URI, each carrying the element identity the
-     * full run's hand-off pairs on.
+     * Transitional or ISO Strict URI. Only findings for non-empty ids carry
+     * the element identity the full run's hand-off pairs on.
      */
     run: async (ctx: ValidationContext): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
@@ -138,15 +158,13 @@ export const wordHeaderFooterRelationshipCheck: CheckDefinition = {
                 continue;
             }
             const types = relationshipTypes(ctx, root.part, findPart);
-            if (types === null || types === undefined) {
-                continue;
-            }
             for (const ns of WORD_PARAGRAPH_NAMESPACES) {
                 for (const { localName, expected } of REFERENCES) {
                     const [transitionalType, strictType] = ACCEPTED_RELATIONSHIP_TYPES[expected];
                     for (const elem of getElementsByTagNameNSAll(parsed.document, ns, localName)) {
                         let rid: string | null = null;
                         let ridNamespaceURI = "";
+                        let hasEmptyId = false;
                         for (const relNs of relationshipNamespaces) {
                             const value = elem.getAttributeNS(relNs, "id");
                             if (value) {
@@ -154,9 +172,25 @@ export const wordHeaderFooterRelationshipCheck: CheckDefinition = {
                                 ridNamespaceURI = relNs;
                                 break;
                             }
+                            if (elem.hasAttributeNS(relNs, "id")) hasEmptyId = true;
                         }
-                        // No r:id: never this check's finding.
-                        if (rid === null) continue;
+                        // #623: the attribute is wrong before any lookup.
+                        // The legacy walk skips empty/missing ids, so these
+                        // findings have no copy to pair by identity.
+                        if (rid === null) {
+                            issues.push({
+                                severity: "error",
+                                message:
+                                    `<w:${localName}> has ${hasEmptyId ? "an empty" : "a missing"} r:id; ` +
+                                    `a w:${localName} needs a Relationship of Type ${transitionalType} (or the ISO Strict ${strictType}). ` +
+                                    (hasEmptyId ? "Microsoft Word offers to recover the file. " : "Microsoft Word cannot open the file. ") +
+                                    "Set a non-empty r:id naming such a Relationship, adding one with that Id and Type when the part has none.",
+                                path: root.part,
+                                code: WORD_HEADER_FOOTER_RELATIONSHIP,
+                            });
+                            continue;
+                        }
+                        if (types === null || types === undefined) continue;
                         const type = types.get(rid);
                         // An r:id naming no Relationship of a part whose
                         // sidecar exists and parses: this check's finding

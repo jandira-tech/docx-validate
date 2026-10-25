@@ -19,6 +19,14 @@ describe("word error explanations", () => {
         expect(explanation).toContain("unique");
     });
 
+    it("explains a story-reference repair that needs no existing id (#623)", () => {
+        const explanation = explainWordError("word-header-footer-relationship");
+        expect(explanation).toContain(
+            "Give the reference a non-empty r:id naming a Relationship of the matching Type: add that Relationship when none exists, or retype the one it names.",
+        );
+        expect(explanation).not.toContain("add one with that Id and Type");
+    });
+
     it("explains both absent and multiple main relationships (#515)", () => {
         const explanation = explainWordError("word-main-document-part");
         expect(explanation).toContain("exactly one internal officeDocument relationship");

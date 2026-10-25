@@ -33,6 +33,7 @@ import {
     wordReadParts,
     wordReadTypedTargets,
     wordTypedRelationshipTargets,
+    wordUnobservedRelationshipTargets,
 } from "../src/lib/word-read-parts";
 import { validate } from "../src/scripts/office/validate";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
@@ -1568,5 +1569,68 @@ describe("a part related by two relationship types keeps every segment (#593)", 
             { part: "word/numbering.xml", segment: first },
             { part: "word/numbering.xml", segment: second },
         ]);
+    });
+});
+
+describe("wordUnobservedRelationshipTargets (#638)", () => {
+    // rels-missing-sidecar blocked in every part before #638. Word was never
+    // shown a part that an unobserved Office relationship type names outside
+    // word/, so those keep blocking for that finding; wordReadParts keeps the
+    // word/-folder rule for XML syntax (#437). The package's officeDocument
+    // relationship is no eager or lazy type either, so the main document is
+    // named too; it is a story root, which blocks anyway.
+    const MAIN_NAMED = canonicalPartName("word/document.xml");
+    it.each([
+        ["outside word/", "../charts/chart1.xml", "charts/chart1.xml"],
+        ["under word/", "charts/chart1.xml", "word/charts/chart1.xml"],
+    ] as const)("names an unobserved Office-type target %s", async (_label, target, part) => {
+        const parts = withDocRel({ ...MINIMAL_PARTS, [part]: MALFORMED.xtra! }, "rId9", `${R}/chart`, target);
+        expect(await wordUnobservedRelationshipTargets(ValidationContext.fromEntries(parts))).toEqual(
+            new Set([MAIN_NAMED, canonicalPartName(part)]),
+        );
+    });
+
+    it("names one from any part's relationships, in a Microsoft namespace too", async () => {
+        const parts: Parts = {
+            ...MINIMAL_PARTS,
+            "word/_rels/styles.xml.rels":
+                `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+                `<Relationships xmlns="${RELS_NS}">` +
+                `<Relationship Id="rId3" Type="http://schemas.microsoft.com/office/2011/relationships/people" Target="../xdocs/people1.xml"/>` +
+                `</Relationships>`,
+            "xdocs/people1.xml": MALFORMED.customXml!,
+        };
+        expect(await wordUnobservedRelationshipTargets(ValidationContext.fromEntries(parts))).toEqual(
+            new Set([MAIN_NAMED, canonicalPartName("xdocs/people1.xml")]),
+        );
+    });
+
+    it.each([
+        ["an unknown type", "urn:x:unknown", "../xdocs/xtra.xml"],
+        ["an observed type", `${R}/styles`, "../xdocs/xtra.xml"],
+        ["an Office type with an extra path segment", `${R}/custom/styles`, "../xdocs/xtra.xml"],
+    ] as const)("does not name the target of %s", async (_label, type, target) => {
+        const parts = withDocRel({ ...MINIMAL_PARTS, "xdocs/xtra.xml": MALFORMED.xtra! }, "rId9", type, target);
+        const named = await wordUnobservedRelationshipTargets(ValidationContext.fromEntries(parts));
+        expect(named.has(canonicalPartName("xdocs/xtra.xml"))).toBe(type === `${R}/custom/styles`);
+    });
+
+    it("skips external targets and yields nothing without a main document", async () => {
+        const parts = withDocRel({ ...MINIMAL_PARTS }, "rId9", `${R}/chart`, "https://example.com/chart1.xml");
+        const external = {
+            ...parts,
+            "word/_rels/document.xml.rels": (parts["word/_rels/document.xml.rels"] as string).replace(
+                'Target="https://example.com/chart1.xml"',
+                'Target="https://example.com/chart1.xml" TargetMode="External"',
+            ),
+        };
+        expect(await wordUnobservedRelationshipTargets(ValidationContext.fromEntries(external))).toEqual(new Set([MAIN_NAMED]));
+        const { "_rels/.rels": _dropped, ...noMain } = withDocRel(
+            { ...MINIMAL_PARTS, "charts/chart1.xml": MALFORMED.xtra! },
+            "rId9",
+            `${R}/chart`,
+            "../charts/chart1.xml",
+        );
+        expect(await wordUnobservedRelationshipTargets(ValidationContext.fromEntries(noMain))).toEqual(new Set());
     });
 });

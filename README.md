@@ -966,19 +966,98 @@ part is this check's finding too — when that relationships part exists and
 parses, as Word 16.115 offered recovery for a body `w:footerReference`
 `r:id="rId9"` beside a kept `word/_rels/document.xml.rels` holding no `rId9`
 ([#619](https://github.com/jandira-tech/docx-validate/issues/619); session 32
-in the same evidence file); a part with no relationships part keeps
-`rels-missing-sidecar` as its only finding. The finding is an error under
+in the same evidence file). In a full run, a part with no relationships part
+keeps `rels-missing-sidecar` as its only finding for a non-empty `r:id`; the
+legacy relationship walk that reports it runs only in full runs, so quick and
+named runs report nothing for that shape.
+Under word-valid for DOCX/DOCM, `rels-missing-sidecar` blocks only when the
+part is a story root, a member of the run's Word-read set, or a part that a
+known Office relationship of an unobserved type names wherever it is stored,
+and a counted relationship reference survives in its processed
+markup-compatibility view. The Word-read set holds such parts only under
+`word/`; Word was never shown one outside it with a reference and no sidecar,
+so a chart stored as `charts/chart1.xml` and reached by a chart relationship
+keeps the blocking decision it had before #638.
+Session 35, chunks s35a/s35b, observed clean opens for ids in unreferenced
+`word/xtra.xml` (both relationships namespaces), unreferenced `docProps/app.xml`,
+an unreached glossary, on `w:name` in reached styles, and inside an unselected
+`mc:Choice` (both relationships namespaces). These findings now warn under
+word-valid; strict and lenient output is unchanged
+([#638](https://github.com/jandira-tech/docx-validate/issues/638)). A footer
+reference's Strict relationships id inside `w:sectPrChange` still blocks:
+Word offered recovery for it in s35b.
+
+The processed-reference test uses declaration sets generated from all bundled
+XSDs by `scripts/generate-relationship-reference-elements.ts`, with a test
+that regenerates them in memory to check for drift. The sets follow global
+and local element declarations, element references, type extension and
+restriction bases, and attribute groups. They union declarations sharing an
+element name and map Transitional namespaces to their ISO Strict counterparts.
+A non-empty `id`, `embed` or `link` in either relationships namespace stops
+counting only when the schemas declare the element and no declaration gives
+it that attribute. `w:name` declares only `w:val`, so its added relationship
+id does not qualify. Undeclared elements and namespaces, including extension
+namespaces such as `asvg`, keep counting; an unresolved type also cannot prove
+absence. Charts, ambiguous names with a reference-bearing declaration and
+unobserved extensions retain the previous blocking decision. This conservative
+classification is not fresh Word evidence for those shapes. It loads or
+compiles no XSD during word-valid validation.
+
+A story root — the main document or a reached glossary — keeps precedence
+over the header/footer basename tolerance, under any `.xml` name, even
+`word/header1.xml`: session 33 observed recovery for both renamed roots
+whose `.rels` was gone beside their story reference, while the renamed
+controls opened clean
+([#625](https://github.com/jandira-tech/docx-validate/issues/625); session 33,
+chunk s33b, in the same evidence file). A genuine `word/header1.xml` or
+`word/footer1.xml` bearing relationship references with no sidecar keeps its
+word-valid warning — Word's own regenerated output opens clean carrying
+that finding. A story root stored without a `.xml` suffix
+(`word/document.bin`) is not checked as XML, so it gets no
+`rels-missing-sidecar` at all
+([#620](https://github.com/jandira-tech/docx-validate/issues/620)).
+An empty or missing id in both relationships namespaces is this check's
+finding regardless of whether the sidecar exists or parses
+([#623](https://github.com/jandira-tech/docx-validate/issues/623)). Session 33
+observed Word 16.115 offer recovery for `r:id=""` on a header or footer
+reference in the main document's body `w:sectPr` (s33a/s33c), and report an
+error opening the file when either reference has no id (s33c/s33e). An id
+in a third namespace counts as missing, even when it names a real footer
+relationship (s33d). An ISO Strict relationships id naming a real footer
+relationship on a Transitional reference opens clean and renders the footer
+(s33c, #631 refuted). The check applies to the same placements and story
+roots as before; session 33 observed these empty/missing shapes only in the
+main document's body `w:sectPr`, while sessions 26/27 established the footing
+for the other placements and reached glossaries. Set a non-empty id in
+either relationships namespace naming a Relationship of the required Type,
+adding one with that Id and Type when the part has none. Strict also keeps the XSD error for a
+missing `r:id`. The finding is an error under
 strict and Word-blocking under word-valid for DOCX/DOCM; lenient runs no Word
 rule. In a full word-valid or strict run neither `rels-id-mismatch` nor
 `rels-id-missing` repeats an element this check reported — the run drops that
-duplicate, pairing the two findings by the element identity both checks
+duplicate for a non-empty id, pairing the two findings by the element identity both checks
 register on the issue (part path, namespace URI, local name, raw `r:id` and
 the namespace the `r:id` was read in), never by message text — while `validateAllRelationshipIds()` called on its own
 still reports every `rels-id-mismatch` and `rels-id-missing` (#612, #616,
-#619). A glossary no main-document relationship reaches keeps its
+#619). Empty/missing-id findings register no such identity, because the
+legacy walk reads only truthy ids and reports neither shape.
+A glossary no main-document relationship reaches keeps its
 `rels-id-mismatch` or `rels-id-missing` under strict (Word does not read it,
 so word-valid stays silent), and lenient keeps every one of them.
-Full, quick and named Word-valid runs agree (#381).
+Full, quick and named Word-valid runs judge the findings they report alike
+(#381).
+
+`rels-missing-sidecar` reports a part that uses a non-empty `id`, `embed` or
+`link` attribute in either the Transitional or ISO Strict relationships
+namespace but has no `.rels` sidecar. Session 33 observed Word 16.115 offer
+recovery for a Strict document's body `w:footerReference` with a Strict
+`r:id="rId9"` and no sidecar (`s33a`), while the same Strict package without
+the reference opened clean (`s33c`)
+([#624](https://github.com/jandira-tech/docx-validate/issues/624);
+`docs/plans/evidence/word-probes-2026-10-24.md`). A missing sidecar alone
+does not trigger this finding. Counting Strict `embed` and `link` attributes
+extends the existing Transitional rule on the same footing; those shapes
+were not observed in Word in this session.
 
 `word-markup-compatibility` reports processor errors for XML parts under `word/`.
 Root validation, the processor, and the schema walk use these stable codes:
