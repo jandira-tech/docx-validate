@@ -244,14 +244,15 @@ describe("docx diagnostics", () => {
     });
 
     it("gives story-reference guidance that needs no existing id (#623)", () => {
-        const [issue] = buildRepairPlanIssues([
-            {
-                severity: "error",
-                path: "word/document.xml",
-                code: "word-header-footer-relationship",
-                message: "<w:footerReference> has a missing r:id",
-            },
-        ]);
+        const missingId: ValidationIssue = {
+            severity: "error",
+            path: "word/document.xml",
+            code: "word-header-footer-relationship",
+            message: "<w:footerReference> has a missing r:id",
+        };
+        // No repair() changes this code, so the finding remains after repair.
+        const [issue] = buildRepairPlanIssues([missingId], [missingId]);
+        expect(issue?.code).toBe("repair-plan-unavailable");
         expect(issue?.message).toContain(
             "set the w:headerReference or w:footerReference r:id to a non-empty id naming a relationship whose Type is the Transitional or ISO Strict header (respectively footer) relationship URI, adding such a relationship to the part's relationships when none exists",
         );
