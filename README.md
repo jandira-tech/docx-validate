@@ -1000,7 +1000,7 @@ roots as before; session 33 observed these empty/missing shapes only in the
 main document's body `w:sectPr`, while sessions 26/27 established the footing
 for the other placements and reached glossaries. Set a non-empty id in
 either relationships namespace naming a Relationship of the required Type,
-or add one with that Id and Type. Strict also keeps the XSD error for a
+adding one with that Id and Type when the part has none. Strict also keeps the XSD error for a
 missing `r:id`. The finding is an error under
 strict and Word-blocking under word-valid for DOCX/DOCM; lenient runs no Word
 rule. In a full word-valid or strict run neither `rels-id-mismatch` nor

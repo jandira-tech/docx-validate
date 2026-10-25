@@ -184,7 +184,7 @@ export const wordHeaderFooterRelationshipCheck: CheckDefinition = {
                                     `<w:${localName}> has ${hasEmptyId ? "an empty" : "a missing"} r:id; ` +
                                     `a w:${localName} needs a Relationship of Type ${transitionalType} (or the ISO Strict ${strictType}). ` +
                                     (hasEmptyId ? "Microsoft Word offers to recover the file. " : "Microsoft Word cannot open the file. ") +
-                                    "Set a non-empty r:id naming such a Relationship, or add one with that Id and Type.",
+                                    "Set a non-empty r:id naming such a Relationship, adding one with that Id and Type when the part has none.",
                                 path: root.part,
                                 code: WORD_HEADER_FOOTER_RELATIONSHIP,
                             });

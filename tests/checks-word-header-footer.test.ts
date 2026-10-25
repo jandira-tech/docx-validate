@@ -1173,7 +1173,7 @@ const invalidReferenceIdMessage = (reference: "headerReference" | "footerReferen
         `<w:${reference}> has ${kind === "empty" ? "an empty" : "a missing"} r:id; ` +
         `a w:${reference} needs a Relationship of Type ${REL}/${segment} (or the ISO Strict ${STRICT_REL}/${segment}). ` +
         (kind === "empty" ? "Microsoft Word offers to recover the file. " : "Microsoft Word cannot open the file. ") +
-        "Set a non-empty r:id naming such a Relationship, or add one with that Id and Type."
+        "Set a non-empty r:id naming such a Relationship, adding one with that Id and Type when the part has none."
     );
 };
 

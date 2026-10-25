@@ -232,6 +232,21 @@ describe("docx diagnostics", () => {
         expect(issues[1].message).toContain("Before repair found 2 [ws-missing-preserve] issue(s)");
         expect(issues[1].message).toContain("add xml:space='preserve'");
     });
+
+    it("gives story-reference guidance that needs no existing id (#623)", () => {
+        const [issue] = buildRepairPlanIssues([
+            {
+                severity: "error",
+                path: "word/document.xml",
+                code: "word-header-footer-relationship",
+                message: "<w:footerReference> has a missing r:id",
+            },
+        ]);
+        expect(issue?.message).toContain(
+            "set the w:headerReference or w:footerReference r:id to a non-empty id naming a relationship whose Type is the Transitional or ISO Strict header (respectively footer) relationship URI, adding such a relationship to the part's relationships when none exists",
+        );
+        expect(issue?.message).not.toContain("add a relationship with that Id and Type");
+    });
 });
 
 it.each(["[CONTENT_TYPES].XML", "[content_types].xml"])("inventories declarations in stored stream %s (#396)", async (name) => {

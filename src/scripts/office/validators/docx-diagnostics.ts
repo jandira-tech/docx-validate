@@ -715,7 +715,7 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
         case "word-hyperlink-relationship":
             return "point the w:hyperlink r:id at a relationship whose Type is the Transitional or ISO Strict hyperlink relationship URI with TargetMode External, or remove the r:id";
         case "word-header-footer-relationship":
-            return "set the w:headerReference or w:footerReference r:id to a non-empty id naming a relationship whose Type is the Transitional or ISO Strict header (respectively footer) relationship URI, or add a relationship with that Id and Type";
+            return "set the w:headerReference or w:footerReference r:id to a non-empty id naming a relationship whose Type is the Transitional or ISO Strict header (respectively footer) relationship URI, adding such a relationship to the part's relationships when none exists";
         case "word-duplicate-theme-relationship":
             return "keep a single theme relationship in the part's .rels file";
         case "word-duplicate-font-table-relationship":

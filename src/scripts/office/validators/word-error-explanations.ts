@@ -38,7 +38,7 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
     "word-hyperlink-relationship":
         "A w:hyperlink r:id does not reference a Relationship whose Type is the Transitional or the ISO Strict hyperlink URI with TargetMode External. Word offers to recover the file. Add that relationship, or remove the r:id.",
     "word-header-footer-relationship":
-        "A w:headerReference or w:footerReference has an empty or missing id in both relationships namespaces, names no Relationship with its r:id, or names a Relationship whose Type is neither the Transitional nor the ISO Strict URI the reference needs. Word cannot open the file when the id is missing; an id in a third namespace counts as missing. Word offers to recover the file for an empty id, a dangling id or a wrong Type. Set a non-empty r:id naming a Relationship of the matching type, add one with that Id and Type, or retype that Relationship.",
+        "A w:headerReference or w:footerReference has an empty or missing id in both relationships namespaces, names no Relationship with its r:id, or names a Relationship whose Type is neither the Transitional nor the ISO Strict URI the reference needs. Word cannot open the file when the id is missing; an id in a third namespace counts as missing. Word offers to recover the file for an empty id, a dangling id or a wrong Type. Give the reference a non-empty r:id naming a Relationship of the matching Type: add that Relationship when none exists, or retype the one it names.",
     "word-duplicate-theme-relationship":
         "A relationships part lists more than one theme. Word offers to recover the file. Keep a single theme relationship.",
     "word-duplicate-font-table-relationship":
