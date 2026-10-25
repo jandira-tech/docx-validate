@@ -1,6 +1,6 @@
 # Real-Word probes, 2026-10-24
 
-Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), what session 26 settled for the items adversarial review AY suspected (#606, #607, #610), what session 27 settled for the relationship types and placements adversarial review AZ left open (#613), what session 28 settled for a hyperlink's relationship type (#614), what session 29 settled for duplicate relationship Ids and `https:` relationship Types (#615, adversarial review BA), what session 30 settled for duplicate relationship Ids outside the package and main-document `.rels` (#617, adversarial review BB), what session 31 settled for duplicate relationship Ids beside a story root stored without a `.xml` suffix (#618, adversarial review BC), what session 32 settled for a story reference whose `r:id` names no relationship and for a main document stored without a `.xml` suffix (#619, #620, adversarial review BD), and what session 33 settled for story references with an empty, missing or ISO Strict `r:id`, story roots stored as `word/header1.xml`, and markup compatibility in relationships parts (#623, #624, #625, #631, #632, adversarial reviews BE and BG).
+Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), what session 26 settled for the items adversarial review AY suspected (#606, #607, #610), what session 27 settled for the relationship types and placements adversarial review AZ left open (#613), what session 28 settled for a hyperlink's relationship type (#614), what session 29 settled for duplicate relationship Ids and `https:` relationship Types (#615, adversarial review BA), what session 30 settled for duplicate relationship Ids outside the package and main-document `.rels` (#617, adversarial review BB), what session 31 settled for duplicate relationship Ids beside a story root stored without a `.xml` suffix (#618, adversarial review BC), what session 32 settled for a story reference whose `r:id` names no relationship and for a main document stored without a `.xml` suffix (#619, #620, adversarial review BD), and what session 33 settled for story references with an empty, missing or ISO Strict `r:id`, story roots stored as `word/header1.xml`, and markup compatibility in relationships parts (#623, #624, #625, #631, #632, adversarial reviews BE and BG), and what session 35 settled for the adversarial review of layer 130: relationship ids `rels-missing-sidecar` counts that Word never resolves (#638), and story-reference ids outside the body `w:sectPr`.
 
 - Word: Microsoft Word for Mac 16.115 (build 16.115.26100424), platform `darwin`.
 - Transport, sessions 1 and 2: `verifyInWord` (`src/lib/word-verifier.ts`). It opens each specimen by path, reads Word's window and dialog state, and never saves.
@@ -217,6 +217,12 @@ Session 33 adds:
 - **#631 refuted: Word reads the ISO Strict `r:id` on a Transitional story reference.** A Transitional `w:footerReference` whose only id was an `rs:id` (`xmlns:rs` bound to the ISO Strict relationships namespace) naming a real footer relationship opened clean, and the PDF Word wrote rendered the footer (`s33c`). Dangling, it got the recovery offer of a dangling Transitional `r:id`, not the open error of a reference with no id. `word-header-footer-relationship` already resolves both namespaces (#606, #619).
 - **#632: Word applies markup compatibility to relationships parts before it judges their children.** In `word/_rels/document.xml.rels`, session 26's footer relationship opened clean, the footer rendered, in three shapes: inside an `mc:Fallback` beside an `mc:Choice` requiring a namespace Word does not understand (`s33d`); inside an `mc:Choice` requiring `w14` with an empty `mc:Fallback` (`s33e`); and kept beside a foreign `<x:Wrap/>` whose prefix the root declares `mc:Ignorable` (`s33e`). `_rels/.rels` with its officeDocument relationship inside such a Fallback opened clean too (`s33e`). A foreign `<x:Wrap/>` left inside the selected Fallback was refused (`s33e`), as #433's undeclared one is. Word-valid at 5cd8ada8 rejects all four clean shapes, through `opc-relationships-structure` (and, for `_rels/.rels`, `word-main-document-part`), which judge the stored XML.
 
+Session 35 adds:
+
+- **#638: Word does not resolve every relationship id `rels-missing-sidecar` counts.** Each specimen had a non-empty relationship id and no `.rels` beside its part, and Word opened each clean while word-valid at 9ac8d583 rejected each with a blocking `rels-missing-sidecar`. In parts Word does not read (`s35a`): an unreferenced `word/xtra.xml` holding an ISO Strict `rs:id`, and its Transitional `r:id` twin; a `docProps/app.xml` no relationship names, holding an `rs:id`; an ISO Strict glossary no `glossaryDocument` relationship reaches, holding an `rs:id` footer reference. In a part Word reads (`s35a`): `rs:id` on `w:name` in `word/styles.xml`, an element the schema gives no relationship attribute. In the main document with its `.rels` removed (`s35b`): an `a:blip` `rs:embed` inside an `mc:Choice` whose `Requires` Word does not understand, beside an empty `mc:Fallback`, and its Transitional `r:embed` twin. The Transitional twins blocked before #624 too; #624 exposed the ISO Strict shapes.
+- **Word resolves a story reference inside `w:sectPrChange`.** A `w:footerReference rs:id="rId9"` inside `w:sectPrChange/w:sectPr` of the body `w:sectPr`, the main document's `.rels` removed, got a recovery offer (`s35b`); word-valid already rejects it through `rels-missing-sidecar`. Deleted section properties are read, not skipped.
+- **#623's missing-id rule holds outside the body `w:sectPr`.** A `w:footerReference` with no id inside `w:sectPrChange/w:sectPr`, as a direct `w:body` child, and in a paragraph-level `w:pPr/w:sectPr` each got "Word experienced an error trying to open the file." (`s35b`), as `word-header-footer-relationship` already reports. `r:id=""` beside `x:id="rId9"` (`urn:x`) and `r:id=" "` each got a recovery offer (`s35c`), as the check's message says.
+
 ## Not observed
 
 Session 1. Another session began driving Word by 02:28Z: its first log line is at 02:28:14Z, and its map file was written at 02:27:55Z. Its preflight closes every open document, so rows observed from 02:26Z on were not treated as evidence. Session 2 observed all of them again (below).
@@ -280,6 +286,8 @@ Session 31 ran in the foreground (`s31a` 00:26Z on 2026-10-25), one driver run. 
 Session 32 ran in the foreground (`s32a` 01:10Z on 2026-10-25), one driver run. Nothing was set aside, and every row is attributed by a manifest entry naming its staged file. Before the chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`; another session was running its own converter (`bench docx-to-pdf --converter jubarte-rc`), which does not drive Word. No Word process was running, so the driver launched its own (`launched_by_us=True`, `open_documents=0`, `word_pid=74817`). The chunk was built at 6e3cda3e with the session 32 builder below.
 
 Session 33 ran in the foreground, one driver run per chunk (`s33a` 04:45Z, `s33b` 05:03Z, `s33c` 05:13Z, `s33d` 05:15Z and `s33e` 05:21Z on 2026-10-25). Nothing was set aside, and every row is attributed by a manifest entry naming its staged file. Before each chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, and there was no `word.lock`; another session was running its own converters (`bench docx-to-pdf` with `jubarte-rc`, and with `soffice`), which do not drive Word. For `s33a`, `s33c`, `s33d` and `s33e` no Word process was running, so the driver launched its own (`launched_by_us=True`, `open_documents=0`; `word_pid=46992`, `63771`, `70432` and `5565`). `s33b` found the Word `s33a` had left (`launched_by_us=False`, `open_documents=0`, `word_pid=98254`). Every run recycled Word after consecutive refusals (`recovery 1`). In `s33a` and `s33b` Word did not quit within 20 s and the driver ended it with `pkill`; in `s33b` the driver then declined Microsoft Error Reporting's "A Force Quit was performed" notice, which reports that quit. `~/Library/Logs/DiagnosticReports` holds no Word report from the session. `s33a` ran under heavy load (the 15-minute load average read 110.8 at 05:03Z) and took 10 min 16 s, so the harness moved it to the background for its last seconds; three of its items ended in an AppleEvent timeout or with no document and no dialog, and are recorded as inconclusive. `s33c` observed all three shapes again. `s33a` and `s33b` were built at 8b79bc78, the head of #611; `s33c`–`s33e` at 5cd8ada8, #611's merge into `release/0.53.0-rc.2`, whose tree is identical. All five were built with the session 33 builder below.
+
+Session 35 ran in the foreground, one driver run per chunk (`s35a` 06:25Z, `s35b` 06:26Z and `s35c` 06:27Z on 2026-10-25). An earlier `s35a` attempt at 06:15Z was set aside without evidence: another session had launched Word at 06:13Z and its `osascript` was running, Word did not answer Apple events within 90 s, and no specimen was opened. Before each recorded chunk, no `osascript` executable and no Python process running `word_pdf` or `word_redline` was running, no `word_watchdog.sh` was running, there was no `word.lock`, and no Word process was running, so the driver launched its own each time (`launched_by_us=True`; `word_pid=65098`, `68407` and `71367`). In `s35a` the newly launched Word reported one open document (`open_documents=1`, `started_clean=False`), which the driver's preflight closed before the first specimen; `s35b` and `s35c` started clean. `s35b` recycled Word twice (`recovery 1` and `recovery 2`, Word quit on request each time) because the refused specimens open no document; each of its four refused specimens got the same reaction on both passes. `~/Library/Logs/DiagnosticReports` holds no Word report from the session. All three chunks were built at 9ac8d583, then the head of layer 130 (`wfv/130-story-reference-ids`, PR #637), with the session 35 builder below; the validator columns are that commit's.
 
 Sessions 4–6 observed `main-relationship-missing` (#380), the #414 `PartName`s with `application/xml`, an escape in a folder segment (#408), a part-level relationships part (#433) and an unreferenced malformed `customXml/item9.xml` (#437). Still to be observed:
 
@@ -1982,6 +1990,58 @@ Adversarial reviews BE and BG's suspected items on #619 (#623, #624, #625, #631,
 {"run": "s33e", "name": "mce-rels-ignorable-foreign", "sha256": "cfa548e94f66d305749469d3891d5b438e51837d72c05ee336f3b20061588e8a", "observedAt": "2026-10-25T05:23:20+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 {"run": "s33e", "name": "mce-rels-fallback-foreign", "sha256": "00f74391cdc0863c6b83b2de5c1dd1329bf47640a69293ad31e3ca9a8699406a", "observedAt": "2026-10-25T05:22:38.588Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00003__wfv__mce-rels-fallback-foreign.docx; refusing to guess", "dialogs": ["\"Word found unreadable content in 00003__wfv__mce-rels-fallback-foreign.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
 {"run": "s33e", "name": "s33e-control-minimal-end", "sha256": "f18ce8ddd7bf7056130e594838744ca3b1f772270d0ae38b1daaa8c49db024be", "observedAt": "2026-10-25T05:23:20+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+```
+
+</details>
+
+### Session 35: 06:25Z–06:28Z on 2026-10-25, validator columns at 9ac8d583
+
+The adversarial review of layer 130 (empryo devin/swe-2), suspected findings 5–8, between clean controls. The specimens sort before their chunk's controls, so each chunk's two controls ran last.
+
+| Run | Observed | Specimen | Issue | Shape | SHA-256 (first 16) | Word | word-valid at 9ac8d583 | strict at 9ac8d583 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `s35a` | 06:25:38Z | `s35a-control-minimal` | control | `MINIMAL_PARTS` | `f930e0867aa34565` | clean-open | valid | valid |
+| `s35a` | 06:25:38Z | `unread-xtra-rs-id-no-sidecar` | #638 (review 130 finding 5) | `MINIMAL_PARTS` plus an unreferenced `word/xtra.xml`, `<x:root xmlns:x="urn:x">` holding `<x:e rs:id="rId9"/>` (ISO Strict relationships namespace), no `.rels` | `37b4859edfdcc272` | clean-open | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `rels-unreferenced`, `xsd-error`, `xsd-summary` |
+| `s35a` | 06:25:38Z | `unread-xtra-r-id-no-sidecar` | #638 twin (Transitional) | the same with a Transitional `r:id` | `1a1147e1cecc8e33` | clean-open | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `rels-unreferenced`, `xsd-error`, `xsd-summary` |
+| `s35a` | 06:25:38Z | `unread-app-props-rs-id-no-sidecar` | #638 (review 130 finding 5) | `MINIMAL_PARTS` plus `docProps/app.xml` with its Override and no relationship, `<Application rs:id="rId9">`, no `.rels` | `86dcb93528a77cbc` | clean-open | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `rels-unreferenced`, `xsd-error`, `xsd-summary` |
+| `s35a` | 06:25:38Z | `unreached-glossary-rs-id-no-sidecar` | #638 (review 130 finding 5) | `MINIMAL_PARTS` plus an ISO Strict `word/glossary/document.xml` with its Override and no `glossaryDocument` relationship, a `w:footerReference rs:id="rId9"` in a `w:docPartBody` `w:sectPr`, no `.rels` | `ddf82ef1c9eb6f42` | clean-open | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `rels-unreferenced` |
+| `s35a` | 06:25:38Z | `styles-rs-id-no-sidecar` | #638 (review 130 finding 5) | `MINIMAL_PARTS` with `rs:id="rId9"` on the first `w:name` of `word/styles.xml`, which has no `.rels` | `cb8546802b5c65d4` | clean-open | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `xsd-error`, `xsd-summary` |
+| `s35a` | 06:25:38Z | `s35a-control-minimal-end` | control | `MINIMAL_PARTS` | `5d9f08c1efc1ee32` | clean-open | valid | valid |
+| `s35b` | 06:26:53Z | `s35b-control-minimal` | control | `MINIMAL_PARTS` | `5d9f08c1efc1ee32` | clean-open | valid | valid |
+| `s35b` | 06:26:53Z | `mce-unselected-rs-embed-no-sidecar` | #638 (review 130 finding 6) | `MINIMAL_PARTS` without `word/_rels/document.xml.rels`, the body holding `<mc:AlternateContent><mc:Choice Requires="foo"><w:p><w:r><w:drawing><a:blip rs:embed="rId9"/></w:drawing></w:r></w:p></mc:Choice><mc:Fallback/></mc:AlternateContent>` (`foo` = `urn:foo`) before the body `w:sectPr` | `c0899813960b1eec` | clean-open | invalid: `rels-missing-sidecar` | invalid: `paraid-missing-element`, `rels-missing-sidecar`, `rels-unreferenced` |
+| `s35b` | 06:26:53Z | `mce-unselected-r-embed-no-sidecar` | #638 twin (Transitional) | the same with a Transitional `r:embed` | `e5af8b5f89d47fca` | clean-open | invalid: `rels-missing-sidecar` | invalid: `paraid-missing-element`, `rels-missing-sidecar`, `rels-unreferenced` |
+| `s35b` | 06:26:20Z | `sectprchange-rs-id-no-sidecar` | review 130 finding 6 (calibration for #638) | `MINIMAL_PARTS` without `word/_rels/document.xml.rels`, a `w:footerReference w:type="default" rs:id="rId9"` inside `w:sectPrChange/w:sectPr` at the end of the body `w:sectPr` | `24bf7cf6dd8fb77d` | repair-warning | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `rels-unreferenced`, `xsd-error`, `xsd-summary` |
+| `s35b` | 06:26:15Z | `sectprchange-footerref-no-id` | review 130 finding 7 (#623) | `MINIMAL_PARTS` with `<w:footerReference w:type="default"/>` (no id) inside `w:sectPrChange/w:sectPr` at the end of the body `w:sectPr` | `df3d9ae1815f280d` | open-error | invalid: `word-header-footer-relationship` | invalid: `word-header-footer-relationship`, `xsd-error`, `xsd-summary` |
+| `s35b` | 06:26:05Z | `body-child-footerref-no-id` | review 130 finding 7 (#623) | `MINIMAL_PARTS` with `<w:footerReference w:type="default"/>` (no id) as a direct `w:body` child before the body `w:sectPr` | `43d67a73dc2e5ab8` | open-error | invalid: `word-header-footer-relationship` | invalid: `word-header-footer-relationship`, `xsd-error`, `xsd-summary` |
+| `s35b` | 06:26:10Z | `ppr-sectpr-footerref-no-id` | review 130 finding 7 (#623) | `MINIMAL_PARTS` with `<w:footerReference w:type="default"/>` (no id) in a paragraph-level `w:pPr/w:sectPr` | `e54fb5744158b43e` | open-error | invalid: `word-header-footer-relationship` | invalid: `word-header-footer-relationship`, `xsd-error`, `xsd-summary` |
+| `s35b` | 06:26:53Z | `s35b-control-minimal-end` | control | `MINIMAL_PARTS` | `4293acd4ef77952a` | clean-open | valid | valid |
+| `s35c` | 06:28:26Z | `s35c-control-minimal` | control | `MINIMAL_PARTS` | `4293acd4ef77952a` | clean-open | valid | valid |
+| `s35c` | 06:27:22Z | `footerref-rid-empty-x-id` | review 130 finding 8 (#623) | `MINIMAL_PARTS` with a body `w:sectPr` `<w:footerReference w:type="default" r:id="" x:id="rId9"/>` (`x` = `urn:x`) | `400ef042eb6c180a` | repair-warning | invalid: `word-header-footer-relationship` | invalid: `word-header-footer-relationship`, `xsd-error`, `xsd-summary` |
+| `s35c` | 06:28:23Z | `footerref-rid-whitespace` | review 130 finding 8 (#623) | `MINIMAL_PARTS` with a body `w:sectPr` `<w:footerReference w:type="default" r:id=" "/>` | `a41c3a3f6cc36a7a` | repair-warning | invalid: `word-header-footer-relationship` | invalid: `word-header-footer-relationship` |
+| `s35c` | 06:28:26Z | `s35c-control-minimal-end` | control | `MINIMAL_PARTS` | `4293acd4ef77952a` | clean-open | valid | valid |
+
+<details><summary>Raw records, session 35</summary>
+
+```jsonl
+{"run": "s35a", "name": "s35a-control-minimal", "sha256": "f930e0867aa345651dab60b1c9527092cda970897ec7bc5eef195a782362854f", "observedAt": "2026-10-25T06:25:38+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s35a", "name": "unread-xtra-rs-id-no-sidecar", "sha256": "37b4859edfdcc27201b4592b252bf27e6f22ab8e5f21cfdf175dfcd0045ca0c7", "observedAt": "2026-10-25T06:25:38+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s35a", "name": "unread-xtra-r-id-no-sidecar", "sha256": "1a1147e1cecc8e33c763f5f2c6a8ee78f88b76ea7770260bd204464b7aa21ca8", "observedAt": "2026-10-25T06:25:38+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s35a", "name": "unread-app-props-rs-id-no-sidecar", "sha256": "86dcb93528a77cbc965b5c8ad6b599c30e58b159951842619af93a8f1c0dd304", "observedAt": "2026-10-25T06:25:38+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s35a", "name": "unreached-glossary-rs-id-no-sidecar", "sha256": "ddf82ef1c9eb6f427408acce89f37a3a2aa16d7d4325b190384e55c7096503dd", "observedAt": "2026-10-25T06:25:38+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s35a", "name": "styles-rs-id-no-sidecar", "sha256": "cb8546802b5c65d4ca6e6cb81c35a4e47e270ae6eea91afd1c6800d6e9e58d0c", "observedAt": "2026-10-25T06:25:38+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s35a", "name": "s35a-control-minimal-end", "sha256": "5d9f08c1efc1ee3210619b045eb5757fe847fbc56867276e1ea3d7289b1653a1", "observedAt": "2026-10-25T06:25:38+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s35b", "name": "s35b-control-minimal", "sha256": "5d9f08c1efc1ee3210619b045eb5757fe847fbc56867276e1ea3d7289b1653a1", "observedAt": "2026-10-25T06:26:53+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s35b", "name": "mce-unselected-rs-embed-no-sidecar", "sha256": "c0899813960b1eecf214c8790d5f4dafddc8f82bebc81699d8d2f8d2145098fa", "observedAt": "2026-10-25T06:26:53+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s35b", "name": "mce-unselected-r-embed-no-sidecar", "sha256": "e5af8b5f89d47fca97b132a863da675b379f6660b69788cef39911aa72a5eff2", "observedAt": "2026-10-25T06:26:53+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s35b", "name": "sectprchange-rs-id-no-sidecar", "sha256": "24bf7cf6dd8fb77da2f675b65febfab14b8107a303e7a5131c63d62052911e51", "observedAt": "2026-10-25T06:26:20.054Z", "outcome": "repair-warning", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00007__wfv__sectprchange-rs-id-no-sidecar.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00007__wfv__sectprchange-rs-id-no-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00007__wfv__sectprchange-rs-id-no-sidecar.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s35b", "name": "sectprchange-footerref-no-id", "sha256": "df3d9ae1815f280d0dd6276765137d24c3129d466695c796139ab3fc1c5bfbda", "observedAt": "2026-10-25T06:26:15.582Z", "outcome": "open-error", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00006__wfv__sectprchange-footerref-no-id.docx; refusing to guess", "dialogs": ["'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permissions for the document or drive.\\n* Make sure there is sufficient free memory and disk space.\\n* Open the file with the Text Recovery conver", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s35b", "name": "body-child-footerref-no-id", "sha256": "43d67a73dc2e5ab81169ceff9131ff5f11b0a90f72f6f99f4afbdc5f55a9346d", "observedAt": "2026-10-25T06:26:05.853Z", "outcome": "open-error", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00000__wfv__body-child-footerref-no-id.docx; refusing to guess", "dialogs": ["'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permissions for the document or drive.\\n* Make sure there is sufficient free memory and disk space.\\n* Open the file with the Text Recovery conver", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s35b", "name": "ppr-sectpr-footerref-no-id", "sha256": "e54fb5744158b43e575c1eefaafa506a84c34068838f207fdb5d15e9c38c1268", "observedAt": "2026-10-25T06:26:10.584Z", "outcome": "open-error", "item": "failed", "error": "Word could not load it in 2 passes: open produced 0 new documents, none named 00003__wfv__ppr-sectpr-footerref-no-id.docx; refusing to guess", "dialogs": ["'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permissions for the document or drive.\\n* Make sure there is sufficient free memory and disk space.\\n* Open the file with the Text Recovery conver", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s35b", "name": "s35b-control-minimal-end", "sha256": "4293acd4ef77952ab9eb2536a353698b02ee24307df73d76ad60129f0abde8d4", "observedAt": "2026-10-25T06:26:53+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s35c", "name": "s35c-control-minimal", "sha256": "4293acd4ef77952ab9eb2536a353698b02ee24307df73d76ad60129f0abde8d4", "observedAt": "2026-10-25T06:28:26+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
+{"run": "s35c", "name": "footerref-rid-empty-x-id", "sha256": "400ef042eb6c180a829d333342d99e1555ecd9711b7c29aeaffaa523f4ff9277", "observedAt": "2026-10-25T06:27:22.887Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00000__wfv__footerref-rid-empty-x-id.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00000__wfv__footerref-rid-empty-x-id.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00000__wfv__footerref-rid-empty-x-id.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\"", "\"Word experienced an error trying to open the file.\nTry these suggestions.\n* Check the file permissions for the document or drive.\n* Make sure there is sufficient free memory and disk space.\n* Open the file with the Text Recovery converter."]}
+{"run": "s35c", "name": "footerref-rid-whitespace", "sha256": "a41c3a3f6cc36a7ad8af8d6752b1d0f260607b5a210a7971d2ac8ff7cfe6021c", "observedAt": "2026-10-25T06:28:23.935Z", "outcome": "repair-warning", "item": "failed", "error": "repair prompt declined; Word could not read it: open produced 0 new documents, none named 00001__wfv__footerref-rid-whitespace.docx; refusing to guess", "dialogs": ["'Word found unreadable content in 00001__wfv__footerref-rid-whitespace.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.'", "\"Word found unreadable content in 00001__wfv__footerref-rid-whitespace.docx. Do you want to recover the contents of this document? If you trust the source of this document, click Yes.\""]}
+{"run": "s35c", "name": "s35c-control-minimal-end", "sha256": "4293acd4ef77952ab9eb2536a353698b02ee24307df73d76ad60129f0abde8d4", "observedAt": "2026-10-25T06:28:26+00:00", "outcome": "clean-open", "item": "ok", "error": "", "dialogs": []}
 ```
 
 </details>
@@ -6989,6 +7049,123 @@ for (const [name, issue, make] of specimens) {
     console.log(
         `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
     );
+}
+```
+
+Session 35's builder (`s35a`–`s35c`) is another standalone script, run the same way from the layer 130 worktree, with `CHUNK` naming the chunk:
+
+```ts
+// Session 35 (2026-10-25): the adversarial review of layer 130 (#623, #624, #625; empryo devin/swe-2), its suspected
+// findings 5–8, each a shape Word was never shown.
+// s35a: finding 5 (#624). A relationship id with no sidecar in a part Word may never read: an unreferenced word/xtra.xml
+//       (ISO Strict rs:id, and its Transitional r:id twin, which already blocked before #624), an unreferenced
+//       docProps/app.xml (rs:id), an unreached ISO Strict glossary (rs:id footer reference), and word/styles.xml (rs:id
+//       on w:name; styles is reached).
+// s35b: findings 6 and 7. The no-sidecar walk reads the stored XML: an rs:embed (and its Transitional r:embed twin) inside
+//       an mc:Choice Word does not select, and an rs:id footer reference inside w:sectPrChange, each with no sidecar.
+//       #623's rule beyond the body w:sectPr: a footer reference with no id inside w:sectPrChange, as a direct w:body
+//       child, and in a paragraph-level w:sectPr.
+// s35c: finding 8. A footer reference with r:id="" beside x:id="rId9" (urn:x), and one with a whitespace r:id=" ".
+// Shapes: wfv-scratch/review-130 probe1–probe3 (N's w:pPr moved first, where the schema puts it); tests/support/minimal-docx.ts.
+// Run from the layer 130 worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s35a pnpm exec tsx s35builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const WS = "http://purl.oclc.org/ooxml/wordprocessingml/main";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const RS = "http://purl.oclc.org/ooxml/officeDocument/relationships";
+const A = "http://schemas.openxmlformats.org/drawingml/2006/main";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+type Parts = Record<string, string>;
+const replaceOnce = (text: string, from: string, to: string) => {
+  if (!text.includes(from)) throw new Error(`missing ${from}`);
+  return text.replace(from, to);
+};
+const override = (part: string, type: string) => replaceOnce(MINIMAL_PARTS[CT]!, "</Types>", `<Override PartName="/${part}" ContentType="${type}"/></Types>`);
+const main = (declarations: string, from: string, to: string): string =>
+  replaceOnce(replaceOnce(MINIMAL_PARTS[MAIN]!, "<w:document ", `<w:document ${declarations} `), from, to);
+const withoutSidecar = (parts: Parts): Parts => {
+  const out = { ...parts };
+  delete out[SIDECAR];
+  return out;
+};
+const NOID = '<w:footerReference w:type="default"/>';
+const SECTPR_CHANGE = (inner: string) => `<w:sectPrChange w:id="5" w:author="a" w:date="2026-01-01T00:00:00Z"><w:sectPr>${inner}</w:sectPr></w:sectPrChange></w:sectPr>`;
+const control = () => buildDocx({ ...MINIMAL_PARTS });
+
+const chunks: Record<string, Array<[string, string, () => Promise<Uint8Array>]>> = {
+  s35a: [
+    ["s35a-control-minimal", "control", control],
+    ["unread-xtra-rs-id-no-sidecar", "review 130 finding 5 (#624)", () =>
+      buildDocx({ ...MINIMAL_PARTS, "word/xtra.xml": `<?xml version="1.0"?><x:root xmlns:x="urn:x" xmlns:rs="${RS}"><x:e rs:id="rId9"/></x:root>` })],
+    ["unread-xtra-r-id-no-sidecar", "review 130 finding 5 twin (Transitional)", () =>
+      buildDocx({ ...MINIMAL_PARTS, "word/xtra.xml": `<?xml version="1.0"?><x:root xmlns:x="urn:x" xmlns:r="${R}"><x:e r:id="rId9"/></x:root>` })],
+    ["unread-app-props-rs-id-no-sidecar", "review 130 finding 5 (#624)", () =>
+      buildDocx({
+        ...MINIMAL_PARTS,
+        "docProps/app.xml": `<?xml version="1.0"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:rs="${RS}"><Application rs:id="rId9">x</Application></Properties>`,
+        [CT]: override("docProps/app.xml", "application/vnd.openxmlformats-officedocument.extended-properties+xml"),
+      })],
+    ["unreached-glossary-rs-id-no-sidecar", "review 130 finding 5 (#624)", () =>
+      buildDocx({
+        ...MINIMAL_PARTS,
+        "word/glossary/document.xml": `<?xml version="1.0"?><w:glossaryDocument xmlns:w="${WS}" xmlns:rs="${RS}"><w:docParts><w:docPart><w:docPartBody><w:sectPr><w:footerReference w:type="default" rs:id="rId9"/></w:sectPr></w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`,
+        [CT]: override("word/glossary/document.xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.document.glossary+xml"),
+      })],
+    ["styles-rs-id-no-sidecar", "review 130 finding 5 (#624; styles is reached)", () =>
+      buildDocx({ ...MINIMAL_PARTS, "word/styles.xml": replaceOnce(replaceOnce(MINIMAL_PARTS["word/styles.xml"]!, "<w:styles ", `<w:styles xmlns:rs="${RS}" `), "<w:name ", `<w:name rs:id="rId9" `) })],
+    ["s35a-control-minimal-end", "control", control],
+  ],
+  s35b: [
+    ["s35b-control-minimal", "control", control],
+    ["mce-unselected-rs-embed-no-sidecar", "review 130 finding 6 (#624)", () =>
+      buildDocx(withoutSidecar({ ...MINIMAL_PARTS, [MAIN]: main(`xmlns:rs="${RS}" xmlns:foo="urn:foo" xmlns:a="${A}"`, "<w:sectPr>", `<mc:AlternateContent><mc:Choice Requires="foo"><w:p><w:r><w:drawing><a:blip rs:embed="rId9"/></w:drawing></w:r></w:p></mc:Choice><mc:Fallback/></mc:AlternateContent><w:sectPr>`) }))],
+    ["mce-unselected-r-embed-no-sidecar", "review 130 finding 6 twin (Transitional)", () =>
+      buildDocx(withoutSidecar({ ...MINIMAL_PARTS, [MAIN]: main(`xmlns:r="${R}" xmlns:foo="urn:foo" xmlns:a="${A}"`, "<w:sectPr>", `<mc:AlternateContent><mc:Choice Requires="foo"><w:p><w:r><w:drawing><a:blip r:embed="rId9"/></w:drawing></w:r></w:p></mc:Choice><mc:Fallback/></mc:AlternateContent><w:sectPr>`) }))],
+    ["sectprchange-rs-id-no-sidecar", "review 130 finding 6 (#624)", () =>
+      buildDocx(withoutSidecar({ ...MINIMAL_PARTS, [MAIN]: main(`xmlns:rs="${RS}"`, "</w:sectPr>", SECTPR_CHANGE('<w:footerReference w:type="default" rs:id="rId9"/>')) }))],
+    ["sectprchange-footerref-no-id", "review 130 finding 7 (#623)", () =>
+      buildDocx({ ...MINIMAL_PARTS, [MAIN]: main(`xmlns:r="${R}"`, "</w:sectPr>", SECTPR_CHANGE(NOID)) })],
+    ["body-child-footerref-no-id", "review 130 finding 7 (#623)", () =>
+      buildDocx({ ...MINIMAL_PARTS, [MAIN]: main(`xmlns:r="${R}"`, "<w:sectPr>", `${NOID}<w:sectPr>`) })],
+    ["ppr-sectpr-footerref-no-id", "review 130 finding 7 (#623)", () =>
+      buildDocx({ ...MINIMAL_PARTS, [MAIN]: main(`xmlns:r="${R}"`, "<w:r><w:t>Hello", `<w:pPr><w:sectPr>${NOID}</w:sectPr></w:pPr><w:r><w:t>Hello`) })],
+    ["s35b-control-minimal-end", "control", control],
+  ],
+  s35c: [
+    ["s35c-control-minimal", "control", control],
+    ["footerref-rid-empty-x-id", "review 130 finding 8 (#623)", () =>
+      buildDocx({ ...MINIMAL_PARTS, [MAIN]: main(`xmlns:r="${R}" xmlns:x="urn:x"`, "<w:sectPr>", '<w:sectPr><w:footerReference w:type="default" r:id="" x:id="rId9"/>') })],
+    ["footerref-rid-whitespace", "review 130 finding 8 (#623)", () =>
+      buildDocx({ ...MINIMAL_PARTS, [MAIN]: main(`xmlns:r="${R}"`, "<w:sectPr>", '<w:sectPr><w:footerReference w:type="default" r:id=" "/>') })],
+    ["s35c-control-minimal-end", "control", control],
+  ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+  const bytes = await make();
+  const file = `${name}.docx`;
+  writeFileSync(path.join(dir, file), bytes);
+  const sha256 = createHash("sha256").update(bytes).digest("hex");
+  const verdict = async (profile: "word-valid" | "strict") => {
+    const r = await validate(path.join(dir, file), { profile });
+    return { valid: r.valid, errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))] };
+  };
+  const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+  appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+  console.log(`built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`);
 }
 ```
 
