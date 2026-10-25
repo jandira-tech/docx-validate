@@ -109,6 +109,7 @@ const SCHEMA_MAPPINGS: Record<string, string> = {
     "commentsExtensible.xml": "microsoft/wml-cex-2018.xsd",
     "commentsExtended.xml": "microsoft/wml-2012.xsd",
     chart: "ISO-IEC29500-4_2016/dml-chart.xsd",
+    diagram: "ISO-IEC29500-4_2016/dml-diagram.xsd",
     theme: "ISO-IEC29500-4_2016/dml-main.xsd",
     drawing: "ISO-IEC29500-4_2016/dml-main.xsd",
     "bibliography.xml": "ISO-IEC29500-4_2016/shared-bibliography.xsd",
@@ -148,6 +149,7 @@ const STRICT_SCHEMA_MAPPINGS: Record<string, string> = {
     "app.xml": `${STRICT_SCHEMA_DIR}/shared-documentPropertiesExtended.xsd`,
     "custom.xml": `${STRICT_SCHEMA_DIR}/shared-documentPropertiesCustom.xsd`,
     chart: `${STRICT_SCHEMA_DIR}/dml-chart.xsd`,
+    diagram: `${STRICT_SCHEMA_DIR}/dml-diagram.xsd`,
     theme: `${STRICT_SCHEMA_DIR}/dml-main.xsd`,
     drawing: `${STRICT_SCHEMA_DIR}/dml-main.xsd`,
     "bibliography.xml": `${STRICT_SCHEMA_DIR}/shared-bibliography.xsd`,
@@ -196,6 +198,14 @@ export const PACKAGE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.or
 export const OFFICE_RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 export const STRICT_OFFICE_RELATIONSHIPS_NAMESPACE = "http://purl.oclc.org/ooxml/officeDocument/relationships";
 const MAIN_CONTENT_FOLDERS = new Set(["word", "ppt", "xl"]);
+
+/**
+ * The DrawingML diagram parts' file names, ASCII lower-cased: data, layout,
+ * quick style and colors (roots `dgm:dataModel`, `dgm:layoutDef`,
+ * `dgm:styleDef`, `dgm:colorsDef`). Microsoft's drawing cache (`drawingN.xml`,
+ * `dsp:drawing`) has no bundled schema.
+ */
+const DIAGRAM_PART_NAME = /^(?:data|layout|quickstyle|colors)\d*\.xml$/;
 
 const asciiLowerCase = (text: string): string => text.replace(/[A-Z]/g, (letter) => letter.toLowerCase());
 
@@ -2046,6 +2056,16 @@ export class BaseSchemaValidator {
         const parentName = path.posix.basename(path.posix.dirname(name));
         if (MAIN_CONTENT_FOLDERS.has(parentName) && SCHEMA_MAPPINGS[parentName]) {
             return parentName;
+        }
+        // One folder below a main content folder: the glossary document and
+        // the parts it relates are WordprocessingML, and the diagram parts
+        // DrawingML; the folder rule above never reached them (#628).
+        const grandparentName = path.posix.basename(path.posix.dirname(path.posix.dirname(name)));
+        if (parentName === "glossary" && grandparentName === "word") {
+            return "word";
+        }
+        if (parentName === "diagrams" && MAIN_CONTENT_FOLDERS.has(grandparentName) && DIAGRAM_PART_NAME.test(base)) {
+            return "diagram";
         }
         return null;
     }

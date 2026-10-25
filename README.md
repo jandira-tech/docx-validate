@@ -191,6 +191,13 @@ Named selections diagnose the escaped name when they include that check.
 Empty-part auto-repair retains its exact lowercase `.rels` scope. The trace describes the schema walk, not a Microsoft Word invocation. Under `strict`, ISO Strict OOXML parts use the bundled
 `schemas/iso-strict/` schemas. Lenient skips those parts with the info-level
 `xsd-strict-skipped`; Word-valid emits no XSD skip issue because it runs no XSD.
+The walk sends a part to the schema its identity maps to. The glossary
+document's parts (`word/glossary/*.xml`) use `wml.xsd`, and the DrawingML
+diagram parts (`diagrams/dataN.xml`, `layoutN.xml`, `quickStyleN.xml`,
+`colorsN.xml` under `word/`, `ppt/` or `xl/`) use `dml-diagram.xsd` (#628). A
+part with no mapped schema, such as `customXml/item1.xml` or a diagram's
+`drawingN.xml` cache, is not sent: `xsdWalk.parts` lists exactly the parts
+that were.
 
 Full DOCX/DOCM validation reports duplicate relationship `Id` values as
 `rels-id-duplicate`, judging the relationships part of every owner part in
