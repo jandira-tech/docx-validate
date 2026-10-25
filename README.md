@@ -966,9 +966,10 @@ root, and an `mc:Choice` whose `Requires` prefix is undeclared in
 [#636](https://github.com/jandira-tech/docx-validate/issues/636)). The
 `word-markup-compatibility` check reports those findings (see below).
 Hyperlink and toolbar resolution, duplicate counts and the validators' semantic
-relationship checks (#635, above) read the processed view too, still taking
-direct children only, under Word-valid and strict. Legacy lenient traversal and
-raw repair-inventory collection remain unchanged.
+relationship checks read the processed view too, still taking direct children
+only, under Word-valid and strict; for the semantic checks that view is
+DOCX/DOCM only (#635, #643, above). Legacy lenient traversal and raw
+repair-inventory collection remain unchanged.
 
 Word 16.115 (build 16.115.26100424, macOS, 2026-10-24) offered recovery for all
 three minimal package mutations: a foreign sibling with every relationship
