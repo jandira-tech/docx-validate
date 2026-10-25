@@ -30,6 +30,16 @@ const isWordFolderPart = (partName: string | undefined): boolean =>
 const isPackageRelationshipsPart = (partName: string | undefined): boolean =>
     partName !== undefined && canonicalPartName(partName) === "_rels/.rels";
 
+/**
+ * Whether `issue` stays an error under `word-valid`: `true` when Word 16.115
+ * is observed to refuse or offer to recover a file carrying it. The three sets
+ * hold canonical part names, computed once per run by the caller:
+ * `propertiesParts` (the core, app and custom properties parts the package
+ * relationships name, `propertiesParts()`), `wordReadParts` (the parts Word
+ * reads at open, `wordReadParts()`) and `storyRootParts` (every main document
+ * plus every reached glossary document, `wordStoryRootParts()`). An empty set
+ * makes the findings that depend on it non-blocking.
+ */
 export const isWordBlockingIssue = (
     issue: ValidationIssue,
     propertiesParts: ReadonlySet<string> = new Set(),

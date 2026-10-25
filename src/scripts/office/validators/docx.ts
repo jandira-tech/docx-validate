@@ -624,6 +624,14 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         );
     }
 
+    /**
+     * The `word-valid` view of a full run: every error that does not predict a
+     * Word refusal or recovery offer ({@link isWordBlockingIssue}) becomes a
+     * warning, judged against this package's properties parts, Word-read parts
+     * and story roots. Runs after the story-reference hand-off, so the
+     * pairing in `withoutRepeatedHeaderFooterFindings` sees the producers'
+     * own issue objects.
+     */
     private async applyWordValidProfile(result: ValidationResult): Promise<ValidationResult> {
         const context = this.context();
         // Resolve each part set once per run and share the blocking predicate
