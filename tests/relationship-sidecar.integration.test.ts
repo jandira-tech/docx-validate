@@ -11,6 +11,7 @@ import type { ValidationIssue } from "../src/lib/types";
 import { validate } from "../src/scripts/office/validate";
 import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
+import { STORY_FOOTER_XML, glossaryStoryReferenceParts, storyContentType } from "./support/story-content-type-specimens";
 
 const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 const RS = "http://purl.oclc.org/ooxml/officeDocument/relationships";
@@ -19,6 +20,16 @@ const WS = "http://purl.oclc.org/ooxml/wordprocessingml/main";
 const ESCAPED_NAME = "opc-part-name-escaped-unreserved";
 const MAIN = "word/document.xml";
 const SIDECAR = "word/_rels/document.xml.rels";
+const CT = "[Content_Types].xml";
+const HEADER1 = "word/header1.xml";
+const HEADER1_SIDECAR = "word/_rels/header1.xml.rels";
+const GLOSSARY = "word/glossary/document.xml";
+const GLOSSARY_SIDECAR = "word/glossary/_rels/document.xml.rels";
+/** `text` with the one occurrence of `from` replaced; throws when `from` is absent, so a shape cannot silently stay unchanged. */
+const replaceOnce = (text: string, from: string, to: string): string => {
+    if (!text.includes(from)) throw new Error(`missing ${from}`);
+    return text.replace(from, to);
+};
 const TEXT = "<w:r><w:t>Hello</w:t></w:r>";
 const docH = MINIMAL_PARTS[MAIN]!.replace("<w:document ", `<w:document xmlns:r="${R}" `).replace(
     TEXT,
@@ -122,6 +133,103 @@ describe("relationship references without a sidecar (#624)", () => {
         });
     });
 });
+
+// Session 33's s33b shapes (#625), built as the evidence builder built them
+// (docs/plans/evidence/word-probes-2026-10-24.md, session 33's builder).
+const FOOTER_RID9 = '<w:footerReference w:type="default" r:id="rId9"/>';
+/** The main document's body sectPr gets the reference, with `xmlns:r` declared. */
+const withFooterReference = (parts: Record<string, string>): Record<string, string> => ({
+    ...parts,
+    [MAIN]: replaceOnce(replaceOnce(parts[MAIN]!, "<w:document ", `<w:document xmlns:r="${R}" `), "<w:sectPr>", `<w:sectPr>${FOOTER_RID9}`),
+});
+/** `parts` without the relationships part `rels`. */
+const withoutRels = (parts: Record<string, string>, rels: string): Record<string, string> => {
+    const out: Record<string, string> = { ...parts };
+    if (out[rels] === undefined) throw new Error(`missing ${rels}`);
+    delete out[rels];
+    return out;
+};
+/** Review BE S2 (#625): the main document stored as word/header1.xml, with its `.rels`, Override and package relationship renamed with it. */
+const mainAsHeader1 = (parts: Record<string, string>): Record<string, string> => {
+    const out: Record<string, string> = { ...parts };
+    out[HEADER1] = out[MAIN]!;
+    delete out[MAIN];
+    if (out[SIDECAR] !== undefined) {
+        out[HEADER1_SIDECAR] = out[SIDECAR]!;
+        delete out[SIDECAR];
+    }
+    out[CT] = replaceOnce(out[CT]!, 'PartName="/word/document.xml"', 'PartName="/word/header1.xml"');
+    out["_rels/.rels"] = replaceOnce(out["_rels/.rels"]!, 'Target="word/document.xml"', 'Target="word/header1.xml"');
+    return out;
+};
+/** Session 26's clean reached-glossary footer shape. */
+const glossary = (): Record<string, string> =>
+    glossaryStoryReferenceParts("footerReference", "footer", "footer9.xml", STORY_FOOTER_XML, storyContentType("footer"));
+/** Review BE S2 (#625): the reached glossary stored as word/header1.xml, with its `.rels` (Target adjusted), Override and relationship renamed with it. */
+const glossaryAsHeader1 = (parts: Record<string, string>): Record<string, string> => {
+    const out: Record<string, string> = { ...parts };
+    out[HEADER1] = out[GLOSSARY]!;
+    delete out[GLOSSARY];
+    if (out[GLOSSARY_SIDECAR] !== undefined) {
+        out[HEADER1_SIDECAR] = replaceOnce(out[GLOSSARY_SIDECAR]!, 'Target="footer9.xml"', 'Target="glossary/footer9.xml"');
+        delete out[GLOSSARY_SIDECAR];
+    }
+    out[CT] = replaceOnce(out[CT]!, 'PartName="/word/glossary/document.xml"', 'PartName="/word/header1.xml"');
+    out[SIDECAR] = replaceOnce(out[SIDECAR]!, 'Target="glossary/document.xml"', 'Target="header1.xml"');
+    return out;
+};
+/** A genuine header at word/header1.xml: the main document's sectPr references it, and its own picture names `rId2` with no sidecar beside it. */
+const genuineHeaderNoSidecar = (): Record<string, string> => ({
+    ...MINIMAL_PARTS,
+    [MAIN]: MINIMAL_PARTS[MAIN]!.replace("<w:document ", `<w:document xmlns:r="${R}" `).replace(
+        "<w:sectPr>",
+        '<w:sectPr><w:headerReference w:type="default" r:id="rIdH"/>',
+    ),
+    [HEADER1]: `<w:hdr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="${R}"><w:p>${picture}</w:p></w:hdr>`,
+    [SIDECAR]: MINIMAL_PARTS[SIDECAR]!.replace(
+        "</Relationships>",
+        `<Relationship Id="rIdH" Type="${R}/header" Target="header1.xml"/></Relationships>`,
+    ),
+    [CT]: MINIMAL_PARTS[CT]!.replace(
+        "</Types>",
+        '<Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/></Types>',
+    ),
+});
+interface StorySpecimen {
+    name: string;
+    parts: () => Record<string, string>;
+    wordValid: boolean;
+    /** The single expected `rels-missing-sidecar` finding and its word-valid severity, if any. */
+    sidecar?: { path: string; severity: "error" | "warning" };
+}
+const STORY_SPECIMENS: readonly StorySpecimen[] = [
+    { name: "header1-main-control", parts: () => mainAsHeader1({ ...MINIMAL_PARTS }), wordValid: true },
+    {
+        name: "header1-main-footerref-no-sidecar",
+        parts: () => withoutRels(mainAsHeader1(withFooterReference({ ...MINIMAL_PARTS })), HEADER1_SIDECAR),
+        wordValid: false,
+        sidecar: { path: HEADER1, severity: "error" },
+    },
+    { name: "header1-glossary-control", parts: () => glossaryAsHeader1(glossary()), wordValid: true },
+    {
+        name: "header1-glossary-footerref-no-sidecar",
+        parts: () => withoutRels(glossaryAsHeader1(glossary()), HEADER1_SIDECAR),
+        wordValid: false,
+        sidecar: { path: HEADER1, severity: "error" },
+    },
+    {
+        name: "glossary-footerref-no-sidecar",
+        parts: () => withoutRels(glossary(), GLOSSARY_SIDECAR),
+        wordValid: false,
+        sidecar: { path: GLOSSARY, severity: "error" },
+    },
+    {
+        name: "genuine-header-no-sidecar",
+        parts: genuineHeaderNoSidecar,
+        wordValid: true,
+        sidecar: { path: HEADER1, severity: "warning" },
+    },
+];
 
 describe.each(["packed", "directory"] as const)("OPC sidecar lookup, %s (#402)", { timeout: 120_000 }, (input) => {
     // Filesystem and ZIP operations are integration-only. Snapshot every file,
@@ -256,6 +364,47 @@ describe.each(["packed", "directory"] as const)("OPC sidecar lookup, %s (#402)",
                     if (result.valid) expect(partial.valid).toBe(true);
                     expect(errors(result.issues)).toEqual(expect.arrayContaining(errors(partial.issues)));
                 }
+            }
+        });
+    });
+
+    it("keeps a story root's missing sidecar blocking under a header's name (#625)", async () => {
+        // Session 33 (s33b): Word judges a story root by the relationship that
+        // reaches it, not by its file name. A main document, and a reached
+        // glossary, each stored as word/header1.xml with no .rels beside their
+        // story reference get the recovery offer, and the renamed controls
+        // open clean; the ordinary-name glossary calibration already blocks,
+        // and a genuine header keeps its Word-tolerated warning.
+        await withTempDir(async (dir) => {
+            for (const specimen of STORY_SPECIMENS) {
+                const file = await writePackage(dir, specimen.name, specimen.parts());
+                const before = snapshot(file);
+                const full = await validate(file, { profile: "word-valid" });
+                expect.soft(full.valid, specimen.name).toBe(specimen.wordValid);
+                expect
+                    .soft(
+                        full.issues.filter((issue) => issue.code === "rels-missing-sidecar"),
+                        specimen.name,
+                    )
+                    .toEqual(
+                        specimen.sidecar === undefined
+                            ? []
+                            : [expect.objectContaining({ code: "rels-missing-sidecar", ...specimen.sidecar })],
+                    );
+                // The legacy ID walk that produces the finding stays outside
+                // named and quick selections, so a partial run agrees by
+                // reporting nothing here either.
+                for (const selection of [{ checks: ["word-hyperlink-relationship"] }, { quick: true }] as const) {
+                    const partial = await validate(file, { profile: "word-valid", ...selection });
+                    expect
+                        .soft(
+                            partial.issues.filter((issue) => issue.code === "rels-missing-sidecar"),
+                            `${specimen.name}: ${JSON.stringify(selection)}`,
+                        )
+                        .toEqual([]);
+                    if (full.valid) expect.soft(partial.valid, specimen.name).toBe(true);
+                }
+                expect(snapshot(file)).toEqual(before);
             }
         });
     });

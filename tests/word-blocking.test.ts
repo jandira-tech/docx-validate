@@ -235,6 +235,30 @@ describe("isWordBlockingIssue", () => {
         expect(isWordBlockingIssue(issue("rels-missing-sidecar", { path }))).toBe(blocking);
     });
 
+    it("blocks a missing .rels sidecar for a story root stored under a header's name (#625)", () => {
+        // Session 33 (s33b): Word judges a story root by the relationship
+        // that reaches it, not by its file name, so a main document — or a
+        // reached glossary — stored as word/header1.xml with no .rels beside
+        // its story reference is refused while the renamed controls open
+        // clean. The story-root set decides, compared as OPC part names; the
+        // basename exemption keeps applying only to parts outside it.
+        const roots = new Set([canonicalPartName("word/header1.xml"), canonicalPartName("word/document.xml")]);
+        expect(isWordBlockingIssue(issue("rels-missing-sidecar", { path: "word/header1.xml" }), new Set(), new Set(), roots)).toBe(true);
+        expect(isWordBlockingIssue(issue("rels-missing-sidecar", { path: "WORD/Header1.XML" }), new Set(), new Set(), roots)).toBe(true);
+        // A header name no story root uses keeps today's exemption, and the
+        // main document keeps blocking with or without the set.
+        expect(
+            isWordBlockingIssue(
+                issue("rels-missing-sidecar", { path: "word/header1.xml" }),
+                new Set(),
+                new Set(),
+                new Set([canonicalPartName("word/document.xml")]),
+            ),
+        ).toBe(false);
+        expect(isWordBlockingIssue(issue("rels-missing-sidecar", { path: "word/document.xml" }))).toBe(true);
+        expect(isWordBlockingIssue(issue("rels-missing-sidecar", { path: "word/document.xml" }), new Set(), new Set(), roots)).toBe(true);
+    });
+
     it.each([
         ["Broken reference: ../customXml/item1.xml", true],
         ["Broken reference in word/_rels/document.xml.rels", true],

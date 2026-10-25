@@ -217,8 +217,23 @@ export const isWordBlockingIssue = (
         // comment) — verified: comments.unmatched-comment-marker_from_html.docx
         // carries the exact same orphan and opens cleanly in real Word. So an
         // orphan marker does not predict Word rejection; keep it a warning.
-        case "rels-missing-sidecar":
+        case "rels-missing-sidecar": {
+            // #625, session 33 (s33b): Word judges a story root by the
+            // relationship that reaches it, not by its file name — a main
+            // document, and a reached glossary, each stored as
+            // word/header1.xml with no .rels beside their story reference
+            // get the recovery offer, while the renamed controls open clean.
+            // So a story root's missing sidecar blocks wherever the root is
+            // stored, compared as OPC part names as the rels-id-duplicate
+            // case above compares its sidecar. Every other part keeps the
+            // basename rule unchanged: a genuine word/header1.xml or
+            // word/footer1.xml with no sidecar is Word-tolerated (Word's own
+            // regenerated header-with-rid-no-sidecar output opens clean
+            // carrying the finding), and any other name blocks as before.
+            const part = issue.path?.replace(/\\/g, "/");
+            if (part !== undefined && storyRootParts.has(canonicalPartName(part))) return true;
             return !/^word\/(?:header|footer)\d*\.xml$/i.test(issue.path ?? "");
+        }
         case "opc-relationships-structure": {
             // #433: Word 16.115 offers recovery for a wrong root or a foreign
             // child in _rels/.rels (session 3c) and in word/_rels/document.xml.rels

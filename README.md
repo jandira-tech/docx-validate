@@ -968,6 +968,19 @@ parses, as Word 16.115 offered recovery for a body `w:footerReference`
 ([#619](https://github.com/jandira-tech/docx-validate/issues/619); session 32
 in the same evidence file); a part with no relationships part keeps
 `rels-missing-sidecar` as its only finding for a non-empty `r:id`.
+Under word-valid for DOCX/DOCM, `rels-missing-sidecar` blocks when the part
+is a story root — the main document or a reached glossary — wherever it is
+stored, even under `word/header1.xml`: Word judges a story root by the
+relationship that reaches it, not by its file name, and session 33 observed
+recovery for both a renamed main document and a renamed reached glossary
+whose `.rels` was gone beside their story reference, while the renamed
+controls opened clean
+([#625](https://github.com/jandira-tech/docx-validate/issues/625); session 33,
+chunk s33b, in the same evidence file). Every other part keeps the basename
+rule: a genuine `word/header1.xml` or `word/footer1.xml` bearing relationship
+references with no sidecar keeps its word-valid warning — Word's own
+regenerated output opens clean carrying that finding — and any other name
+blocks as before.
 An empty or missing id in both relationships namespaces is this check's
 finding regardless of whether the sidecar exists or parses
 ([#623](https://github.com/jandira-tech/docx-validate/issues/623)). Session 33
