@@ -29,6 +29,26 @@ runs bypass it, so a broken XSD engine no longer fails a default DOCX run (#318)
 A full PPTX run walks its schemas under every profile, so it always probes; an
 XLSX run never does (#341).
 
+### Breaking: `buildRepairPlanIssues` signature and the `repair-plan` code's meaning
+
+`buildRepairPlanIssues` — re-exported from the package root — changed from
+`buildRepairPlanIssues(issues)` to
+`buildRepairPlanIssues(before, after)` when the plan began reporting the same
+run's observed repair outcomes (#622). Pass the non-info findings from before
+repair and this run's post-repair findings; the old one-argument call throws
+(`undefined` is not iterable).
+
+The `repair-plan` issue code changed meaning with it. Before #622 it meant "a
+repair is registered for this code"; it now means "this `(path, code)` group
+cleared". A consumer keyed on the old meaning silently reads the opposite —
+the group reported by `repair-plan` has no surviving findings, while
+`repair-plan-partial` and `repair-plan-unavailable` carry the leftovers (with
+"Fix manually: …" guidance when the survivors' guidance exists). Plan issues
+are info-severity and appear only in the path API's `validate()` result and
+in CLI `--json` output; the CLI's text mode prints errors only, and the byte
+APIs (`new Validate().run(bytes)`, `jubarte.validate(bytes)`) have no
+`autoRepair` option, so they never produce a plan.
+
 ### Check selection and execution metadata
 
 `quick: true` / `--quick` and `checks: ["tables"]` / `--checks tables` select

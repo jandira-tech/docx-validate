@@ -1483,15 +1483,22 @@ extraction fails on a NUL-bearing name: omitted work can miss a defect.
 return the shared `ValidationResult`, including metadata, without those extra fields.
 
 With `autoRepair` the run also reports repair outcomes for DOCX/DOCM and PPTX
-([#622](https://github.com/jandira-tech/docx-validate/issues/622)). Non-info
-findings from before repair are grouped by path, code and manual guidance,
-then compared with the same groups from that run's post-repair validation.
+([#622](https://github.com/jandira-tech/docx-validate/issues/622)). The plan
+appears in the path API's `validate()` result and in the CLI's `--json`
+output; the CLI's text mode prints only error-severity issues, and the byte
+APIs (`new Validate().run(bytes)`, `jubarte.validate(bytes)`) have no
+`autoRepair` option, so neither surface carries the plan
+([#651](https://github.com/jandira-tech/docx-validate/issues/651)). Non-info
+findings from before repair are grouped by path and code, then compared with
+the same group from that run's post-repair validation
+([#648](https://github.com/jandira-tech/docx-validate/issues/648)).
 Each info-severity plan line gives the original count and says
 "Auto-repair cleared N; M remain": `repair-plan` means none remain,
 `repair-plan-partial` means some cleared and some remain, and
 `repair-plan-unavailable` means none cleared. Remaining findings carry
-"Fix manually: …" when guidance exists, or "No manual repair guidance is
-available." otherwise. Counts describe group outcomes, including indirect
+"Fix manually: …" when guidance exists — one line lists every distinct
+guidance its survivors carry — or "No manual repair guidance is available."
+otherwise. Counts describe group outcomes, including indirect
 repairs; they do not identify individual occurrences or promise future repairs.
 New post-repair groups remain ordinary validation findings. No repairs are added.
 

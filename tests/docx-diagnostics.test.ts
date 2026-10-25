@@ -804,3 +804,21 @@ describe("repair plan manual guidance wording (#650)", () => {
         expect(plan.message).not.toContain("positive integer");
     });
 });
+
+/*
+ * #651 — the (issues) → (before, after) signature break and the repair-plan
+ * code's meaning change are documented in MIGRATION.md rather than hidden
+ * behind a one-argument overload: a silent overload would let old callers
+ * read "none remain" as if the code still meant "a repair is registered".
+ */
+describe("buildRepairPlanIssues migration notes (#651)", () => {
+    it("keeps the two-argument signature the migration guide documents", () => {
+        expect(buildRepairPlanIssues.length).toBe(2);
+    });
+
+    it("documents the signature change and the repair-plan meaning change in MIGRATION.md", async () => {
+        const migration = await fs.readFile(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "MIGRATION.md"), "utf-8");
+        expect(migration).toContain("buildRepairPlanIssues");
+        expect(migration).toContain("repair-plan");
+    });
+});
