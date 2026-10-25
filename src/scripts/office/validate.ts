@@ -1238,27 +1238,29 @@ async function runValidators(
     }
 
     let repairs = 0;
-    let repairDiagnostics: ValidationResult = { valid: true, issues: [] };
+    let beforeIssues: readonly ValidationIssue[] = [];
+    let contentIssues: ValidationIssue[] = [];
     if (opts.autoRepair) {
         const beforeInventory =
             opts.suffix === ".docx" || opts.suffix === ".docm" ? await collectDocxSemanticInventory(unpackedDir, opts.profile) : null;
         const beforeResults = await Promise.all(validators.map((v) => v.validate()));
-        const repairPlanIssues = buildRepairPlanIssues(mergeResults(...beforeResults).issues);
+        beforeIssues = mergeResults(...beforeResults).issues;
         for (const v of validators) {
             repairs += await v.repair();
         }
-        const contentIssues =
+        contentIssues =
             beforeInventory && repairs > 0
                 ? compareDocxSemanticInventories(beforeInventory, await collectDocxSemanticInventory(unpackedDir, opts.profile))
                 : [];
-        repairDiagnostics = mergeResults({
-            valid: [...repairPlanIssues, ...contentIssues].every((i) => i.severity !== "error"),
-            issues: [...repairPlanIssues, ...contentIssues],
-        });
     }
 
     const results = await Promise.all(validators.map((v) => v.validate()));
-    const merged = mergeResults(...results, repairDiagnostics);
+    const after = mergeResults(...results);
+    const repairPlanIssues = opts.autoRepair ? buildRepairPlanIssues(beforeIssues, after.issues) : [];
+    const merged = mergeResults(after, {
+        valid: contentIssues.every((i) => i.severity !== "error"),
+        issues: [...repairPlanIssues, ...contentIssues],
+    });
     // mergeResults drops xsdWalk. Copy the trace off the schema validator
     // after the walk, including the word-valid path that never started XSD.
     return {

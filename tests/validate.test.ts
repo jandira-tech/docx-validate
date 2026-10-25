@@ -265,7 +265,8 @@ describe("validate", () => {
             expect(wsAfter.length).toBe(0);
             expect(
                 after.issues.some(
-                    (i) => i.code === "repair-plan" && i.path === "word/document.xml" && i.message.includes("add xml:space='preserve'"),
+                    (i) =>
+                        i.code === "repair-plan" && i.path === "word/document.xml" && i.message.includes("Auto-repair cleared 1; 0 remain"),
                 ),
             ).toBe(true);
             expect(after.issues.some((i) => i.code === "repair-content-preserved")).toBe(true);

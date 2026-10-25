@@ -68,60 +68,11 @@ export function severityClassFor(category: string): InventorySeverityClass {
     return SEVERITY_CLASS_BY_CATEGORY[category] ?? "content";
 }
 
-/**
- * The issue codes a `repair()` pass actually changes, proven end-to-end in
- * `tests/docx-diagnostics.test.ts`: `BaseSchemaValidator.repair` covers the
- * whitespace-preservation and empty-`.rels` codes; `DOCXSchemaValidator.repair`
- * covers the rest. `xsd-error` is included only for the DrawingML
- * scaffold messages (`repairInlinePictureScaffolds`); every other schema
- * finding, the `xsd-summary` row, and each code with a manual
- * `repairActionForIssue` hint but no repair is absent so
- * `buildRepairPlanIssues` never promises an "Auto-repair will" for them.
- */
-export const AUTO_REPAIRED_ISSUE_CODES: readonly string[] = [
-    "ws-missing-preserve",
-    "rels-empty-part",
-    "id-durable-overflow",
-    "id-durable-decimal",
-    "id-paraid-overflow",
-    "id-textid-overflow",
-    "ignorable-undeclared",
-    "paraid-missing-element",
-    "textid-missing-element",
-    "style-reference-undefined",
-    "style-default-missing",
-    "comment-thread-commentid-paraid-orphan",
-    "comment-thread-durableid-orphan",
-    "word-drawing-scalar-whitespace",
-    "xsd-error",
-];
-
 interface RepairPlanGroup {
     path?: string;
     code: string;
     action: string | null;
-    supported: boolean;
     count: number;
-}
-
-const AUTO_REPAIRED_CODES = new Set(AUTO_REPAIRED_ISSUE_CODES);
-
-/**
- * The `xsd-error` messages `repairInlinePictureScaffolds` actually fixes.
- * Other schema findings — including the empty `vt:filetime` message
- * `repairActionForIssue` keeps as a manual hint — get no "Auto-repair will"
- * because no repair pass changes them.
- */
-const AUTO_REPAIRED_XSD_ERROR_MARKERS = [
-    "}graphic': This element is not expected",
-    "}blipFill': This element is not expected",
-    "Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/picture}spPr",
-];
-
-/** Whether a `repair()` pass changes this issue — the source of the plan's `supported` flag. */
-function autoRepairSupportsIssue(issue: ValidationIssue): boolean {
-    if (issue.code === "xsd-error") return AUTO_REPAIRED_XSD_ERROR_MARKERS.some((marker) => issue.message.includes(marker));
-    return issue.code !== undefined && AUTO_REPAIRED_CODES.has(issue.code);
 }
 
 export async function collectDocxSemanticInventory(unpackedDir: string, profile: Profile = "lenient"): Promise<DocxSemanticInventory> {
@@ -170,39 +121,51 @@ export function compareDocxSemanticInventories(before: DocxSemanticInventory, af
     ];
 }
 
-export function buildRepairPlanIssues(issues: readonly ValidationIssue[]): ValidationIssue[] {
+/**
+ * Summarize the same auto-repair run's observed outcomes. Groups retain the
+ * pre-repair path, code and manual guidance; only their before/after counts
+ * decide whether they cleared, partly cleared, or remain. This also captures
+ * indirect repairs and works for every format without a capability table.
+ */
+export function buildRepairPlanIssues(before: readonly ValidationIssue[], after: readonly ValidationIssue[]): ValidationIssue[] {
+    const beforeGroups = groupRepairIssues(before);
+    const afterGroups = groupRepairIssues(after);
+    return [...beforeGroups.entries()]
+        .sort(([, a], [, b]) => compareRepairPlanGroups(a, b))
+        .map(([key, group]) => {
+            const remaining = afterGroups.get(key)?.count ?? 0;
+            // New findings may increase a group; never report a negative clearance.
+            const cleared = Math.max(0, group.count - remaining);
+            const guidance =
+                remaining === 0
+                    ? ""
+                    : group.action !== null
+                      ? ` Fix manually: ${group.action}.`
+                      : " No manual repair guidance is available.";
+            return {
+                severity: "info" as const,
+                path: group.path,
+                code: remaining === 0 ? "repair-plan" : cleared > 0 ? "repair-plan-partial" : "repair-plan-unavailable",
+                message: `Before repair found ${group.count} [${group.code}] issue(s). Auto-repair cleared ${cleared}; ${remaining} remain.${guidance}`,
+            };
+        });
+}
+
+function groupRepairIssues(issues: readonly ValidationIssue[]): Map<string, RepairPlanGroup> {
     const groups = new Map<string, RepairPlanGroup>();
     for (const issue of issues) {
         if (issue.severity === "info") continue;
         const code = issue.code ?? "uncoded-validation-issue";
         const action = repairActionForIssue(issue);
-        const supported = action !== null && autoRepairSupportsIssue(issue);
-        const key = `${issue.path ?? ""}\u0000${code}\u0000${supported ? "1" : "0"}\u0000${action ?? ""}`;
+        const key = `${issue.path ?? ""}\u0000${code}\u0000${action ?? ""}`;
         const existing = groups.get(key);
         if (existing) {
             existing.count += 1;
-            continue;
+        } else {
+            groups.set(key, { path: issue.path, code, action, count: 1 });
         }
-        groups.set(key, {
-            path: issue.path,
-            code,
-            action,
-            supported,
-            count: 1,
-        });
     }
-    return [...groups.values()].sort(compareRepairPlanGroups).map((group) => ({
-        severity: "info" as const,
-        path: group.path,
-        code: group.supported ? "repair-plan" : "repair-plan-unavailable",
-        message:
-            `Before repair found ${group.count} [${group.code}] issue(s). ` +
-            (group.supported
-                ? `Auto-repair will ${group.action}.`
-                : group.action !== null
-                  ? `Auto-repair will not change them because no automatic repair is registered. Fix manually: ${group.action}.`
-                  : "Auto-repair will not change them because no automatic repair is registered; validation will report it again after repair if it remains."),
-    }));
+    return groups;
 }
 
 async function collectPackageAsset(file: string, rel: string, inventory: MutableDocxSemanticInventory): Promise<void> {
@@ -697,13 +660,8 @@ function shortRelationshipType(type: string): string {
 }
 
 /**
- * The manual repair guidance for an issue's code, or `null` when no
- * guidance is registered for it; `buildRepairPlanIssues` groups issues by
- * this action. A non-null action does NOT mean `repair()` performs it —
- * `buildRepairPlanIssues` prints "Auto-repair will" only for issues
- * {@link autoRepairSupportsIssue} covers (`AUTO_REPAIRED_ISSUE_CODES`, plus
- * the scaffold `xsd-error` messages); every other action is carried on the
- * `repair-plan-unavailable` issue as a "Fix manually:" hint.
+ * Manual guidance only: a non-null action does not imply automatic support.
+ * The planner groups findings by this text and shows it for remaining issues.
  */
 function repairActionForIssue(issue: ValidationIssue): string | null {
     switch (issue.code) {
@@ -725,7 +683,7 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
         case "textid-missing-element":
             return "stamp missing w14:textId anchors on affected paragraphs or table rows";
         case "style-reference-undefined":
-            return "inject canonical definitions for known missing style IDs and leave unknown style IDs reported";
+            return "define the missing styles in word/styles.xml or correct references to existing style IDs";
         case "style-default-missing":
             return "inject canonical implied-default Word style definitions";
         case "comment-thread-commentid-paraid-orphan":
@@ -737,7 +695,7 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
         case "word-drawing-scalar-whitespace":
             return "trim leading and trailing whitespace around scalar DrawingML values";
         case "word-drawing-arc-radius":
-            return "replace non-integer a:arcTo wR and hR radii with integers";
+            return "replace invalid a:arcTo wR and hR radii with non-negative integers";
         case "word-empty-drawing":
             return "remove the empty w:drawing or give it a wp:anchor or wp:inline child";
         case "word-drawing-extent-negative":
@@ -749,7 +707,7 @@ function repairActionForIssue(issue: ValidationIssue): string | null {
         case "word-sdt-id-empty":
             return "set the empty w:sdtPr/w:id w:val to a number";
         case "word-attached-toolbar-utf8":
-            return "replace each EF BF BD sequence in the attached toolbar that wne:toolbarData references";
+            return "restore the original toolbar bytes in place of each EF BF BD replacement sequence in the part that wne:toolbarData references";
         case "word-row-without-cell":
             return "remove the table row that has no w:tc, or add a cell to it";
         case "word-cell-ends-with-table":
@@ -789,13 +747,13 @@ function xsdRepairAction(issue: ValidationIssue): string | null {
     if (issue.code !== "xsd-error" && issue.code !== "xsd-summary") return null;
     const message = issue.message;
     if (message.includes("}graphic': This element is not expected") || message.includes("}blipFill': This element is not expected")) {
-        return "insert missing inline-picture scaffolding required by WordprocessingML/DrawingML schemas";
+        return "supply the required DrawingML children in schema order for the reported anchor, inline drawing, or picture";
     }
     if (message.includes("Expected is ( {http://schemas.openxmlformats.org/drawingml/2006/picture}spPr")) {
         return "insert missing picture shape properties required by DrawingML schemas";
     }
     if (message.includes("}filetime': '' is not a valid value")) {
-        return "trim invalid whitespace from core document properties that Word expects as scalar values";
+        return "give the custom property a valid xs:dateTime value or remove/correct it";
     }
     return null;
 }

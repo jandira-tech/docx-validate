@@ -3,12 +3,12 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 import { withTempDir } from "../src/lib/run-cli";
+import type { ValidationIssue } from "../src/lib/types";
 import {
     buildRepairPlanIssues,
     collectDocxSemanticInventory,
     compareDocxSemanticInventories,
     severityClassFor,
-    AUTO_REPAIRED_ISSUE_CODES,
 } from "../src/scripts/office/validators/docx-diagnostics";
 import { fileURLToPath } from "node:url";
 
@@ -223,19 +223,24 @@ describe("docx diagnostics", () => {
         });
     });
 
-    it("emits pre-repair plans for known repairable issue codes", () => {
-        const issues = buildRepairPlanIssues([
-            { severity: "error", path: "word/document.xml", code: "ws-missing-preserve", message: "missing xml:space" },
-            { severity: "error", path: "word/document.xml", code: "ws-missing-preserve", message: "missing xml:space" },
-            { severity: "error", path: "word/document.xml", code: "comment-orphan-start", message: "orphan" },
-        ]);
+    it("reports cleared and retained pre-repair groups from their outcomes", () => {
+        const retained: ValidationIssue = { severity: "error", path: "word/document.xml", code: "comment-orphan-start", message: "orphan" };
+        const issues = buildRepairPlanIssues(
+            [
+                { severity: "error", path: "word/document.xml", code: "ws-missing-preserve", message: "missing xml:space" },
+                { severity: "error", path: "word/document.xml", code: "ws-missing-preserve", message: "missing xml:space" },
+                retained,
+            ],
+            [retained],
+        );
 
         expect(issues).toHaveLength(2);
-        expect(issues[0]).toMatchObject({ code: "repair-plan-unavailable", path: "word/document.xml" });
+        expect(issues[0]).toMatchObject({ severity: "info", code: "repair-plan-unavailable", path: "word/document.xml" });
         expect(issues[0].message).toContain("Before repair found 1 [comment-orphan-start] issue(s)");
-        expect(issues[1]).toMatchObject({ code: "repair-plan", path: "word/document.xml" });
+        expect(issues[0].message).toContain("Auto-repair cleared 0; 1 remain");
+        expect(issues[1]).toMatchObject({ severity: "info", code: "repair-plan", path: "word/document.xml" });
         expect(issues[1].message).toContain("Before repair found 2 [ws-missing-preserve] issue(s)");
-        expect(issues[1].message).toContain("add xml:space='preserve'");
+        expect(issues[1].message).toContain("Auto-repair cleared 2; 0 remain");
     });
 
     it("gives story-reference guidance that needs no existing id (#623)", () => {
@@ -269,8 +274,7 @@ it.each(["[CONTENT_TYPES].XML", "[content_types].xml"])("inventories declaration
 });
 
 /*
- * #622 — the pre-repair plan must say "Auto-repair will …" only for codes a
- * `repair()` pass actually changes. Every code `repairActionForIssue` maps to
+ * #622 — repair plans report the observed before/after outcome. Every code `repairActionForIssue` maps to
  * a manual action is covered below: one specimen per code, validated with
  * `autoRepair`, asserting `repair-plan` only when the finding is gone after
  * repair and `repair-plan-unavailable` (carrying the manual action as
@@ -379,7 +383,7 @@ describe("repair plan vs repair() coverage (#622)", () => {
 
     interface RepairPlanCase {
         code: string;
-        /** "repaired" = in AUTO_REPAIRED_ISSUE_CODES; "unavailable" = action string but no repair(). */
+        /** Expected outcome for this particular specimen, verified against the findings. */
         expected: "repaired" | "unavailable";
         profile?: "word-valid" | "strict" | "lenient";
         parts?: Record<string, string | Uint8Array>;
@@ -593,29 +597,31 @@ describe("repair plan vs repair() coverage (#622)", () => {
             } else {
                 await fs.writeFile(file, await buildDocx(c.parts!));
             }
+            const before = await validate(file, { profile: c.profile ?? "word-valid" });
+            expect(before.issues.some((i) => i.code === c.code)).toBe(true);
             const result = await validate(file, { profile: c.profile ?? "word-valid", autoRepair: true });
-            const plans = result.issues.filter(
-                (i) => (i.code === "repair-plan" || i.code === "repair-plan-unavailable") && i.message.includes(`[${c.code}]`),
-            );
+            const plans = result.issues.filter((i) => i.code?.startsWith("repair-plan") && i.message.includes(`[${c.code}]`));
             expect(plans.length).toBeGreaterThan(0);
+            for (const plan of plans) {
+                const count = before.issues.filter((i) => i.code === c.code && i.path === plan.path).length;
+                const remaining = result.issues.filter((i) => i.code === c.code && i.path === plan.path).length;
+                expect(plan.message).toContain(`Before repair found ${count} [${c.code}] issue(s)`);
+                expect(plan.message).toContain(`Auto-repair cleared ${Math.max(0, count - remaining)}; ${remaining} remain`);
+                expect(plan.message).not.toContain("Auto-repair will");
+            }
             if (c.expected === "repaired") {
-                expect(AUTO_REPAIRED_ISSUE_CODES).toContain(c.code);
                 for (const plan of plans) {
                     expect(plan.code).toBe("repair-plan");
-                    expect(plan.message).toContain("Auto-repair will ");
+                    expect(plan.message).toMatch(/Auto-repair cleared [1-9]\d*; 0 remain/);
                 }
                 expect(result.repairs).toBeGreaterThan(0);
                 expect(result.issues.some((i) => i.code === c.code)).toBe(false);
             } else {
-                // xsd-error is in the table but message-gated: only the
-                // scaffold messages are repaired, so skip the membership
-                // assertion for it.
-                if (c.code !== "xsd-error") expect(AUTO_REPAIRED_ISSUE_CODES).not.toContain(c.code);
                 for (const plan of plans) {
                     expect(plan.code).toBe("repair-plan-unavailable");
-                    // Never "Auto-repair will <action>" — only the negated form.
-                    expect(plan.message).not.toMatch(/Auto-repair will (?!not\b)/);
-                    expect(plan.message).toContain("Auto-repair will not");
+                    expect(plan.message).not.toContain("Auto-repair will");
+                    const remaining = result.issues.filter((i) => i.code === c.code && i.path === plan.path).length;
+                    expect(plan.message).toContain(`Auto-repair cleared 0; ${remaining} remain`);
                     expect(plan.message).toContain("Fix manually:");
                 }
                 expect(result.issues.some((i) => i.code === c.code)).toBe(true);
@@ -623,29 +629,94 @@ describe("repair plan vs repair() coverage (#622)", () => {
         });
     });
 
-    it("keeps every AUTO_REPAIRED_ISSUE_CODES entry backed by a guidance action, without duplicates", () => {
-        expect(new Set(AUTO_REPAIRED_ISSUE_CODES).size).toBe(AUTO_REPAIRED_ISSUE_CODES.length);
-        const xsdMessage = "}graphic': This element is not expected";
-        for (const code of AUTO_REPAIRED_ISSUE_CODES) {
-            const [plan] = buildRepairPlanIssues([
-                { severity: "error", path: "word/document.xml", code, message: code === "xsd-error" ? xsdMessage : "synthetic" },
-            ]);
-            expect(plan?.code).toBe("repair-plan");
-            expect(plan?.message).toContain("Auto-repair will ");
-        }
+    it.each([
+        ["word-drawing-arc-radius", "non-negative integers"],
+        ["word-attached-toolbar-utf8", "restore the original toolbar bytes"],
+    ])("manual byte and radius guidance for %s describes a valid correction", (code, guidance) => {
+        const issue: ValidationIssue = { severity: "error", code, message: "synthetic" };
+        const [plan] = buildRepairPlanIssues([issue], [issue]);
+        expect(plan.message).toContain(`Fix manually:`);
+        expect(plan.message).toContain(guidance);
     });
 
-    it("carries the manual action as guidance on unavailable codes", () => {
-        const plans = buildRepairPlanIssues([
+    it("reports clearance without requiring a registered guidance action", () => {
+        const issue: ValidationIssue = { severity: "error", code: "unregistered", message: "synthetic" };
+        expect(buildRepairPlanIssues([issue], [])).toEqual([
+            {
+                severity: "info",
+                path: undefined,
+                code: "repair-plan",
+                message: "Before repair found 1 [unregistered] issue(s). Auto-repair cleared 1; 0 remain.",
+            },
+        ]);
+    });
+
+    it("carries manual guidance or generic wording only for remaining issues", () => {
+        const before: ValidationIssue[] = [
             { severity: "error", path: "word/document.xml", code: "word-hyperlink-relationship", message: "synthetic" },
             { severity: "error", path: "word/document.xml", code: "comment-orphan-start", message: "no action" },
-        ]);
+        ];
+        const plans = buildRepairPlanIssues(before, before);
         const hyperlink = plans.find((i) => i.message.includes("[word-hyperlink-relationship]"));
         expect(hyperlink?.code).toBe("repair-plan-unavailable");
         expect(hyperlink?.message).toContain("point the w:hyperlink r:id");
         expect(hyperlink?.message).toContain("Fix manually:");
-        const uncoded = plans.find((i) => i.message.includes("[comment-orphan-start]"));
-        expect(uncoded?.code).toBe("repair-plan-unavailable");
-        expect(uncoded?.message).toContain("no automatic repair is registered");
+        const unguided = plans.find((i) => i.message.includes("[comment-orphan-start]"));
+        expect(unguided?.code).toBe("repair-plan-unavailable");
+        expect(unguided?.message).toContain("No manual repair guidance is available");
+    });
+
+    it("groups and sorts null guidance, paths and XSD actions identically across permutations", () => {
+        const before: ValidationIssue[] = [
+            { severity: "warning", path: "word/document.xml", code: "ws-missing-preserve", message: "a" },
+            { severity: "error", path: "word/document.xml", code: "ws-missing-preserve", message: "b" },
+            { severity: "error", path: "word/header1.xml", code: "ws-missing-preserve", message: "c" },
+            { severity: "error", path: "word/document.xml", code: "xsd-error", message: "}graphic': This element is not expected" },
+            { severity: "error", path: "word/document.xml", code: "xsd-error", message: "}filetime': '' is not a valid value" },
+            { severity: "warning", message: "no path, code or guidance" },
+            { severity: "error", path: "word/document.xml", code: "xsd-error", message: "no guidance" },
+        ];
+        const after = [before[0], before[3], before[5], before[6]];
+        const expected = buildRepairPlanIssues(before, after);
+        expect(expected).toHaveLength(6);
+        expect(expected.map((i) => i.code)).toEqual([
+            "repair-plan-unavailable",
+            "repair-plan-partial",
+            "repair-plan-unavailable",
+            "repair-plan",
+            "repair-plan-unavailable",
+            "repair-plan",
+        ]);
+        expect(expected[0].message).toContain("[uncoded-validation-issue]");
+        expect(expected[1].message).toContain("Auto-repair cleared 1; 1 remain");
+        // The same xsd-error/path has three distinct guidance groups, including null.
+        expect(expected[2].message).toContain("No manual repair guidance is available");
+        let permutations = 0;
+        const visit = (prefix: ValidationIssue[], rest: ValidationIssue[]): void => {
+            if (rest.length === 0) {
+                expect(buildRepairPlanIssues(prefix, [...after].reverse())).toEqual(expected);
+                permutations += 1;
+                return;
+            }
+            rest.forEach((issue, i) =>
+                visit(
+                    [...prefix, issue],
+                    rest.filter((_, j) => j !== i),
+                ),
+            );
+        };
+        visit([], before);
+        expect(permutations).toBe(5040);
+    });
+
+    it("ignores informational findings and does not claim clearance when a group grows", () => {
+        const issue: ValidationIssue = { severity: "error", code: "unregistered", message: "one" };
+        const info: ValidationIssue = { ...issue, severity: "info" };
+        expect(buildRepairPlanIssues([info], [])).toEqual([]);
+        expect(buildRepairPlanIssues([issue], [info])[0].code).toBe("repair-plan");
+        const [plan] = buildRepairPlanIssues([issue, info], [issue, issue]);
+        expect(plan.code).toBe("repair-plan-unavailable");
+        expect(plan.message).toContain("Auto-repair cleared 0; 2 remain");
+        expect(buildRepairPlanIssues([], [issue])).toEqual([]);
     });
 });
