@@ -1128,11 +1128,16 @@ Word 16.115 applies markup compatibility to relationships parts before judging t
 (session 33, `s33d`/`s33e`) and honours its errors there: `mc:MustUnderstand` of a
 namespace it does not understand on the `_rels/.rels` root (session 34, `s34c`)
 and an `mc:Choice` whose `Requires` prefix is undeclared in
-`word/_rels/document.xml.rels` (session 34, `s34d`) each prompted recovery, so
-those two findings are blocking in Word-valid. Other relationships parts, and
-other shapes of the same codes there, are unobserved: Word-valid demotes them to
-warnings while strict keeps the error. Lenient runs no Word rule. Full, quick and
-named runs report the same findings and severities.
+`word/_rels/document.xml.rels` (session 34, `s34d`) each prompted recovery.
+Word-valid therefore blocks `mce-malformed` and `mce-must-understand` in
+`_rels/.rels` and in the sidecar of the main document and of every reached
+glossary, found by relationship even when the main document is renamed
+(sessions 34 and 36, [#644](https://github.com/jandira-tech/docx-validate/issues/644)). Sidecars that are not a story root's — stray,
+styles, footer, settings, numbering and header — opened clean with a malformed
+sibling or root `mc:MustUnderstand` (sessions 36 and 37), so Word-valid demotes
+them to warnings, as it does in the remaining unobserved relationships parts;
+strict keeps the error. Lenient runs no Word rule. Full, quick and named runs
+report the same findings and severities.
 If unwrapping a part's root through AlternateContent or ProcessContent would
 leave zero or multiple element children, the processor reports error-severity
 `mce-malformed` and returns the part unprocessed
@@ -1141,8 +1146,10 @@ continues to be unwrapped. The source is unchanged. The stored-root rules keep
 their verdict, including blocking `opc-relationships-structure` for a wrong
 relationships root and `word-document-root` for a wrong main document root.
 Word 16.115 offered recovery for a `_rels/.rels` root AlternateContent whose
-Fallback holds two `Relationship` elements (session 36, `s36c`); the other
-root-wrapped shapes are unobserved. Word-valid and strict return
+Fallback holds two `Relationship` elements (session 36, `s36c`) and opened clean
+one whose Fallback holds the `Relationships` element, which Word-valid still
+rejects with `opc-relationships-structure` ([#646](https://github.com/jandira-tech/docx-validate/issues/646)). Other zero- and
+multiple-element root shapes are unobserved. Word-valid and strict return
 findings instead of throwing or reporting `check-crashed`; full, quick and named
 runs agree on their shared checks. Lenient retains its prior findings, including
 its legacy XSD diagnostic for multiple roots and its empty-view diagnostic for
