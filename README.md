@@ -1593,6 +1593,17 @@ otherwise. Counts describe group outcomes, including indirect
 repairs; they do not identify individual occurrences or promise future repairs.
 New post-repair groups remain ordinary validation findings. No repairs are added.
 
+The paragraph-id repair stamps `w14:paraId`/`w14:textId` on the paragraphs and
+table rows that lack them. On each part it stamps, it also declares `w14` on the
+part root and lists it in the root's `mc:Ignorable`, as Word writes it — reusing
+the prefix the root binds to the markup-compatibility namespace, else declaring
+`mc` — so the repaired part gains no `mce-extension-not-ignorable` finding. A
+root that binds `w14` or `mc` to another namespace is left as it was. Word 16.115
+opened the repaired output clean for a root with neither declaration, one listing
+`w15` and one using a `compat` prefix, as it opened the earlier output with
+`xmlns:w14` on each stamped element (Word probes session 40, `s40a`;
+[#653](https://github.com/jandira-tech/docx-validate/issues/653)).
+
 ## Development
 
 ```bash

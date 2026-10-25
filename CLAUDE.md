@@ -98,6 +98,8 @@ These are intentional behaviours of the implementation, documented at the call s
 
 21. **The file-reference walk skips External targets under word-valid and strict.** `validateFileReferences` in `validators/base.ts` does not resolve a `TargetMode="External"` relationship's target as a part (ECMA-376 Part 2 §9.3), so `file:///…`, UNC and `ftp://` targets draw no `rels-broken`; Word 16.115 opened External `.rels`, `/_rels/` and `../customXml/` targets clean, direct and in a selected Choice (session 40). Lenient keeps its historical scan, which skips only `http…` and `mailto:` (#665).
 
+22. **`repairMissingParaIds` keeps the stamps ignorable.** On each part it stamps, it declares `w14` on the root and lists it in the root's `mc:Ignorable`, reusing the root's prefix for the compatibility namespace or declaring `mc`; a root binding `w14` or `mc` elsewhere is left alone. The repair count is unchanged (#653, session 40).
+
 ## ISO OOXML Strict XSD validation
 
 ISO OOXML defines two conformance classes: **Transitional** (backward-compatible, widely used) and **Strict** (pure ISO, uses different namespace URIs under `purl.oclc.org/ooxml/` instead of `schemas.openxmlformats.org/…`). Example: Strict WML uses `http://purl.oclc.org/ooxml/wordprocessingml/main` vs Transitional's `http://schemas.openxmlformats.org/wordprocessingml/2006/main`.
