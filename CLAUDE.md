@@ -106,6 +106,8 @@ These are intentional behaviours of the implementation, documented at the call s
 
 25. **The style, font-table and comment-thread checks and repairs read the part the main document relates** (#688, #690); they judge nothing for a related non-XML part (#693), and otherwise fall back by name only in the main document's folder, never a reached glossary's, so a part stored elsewhere that no relationship names is not judged (#699).
 
+26. **`word-part-reference-relationship` walks the parts Word reads, each against its own sidecar.** The read set is `wordReadTypedTargets` (`src/lib/word-read-parts.ts`): every main document and reached glossary wherever stored, plus the stories their references make Word read (#726, session 51). A part with no relationships part is judged like one whose relationships part lacks the id — every non-empty id names none (#751, session 55 s55a). The `rels-broken` and `rels-empty-element` word-valid verdicts read the structural fact each producer registered on its issue object (`src/scripts/office/rels-finding-facts.ts`), never the message text, so an unregistered finding warns (#734, #735).
+
 ## ISO OOXML Strict XSD validation
 
 ISO OOXML defines two conformance classes: **Transitional** (backward-compatible, widely used) and **Strict** (pure ISO, uses different namespace URIs under `purl.oclc.org/ooxml/` instead of `schemas.openxmlformats.org/…`). Example: Strict WML uses `http://purl.oclc.org/ooxml/wordprocessingml/main` vs Transitional's `http://schemas.openxmlformats.org/wordprocessingml/2006/main`.

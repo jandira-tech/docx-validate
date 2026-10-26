@@ -3211,10 +3211,12 @@ export function withoutRepeatedCompatibilityFindings(schema: ValidationResult, r
  * legacy walk the raw part, so an element with an `mc:Choice` and an
  * `mc:Fallback` twin yields two legacy copies of the one defect the Word
  * rule reports once, and a Strict-namespace `r:id` on the selected twin
- * (review BE F1) is the same element's other spelling. Every legacy copy
- * of the same Id on the same element in the same part is therefore dropped,
- * and no finding is dropped for another part, another Id or another
- * element. The former message-prose pairing let a quoted `r:id`
+ * (review BE F1) is the same element name's other spelling. The key is the
+ * same element name — namespace URI and local name — with the same Id in
+ * the same part, not the element instance: every legacy copy of it is
+ * dropped, the unselected twin's copy with it, and no finding is dropped
+ * for another part, another Id or another element name. The former
+ * message-prose pairing let a quoted `r:id`
  * double the report and a crafted `r:id` consume a foreign element's only
  * mismatch. A finding without a registered identity — another producer, or
  * a copy made between producer and helper — is never dropped. Where the
