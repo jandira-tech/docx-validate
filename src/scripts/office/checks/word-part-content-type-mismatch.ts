@@ -60,7 +60,7 @@ import {
     parseContentTypes,
     resolveContentType,
 } from "../../../lib/content-types";
-import type { Profile, ValidationIssue } from "../../../lib/types";
+import { NS, type Profile, type ValidationIssue } from "../../../lib/types";
 import type { ValidationContext, XmlPart } from "../../../lib/validation-context";
 import { wordReadTypedTargets } from "../../../lib/word-read-parts";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
@@ -268,10 +268,12 @@ export const wordPartContentTypeMismatchFindings = async (
         // only, never a glossary's own relationship. Session 58 showed
         // own-root parts, so its pairs co-reach only a part whose effective
         // root is the story's own (#803).
-        const rootIsOwn = (parsed: XmlPart | undefined, segment: string): boolean => {
-            const root = parsed?.ok === true ? parsed.document.documentElement : null;
-            return root?.localName === segment && WORD_PARAGRAPH_NAMESPACES.includes(root?.namespaceURI ?? "");
-        };
+        const isOwnRoot = (element: Element | null, segment: string): boolean =>
+            element?.localName === segment && WORD_PARAGRAPH_NAMESPACES.includes(element.namespaceURI ?? "");
+        const rootIsOwn = (parsed: XmlPart | undefined, segment: string): boolean =>
+            isOwnRoot(parsed?.ok === true ? parsed.document.documentElement : null, segment);
+        const childElements = (element: Element): Element[] =>
+            Array.from(element.childNodes).filter((child): child is Element => child.nodeType === 1);
         // The session a read story co-reach cites, or undefined when `entry`
         // is none.
         const storyCoreachSession = (entry: (typeof entries)[number]): string | undefined => {
@@ -290,14 +292,27 @@ export const wordPartContentTypeMismatchFindings = async (
             // spelling cites session 58, and the styles media type with a
             // parameter session 62 (s62c), while a padded spelling with no
             // parameter is unprobed (#802).
-            if (rootIsOwn(ctx.xml(part), entry.segment)) {
+            const stored = ctx.xml(part);
+            if (rootIsOwn(stored, entry.segment)) {
                 return exactSpelling ? session : declared.includes(";") ? "session 62" : undefined;
             }
-            // A stored mc:AlternateContent root whose selected Choice holds
-            // the story's root: session 63 (s63b) refused the comments part
-            // typed styles exactly; the other stories and spellings are
-            // unprobed (#818).
-            return entry.segment === "comments" && exactSpelling ? "session 63" : undefined;
+            // A stored mc:AlternateContent root whose branches hold nothing
+            // but the story's root: session 63 (s63b) refused the comments
+            // part typed styles exactly. The other stories and spellings,
+            // and other stored roots the effective view unwraps to the
+            // story's root, such as an ignorable wrapper that processes its
+            // content, alone or inside a branch, are unprobed (#818, #831).
+            const storedRoot = stored?.ok === true ? stored.document.documentElement : null;
+            const branchesHoldOwnRoot =
+                storedRoot?.localName === "AlternateContent" &&
+                storedRoot.namespaceURI === NS.MC &&
+                childElements(storedRoot).every(
+                    (branch) =>
+                        branch.namespaceURI === NS.MC &&
+                        (branch.localName === "Choice" || branch.localName === "Fallback") &&
+                        childElements(branch).every((child) => isOwnRoot(child, entry.segment)),
+                );
+            return entry.segment === "comments" && exactSpelling && branchesHoldOwnRoot ? "session 63" : undefined;
         };
         const isReadStoryCoreach = (entry: (typeof entries)[number]): boolean => storyCoreachSession(entry) !== undefined;
         // The observed set covers the read header/footer swaps, the eagerly
