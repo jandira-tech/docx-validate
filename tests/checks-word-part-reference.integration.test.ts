@@ -463,12 +463,19 @@ describe(`${CODE} (unit rows)`, () => {
         expect(found[0]?.message).toContain(`(${why})`);
     });
 
-    it("a part with no relationships part is left to rels-missing-sidecar; an unparseable one is skipped (#726)", async () => {
+    it("a part with no relationships part is judged like one whose relationships part lacks the id (#751); an unparseable one is skipped", async () => {
         const absent = ValidationContext.fromEntries({
             "_rels/.rels": rels(`<Relationship Id="rId1" Type="${R}/officeDocument" Target="word/document.xml"/>`),
             "word/document.xml": document(chartReference("rId1")),
         });
-        expect(await check().run(absent)).toEqual([]);
+        expect(await check().run(absent)).toEqual([
+            expect.objectContaining({
+                code: CODE,
+                path: "word/document.xml",
+                severity: "error",
+                message: expect.stringContaining("no Relationship with Id 'rId1'"),
+            }),
+        ]);
         const unparseable = ValidationContext.fromEntries(mainPackage(chartReference("rId1"), "<Relationships"));
         expect(await check().run(unparseable)).toEqual([]);
     });
@@ -667,14 +674,15 @@ describe(`${CODE} (session 51 scope specimens, Word 16.115)`, { timeout: 240_000
         });
     });
 
-    it("leaves a read part with no relationships part to rels-missing-sidecar (#726)", async () => {
+    it("judges a read part with no relationships part like one whose relationships part lacks the id (#751)", async () => {
         await withTempDir(async (dir) => {
             const file = path.join(dir, "main-no-sidecar.docx");
             writeFileSync(file, await buildDocx(noSidecarMainParts()));
             const result = await validate(file, { profile: "word-valid" });
-            // One defect, one code: the absent sidecar is
-            // rels-missing-sidecar's finding, not this rule's.
-            expect(result.issues.filter((issue) => issue.code === CODE)).toEqual([]);
+            // Session 55 (s55a): a non-empty id a missing sidecar strands
+            // names no relationship, so this rule reports it; the absent
+            // sidecar itself stays rels-missing-sidecar's finding.
+            expect(result.issues.filter((issue) => issue.code === CODE)).toHaveLength(1);
             expect(result.issues.some((issue) => issue.code === "rels-missing-sidecar" && issue.path === "word/document.xml")).toBe(true);
         });
     });
@@ -801,6 +809,108 @@ describe(`${CODE} (session 52 specimens, Word 16.115)`, { timeout: 240_000 }, ()
                 const result = await validate(file, { profile: "word-valid" });
                 expect(result.valid).toBe(true);
                 expect(result.issues.filter((issue) => issue.code === CODE)).toEqual([]);
+            });
+        });
+    });
+});
+
+/**
+ * Session 55's s55a specimens (s55builder.mts; #751): a header the body
+ * references through `w:headerReference r:id="rIdH"`, stored as
+ * `word/header1.xml` with NO relationships part, whose references name no
+ * relationship. Word 16.115 offered recovery for all three shapes; its
+ * calibrations — the same header with a relationships part that lacks the
+ * id, and the header with no relationships part and no `r:` reference —
+ * are the guards.
+ */
+const s55ChartDrawing = (ids: string): string =>
+    '<w:p><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="5486400" cy="3200400"/>' +
+    `<wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="1" name="Chart 1"/><wp:cNvGraphicFramePr/><a:graphic><a:graphicData uri="${C}">` +
+    `<c:chart xmlns:c="${C}" ${ids}/></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
+const s55DiagramDrawing = (ids: string): string =>
+    '<w:p><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="952500" cy="952500"/>' +
+    `<wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="1" name="Diagram 1"/><a:graphic><a:graphicData uri="${DGM}">` +
+    `<dgm:relIds xmlns:dgm="${DGM}" ${ids}/></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
+const s55OleObject = (ids: string): string =>
+    "<w:p><w:r><w:object>" +
+    `<o:OLEObject xmlns:o="${O}" Type="Embed" ProgID="Package" ShapeID="_x0000_i1025" DrawAspect="Icon" ObjectID="_1" ${ids}/></w:object></w:r></w:p>`;
+
+/**
+ * A referenced `word/header1.xml` holding `body`, with `sidecar` as its relationships part — absent when undefined. The
+ * image part ships only when the sidecar names it, as in s55a.
+ */
+const s55Header = (body: string, sidecar?: string): Record<string, string | Uint8Array> =>
+    extended(
+        {
+            ...(sidecar?.includes("media/image1.png") ? { "word/media/image1.png": PNG } : {}),
+            "word/header1.xml": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:hdr xmlns:w="${W}" xmlns:wp="${WP}" xmlns:a="${A}" xmlns:c="${C}" xmlns:dgm="${DGM}" xmlns:o="${O}" xmlns:r="${R}">${body}</w:hdr>`,
+            ...(sidecar === undefined ? {} : { "word/_rels/header1.xml.rels": sidecar }),
+            [MAIN]: replaceOnce(
+                replaceOnce(MINIMAL_PARTS[MAIN]!, "<w:document ", `<w:document xmlns:r="${R}" `),
+                "<w:sectPr>",
+                '<w:sectPr><w:headerReference w:type="default" r:id="rIdH"/>',
+            ),
+        },
+        [relationship("rIdH", OFFICE("header"), "header1.xml")],
+        [["word/header1.xml", HEADER_CT]],
+        true,
+    );
+
+const REFUSED_751: Record<string, () => Promise<Buffer>> = {
+    // s55a `header1-nosidecar-chart`: no relationships part, c:chart r:id="rId1" names none.
+    "header1-nosidecar-chart": async () => buildDocx(s55Header(s55ChartDrawing('r:id="rId1"'))),
+    // s55a `header1-nosidecar-oleobject`: the same holding o:OLEObject r:id="rId1".
+    "header1-nosidecar-oleobject": async () => buildDocx(s55Header(s55OleObject('r:id="rId1"'))),
+    // s55a `header1-nosidecar-relids`: the same holding dgm:relIds naming all four parts, so the schema holds.
+    "header1-nosidecar-relids": async () => buildDocx(s55Header(s55DiagramDrawing('r:dm="rId1" r:lo="rId2" r:qs="rId3" r:cs="rId4"'))),
+    // s55a `header1-sidecar-no-rid1-calibration`: the relationships part is present but lacks rId1 — refused too (guard).
+    "header1-sidecar-no-rid1-calibration": async () =>
+        buildDocx(s55Header(s55ChartDrawing('r:id="rId1"'), relsPart(relationship("rId2", OFFICE("image"), "media/image1.png")))),
+};
+const CLEAN_751: Record<string, () => Promise<Buffer>> = {
+    // s55a `header1-nosidecar-no-reference-calibration`: no relationships part and no r: reference opens clean.
+    "header1-nosidecar-no-reference-calibration": async () => buildDocx(s55Header("<w:p><w:r><w:t>header</w:t></w:r></w:p>")),
+};
+
+describe(`${CODE} (session 55a no-sidecar specimens, Word 16.115)`, { timeout: 240_000 }, () => {
+    describe.each(Object.entries(REFUSED_751))("refused specimen %s", (name, make) => {
+        it("word-valid fails with exactly one Word-blocking error, full and partial runs alike (#381)", async () => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, `${name}.docx`);
+                writeFileSync(file, await make());
+                const result = await validate(file, { profile: "word-valid" });
+                const found = result.issues.filter((issue) => issue.code === CODE);
+                expect(result.valid).toBe(false);
+                expect(found).toHaveLength(1);
+                expect(found[0]?.severity).toBe("error");
+                expect(found[0]?.path).toBe("word/header1.xml");
+                const partial = await validate(file, { checks: [CODE] });
+                expect(partial.valid).toBe(false);
+                expect(partial.issues.filter((issue) => issue.code === CODE)).toHaveLength(1);
+            });
+        });
+
+        it("strict reports the code too (strict ⊇ word-valid)", async () => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, `${name}.docx`);
+                writeFileSync(file, await make());
+                const strict = await validate(file, { profile: "strict" });
+                expect(strict.issues.some((issue) => issue.code === CODE && issue.path === "word/header1.xml")).toBe(true);
+            });
+        });
+    });
+
+    describe.each(Object.entries(CLEAN_751))("clean specimen %s", (name, make) => {
+        it("word-valid draws no such finding, full and partial runs alike", async () => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, `${name}.docx`);
+                writeFileSync(file, await make());
+                const result = await validate(file, { profile: "word-valid" });
+                expect(result.valid).toBe(true);
+                expect(result.issues.filter((issue) => issue.code === CODE)).toEqual([]);
+                const partial = await validate(file, { checks: [CODE] });
+                expect(partial.valid).toBe(true);
+                expect(partial.issues.filter((issue) => issue.code === CODE)).toEqual([]);
             });
         });
     });

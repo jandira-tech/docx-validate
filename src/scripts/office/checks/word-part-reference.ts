@@ -54,9 +54,15 @@
  * Word reads the selected markup-compatibility view, so this check judges
  * `ctx.effectiveXml` and each part's own sidecar: an unparseable one is
  * skipped for xml-syntax to report, and a part with no relationships part
- * at all is left to `rels-missing-sidecar`, as the header/footer rule
- * leaves it — the defect is the absent sidecar, not the ids it strands
- * (#726). The accepted Types are exact membership, byte for byte — the
+ * at all is judged like one whose relationships part lacks the id — every
+ * non-empty id it holds names no relationship, and an empty id is wrong
+ * before any lookup (#728) — while `rels-missing-sidecar` still reports
+ * the absent sidecar itself (#751; session 55, chunk s55a, two runs: the
+ * recovery offer for a referenced `word/header1.xml` with no
+ * relationships part holding `c:chart r:id`, `o:OLEObject r:id` or
+ * `dgm:relIds`, as for the same header whose relationships part lacks the
+ * id, and a clean open for the same header with no `r:` reference). The
+ * accepted Types are exact membership, byte for byte — the
  * Transitional `…/officeDocument/2006/relationships/<segment>` URI or its
  * ISO Strict `purl.oclc.org` counterpart — like the hyperlink rule's two
  * (#614); session 52 refused every other Type shape tried under these
@@ -137,9 +143,9 @@ type Relationship = { readonly type: string; readonly targetMode: string };
 
 /**
  * Each relationship id the part's own sidecar names, with its Type and
- * TargetMode. An absent sidecar returns `undefined` (`rels-missing-sidecar`'s
- * business, #726); an unparseable one returns `null` and is diagnosed by
- * xml-syntax.
+ * TargetMode. An absent sidecar returns `undefined` — every non-empty id
+ * then names no relationship (#751); an unparseable one returns `null`
+ * and is diagnosed by xml-syntax.
  */
 const relationshipIndex = (ctx: ValidationContext, xmlFile: string): Map<string, Relationship> | null | undefined => {
     const relsFile = sidecarOf(ctx.partNames, xmlFile);
@@ -222,10 +228,7 @@ export const wordPartReferenceRelationshipCheck: CheckDefinition = {
             }
             const dom = parsed.document;
             const rels = relationshipIndex(ctx, xmlFile);
-            // An unparseable sidecar is xml-syntax's to report. An absent
-            // one still judges the empty ids below (#728) — an empty id is
-            // wrong before any lookup — while a non-empty id it strands is
-            // rels-missing-sidecar's alone.
+            // An unparseable sidecar is xml-syntax's to report.
             if (rels === null) {
                 continue;
             }
@@ -233,12 +236,6 @@ export const wordPartReferenceRelationshipCheck: CheckDefinition = {
                 for (const elem of getElementsByTagNameNSAll(dom, ns, "chart")) {
                     const id = relationshipId(elem, "id", relationshipNamespaces);
                     if (!id) {
-                        continue;
-                    }
-                    // #726: a non-empty id stranded by an absent sidecar is
-                    // rels-missing-sidecar's finding alone; #728 judges an
-                    // empty one — wrong before any lookup — without one too.
-                    if (id.rid !== "" && !rels) {
                         continue;
                     }
                     const rel = rels?.get(id.rid);
@@ -286,9 +283,6 @@ export const wordPartReferenceRelationshipCheck: CheckDefinition = {
                     if (!id) {
                         continue;
                     }
-                    if (id.rid !== "" && !rels) {
-                        continue;
-                    }
                     const rel = rels?.get(id.rid);
                     // Session 52's B2 rows: like the chart rule, the Type
                     // alone is not enough — an External diagramData
@@ -319,9 +313,6 @@ export const wordPartReferenceRelationshipCheck: CheckDefinition = {
             for (const elem of getElementsByTagNameNSAll(dom, OFFICE_NAMESPACE, "OLEObject")) {
                 const id = relationshipId(elem, "id", relationshipNamespaces);
                 if (!id) {
-                    continue;
-                }
-                if (id.rid !== "" && !rels) {
                     continue;
                 }
                 const rel = rels?.get(id.rid);
