@@ -34,6 +34,25 @@ const commentXml = (ctx: ValidationContext, part: string): Document => {
 };
 
 /**
+ * The comment-marker check's view of a part (#799): Word rules read
+ * `ValidationContext.effectiveXml()` after markup compatibility's branch
+ * selection, so a marker or definition only an unselected `mc:Choice` holds
+ * is judged neither — a reference there names no missing comment, and a
+ * definition there satisfies no surviving reference. Word session 62 (s62a)
+ * opened clean a comment reference only an unselected Choice holds, and
+ * offered recovery for a reference whose comment only an unselected Choice
+ * of the comments part defines, while the same comment in a selected `w14`
+ * Choice opened clean.
+ * Keeps the legacy parse diagnostic rather than replacing it with an XML
+ * prerequisite's message.
+ */
+const effectiveCommentXml = (ctx: ValidationContext, part: string): Document => {
+    const parsed = ctx.effectiveXml(part)!;
+    if (!parsed.ok) throw new Error(parsed.message);
+    return parsed.document;
+};
+
+/**
  * The main document the comment checks judge (#696): the first part the
  * package's `officeDocument` relationship names, wherever it is stored, so
  * a reached glossary's own `document.xml` never stands in for it. When no
@@ -142,7 +161,7 @@ export const commentMarkersCheck: CheckDefinition = {
 
         let docDom: Document;
         try {
-            docDom = commentXml(ctx, documentXml);
+            docDom = effectiveCommentXml(ctx, documentXml);
         } catch (err) {
             issues.push({
                 severity: "error",
@@ -192,7 +211,7 @@ export const commentMarkersCheck: CheckDefinition = {
         if (commentsXml) {
             let commentsDom: Document;
             try {
-                commentsDom = commentXml(ctx, commentsXml);
+                commentsDom = effectiveCommentXml(ctx, commentsXml);
             } catch (err) {
                 issues.push({
                     severity: "error",

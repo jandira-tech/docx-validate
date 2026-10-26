@@ -245,6 +245,110 @@ describe("dangling comment references (#784, session 58 s58a)", { timeout: 30000
     });
 });
 
+/** The comments part of both #799 specimens, holding comment 5 outside any branch. */
+const COMMENTS_HOLDING_FIVE = commentsPart("5", "0000AAAA");
+
+/**
+ * The minimal document's root with the unknown `Requires` prefix bound, so an
+ * `mc:Choice Requires="u"` is never selected and its Fallback stands.
+ */
+const DOCUMENT_ROOT_WITH_UNKNOWN_PREFIX = MINIMAL_PARTS["word/document.xml"]!.replace(
+    'mc:Ignorable="w14"',
+    'mc:Ignorable="w14" xmlns:u="urn:example:unknown"',
+);
+
+/** The body's only comment reference sits inside the unselected Choice. */
+const REFERENCE_ONLY_AN_UNSELECTED_CHOICE_HOLDS = DOCUMENT_ROOT_WITH_UNKNOWN_PREFIX.replace(
+    "</w:r></w:p>",
+    `</w:r><mc:AlternateContent><mc:Choice Requires="u"><w:r><w:commentReference w:id="0"/></w:r></mc:Choice>` +
+        `<mc:Fallback><w:r><w:t>F</w:t></w:r></mc:Fallback></mc:AlternateContent></w:p>`,
+);
+
+/** The body's comment reference 0 sits outside any AlternateContent. */
+const REFERENCE_OUTSIDE_ANY_ALTERNATE_CONTENT = DOCUMENT_ROOT_WITH_UNKNOWN_PREFIX.replace(
+    "</w:r></w:p>",
+    '</w:r><w:r><w:commentReference w:id="0"/></w:r></w:p>',
+);
+
+/** Comment 0 is defined only inside the comments part root's unselected Choice; the Fallback holds comment 5. */
+const DEFINITION_ONLY_AN_UNSELECTED_CHOICE_HOLDS =
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+    `<mc:AlternateContent xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" ` +
+    `xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">` +
+    `<mc:Choice Requires="u" xmlns:u="urn:example:unknown">` +
+    `<w:comment w:id="0" w:author="A"><w:p><w:r><w:t>C0</w:t></w:r></w:p></w:comment></mc:Choice>` +
+    `<mc:Fallback><w:comment w:id="5" w:author="A"><w:p><w:r><w:t>C5</w:t></w:r></w:p></w:comment></mc:Fallback>` +
+    `</mc:AlternateContent>`;
+
+/** The minimal package with `document` and `comments` in place, its comments part related and typed. */
+const alternateContentPackage = (document: string, comments: string): Record<string, string> => ({
+    ...MINIMAL_PARTS,
+    "word/document.xml": document,
+    "word/comments.xml": comments,
+    "word/_rels/document.xml.rels": relsPart(rel("rId1", "styles", "styles.xml"), rel("rId2", "comments", "comments.xml")),
+    "[Content_Types].xml": withOverrides(override("word/comments.xml", COMMENTS_CT)),
+});
+
+const markerMissingFindings = (issues: readonly ValidationIssue[]) => issues.filter((issue) => issue.code === "comment-marker-missing");
+
+describe("comment markers read the effective view (#799)", { timeout: 30000 }, () => {
+    it("a reference only an unselected Choice holds names no missing comment", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "choice-reference.docx");
+            await writeFile(
+                file,
+                await buildDocx(alternateContentPackage(REFERENCE_ONLY_AN_UNSELECTED_CHOICE_HOLDS, COMMENTS_HOLDING_FIVE)),
+            );
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(true);
+            expect(markerMissingFindings(result.issues)).toEqual([]);
+            const selected = await validate(file, { profile: "word-valid", checks: ["comment-markers"] });
+            expect(selected.valid).toBe(true);
+            expect(markerMissingFindings(selected.issues)).toEqual([]);
+        });
+    });
+
+    it("a definition only an unselected Choice holds satisfies no reference outside one", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "choice-definition.docx");
+            await writeFile(
+                file,
+                await buildDocx(
+                    alternateContentPackage(REFERENCE_OUTSIDE_ANY_ALTERNATE_CONTENT, DEFINITION_ONLY_AN_UNSELECTED_CHOICE_HOLDS),
+                ),
+            );
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([
+                expect.objectContaining({
+                    code: "comment-marker-missing",
+                    path: "word/document.xml",
+                    message: 'marker id="0" references non-existent comment',
+                }),
+            ]);
+            const selected = await validate(file, { profile: "word-valid", checks: ["comment-markers"] });
+            expect(selected.valid).toBe(false);
+            expect(markerMissingFindings(selected.issues)).toEqual(markerMissingFindings(result.issues));
+        });
+    });
+
+    it("a reference outside any AlternateContent still names its missing comment (#784, session 58 s58a)", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "plain-reference.docx");
+            await writeFile(file, await buildDocx(alternateContentPackage(REFERENCE_OUTSIDE_ANY_ALTERNATE_CONTENT, COMMENTS_HOLDING_FIVE)));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([
+                expect.objectContaining({
+                    code: "comment-marker-missing",
+                    path: "word/document.xml",
+                    message: 'marker id="0" references non-existent comment',
+                }),
+            ]);
+        });
+    });
+});
+
 describe("named comment validation (#384)", { timeout: 120_000 }, () => {
     it.each(["word-valid", "lenient"] as const)("selects comments with full-run findings under %s", async (profile) => {
         const selected = await validate(markerFixture, { profile, checks: ["comments"] });
