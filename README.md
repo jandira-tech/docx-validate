@@ -1460,12 +1460,13 @@ never the local header's or the unicode-path field's (#445) — or an unreadable
 entry — fails with
 `package-extract-failed`, as the full run's extraction reports it (#413). Each stored
 item name that places no part is also its own error-severity `opc-item-name-refused`
-finding, and the full run of a packed file still judges the archive's other entries,
-as it does after a failed extraction: it leaves the refused central-directory records
-out, so an entry a refused `..` name hid in the package view is judged by its own bytes.
-It judges nothing more when the remaining names still collide (#413), when the archive
-uses ZIP64, or when bytes sit between the central directory and its end record. A
-directory input judges only its names, and a partial run only what is described below
+finding, and a full or partial run of a packed file still judges the archive's other
+entries, as a full run does after a failed extraction: it leaves the refused
+central-directory records out, so an entry a refused `..` name hid in the package view
+is judged by its own bytes. A partial run judges them with its selected checks only.
+Neither judges anything more when the remaining names still collide (#413), when the
+archive uses ZIP64, or when bytes sit between the central directory and its end record,
+and a directory input judges only its names
 ([#629](https://github.com/jandira-tech/docx-validate/issues/629)). Directory inputs apply the same stored-name refusal before either full or partial validation: literal backslash names with empty or dot-only segments are refused with the same code and message (#424).
 Direct `DOCXSchemaValidator.validate()` and `PPTXSchemaValidator.validate()` calls also return an error-severity
 `package-extract-failed` for such refused directory names, with the same message as `validate()`; programming errors still propagate
@@ -1479,9 +1480,11 @@ entry names and archive bytes are still read. Selected `opc-equivalent-part-name
 `opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`,
 `opc-part-name-word-refused`, and `opc-item-name-refused` checks and
 selected envelope checks (such as `zip-bytes-after-eocd`) run and report what the
-full run reports. Every other selected check needs the package's parts and is
-listed in `omittedChecks`
-([#420](https://github.com/jandira-tech/docx-validate/issues/420)). It is not a
+full run reports. Every other selected check needs the package's parts: it runs
+on the entries a refused item name leaves, as above, and is otherwise listed in
+`omittedChecks`
+([#420](https://github.com/jandira-tech/docx-validate/issues/420),
+[#629](https://github.com/jandira-tech/docx-validate/issues/629)). It is not a
 per-method execution trace. In the source scheduler, use `runChecks().outcomes`
 for individual
 `passed` / `failed` / `skipped` / `unavailable` statuses. `omittedChecks` names ids

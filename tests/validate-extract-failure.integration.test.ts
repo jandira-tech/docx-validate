@@ -327,13 +327,17 @@ describe("the paths that are already consistent stay unchanged (#454)", { timeou
             }
         });
     });
+});
 
-    it("keeps a partial run of a refused item name to its stored-name findings and the extract failure", async () => {
-        // A stored name that places no part refuses the package view (#378).
-        // The full run judges the rest of the archive without it (#629); a
-        // partial run still holds no part, so its part-based checks do not run.
+describe("a refused item name hides no other entry, in full and partial runs (#629)", { timeout: 120_000 }, () => {
+    it("reports the malformed Override the rest of the archive holds, as the full run does", async () => {
+        // A stored name that places no part still refuses the package view
+        // (#378), but both runs judge the entries it leaves.
         const bytes = buildRawZip([
-            ...Object.entries(MINIMAL_PARTS).map(([name, text]) => ({ name, content: text })),
+            ...Object.entries(MINIMAL_PARTS).map(([name, text]) => ({
+                name,
+                content: name === "[Content_Types].xml" ? BAD_OVERRIDE_TYPES : text,
+            })),
             { name: "word/a/../b.xml", content: "<x/>" },
         ]);
         await withTempDir(async (dir) => {
@@ -342,17 +346,24 @@ describe("the paths that are already consistent stay unchanged (#454)", { timeou
             for (const profile of ["word-valid", "lenient"] as const) {
                 const full = await validate(file, { profile });
                 const tag = `refused ${profile}`;
+                const override = full.issues.filter((issue) => issue.code === "ct-override-partname-invalid");
 
                 expect(full.valid, tag).toBe(false);
-                expect(errorPairs(full.issues), tag).toEqual(["opc-item-name-refused@word/a/../b.xml", "package-extract-failed@"]);
-                // The stored-name diagnosis ran, and so did the part-based checks on the rest.
+                expect(override, tag).toEqual([expect.objectContaining({ path: "[Content_Types].xml", severity: severityUnder(profile) })]);
                 expect(full.metadata?.executedChecks, tag).toContain("opc-equivalent-part-names");
                 expect(full.metadata?.executedChecks, tag).toContain("ct-override-partname-invalid");
+
                 const partial = await validate(file, { profile, checks: ["ct-override-partname-invalid"] });
+                // The selection reports the full run's finding, issue for
+                // issue, and the extract failure says why nothing was staged.
                 expect(
-                    partial.issues.map((issue) => issue.code),
+                    partial.issues.filter((issue) => issue.code !== "package-extract-failed"),
                     tag,
-                ).toEqual(["package-extract-failed"]);
+                ).toEqual(override);
+                expect(partial.issues.at(-1)?.code, tag).toBe("package-extract-failed");
+                // The check reports its own parse failures, so xml-syntax runs as its companion (#385).
+                expect(partial.metadata?.executedChecks, tag).toEqual(["xml-syntax", "ct-override-partname-invalid"]);
+                expect(partial.metadata?.omittedChecks, tag).not.toContain("ct-override-partname-invalid");
                 expect(errorPairs(full.issues), tag).toEqual(expect.arrayContaining(errorPairs(partial.issues)));
             }
             expect(readFileSync(file)).toEqual(bytes);

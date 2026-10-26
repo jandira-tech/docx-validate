@@ -899,7 +899,8 @@ function findingsUnderProfile(
  *
  * The machinery is the one a partial run uses: the registry's checks for the
  * format, the profile's policy on their findings, and lenient's stop at the
- * first malformed part.
+ * first malformed part. `select` defaults to every check the staging failure
+ * still runs; a partial run passes its own part-reading selection (#629).
  */
 async function archiveFindings(
     bytes: Uint8Array,
@@ -907,13 +908,13 @@ async function archiveFindings(
     profile: Profile,
     registry: CheckRegistry,
     deadline?: RunDeadline,
+    select: readonly string[] = stagingFallbackSelection(registry, format, profile),
 ): Promise<{ issues: readonly ValidationIssue[]; executed: readonly string[] }> {
     if (deadline?.reached("the checks a failed staging still runs")) return EMPTY_FINDINGS;
     const opened = await contextFromArchive(bytes);
     // An archive that does not open, or whose package view is refused, holds
     // no part: the full run reports that failure alone (#413).
     if (opened.openError !== undefined) return EMPTY_FINDINGS;
-    const select = stagingFallbackSelection(registry, format, profile);
     if (select.length === 0) return EMPTY_FINDINGS;
     try {
         const run = await runChecks(opened.context, registry, {
@@ -970,7 +971,8 @@ async function archiveFindings(
  * left out of the directory, so an entry a refused `..` name hid in JSZip's
  * view is judged by its own bytes. An envelope the rewrite cannot honor adds
  * nothing, and an archive whose remaining view is refused too — a portable
- * name collision — adds nothing either (#413).
+ * name collision — adds nothing either (#413). The bytes come back as given
+ * when no name was refused, so they add nothing either.
  */
 async function placeableEntryFindings(
     bytes: Uint8Array,
@@ -978,9 +980,10 @@ async function placeableEntryFindings(
     profile: Profile,
     registry: CheckRegistry,
     deadline?: RunDeadline,
+    select?: readonly string[],
 ): Promise<{ issues: readonly ValidationIssue[]; executed: readonly string[] }> {
     const rest = archiveWithoutEntries(bytes, (record) => !record.directory && entryNameRefusal(record.name) !== undefined);
-    return rest === undefined ? EMPTY_FINDINGS : archiveFindings(rest, format, profile, registry, deadline);
+    return rest === undefined || rest === bytes ? EMPTY_FINDINGS : archiveFindings(rest, format, profile, registry, deadline, select);
 }
 
 /**
@@ -1064,11 +1067,20 @@ async function runSelectedChecks(
                 : undefined;
         // A refused view has no parts, so no properties part to block (#409).
         const issues = run === undefined ? [] : findingsUnderProfile(run, registry, format, mode.profile, new Set());
-        const executed = run?.executed ?? [];
+        // A refused item name no longer hides the rest of a packed package:
+        // the selected checks that read parts judge the entries it leaves, as
+        // the full run's staging failure does (#629).
+        const partSelect = resolved.filter((id) => !runnable.has(id));
+        const rest =
+            opened.extractFailed === true && packedBytes !== undefined && partSelect.length > 0
+                ? await placeableEntryFindings(packedBytes, format, mode.profile, registry, deadline, partSelect)
+                : EMPTY_FINDINGS;
+        const executed = orderedExecutedChecks(format, [...(run?.executed ?? []), ...rest.executed]);
         return {
             valid: false,
             issues: [
                 ...issues,
+                ...rest.issues,
                 opened.extractFailed === true
                     ? packageExtractFailedIssue(target, opened.openError)
                     : packageOpenFailedIssue(target, opened.openError),
