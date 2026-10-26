@@ -745,11 +745,21 @@ header typed `…footer+xml` and for a read footer typed `…header+xml` despite
 an unused header relationship to it; the latter's `…footer+xml` control
 opened clean. The recovery sentence cites session 24 for the main header,
 main footer and glossary footer swaps, and session 26 for the glossary
-header swap (#610); sessions 49 and 53 cite the main styles reach (49
-showed the settings type, s49b, and 53 every other mapped type, s53g/s53h)
-and sessions 50 and 53 the settings, numbering and main-document reaches (50
-showed one type each, s50d, and 53 the rest, s53d–s53h); session 53 cites
-the footer co-reach (#739). The finding names
+header swap (#610); every eager pair names the session that showed it —
+session 49 the settings type on the styles reach (s49b), session 50 the
+styles type on the main document and the settings reach and the settings
+type on the numbering reach (s50d), session 53 the other mapped types it
+ran on the main document (s53d–s53f) and on the settings, numbering and
+styles reaches (s53f–s53h), session 56 the footer type on the styles reach
+(s56a), and session 57 the thirteen pairs no earlier session had shown:
+the main document typed webSettings, the settings reach typed webSettings,
+glossary, footer, footnotes or endnotes, the numbering reach typed
+webSettings, glossary, theme or footer, and the styles reach typed
+webSettings, glossary or footnotes
+([#779](https://github.com/jandira-tech/docx-validate/issues/779)). The
+styles reach typed endnotes and the numbering reach typed footnotes or
+endnotes were shown to no session and carry no recovery sentence; session
+53 cites the footer co-reach (#739). The finding names
 the relationship, declared
 type and expected type, errors and blocks Word-valid; lenient warns. Unread
 stories, a related fontTable or webSettings part, the glossary's reaches,
@@ -763,8 +773,9 @@ Document part and cites clause 11.3.10 (#609). Candidate relationships are
 ranked in the same fixed order as the generic check, so relationship entry
 order does not change the reported segment or clause (#608). Only an
 observed finding — a read header/footer swap or footer co-reach, the main
-document, or a related styles, settings or numbering part — carries the Word
-recovery sentence; unobserved shapes keep spec wording. Full, quick and named
+document, or a related styles, settings or numbering part whose pair a
+session showed — carries the Word recovery sentence; unobserved shapes and
+an eager pair no session showed keep spec wording. Full, quick and named
 selections agree
 (#381).
 

@@ -276,14 +276,12 @@ it("strict judges every mapped related type on the main document and glossary", 
                 expect(found[0]?.message).toContain(segment === "theme" ? "clause 14.2.7" : "clause 11.3");
                 // Sessions 49 and 50 made the main document and the main
                 // document's styles, settings and numbering reaches observed
-                // (#722), so their strict findings keep the Word sentence the
-                // swaps already carry (#610); every other shape stays spec-only.
+                // (#722), and every pair cites the session that showed it
+                // (#779) — here the header type, session 53 (s53d–s53h) — so
+                // those strict findings keep the Word sentence the swaps
+                // already carry (#610); every other shape stays spec-only.
                 const citation =
-                    via === "main" && ["officeDocument", "styles", "settings", "numbering"].includes(segment)
-                        ? segment === "styles"
-                            ? "sessions 49 and 53"
-                            : "sessions 50 and 53"
-                        : undefined;
+                    via === "main" && ["officeDocument", "styles", "settings", "numbering"].includes(segment) ? "session 53" : undefined;
                 if (citation === undefined) {
                     expect(found[0]?.message).not.toContain("Word 16.115");
                 } else {
@@ -381,7 +379,9 @@ it.each([
 // styles part typed with the settings type (s49b), and for a related settings
 // part typed with the styles type, a related numbering part typed with the
 // settings type and the main document typed with the styles type (s50d);
-// session 53 (s53d–s53h) showed every other mapped type on those reaches.
+// session 53 (s53d–s53h), session 56 (s56a) and session 57 (s57a–s57c)
+// showed the other pairs on those reaches, each citation naming its own
+// session (#779).
 describe("observed eager mismatches (#722, sessions 49 and 50)", () => {
     const retypedParts = (part: string, own: string, type: string): Record<string, string> => ({
         ...MINIMAL_PARTS,
@@ -396,28 +396,28 @@ describe("observed eager mismatches (#722, sessions 49 and 50)", () => {
             parts: retypedParts("word/styles.xml", storyContentType("styles"), storyContentType("settings")),
             path: "word/styles.xml",
             by: "the main document's styles relationship",
-            citation: "sessions 49 and 53",
+            citation: "session 49",
         },
         {
             label: "a related settings part typed with the styles type",
             parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[0], storyContentType("styles")),
             path: "word/settings.xml",
             by: "the main document's settings relationship",
-            citation: "sessions 50 and 53",
+            citation: "session 50",
         },
         {
             label: "a related numbering part typed with the settings type",
             parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[2], storyContentType("settings")),
             path: "word/numbering.xml",
             by: "the main document's numbering relationship",
-            citation: "sessions 50 and 53",
+            citation: "session 50",
         },
         {
             label: "the main document typed with the styles type",
             parts: retypedParts("word/document.xml", storyContentType("document.main"), storyContentType("styles")),
             path: "word/document.xml",
             by: "the package officeDocument relationship",
-            citation: "sessions 50 and 53",
+            citation: "session 50",
         },
     ] as const;
 
@@ -512,7 +512,7 @@ describe("observed co-reach (#739, session 53)", () => {
             parts: withReadFooter(retypedParts("word/document.xml", MAIN_TYPE, storyContentType("styles")), "document.xml"),
             path: "word/document.xml",
             by: "the package officeDocument relationship",
-            citation: "sessions 50 and 53",
+            citation: "session 50",
         },
         {
             label: "a read footer targeting the related numbering part, typed numbering (calibration)",
@@ -529,7 +529,7 @@ describe("observed co-reach (#739, session 53)", () => {
             parts: withReadFooter(relatedContentTypeParts(RELATED_PART_SPECIMENS[2], storyContentType("settings")), "numbering.xml"),
             path: "word/numbering.xml",
             by: "the main document's numbering relationship",
-            citation: "sessions 50 and 53",
+            citation: "session 50",
         },
         {
             label: "a read footer targeting the styles part, typed styles (calibration)",
@@ -543,21 +543,21 @@ describe("observed co-reach (#739, session 53)", () => {
             parts: withReadFooter(retypedParts("word/styles.xml", storyContentType("styles"), storyContentType("settings")), "styles.xml"),
             path: "word/styles.xml",
             by: "the main document's styles relationship",
-            citation: "sessions 49 and 53",
+            citation: "session 49",
         },
         {
             label: "the styles part also the settings target, typed styles (calibration)",
             parts: stylesSettingsParts(storyContentType("styles")),
             path: "word/styles.xml",
             by: "the main document's settings relationship",
-            citation: "sessions 50 and 53",
+            citation: "session 50",
         },
         {
             label: "the styles part also the settings target, typed settings",
             parts: stylesSettingsParts(storyContentType("settings")),
             path: "word/styles.xml",
             by: "the main document's styles relationship",
-            citation: "sessions 49 and 53",
+            citation: "session 49",
         },
     ] as const;
 
@@ -641,4 +641,227 @@ describe("observed co-reach (#739, session 53)", () => {
             }
         });
     }, 60_000);
+});
+
+// Session 57 (2026-10-26; Word 16.115, two runs, all readings agree) showed
+// the thirteen mapped-type pairs no earlier session had, so every recovery
+// sentence names the session that showed its pair — the reach plus the
+// declared type — instead of its reach's sessions: 49 the settings type on
+// the styles part (s49b), 50 the styles type on the main document and a
+// related settings part and the settings type on a related numbering part
+// (s50d), 53 the other mapped types it ran (s53d–s53h), 56 the footer type
+// on the styles part (s56a) and 57 the thirteen pairs of s57a–s57c.
+describe("per-pair recovery citations (#779)", () => {
+    const THEME_TYPE = "application/vnd.openxmlformats-officedocument.theme+xml";
+    const retypedParts = (part: string, own: string, type: string): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+            `<Override PartName="/${part}" ContentType="${own}"/>`,
+            `<Override PartName="/${part}" ContentType="${type}"/>`,
+        ),
+    });
+    const CASES = [
+        {
+            label: "the main document typed webSettings (s57a)",
+            parts: retypedParts("word/document.xml", storyContentType("document.main"), storyContentType("webSettings")),
+            path: "word/document.xml",
+            by: "the package officeDocument relationship",
+            session: "session 57",
+        },
+        {
+            label: "a related settings part typed webSettings (s57a)",
+            parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[0], storyContentType("webSettings")),
+            path: "word/settings.xml",
+            by: "the main document's settings relationship",
+            session: "session 57",
+        },
+        {
+            label: "a related settings part typed glossary (s57a)",
+            parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[0], storyContentType("document.glossary")),
+            path: "word/settings.xml",
+            by: "the main document's settings relationship",
+            session: "session 57",
+        },
+        {
+            label: "a related settings part typed footer (s57a)",
+            parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[0], storyContentType("footer")),
+            path: "word/settings.xml",
+            by: "the main document's settings relationship",
+            session: "session 57",
+        },
+        {
+            label: "a related settings part typed footnotes (s57a)",
+            parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[0], storyContentType("footnotes")),
+            path: "word/settings.xml",
+            by: "the main document's settings relationship",
+            session: "session 57",
+        },
+        {
+            label: "a related settings part typed endnotes (s57a)",
+            parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[0], storyContentType("endnotes")),
+            path: "word/settings.xml",
+            by: "the main document's settings relationship",
+            session: "session 57",
+        },
+        {
+            label: "a related numbering part typed webSettings (s57b)",
+            parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[2], storyContentType("webSettings")),
+            path: "word/numbering.xml",
+            by: "the main document's numbering relationship",
+            session: "session 57",
+        },
+        {
+            label: "a related numbering part typed glossary (s57b)",
+            parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[2], storyContentType("document.glossary")),
+            path: "word/numbering.xml",
+            by: "the main document's numbering relationship",
+            session: "session 57",
+        },
+        {
+            label: "a related numbering part typed theme (s57b)",
+            parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[2], THEME_TYPE),
+            path: "word/numbering.xml",
+            by: "the main document's numbering relationship",
+            session: "session 57",
+        },
+        {
+            label: "a related numbering part typed footer (s57b)",
+            parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[2], storyContentType("footer")),
+            path: "word/numbering.xml",
+            by: "the main document's numbering relationship",
+            session: "session 57",
+        },
+        {
+            label: "the styles part typed webSettings (s57b)",
+            parts: retypedParts("word/styles.xml", storyContentType("styles"), storyContentType("webSettings")),
+            path: "word/styles.xml",
+            by: "the main document's styles relationship",
+            session: "session 57",
+        },
+        {
+            label: "the styles part typed glossary (s57b)",
+            parts: retypedParts("word/styles.xml", storyContentType("styles"), storyContentType("document.glossary")),
+            path: "word/styles.xml",
+            by: "the main document's styles relationship",
+            session: "session 57",
+        },
+        {
+            label: "the styles part typed footnotes (s57c)",
+            parts: retypedParts("word/styles.xml", storyContentType("styles"), storyContentType("footnotes")),
+            path: "word/styles.xml",
+            by: "the main document's styles relationship",
+            session: "session 57",
+        },
+        {
+            label: "the styles part typed footer (s56a)",
+            parts: retypedParts("word/styles.xml", storyContentType("styles"), storyContentType("footer")),
+            path: "word/styles.xml",
+            by: "the main document's styles relationship",
+            session: "session 56",
+        },
+        {
+            label: "the styles part typed settings (s49b)",
+            parts: retypedParts("word/styles.xml", storyContentType("styles"), storyContentType("settings")),
+            path: "word/styles.xml",
+            by: "the main document's styles relationship",
+            session: "session 49",
+        },
+        {
+            label: "the main document typed styles (s50d)",
+            parts: retypedParts("word/document.xml", storyContentType("document.main"), storyContentType("styles")),
+            path: "word/document.xml",
+            by: "the package officeDocument relationship",
+            session: "session 50",
+        },
+        {
+            label: "a related settings part typed styles (s50d)",
+            parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[0], storyContentType("styles")),
+            path: "word/settings.xml",
+            by: "the main document's settings relationship",
+            session: "session 50",
+        },
+        {
+            label: "a related numbering part typed settings (s50d)",
+            parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[2], storyContentType("settings")),
+            path: "word/numbering.xml",
+            by: "the main document's numbering relationship",
+            session: "session 50",
+        },
+        {
+            label: "the main document typed theme (s53d)",
+            parts: retypedParts("word/document.xml", storyContentType("document.main"), THEME_TYPE),
+            path: "word/document.xml",
+            by: "the package officeDocument relationship",
+            session: "session 53",
+        },
+        {
+            label: "a related settings part typed main (s53f)",
+            parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[0], storyContentType("document.main")),
+            path: "word/settings.xml",
+            by: "the main document's settings relationship",
+            session: "session 53",
+        },
+        {
+            label: "a related numbering part typed main (s53g)",
+            parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[2], storyContentType("document.main")),
+            path: "word/numbering.xml",
+            by: "the main document's numbering relationship",
+            session: "session 53",
+        },
+        {
+            label: "the styles part typed main (s53g)",
+            parts: retypedParts("word/styles.xml", storyContentType("styles"), storyContentType("document.main")),
+            path: "word/styles.xml",
+            by: "the main document's styles relationship",
+            session: "session 53",
+        },
+    ] as const;
+
+    it.each(CASES)("cites $session for $label", async ({ parts, path, by, session }) => {
+        const found = await diagnose(parts);
+        expect(found).toHaveLength(1);
+        expect(found[0]).toMatchObject({ code: ID, severity: "error", path });
+        expect(found[0]?.message).toContain(by);
+        expect(found[0]?.message).toContain(`Word 16.115 offers to recover the package (${session}).`);
+        expect(isWordBlockingIssue(found[0]!)).toBe(true);
+    });
+
+    it("invalidates the full word-valid run on the session 57 pairs with exactly one error", async () => {
+        await withTempDir(async (dir) => {
+            for (const { label, parts } of CASES.filter((entry) => entry.session === "session 57")) {
+                const file = path.join(dir, "pair.docx");
+                writeFileSync(file, await buildDocx(parts));
+                const result = await validate(file);
+                expect(result.valid, label).toBe(false);
+                expect(result.issues.filter((issue) => issue.code === ID && issue.severity === "error")).toHaveLength(1);
+            }
+        });
+    }, 120_000);
+
+    // No session showed the styles part typed endnotes or the numbering part
+    // typed footnotes or endnotes; they keep their rejection, but a pair
+    // with no row carries no recovery sentence.
+    it.each([
+        {
+            label: "the styles part typed endnotes",
+            parts: retypedParts("word/styles.xml", storyContentType("styles"), storyContentType("endnotes")),
+            path: "word/styles.xml",
+        },
+        {
+            label: "a related numbering part typed footnotes",
+            parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[2], storyContentType("footnotes")),
+            path: "word/numbering.xml",
+        },
+        {
+            label: "a related numbering part typed endnotes",
+            parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[2], storyContentType("endnotes")),
+            path: "word/numbering.xml",
+        },
+    ] as const)("keeps $label rejected with no recovery sentence", async ({ parts, path }) => {
+        const found = await diagnose(parts);
+        expect(found).toHaveLength(1);
+        expect(found[0]).toMatchObject({ code: ID, severity: "error", path });
+        expect(found[0]?.message).not.toContain("Word 16.115");
+        expect(isWordBlockingIssue(found[0]!)).toBe(true);
+    });
 });
