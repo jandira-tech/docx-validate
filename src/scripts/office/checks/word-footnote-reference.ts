@@ -174,7 +174,7 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
             }
         };
         // The references one part holds, each judged against its definitions.
-        const judged = (xmlFile: string, definitions: ReadonlySet<string | bigint>): void => {
+        const judged = (xmlFile: string, definitions: ReadonlySet<string | bigint>, union?: ReadonlySet<string | bigint>): void => {
             const parsed = ctx.effectiveXml(xmlFile);
             if (!parsed?.ok) {
                 return;
@@ -189,15 +189,22 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
                 const refs = getElementsByTagNameNSAll(dom, ns, `${kind}Reference`);
                 for (const entry of refs) {
                     const id = entry?.getAttributeNS(ns, "id");
-                    if (!id || definitions.has(noteIdKey(id))) {
+                    const key = id ? noteIdKey(id) : undefined;
+                    if (key === undefined || definitions.has(key)) {
                         continue;
                     }
+                    const glossaryOnly = union?.has(key) === true;
                     issues.push({
                         severity: "error",
                         message:
-                            `${kind === "footnote" ? "A" : "An"} ${kind} reference uses id ${id}, and this package has no w:${kind} with that id. ` +
+                            `${kind === "footnote" ? "A" : "An"} ${kind} reference uses id ${id}, and ` +
+                            (glossaryOnly
+                                ? `the notes parts the main document relates define no w:${kind} with that id; only a reached glossary's notes part does. `
+                                : `this package has no w:${kind} with that id. `) +
                             "Microsoft Word offers to recover the file. " +
-                            `Remove the w:${kind}Reference, or add the matching ${kind}.`,
+                            (glossaryOnly
+                                ? `Remove the w:${kind}Reference, or add the note to a notes part the main document relates.`
+                                : `Remove the w:${kind}Reference, or add the matching ${kind}.`),
                         path: xmlFile,
                         code: `word-${kind}-reference-missing`,
                     });
@@ -248,8 +255,9 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
             collect(target.part);
         }
         // Main-document references cannot use a glossary's definitions
-        // (session 63 s63c, #828). Glossary references keep the union,
-        // whose reading remains unprobed.
+        // (session 63 s63c, #828), and a reference only the union
+        // satisfies says so in its message (#838). Glossary references
+        // keep the union, whose reading remains unprobed.
         const mainDefined = new Set(defined);
         for (const target of await glossaryTypedRelationshipTargets(ctx, new Set([segment]), profile, definitions)) {
             collect(target.part);
@@ -280,7 +288,7 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
                 continue;
             }
             seen.add(canonical);
-            judged(target.part, target.via === "glossary" ? defined : mainDefined);
+            judged(target.part, target.via === "glossary" ? defined : mainDefined, defined);
         }
 
         return issues;

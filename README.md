@@ -1010,7 +1010,9 @@ Word read) use only the notes parts its own relationships name: session 63
 (s63c, same evidence, two runs, all readings agree) offered recovery for a
 body footnote reference whose note only a reached glossary's notes part
 defines, while the main-related matching calibration opened clean
-([#828](https://github.com/jandira-tech/docx-validate/issues/828)). The endnotes
+([#828](https://github.com/jandira-tech/docx-validate/issues/828)); the finding's
+message then names the glossary
+([#838](https://github.com/jandira-tech/docx-validate/issues/838)). The endnotes
 twin is unprobed; generalising from footnotes follows #793's footnote-to-endnote
 reading. References read through a reached glossary keep the union of the main
 document's and reached glossaries' definitions; that reading is unprobed.
