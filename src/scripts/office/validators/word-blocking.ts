@@ -27,11 +27,12 @@ export type WordBlockingFacts = {
     /**
      * Defined only when every internal relationship reaching the part is of a
      * type Word loads only when referenced (`chart`, `diagramData`,
-     * `oleObject`, `hdphoto`) or of the `image` type, which never loads it:
-     * `"referenced"` when a Word-read part's effective XML names one of the
-     * non-image relationship Ids, `"unreferenced"` when none does (#645,
-     * session 36; #647, session 44 — Word opens clean then). `undefined`
-     * leaves the part on the reach-based verdict.
+     * `oleObject`, `hdphoto`) or of the `image` type, which never loads it
+     * and never yields a reference source (#706): `"referenced"` when a
+     * Word-read part's effective XML names one of the returned relationship
+     * Ids, `"unreferenced"` when none does (#645, session 36; #647, session
+     * 44 — Word opens clean then). `undefined` leaves the part on the
+     * reach-based verdict.
      */
     referenceLoadedReach?: "referenced" | "unreferenced";
 };
@@ -78,22 +79,17 @@ export const wordRelationshipReferenceIds = (document: Document): ReadonlySet<st
 
 /**
  * Every value of an attribute in either relationships namespace, or of VML's
- * `o:relid`, on any element of `document`. A superset of
- * {@link wordRelationshipReferenceIds} for the relationship types whose
- * referenced shape Word was never shown (#647): `dgm:relIds` names the
- * diagram data through `r:dm`, which that set does not count, so a reference
- * of any spelling keeps the reach-based blocking verdict.
+ * `o:relid`, on any element of `document`, except a picture's `a:blip
+ * r:embed`, Transitional or ISO Strict DrawingML: the reference matcher for
+ * the relationship types whose referenced shapes Word was never shown but a
+ * picture's embed — `diagramData`, `oleObject` and `hdphoto`
+ * (`referenceLoad`'s `"unobserved-reference"`). `dgm:relIds` names the
+ * diagram data through `r:dm`, which `wordRelationshipReferenceIds` does not
+ * count, so a reference of any other spelling keeps the reach-based
+ * blocking verdict (#647), while a picture's `a:blip r:embed` naming one of
+ * those relationships opened clean (#702 S1, session 45).
  */
-export const relationshipAttributeValues = (document: Document): ReadonlySet<string> => relationshipAttributes(document, false);
-
-/**
- * {@link relationshipAttributeValues} without a picture's `a:blip r:embed`,
- * Transitional or ISO Strict DrawingML: the one reference to an `image`
- * relationship Word was shown, clean, for a part with no sidecar (session 44
- * s44a/s44b). Every other attribute naming an image relationship's Id keeps
- * the reach blocking (#701).
- */
-export const nonPictureRelationshipAttributeValues = (document: Document): ReadonlySet<string> => relationshipAttributes(document, true);
+export const unobservedReferenceAttributeValues = (document: Document): ReadonlySet<string> => relationshipAttributes(document);
 
 const DRAWINGML_MAIN_NAMESPACES: ReadonlySet<string> = new Set([
     "http://schemas.openxmlformats.org/drawingml/2006/main",
@@ -101,10 +97,10 @@ const DRAWINGML_MAIN_NAMESPACES: ReadonlySet<string> = new Set([
 ]);
 const RELATIONSHIP_ATTRIBUTE_NAMESPACES: ReadonlySet<string> = new Set([NS.R, "http://purl.oclc.org/ooxml/officeDocument/relationships"]);
 
-const relationshipAttributes = (document: Document, skipPictureEmbed: boolean): ReadonlySet<string> => {
+const relationshipAttributes = (document: Document): ReadonlySet<string> => {
     const values = new Set<string>();
     for (const element of getElementsByTagNameAll(document)) {
-        const picture = skipPictureEmbed && element.localName === "blip" && DRAWINGML_MAIN_NAMESPACES.has(element.namespaceURI ?? "");
+        const picture = element.localName === "blip" && DRAWINGML_MAIN_NAMESPACES.has(element.namespaceURI ?? "");
         for (let i = 0; i < element.attributes.length; i++) {
             const attribute = element.attributes.item(i);
             if (attribute === null || attribute.value === "") continue;
@@ -395,8 +391,10 @@ export const isWordBlockingIssue = (
             // selected one got the recovery offer (session 37 s37b). #647,
             // session 44: an image reach never loads the part, even through a
             // picture's `a:blip r:embed`, and an unreferenced diagramData,
-            // oleObject or hdphoto reach opened clean too. The basename
-            // exemption still answers first for a named header or footer.
+            // oleObject or hdphoto reach opened clean too; session 45 (S1)
+            // opened the same picture naming one of those three clean (#702).
+            // The basename exemption still answers first for a named header
+            // or footer.
             if (facts.referenceLoadedReach !== undefined) {
                 return facts.referenceLoadedReach === "referenced" && !/^word\/(?:header|footer)\d*\.xml$/i.test(issue.path ?? "");
             }

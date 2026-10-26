@@ -69,8 +69,7 @@ import {
 import {
     hasWordRelationshipReference,
     isWordBlockingIssue,
-    nonPictureRelationshipAttributeValues,
-    relationshipAttributeValues,
+    unobservedReferenceAttributeValues,
     wordRelationshipReferenceIds,
 } from "./word-blocking";
 import {
@@ -813,9 +812,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         // #645, session 36 s36b/s36d: a part every reaching relationship names
         // through the chart type is loaded by Word only when a Word-read
         // part's effective XML references one of those relationship Ids;
-        // #647, session 44: diagramData, oleObject and hdphoto count any
-        // attribute naming the Id, and an image every one but a picture's
-        // `a:blip r:embed`, the reference Word showed clean (#701).
+        // #647, session 44: diagramData, oleObject and hdphoto match every
+        // attribute naming the Id but a picture's `a:blip r:embed`, which
+        // session 45 opened clean (#702 S1); an image relationship is never
+        // a source, so an image reach alone warns (#706).
         const referenceLoadedReach = new Map<string, "referenced" | "unreferenced">();
         for (const path of result.issues.flatMap((issue) => {
             const part = missingSidecarPart(issue);
@@ -834,9 +834,7 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
                     xml?.ok === true &&
                     (reference === "declared"
                         ? wordRelationshipReferenceIds(xml.document)
-                        : reference === "any"
-                          ? relationshipAttributeValues(xml.document)
-                          : nonPictureRelationshipAttributeValues(xml.document)
+                        : unobservedReferenceAttributeValues(xml.document)
                     ).has(id)
                 );
             });

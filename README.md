@@ -1185,18 +1185,22 @@ Word-read part's effective XML names one of those relationship Ids
 inside an unselected `mc:Choice` opened clean and one inside a selected
 Choice got the recovery offer, session 37 s37b). Session 44 opened clean
 every part an image relationship reaches, under `word/` and outside it,
-unreferenced or named by a picture's `a:blip r:embed`, so that picture
-reference does not count; any other attribute naming an image relationship's
-Id (`c:chart r:id`, `dgm:relIds`, `o:OLEObject r:id`, …) was never shown to
-Word and keeps the part blocking
-([#701](https://github.com/jandira-tech/docx-validate/issues/701)), so a part
-images and charts reach blocks through a referenced chart relationship or a
-non-picture reference to an image one. Session 44 also opened clean an unreferenced
+unreferenced or named by a picture's `a:blip r:embed`, and session 46 (s46d)
+opened the same chart clean when a VML picture's `v:imagedata r:id` or a
+linked picture's `a:blip r:link` names the relationship: an image reach
+never loads the part, so `rels-missing-sidecar` always warns for it, however
+its Id is named
+([#706](https://github.com/jandira-tech/docx-validate/issues/706); #701's
+extension is replaced by #705's rule, which blocks the `c:chart r:id`,
+`dgm:relIds` and `o:OLEObject r:id` shapes naming an image relationship for
+the reference's Type). Session 44 also opened clean an unreferenced
 `diagramData`, `oleObject` or Microsoft `hdphoto` reach, so those types join
-the rule; Word was never shown their referenced shapes, so any attribute in a
-relationships namespace (or VML's `o:relid`) naming the relationship counts
-as their reference, and a `dgm:relIds r:dm` keeps blocking
-([#647](https://github.com/jandira-tech/docx-validate/issues/647)). A part
+the rule; session 45 (S1) opened clean a picture's `a:blip r:embed` naming
+one of them, so every other attribute in a relationships namespace (or
+VML's `o:relid`) naming the relationship counts as their reference, and a
+`dgm:relIds r:dm` keeps blocking
+([#647](https://github.com/jandira-tech/docx-validate/issues/647);
+[#702](https://github.com/jandira-tech/docx-validate/issues/702)). A part
 any other relationship type also reaches keeps the reach-based verdict
 ([#645](https://github.com/jandira-tech/docx-validate/issues/645); chunks
 s36b/s36d, s37b and s44a–s44c in the same evidence file).

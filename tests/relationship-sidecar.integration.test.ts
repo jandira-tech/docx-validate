@@ -13,6 +13,7 @@ import { BaseSchemaValidator } from "../src/scripts/office/validators/base";
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { STORY_FOOTER_XML, glossaryStoryReferenceParts, storyContentType } from "./support/story-content-type-specimens";
 import {
+    barChartXml,
     chartSpecimenParts,
     CHART_DRAWING,
     equivalentTargetChartSpecimenParts,
@@ -750,23 +751,41 @@ const session44Specimens = [
         blocking: true,
     },
     { name: "chart-word-image-and-audio-reach", part: CHART_INSIDE, reach: [IMAGE, reaching("rId7", "audio")], blocking: true },
-    // Unobserved (#701): an image relationship's Id named by anything but a
-    // picture's `a:blip r:embed` keeps the reach-based verdict.
-    { name: "chart-word-image-reach-chart-reference", part: CHART_INSIDE, reach: [IMAGE], drawing: IMAGE_CHART_DRAWING, blocking: true },
+    // Refused for the reference's Type, whatever the target (sessions 45
+    // s45c and 46, #705): `word-part-reference-relationship` blocks these
+    // rows, and #706 takes #701's extension back out, so the missing
+    // sidecar alone warns.
+    {
+        name: "chart-word-image-reach-chart-reference",
+        part: CHART_INSIDE,
+        reach: [IMAGE],
+        drawing: IMAGE_CHART_DRAWING,
+        blocking: true,
+        referenceRefused: true,
+    },
     {
         name: "chart-word-strict-image-reach-chart-reference",
         part: CHART_INSIDE,
         reach: [{ id: "rId8", type: `${RS}/image` }],
         drawing: IMAGE_CHART_DRAWING,
         blocking: true,
+        referenceRefused: true,
     },
-    { name: "chart-word-image-reach-relids-reference", part: CHART_INSIDE, reach: [IMAGE], drawing: DIAGRAM_DRAWING, blocking: true },
+    {
+        name: "chart-word-image-reach-relids-reference",
+        part: CHART_INSIDE,
+        reach: [IMAGE],
+        drawing: DIAGRAM_DRAWING,
+        blocking: true,
+        referenceRefused: true,
+    },
     {
         name: "chart-outside-word-image-reach-oleobject-reference",
         part: CHART_OUTSIDE,
         reach: [IMAGE],
         drawing: OLE_OBJECT,
         blocking: true,
+        referenceRefused: true,
     },
     {
         name: "chart-word-image-reach-blip-and-chart-reference",
@@ -774,6 +793,7 @@ const session44Specimens = [
         reach: [IMAGE],
         drawing: `${PICTURE_DRAWING}${IMAGE_CHART_DRAWING}`,
         blocking: true,
+        referenceRefused: true,
     },
 ];
 
@@ -795,12 +815,134 @@ describe("relationship types Word was shown in session 44 (#647)", { timeout: 12
             expect.soft(full.valid).toBe(specimen.blocking !== true);
             expect
                 .soft(full.issues.filter((finding) => finding.code === "rels-missing-sidecar"))
-                .toEqual(specimen.blocking === undefined ? [] : [missingSidecar(specimen.blocking ? "error" : "warning")]);
+                .toEqual(
+                    specimen.blocking === undefined
+                        ? []
+                        : [missingSidecar(specimen.blocking && !specimen.referenceRefused ? "error" : "warning")],
+                );
+            // #706: a row Word refuses for the reference's Type stays invalid
+            // through #705's rule; the missing sidecar alone warns.
+            if (specimen.referenceRefused) {
+                expect
+                    .soft(full.issues.filter((finding) => finding.code === "word-part-reference-relationship"))
+                    .toEqual([expect.objectContaining({ path: MAIN, severity: "error" })]);
+            }
             // Strict and lenient keep the finding an error whichever way Word went.
             for (const profile of ["strict", "lenient"] as const) {
                 const result = await validate(file, { profile });
                 expect(result.valid, profile).toBe(false);
                 if (specimen.blocking !== undefined) expect(result.issues, profile).toContainEqual(missingSidecar("error"));
+            }
+            // The legacy missing-sidecar walk is not a registered check, so
+            // partial runs omit it and keep only the #381 one-way contract (#663).
+            for (const selection of [{ quick: true }, { checks: ["relationships"] }]) {
+                const partial = await validate(file, { profile: "word-valid", ...selection });
+                expect(partial.issues.filter((finding) => finding.code === "rels-missing-sidecar")).toEqual([]);
+                expect(errors(full.issues)).toEqual(expect.arrayContaining(errors(partial.issues)));
+                if (full.valid) expect(partial.valid).toBe(true);
+            }
+        });
+    });
+});
+
+// #706, with #702's S1 rows: the references #701 made blocking that Word
+// 16.115 opened clean, in two runs each. The review of layers 140–142
+// (findings 3–5) built the first four shapes on the bare chart with no
+// sidecar, reached by an `image` relationship: a `w:name r:id` — the
+// attribute session 35 showed Word never reads as a reference — a VML
+// picture's `v:imagedata r:id`, the same picture in a selected
+// `mc:Fallback`, and a linked picture's `a:blip r:link`. Session 46 (s46d)
+// showed Word the VML picture and the linked picture naming an `image`
+// relationship to session 36d's bar chart, with the `a:blip r:embed`
+// control; session 45 (s45b/s45d, #702 S1) showed it the same picture
+// naming a `diagramData` or `oleObject` relationship to the bare chart,
+// under `word/` and outside it. An `image` reach never loads the part, and
+// the one reference to a `diagramData`, `oleObject` or `hdphoto`
+// relationship Word was shown is a picture's `a:blip r:embed`, so
+// `rels-missing-sidecar` warns on every row here; the shapes Word refuses
+// (`c:chart r:id`, `dgm:relIds`, `o:OLEObject r:id` naming an `image`
+// relationship) are #705's `word-part-reference-relationship`, covered by
+// the session 44 rows above.
+const VML_PICTURE_RID =
+    '<w:p w14:paraId="00000002" w14:textId="00000002"><w:r><w:pict>' +
+    `<v:shape xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" id="s1" style="width:10pt;height:10pt">` +
+    `<v:imagedata r:id="rId8" o:title=""/></v:shape></w:pict></w:r></w:p>`;
+const NAME_REFERENCE = '<w:p w14:paraId="00000002" w14:textId="00000002"><w:name r:id="rId8"/><w:r><w:t>x</w:t></w:r></w:p>';
+const LINKED_PICTURE_DRAWING = replaceOnce(PICTURE_DRAWING, 'r:embed="rId8"', 'r:link="rId8"');
+/** The `drawing` inside a selected `mc:Fallback`: an unselected `foo` Choice before it, so the Fallback is read. */
+const inSelectedFallback = (parts: Record<string, string>, drawing: string): Record<string, string> => ({
+    ...parts,
+    [MAIN]: replaceOnce(
+        replaceOnce(parts[MAIN]!, "<w:document ", '<w:document xmlns:foo="urn:foo" '),
+        drawing,
+        `<mc:AlternateContent><mc:Choice Requires="foo"/><mc:Fallback>${drawing}</mc:Fallback></mc:AlternateContent>`,
+    ),
+});
+/** Session 46's bar chart (s46d) in place of the bare chart, still with no sidecar and an image reach. */
+const barImageReachedChartParts = (drawing: string): Record<string, string> => ({
+    ...reachedChartSpecimenParts(CHART_INSIDE, [IMAGE], drawing),
+    [CHART_INSIDE]: barChartXml(true),
+});
+const session45And46Specimens = [
+    {
+        name: "chart-word-image-reach-wname-reference",
+        part: CHART_INSIDE,
+        parts: () => reachedChartSpecimenParts(CHART_INSIDE, [IMAGE], NAME_REFERENCE),
+    },
+    {
+        name: "chart-word-image-reach-vml-imagedata-reference",
+        part: CHART_INSIDE,
+        parts: () => reachedChartSpecimenParts(CHART_INSIDE, [IMAGE], VML_PICTURE_RID),
+    },
+    {
+        name: "chart-word-image-reach-vml-imagedata-fallback",
+        part: CHART_INSIDE,
+        parts: () => inSelectedFallback(reachedChartSpecimenParts(CHART_INSIDE, [IMAGE], VML_PICTURE_RID), VML_PICTURE_RID),
+    },
+    {
+        name: "chart-word-image-reach-blip-link-reference",
+        part: CHART_INSIDE,
+        parts: () => reachedChartSpecimenParts(CHART_INSIDE, [IMAGE], LINKED_PICTURE_DRAWING),
+    },
+    { name: "bar-image-reach-vml-imagedata-rid", part: CHART_INSIDE, parts: () => barImageReachedChartParts(VML_PICTURE_RID) },
+    { name: "bar-image-reach-blip-link", part: CHART_INSIDE, parts: () => barImageReachedChartParts(LINKED_PICTURE_DRAWING) },
+    { name: "bar-image-reach-blip-embed", part: CHART_INSIDE, parts: () => barImageReachedChartParts(PICTURE_DRAWING) },
+    {
+        name: "chart-word-diagramdata-reach-blip-reference",
+        part: CHART_INSIDE,
+        parts: () => reachedChartSpecimenParts(CHART_INSIDE, [reaching("rId8", "diagramData")], PICTURE_DRAWING),
+    },
+    {
+        name: "chart-word-oleobject-reach-blip-reference",
+        part: CHART_INSIDE,
+        parts: () => reachedChartSpecimenParts(CHART_INSIDE, [reaching("rId8", "oleObject")], PICTURE_DRAWING),
+    },
+    {
+        name: "chart-outside-word-diagramdata-reach-blip-reference",
+        part: CHART_OUTSIDE,
+        parts: () => reachedChartSpecimenParts(CHART_OUTSIDE, [reaching("rId8", "diagramData")], PICTURE_DRAWING),
+    },
+];
+
+describe("references Word opened clean to a reference-loaded part (#706, #702)", { timeout: 120_000 }, () => {
+    it.each(session45And46Specimens)("$name leaves the missing sidecar a warning", async (specimen) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, `${specimen.name}.docx`);
+            writeFileSync(file, await buildDocx(specimen.parts()));
+            const missingSidecar = (severity: "error" | "warning") => ({
+                code: "rels-missing-sidecar",
+                path: specimen.part,
+                severity,
+                message: `Part '${specimen.part}' uses relationship references but has no .rels sidecar file`,
+            });
+            const full = await validate(file, { profile: "word-valid" });
+            expect.soft(full.valid).toBe(true);
+            expect.soft(full.issues.filter((finding) => finding.code === "rels-missing-sidecar")).toEqual([missingSidecar("warning")]);
+            // Strict and lenient keep the finding an error whichever way Word went.
+            for (const profile of ["strict", "lenient"] as const) {
+                const result = await validate(file, { profile });
+                expect(result.valid, profile).toBe(false);
+                expect(result.issues, profile).toContainEqual(missingSidecar("error"));
             }
             // The legacy missing-sidecar walk is not a registered check, so
             // partial runs omit it and keep only the #381 one-way contract (#663).
