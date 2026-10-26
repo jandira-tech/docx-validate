@@ -14050,3 +14050,375 @@ print(len(rows), "rows,", len(raw), "raw records")
 `````
 
 </details>
+
+### Session 51: 11:55Z–11:57Z on 2026-10-26, validator columns at e762ffb5
+
+The scope of `word-part-reference-relationship` (layer 147, [#705](https://github.com/jandira-tech/docx-validate/issues/705)), which walks the parts whose name looks like a story instead of the parts Word reads; the shapes are the review of layers 147–150's findings 1–4 ([#726](https://github.com/jandira-tech/docx-validate/issues/726)). The chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; all 8 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen.
+
+- A header the body references, holding a chart whose `c:chart r:id` names an image relationship to a real PNG, gets the recovery offer stored as `word/header1.xml` (the calibration) and as `word/headerFirst.xml`; so does the main document stored as `word/main.xml` with the same reference. Word-valid rejects only `word/header1.xml`: the other two are false negatives.
+- The same header related by the main document but named by no `w:headerReference` opens clean, with its relationships part and without one, and so does a glossary document no relationship reaches holding the same reference (as sessions 15 and 35 predicted). Word-valid rejects all three through `word-part-reference-relationship`: false positives.
+
+| Run    | Observed             | Specimen                                     | Shape                                                                                                      | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at e762ffb5                      | strict at e762ffb5                                                                                                 |
+| ------ | -------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `s51a` | 11:55:15Z, 11:57:27Z | `s51a-control-minimal`                       | control                                                                                                    | `bb3e60c5a7751c97` | clean-open     | clean-open     | clean-open                 | valid                                       | valid                                                                                                              |
+| `s51a` | 11:55:15Z, 11:57:27Z | `header1-referenced-chart-image-calibration` | calibration: a referenced word/header1.xml whose c:chart r:id names an image relationship                  | `4d37fd37a53b26ec` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-part-reference-relationship` | invalid: `paraid-missing-element`, `word-part-reference-relationship`                                              |
+| `s51a` | 11:55:15Z, 11:57:27Z | `headerfirst-referenced-chart-image`         | review F3: the same header stored as word/headerFirst.xml                                                  | `80688107f2b2dacd` | repair-warning | repair-warning | unreadable-content-warning | valid                                       | valid                                                                                                              |
+| `s51a` | 11:55:15Z, 11:57:27Z | `main-renamed-chart-image`                   | review F3: the main document stored as word/main.xml, its c:chart r:id naming an image relationship        | `842c3f1237199000` | repair-warning | repair-warning | unreadable-content-warning | valid                                       | valid                                                                                                              |
+| `s51a` | 11:55:15Z, 11:57:27Z | `unused-header-chart-image`                  | review F1: an unused header (related, no w:headerReference) whose c:chart r:id names an image relationship | `e41d8e1979abf5cb` | clean-open     | clean-open     | clean-open                 | invalid: `word-part-reference-relationship` | invalid: `paraid-missing-element`, `word-part-reference-relationship`                                              |
+| `s51a` | 11:55:15Z, 11:57:27Z | `unused-header-chart-no-sidecar`             | review F4: the unused header with no relationships part                                                    | `19d5e84d8c649d5b` | clean-open     | clean-open     | clean-open                 | invalid: `word-part-reference-relationship` | invalid: `rels-unreferenced`, `rels-missing-sidecar`, `paraid-missing-element`, `word-part-reference-relationship` |
+| `s51a` | 11:55:15Z, 11:57:27Z | `unreached-glossary-chart-image`             | review F2: a glossary no relationship reaches whose c:chart r:id names an image relationship               | `71002656f45f7e0e` | clean-open     | clean-open     | clean-open                 | invalid: `word-part-reference-relationship` | invalid: `rels-unreferenced`, `paraid-missing-element`, `word-part-reference-relationship`                         |
+| `s51a` | 11:55:15Z, 11:57:27Z | `s51a-control-minimal-end`                   | control                                                                                                    | `f74fbbfcf7657eb2` | clean-open     | clean-open     | clean-open                 | valid                                       | valid                                                                                                              |
+
+<details><summary>Raw records, session 51</summary>
+
+```jsonl
+{"run": "s51a", "pass": 1, "name": "s51a-control-minimal", "sha256": "bb3e60c5a7751c973b79208a6b79300af8fa501a83f2327cc99cb9f31c831eed", "observedAt": "2026-10-26T11:55:15+00:00", "staged": "00004__wfv__s51a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s51a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s51a", "pass": 2, "name": "s51a-control-minimal", "sha256": "bb3e60c5a7751c973b79208a6b79300af8fa501a83f2327cc99cb9f31c831eed", "observedAt": "2026-10-26T11:57:27+00:00", "staged": "00004__wfv__s51a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s51a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s51a", "pass": 1, "name": "header1-referenced-chart-image-calibration", "sha256": "4d37fd37a53b26eca536cc220dd01e86fd7fbdb22e12c2aa9dae359f94454ca8", "observedAt": "2026-10-26T11:55:15+00:00", "staged": "00000__wfv__header1-referenced-chart-image-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:51:59.875 'Word found unreadable content in 00000__wfv__header1-referenced-chart-image-calibration.docx. Do yo … ? If you trust the source of this document, click Yes.'", "2026-10-26 07:52:00.544 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__header1-referenced-chart-...)\""]}
+{"run": "s51a", "pass": 2, "name": "header1-referenced-chart-image-calibration", "sha256": "4d37fd37a53b26eca536cc220dd01e86fd7fbdb22e12c2aa9dae359f94454ca8", "observedAt": "2026-10-26T11:57:27+00:00", "staged": "00000__wfv__header1-referenced-chart-image-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:55:49.193 'Word found unreadable content in 00000__wfv__header1-referenced-chart-image-calibration.docx. Do yo … ? If you trust the source of this document, click Yes.'", "2026-10-26 07:55:49.826 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__header1-referenced-chart-...)\""]}
+{"run": "s51a", "pass": 1, "name": "headerfirst-referenced-chart-image", "sha256": "80688107f2b2dacdf9a376942c3f2ee075a88b84fcb932f73ee65dc379dd6770", "observedAt": "2026-10-26T11:55:15+00:00", "staged": "00001__wfv__headerfirst-referenced-chart-image.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:52:58.993 Microsoft Word, Word found unreadable content in 00001__wfv__headerfirst-referenced-chart-image.docx … t? If you trust the source of this document, click Yes."]}
+{"run": "s51a", "pass": 2, "name": "headerfirst-referenced-chart-image", "sha256": "80688107f2b2dacdf9a376942c3f2ee075a88b84fcb932f73ee65dc379dd6770", "observedAt": "2026-10-26T11:57:27+00:00", "staged": "00001__wfv__headerfirst-referenced-chart-image.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:57:07.595 \"Word found unreadable content in 00001__wfv__headerfirst-referenced-chart-image.docx. Do you want t … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s51a", "pass": 1, "name": "main-renamed-chart-image", "sha256": "842c3f1237199000e73c634aebd04aaf207f70374a2f92319c0cf95d929a76d3", "observedAt": "2026-10-26T11:55:15+00:00", "staged": "00002__wfv__main-renamed-chart-image.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:55:07.690 Microsoft Word, Word found unreadable content in 00002__wfv__main-renamed-chart-image.docx. Do you w … t? If you trust the source of this document, click Yes.", "2026-10-26 07:55:12.678 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__main-renamed-chart-image....)\""]}
+{"run": "s51a", "pass": 2, "name": "main-renamed-chart-image", "sha256": "842c3f1237199000e73c634aebd04aaf207f70374a2f92319c0cf95d929a76d3", "observedAt": "2026-10-26T11:57:27+00:00", "staged": "00002__wfv__main-renamed-chart-image.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 07:57:25.032 \"Word found unreadable content in 00002__wfv__main-renamed-chart-image.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s51a", "pass": 1, "name": "unused-header-chart-image", "sha256": "e41d8e1979abf5cba631412af3135d20343d8a04266162d0d3e082646385db21", "observedAt": "2026-10-26T11:55:15+00:00", "staged": "00006__wfv__unused-header-chart-image.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF unused-header-chart-image_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s51a", "pass": 2, "name": "unused-header-chart-image", "sha256": "e41d8e1979abf5cba631412af3135d20343d8a04266162d0d3e082646385db21", "observedAt": "2026-10-26T11:57:27+00:00", "staged": "00006__wfv__unused-header-chart-image.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF unused-header-chart-image_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s51a", "pass": 1, "name": "unused-header-chart-no-sidecar", "sha256": "19d5e84d8c649d5b12bf868f4d3f002dab1b4e4aa1c422939290dee51325049a", "observedAt": "2026-10-26T11:55:15+00:00", "staged": "00007__wfv__unused-header-chart-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF unused-header-chart-no-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s51a", "pass": 2, "name": "unused-header-chart-no-sidecar", "sha256": "19d5e84d8c649d5b12bf868f4d3f002dab1b4e4aa1c422939290dee51325049a", "observedAt": "2026-10-26T11:57:27+00:00", "staged": "00007__wfv__unused-header-chart-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF unused-header-chart-no-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s51a", "pass": 1, "name": "unreached-glossary-chart-image", "sha256": "71002656f45f7e0e785cf7c9fef8cda14f0880b177bc3589917f02cc93f533c6", "observedAt": "2026-10-26T11:55:15+00:00", "staged": "00005__wfv__unreached-glossary-chart-image.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF unreached-glossary-chart-image_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s51a", "pass": 2, "name": "unreached-glossary-chart-image", "sha256": "71002656f45f7e0e785cf7c9fef8cda14f0880b177bc3589917f02cc93f533c6", "observedAt": "2026-10-26T11:57:27+00:00", "staged": "00005__wfv__unreached-glossary-chart-image.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF unreached-glossary-chart-image_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s51a", "pass": 1, "name": "s51a-control-minimal-end", "sha256": "f74fbbfcf7657eb2908ef2c95c2c718a2ab099789e78458039aaed0dbc9478cd", "observedAt": "2026-10-26T11:55:15+00:00", "staged": "00003__wfv__s51a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s51a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s51a", "pass": 2, "name": "s51a-control-minimal-end", "sha256": "f74fbbfcf7657eb2908ef2c95c2c718a2ab099789e78458039aaed0dbc9478cd", "observedAt": "2026-10-26T11:57:27+00:00", "staged": "00003__wfv__s51a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s51a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 51 builder, cross-check and section scripts</summary>
+
+Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s51builder.mts`:
+
+```ts
+// Session 51 (2026-10-26): the scope of layer 147's `word-part-reference-relationship` (#705), which walks the parts
+// whose NAME looks like a story (`ctx.storyParts()`), not the parts Word reads. The review of layers 147–150 (findings
+// 1–4) built these shapes; session 15 (an unreferenced malformed header opens clean) and session 35 (an unreached
+// glossary is not read) predict the clean ones, but no session showed Word a chart reference in such a part.
+// - an unused header (related, named by no `w:headerReference`) holding a `c:chart r:id` that names an image
+//   relationship, with its sidecar and with none;
+// - the main document stored as `word/main.xml` holding the same reference;
+// - a glossary document no relationship reaches holding the same reference;
+// - a header the body references, stored as `word/headerFirst.xml`, holding the same reference, beside the same
+//   header stored as `word/header1.xml` (the calibration: session 46 refused the shape in the main document).
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s51a pnpm exec tsx s51builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const C = "http://schemas.openxmlformats.org/drawingml/2006/chart";
+const A = "http://schemas.openxmlformats.org/drawingml/2006/main";
+const WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+const PNG = Uint8Array.from(
+    Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64"),
+);
+const DRAWING_NS = `xmlns:wp="${WP}" xmlns:a="${A}" xmlns:c="${C}" xmlns:r="${R}"`;
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const relsPart = (body: string) =>
+    `${XML_DECL}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${body}</Relationships>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+/** The minimal content types plus a `png` Default and the given Overrides. */
+const types = (...overrides: Array<[string, string]>) =>
+    replaceOnce(
+        replaceOnce(P[CT]!, '<Default Extension="rels"', '<Default Extension="png" ContentType="image/png"/><Default Extension="rels"'),
+        "</Types>",
+        `${overrides.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+/** A paragraph holding a chart drawing whose `c:chart r:id` is `id` (the review's CHART_DRAWING). */
+const chartParagraph = (id: string) =>
+    '<w:p><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="5486400" cy="3200400"/>' +
+    `<wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="1" name="Chart 1"/><wp:cNvGraphicFramePr/><a:graphic><a:graphicData uri="${C}">` +
+    `<c:chart r:id="${id}"/></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
+const header = () => `${XML_DECL}<w:hdr xmlns:w="${W}" ${DRAWING_NS}>${chartParagraph("rId1")}</w:hdr>`;
+/** A story part's sidecar whose rId1 is an image relationship to the PNG. */
+const imageSidecar = () => relsPart(relationship("rId1", "image", "media/image1.png"));
+const control = () => buildDocx({ ...P });
+
+/** An unused header: related as rIdH by the main document, named by no `w:headerReference`. */
+const unusedHeader = (withSidecar: boolean) =>
+    buildDocx({
+        ...P,
+        "word/media/image1.png": PNG,
+        "word/header1.xml": header(),
+        ...(withSidecar ? { "word/_rels/header1.xml.rels": imageSidecar() } : {}),
+        [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdH", "header", "header1.xml")),
+        [CT]: types(["word/header1.xml", `${WML}.header+xml`]),
+    });
+/** A header the body references through `w:headerReference r:id="rIdH"`, stored as `word/<file>`. */
+const referencedHeader = (file: string) =>
+    buildDocx({
+        ...P,
+        "word/media/image1.png": PNG,
+        [`word/${file}`]: header(),
+        [`word/_rels/${file}.rels`]: imageSidecar(),
+        [MAIN]: replaceOnce(
+            replaceOnce(P[MAIN]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`),
+            "<w:sectPr>",
+            `<w:sectPr><w:headerReference w:type="default" r:id="rIdH"/>`,
+        ),
+        [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdH", "header", file)),
+        [CT]: types([`word/${file}`, `${WML}.header+xml`]),
+    });
+/** The main document stored as `word/main.xml`, its body holding a chart whose `c:chart r:id` names an image relationship. */
+const renamedMain = () => {
+    const parts: Record<string, string | Uint8Array> = {
+        ...P,
+        "word/media/image1.png": PNG,
+        "word/main.xml": replaceOnce(
+            replaceOnce(P[MAIN]!, `xmlns:w="${W}"`, `xmlns:w="${W}" ${DRAWING_NS}`),
+            "<w:sectPr>",
+            `${chartParagraph("rIdI")}<w:sectPr>`,
+        ),
+        "word/_rels/main.xml.rels": appendRels(P[SIDECAR]!, relationship("rIdI", "image", "media/image1.png")),
+        "_rels/.rels": replaceOnce(P["_rels/.rels"]!, 'Target="word/document.xml"', 'Target="word/main.xml"'),
+        [CT]: replaceOnce(types(), '<Override PartName="/word/document.xml"', '<Override PartName="/word/main.xml"'),
+    };
+    delete parts[MAIN];
+    delete parts[SIDECAR];
+    return buildDocx(parts);
+};
+/** A glossary document no relationship reaches, its part body holding the same chart reference. */
+const unreachedGlossary = () =>
+    buildDocx({
+        ...P,
+        "word/media/image1.png": PNG,
+        "word/glossary/document.xml":
+            `${XML_DECL}<w:glossaryDocument xmlns:w="${W}" ${DRAWING_NS}><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+            `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+            `<w:docPartBody>${chartParagraph("rId1")}</w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`,
+        "word/glossary/_rels/document.xml.rels": relsPart(relationship("rId1", "image", "../media/image1.png")),
+        [CT]: types(["word/glossary/document.xml", `${WML}.document.glossary+xml`]),
+    });
+
+const chunks: Record<string, Array<[string, string, () => Promise<Uint8Array>]>> = {
+    s51a: [
+        ["s51a-control-minimal", "control", control],
+        [
+            "header1-referenced-chart-image-calibration",
+            "calibration: a referenced word/header1.xml whose c:chart r:id names an image relationship",
+            () => referencedHeader("header1.xml"),
+        ],
+        [
+            "headerfirst-referenced-chart-image",
+            "review F3: the same header stored as word/headerFirst.xml",
+            () => referencedHeader("headerFirst.xml"),
+        ],
+        [
+            "main-renamed-chart-image",
+            "review F3: the main document stored as word/main.xml, its c:chart r:id naming an image relationship",
+            renamedMain,
+        ],
+        [
+            "unused-header-chart-image",
+            "review F1: an unused header (related, no w:headerReference) whose c:chart r:id names an image relationship",
+            () => unusedHeader(true),
+        ],
+        ["unused-header-chart-no-sidecar", "review F4: the unused header with no relationships part", () => unusedHeader(false)],
+        [
+            "unreached-glossary-chart-image",
+            "review F2: a glossary no relationship reaches whose c:chart r:id names an image relationship",
+            unreachedGlossary,
+        ],
+        ["s51a-control-minimal-end", "control", control],
+    ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        wordValid: await verdict("word-valid"),
+        strict: await verdict("strict"),
+    };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-51 chunk: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s51a",)
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0]) if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": "control-minimal" in spec["name"],
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s51/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-51 parts of docs/plans/evidence/word-probes-2026-10-24.md into s51/section.md.
+
+Reads the chunk's specimens.jsonl (validator columns at e762ffb5, written by the builder), both runs'
+logcheck.jsonl and pdf/manifest.jsonl, and s51/results.json from compare.py.
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s51a",)
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s51/results.json").read_text())}
+
+
+def cell(v):
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw, starts, ends = [], [], [], []
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "observedAt": t.isoformat(), "staged": row["staged"], "logVerdict": row["logVerdict"],
+                                   "tableVerdict": row["outcomesVerdict"], "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+out = [
+    f"### Session 51: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on 2026-10-26, validator columns at e762ffb5",
+    "",
+    "The scope of `word-part-reference-relationship` (layer 147, [#705](https://github.com/jandira-tech/docx-validate/issues/705)), "
+    "which walks the parts whose name looks like a story instead of the parts Word reads; the shapes are the review of layers 147–150's "
+    "findings 1–4 ([#726](https://github.com/jandira-tech/docx-validate/issues/726)). The chunk ran twice, as two separate driver runs "
+    "of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by "
+    "`wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; all 8 rows "
+    "agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen.",
+    "",
+    "- A header the body references, holding a chart whose `c:chart r:id` names an image relationship to a real PNG, gets the recovery "
+    "offer stored as `word/header1.xml` (the calibration) and as `word/headerFirst.xml`; so does the main document stored as "
+    "`word/main.xml` with the same reference. Word-valid rejects only `word/header1.xml`: the other two are false negatives.",
+    "- The same header related by the main document but named by no `w:headerReference` opens clean, with its relationships part and "
+    "without one, and so does a glossary document no relationship reaches holding the same reference (as sessions 15 and 35 predicted). "
+    "Word-valid rejects all three through `word-part-reference-relationship`: false positives.",
+    "",
+    "| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at e762ffb5 | strict at e762ffb5 |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 51</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 51 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s51builder.mts", ROOT / "s51builder.mts", "ts"), ("compare.py", ROOT / "s51/compare.py", "python"),
+                         ("section.py", ROOT / "s51/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s51/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records")
+`````
+
+</details>
