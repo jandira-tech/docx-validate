@@ -31,9 +31,11 @@
  * 45). One styles relationship opens clean. A type counts only
  * as the namespace plus the one segment — Word reads Types
  * exactly (session 27) — so `…/relationships/custom/styles` is
- * no styles type (#519); session 47 opened one beside a real
- * styles relationship clean. Two `numbering` relationships make
- * Word offer to recover the file the same way; one opens clean.
+ * no styles type (#519); session 47 opened a suffix-only Type
+ * clean beside a real one, for settings, webSettings and
+ * fontTable too, so every duplicate rule here counts exact
+ * Types. Two `numbering` relationships make Word offer to
+ * recover the file the same way; one opens clean.
  * Two `footnotes` relationships open clean, so footnotes keeps
  * no check of its own.
  */
@@ -67,7 +69,7 @@ export const wordDuplicateThemeRelationshipCheck: CheckDefinition = {
             const themeIds: string[] = [];
             for (const rel of rels) {
                 const type = rel.getAttribute("Type") ?? "";
-                if (!type.endsWith("/theme")) {
+                if (officeRelationshipTypeSegment(type) !== "theme") {
                     continue;
                 }
                 themeIds.push(rel.getAttribute("Id") ?? "");
@@ -111,7 +113,7 @@ export const wordDuplicateFontTableRelationshipCheck: CheckDefinition = {
             const fontIds: string[] = [];
             for (const rel of rels) {
                 const type = rel.getAttribute("Type") ?? "";
-                if (!type.endsWith("/fontTable")) {
+                if (officeRelationshipTypeSegment(type) !== "fontTable") {
                     continue;
                 }
                 fontIds.push(rel.getAttribute("Id") ?? "");
@@ -155,7 +157,7 @@ export const wordDuplicateWebSettingsRelationshipCheck: CheckDefinition = {
             const webIds: string[] = [];
             for (const rel of rels) {
                 const type = rel.getAttribute("Type") ?? "";
-                if (!type.endsWith("/webSettings")) {
+                if (officeRelationshipTypeSegment(type) !== "webSettings") {
                     continue;
                 }
                 webIds.push(rel.getAttribute("Id") ?? "");
@@ -199,7 +201,7 @@ export const wordDuplicateSettingsRelationshipCheck: CheckDefinition = {
             const settingsIds: string[] = [];
             for (const rel of rels) {
                 const type = rel.getAttribute("Type") ?? "";
-                if (!type.endsWith("/settings")) {
+                if (officeRelationshipTypeSegment(type) !== "settings") {
                     continue;
                 }
                 settingsIds.push(rel.getAttribute("Id") ?? "");
