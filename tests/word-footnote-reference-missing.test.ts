@@ -897,6 +897,88 @@ describe("a package view the read model cannot use (#816)", { timeout: 30000 }, 
     });
 });
 
+describe("a notes relationship target escaping the package (#830, sessions 63 s63c and 64 s64a)", { timeout: 30000 }, () => {
+    /**
+     * The s64 builder's `notesAt`: note 1 stored at `stored`, typed by its
+     * Override and named only by the `<kind>s` relationship whose target is
+     * `target`; the body references note 1.
+     */
+    const notesAt = (kind: "footnote" | "endnote", stored: string, target: string): Promise<Buffer> =>
+        buildDocx({
+            ...MINIMAL_PARTS,
+            "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+                "</w:r></w:p>",
+                `</w:r><w:r><w:${kind}Reference w:id="1"/></w:r></w:p>`,
+            ),
+            [stored]:
+                `<w:${kind}s xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">` +
+                `<w:${kind} w:id="1"><w:p><w:r><w:t>Note</w:t></w:r></w:p></w:${kind}></w:${kind}s>`,
+            "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                "</Relationships>",
+                `<Relationship Id="rIdN" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/${kind}s" Target="${target}"/></Relationships>`,
+            ),
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                `<Override PartName="/${stored}" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.${kind}s+xml"/></Types>`,
+            ),
+        });
+
+    // Session 64 (s64a, two runs, all readings agree) opened each of these
+    // clean: Word resolves the target as RFC 3986's remove_dot_segments
+    // does, stopping the `..` segments at the package root, so the note at
+    // `/footnotes.xml` (or `/endnotes.xml`) is defined. The two-level
+    // footnotes row repeats session 63 (s63c), which word-valid rejected as
+    // a false positive; the three-level row and the endnotes twin are
+    // session 64's confirmations.
+    it.each([
+        ["footnote", "../../footnotes.xml"],
+        ["footnote", "../../../footnotes.xml"],
+        ["endnote", "../../endnotes.xml"],
+    ] as const)("accepts the %s reference the escaping target %s resolves at the package root", async (kind, target) => {
+        await withTempDir(async (dir) => {
+            const code = `word-${kind}-reference-missing`;
+            const file = path.join(dir, "escaping.docx");
+            await writeFile(file, await notesAt(kind, `${kind}s.xml`, target));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(true);
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+            const selected = await validate(file, { profile: "word-valid", checks: [code] });
+            expect(selected.valid).toBe(true);
+            expect(selected.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+        });
+    });
+
+    it("still rejects the escaping relationship whose note sits only in word/footnotes.xml", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "escaping-in-word-folder.docx");
+            await writeFile(file, await notesAt("footnote", "word/footnotes.xml", "../../footnotes.xml"));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            const errors = result.issues.filter((issue) => issue.severity === "error");
+            expect(errors).toEqual([
+                expect.objectContaining({
+                    code: "word-footnote-reference-missing",
+                    path: "word/document.xml",
+                    message: expect.stringContaining("footnote reference uses id 1"),
+                }),
+            ]);
+            const selected = await validate(file, { profile: "word-valid", checks: ["word-footnote-reference-missing"] });
+            expect(selected.valid).toBe(result.valid);
+            expect(selected.issues.filter((issue) => issue.severity === "error")).toEqual(errors);
+        });
+    });
+
+    it("accepts the in-package ../footnotes.xml calibration", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "one-level.docx");
+            await writeFile(file, await notesAt("footnote", "footnotes.xml", "../footnotes.xml"));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(true);
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+        });
+    });
+});
+
 describe("word-valid dangling footnote reference", { timeout: 30000 }, () => {
     it("rejects a footnote reference whose id is not a footnote id", async () => {
         const result = await validate(BROKEN, { profile: "word-valid" });

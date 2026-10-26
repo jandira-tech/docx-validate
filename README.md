@@ -1037,12 +1037,28 @@ dangling reference still draws its finding beside the package defect's own
 session has shown a note reference in such a package, so the fallback reading is
 unprobed.
 
-Comment range markers only an unselected `mc:Choice` holds (a range split
-across one, or an unmatched start), and a body footnote reference whose note
-sits in `word/footnotes.xml` while the main document's only `footnotes`
-relationship is External or targets outside the package (`../../footnotes.xml`
-from `word/`), are judged by rule and unprobed
-([#820](https://github.com/jandira-tech/docx-validate/issues/820)).
+A comment range whose start only an unselected `mc:Choice` holds, so the
+effective view holds an unmatched end, opened clean, and word-valid accepts it with warnings (session 63 s63b, same
+evidence, two runs, all readings agree; the selected-`w14` spelling is its
+clean calibration,
+[#820](https://github.com/jandira-tech/docx-validate/issues/820)); the
+mirror, an end only such a Choice holds, is unprobed. A body
+footnote reference whose note sits in `word/footnotes.xml` while the main
+document's only `footnotes` relationship is External gets the recovery offer
+and blocks (session 63 s63c, same evidence). When that relationship instead
+targets outside the package, the note definitions resolve the target by
+stopping its `..` segments at the package root, as RFC 3986's
+remove_dot_segments does: session 63 (s63c, same evidence) and session 64
+(s64a in `docs/plans/evidence/word-probes-2026-10-24.md`, two runs, all
+readings agree) opened `word/`'s `../../footnotes.xml` and
+`../../../footnotes.xml` clean with the note at `/footnotes.xml` — and the
+endnotes twin `../../endnotes.xml` with its note at `/endnotes.xml` — while
+the same escaping target with the note only in `word/footnotes.xml` got the
+recovery offer and stays rejected, and the in-package `../footnotes.xml`
+calibration opened clean
+([#830](https://github.com/jandira-tech/docx-validate/issues/830)). Other
+rules' relationship resolution keeps dropping an escaping target; those
+readings are unprobed.
 
 Named `word-math-parse` runs and full runs that cannot stage the archive retain
 the positioned XML diagnostics without repeating `word-math-parse` for the same
