@@ -73,6 +73,8 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
     "word-position-offset-and-align":
         "A wp:positionH or wp:positionV contains both wp:posOffset and wp:align. Word cannot open the file. Keep only one of those children.",
     "word-sdt-id-empty": 'A w:sdt has w:id w:val="". Word cannot open the file. Set w:val to a number.',
+    "word-attached-toolbar-relationship":
+        "A wne:toolbarData r:id names a relationship whose Type is not exactly http://schemas.microsoft.com/office/2006/relationships/attachedToolbars, or no relationship at all. Word 16.115 offers to recover the file whatever the target's bytes hold — clean toolbar bytes are refused once the Type changes (session 48). Point the r:id at a Relationship of that exact Type, or retype the one it names.",
     "word-attached-toolbar-utf8":
         "An attached toolbar referenced by wne:toolbarData contains the UTF-8 replacement sequence EF BF BD. Word offers to recover the file. Replace each sequence with the original byte. The same bytes in a part that toolbarData does not reference are not this defect.",
     "word-row-without-cell": "A table row contains no w:tc cell. Word cannot open the file. Remove the row or add a cell.",

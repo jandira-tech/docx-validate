@@ -56,7 +56,7 @@ import {
 } from "./word-duplicate-relationships";
 import { wordChoiceRequiresUndeclaredCheck } from "./word-choice-requires";
 import { wordSdtIdEmptyCheck } from "./word-sdt-id";
-import { wordAttachedToolbarUtf8Check } from "./word-attached-toolbar";
+import { wordAttachedToolbarRelationshipCheck, wordAttachedToolbarUtf8Check } from "./word-attached-toolbar";
 import { wordNumberingPictureBulletCheck } from "./word-numbering-picture-bullet";
 import { wordFootnoteReferenceMissingCheck } from "./word-footnote-reference";
 import { wordMathParseCheck, wordMathSpreBodyCheck } from "./word-body-math";
@@ -106,6 +106,7 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordMathSpreBodyCheck,
     wordFootnoteReferenceMissingCheck,
     wordNumberingPictureBulletCheck,
+    wordAttachedToolbarRelationshipCheck,
     wordAttachedToolbarUtf8Check,
     wordSdtIdEmptyCheck,
     wordChoiceRequiresUndeclaredCheck,

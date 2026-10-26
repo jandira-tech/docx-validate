@@ -10,7 +10,9 @@
  * `word-header-footer-relationship` rule (checks/word-header-footer.ts) can
  * both report the same `headerReference`/`footerReference` element, and the
  * `word-part-reference-relationship` rule (checks/word-part-reference.ts)
- * the same `c:chart`/`o:OLEObject` (#705). A full
+ * the same `c:chart`/`o:OLEObject` (#705) and the
+ * `word-attached-toolbar-relationship` rule (checks/word-attached-toolbar.ts)
+ * the same `wne:toolbarData` (#716). A full
  * non-lenient run keeps the Word rule's finding and drops the legacy
  * `rels-id-mismatch` copy (#616), or the `rels-id-missing` copy for an
  * `r:id` naming no Relationship (#619), through
@@ -29,11 +31,11 @@
 import type { ValidationIssue } from "../../lib/types";
 
 /** The story reference and Word part reference local names the hand-off recognizes. */
-export type StoryReferenceLocalName = "headerReference" | "footerReference" | "chart" | "OLEObject";
+export type StoryReferenceLocalName = "headerReference" | "footerReference" | "chart" | "OLEObject" | "toolbarData";
 
 /** `true` for the story reference and Word part reference local names the hand-off recognizes. */
 export const isStoryReferenceLocalName = (name: string): name is StoryReferenceLocalName =>
-    name === "headerReference" || name === "footerReference" || name === "chart" || name === "OLEObject";
+    name === "headerReference" || name === "footerReference" || name === "chart" || name === "OLEObject" || name === "toolbarData";
 
 /**
  * The story reference element a finding names: the part path (backslashes
