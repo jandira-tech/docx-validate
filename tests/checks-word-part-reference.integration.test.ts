@@ -473,14 +473,17 @@ describe(`${CODE} (unit rows)`, () => {
         expect(await check().run(unparseable)).toEqual([]);
     });
 
-    it("leaves a chart reference with no r:id alone", async () => {
+    it("leaves a chart reference with no r:id attribute alone, and judges an empty one (#728)", async () => {
         const ctx = ValidationContext.fromEntries(
             mainPackage(
                 `<w:p><w:r><w:drawing><a:graphic><a:graphicData uri="${C}"><c:chart xmlns:c="${C}"/><c:chart xmlns:c="${C}" r:id=""/></a:graphicData></a:graphic></w:drawing></w:r></w:p>`,
                 relation("rId1", "chart"),
             ),
         );
-        expect(await check().run(ctx)).toEqual([]);
+        const found = await check().run(ctx);
+        expect(found).toHaveLength(1);
+        expect(found[0]?.message).toContain('<c:chart> r:id=""');
+        expect(found[0]?.message).toContain("(the id is empty)");
     });
 
     it("skips absent and unparseable story parts, and resolves an OPC-equivalent sidecar", async () => {
@@ -673,6 +676,132 @@ describe(`${CODE} (session 51 scope specimens, Word 16.115)`, { timeout: 240_000
             // rels-missing-sidecar's finding, not this rule's.
             expect(result.issues.filter((issue) => issue.code === CODE)).toEqual([]);
             expect(result.issues.some((issue) => issue.code === "rels-missing-sidecar" && issue.path === "word/document.xml")).toBe(true);
+        });
+    });
+});
+
+/** Session 46's word-clean-strict01 package with its sidecar edited instead of its main document (session 52's B2). */
+const DATA_REL =
+    '<Relationship Id="rId35" Type="http://purl.oclc.org/ooxml/officeDocument/relationships/diagramData" Target="diagrams/data1.xml"/>';
+const strictSidecarVariant = async (from: string, to: string): Promise<Buffer> => {
+    const zip = await JSZip.loadAsync(readFileSync(STRICT01));
+    const parts: Record<string, string | Uint8Array> = {};
+    for (const [name, entry] of Object.entries(zip.files)) {
+        if (entry.dir) continue;
+        parts[name] = await entry.async("uint8array");
+    }
+    parts[SIDECAR] = replaceOnce(Buffer.from(parts[SIDECAR] as Uint8Array).toString("utf8"), from, to);
+    return buildDocx(parts);
+};
+
+/**
+ * Session 52's specimens (s52builder.mts; #728): the empty-id shapes Word
+ * 16.115 refused (C1–C3, the review's `r:dm`-only element for C3) and the
+ * External `diagramData` relationship a `dgm:relIds r:dm` names (B2), with
+ * the External `package` relationship Word opened clean (B1) and the
+ * `r:dm`-alone confound as guards.
+ */
+const pngPackage = (): Record<string, string | Uint8Array> => extended({ "word/media/image1.png": PNG }, [], [], true);
+const relIdsDmOnly = (dm: string): string =>
+    `<w:p><w:r><w:drawing><a:graphic><a:graphicData uri="${DGM}"><dgm:relIds xmlns:dgm="${DGM}" r:dm="${dm}"/></a:graphicData></a:graphic></w:drawing></w:r></w:p>`;
+const REFUSED_728: Record<string, () => Promise<Buffer>> = {
+    // s52b `chart-empty-id`: c:chart r:id="".
+    "chart-empty-id": async () => buildDocx(withDrawing(pngPackage(), CHART_DRAWING(""))),
+    // s52b `oleobject-empty-id`: o:OLEObject r:id="".
+    "oleobject-empty-id": async () => buildDocx(withDrawing(pngPackage(), OLE_OBJECT(""))),
+    // s52b `relids-empty-id`: dgm:relIds r:dm="" (the review's r:dm-only element).
+    "relids-empty-id": async () => buildDocx(withDrawing(pngPackage(), relIdsDmOnly(""))),
+    // s52b `relids-names-external-diagramdata`: r:dm names an External diagramData relationship.
+    "relids-names-external-diagramdata": async () =>
+        buildDocx(
+            withDrawing(
+                extended({}, [relationship("rId9", OFFICE("diagramData"), "http://example.com/data1.xml", true)], [], true),
+                DIAGRAM_DRAWING("rId9"),
+            ),
+        ),
+    // s52d `strict01-relids-dm-empty`: the SmartArt's r:dm emptied, r:lo/r:qs/r:cs intact.
+    "strict01-relids-dm-empty": () => relIds("dm", ""),
+    // s52d `strict01-relids-dm-external`: the SmartArt's diagramData relationship made External.
+    "strict01-relids-dm-external": () =>
+        strictSidecarVariant(
+            DATA_REL,
+            DATA_REL.replace('Target="diagrams/data1.xml"/>', 'Target="http://example.com/data1.xml" TargetMode="External"/>'),
+        ),
+};
+const CLEAN_728: Record<string, () => Promise<Buffer>> = {
+    // s52a `oleobject-names-external-package`: an External package relationship opens clean.
+    "oleobject-names-external-package": async () =>
+        buildDocx(
+            withDrawing(
+                extended({}, [relationship("rId9", OFFICE("package"), "http://example.com/o.xlsx", true)], [], true),
+                OLE_OBJECT("rId9"),
+            ),
+        ),
+    // s52d `strict01-relids-dm-only`: r:dm="rId35" alone names the real internal diagramData relationship.
+    "strict01-relids-dm-only": () => strictVariant(RELIDS, 'r:dm="rId35"'),
+};
+
+describe(`${CODE} (session 52 specimens, Word 16.115)`, { timeout: 240_000 }, () => {
+    describe.each(Object.entries(REFUSED_728))("refused specimen %s", (name, make) => {
+        it("word-valid fails with exactly one Word-blocking error", async () => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, `${name}.docx`);
+                writeFileSync(file, await make());
+                const result = await validate(file, { profile: "word-valid" });
+                const found = result.issues.filter((issue) => issue.code === CODE);
+                expect(result.valid).toBe(false);
+                expect(found).toHaveLength(1);
+                expect(found[0]?.severity).toBe("error");
+                expect(found[0]?.path).toBe("word/document.xml");
+            });
+        });
+
+        it("strict reports the code too (strict \u2287 word-valid)", async () => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, `${name}.docx`);
+                writeFileSync(file, await make());
+                const strict = await validate(file, { profile: "strict" });
+                expect(strict.issues.some((issue) => issue.code === CODE && issue.path === "word/document.xml")).toBe(true);
+            });
+        });
+
+        it("lenient reports nothing for it", async () => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, `${name}.docx`);
+                writeFileSync(file, await make());
+                const lenient = await validate(file, { profile: "lenient" });
+                expect(lenient.issues.some((issue) => issue.code === CODE)).toBe(false);
+            });
+        });
+    });
+
+    it.each([
+        ["chart-empty-id", '<c:chart> r:id=""', "the id is empty"],
+        ["oleobject-empty-id", '<o:OLEObject> r:id=""', "the id is empty"],
+        ["relids-empty-id", '<dgm:relIds> r:dm=""', "the id is empty"],
+        ["strict01-relids-dm-empty", '<dgm:relIds> r:dm=""', "the id is empty"],
+        ["relids-names-external-diagramdata", '<dgm:relIds> r:dm="rId9"', "Relationship 'rId9' has TargetMode 'External'"],
+        ["strict01-relids-dm-external", '<dgm:relIds> r:dm="rId35"', "Relationship 'rId35' has TargetMode 'External'"],
+    ] as const)("%s names the reference and why", async (name, reference, why) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, `${name}.docx`);
+            writeFileSync(file, await REFUSED_728[name]!());
+            const result = await validate(file, { profile: "word-valid" });
+            const found = result.issues.filter((issue) => issue.code === CODE);
+            expect(found[0]?.message).toContain(reference);
+            expect(found[0]?.message).toContain(`(${why})`);
+        });
+    });
+
+    describe.each(Object.entries(CLEAN_728))("clean guard %s", (name, make) => {
+        it("word-valid draws no such finding", async () => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, `${name}.docx`);
+                writeFileSync(file, await make());
+                const result = await validate(file, { profile: "word-valid" });
+                expect(result.valid).toBe(true);
+                expect(result.issues.filter((issue) => issue.code === CODE)).toEqual([]);
+            });
         });
     });
 });
