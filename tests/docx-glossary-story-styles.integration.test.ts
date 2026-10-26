@@ -157,6 +157,68 @@ const SHARED_COMMENTS: Record<string, string> = {
     "word/comments.xml": commentsUsing("GlossaryStyle"),
 };
 
+/** A paragraph whose `w:pStyle` names `styleId`. */
+const styledParagraph = (styleId: string): string => `<w:p><w:pPr><w:pStyle w:val="${styleId}"/></w:pPr><w:r><w:t>x</w:t></w:r></w:p>`;
+
+/**
+ * The same reached glossary, its sidecar relating `comments` to the MAIN
+ * DOCUMENT itself (#742): `mainReached` held no main-document name, so the
+ * glossary claimed the main document as a story part and judged its
+ * references against the glossary's own styles part. `body` holds the main
+ * document's markup.
+ */
+const claimingMain = (body: string): Record<string, string> => ({
+    ...withGlossary(`<w:p><w:r><w:t>x</w:t></w:r></w:p>`, GLOSSARY_STYLES, relationship("rId2", "comments", "../document.xml")),
+    "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace("<w:body>", `<w:body>${body}`),
+});
+
+/** The claimed main document uses `Heading1`, which only the MAIN styles part defines. */
+const CLAIMED_MAIN_STYLE = claimingMain(styledParagraph("Heading1"));
+
+/** The claimed main document uses the well-known `CommentText`, which neither styles part defines. */
+const CLAIMED_WELL_KNOWN = claimingMain(styledParagraph("CommentText"));
+
+/**
+ * The same claim with the main document stored under another name, its
+ * package relationship and sidecar renamed with it: the glossary's
+ * `comments` relationship names the main document wherever it is stored.
+ * `word/comments.xml` is a name the style checks walk, so the claim
+ * misjudges it; `word/main.xml` is walked by no style check, so the claim
+ * stays latent there — the exclusion must still find both by relationship,
+ * never by the name `document.xml`.
+ */
+const renamedMainClaimed = (mainName: string, body: string): Record<string, string> => ({
+    ...Object.fromEntries(
+        Object.entries(MINIMAL_PARTS).filter(([name]) => name !== "word/document.xml" && name !== "word/_rels/document.xml.rels"),
+    ),
+    "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+        'PartName="/word/document.xml"',
+        `PartName="/word/${mainName}"`,
+    ).replace(
+        "</Types>",
+        `${override("word/zglossary/document.xml", GLOSSARY_DOCUMENT_TYPE)}${override("word/zglossary/styles.xml", STYLES_TYPE)}</Types>`,
+    ),
+    "_rels/.rels": MINIMAL_PARTS["_rels/.rels"]!.replace("word/document.xml", `word/${mainName}`),
+    [`word/${mainName}`]: MINIMAL_PARTS["word/document.xml"]!.replace("<w:body>", `<w:body>${body}`),
+    [`word/_rels/${mainName}.rels`]: relationships(
+        relationship("rId1", "styles", "styles.xml"),
+        relationship("rId9", "glossaryDocument", "zglossary/document.xml"),
+    ),
+    "word/styles.xml": MAIN_STYLES,
+    "word/zglossary/document.xml": glossaryDocument(`<w:p><w:r><w:t>x</w:t></w:r></w:p>`),
+    "word/zglossary/_rels/document.xml.rels": relationships(
+        relationship("rId1", "styles", "styles.xml"),
+        relationship("rId2", "comments", `../${mainName}`),
+    ),
+    "word/zglossary/styles.xml": GLOSSARY_STYLES,
+});
+
+/** The main document stored as `word/comments.xml`, claimed by the glossary. */
+const CLAIMED_RENAMED_MAIN = renamedMainClaimed("comments.xml", styledParagraph("Heading1"));
+
+/** The main document stored as `word/main.xml`, claimed by the glossary the same way. */
+const CLAIMED_RENAMED_UNWALKED = renamedMainClaimed("main.xml", styledParagraph("CommentText"));
+
 const validated = async (
     parts: Record<string, string>,
     profile: "strict" | "lenient" | "word-valid",
@@ -249,6 +311,50 @@ describe("a reached glossary is judged against its own styles part (#698)", () =
             expect(repairs).toBe(1);
             expect(await fs.readFile(path.join(dir, "word/zglossary/styles.xml"), "utf-8")).toContain(`w:styleId="CommentReference"`);
             expect(await fs.readFile(path.join(dir, "word/styles.xml"), "utf-8")).toBe(MAIN_STYLES);
+        });
+    });
+});
+
+describe("the main document is never a glossary's story part (#742)", () => {
+    it.each(["strict", "word-valid"] as const)(
+        "a glossary relating the main document leaves it judged against the main styles part (%s)",
+        async (profile) => {
+            const issues = await validated(CLAIMED_MAIN_STYLE, profile);
+            expect(codesAt(issues, "style-reference-undefined")).toEqual([]);
+        },
+    );
+
+    it("repair writes the claimed main document's missing well-known style into the main styles part only", async () => {
+        await withTempDir(async (dir) => {
+            await writeParts(dir, CLAIMED_WELL_KNOWN);
+            const repairs = await new DOCXSchemaValidator({ unpackedDir: dir }).repairMissingStyleDefinitions();
+            expect(repairs).toBe(1);
+            expect(await fs.readFile(path.join(dir, "word/zglossary/styles.xml"), "utf-8")).toBe(GLOSSARY_STYLES);
+            expect(await fs.readFile(path.join(dir, "word/styles.xml"), "utf-8")).toContain(`w:styleId="CommentText"`);
+        });
+    });
+
+    it.each(["strict", "word-valid"] as const)(
+        "a main document stored as word/comments.xml stays judged against the main styles part (%s)",
+        async (profile) => {
+            const issues = await validated(CLAIMED_RENAMED_MAIN, profile);
+            expect(codesAt(issues, "style-reference-undefined")).toEqual([]);
+        },
+    );
+
+    it.each(["strict", "word-valid"] as const)(
+        "a main document stored as word/main.xml, a name no style check walks, draws no style finding (%s)",
+        async (profile) => {
+            const issues = await validated(CLAIMED_RENAMED_UNWALKED, profile);
+            expect(codesAt(issues, "style-reference-undefined")).toEqual([]);
+        },
+    );
+
+    it("repair leaves the glossary's styles part untouched when the main document is stored as word/main.xml", async () => {
+        await withTempDir(async (dir) => {
+            await writeParts(dir, CLAIMED_RENAMED_UNWALKED);
+            await new DOCXSchemaValidator({ unpackedDir: dir }).repairMissingStyleDefinitions();
+            expect(await fs.readFile(path.join(dir, "word/zglossary/styles.xml"), "utf-8")).toBe(GLOSSARY_STYLES);
         });
     });
 });

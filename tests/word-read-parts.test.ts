@@ -31,6 +31,7 @@ import { ValidationContext } from "../src/lib/validation-context";
 import {
     glossaryTypedRelationshipTargets,
     wordExactTypeTargets,
+    wordMainReachedParts,
     wordReadParts,
     wordReadTypedTargets,
     wordTypedRelationshipTargets,
@@ -384,6 +385,41 @@ describe("wordReadParts: the main document's own relationships part (#514)", () 
             "word/_rels/styles.xml.rels": `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="${RELS_NS}"/>`,
         };
         expect(await wordReadParts(ValidationContext.fromEntries(parts))).not.toContain(canonicalPartName("word/_rels/styles.xml.rels"));
+    });
+});
+
+describe("wordMainReachedParts (#742)", () => {
+    it("holds the main document itself, wherever it is stored, and every part its relationships reach", async () => {
+        const parts = withDocRel(
+            { ...MINIMAL_PARTS, "word/header1.xml": MALFORMED.header!, "word/extra.xml": MALFORMED.xtra! },
+            "rId9",
+            `${R}/customXml`,
+            "extra.xml",
+        );
+        const second = withDocRel(parts, "rIdA", `${R}/header`, "header1.xml");
+        expect(await wordMainReachedParts(ValidationContext.fromEntries(second))).toEqual(
+            new Set(["word/document.xml", "word/styles.xml", "word/extra.xml", "word/header1.xml"].map(canonicalPartName)),
+        );
+    });
+
+    it("holds the main document itself, wherever it is stored", async () => {
+        expect(await wordMainReachedParts(ValidationContext.fromEntries(movedOutOfWord()))).toContain(
+            canonicalPartName("xdocs/document.xml"),
+        );
+    });
+
+    it("keeps a lazily parsed part the main document relates but does not use, ungate by usage", async () => {
+        const parts = withDocRel({ ...MINIMAL_PARTS, "word/comments.xml": MALFORMED.comments! }, "rId9", `${R}/comments`, "comments.xml");
+        expect(await wordMainReachedParts(ValidationContext.fromEntries(parts))).toContain(canonicalPartName("word/comments.xml"));
+    });
+
+    it("names no External target, and nothing without a package relationships part", async () => {
+        const external = withDocRel({ ...MINIMAL_PARTS }, "rId9", `${R}/comments`, "https://example.com/comments.xml");
+        expect(await wordMainReachedParts(ValidationContext.fromEntries(external))).toEqual(
+            new Set(["word/document.xml", "word/styles.xml"].map(canonicalPartName)),
+        );
+        const { "_rels/.rels": _packageRels, ...rest } = MINIMAL_PARTS;
+        expect(await wordMainReachedParts(ValidationContext.fromEntries(rest))).toEqual(new Set());
     });
 });
 

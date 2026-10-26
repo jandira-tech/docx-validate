@@ -381,6 +381,41 @@ export const wordTypedRelationshipTargets = async (
 };
 
 /**
+ * Canonical names of the main documents themselves, wherever they are
+ * stored, and of every part their own relationships parts reach, whatever
+ * the relationship's type (#742): the exclusion set of the glossary
+ * story-styles map, so a reached glossary can claim as a story part never a
+ * part the main document also reads. Ungated by usage, as
+ * `wordTypedRelationshipTargets` reads the story segments — whether the
+ * main document uses a lazily parsed part cannot decide whose story the
+ * part is — and unfiltered by type, so a part the main document reaches
+ * through a non-story type cannot be claimed through a story one. External
+ * targets name no package part, and a package view that cannot be read
+ * yields the empty set, as `wordTypedRelationshipTargets` does; its own
+ * diagnostics block the run.
+ */
+export const wordMainReachedParts = async (context: ValidationContext, profile?: Profile): Promise<ReadonlySet<string>> => {
+    const reach = await packageReach(context, profile);
+    if (reach === undefined) {
+        return new Set();
+    }
+    const parts = new Set<string>();
+    for (const mainPart of reach.mainParts) {
+        parts.add(canonicalPartName(mainPart));
+        for (const relationship of relationshipsOf(context, sidecarOf(reach.names, mainPart), profile)) {
+            if (relationship.getAttribute("TargetMode") === "External") {
+                continue;
+            }
+            const target = resolveTarget(reach.lookup, path.posix.dirname(mainPart), relationship.getAttribute("Target") ?? "");
+            if (target !== undefined) {
+                parts.add(canonicalPartName(target));
+            }
+        }
+    }
+    return parts;
+};
+
+/**
  * The Microsoft relationship types that pair a comments part with its
  * extension parts (#690, #696). They live under `schemas.microsoft.com`,
  * so `wordTypedRelationshipTargets` never reaches their targets and
