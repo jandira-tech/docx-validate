@@ -14965,3 +14965,591 @@ print(len(rows), "rows,", len(raw), "raw records")
 `````
 
 </details>
+
+### Session 54: 13:38Z–13:40Z on 2026-10-26, validator columns at 0b26c414
+
+The shapes three follow-ups need before they land: the broken relationship targets whose `rels-broken` verdict [#734](https://github.com/jandira-tech/docx-validate/issues/734) moves from the Target's spelling to the part it resolves to; the attached-toolbar spellings and the empty id of [#743](https://github.com/jandira-tech/docx-validate/issues/743) (the review of layers 151–155, findings 2, 3 and S1); and the four duplicate cells session 50 did not show ([#744](https://github.com/jandira-tech/docx-validate/issues/744), finding 4). Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; all 27 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen.
+
+- A `customXml` relationship from the main document's relationships part to an absent package-root `customXml/item1.xml` gets the recovery offer however the Target spells it: `../customXml/item1.xml` (vectors.docx's shape, the calibration), `/customXml/item1.xml`, `..\customXml\item1.xml`, `../CUSTOMXML/%69tem1.xml`, and `../../customXml/item1.xml`, whose extra `..` stays at the package root as RFC 3986 removes dot segments. Word-valid at 0b26c414 rejects only the calibration and the last: three false negatives.
+- An image relationship to an absent `media/_rels/x.png`, `notes.rels` or `word/../customXml/x.png` opens clean, as the broken `media/image9.png` calibration does, and so does a reached glossary's `customXml` relationship to an absent `../customXml/item1.xml` (which resolves to `word/customXml/item1.xml`). Word-valid at 0b26c414 rejects all four by their spelling: false positives.
+- The Word-clean toolbar fixture (`tests/fixtures/working/package.word-attached-toolbar-utf8-repaired.docx`, re-zipped) opens clean unchanged, with its relationships part stored as `word/_rels/customizations.xml.RELS`, and with `wne:toolbarData r:id=""`. Word-valid rejects the `.RELS` spelling through `word-attached-toolbar-relationship`: a false positive. The Word-refused fixture (`tests/fixtures/broken/package.word-attached-toolbar-utf8.docx`) gets the recovery offer unchanged and with `word/customizations.xml` and its relationships part stored with `.XML` spellings; word-valid passes the `.XML` spelling: a false negative.
+- Two fontTable or two webSettings relationships in `_rels/.rels`, beside the main document's own, open clean; two webSettings or two theme relationships in a reached glossary's relationships part get the recovery offer. Word-valid agrees on all four.
+
+| Run    | Observed             | Specimen                           | Shape                                                                                                                                  | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at 0b26c414                              | strict at 0b26c414                                                                                                                                                                                                             |
+| ------ | -------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `s54a` | 13:38:47Z, 13:40:13Z | `s54a-control-minimal`             | control                                                                                                                                | `d1a934c730b0dda3` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                                                                                                                                                                                                          |
+| `s54a` | 13:38:47Z, 13:40:13Z | `broken-customxml-calibration`     | #734 calibration (vectors.docx's shape): a customXml relationship from the main document's sidecar to an absent ../customXml/item1.xml | `f4c1d95fae3a596a` | repair-warning | repair-warning | unreadable-content-warning | invalid: `rels-broken`                              | invalid: `rels-broken`, `rels-target-missing`                                                                                                                                                                                  |
+| `s54a` | 13:38:47Z, 13:40:13Z | `broken-customxml-absolute`        | #734: the same target spelled /customXml/item1.xml                                                                                     | `790a9a9d7cbd80c3` | repair-warning | repair-warning | unreadable-content-warning | valid                                               | invalid: `rels-broken`, `rels-target-missing`                                                                                                                                                                                  |
+| `s54a` | 13:38:47Z, 13:40:13Z | `broken-customxml-backslash`       | #734: the same target spelled ..\customXml\item1.xml                                                                                   | `fc1a774fc7fdeac1` | repair-warning | repair-warning | unreadable-content-warning | valid                                               | invalid: `rels-broken`, `rels-target-missing`                                                                                                                                                                                  |
+| `s54a` | 13:38:47Z, 13:40:13Z | `broken-customxml-escaped`         | #734: the same target spelled ../CUSTOMXML/%69tem1.xml                                                                                 | `12bc3dda52e6f86e` | repair-warning | repair-warning | unreadable-content-warning | valid                                               | invalid: `rels-broken`, `rels-target-missing`                                                                                                                                                                                  |
+| `s54a` | 13:38:47Z, 13:40:13Z | `broken-customxml-above-root`      | #734: the same target spelled ../../customXml/item1.xml (above the package root)                                                       | `184d9b8088916065` | repair-warning | repair-warning | unreadable-content-warning | invalid: `rels-broken`                              | invalid: `rels-broken`, `rels-target-missing`                                                                                                                                                                                  |
+| `s54a` | 13:38:47Z, 13:40:13Z | `s54a-control-minimal-end`         | control                                                                                                                                | `d1a934c730b0dda3` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                                                                                                                                                                                                          |
+| `s54b` | 13:38:52Z, 13:40:19Z | `s54b-control-minimal`             | control                                                                                                                                | `d1a934c730b0dda3` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                                                                                                                                                                                                          |
+| `s54b` | 13:38:52Z, 13:40:19Z | `broken-media-calibration`         | #734 calibration (tolerated): an image relationship from the main document's sidecar to an absent media/image9.png                     | `d13d0c6be5ccc5d5` | clean-open     | clean-open     | clean-open                 | valid                                               | invalid: `rels-broken`, `rels-target-missing`                                                                                                                                                                                  |
+| `s54b` | 13:38:52Z, 13:40:19Z | `broken-image-media-rels-folder`   | #734: an image relationship to an absent media/_rels/x.png                                                                             | `3a830099e1e92092` | clean-open     | clean-open     | clean-open                 | invalid: `rels-broken`                              | invalid: `rels-broken`, `rels-target-missing`                                                                                                                                                                                  |
+| `s54b` | 13:38:52Z, 13:40:19Z | `broken-image-notes-rels`          | #734: an image relationship to an absent notes.rels                                                                                    | `c33990490c00235c` | clean-open     | clean-open     | clean-open                 | invalid: `rels-broken`                              | invalid: `rels-broken`, `rels-target-missing`                                                                                                                                                                                  |
+| `s54b` | 13:38:52Z, 13:40:19Z | `broken-image-word-customxml`      | #734: an image relationship to an absent word/../customXml/x.png (resolves to word/customXml/x.png)                                    | `3fa4f4b9150662e3` | clean-open     | clean-open     | clean-open                 | invalid: `rels-broken`                              | invalid: `rels-broken`, `rels-target-missing`                                                                                                                                                                                  |
+| `s54b` | 13:38:52Z, 13:40:19Z | `broken-customxml-from-glossary`   | #734: a reached glossary's customXml relationship to an absent ../customXml/item1.xml (resolves under word/)                           | `2fdc5f30f375b2fe` | clean-open     | clean-open     | clean-open                 | invalid: `rels-broken`                              | invalid: `rels-broken`, `paraid-missing-element`, `rels-target-missing`                                                                                                                                                        |
+| `s54b` | 13:38:52Z, 13:40:19Z | `s54b-control-minimal-end`         | control                                                                                                                                | `d1a934c730b0dda3` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                                                                                                                                                                                                          |
+| `s54c` | 13:39:09Z, 13:40:35Z | `s54c-control-minimal`             | control                                                                                                                                | `e9022a75397b8b4e` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                                                                                                                                                                                                          |
+| `s54c` | 13:39:09Z, 13:40:35Z | `toolbar-clean-calibration`        | #743 calibration: the Word-clean toolbar fixture re-zipped unchanged                                                                   | `1bd77d059f5b58a4` | clean-open     | clean-open     | clean-open                 | valid                                               | invalid: `rels-unreferenced`, `rels-unreferenced`, `paraid-missing-element`, `style-default-missing`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`                                       |
+| `s54c` | 13:39:09Z, 13:40:35Z | `toolbar-clean-sidecar-upper-rels` | #743: the same with its sidecar stored as word/_rels/customizations.xml.RELS                                                           | `1d5af69a695c4ca4` | clean-open     | clean-open     | clean-open                 | invalid: `word-attached-toolbar-relationship`       | invalid: `rels-unreferenced`, `rels-unreferenced`, `paraid-missing-element`, `style-default-missing`, `word-attached-toolbar-relationship`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error` |
+| `s54c` | 13:39:09Z, 13:40:35Z | `toolbar-clean-empty-id`           | #743: the same with wne:toolbarData r:id=""                                                                                            | `49deb16d41f543f6` | clean-open     | clean-open     | clean-open                 | valid                                               | invalid: `rels-unreferenced`, `rels-unreferenced`, `paraid-missing-element`, `style-default-missing`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`                                       |
+| `s54c` | 13:39:09Z, 13:40:35Z | `toolbar-broken-calibration`       | #743 calibration: the Word-refused toolbar fixture re-zipped unchanged                                                                 | `f5f61abe9857e547` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-attached-toolbar-utf8`               | invalid: `rels-unreferenced`, `rels-unreferenced`, `paraid-missing-element`, `style-default-missing`, `word-attached-toolbar-utf8`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`         |
+| `s54c` | 13:39:09Z, 13:40:35Z | `toolbar-broken-upper-xml`         | #743: the same with word/customizations.xml and its sidecar stored with .XML spellings                                                 | `cfeb78d2c8ceb546` | repair-warning | repair-warning | unreadable-content-warning | valid                                               | invalid: `rels-unreferenced`, `rels-unreferenced`, `paraid-missing-element`, `style-default-missing`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`, `xsd-summary`, `xsd-error`                                       |
+| `s54c` | 13:39:09Z, 13:40:35Z | `s54c-control-minimal-end`         | control                                                                                                                                | `e9022a75397b8b4e` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                                                                                                                                                                                                          |
+| `s54d` | 13:39:23Z, 13:40:50Z | `s54d-control-minimal`             | control                                                                                                                                | `e9022a75397b8b4e` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                                                                                                                                                                                                          |
+| `s54d` | 13:39:23Z, 13:40:50Z | `dup-fonttable-package-rels`       | #744: the main document's fontTable relationship, and two more fontTable relationships in _rels/.rels                                  | `2c9929f882aaca63` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                                                                                                                                                                                                          |
+| `s54d` | 13:39:23Z, 13:40:50Z | `dup-websettings-package-rels`     | #744: the main document's webSettings relationship, and two more webSettings relationships in _rels/.rels                              | `bd8b65c79c3a5083` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                                                                                                                                                                                                          |
+| `s54d` | 13:39:23Z, 13:40:50Z | `dup-websettings-glossary-sidecar` | #744: a reached glossary's sidecar holds two webSettings relationships to two parts                                                    | `017b32dfe1f02cd6` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-duplicate-web-settings-relationship` | invalid: `paraid-missing-element`, `word-duplicate-web-settings-relationship`                                                                                                                                                  |
+| `s54d` | 13:39:23Z, 13:40:50Z | `dup-theme-glossary-sidecar`       | #744: a reached glossary's sidecar holds two theme relationships to two parts                                                          | `e214957b33d64daf` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-duplicate-theme-relationship`        | invalid: `paraid-missing-element`, `word-duplicate-theme-relationship`                                                                                                                                                         |
+| `s54d` | 13:39:23Z, 13:40:50Z | `s54d-control-minimal-end`         | control                                                                                                                                | `e9022a75397b8b4e` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                                                                                                                                                                                                          |
+
+<details><summary>Raw records, session 54</summary>
+
+```jsonl
+{"run": "s54a", "pass": 1, "name": "s54a-control-minimal", "sha256": "d1a934c730b0dda3b0332a84243f7e6a6c7c339ad1c6dd1203889ebc31a88892", "observedAt": "2026-10-26T13:38:47+00:00", "staged": "00006__wfv__s54a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s54a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54a", "pass": 2, "name": "s54a-control-minimal", "sha256": "d1a934c730b0dda3b0332a84243f7e6a6c7c339ad1c6dd1203889ebc31a88892", "observedAt": "2026-10-26T13:40:13+00:00", "staged": "00006__wfv__s54a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s54a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54a", "pass": 1, "name": "broken-customxml-calibration", "sha256": "f4c1d95fae3a596a23e5a3cb03f4792f037734f0c739d1c007d3c87e66a6e9d8", "observedAt": "2026-10-26T13:38:47+00:00", "staged": "00003__wfv__broken-customxml-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:38:41.898 'Word found unreadable content in 00003__wfv__broken-customxml-calibration.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:38:42.704 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__broken-customxml-calibrat...)\""]}
+{"run": "s54a", "pass": 2, "name": "broken-customxml-calibration", "sha256": "f4c1d95fae3a596a23e5a3cb03f4792f037734f0c739d1c007d3c87e66a6e9d8", "observedAt": "2026-10-26T13:40:13+00:00", "staged": "00003__wfv__broken-customxml-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:40:07.581 'Word found unreadable content in 00003__wfv__broken-customxml-calibration.docx. Do you want to reco … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:40:08.385 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__broken-customxml-calibrat...)\""]}
+{"run": "s54a", "pass": 1, "name": "broken-customxml-absolute", "sha256": "790a9a9d7cbd80c3a86f75ba98ebd6eba8b101d68ecfa387fca0a46108be1335", "observedAt": "2026-10-26T13:38:47+00:00", "staged": "00001__wfv__broken-customxml-absolute.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:38:33.531 'Word found unreadable content in 00001__wfv__broken-customxml-absolute.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:38:34.325 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__broken-customxml-absolute...)\""]}
+{"run": "s54a", "pass": 2, "name": "broken-customxml-absolute", "sha256": "790a9a9d7cbd80c3a86f75ba98ebd6eba8b101d68ecfa387fca0a46108be1335", "observedAt": "2026-10-26T13:40:13+00:00", "staged": "00001__wfv__broken-customxml-absolute.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:39:59.264 'Word found unreadable content in 00001__wfv__broken-customxml-absolute.docx. Do you want to recover … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:40:00.072 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__broken-customxml-absolute...)\""]}
+{"run": "s54a", "pass": 1, "name": "broken-customxml-backslash", "sha256": "fc1a774fc7fdeac107804d56730968a8fa83dd31c78db1b0cb23045df3ec24b3", "observedAt": "2026-10-26T13:38:47+00:00", "staged": "00002__wfv__broken-customxml-backslash.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:38:37.714 'Word found unreadable content in 00002__wfv__broken-customxml-backslash.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:38:38.516 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__broken-customxml-backslas...)\""]}
+{"run": "s54a", "pass": 2, "name": "broken-customxml-backslash", "sha256": "fc1a774fc7fdeac107804d56730968a8fa83dd31c78db1b0cb23045df3ec24b3", "observedAt": "2026-10-26T13:40:13+00:00", "staged": "00002__wfv__broken-customxml-backslash.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:40:03.431 'Word found unreadable content in 00002__wfv__broken-customxml-backslash.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:40:04.184 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__broken-customxml-backslas...)\""]}
+{"run": "s54a", "pass": 1, "name": "broken-customxml-escaped", "sha256": "12bc3dda52e6f86e0abe2eb6b7a8c8a1b056fd79ff7694909a7a2d4e8809aaf2", "observedAt": "2026-10-26T13:38:47+00:00", "staged": "00004__wfv__broken-customxml-escaped.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:38:46.064 'Word found unreadable content in 00004__wfv__broken-customxml-escaped.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:38:46.831 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__broken-customxml-escaped....)\""]}
+{"run": "s54a", "pass": 2, "name": "broken-customxml-escaped", "sha256": "12bc3dda52e6f86e0abe2eb6b7a8c8a1b056fd79ff7694909a7a2d4e8809aaf2", "observedAt": "2026-10-26T13:40:13+00:00", "staged": "00004__wfv__broken-customxml-escaped.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:40:11.798 'Word found unreadable content in 00004__wfv__broken-customxml-escaped.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:40:12.591 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00004__wfv__broken-customxml-escaped....)\""]}
+{"run": "s54a", "pass": 1, "name": "broken-customxml-above-root", "sha256": "184d9b8088916065426771c56bd8f70514b193e31b40601ee824f2d78a289725", "observedAt": "2026-10-26T13:38:47+00:00", "staged": "00000__wfv__broken-customxml-above-root.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:38:29.364 'Word found unreadable content in 00000__wfv__broken-customxml-above-root.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:38:30.151 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__broken-customxml-above-ro...)\""]}
+{"run": "s54a", "pass": 2, "name": "broken-customxml-above-root", "sha256": "184d9b8088916065426771c56bd8f70514b193e31b40601ee824f2d78a289725", "observedAt": "2026-10-26T13:40:13+00:00", "staged": "00000__wfv__broken-customxml-above-root.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:39:55.031 'Word found unreadable content in 00000__wfv__broken-customxml-above-root.docx. Do you want to recov … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:39:55.839 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00000__wfv__broken-customxml-above-ro...)\""]}
+{"run": "s54a", "pass": 1, "name": "s54a-control-minimal-end", "sha256": "d1a934c730b0dda3b0332a84243f7e6a6c7c339ad1c6dd1203889ebc31a88892", "observedAt": "2026-10-26T13:38:47+00:00", "staged": "00005__wfv__s54a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s54a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54a", "pass": 2, "name": "s54a-control-minimal-end", "sha256": "d1a934c730b0dda3b0332a84243f7e6a6c7c339ad1c6dd1203889ebc31a88892", "observedAt": "2026-10-26T13:40:13+00:00", "staged": "00005__wfv__s54a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s54a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54b", "pass": 1, "name": "s54b-control-minimal", "sha256": "d1a934c730b0dda3b0332a84243f7e6a6c7c339ad1c6dd1203889ebc31a88892", "observedAt": "2026-10-26T13:38:52+00:00", "staged": "00006__wfv__s54b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s54b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54b", "pass": 2, "name": "s54b-control-minimal", "sha256": "d1a934c730b0dda3b0332a84243f7e6a6c7c339ad1c6dd1203889ebc31a88892", "observedAt": "2026-10-26T13:40:19+00:00", "staged": "00006__wfv__s54b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s54b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54b", "pass": 1, "name": "broken-media-calibration", "sha256": "d13d0c6be5ccc5d554db972f26fec202783eec41a46d9bf5d694d9dfc94b1dc5", "observedAt": "2026-10-26T13:38:52+00:00", "staged": "00004__wfv__broken-media-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF broken-media-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54b", "pass": 2, "name": "broken-media-calibration", "sha256": "d13d0c6be5ccc5d554db972f26fec202783eec41a46d9bf5d694d9dfc94b1dc5", "observedAt": "2026-10-26T13:40:19+00:00", "staged": "00004__wfv__broken-media-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF broken-media-calibration_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54b", "pass": 1, "name": "broken-image-media-rels-folder", "sha256": "3a830099e1e92092315cef350db0e6e440c9cdb56b190f6bcc9ecc75c9363b2e", "observedAt": "2026-10-26T13:38:52+00:00", "staged": "00001__wfv__broken-image-media-rels-folder.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF broken-image-media-rels-folder_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54b", "pass": 2, "name": "broken-image-media-rels-folder", "sha256": "3a830099e1e92092315cef350db0e6e440c9cdb56b190f6bcc9ecc75c9363b2e", "observedAt": "2026-10-26T13:40:19+00:00", "staged": "00001__wfv__broken-image-media-rels-folder.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF broken-image-media-rels-folder_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54b", "pass": 1, "name": "broken-image-notes-rels", "sha256": "c33990490c00235c1b523ee98c6bd86bda65d5b655dffe3026bcabd35f6e0c62", "observedAt": "2026-10-26T13:38:52+00:00", "staged": "00002__wfv__broken-image-notes-rels.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF broken-image-notes-rels_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54b", "pass": 2, "name": "broken-image-notes-rels", "sha256": "c33990490c00235c1b523ee98c6bd86bda65d5b655dffe3026bcabd35f6e0c62", "observedAt": "2026-10-26T13:40:19+00:00", "staged": "00002__wfv__broken-image-notes-rels.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF broken-image-notes-rels_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54b", "pass": 1, "name": "broken-image-word-customxml", "sha256": "3fa4f4b9150662e3dbe83298f7422bf32235a5d21222a8731c9729898d2545af", "observedAt": "2026-10-26T13:38:52+00:00", "staged": "00003__wfv__broken-image-word-customxml.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF broken-image-word-customxml_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54b", "pass": 2, "name": "broken-image-word-customxml", "sha256": "3fa4f4b9150662e3dbe83298f7422bf32235a5d21222a8731c9729898d2545af", "observedAt": "2026-10-26T13:40:19+00:00", "staged": "00003__wfv__broken-image-word-customxml.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF broken-image-word-customxml_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54b", "pass": 1, "name": "broken-customxml-from-glossary", "sha256": "2fdc5f30f375b2fe4caf27dd48a08d44797b7ffa4030e4e69ba3c39df2dbf597", "observedAt": "2026-10-26T13:38:52+00:00", "staged": "00000__wfv__broken-customxml-from-glossary.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF broken-customxml-from-glossary_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54b", "pass": 2, "name": "broken-customxml-from-glossary", "sha256": "2fdc5f30f375b2fe4caf27dd48a08d44797b7ffa4030e4e69ba3c39df2dbf597", "observedAt": "2026-10-26T13:40:19+00:00", "staged": "00000__wfv__broken-customxml-from-glossary.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF broken-customxml-from-glossary_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54b", "pass": 1, "name": "s54b-control-minimal-end", "sha256": "d1a934c730b0dda3b0332a84243f7e6a6c7c339ad1c6dd1203889ebc31a88892", "observedAt": "2026-10-26T13:38:52+00:00", "staged": "00005__wfv__s54b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s54b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54b", "pass": 2, "name": "s54b-control-minimal-end", "sha256": "d1a934c730b0dda3b0332a84243f7e6a6c7c339ad1c6dd1203889ebc31a88892", "observedAt": "2026-10-26T13:40:19+00:00", "staged": "00005__wfv__s54b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s54b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54c", "pass": 1, "name": "s54c-control-minimal", "sha256": "e9022a75397b8b4ec966cb931f5cb0e7c97d9ffda8719aadec4d012a5bb57a89", "observedAt": "2026-10-26T13:39:09+00:00", "staged": "00001__wfv__s54c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s54c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54c", "pass": 2, "name": "s54c-control-minimal", "sha256": "e9022a75397b8b4ec966cb931f5cb0e7c97d9ffda8719aadec4d012a5bb57a89", "observedAt": "2026-10-26T13:40:35+00:00", "staged": "00001__wfv__s54c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s54c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54c", "pass": 1, "name": "toolbar-clean-calibration", "sha256": "1bd77d059f5b58a49b56af7ffc514fbfbea4fbd52713793e50fd4f158ae900bb", "observedAt": "2026-10-26T13:39:09+00:00", "staged": "00004__wfv__toolbar-clean-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF toolbar-clean-calibration_byword.pdf (434557 bytes), no dialog named the file"]}
+{"run": "s54c", "pass": 2, "name": "toolbar-clean-calibration", "sha256": "1bd77d059f5b58a49b56af7ffc514fbfbea4fbd52713793e50fd4f158ae900bb", "observedAt": "2026-10-26T13:40:35+00:00", "staged": "00004__wfv__toolbar-clean-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF toolbar-clean-calibration_byword.pdf (434557 bytes), no dialog named the file"]}
+{"run": "s54c", "pass": 1, "name": "toolbar-clean-sidecar-upper-rels", "sha256": "1d5af69a695c4ca4f772391453f8fe5034044a82bc970201bdff7ce4b05c9c73", "observedAt": "2026-10-26T13:39:09+00:00", "staged": "00006__wfv__toolbar-clean-sidecar-upper-rels.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF toolbar-clean-sidecar-upper-rels_byword.pdf (434557 bytes), no dialog named the file"]}
+{"run": "s54c", "pass": 2, "name": "toolbar-clean-sidecar-upper-rels", "sha256": "1d5af69a695c4ca4f772391453f8fe5034044a82bc970201bdff7ce4b05c9c73", "observedAt": "2026-10-26T13:40:35+00:00", "staged": "00006__wfv__toolbar-clean-sidecar-upper-rels.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF toolbar-clean-sidecar-upper-rels_byword.pdf (434557 bytes), no dialog named the file"]}
+{"run": "s54c", "pass": 1, "name": "toolbar-clean-empty-id", "sha256": "49deb16d41f543f62d699d6048077e6dd948efb8b2e27ae35fe07d865810e199", "observedAt": "2026-10-26T13:39:09+00:00", "staged": "00005__wfv__toolbar-clean-empty-id.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF toolbar-clean-empty-id_byword.pdf (434557 bytes), no dialog named the file"]}
+{"run": "s54c", "pass": 2, "name": "toolbar-clean-empty-id", "sha256": "49deb16d41f543f62d699d6048077e6dd948efb8b2e27ae35fe07d865810e199", "observedAt": "2026-10-26T13:40:35+00:00", "staged": "00005__wfv__toolbar-clean-empty-id.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF toolbar-clean-empty-id_byword.pdf (434557 bytes), no dialog named the file"]}
+{"run": "s54c", "pass": 1, "name": "toolbar-broken-calibration", "sha256": "f5f61abe9857e5473452ba35d0a941c4ded9461361e8be9beeb70d6a329e5a80", "observedAt": "2026-10-26T13:39:09+00:00", "staged": "00002__wfv__toolbar-broken-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:39:02.282 'Word found unreadable content in 00002__wfv__toolbar-broken-calibration.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:39:03.065 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__toolbar-broken-calibratio...)\""]}
+{"run": "s54c", "pass": 2, "name": "toolbar-broken-calibration", "sha256": "f5f61abe9857e5473452ba35d0a941c4ded9461361e8be9beeb70d6a329e5a80", "observedAt": "2026-10-26T13:40:35+00:00", "staged": "00002__wfv__toolbar-broken-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:40:28.583 'Word found unreadable content in 00002__wfv__toolbar-broken-calibration.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:40:29.365 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__toolbar-broken-calibratio...)\""]}
+{"run": "s54c", "pass": 1, "name": "toolbar-broken-upper-xml", "sha256": "cfeb78d2c8ceb5466d9e38dcecec0d8127f1dea2761ae8c3bd2dc5e4f2701ab4", "observedAt": "2026-10-26T13:39:09+00:00", "staged": "00003__wfv__toolbar-broken-upper-xml.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:39:06.480 'Word found unreadable content in 00003__wfv__toolbar-broken-upper-xml.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:39:07.296 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__toolbar-broken-upper-xml....)\""]}
+{"run": "s54c", "pass": 2, "name": "toolbar-broken-upper-xml", "sha256": "cfeb78d2c8ceb5466d9e38dcecec0d8127f1dea2761ae8c3bd2dc5e4f2701ab4", "observedAt": "2026-10-26T13:40:35+00:00", "staged": "00003__wfv__toolbar-broken-upper-xml.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:40:32.763 'Word found unreadable content in 00003__wfv__toolbar-broken-upper-xml.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:40:33.548 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__toolbar-broken-upper-xml....)\""]}
+{"run": "s54c", "pass": 1, "name": "s54c-control-minimal-end", "sha256": "e9022a75397b8b4ec966cb931f5cb0e7c97d9ffda8719aadec4d012a5bb57a89", "observedAt": "2026-10-26T13:39:09+00:00", "staged": "00000__wfv__s54c-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s54c-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54c", "pass": 2, "name": "s54c-control-minimal-end", "sha256": "e9022a75397b8b4ec966cb931f5cb0e7c97d9ffda8719aadec4d012a5bb57a89", "observedAt": "2026-10-26T13:40:35+00:00", "staged": "00000__wfv__s54c-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s54c-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54d", "pass": 1, "name": "s54d-control-minimal", "sha256": "e9022a75397b8b4ec966cb931f5cb0e7c97d9ffda8719aadec4d012a5bb57a89", "observedAt": "2026-10-26T13:39:23+00:00", "staged": "00005__wfv__s54d-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s54d-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54d", "pass": 2, "name": "s54d-control-minimal", "sha256": "e9022a75397b8b4ec966cb931f5cb0e7c97d9ffda8719aadec4d012a5bb57a89", "observedAt": "2026-10-26T13:40:50+00:00", "staged": "00005__wfv__s54d-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s54d-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54d", "pass": 1, "name": "dup-fonttable-package-rels", "sha256": "2c9929f882aaca637d3675e93383983db5b2ff5eb404d50f9a7b57109508c291", "observedAt": "2026-10-26T13:39:23+00:00", "staged": "00000__wfv__dup-fonttable-package-rels.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-fonttable-package-rels_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54d", "pass": 2, "name": "dup-fonttable-package-rels", "sha256": "2c9929f882aaca637d3675e93383983db5b2ff5eb404d50f9a7b57109508c291", "observedAt": "2026-10-26T13:40:50+00:00", "staged": "00000__wfv__dup-fonttable-package-rels.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-fonttable-package-rels_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54d", "pass": 1, "name": "dup-websettings-package-rels", "sha256": "bd8b65c79c3a50832dd2f97807d79483ef7f2a3cc6dbbcbb7b034e911c27d293", "observedAt": "2026-10-26T13:39:23+00:00", "staged": "00003__wfv__dup-websettings-package-rels.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-websettings-package-rels_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54d", "pass": 2, "name": "dup-websettings-package-rels", "sha256": "bd8b65c79c3a50832dd2f97807d79483ef7f2a3cc6dbbcbb7b034e911c27d293", "observedAt": "2026-10-26T13:40:50+00:00", "staged": "00003__wfv__dup-websettings-package-rels.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF dup-websettings-package-rels_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54d", "pass": 1, "name": "dup-websettings-glossary-sidecar", "sha256": "017b32dfe1f02cd6328e070f2fec2bbaebfd6ade8277658cb59e34af9de61977", "observedAt": "2026-10-26T13:39:23+00:00", "staged": "00002__wfv__dup-websettings-glossary-sidecar.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:39:21.780 'Word found unreadable content in 00002__wfv__dup-websettings-glossary-sidecar.docx. Do you want to  … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:39:22.565 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__dup-websettings-glossary-...)\""]}
+{"run": "s54d", "pass": 2, "name": "dup-websettings-glossary-sidecar", "sha256": "017b32dfe1f02cd6328e070f2fec2bbaebfd6ade8277658cb59e34af9de61977", "observedAt": "2026-10-26T13:40:50+00:00", "staged": "00002__wfv__dup-websettings-glossary-sidecar.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:40:48.086 'Word found unreadable content in 00002__wfv__dup-websettings-glossary-sidecar.docx. Do you want to  … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:40:48.985 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00002__wfv__dup-websettings-glossary-...)\""]}
+{"run": "s54d", "pass": 1, "name": "dup-theme-glossary-sidecar", "sha256": "e214957b33d64daf293f3e8c27d27adbdc887dc7f1219ed8339d904708c4766b", "observedAt": "2026-10-26T13:39:23+00:00", "staged": "00001__wfv__dup-theme-glossary-sidecar.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:39:17.598 'Word found unreadable content in 00001__wfv__dup-theme-glossary-sidecar.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:39:18.416 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__dup-theme-glossary-sideca...)\""]}
+{"run": "s54d", "pass": 2, "name": "dup-theme-glossary-sidecar", "sha256": "e214957b33d64daf293f3e8c27d27adbdc887dc7f1219ed8339d904708c4766b", "observedAt": "2026-10-26T13:40:50+00:00", "staged": "00001__wfv__dup-theme-glossary-sidecar.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 09:40:43.655 'Word found unreadable content in 00001__wfv__dup-theme-glossary-sidecar.docx. Do you want to recove … ? If you trust the source of this document, click Yes.'", "2026-10-26 09:40:44.627 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00001__wfv__dup-theme-glossary-sideca...)\""]}
+{"run": "s54d", "pass": 1, "name": "s54d-control-minimal-end", "sha256": "e9022a75397b8b4ec966cb931f5cb0e7c97d9ffda8719aadec4d012a5bb57a89", "observedAt": "2026-10-26T13:39:23+00:00", "staged": "00004__wfv__s54d-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s54d-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s54d", "pass": 2, "name": "s54d-control-minimal-end", "sha256": "e9022a75397b8b4ec966cb931f5cb0e7c97d9ffda8719aadec4d012a5bb57a89", "observedAt": "2026-10-26T13:40:50+00:00", "staged": "00004__wfv__s54d-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s54d-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 54 builder, cross-check and section scripts</summary>
+
+Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s54builder.mts`:
+
+```ts
+// Session 54 (2026-10-26): the shapes three follow-ups need before they land.
+// - s54a/s54b (#734): a broken relationship Target the rels-broken verdict reads. Layer 158's lane decides it from the
+//   resolved part (a relationships part, or a customXml part outside word/) instead of the Target's spelling, which
+//   changes the verdict of spellings Word never saw: the injected ones (media/_rels/x.png, notes.rels,
+//   word/../customXml/x.png), a reached glossary's ../customXml/ target, a target above the package root, and the
+//   absolute, backslash and escaped spellings of the blocking ../customXml/item1.xml (vectors.docx's shape, the
+//   calibration). A broken media target is the tolerated calibration.
+// - s54c (#743): the attached-toolbar walk finds the part and its sidecar by literal name. The Word-clean and the
+//   Word-refused toolbar fixtures, re-zipped unchanged (calibrations), the clean one with its sidecar spelled .RELS and
+//   with an empty wne:toolbarData r:id, and the refused one with the part and sidecar spelled .XML.
+// - s54d (#744): the four duplicate cells session 50 did not show: two fontTable and two webSettings relationships in
+//   _rels/.rels, two webSettings and two theme relationships in a reached glossary's sidecar.
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s54a pnpm exec tsx s54builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import JSZip from "jszip";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const MAIN_TYPE = `${WML}.document.main+xml`;
+const STYLES_TYPE = `${WML}.styles+xml`;
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+
+/** A Word-clean fixture's theme part (Word 16.115 clean-open in the manifest). */
+const THEME_XML = await (async () => {
+    const zip = await JSZip.loadAsync(readFileSync("tests/fixtures/working/package.drawing-arc-radius-integer.docx"));
+    const file = zip.file("word/theme/theme1.xml");
+    if (!file) throw new Error("theme fixture lost word/theme/theme1.xml");
+    return file.async("string");
+})();
+
+type Kind = "numbering" | "settings" | "fontTable" | "webSettings" | "theme";
+/** The relationship segment, the part body and the content type of each kind (the bodies session 47 used). */
+const KINDS: Record<Kind, { root: string; ct: string }> = {
+    numbering: { root: `${XML_DECL}<w:numbering xmlns:w="${W}"/>`, ct: `${WML}.numbering+xml` },
+    settings: { root: `${XML_DECL}<w:settings xmlns:w="${W}"/>`, ct: `${WML}.settings+xml` },
+    fontTable: { root: `${XML_DECL}<w:fonts xmlns:w="${W}"/>`, ct: `${WML}.fontTable+xml` },
+    webSettings: { root: `${XML_DECL}<w:webSettings xmlns:w="${W}"/>`, ct: `${WML}.webSettings+xml` },
+    theme: { root: THEME_XML, ct: "application/vnd.openxmlformats-officedocument.theme+xml" },
+};
+/** Where a kind's parts live: `theme/theme1.xml` for the theme, `<kind>.xml` otherwise. */
+const fileOf = (kind: Kind, n: 1 | 2) => (kind === "theme" ? `theme/theme${n}.xml` : `${kind}${n === 1 ? "" : "2"}.xml`);
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${REL}/${segment}" Target="${target}"/>`;
+const relsPart = (body: string) =>
+    `${XML_DECL}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${body}</Relationships>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+const control = () => buildDocx({ ...P });
+
+/** The minimal package plus `word/<file of kind>` related from the main document's sidecar as rId2. */
+const withRelated = (kind: Kind, type = KINDS[kind].ct): Record<string, string> => ({
+    ...P,
+    [`word/${fileOf(kind, 1)}`]: KINDS[kind].root,
+    [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rId2", kind, fileOf(kind, 1))),
+    [CT]: overrides(P[CT]!, [`word/${fileOf(kind, 1)}`, type]),
+});
+/** {@link withRelated} with the Override of the related part (or of `part`) carrying `type`. */
+const relatedTyped = (kind: Kind, type: string) => buildDocx(withRelated(kind, type));
+const retyped = (part: string, own: string, type: string) =>
+    buildDocx({
+        ...P,
+        [CT]: replaceOnce(
+            P[CT]!,
+            `<Override PartName="/${part}" ContentType="${own}"/>`,
+            `<Override PartName="/${part}" ContentType="${type}"/>`,
+        ),
+    });
+const mainTyped = (type: string) => retyped("word/document.xml", MAIN_TYPE, type);
+
+/** Session 45's refused shape: two relationships of `kind` to two parts in the main document's sidecar. */
+const dupInMainRels = (kind: Kind) => {
+    const parts = withRelated(kind);
+    return buildDocx({
+        ...parts,
+        [`word/${fileOf(kind, 2)}`]: KINDS[kind].root,
+        [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rId3", kind, fileOf(kind, 2))),
+        [CT]: overrides(parts[CT]!, [`word/${fileOf(kind, 2)}`, KINDS[kind].ct]),
+    });
+};
+/** The main document's own `kind` relationship, and two more of `kind` in `_rels/.rels` (s49c's styles shape). */
+const dupInPackageRels = (kind: Kind) => {
+    const parts = withRelated(kind);
+    return buildDocx({
+        ...parts,
+        [`word/${fileOf(kind, 2)}`]: KINDS[kind].root,
+        "_rels/.rels": appendRels(
+            P["_rels/.rels"]!,
+            `${relationship("rId8", kind, `word/${fileOf(kind, 1)}`)}${relationship("rId9", kind, `word/${fileOf(kind, 2)}`)}`,
+        ),
+        [CT]: overrides(parts[CT]!, [`word/${fileOf(kind, 2)}`, KINDS[kind].ct]),
+    });
+};
+const HEADER = `${XML_DECL}<w:hdr xmlns:w="${W}"><w:p><w:r><w:t>Header</w:t></w:r></w:p></w:hdr>`;
+/** The main document's own `kind` relationship, and a referenced header whose sidecar holds two of `kind`. */
+const dupInHeaderRels = (kind: Kind) => {
+    const parts = withRelated(kind);
+    return buildDocx({
+        ...parts,
+        [`word/${fileOf(kind, 2)}`]: KINDS[kind].root,
+        "word/document.xml": replaceOnce(
+            replaceOnce(P["word/document.xml"]!, `xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${REL}"`),
+            "<w:sectPr>",
+            `<w:sectPr><w:headerReference w:type="default" r:id="rIdH"/>`,
+        ),
+        "word/header9.xml": HEADER,
+        "word/_rels/header9.xml.rels": relsPart(
+            `${relationship("rId1", kind, fileOf(kind, 1))}${relationship("rId2", kind, fileOf(kind, 2))}`,
+        ),
+        [SIDECAR]: appendRels(parts[SIDECAR]!, relationship("rIdH", "header", "header9.xml")),
+        [CT]: overrides(parts[CT]!, ["word/header9.xml", `${WML}.header+xml`], [`word/${fileOf(kind, 2)}`, KINDS[kind].ct]),
+    });
+};
+const GLOSSARY =
+    `${XML_DECL}<w:glossaryDocument xmlns:w="${W}"><w:docParts><w:docPart><w:docPartPr><w:name w:val="Part"/>` +
+    `<w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category><w:guid w:val="{6A9E2C40-3F1B-4C55-9D2E-7B1A0C9D4E11}"/></w:docPartPr>` +
+    `<w:docPartBody><w:p><w:r><w:t>Part</w:t></w:r></w:p></w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`;
+/** A reached glossary whose own sidecar holds two relationships of `kind` to two parts in its folder (s49c's shape). */
+const dupInGlossaryRels = (kind: Kind) =>
+    buildDocx({
+        ...P,
+        "word/glossary/document.xml": GLOSSARY,
+        [`word/glossary/${fileOf(kind, 1)}`]: KINDS[kind].root,
+        [`word/glossary/${fileOf(kind, 2)}`]: KINDS[kind].root,
+        "word/glossary/_rels/document.xml.rels": relsPart(
+            `${relationship("rId1", kind, fileOf(kind, 1))}${relationship("rId2", kind, fileOf(kind, 2))}`,
+        ),
+        [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdG", "glossaryDocument", "glossary/document.xml")),
+        [CT]: overrides(
+            P[CT]!,
+            ["word/glossary/document.xml", `${WML}.document.glossary+xml`],
+            [`word/glossary/${fileOf(kind, 1)}`, KINDS[kind].ct],
+            [`word/glossary/${fileOf(kind, 2)}`, KINDS[kind].ct],
+        ),
+    });
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const withControls = (chunk: string, rows: Row[]): Row[] => [
+    [`${chunk}-control-minimal`, "control", control],
+    ...rows,
+    [`${chunk}-control-minimal-end`, "control", control],
+];
+
+/** The minimal package plus one relationship of `segment` from the main document's sidecar to an absent `target`. */
+const brokenFromMain = (segment: string, target: string) =>
+    buildDocx({ ...P, [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rId9", segment, target)) });
+/** A reached glossary whose own sidecar relates `segment` to an absent `target` (s49c's glossary shape). */
+const brokenFromGlossary = (segment: string, target: string) =>
+    buildDocx({
+        ...P,
+        "word/glossary/document.xml": GLOSSARY,
+        "word/glossary/_rels/document.xml.rels": relsPart(relationship("rId1", segment, target)),
+        [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdG", "glossaryDocument", "glossary/document.xml")),
+        [CT]: overrides(P[CT]!, ["word/glossary/document.xml", `${WML}.document.glossary+xml`]),
+    });
+
+const CLEAN_TOOLBAR = "tests/fixtures/working/package.word-attached-toolbar-utf8-repaired.docx";
+const BROKEN_TOOLBAR = "tests/fixtures/broken/package.word-attached-toolbar-utf8.docx";
+/** `fixture` re-zipped with `edit` applied to its entries (renames, text replacements). */
+const rezip = async (fixture: string, edit: (zip: JSZip) => Promise<void> = async () => {}) => {
+    const zip = await JSZip.loadAsync(readFileSync(fixture));
+    await edit(zip);
+    return zip.generateAsync({ type: "uint8array", compression: "DEFLATE" });
+};
+const rename = async (zip: JSZip, from: string, to: string) => {
+    const file = zip.file(from);
+    if (!file) throw new Error(`no ${from}`);
+    const bytes = await file.async("uint8array");
+    zip.remove(from);
+    zip.file(to, bytes);
+};
+const emptyToolbarId = async (zip: JSZip) => {
+    const file = zip.file("word/customizations.xml");
+    if (!file) throw new Error("no word/customizations.xml");
+    const xml = await file.async("string");
+    const ids = xml.match(/r:id="[^"]*"/g) ?? [];
+    if (ids.length !== 1) throw new Error(`expected one r:id, found ${ids.length}`);
+    zip.file("word/customizations.xml", xml.replace(ids[0]!, 'r:id=""'));
+};
+
+const chunks: Record<string, Row[]> = {
+    s54a: withControls("s54a", [
+        [
+            "broken-customxml-calibration",
+            "#734 calibration (vectors.docx's shape): a customXml relationship from the main document's sidecar to an absent ../customXml/item1.xml",
+            () => brokenFromMain("customXml", "../customXml/item1.xml"),
+        ],
+        [
+            "broken-customxml-absolute",
+            "#734: the same target spelled /customXml/item1.xml",
+            () => brokenFromMain("customXml", "/customXml/item1.xml"),
+        ],
+        [
+            "broken-customxml-backslash",
+            "#734: the same target spelled ..\\customXml\\item1.xml",
+            () => brokenFromMain("customXml", "..\\customXml\\item1.xml"),
+        ],
+        [
+            "broken-customxml-escaped",
+            "#734: the same target spelled ../CUSTOMXML/%69tem1.xml",
+            () => brokenFromMain("customXml", "../CUSTOMXML/%69tem1.xml"),
+        ],
+        [
+            "broken-customxml-above-root",
+            "#734: the same target spelled ../../customXml/item1.xml (above the package root)",
+            () => brokenFromMain("customXml", "../../customXml/item1.xml"),
+        ],
+    ]),
+    s54b: withControls("s54b", [
+        [
+            "broken-media-calibration",
+            "#734 calibration (tolerated): an image relationship from the main document's sidecar to an absent media/image9.png",
+            () => brokenFromMain("image", "media/image9.png"),
+        ],
+        [
+            "broken-image-media-rels-folder",
+            "#734: an image relationship to an absent media/_rels/x.png",
+            () => brokenFromMain("image", "media/_rels/x.png"),
+        ],
+        ["broken-image-notes-rels", "#734: an image relationship to an absent notes.rels", () => brokenFromMain("image", "notes.rels")],
+        [
+            "broken-image-word-customxml",
+            "#734: an image relationship to an absent word/../customXml/x.png (resolves to word/customXml/x.png)",
+            () => brokenFromMain("image", "word/../customXml/x.png"),
+        ],
+        [
+            "broken-customxml-from-glossary",
+            "#734: a reached glossary's customXml relationship to an absent ../customXml/item1.xml (resolves under word/)",
+            () => brokenFromGlossary("customXml", "../customXml/item1.xml"),
+        ],
+    ]),
+    s54c: withControls("s54c", [
+        ["toolbar-clean-calibration", "#743 calibration: the Word-clean toolbar fixture re-zipped unchanged", () => rezip(CLEAN_TOOLBAR)],
+        [
+            "toolbar-clean-sidecar-upper-rels",
+            "#743: the same with its sidecar stored as word/_rels/customizations.xml.RELS",
+            () => rezip(CLEAN_TOOLBAR, (zip) => rename(zip, "word/_rels/customizations.xml.rels", "word/_rels/customizations.xml.RELS")),
+        ],
+        ["toolbar-clean-empty-id", '#743: the same with wne:toolbarData r:id=""', () => rezip(CLEAN_TOOLBAR, emptyToolbarId)],
+        [
+            "toolbar-broken-calibration",
+            "#743 calibration: the Word-refused toolbar fixture re-zipped unchanged",
+            () => rezip(BROKEN_TOOLBAR),
+        ],
+        [
+            "toolbar-broken-upper-xml",
+            "#743: the same with word/customizations.xml and its sidecar stored with .XML spellings",
+            () =>
+                rezip(BROKEN_TOOLBAR, async (zip) => {
+                    await rename(zip, "word/customizations.xml", "word/customizations.XML");
+                    await rename(zip, "word/_rels/customizations.xml.rels", "word/_rels/customizations.XML.rels");
+                }),
+        ],
+    ]),
+    s54d: withControls("s54d", [
+        [
+            "dup-fonttable-package-rels",
+            "#744: the main document's fontTable relationship, and two more fontTable relationships in _rels/.rels",
+            () => dupInPackageRels("fontTable"),
+        ],
+        [
+            "dup-websettings-package-rels",
+            "#744: the main document's webSettings relationship, and two more webSettings relationships in _rels/.rels",
+            () => dupInPackageRels("webSettings"),
+        ],
+        [
+            "dup-websettings-glossary-sidecar",
+            "#744: a reached glossary's sidecar holds two webSettings relationships to two parts",
+            () => dupInGlossaryRels("webSettings"),
+        ],
+        [
+            "dup-theme-glossary-sidecar",
+            "#744: a reached glossary's sidecar holds two theme relationships to two parts",
+            () => dupInGlossaryRels("theme"),
+        ],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        wordValid: await verdict("word-valid"),
+        strict: await verdict("strict"),
+    };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-54 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s54a", "s54b", "s54c", "s54d")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0]) if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": "control-minimal" in spec["name"],
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s54/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-54 parts of docs/plans/evidence/word-probes-2026-10-24.md into s54/section.md.
+
+Reads the chunk's specimens.jsonl (validator columns at 0b26c414, written by the builder), both runs'
+logcheck.jsonl and pdf/manifest.jsonl, and s54/results.json from compare.py.
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s54a", "s54b", "s54c", "s54d")
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s54/results.json").read_text())}
+
+
+def cell(v):
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw, starts, ends = [], [], [], []
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "observedAt": t.isoformat(), "staged": row["staged"], "logVerdict": row["logVerdict"],
+                                   "tableVerdict": row["outcomesVerdict"], "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+out = [
+    f"### Session 54: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on 2026-10-26, validator columns at 0b26c414",
+    "",
+    "The shapes three follow-ups need before they land: the broken relationship targets whose `rels-broken` verdict "
+    "[#734](https://github.com/jandira-tech/docx-validate/issues/734) moves from the Target's spelling to the part it resolves to; the "
+    "attached-toolbar spellings and the empty id of [#743](https://github.com/jandira-tech/docx-validate/issues/743) (the review of layers "
+    "151–155, findings 2, 3 and S1); and the four duplicate cells session 50 did not show "
+    "([#744](https://github.com/jandira-tech/docx-validate/issues/744), finding 4). Each chunk ran twice, as two separate driver runs of "
+    "byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by "
+    "`wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; all 27 rows "
+    "agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen.",
+    "",
+    "- A `customXml` relationship from the main document's relationships part to an absent package-root `customXml/item1.xml` gets the "
+    "recovery offer however the Target spells it: `../customXml/item1.xml` (vectors.docx's shape, the calibration), `/customXml/item1.xml`, "
+    "`..\\customXml\\item1.xml`, `../CUSTOMXML/%69tem1.xml`, and `../../customXml/item1.xml`, whose extra `..` stays at the package root as "
+    "RFC 3986 removes dot segments. Word-valid at 0b26c414 rejects only the calibration and the last: three false negatives.",
+    "- An image relationship to an absent `media/_rels/x.png`, `notes.rels` or `word/../customXml/x.png` opens clean, as the broken "
+    "`media/image9.png` calibration does, and so does a reached glossary's `customXml` relationship to an absent `../customXml/item1.xml` "
+    "(which resolves to `word/customXml/item1.xml`). Word-valid at 0b26c414 rejects all four by their spelling: false positives.",
+    "- The Word-clean toolbar fixture (`tests/fixtures/working/package.word-attached-toolbar-utf8-repaired.docx`, re-zipped) opens clean "
+    "unchanged, with its relationships part stored as `word/_rels/customizations.xml.RELS`, and with `wne:toolbarData r:id=\"\"`. "
+    "Word-valid rejects the `.RELS` spelling through `word-attached-toolbar-relationship`: a false positive. The Word-refused fixture "
+    "(`tests/fixtures/broken/package.word-attached-toolbar-utf8.docx`) gets the recovery offer unchanged and with `word/customizations.xml` "
+    "and its relationships part stored with `.XML` spellings; word-valid passes the `.XML` spelling: a false negative.",
+    "- Two fontTable or two webSettings relationships in `_rels/.rels`, beside the main document's own, open clean; two webSettings or two "
+    "theme relationships in a reached glossary's relationships part get the recovery offer. Word-valid agrees on all four.",
+    "",
+    "| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at 0b26c414 | strict at 0b26c414 |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 54</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 54 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s54builder.mts", ROOT / "s54builder.mts", "ts"), ("compare.py", ROOT / "s54/compare.py", "python"),
+                         ("section.py", ROOT / "s54/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s54/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records")
+`````
+
+</details>

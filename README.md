@@ -253,6 +253,15 @@ Choice, and one a `w:hyperlink` names; these are the targets Word-valid's
 `rels-broken` still blocked, so they no longer block (Word probes session 40,
 `s40a`/`s40b`). Lenient keeps its historical scan, which skips only `http…` and
 `mailto:` targets ([#665](https://github.com/jandira-tech/docx-validate/issues/665)).
+An internal broken target blocks Word-valid when the part it resolves to is a
+relationships part or a `customXml` part outside `word/`, whatever the Target's
+spelling: Word 16.115 refused an absent package-root `customXml/item1.xml` spelled
+`../customXml/item1.xml`, `/customXml/item1.xml`, `..\customXml\item1.xml`,
+`../CUSTOMXML/%69tem1.xml` and `../../customXml/item1.xml` (an extra `..` stays at
+the package root), and opened clean an absent image spelled `media/_rels/x.png`,
+`notes.rels` or `word/../customXml/x.png` and a reached glossary's absent
+`../customXml/item1.xml` (Word probes session 54, `s54a`/`s54b`;
+[#734](https://github.com/jandira-tech/docx-validate/issues/734)).
 
 The processed view is DOCX/DOCM-only: every observation behind it is Word
 opening `.docx` files, and PowerPoint was never shown markup compatibility in a
