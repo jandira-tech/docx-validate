@@ -4,15 +4,17 @@
  */
 
 /**
- * Session 49 (s49c) and session 50 (s50a/s50b) specimens for #717: Word
- * 16.115 offers recovery for two relationships of one kind only in the
- * relationships part of a story root — the main document, or a glossary
- * document a main-document `glossaryDocument` relationship reaches. The
- * same pair in `_rels/.rels` or in a referenced header's sidecar opens
- * clean, and the real styles relationship beside one or two External
- * styles relationships is still refused. The fontTable and webSettings
- * rows in `_rels/.rels` and the webSettings and theme rows in a glossary
- * sidecar were not shown to Word; they follow the same rule.
+ * Session 49 (s49c), session 50 (s50a/s50b) and session 54 (s54d)
+ * specimens for #717 and #744: Word 16.115 offers recovery for two
+ * relationships of one kind only in the relationships part of a story
+ * root — the main document, or a glossary document a main-document
+ * `glossaryDocument` relationship reaches. The same pair in
+ * `_rels/.rels` or in a referenced header's sidecar opens clean —
+ * session 54 (s54d) showed the fontTable and webSettings `_rels/.rels`
+ * cells — and the real styles relationship beside one or two External
+ * styles relationships is still refused. Two webSettings or two theme
+ * relationships in a reached glossary's own sidecar get the recovery
+ * offer (s54d).
  */
 
 import { promises as fs } from "node:fs";
@@ -161,8 +163,6 @@ const withExternalStyles = (count: number): Promise<Buffer> =>
     });
 
 const ALL_KINDS: readonly Kind[] = ["styles", "numbering", "settings", "fontTable", "webSettings", "theme"];
-const PROBED_PACKAGE_KINDS: readonly Kind[] = ["styles", "numbering", "settings", "theme"];
-const PROBED_GLOSSARY_KINDS: readonly Kind[] = ["styles", "numbering", "settings", "fontTable"];
 
 const run = async (
     dir: string,
@@ -176,7 +176,7 @@ const run = async (
 const hasDuplicateFinding = (result: Awaited<ReturnType<typeof validate>>, kind?: Kind): boolean =>
     result.issues.some((issue) => (kind === undefined ? issue.code?.startsWith("word-duplicate-") : issue.code === CHECK_OF[kind]));
 
-describe("duplicate-relationship scope (#717; sessions 49 and 50)", { timeout: 60000 }, () => {
+describe("duplicate-relationship scope (#717, #744; sessions 49, 50 and 54)", { timeout: 60000 }, () => {
     it("opens the minimal control clean", async () => {
         await withTempDir(async (dir) => {
             const { wordValid, strict } = await run(dir, "control-minimal", () => buildDocx({ ...P }));
@@ -195,7 +195,7 @@ describe("duplicate-relationship scope (#717; sessions 49 and 50)", { timeout: 6
         });
     });
 
-    it.each(PROBED_PACKAGE_KINDS)("does not report two %s relationships in _rels/.rels (session probe)", async (kind) => {
+    it.each(ALL_KINDS)("does not report two %s relationships in _rels/.rels (sessions 49, 50; s54d)", async (kind) => {
         await withTempDir(async (dir) => {
             const { wordValid, strict } = await run(dir, `dup-${kind}-package-rels`, () => dupInPackageRels(kind));
             expect(hasDuplicateFinding(wordValid)).toBe(false);
@@ -203,18 +203,6 @@ describe("duplicate-relationship scope (#717; sessions 49 and 50)", { timeout: 6
             expect(hasDuplicateFinding(strict)).toBe(false);
         });
     });
-
-    it.each(["fontTable", "webSettings"] as const)(
-        "does not report two %s relationships in _rels/.rels (unshown, same rule)",
-        async (kind) => {
-            await withTempDir(async (dir) => {
-                const { wordValid, strict } = await run(dir, `dup-${kind}-package-rels`, () => dupInPackageRels(kind));
-                expect(hasDuplicateFinding(wordValid)).toBe(false);
-                expect(wordValid.valid).toBe(true);
-                expect(hasDuplicateFinding(strict)).toBe(false);
-            });
-        },
-    );
 
     it.each(ALL_KINDS)("does not report two %s relationships in a referenced header's sidecar", async (kind) => {
         await withTempDir(async (dir) => {
@@ -225,7 +213,7 @@ describe("duplicate-relationship scope (#717; sessions 49 and 50)", { timeout: 6
         });
     });
 
-    it.each(PROBED_GLOSSARY_KINDS)("reports two %s relationships in a reached glossary's sidecar (session probe)", async (kind) => {
+    it.each(ALL_KINDS)("reports two %s relationships in a reached glossary's sidecar (sessions 49, 50; s54d)", async (kind) => {
         await withTempDir(async (dir) => {
             const { wordValid, strict } = await run(dir, `dup-${kind}-glossary-sidecar`, () => dupInGlossaryRels(kind));
             expect(wordValid.issues.some((issue) => issue.severity === "error" && issue.code === CHECK_OF[kind])).toBe(true);
@@ -233,18 +221,6 @@ describe("duplicate-relationship scope (#717; sessions 49 and 50)", { timeout: 6
             expect(strict.issues.some((issue) => issue.severity === "error" && issue.code === CHECK_OF[kind])).toBe(true);
         });
     });
-
-    it.each(["webSettings", "theme"] as const)(
-        "reports two %s relationships in a reached glossary's sidecar (unshown, same rule)",
-        async (kind) => {
-            await withTempDir(async (dir) => {
-                const { wordValid, strict } = await run(dir, `dup-${kind}-glossary-sidecar`, () => dupInGlossaryRels(kind));
-                expect(wordValid.issues.some((issue) => issue.severity === "error" && issue.code === CHECK_OF[kind])).toBe(true);
-                expect(wordValid.valid).toBe(false);
-                expect(strict.issues.some((issue) => issue.severity === "error" && issue.code === CHECK_OF[kind])).toBe(true);
-            });
-        },
-    );
 
     it.each([1, 2])("reports the real styles relationship beside %i External styles relationship(s)", async (count) => {
         await withTempDir(async (dir) => {

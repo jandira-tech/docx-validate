@@ -47,19 +47,19 @@
  * Two `footnotes` relationships open clean, so footnotes keeps
  * no check of its own.
  *
- * Scope (#717; sessions 49 and 50, Word 16.115): two of one kind in a
- * reached glossary's own relationships part — to two parts in its
- * folder — is refused for styles, numbering, settings and fontTable,
- * while the same pair in `_rels/.rels` opens clean for styles,
- * numbering, settings and theme, and in a referenced header's sidecar
- * for all six kinds. Every rule here therefore judges only the
- * relationships part of each story root — the main document and every
- * glossary document a main-document `glossaryDocument` relationship
- * reaches, found by relationship as `wordStoryRootParts` finds them —
- * and a relationships part no story root owns is not judged. The
- * fontTable and webSettings cells in `_rels/.rels` and the webSettings
- * and theme cells in a glossary sidecar were not shown to Word; they
- * follow the same rule. Lenient output is unchanged.
+ * Scope (#717; sessions 49, 50 and 54, Word 16.115): two of one kind in
+ * a reached glossary's own relationships part — to two parts in its
+ * folder — is refused for styles, numbering, settings and fontTable
+ * (sessions 49 and 50) and for webSettings and theme (session 54,
+ * s54d), while the same pair in `_rels/.rels` opens clean for styles,
+ * numbering, settings and theme (sessions 49 and 50) and for fontTable
+ * and webSettings (s54d), and in a referenced header's sidecar for all
+ * six kinds. Every rule here therefore judges only the relationships
+ * part of each story root — the main document and every glossary
+ * document a main-document `glossaryDocument` relationship reaches,
+ * found by relationship as `wordStoryRootParts` finds them — and a
+ * relationships part no story root owns is not judged. Lenient output
+ * is unchanged.
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
