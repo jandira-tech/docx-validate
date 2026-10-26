@@ -185,6 +185,66 @@ const NON_XML_COMMENTS: Record<string, string> = {
     "word/comments.xml": commentsPart("7", "0000AAAA"),
 };
 
+describe("dangling comment references (#784, session 58 s58a)", { timeout: 30000 }, () => {
+    it.each(["5", "0"])("judges comment reference 0 against a part holding comment %s", async (held) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "comments.docx");
+            await writeFile(
+                file,
+                await buildDocx({
+                    ...MINIMAL_PARTS,
+                    "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+                        "</w:r></w:p>",
+                        '</w:r><w:r><w:commentReference w:id="0"/></w:r></w:p>',
+                    ),
+                    "word/comments.xml": commentsPart(held, "0000AAAA"),
+                    "word/_rels/document.xml.rels": relsPart(rel("rId1", "styles", "styles.xml"), rel("rIdN", "comments", "comments.xml")),
+                    "[Content_Types].xml": withOverrides(override("word/comments.xml", COMMENTS_CT)),
+                }),
+            );
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(held === "0");
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual(
+                held === "0"
+                    ? []
+                    : [
+                          expect.objectContaining({
+                              code: "comment-marker-missing",
+                              path: "word/document.xml",
+                              message: expect.stringContaining('id="0"'),
+                          }),
+                      ],
+            );
+            const selected = await validate(file, { profile: "word-valid", checks: ["comments"] });
+            expect(selected.valid).toBe(result.valid);
+            expect(selected.issues).toEqual(commentIssues(result.issues));
+        });
+    });
+
+    it.each(["commentRangeStart", "commentRangeEnd"])("keeps a dangling %s without a commentReference advisory", async (marker) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "range-only.docx");
+            await writeFile(
+                file,
+                await buildDocx({
+                    ...commentPackage(),
+                    "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace("</w:p>", `<w:${marker} w:id="9"/></w:p>`),
+                }),
+            );
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(true);
+            expect(result.issues).toContainEqual(
+                expect.objectContaining({
+                    code: "comment-marker-missing",
+                    severity: "warning",
+                    message: expect.stringContaining('id="9"'),
+                }),
+            );
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+        });
+    });
+});
+
 describe("named comment validation (#384)", { timeout: 120_000 }, () => {
     it.each(["word-valid", "lenient"] as const)("selects comments with full-run findings under %s", async (profile) => {
         const selected = await validate(markerFixture, { profile, checks: ["comments"] });

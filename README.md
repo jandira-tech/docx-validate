@@ -513,7 +513,7 @@ names and input bytes unchanged.
 | `package`                 | `zip-bytes-after-eocd`, `zip-bytes-before-archive`, `zip-eocd-comment-overrun`, `opc-equivalent-part-names`, `opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, `opc-part-name-word-refused`, `opc-item-name-refused`                                                                                                                                                                                                             |
 | `math`, `tracked-changes` | `word-math-run-insertion`, `word-math-run-deletion`                                                                                                                                                                                                                                                                                                                                                                                               |
 | `math`                    | `word-math-parse`, `word-math-spre-body`                                                                                                                                                                                                                                                                                                                                                                                                          |
-| `story`                   | `word-shading-color`, `word-page-margin-attributes`, `word-run-misplaced`, `word-run-properties-misplaced`, `word-underline-misplaced`, `word-paragraph-properties-misplaced`, `word-section-properties-misplaced`, `word-footnote-reference-missing`, `word-numbering-picture-bullet`, `word-sdt-id-empty`, `word-text-contains-paragraph`                                                                                                       |
+| `story`                   | `word-shading-color`, `word-page-margin-attributes`, `word-run-misplaced`, `word-run-properties-misplaced`, `word-underline-misplaced`, `word-paragraph-properties-misplaced`, `word-section-properties-misplaced`, `word-footnote-reference-missing`, `word-endnote-reference-missing`, `word-numbering-picture-bullet`, `word-sdt-id-empty`, `word-text-contains-paragraph`                                                                     |
 | `tables`                  | `word-grid-column-attributes`, `word-cell-margin-order`, `word-table-properties-required`, `word-table-properties-misplaced`, `word-row-without-cell`, `word-cell-ends-with-table`                                                                                                                                                                                                                                                                |
 | `drawings`                | `word-textbox-content-namespace`, `word-drawing-extent-missing`, `word-drawing-extent-misplaced`, `word-picture-nvpicpr-missing`, `word-picture-sppr-missing`, `word-empty-drawing`, `word-anchor-missing-attribute`, `word-position-offset-and-align`, `word-drawing-scalar-whitespace`, `word-drawing-arc-radius`, `word-drawing-extent-negative`, `word-part-reference-relationship`                                                           |
 | `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`, `ct-override-partname-invalid`, `ct-override-partname-word-refused`, `ct-markup-compatibility`, `word-part-content-type-generic`, `word-part-content-type-inexact`, `word-part-content-type-mismatch`, `word-part-content-type-unrecognized`                                                                                                                                             |
@@ -935,6 +935,18 @@ full lenient run stops at a malformed part, so the comment checks then do not ru
 ([#391](https://github.com/jandira-tech/docx-validate/issues/391)). Full validation runs them once and records their ids in
 `executedChecks`; `--quick` does not select them. Like every other check, they
 find a comment part under an OPC-equivalent name (`word/comments.XML`).
+
+A dangling `w:commentReference` is a Word-valid error; a range start or end
+naming a missing comment without that reference stays a warning. The
+`comment-marker-missing` finding carries a registered reference fact, so its
+verdict does not depend on message text. The `story` checks
+`word-footnote-reference-missing` and `word-endnote-reference-missing` likewise
+reject references whose ids name no matching note. Session 58 (s58a, two runs,
+all four readings agree) showed recovery for the dangling comment and endnote
+references and clean opens for their matching-id calibrations
+([#784](https://github.com/jandira-tech/docx-validate/issues/784)).
+Endnote references inside a footnotes part stay unjudged, matching session 16's
+clean open: Word does not follow those references.
 
 Named `word-math-parse` runs and full runs that cannot stage the archive retain
 the positioned XML diagnostics without repeating `word-math-parse` for the same

@@ -8,7 +8,9 @@
  * Word offer recovery (fixture 1829). One such reference is enough.
  * Removing it opens clean once text-box deleted text is also gone.
  * A reference that names a present footnote opens clean. Duplicate
- * footnote ids are not this defect.
+ * footnote ids are not this defect. The same mechanism judges endnotes:
+ * Word session 58 (s58a) offers recovery for a reference to endnote 1 when
+ * the part holds only endnote 5; the matching-id calibration opens clean.
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
@@ -18,9 +20,9 @@ import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
 import path from "node:path";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
 
-export const wordFootnoteReferenceMissingCheck: CheckDefinition = {
-    id: "word-footnote-reference-missing",
-    description: "Footnote references name footnotes present in the package.",
+const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinition => ({
+    id: `word-${kind}-reference-missing`,
+    description: `${kind === "footnote" ? "Footnote" : "Endnote"} references name ${kind}s present in the package.`,
     groups: ["story"],
     formats: ["docx"],
     requires: ["xml-syntax"],
@@ -29,7 +31,7 @@ export const wordFootnoteReferenceMissingCheck: CheckDefinition = {
 
         const defined = new Set<string>();
         for (const xmlFile of ctx.partNames) {
-            if (path.posix.basename(xmlFile) !== "footnotes.xml") {
+            if (path.posix.basename(xmlFile) !== `${kind}s.xml`) {
                 continue;
             }
             const parsed = ctx.effectiveXml(xmlFile);
@@ -38,7 +40,7 @@ export const wordFootnoteReferenceMissingCheck: CheckDefinition = {
             }
             const dom = parsed.document;
             for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const notes = getElementsByTagNameNSAll(dom, ns, "footnote");
+                const notes = getElementsByTagNameNSAll(dom, ns, kind);
                 for (const entry of notes) {
                     const id = entry?.getAttributeNS(ns, "id");
                     if (id) {
@@ -53,8 +55,13 @@ export const wordFootnoteReferenceMissingCheck: CheckDefinition = {
                 continue;
             }
             const dom = parsed.document;
+            // Word does not follow endnote references from inside a footnote
+            // (session 16's clean-open calibration); keep that source unjudged.
+            if (kind === "endnote" && dom.documentElement?.localName === "footnotes") {
+                continue;
+            }
             for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const refs = getElementsByTagNameNSAll(dom, ns, "footnoteReference");
+                const refs = getElementsByTagNameNSAll(dom, ns, `${kind}Reference`);
                 for (const entry of refs) {
                     const id = entry?.getAttributeNS(ns, "id");
                     if (!id || defined.has(id)) {
@@ -63,11 +70,11 @@ export const wordFootnoteReferenceMissingCheck: CheckDefinition = {
                     issues.push({
                         severity: "error",
                         message:
-                            `A footnote reference uses id ${id}, and this package has no w:footnote with that id. ` +
+                            `${kind === "footnote" ? "A" : "An"} ${kind} reference uses id ${id}, and this package has no w:${kind} with that id. ` +
                             "Microsoft Word offers to recover the file. " +
-                            "Remove the w:footnoteReference, or add the matching footnote.",
+                            `Remove the w:${kind}Reference, or add the matching ${kind}.`,
                         path: xmlFile,
-                        code: "word-footnote-reference-missing",
+                        code: `word-${kind}-reference-missing`,
                     });
                 }
             }
@@ -75,4 +82,7 @@ export const wordFootnoteReferenceMissingCheck: CheckDefinition = {
 
         return issues;
     },
-};
+});
+
+export const wordFootnoteReferenceMissingCheck = noteReferenceMissingCheck("footnote");
+export const wordEndnoteReferenceMissingCheck = noteReferenceMissingCheck("endnote");

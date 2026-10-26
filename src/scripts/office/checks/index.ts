@@ -59,7 +59,7 @@ import { wordChoiceRequiresUndeclaredCheck } from "./word-choice-requires";
 import { wordSdtIdEmptyCheck } from "./word-sdt-id";
 import { wordAttachedToolbarRelationshipCheck, wordAttachedToolbarUtf8Check } from "./word-attached-toolbar";
 import { wordNumberingPictureBulletCheck } from "./word-numbering-picture-bullet";
-import { wordFootnoteReferenceMissingCheck } from "./word-footnote-reference";
+import { wordFootnoteReferenceMissingCheck, wordEndnoteReferenceMissingCheck } from "./word-footnote-reference";
 import { wordMathParseCheck, wordMathSpreBodyCheck } from "./word-body-math";
 import { commentMarkersCheck, commentThreadingCheck } from "./comments";
 import { xmlSyntaxCheck } from "./xml";
@@ -107,6 +107,7 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordMathParseCheck,
     wordMathSpreBodyCheck,
     wordFootnoteReferenceMissingCheck,
+    wordEndnoteReferenceMissingCheck,
     wordNumberingPictureBulletCheck,
     wordAttachedToolbarRelationshipCheck,
     wordAttachedToolbarUtf8Check,

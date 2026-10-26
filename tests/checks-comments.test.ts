@@ -8,6 +8,7 @@ import { runChecks } from "../src/lib/check-scheduler";
 import { ValidationContext } from "../src/lib/validation-context";
 import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
 import { parseXml } from "../src/lib/xml-helpers";
+import { isWordBlockingIssue } from "../src/scripts/office/validators/word-blocking";
 
 const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 const W14 = "http://schemas.microsoft.com/office/word/2010/wordml";
@@ -30,6 +31,24 @@ const runRegistered = async (id: string, parts: Readonly<Record<string, string>>
 };
 const markerIssues = (parts: Readonly<Record<string, string>>) => runRegistered("comment-markers", parts);
 const threadIssues = (parts: Readonly<Record<string, string>>) => runRegistered("comment-threading", parts);
+
+describe("comment reference facts (#784)", () => {
+    it.each([false, true])("distinguishes a missing reference from range-only markers (reference=%s)", async (reference) => {
+        const issues = await markerIssues({
+            "word/document.xml": document(
+                `<w:commentRangeStart w:id="9"/><w:commentRangeEnd w:id="9"/>${reference ? '<w:commentReference w:id="9"/>' : ""}`,
+            ),
+            "word/comments.xml": comments(""),
+        });
+        expect(issues).toHaveLength(1);
+        const issue = issues[0]!;
+        expect(issue.code).toBe("comment-marker-missing");
+        expect(isWordBlockingIssue(issue)).toBe(reference);
+        issue.message = reference ? "a range marker" : "w:commentReference names a missing comment";
+        expect(isWordBlockingIssue(issue)).toBe(reference);
+        expect(isWordBlockingIssue({ ...issue })).toBe(false);
+    });
+});
 
 // All package bytes in this suite are supplied in memory; no filesystem loaders or mocks.
 describe("registered comment checks", () => {
