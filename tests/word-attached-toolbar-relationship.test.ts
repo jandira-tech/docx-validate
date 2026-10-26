@@ -137,6 +137,35 @@ describe("session 54 (s54c) spellings (#743)", { timeout: 60000 }, () => {
             expect(selected.valid).toBe(true);
         });
     });
+
+    it.each(["_rels", "_RELS"])("resolves toolbar bytes from a custom/%s sidecar (#758)", async (folder) => {
+        const zip = await JSZip.loadAsync(await fs.readFile(BROKEN));
+        for (const [from, to] of [
+            ["word/customizations.xml", "custom/customizations.xml"],
+            [RELS, `custom/${folder}/customizations.xml.rels`],
+            ["word/attachedToolbars.bin", "custom/attachedToolbars.bin"],
+        ] as const) {
+            zip.file(to, await zip.file(from)!.async("uint8array"));
+            zip.remove(from);
+        }
+        const rels = await zip.file("word/_rels/document.xml.rels")!.async("string");
+        zip.file("word/_rels/document.xml.rels", rels.replace('Target="customizations.xml"', 'Target="../custom/customizations.xml"'));
+        const types = await zip.file("[Content_Types].xml")!.async("string");
+        zip.file("[Content_Types].xml", types.replace('PartName="/word/customizations.xml"', 'PartName="/custom/customizations.xml"'));
+        await withTempDir(async (dir) => {
+            const { full, selected } = await run(
+                dir,
+                `toolbar-custom-${folder}`,
+                await zip.generateAsync({ type: "uint8array", compression: "DEFLATE" }),
+            );
+            for (const result of [full, selected]) {
+                expect.soft(result.valid).toBe(false);
+                expect
+                    .soft(result.issues)
+                    .toContainEqual(expect.objectContaining({ severity: "error", code: UTF8, path: "custom/attachedToolbars.bin" }));
+            }
+        });
+    });
 });
 
 describe("word-attached-toolbar-relationship (#716; session 48)", { timeout: 60000 }, () => {

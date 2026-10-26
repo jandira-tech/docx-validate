@@ -89,32 +89,37 @@ describe("word-attached-toolbar-utf8", () => {
         const issues = await wordAttachedToolbarUtf8Check.run(ctx);
         expect(issues.map((issue) => issue.path)).toEqual(["word/a/tb.bin"]);
     });
-    it("looks up a repeated reference without rescanning every entry (#358)", async () => {
-        const filler = Object.fromEntries(Array.from({ length: 300 }, (_, i) => [`word/media/image${i}.png`, new Uint8Array([0])]));
-        const references = 60;
-        const ctx = ValidationContext.fromEntries({
-            ...filler,
-            "word/fontTable.xml": document(`<wne:toolbarData r:id="rId1"/>`.repeat(references)),
-            "word/_rels/fontTable.xml.rels": rels(toolbarRelation("rId1", "", "A/TB.bin")),
-            "word/a/tb.bin": new Uint8Array([0x00]),
-        });
-        const names = ctx.partNames;
-        let reads = 0;
-        const counted = new Proxy(names, {
-            get: (target, key, receiver) => {
-                if (typeof key === "string" && /^\d+$/.test(key)) {
-                    reads += 1;
-                }
-                return Reflect.get(target, key, receiver) as unknown;
-            },
-        });
-        vi.spyOn(ctx, "partNames", "get").mockReturnValue(counted);
+    it.each(["rels", "RELS", undefined])(
+        "looks up repeated references with sidecar %s without rescanning every entry (#358, #758)",
+        async (extension) => {
+            const filler = Object.fromEntries(Array.from({ length: 300 }, (_, i) => [`word/media/image${i}.png`, new Uint8Array([0])]));
+            const references = 60;
+            const ctx = ValidationContext.fromEntries({
+                ...filler,
+                "word/fontTable.xml": document(`<wne:toolbarData r:id="rId1"/>`.repeat(references)),
+                ...(extension === undefined
+                    ? { "word/settings.xml": document(`<wne:toolbarData r:id="rId1"/>`) }
+                    : { [`word/_rels/fontTable.xml.${extension}`]: rels(toolbarRelation("rId1", "", "A/TB.bin")) }),
+                "word/a/tb.bin": new Uint8Array([0x00]),
+            });
+            const names = ctx.partNames;
+            let reads = 0;
+            const counted = new Proxy(names, {
+                get: (target, key, receiver) => {
+                    if (typeof key === "string" && /^\d+$/.test(key)) {
+                        reads += 1;
+                    }
+                    return Reflect.get(target, key, receiver) as unknown;
+                },
+            });
+            vi.spyOn(ctx, "partNames", "get").mockReturnValue(counted);
 
-        expect(await wordAttachedToolbarUtf8Check.run(ctx)).toEqual([]);
-        // Building one index reads each entry a bounded number of times; a
-        // scan per reference would read them `references` times over.
-        expect(reads).toBeLessThan(5 * names.length);
-    });
+            expect(await wordAttachedToolbarUtf8Check.run(ctx)).toEqual([]);
+            // Building one index reads each entry a bounded number of times; a
+            // scan per reference would read them `references` times over.
+            expect(reads).toBeLessThan(5 * names.length);
+        },
+    );
     it("skips an External relationship, which names no package part (#359)", async () => {
         const ctx = ValidationContext.fromEntries({
             "word/fontTable.xml": document(`<wne:toolbarData r:id="rId1"/><wne:toolbarData r:id="rId2"/>`),
