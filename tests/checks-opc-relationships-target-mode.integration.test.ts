@@ -120,3 +120,104 @@ describe(CODE, () => {
         });
     });
 });
+
+describe("hyperlink TargetMode ownership (#773)", () => {
+    const parts = (mode: string): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        [MAIN]: MINIMAL_PARTS[MAIN]!.replace("<w:document ", `<w:document xmlns:r="${R}" `).replace(
+            "<w:r><w:t>Hello</w:t></w:r>",
+            '<w:hyperlink r:id="rId99"><w:r><w:t>link</w:t></w:r></w:hyperlink>',
+        ),
+        [SIDECAR]: append(MINIMAL_PARTS[SIDECAR]!, hyperlink(mode)),
+    });
+
+    it.each(["external", "EXTERNAL", "External "])("reports only the target-mode error for %j in a full word-valid run", async (mode) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "specimen.docx");
+            await writeFile(file, await buildDocx(parts(mode)));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([
+                expect.objectContaining({ code: CODE, path: SIDECAR, message: expect.stringContaining("rId99") }),
+            ]);
+            expect(result.issues.some((issue) => issue.code === "word-hyperlink-relationship")).toBe(false);
+        });
+    });
+
+    for (const code of [CODE, "word-hyperlink-relationship"]) {
+        it.each(["external", "EXTERNAL", "External "])(`pins the named ${code} run for %j`, async (mode) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "specimen.docx");
+                await writeFile(file, await buildDocx(parts(mode)));
+                const result = await validate(file, { profile: "word-valid", checks: [code] });
+                expect(result.valid).toBe(code !== CODE);
+                expect(result.issues.filter((issue) => issue.severity === "error")).toEqual(
+                    code === CODE ? [expect.objectContaining({ code: CODE, path: SIDECAR })] : [],
+                );
+            });
+        });
+    }
+
+    it.each(["Internal", "absent", "another Type", "missing relationship"])("keeps the hyperlink finding for %s", async (shape) => {
+        const specimen = parts("Internal");
+        if (shape === "absent") specimen[SIDECAR] = specimen[SIDECAR]!.replace(' TargetMode="Internal"', "");
+        if (shape === "another Type") {
+            specimen[SIDECAR] = specimen[SIDECAR]!.replace(`${R}/hyperlink`, `${R}/image`).replace(
+                'TargetMode="Internal"',
+                'TargetMode="external"',
+            );
+        }
+        if (shape === "missing relationship") specimen[SIDECAR] = MINIMAL_PARTS[SIDECAR]!;
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "specimen.docx");
+            await writeFile(file, await buildDocx(specimen));
+            for (const options of [{}, { checks: ["word-hyperlink-relationship"] }]) {
+                const result = await validate(file, { profile: "word-valid", ...options });
+                expect(result.valid).toBe(false);
+                expect(result.issues).toContainEqual(
+                    expect.objectContaining({
+                        code: "word-hyperlink-relationship",
+                        severity: "error",
+                        message: expect.stringContaining("rId99"),
+                    }),
+                );
+            }
+        });
+    });
+
+    it.each(["header", "glossary"])("keeps the hyperlink finding in a reached %s's sidecar", async (story) => {
+        const specimen = { ...MINIMAL_PARTS };
+        const part = story === "header" ? "word/header1.xml" : "word/glossary/document.xml";
+        const sidecar = story === "header" ? HEADER : "word/glossary/_rels/document.xml.rels";
+        const type = story === "header" ? "header" : "glossaryDocument";
+        const contentType = story === "header" ? "header" : "document.glossary";
+        const link = `<w:p><w:hyperlink r:id="rId99"><w:r><w:t>link</w:t></w:r></w:hyperlink></w:p>`;
+        specimen[MAIN] = specimen[MAIN]!.replace("<w:document ", `<w:document xmlns:r="${R}" `);
+        if (story === "header") {
+            specimen[MAIN] = specimen[MAIN]!.replace("<w:sectPr>", '<w:sectPr><w:headerReference w:type="default" r:id="rIdS"/>');
+        }
+        specimen[SIDECAR] = append(specimen[SIDECAR]!, `<Relationship Id="rIdS" Type="${R}/${type}" Target="${part.slice(5)}"/>`);
+        specimen[part] =
+            story === "header"
+                ? `<w:hdr xmlns:w="${W}" xmlns:r="${R}">${link}</w:hdr>`
+                : `<w:glossaryDocument xmlns:w="${W}" xmlns:r="${R}"><w:docParts><w:docPart><w:docPartBody>${link}</w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`;
+        specimen[sidecar] =
+            `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${hyperlink("external")}</Relationships>`;
+        specimen["[Content_Types].xml"] = specimen["[Content_Types].xml"]!.replace(
+            "</Types>",
+            `<Override PartName="/${part}" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.${contentType}+xml"/></Types>`,
+        );
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "specimen.docx");
+            await writeFile(file, await buildDocx(specimen));
+            for (const options of [{}, { checks: ["word-hyperlink-relationship"] }]) {
+                const result = await validate(file, { profile: "word-valid", ...options });
+                expect(result.valid).toBe(false);
+                expect(result.issues).toContainEqual(
+                    expect.objectContaining({ code: "word-hyperlink-relationship", severity: "error", path: part }),
+                );
+                expect(result.issues.some((issue) => issue.code === CODE)).toBe(false);
+            }
+        });
+    });
+});

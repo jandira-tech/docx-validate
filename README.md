@@ -1093,7 +1093,10 @@ Other relationships parts (glossary, footnotes, comments and so on) are unshown
 and keep their verdict too ([#753](https://github.com/jandira-tech/docx-validate/issues/753);
 session 55, `s55b`–`s55e` in `docs/plans/evidence/word-probes-2026-10-24.md`).
 Full word-valid and named runs block the same findings; strict reports errors,
-and lenient runs no Word rule. An absent `TargetMode` remains valid.
+and lenient runs no Word rule. An absent `TargetMode` is not this check's finding.
+A hyperlink naming a relationship with a misspelled present mode in this scope
+is reported here alone, without a second `word-hyperlink-relationship` error
+for that attribute ([#773](https://github.com/jandira-tech/docx-validate/issues/773)).
 
 `opc-relationships-structure` requires every relationships part to have a
 `Relationships` root in the package-relationships namespace and only `Relationship`
@@ -1185,6 +1188,14 @@ TargetMode still warns
 ([#614](https://github.com/jandira-tech/docx-validate/issues/614); session 28,
 chunk s28a, in
 [docs/plans/evidence/word-probes-2026-10-24.md](docs/plans/evidence/word-probes-2026-10-24.md)).
+A present `TargetMode` other than exactly `Internal` or `External` on an
+otherwise accepted hyperlink relationship is left to
+`opc-relationships-target-mode` wherever that check judges the relationships
+part. This also applies to a named `word-hyperlink-relationship` run: select
+`opc-relationships-target-mode` too to report that shape. An exactly `Internal`
+or absent mode, another Type, an unresolved id, and a misspelled mode in a
+header's or reached glossary's sidecar still receive the hyperlink finding
+([#773](https://github.com/jandira-tech/docx-validate/issues/773)).
 The finding is an error, and Word-blocking, under word-valid and strict;
 lenient runs no Word rule.
 

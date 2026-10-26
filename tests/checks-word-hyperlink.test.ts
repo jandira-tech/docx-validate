@@ -175,3 +175,36 @@ describe("word-hyperlink-relationship accepts exactly two Types (#614, Word 16.1
         });
     });
 });
+
+describe("hyperlink TargetMode scope (#773)", () => {
+    it.each(["external", "EXTERNAL", "External ", ""])("leaves a present %j to the main sidecar's target-mode check", async (mode) => {
+        const parts = hyperlinkRelTypeParts(`${R}/hyperlink`);
+        parts["word/_rels/document.xml.rels"] = parts["word/_rels/document.xml.rels"]!.replace(
+            'TargetMode="External"',
+            `TargetMode="${mode}"`,
+        );
+        expect(await wordHyperlinkRelationshipCheck.run(ValidationContext.fromEntries(parts))).toEqual([]);
+    });
+
+    it("shares the relationship-resolved scope with an OPC-equivalent sidecar", async () => {
+        const parts = hyperlinkRelTypeParts(`${R}/hyperlink`);
+        parts["word/_rels/document.xml.RELS"] = parts["word/_rels/document.xml.rels"]!.replace(
+            'TargetMode="External"',
+            'TargetMode="external"',
+        );
+        delete parts["word/_rels/document.xml.rels"];
+        expect(await wordHyperlinkRelationshipCheck.run(ValidationContext.fromEntries(parts))).toEqual([]);
+    });
+
+    it("keeps the hyperlink finding when the package does not name its owner as a main document", async () => {
+        const parts = hyperlinkRelTypeParts(`${R}/hyperlink`);
+        parts["word/_rels/document.xml.rels"] = parts["word/_rels/document.xml.rels"]!.replace(
+            'TargetMode="External"',
+            'TargetMode="external"',
+        );
+        delete parts["_rels/.rels"];
+        expect(await wordHyperlinkRelationshipCheck.run(ValidationContext.fromEntries(parts))).toEqual([
+            expect.objectContaining({ code: "word-hyperlink-relationship", severity: "error", path: "word/document.xml" }),
+        ]);
+    });
+});

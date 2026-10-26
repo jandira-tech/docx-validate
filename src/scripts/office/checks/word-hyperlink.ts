@@ -9,7 +9,9 @@
  * enough. Removing the `r:id`, or adding a Relationship with the Transitional
  * or the ISO Strict hyperlink Type and TargetMode `External`, opens clean. A
  * hyperlink relationship without TargetMode, and an external relationship of
- * another type, still warn. A hyperlink with no `r:id` is left alone.
+ * another type, still warn. A present misspelled TargetMode in a part
+ * opc-relationships-target-mode judges is that check's finding alone (#773),
+ * even when this check runs by name. A hyperlink with no `r:id` is left alone.
  *
  * Word session 28 (#614; chunk s28a in
  * docs/plans/evidence/word-probes-2026-10-24.md) pinned the accepted Types to
@@ -21,10 +23,10 @@
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
-import { equivalentPartLookup } from "../../../lib/content-types";
-import type { ValidationIssue } from "../../../lib/types";
+import type { Profile, ValidationIssue } from "../../../lib/types";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
-import path from "node:path";
+import { sidecarOf } from "../../../lib/word-read-parts";
+import { targetModeRelationshipParts } from "./opc-relationships-target-mode";
 import type { ValidationContext } from "../../../lib/validation-context";
 import { getElementsByTagNameNSAll, getRelationshipChildren } from "../../../lib/xml-helpers";
 
@@ -46,15 +48,13 @@ const isAcceptedHyperlinkRelationshipType = (type: string): boolean => ACCEPTED_
 /** An absent sidecar leaves every id unresolved; an unparseable sidecar is diagnosed by xml-syntax. */
 const externalHyperlinkRelationshipIds = (
     ctx: ValidationContext,
-    xmlFile: string,
-    findPart: (partName: string) => string | undefined,
-): Map<string, { type: string; targetMode: string; externalHyperlink: boolean }> | null => {
-    const relsFile = findPart(path.posix.join(path.posix.dirname(xmlFile), "_rels", `${path.posix.basename(xmlFile)}.rels`));
+    relsFile: string | undefined,
+): Map<string, { type: string; targetMode: string | null; externalHyperlink: boolean }> | null => {
     const parsed = relsFile === undefined ? undefined : ctx.effectiveXml(relsFile);
     if (parsed && !parsed.ok) {
         return null;
     }
-    const out = new Map<string, { type: string; targetMode: string; externalHyperlink: boolean }>();
+    const out = new Map<string, { type: string; targetMode: string | null; externalHyperlink: boolean }>();
     if (!parsed) {
         return out;
     }
@@ -64,7 +64,7 @@ const externalHyperlinkRelationshipIds = (
             continue;
         }
         const type = rel.getAttribute("Type") ?? "";
-        const targetMode = rel.getAttribute("TargetMode") ?? "";
+        const targetMode = rel.hasAttribute("TargetMode") ? (rel.getAttribute("TargetMode") ?? "") : null;
         out.set(id, { type, targetMode, externalHyperlink: isAcceptedHyperlinkRelationshipType(type) && targetMode === "External" });
     }
     return out;
@@ -76,9 +76,9 @@ export const wordHyperlinkRelationshipCheck: CheckDefinition = {
     groups: ["relationships"],
     formats: ["docx"],
     requires: ["xml-syntax"],
-    run: (ctx: ValidationContext): ValidationIssue[] => {
+    run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
-        const findPart = equivalentPartLookup(ctx.partNames);
+        const targetModeParts = await targetModeRelationshipParts(ctx, profile);
 
         const relationshipNamespaces = [OFFICE_RELATIONSHIPS_NAMESPACE, "http://purl.oclc.org/ooxml/officeDocument/relationships"];
         for (const xmlFile of ctx.storyParts()) {
@@ -87,7 +87,8 @@ export const wordHyperlinkRelationshipCheck: CheckDefinition = {
                 continue;
             }
             const dom = parsed.document;
-            const rels = externalHyperlinkRelationshipIds(ctx, xmlFile, findPart);
+            const relsFile = sidecarOf(ctx.partNames, xmlFile);
+            const rels = externalHyperlinkRelationshipIds(ctx, relsFile);
             if (!rels) {
                 continue;
             }
@@ -107,6 +108,19 @@ export const wordHyperlinkRelationshipCheck: CheckDefinition = {
                     }
                     const rel = rels.get(rid);
                     if (rel?.externalHyperlink) {
+                        continue;
+                    }
+                    // #773: a misspelled mode in this shared scope is the
+                    // target-mode check's finding, including named runs.
+                    if (
+                        rel &&
+                        isAcceptedHyperlinkRelationshipType(rel.type) &&
+                        rel.targetMode !== null &&
+                        rel.targetMode !== "Internal" &&
+                        rel.targetMode !== "External" &&
+                        relsFile !== undefined &&
+                        targetModeParts.has(relsFile)
+                    ) {
                         continue;
                     }
                     let why: string;
