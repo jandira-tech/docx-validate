@@ -441,8 +441,9 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * part that is not one of the XML parts: nothing is judged, and no
      * other part stands in for it (#693). Only when no relationship names
      * a stored part, or the package view cannot be read, the last file
-     * named `fallbackName` in the main document's folder (#699), never one
-     * from another story's folder; `null` when there is none.
+     * named `fallbackName` in the main document's folder (#699); `null`
+     * when there is none. A part stored elsewhere that no relationship
+     * names is not judged.
      */
     private async mainRelatedPath(segment: string, fallbackName: string): Promise<string | null | undefined> {
         try {
@@ -462,8 +463,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     /**
      * The folder the by-name fallback reads (#699): the folder of the
      * first main document `wordTypedRelationshipTargets` names, or `word`
-     * when the package relationships name none or cannot be read, as
-     * `mainCommentsPart` does for the comment checks (#696).
+     * when the package relationships name none or cannot be read. It reads
+     * the profile's relationship view, so under lenient an `officeDocument`
+     * relationship only a markup-compatibility branch carries names no
+     * folder and `word` is read.
      */
     private async mainDocumentFolder(): Promise<string> {
         try {
