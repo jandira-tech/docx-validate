@@ -61,7 +61,7 @@ import {
     resolveContentType,
 } from "../../../lib/content-types";
 import type { Profile, ValidationIssue } from "../../../lib/types";
-import type { ValidationContext } from "../../../lib/validation-context";
+import type { ValidationContext, XmlPart } from "../../../lib/validation-context";
 import { wordReadTypedTargets } from "../../../lib/word-read-parts";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
 import { REPORTING_SEGMENT_ORDER } from "./word-part-content-type-generic";
@@ -165,16 +165,21 @@ const segmentForMediaType = (mediaType: string): string | undefined =>
  * relationship nothing references also targets opens clean (s58a/s58b)
  * — the observed shape is the read story typed styles, not the styles
  * part co-reached. Session 58's rows were own-root parts, so its pairs
- * co-reach only a part holding the story's own root (#803). Word refused
+ * co-reach only a part whose effective root is the story's own (#803).
+ * Session 63 (s63b) also refused a comments part whose stored root is an
+ * mc:AlternateContent unwrapping to the comments root, typed with the
+ * styles type exactly; that shape cites session 63, and the endnotes and
+ * footnotes parts in it, or any inexact spelling of it, are unprobed and
+ * keep the verdict they had before #785 (#818). Word refused
  * every shape whatever the Override says, so a matching reach on the
  * same part exempts none of it, and typings
  * no session showed keep their verdict. Main-document reaches only: a
  * glossary's own relationship co-reaches nothing here. The session-58
  * pairs also take the styles media type with a parameter, which session
  * 62 (s62c) refused; their finding cites that session instead of
- * session 58 (#802). A padded spelling with no parameter, and any
- * inexact spelling on the header and footer pairs, stay unprobed and
- * keep their verdict.
+ * session 58 (#802); session 62's rows stored the story's own root. A
+ * padded spelling with no parameter, and any inexact spelling on the
+ * header and footer pairs, stay unprobed and keep their verdict.
  */
 const READ_STORY_COREACH_SESSIONS: ReadonlyMap<string, string> = new Map([
     ["footer\nofficeDocument", "sessions 53 and 57"],
@@ -261,28 +266,40 @@ export const wordPartContentTypeMismatchFindings = async (
         // whose part is typed with one of the observed pairs' mapped types,
         // which no matching reach exempts — the main document's reaches
         // only, never a glossary's own relationship. Session 58 showed
-        // own-root parts, so its pairs co-reach only a part whose
-        // effective root is the story's own (#803).
-        const ownStoryRoot = (segment: string): boolean => {
-            const parsed = ctx.effectiveXml(part);
+        // own-root parts, so its pairs co-reach only a part whose effective
+        // root is the story's own (#803).
+        const rootIsOwn = (parsed: XmlPart | undefined, segment: string): boolean => {
             const root = parsed?.ok === true ? parsed.document.documentElement : null;
             return root?.localName === segment && WORD_PARAGRAPH_NAMESPACES.includes(root?.namespaceURI ?? "");
         };
-        const isReadStoryCoreach = (entry: (typeof entries)[number]): boolean => {
+        // The session a read story co-reach cites, or undefined when `entry`
+        // is none.
+        const storyCoreachSession = (entry: (typeof entries)[number]): string | undefined => {
             const session = READ_STORY_COREACH_SESSIONS.get(`${entry.segment}\n${segmentForMediaType(mediaType)}`);
-            return (
-                session !== undefined &&
-                LAZY_OBSERVED_SEGMENTS.has(entry.segment) &&
-                entry.via !== "glossary" &&
-                // The session-58 pairs also take the styles media type with
-                // a parameter, which session 62 (s62c) refused; a padded
-                // spelling with no parameter, and the header and footer
-                // pairs' inexact spellings, are unprobed (#802).
-                (exactSpelling || (session === "session 58" && declared.includes(";"))) &&
-                readKeys?.has(`${entry.via ?? "main"}\n${canonical}\n${entry.segment}`) === true &&
-                (session !== "session 58" || ownStoryRoot(entry.segment))
-            );
+            if (
+                session === undefined ||
+                !LAZY_OBSERVED_SEGMENTS.has(entry.segment) ||
+                entry.via === "glossary" ||
+                readKeys?.has(`${entry.via ?? "main"}\n${canonical}\n${entry.segment}`) !== true
+            ) {
+                return undefined;
+            }
+            if (session !== "session 58") return exactSpelling ? session : undefined;
+            if (!rootIsOwn(ctx.effectiveXml(part), entry.segment)) return undefined;
+            // Sessions 58 and 62 stored the story's own root: the exact
+            // spelling cites session 58, and the styles media type with a
+            // parameter session 62 (s62c), while a padded spelling with no
+            // parameter is unprobed (#802).
+            if (rootIsOwn(ctx.xml(part), entry.segment)) {
+                return exactSpelling ? session : declared.includes(";") ? "session 62" : undefined;
+            }
+            // A stored mc:AlternateContent root whose selected Choice holds
+            // the story's root: session 63 (s63b) refused the comments part
+            // typed styles exactly; the other stories and spellings are
+            // unprobed (#818).
+            return entry.segment === "comments" && exactSpelling ? "session 63" : undefined;
         };
+        const isReadStoryCoreach = (entry: (typeof entries)[number]): boolean => storyCoreachSession(entry) !== undefined;
         // The observed set covers the read header/footer swaps, the eagerly
         // parsed reaches — the main document and the main document's own
         // styles, settings and numbering relationships, which need no usage
@@ -326,9 +343,7 @@ export const wordPartContentTypeMismatchFindings = async (
             observed === undefined
                 ? undefined
                 : isReadStoryCoreach(observed)
-                  ? exactSpelling
-                      ? READ_STORY_COREACH_SESSIONS.get(`${observed.segment}\n${segmentForMediaType(mediaType)}`)
-                      : "session 62"
+                  ? storyCoreachSession(observed)
                   : swaps.includes(observed)
                     ? OBSERVED_SESSIONS.get(`${observed.via ?? "main"}\n${observed.segment}`)
                     : OBSERVED_SESSIONS.get(`${observed.via ?? "main"}\n${observed.segment}\n${segmentForMediaType(mediaType)}`);

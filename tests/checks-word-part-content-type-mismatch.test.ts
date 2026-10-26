@@ -580,6 +580,153 @@ describe("parameterized styles spelling on the session 58 pairs (#802, session 6
     }, 60_000);
 });
 
+// A stored `mc:AlternateContent` root unwraps to the selected branch's
+// element in the effective view, so a selected `w14` Choice holding the
+// story's own root passes #803's guard, while session 58's rows (s58b) and
+// session 62's parameterized spelling (s62c) stored the story's own root.
+// Session 63 (s63b, two runs, all readings agree) offered recovery for the
+// comments part in that shape typed with the styles type exactly, and
+// opened the same part typed comments clean, so that finding cites session
+// 63. The endnotes and footnotes parts in it, and the charset spelling,
+// are unprobed and keep the verdict they had before #785, as the foreign
+// root does (#803): silent under word-valid, the spec-path finding under
+// strict, and no session citation (#818).
+describe("a story part whose stored root is an AlternateContent (#818, session 63 s63b)", () => {
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    const MC = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+    const W14 = "http://schemas.microsoft.com/office/word/2010/wordml";
+    const TEXT_P = "<w:p><w:r><w:t>x</w:t></w:r></w:p>";
+    /** Session 62's parameterized spelling of the styles type (s62c). */
+    const STYLES_CHARSET = `${storyContentType("styles")}; charset=utf-8`;
+    /** Each story's own root holding the item `id`, and the body's reference to the held one. */
+    const STORIES = {
+        comments: {
+            root: (id: string) => `<w:comments xmlns:w="${W}"><w:comment w:id="${id}" w:author="a">${TEXT_P}</w:comment></w:comments>`,
+            ref: `<w:r><w:commentReference w:id="0"/></w:r>`,
+            held: "0",
+        },
+        endnotes: {
+            root: (id: string) => `<w:endnotes xmlns:w="${W}"><w:endnote w:id="${id}">${TEXT_P}</w:endnote></w:endnotes>`,
+            ref: `<w:r><w:endnoteReference w:id="1"/></w:r>`,
+            held: "1",
+        },
+        footnotes: {
+            root: (id: string) => `<w:footnotes xmlns:w="${W}"><w:footnote w:id="${id}">${TEXT_P}</w:footnote></w:footnotes>`,
+            ref: `<w:r><w:footnoteReference w:id="1"/></w:r>`,
+            held: "1",
+        },
+    } as const;
+    type Story = keyof typeof STORIES;
+    /**
+     * A used `word/<story>.xml` whose stored root is `mc:AlternateContent`, a
+     * selected `w14` Choice holding the story's own root with the referenced
+     * item and an empty Fallback, typed `type` — session 63's s63b specimen
+     * for the comments part.
+     */
+    const alternateRootStoryParts = (story: Story, type: string): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(`xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`).replace(
+            "</w:r></w:p>",
+            `</w:r>${STORIES[story].ref}</w:p>`,
+        ),
+        [`word/${story}.xml`]:
+            `<mc:AlternateContent xmlns:mc="${MC}" xmlns:w="${W}" xmlns:w14="${W14}">` +
+            `<mc:Choice Requires="w14">${STORIES[story].root(STORIES[story].held)}</mc:Choice><mc:Fallback/>` +
+            `</mc:AlternateContent>`,
+        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rIdS" Type="${R}/${story}" Target="${story}.xml"/></Relationships>`,
+        ),
+        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"].replace(
+            "</Types>",
+            `<Override PartName="/word/${story}.xml" ContentType="${type}"/></Types>`,
+        ),
+    });
+
+    it("rejects the used comments part typed styles, citing session 63 (s63b)", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "alternate-root.docx");
+            writeFileSync(file, await buildDocx(alternateRootStoryParts("comments", storyContentType("styles"))));
+            const expected = [
+                expect.objectContaining({
+                    severity: "error",
+                    path: "word/comments.xml",
+                    message: expect.stringContaining("Word 16.115 offers to recover the package (session 63)."),
+                }),
+            ];
+            const partial = await validate(file, { checks: [ID] });
+            expect(partial.valid).toBe(false);
+            expect(partial.issues.filter((issue) => issue.code === ID)).toEqual(expected);
+            const result = await validate(file);
+            expect(result.valid).toBe(false);
+            expect(result.issues.filter((issue) => issue.code === ID)).toEqual(expected);
+            const strict = (await validate(file, { profile: "strict" })).issues.filter((issue) => issue.code === ID);
+            expect(strict).toEqual([
+                expect.objectContaining({
+                    severity: "error",
+                    path: "word/comments.xml",
+                    message: expect.stringContaining(
+                        "clause 11.3 assigns the comments part. Word 16.115 offers to recover the package (session 63).",
+                    ),
+                }),
+            ]);
+        });
+    }, 60_000);
+
+    it.each(["endnotes", "footnotes"] as const)(
+        "reports no mismatch for a used %s part whose stored root is an AlternateContent under word-valid",
+        async (story) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "alternate-root.docx");
+                writeFileSync(file, await buildDocx(alternateRootStoryParts(story, storyContentType("styles"))));
+                const partial = await validate(file, { checks: [ID] });
+                expect(partial.valid).toBe(true);
+                expect(partial.issues.filter((issue) => issue.code === ID)).toEqual([]);
+                const result = await validate(file);
+                expect(result.valid, "the selected Choice holds the referenced item, so only warnings remain").toBe(true);
+                expect(result.issues.filter((issue) => issue.code === ID)).toEqual([]);
+            });
+        },
+        60_000,
+    );
+
+    it.each(["endnotes", "footnotes"] as const)(
+        "cites the spec, not session 58, for a strict %s part whose stored root is an AlternateContent",
+        async (story) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "alternate-root.docx");
+                writeFileSync(file, await buildDocx(alternateRootStoryParts(story, storyContentType("styles"))));
+                const found = (await validate(file, { profile: "strict" })).issues.filter((issue) => issue.code === ID);
+                expect(found).toEqual([
+                    expect.objectContaining({
+                        severity: "error",
+                        path: `word/${story}.xml`,
+                        message: expect.stringContaining("ECMA-376 Part 1 (4th edition), clause 11.3"),
+                    }),
+                ]);
+                expect(found[0]?.message).not.toContain("session");
+            });
+        },
+        60_000,
+    );
+
+    it.each(["comments", "endnotes", "footnotes"] as const)(
+        "reports no mismatch for a used %s part whose stored root is an AlternateContent typed with the charset parameter",
+        async (story) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "alternate-root-charset.docx");
+                writeFileSync(file, await buildDocx(alternateRootStoryParts(story, STYLES_CHARSET)));
+                const partial = await validate(file, { checks: [ID] });
+                expect(partial.valid).toBe(true);
+                expect(partial.issues.filter((issue) => issue.code === ID)).toEqual([]);
+                expect((await validate(file)).issues.filter((issue) => issue.code === ID)).toEqual([]);
+            });
+        },
+        60_000,
+    );
+});
+
 // Sessions 49 and 50 (2026-10-26): Word 16.115 offered recovery for the main
 // styles part typed with the settings type (s49b), and for a related settings
 // part typed with the styles type, a related numbering part typed with the
