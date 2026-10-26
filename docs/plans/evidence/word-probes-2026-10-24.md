@@ -18617,3 +18617,314 @@ print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
 `````
 
 </details>
+
+### Session 60: 18:51Z–18:51Z on 2026-10-26, validator columns at 04ec2f08
+
+Notes parts stored under another name ([#793](https://github.com/jandira-tech/docx-validate/issues/793)). `word-footnote-reference-missing`, and since #784 `word-endnote-reference-missing`, collect the defined note ids only from parts named `footnotes.xml` or `endnotes.xml`, while references are read in every story part. One chunk, opening and closing with the minimal control. It ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 6 of 6 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen.
+
+- A used footnotes part stored as `word/notes-foot.xml`, and a used endnotes part stored as `word/notes-end.xml`, each related by the main document's `footnotes` or `endnotes` relationship and holding the note the body references, open clean, as do the same parts stored under the standard names. Each renamed row's PDF is the same size as its calibration's (14684 bytes for footnotes, 14956 for endnotes). Word-valid at 04ec2f08 rejects both renamed rows: two false positives, the footnote one older than the stack and the endnote one introduced by #784's layer.
+
+| Run    | Observed             | Specimen                              | Shape                                                                                                                              | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome    | word-valid at 04ec2f08                     | strict at 04ec2f08                         |
+| ------ | -------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ----------- | ----------- | ---------- | ------------------------------------------ | ------------------------------------------ |
+| `s60a` | 18:51:44Z, 18:51:56Z | `s60a-control-minimal`                | control                                                                                                                            | `965bbaebb2339172` | clean-open  | clean-open  | clean-open | valid                                      | valid                                      |
+| `s60a` | 18:51:44Z, 18:51:56Z | `footnotes-renamed-matching`          | a used footnotes part stored as word/notes-foot.xml, related by the footnotes relationship, holding footnote 1 the body references | `25b8655b3ec6576d` | clean-open  | clean-open  | clean-open | invalid: `word-footnote-reference-missing` | invalid: `word-footnote-reference-missing` |
+| `s60a` | 18:51:44Z, 18:51:56Z | `endnotes-renamed-matching`           | a used endnotes part stored as word/notes-end.xml, related by the endnotes relationship, holding endnote 1 the body references     | `330da54a65f28f77` | clean-open  | clean-open  | clean-open | invalid: `word-endnote-reference-missing`  | invalid: `word-endnote-reference-missing`  |
+| `s60a` | 18:51:44Z, 18:51:56Z | `footnotes-standard-name-calibration` | calibration: the same footnotes part stored as word/footnotes.xml                                                                  | `a1461c67c75b8e15` | clean-open  | clean-open  | clean-open | valid                                      | invalid: `paraid-missing-element`          |
+| `s60a` | 18:51:44Z, 18:51:56Z | `endnotes-standard-name-calibration`  | calibration: the same endnotes part stored as word/endnotes.xml                                                                    | `a5d891bab4e04d2c` | clean-open  | clean-open  | clean-open | valid                                      | invalid: `paraid-missing-element`          |
+| `s60a` | 18:51:44Z, 18:51:56Z | `s60a-control-minimal-end`            | control                                                                                                                            | `965bbaebb2339172` | clean-open  | clean-open  | clean-open | valid                                      | valid                                      |
+
+<details><summary>Raw records, session 60</summary>
+
+```jsonl
+{"run": "s60a", "pass": 1, "name": "s60a-control-minimal", "sha256": "965bbaebb2339172ec7072a1e9da3e0d8725690be9b1790bb55b303cc00a7fe4", "observedAt": "2026-10-26T18:51:44+00:00", "staged": "00005__wfv__s60a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s60a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s60a", "pass": 2, "name": "s60a-control-minimal", "sha256": "965bbaebb2339172ec7072a1e9da3e0d8725690be9b1790bb55b303cc00a7fe4", "observedAt": "2026-10-26T18:51:56+00:00", "staged": "00005__wfv__s60a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s60a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s60a", "pass": 1, "name": "footnotes-renamed-matching", "sha256": "25b8655b3ec6576dee326462683292a3107421dfc09ab10465be2fe53da5d199", "observedAt": "2026-10-26T18:51:44+00:00", "staged": "00002__wfv__footnotes-renamed-matching.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-renamed-matching_byword.pdf (14684 bytes), no dialog named the file"]}
+{"run": "s60a", "pass": 2, "name": "footnotes-renamed-matching", "sha256": "25b8655b3ec6576dee326462683292a3107421dfc09ab10465be2fe53da5d199", "observedAt": "2026-10-26T18:51:56+00:00", "staged": "00002__wfv__footnotes-renamed-matching.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-renamed-matching_byword.pdf (14684 bytes), no dialog named the file"]}
+{"run": "s60a", "pass": 1, "name": "endnotes-renamed-matching", "sha256": "330da54a65f28f779c50f65a3d2c3e814fe55741d4b7306260dee153140c64ce", "observedAt": "2026-10-26T18:51:44+00:00", "staged": "00000__wfv__endnotes-renamed-matching.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-renamed-matching_byword.pdf (14956 bytes), no dialog named the file"]}
+{"run": "s60a", "pass": 2, "name": "endnotes-renamed-matching", "sha256": "330da54a65f28f779c50f65a3d2c3e814fe55741d4b7306260dee153140c64ce", "observedAt": "2026-10-26T18:51:56+00:00", "staged": "00000__wfv__endnotes-renamed-matching.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-renamed-matching_byword.pdf (14956 bytes), no dialog named the file"]}
+{"run": "s60a", "pass": 1, "name": "footnotes-standard-name-calibration", "sha256": "a1461c67c75b8e150ff06412e1a8ec9646b97dbec355a119625286bf51c772b0", "observedAt": "2026-10-26T18:51:44+00:00", "staged": "00003__wfv__footnotes-standard-name-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-standard-name-calibration_byword.pdf (14684 bytes), no dialog named the file"]}
+{"run": "s60a", "pass": 2, "name": "footnotes-standard-name-calibration", "sha256": "a1461c67c75b8e150ff06412e1a8ec9646b97dbec355a119625286bf51c772b0", "observedAt": "2026-10-26T18:51:56+00:00", "staged": "00003__wfv__footnotes-standard-name-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF footnotes-standard-name-calibration_byword.pdf (14684 bytes), no dialog named the file"]}
+{"run": "s60a", "pass": 1, "name": "endnotes-standard-name-calibration", "sha256": "a5d891bab4e04d2c214370c483b124f3b201e54912eea72c0d49dd6e978db739", "observedAt": "2026-10-26T18:51:44+00:00", "staged": "00001__wfv__endnotes-standard-name-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-standard-name-calibration_byword.pdf (14956 bytes), no dialog named the file"]}
+{"run": "s60a", "pass": 2, "name": "endnotes-standard-name-calibration", "sha256": "a5d891bab4e04d2c214370c483b124f3b201e54912eea72c0d49dd6e978db739", "observedAt": "2026-10-26T18:51:56+00:00", "staged": "00001__wfv__endnotes-standard-name-calibration.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF endnotes-standard-name-calibration_byword.pdf (14956 bytes), no dialog named the file"]}
+{"run": "s60a", "pass": 1, "name": "s60a-control-minimal-end", "sha256": "965bbaebb2339172ec7072a1e9da3e0d8725690be9b1790bb55b303cc00a7fe4", "observedAt": "2026-10-26T18:51:44+00:00", "staged": "00004__wfv__s60a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s60a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s60a", "pass": 2, "name": "s60a-control-minimal-end", "sha256": "965bbaebb2339172ec7072a1e9da3e0d8725690be9b1790bb55b303cc00a7fe4", "observedAt": "2026-10-26T18:51:56+00:00", "staged": "00004__wfv__s60a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s60a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 60 builder, cross-check and section scripts</summary>
+
+Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s60builder.mts`:
+
+```ts
+// Session 60 (2026-10-26): note parts stored under another name. word-footnote-reference-missing finds the defined
+// footnotes by part basename (`footnotes.xml`), and lane 784's word-endnote-reference-missing does the same for
+// `endnotes.xml`, while references are read in every story part. A footnotes or endnotes part the main document
+// relates under another name, holding the id the body references, is judged dangling by name. This session asks Word
+// whether it opens such a package clean (as relationship-based reading predicts), with the standard names as
+// calibrations.
+// Helpers are copied from s57builder.mts (mainWith, relationship, appendRels, overrides).
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s60a pnpm exec node --import tsx s60builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const WML = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+const CT = "[Content_Types].xml";
+const MAIN = "word/document.xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const P = MINIMAL_PARTS as Record<string, string>;
+const XML_DECL = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, segment: string, target: string) =>
+    `<Relationship Id="${id}" Type="${R}/${segment}" Target="${target}"/>`;
+const appendRels = (rels: string, extra: string) => replaceOnce(rels, "</Relationships>", `${extra}</Relationships>`);
+const overrides = (ct: string, ...entries: Array<[string, string]>) =>
+    replaceOnce(
+        ct,
+        "</Types>",
+        `${entries.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+const control = () => buildDocx({ ...P });
+/** `parts` with `run` appended inside the main document's only paragraph. */
+const mainWith = (parts: Record<string, string>, run: string): Record<string, string> => ({
+    ...parts,
+    [MAIN]: replaceOnce(parts[MAIN]!, "</w:r></w:p>", `</w:r>${run}</w:p>`),
+});
+
+type Kind = "footnote" | "endnote";
+const NOTE_P = "<w:p><w:r><w:t>Note</w:t></w:r></w:p>";
+/** A used notes part holding note 1, stored at `word/<name>` and related as rIdN; the body references note 1. */
+const notesAt = (kind: Kind, name: string) =>
+    buildDocx(
+        mainWith(
+            {
+                ...P,
+                [`word/${name}`]: `${XML_DECL}<w:${kind}s xmlns:w="${W}"><w:${kind} w:id="1">${NOTE_P}</w:${kind}></w:${kind}s>`,
+                [SIDECAR]: appendRels(P[SIDECAR]!, relationship("rIdN", `${kind}s`, name)),
+                [CT]: overrides(P[CT]!, [`word/${name}`, `${WML}.${kind}s+xml`]),
+            },
+            `<w:r><w:${kind}Reference w:id="1"/></w:r>`,
+        ),
+    );
+
+type Row = [string, string, () => Promise<Uint8Array>];
+const withControls = (chunk: string, rows: Row[]): Row[] => [
+    [`${chunk}-control-minimal`, "control", control],
+    ...rows,
+    [`${chunk}-control-minimal-end`, "control", control],
+];
+
+const chunks: Record<string, Row[]> = {
+    s60a: withControls("s60a", [
+        [
+            "footnotes-renamed-matching",
+            "a used footnotes part stored as word/notes-foot.xml, related by the footnotes relationship, holding footnote 1 the body references",
+            () => notesAt("footnote", "notes-foot.xml"),
+        ],
+        [
+            "endnotes-renamed-matching",
+            "a used endnotes part stored as word/notes-end.xml, related by the endnotes relationship, holding endnote 1 the body references",
+            () => notesAt("endnote", "notes-end.xml"),
+        ],
+        [
+            "footnotes-standard-name-calibration",
+            "calibration: the same footnotes part stored as word/footnotes.xml",
+            () => notesAt("footnote", "footnotes.xml"),
+        ],
+        [
+            "endnotes-standard-name-calibration",
+            "calibration: the same endnotes part stored as word/endnotes.xml",
+            () => notesAt("endnote", "endnotes.xml"),
+        ],
+    ]),
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        wordValid: await verdict("word-valid"),
+        strict: await verdict("strict"),
+    };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-60 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s60a",)
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0]) if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": "control-minimal" in spec["name"],
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s60/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-60 parts of docs/plans/evidence/word-probes-2026-10-24.md into s60/section.md.
+
+Reads the chunk's specimens.jsonl (validator columns at 04ec2f08, written by the builder), both runs'
+logcheck.jsonl and pdf/manifest.jsonl, and s60/results.json from compare.py.
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s60a",)
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s60/results.json").read_text())}
+
+
+def cell(v):
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw, starts, ends = [], [], [], []
+agreed = 0
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        agreed += result["agreed"]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "observedAt": t.isoformat(), "staged": row["staged"], "logVerdict": row["logVerdict"],
+                                   "tableVerdict": row["outcomesVerdict"], "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+out = [
+    f"### Session 60: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on 2026-10-26, validator columns at 04ec2f08",
+    "",
+    "Notes parts stored under another name "
+    "([#793](https://github.com/jandira-tech/docx-validate/issues/793)). `word-footnote-reference-missing`, and since #784 "
+    "`word-endnote-reference-missing`, collect the defined note ids only from parts named `footnotes.xml` or `endnotes.xml`, "
+    "while references are read in every story part. One chunk, opening and closing with the minimal control. It ran twice, as two "
+    "separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's "
+    f"`logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and "
+    f"`unknown` otherwise; {agreed} of {len(rows)} rows agree. The two times in Observed are the ends of the first and second runs. "
+    "Shape is the builder's description of the specimen.",
+    "",
+    "- A used footnotes part stored as `word/notes-foot.xml`, and a used endnotes part stored as `word/notes-end.xml`, each related "
+    "by the main document's `footnotes` or `endnotes` relationship and holding the note the body references, open clean, as do "
+    "the same parts stored under the standard names. Each renamed row's PDF is the same size as its calibration's (14684 bytes "
+    "for footnotes, 14956 for endnotes). Word-valid at 04ec2f08 rejects both renamed rows: two false positives, the footnote one "
+    "older than the stack and the endnote one introduced by #784's layer.",
+    "",
+    "| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at 04ec2f08 | strict at 04ec2f08 |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 60</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 60 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second run and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s60builder.mts", ROOT / "s60builder.mts", "ts"), ("compare.py", ROOT / "s60/compare.py", "python"),
+                         ("section.py", ROOT / "s60/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s60/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records,", agreed, "agreed")
+`````
+
+</details>
