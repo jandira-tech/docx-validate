@@ -396,27 +396,26 @@ describe("note references in a read header (#806, session 62 s62d/s62e)", { time
         ),
     });
 
-    /** The s62 builder's `withReadHeader`: a section-referenced header holding note reference 1; the footer variant is an unprobed guard. */
-    const withReadStory = (kind: "footnote" | "endnote", held: string, segment: "header" | "footer" = "header"): Record<string, string> => {
+    /** The s62 builder's `withReadHeader`: a section-referenced header holding note reference 1. */
+    const withReadHeader = (kind: "footnote" | "endnote", held: string): Record<string, string> => {
         const parts = withNotes(kind, held);
-        const root = segment === "header" ? "hdr" : "ftr";
         return {
             ...parts,
             "word/document.xml": parts["word/document.xml"]!.replace(
                 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"',
                 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:u="urn:example:unknown"',
-            ).replace("<w:sectPr>", `<w:sectPr><w:${segment}Reference w:type="default" r:id="rIdH"/>`),
-            [`word/${segment}1.xml`]:
+            ).replace("<w:sectPr>", `<w:sectPr><w:headerReference w:type="default" r:id="rIdH"/>`),
+            "word/header1.xml":
                 '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
-                `<w:${root} xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">` +
-                `<w:p><w:r><w:t>Header</w:t></w:r><w:r><w:${kind}Reference w:id="1"/></w:r></w:p></w:${root}>`,
+                `<w:hdr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">` +
+                `<w:p><w:r><w:t>Header</w:t></w:r><w:r><w:${kind}Reference w:id="1"/></w:r></w:p></w:hdr>`,
             "word/_rels/document.xml.rels": parts["word/_rels/document.xml.rels"]!.replace(
                 "</Relationships>",
-                `<Relationship Id="rIdH" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/${segment}" Target="${segment}1.xml"/></Relationships>`,
+                `<Relationship Id="rIdH" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml"/></Relationships>`,
             ),
             "[Content_Types].xml": parts["[Content_Types].xml"]!.replace(
                 "</Types>",
-                `<Override PartName="/word/${segment}1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.${segment}+xml"/></Types>`,
+                `<Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/></Types>`,
             ),
         };
     };
@@ -427,7 +426,7 @@ describe("note references in a read header (#806, session 62 s62d/s62e)", { time
     ] as const)("accepts the read header's dangling %s reference in a full run", async (kind, code) => {
         await withTempDir(async (dir) => {
             const file = path.join(dir, "read-header.docx");
-            await writeFile(file, await buildDocx(withReadStory(kind, "5")));
+            await writeFile(file, await buildDocx(withReadHeader(kind, "5")));
             const result = await validate(file, { profile: "word-valid" });
             expect(result.valid).toBe(true);
             expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
@@ -441,7 +440,7 @@ describe("note references in a read header (#806, session 62 s62d/s62e)", { time
     ] as const)("accepts the read header's dangling %s reference in a selected run", async (kind, code) => {
         await withTempDir(async (dir) => {
             const file = path.join(dir, "read-header-selected.docx");
-            await writeFile(file, await buildDocx(withReadStory(kind, "5")));
+            await writeFile(file, await buildDocx(withReadHeader(kind, "5")));
             const result = await validate(file, { profile: "word-valid", checks: [code] });
             expect(result.valid).toBe(true);
             expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
@@ -455,7 +454,7 @@ describe("note references in a read header (#806, session 62 s62d/s62e)", { time
     ] as const)("reports no missing %s reference from the read header under strict", async (kind, code) => {
         await withTempDir(async (dir) => {
             const file = path.join(dir, "read-header-strict.docx");
-            await writeFile(file, await buildDocx(withReadStory(kind, "5")));
+            await writeFile(file, await buildDocx(withReadHeader(kind, "5")));
             const result = await validate(file, { profile: "strict" });
             expect(result.issues.filter((issue) => issue.code === code)).toEqual([]);
         });
@@ -467,25 +466,13 @@ describe("note references in a read header (#806, session 62 s62d/s62e)", { time
     ] as const)("accepts the read header's matching-%s calibration", async (kind, code) => {
         await withTempDir(async (dir) => {
             const file = path.join(dir, "read-header-calibration.docx");
-            await writeFile(file, await buildDocx(withReadStory(kind, "1")));
+            await writeFile(file, await buildDocx(withReadHeader(kind, "1")));
             const result = await validate(file, { profile: "word-valid" });
             expect(result.valid).toBe(true);
             expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
             const selected = await validate(file, { profile: "word-valid", checks: [code] });
             expect(selected.valid).toBe(true);
             expect(selected.issues.filter((issue) => issue.severity === "error")).toEqual([]);
-        });
-    });
-
-    it("still rejects the dangling footnote reference moved to a read footer (unprobed)", async () => {
-        await withTempDir(async (dir) => {
-            const file = path.join(dir, "read-footer.docx");
-            await writeFile(file, await buildDocx(withReadStory("footnote", "5", "footer")));
-            const result = await validate(file, { profile: "word-valid" });
-            expect(result.valid).toBe(false);
-            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([
-                expect.objectContaining({ code: "word-footnote-reference-missing", path: "word/footer1.xml" }),
-            ]);
         });
     });
 
@@ -508,6 +495,105 @@ describe("note references in a read header (#806, session 62 s62d/s62e)", { time
             expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([
                 expect.objectContaining({ code: "word-footnote-reference-missing", path: "word/document.xml" }),
             ]);
+        });
+    });
+});
+
+describe("note references in a read footer (#826, session 63 s63d)", { timeout: 30000 }, () => {
+    /** The s63 builder's `withNotes`: the related `word/<kind>s.xml` holds note `held`. */
+    const withNotes = (kind: "footnote" | "endnote", held: string): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        [`word/${kind}s.xml`]:
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
+            `<w:${kind}s xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">` +
+            `<w:${kind} w:id="${held}"><w:p><w:r><w:t>Text</w:t></w:r></w:p></w:${kind}></w:${kind}s>`,
+        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rIdN" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/${kind}s" Target="${kind}s.xml"/></Relationships>`,
+        ),
+        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+            "</Types>",
+            `<Override PartName="/word/${kind}s.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.${kind}s+xml"/></Types>`,
+        ),
+    });
+
+    /** The s63 builder's `withReadFooter`: a section-referenced `word/footer1.xml` holding note reference 1. */
+    const withReadFooter = (kind: "footnote" | "endnote", held: string): Record<string, string> => {
+        const parts = withNotes(kind, held);
+        return {
+            ...parts,
+            "word/document.xml": parts["word/document.xml"]!.replace(
+                'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"',
+                'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"',
+            ).replace("<w:sectPr>", `<w:sectPr><w:footerReference w:type="default" r:id="rIdF"/>`),
+            "word/footer1.xml":
+                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
+                `<w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">` +
+                `<w:p><w:r><w:t>Footer</w:t></w:r><w:r><w:${kind}Reference w:id="1"/></w:r></w:p></w:ftr>`,
+            "word/_rels/document.xml.rels": parts["word/_rels/document.xml.rels"]!.replace(
+                "</Relationships>",
+                '<Relationship Id="rIdF" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/></Relationships>',
+            ),
+            "[Content_Types].xml": parts["[Content_Types].xml"]!.replace(
+                "</Types>",
+                '<Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>',
+            ),
+        };
+    };
+
+    it.each([
+        ["endnote", "word-endnote-reference-missing"],
+        ["footnote", "word-footnote-reference-missing"],
+    ] as const)("accepts the read footer's dangling %s reference in a full run", async (kind, code) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "read-footer.docx");
+            await writeFile(file, await buildDocx(withReadFooter(kind, "5")));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(true);
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+            expect(result.issues.filter((issue) => issue.code === code)).toEqual([]);
+        });
+    });
+
+    it.each([
+        ["endnote", "word-endnote-reference-missing"],
+        ["footnote", "word-footnote-reference-missing"],
+    ] as const)("accepts the read footer's dangling %s reference in a selected run", async (kind, code) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "read-footer-selected.docx");
+            await writeFile(file, await buildDocx(withReadFooter(kind, "5")));
+            const result = await validate(file, { profile: "word-valid", checks: [code] });
+            expect(result.valid).toBe(true);
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+            expect(result.issues.filter((issue) => issue.code === code)).toEqual([]);
+        });
+    });
+
+    it.each([
+        ["endnote", "word-endnote-reference-missing"],
+        ["footnote", "word-footnote-reference-missing"],
+    ] as const)("reports no missing %s reference from the read footer under strict", async (kind, code) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "read-footer-strict.docx");
+            await writeFile(file, await buildDocx(withReadFooter(kind, "5")));
+            const result = await validate(file, { profile: "strict" });
+            expect(result.issues.filter((issue) => issue.code === code)).toEqual([]);
+        });
+    });
+
+    it.each([
+        ["endnote", "word-endnote-reference-missing"],
+        ["footnote", "word-footnote-reference-missing"],
+    ] as const)("accepts the read footer's matching-%s calibration", async (kind, code) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "read-footer-calibration.docx");
+            await writeFile(file, await buildDocx(withReadFooter(kind, "1")));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(true);
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+            const selected = await validate(file, { profile: "word-valid", checks: [code] });
+            expect(selected.valid).toBe(true);
+            expect(selected.issues.filter((issue) => issue.severity === "error")).toEqual([]);
         });
     });
 });
@@ -679,6 +765,26 @@ describe("a package view the read model cannot use (#816)", { timeout: 30000 }, 
                 "word/header1.xml":
                     '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
                     `<w:hdr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:r><w:${kind}Reference w:id="1"/></w:r></w:p></w:hdr>`,
+            });
+            await writeFile(file, await buildDocx(parts));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "word-main-document-part")).toBe(true);
+            expect(result.issues.filter((issue) => issue.code === code)).toEqual([]);
+            const selected = await validate(file, { profile: "word-valid", checks: [code] });
+            expect(selected.issues.filter((issue) => issue.code === code)).toEqual([]);
+        });
+    });
+
+    it.each(["footnote", "endnote"] as const)("keeps a footer's dangling %s reference unjudged, as #826 does", async (kind) => {
+        await withTempDir(async (dir) => {
+            const code = `word-${kind}-reference-missing`;
+            const file = path.join(dir, "package-defect-footer.docx");
+            const parts = packageRelsDefects.missing!({
+                ...MINIMAL_PARTS,
+                "word/footer1.xml":
+                    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
+                    `<w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:r><w:${kind}Reference w:id="1"/></w:r></w:p></w:ftr>`,
             });
             await writeFile(file, await buildDocx(parts));
             const result = await validate(file, { profile: "word-valid" });
