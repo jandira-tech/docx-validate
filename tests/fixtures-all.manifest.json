@@ -587,12 +587,7 @@
             "relativePath": "broken/package.word-textbox-deleted-text-shape.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": [
-                    "comment-thread-count-mismatch",
-                    "paraid-missing-element",
-                    "style-reference-undefined",
-                    "word-textbox-deleted-text"
-                ]
+                "errorCodes": ["comment-thread-count-mismatch", "paraid-missing-element", "word-textbox-deleted-text"]
             },
             "lenient": {
                 "valid": false,
@@ -10404,7 +10399,7 @@
             "relativePath": "working/package.word-textbox-deleted-text-shape-repaired.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["comment-thread-count-mismatch", "paraid-missing-element", "style-reference-undefined"]
+                "errorCodes": ["comment-thread-count-mismatch", "paraid-missing-element"]
             },
             "lenient": {
                 "valid": false,
@@ -10438,7 +10433,7 @@
             "relativePath": "working/package.word-textbox-inner-deletion.docx",
             "strict": {
                 "valid": false,
-                "errorCodes": ["comment-thread-count-mismatch", "paraid-missing-element", "style-reference-undefined"]
+                "errorCodes": ["comment-thread-count-mismatch", "paraid-missing-element"]
             },
             "lenient": {
                 "valid": false,

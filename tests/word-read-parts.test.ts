@@ -1598,8 +1598,8 @@ describe("a part related by two relationship types keeps every segment (#593)", 
                 new Set(["header", "styles"]),
             ),
         ).toEqual([
-            { part: "word/glossary/styles2.xml", segment: first, via: "glossary" },
-            { part: "word/glossary/styles2.xml", segment: second, via: "glossary" },
+            { part: "word/glossary/styles2.xml", segment: first, via: "glossary", root: "word/glossary/document.xml" },
+            { part: "word/glossary/styles2.xml", segment: second, via: "glossary", root: "word/glossary/document.xml" },
         ]);
     });
 
@@ -1621,7 +1621,7 @@ describe("a part related by two relationship types keeps every segment (#593)", 
     ] as const)("wordReadTypedTargets reads the glossary's part through styles alone, %s first", async (first, second) => {
         const typed = await wordReadTypedTargets(ValidationContext.fromEntries(dualGlossary(first, second)));
         expect(typed.filter((target) => target.part === "word/glossary/styles2.xml")).toEqual([
-            { part: "word/glossary/styles2.xml", segment: "styles", via: "glossary" },
+            { part: "word/glossary/styles2.xml", segment: "styles", via: "glossary", root: "word/glossary/document.xml" },
         ]);
     });
 

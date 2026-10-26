@@ -312,6 +312,13 @@ export type WordTypedTarget = {
      * main-document targets.
      */
     readonly via?: "glossary";
+    /**
+     * The stored name of the reached glossary document whose own
+     * relationships named the part — set on `via: "glossary"` entries so a
+     * consumer can judge the part through the root that reads it (#698).
+     * Absent for main-document targets.
+     */
+    readonly root?: string;
 };
 
 /**
@@ -480,7 +487,7 @@ export const glossaryTypedRelationshipTargets = async (
                 continue;
             }
             seen.add(key);
-            targets.push({ part: target, segment, via: "glossary" });
+            targets.push({ part: target, segment, via: "glossary", root: glossary });
         }
     }
     return targets;
@@ -513,7 +520,8 @@ const storyRootReadParts = async (
     via?: "glossary",
     profile?: Profile,
 ): Promise<readonly WordTypedTarget[]> => {
-    const typed = (part: string, segment: string): WordTypedTarget => (via === undefined ? { part, segment } : { part, segment, via });
+    const typed = (part: string, segment: string): WordTypedTarget =>
+        via === undefined ? { part, segment } : { part, segment, via, root };
     const targets: WordTypedTarget[] = [typed(root, "officeDocument")];
     const sidecar = sidecarOf(reach.names, root);
     if (sidecar !== undefined) {
