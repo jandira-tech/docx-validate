@@ -44,9 +44,10 @@
  * eagerly parsed reaches, which need no usage lookup, and the read
  * story co-reach of the observed pairs; fontTable, webSettings, theme
  * and every glossary reach were not shown a mapped type, the comments,
- * footnotes and endnotes reaches only the styles type (session 58),
- * and a story part typed with a type no session showed stays silent
- * until probed. Strict judges every mapped relationship.
+ * footnotes and endnotes reaches only the styles type, exact (session 58)
+ * or with a parameter (session 62 s62c, #802), and a story part typed
+ * with a type no session showed stays silent until probed. Strict judges
+ * every mapped relationship.
  * Clause 11.3 of ECMA-376 Part 1 (4th edition) assigns the WML types; theme
  * is DrawingML and its assignment is in clause 14.2.7 instead.
  */
@@ -168,8 +169,12 @@ const segmentForMediaType = (mediaType: string): string | undefined =>
  * every shape whatever the Override says, so a matching reach on the
  * same part exempts none of it, and typings
  * no session showed keep their verdict. Main-document reaches only: a
- * glossary's own relationship co-reaches nothing here. An exact spelling
- * only; an inexact one is the inexact check's finding.
+ * glossary's own relationship co-reaches nothing here. The session-58
+ * pairs also take the styles media type with a parameter, which session
+ * 62 (s62c) refused; their finding cites that session instead of
+ * session 58 (#802). A padded spelling with no parameter, and any
+ * inexact spelling on the header and footer pairs, stay unprobed and
+ * keep their verdict.
  */
 const READ_STORY_COREACH_SESSIONS: ReadonlyMap<string, string> = new Map([
     ["footer\nofficeDocument", "sessions 53 and 57"],
@@ -216,6 +221,10 @@ export const wordPartContentTypeMismatchFindings = async (
         if (resolved === null) continue;
         const declared = resolved.contentType;
         const mediaType = contentTypeMediaType(declared);
+        // Whether the declared value spells its media type exactly, with no
+        // parameter or padding; the session-58 co-reach pairs below also
+        // take one with a parameter (#802).
+        const exactSpelling = asciiLowercase(declared) === mediaType;
         // Generic XML and unknown types belong outside this check.
         if (!MAPPED_MEDIA_TYPES.has(mediaType)) continue;
         const matches = (segment: string): boolean => expectedContentTypesFor(segment).some((type) => asciiLowercase(type) === mediaType);
@@ -265,7 +274,11 @@ export const wordPartContentTypeMismatchFindings = async (
                 session !== undefined &&
                 LAZY_OBSERVED_SEGMENTS.has(entry.segment) &&
                 entry.via !== "glossary" &&
-                asciiLowercase(declared) === mediaType &&
+                // The session-58 pairs also take the styles media type with
+                // a parameter, which session 62 (s62c) refused; a padded
+                // spelling with no parameter, and the header and footer
+                // pairs' inexact spellings, are unprobed (#802).
+                (exactSpelling || (session === "session 58" && declared.includes(";"))) &&
                 readKeys?.has(`${entry.via ?? "main"}\n${canonical}\n${entry.segment}`) === true &&
                 (session !== "session 58" || ownStoryRoot(entry.segment))
             );
@@ -313,7 +326,9 @@ export const wordPartContentTypeMismatchFindings = async (
             observed === undefined
                 ? undefined
                 : isReadStoryCoreach(observed)
-                  ? READ_STORY_COREACH_SESSIONS.get(`${observed.segment}\n${segmentForMediaType(mediaType)}`)
+                  ? exactSpelling
+                      ? READ_STORY_COREACH_SESSIONS.get(`${observed.segment}\n${segmentForMediaType(mediaType)}`)
+                      : "session 62"
                   : swaps.includes(observed)
                     ? OBSERVED_SESSIONS.get(`${observed.via ?? "main"}\n${observed.segment}`)
                     : OBSERVED_SESSIONS.get(`${observed.via ?? "main"}\n${observed.segment}\n${segmentForMediaType(mediaType)}`);
