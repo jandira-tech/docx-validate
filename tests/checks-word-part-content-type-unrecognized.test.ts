@@ -227,6 +227,44 @@ describe("unrecognized profile scope (#707)", () => {
     }, 60_000);
 });
 
+// #719: the invalid-* class belongs to word-content-type-invalid alone, so one
+// defect draws one finding.
+describe("unrecognized leaves the invalid-* class to word-content-type-invalid (#719)", () => {
+    it("reports a styles Override typed invalid-thing once, through word-content-type-invalid", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "styles-invalid.docx");
+            writeFileSync(file, await buildDocx(stylesTyped("invalid-thing")));
+            for (const profile of ["word-valid", "strict"] as const) {
+                const result = await validate(file, { profile });
+                // Strict also judges the stream itself against the OPC schema,
+                // as it did before #719; among the part content-type checks the
+                // invalid-* class has exactly one owner.
+                const contentTypeErrors = result.issues.filter(
+                    (issue) =>
+                        issue.severity === "error" &&
+                        [
+                            "word-content-type-invalid",
+                            "word-part-content-type-generic",
+                            "word-part-content-type-inexact",
+                            "word-part-content-type-mismatch",
+                            ID,
+                        ].includes(issue.code ?? ""),
+                );
+                expect(contentTypeErrors, profile).toHaveLength(1);
+                expect(contentTypeErrors[0], profile).toMatchObject({ code: "word-content-type-invalid" });
+                expect(result.valid, profile).toBe(false);
+                expect(
+                    result.issues.some((issue) => issue.code === ID),
+                    profile,
+                ).toBe(false);
+            }
+            // Word-valid runs no XSD, so the invalid-* Override is its only error.
+            const wordValid = await validate(file);
+            expect(wordValid.issues.filter((issue) => issue.severity === "error")).toHaveLength(1);
+        });
+    }, 60_000);
+});
+
 // #718: the message embeds the declared content type and the stored part name
 // verbatim, so a package can carry the recovery sentence itself; the verdict
 // must read the reach structurally, never that text.
