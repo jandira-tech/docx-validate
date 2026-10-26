@@ -730,14 +730,22 @@ or `numbering` typed with another mapped Word type — the main styles part
 with the settings type (s49b), a related settings part with the styles type
 and a related numbering part with the settings type (s50d); those parts are
 eagerly parsed, so a relationship is enough and no usage lookup gates
-them — and session 53's co-reach (s53a/s53b, 2026-10-26,
-[#739](https://github.com/jandira-tech/docx-validate/issues/739)): an
-eagerly read part — the main document, a related numbering part or the
+them — and the read header/footer co-reach: session 53 (s53a/s53b,
+2026-10-26, [#739](https://github.com/jandira-tech/docx-validate/issues/739))
+an eagerly read part — the main document, a related numbering part or the
 styles part — that a footer reference the body makes also reaches, typed
 with the main document, numbering or styles type alike, and the styles part
 also targeted by the main document's `settings` relationship, typed styles
-or settings alike. Word refused every co-reach shape whatever the Override
-says, so a matching reach exempts none of them. Session 24 observed Word 16.115 offer recovery
+or settings alike; session 57 (s57c–s57e,
+[#778](https://github.com/jandira-tech/docx-validate/issues/778)) the
+reaches with no eager reach: a footer the body references typed with the
+main document, numbering, styles or settings type, a header the body
+references typed with the main document or styles type — the exact-typed
+styles part a read header relationship targets included (s57e) — and a
+reached glossary's own styles part a main footer relationship also reaches
+(s57d). Word refused every co-reach shape whatever the Override
+says, so a matching reach exempts none of them; typings no session showed
+on a header or footer stay silent. Session 24 observed Word 16.115 offer recovery
 for the main document's header and footer swaps and the glossary footer swap,
 including `…header+xml; charset=utf-8`; their exact-type controls and the
 minimal package opened clean. Session 26 observed recovery for the glossary
@@ -758,8 +766,9 @@ webSettings, glossary, theme or footer, and the styles reach typed
 webSettings, glossary or footnotes
 ([#779](https://github.com/jandira-tech/docx-validate/issues/779)). The
 styles reach typed endnotes and the numbering reach typed footnotes or
-endnotes were shown to no session and carry no recovery sentence; session
-53 cites the footer co-reach (#739). The finding names
+endnotes were shown to no session and carry no recovery sentence; the
+footer co-reach pairs cite sessions 53 and 57, the header co-reach session
+57 (#739, #778). The finding names
 the relationship, declared
 type and expected type, errors and blocks Word-valid; lenient warns. Unread
 stories, a related fontTable or webSettings part, the glossary's reaches,
@@ -772,10 +781,11 @@ is DrawingML and cites clause 14.2.7). The main document is named the Main
 Document part and cites clause 11.3.10 (#609). Candidate relationships are
 ranked in the same fixed order as the generic check, so relationship entry
 order does not change the reported segment or clause (#608). Only an
-observed finding — a read header/footer swap or footer co-reach, the main
-document, or a related styles, settings or numbering part whose pair a
-session showed — carries the Word recovery sentence; unobserved shapes and
-an eager pair no session showed keep spec wording. Full, quick and named
+observed finding — a read header/footer swap or header/footer co-reach,
+the main document, or a related styles, settings or numbering part whose
+pair a session showed — carries the Word recovery sentence; unobserved
+shapes, an eager pair no session showed, and a header or footer typed with
+a type no session showed keep spec wording. Full, quick and named
 selections agree
 (#381).
 
