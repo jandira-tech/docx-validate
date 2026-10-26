@@ -27,6 +27,7 @@ const PROFILES = ["word-valid", "lenient", "strict"] as const;
 // the main document.
 const W14_NS = "http://schemas.microsoft.com/office/word/2010/wordml";
 const W16CID_NS = "http://schemas.microsoft.com/office/word/2016/wordml/cid";
+const STRICT_W_NS = "http://purl.oclc.org/ooxml/wordprocessingml/main";
 const REL_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 const MS_COMMENTS_IDS_TYPE = "http://schemas.microsoft.com/office/2016/09/relationships/commentsIds";
 const MAIN_DOCUMENT_CT = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
@@ -52,12 +53,24 @@ const commentsIdsPart = (paraId: string, durableId: string): string =>
     `<w16cid:commentsIds xmlns:w16cid="${W16CID_NS}">` +
     `<w16cid:commentId w16cid:paraId="${paraId}" w16cid:durableId="${durableId}"/></w16cid:commentsIds>`;
 
+/** The same comments part with its comment in the Strict WordprocessingML namespace, ids included. */
+const strictCommentsPart = (id: string, paraId: string): string =>
+    commentsPart(id, paraId).replace(`xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"`, `xmlns:w="${STRICT_W_NS}"`);
+
 /** The minimal document with a paired marker triple for comment 0, plus `extra` markers. */
 const markedDocument = (extra = ""): string =>
     MINIMAL_PARTS["word/document.xml"]!.replace(
         "<w:r><w:t>Hello</w:t></w:r>",
         `<w:commentRangeStart w:id="0"/><w:r><w:t>Hello</w:t></w:r><w:commentRangeEnd w:id="0"/><w:r><w:commentReference w:id="0"/></w:r>${extra}`,
     );
+
+/** The minimal document with the same paired marker triple for comment 0, spelled in the Strict WordprocessingML namespace. */
+const strictMarkedDocument = (): string =>
+    markedDocument()
+        .replace('mc:Ignorable="w14"', `mc:Ignorable="w14" xmlns:ws="${STRICT_W_NS}"`)
+        .replace('<w:commentRangeStart w:id="0"/>', '<ws:commentRangeStart ws:id="0"/>')
+        .replace('<w:commentRangeEnd w:id="0"/>', '<ws:commentRangeEnd ws:id="0"/>')
+        .replace('<w:commentReference w:id="0"/>', '<ws:commentReference ws:id="0"/>');
 
 const override = (part: string, type: string): string => `<Override PartName="/${part}" ContentType="${type}"/>`;
 const withOverrides = (...overrides: string[]): string =>
@@ -311,6 +324,40 @@ describe("dangling comment references in an ISO Strict package (#817, session 63
             expect(strict.issues).toContainEqual(
                 expect.objectContaining({ code: "comment-marker-missing", severity: "error", path: "word/document.xml" }),
             );
+        });
+    });
+
+    /** The minimal package with `document` beside `comments`, the comments part related and typed. */
+    const mixedSpecimen = (document: string, comments: string): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        "word/document.xml": document,
+        "word/comments.xml": comments,
+        "word/_rels/document.xml.rels": relsPart(rel("rId1", "styles", "styles.xml"), rel("rId2", "comments", "comments.xml")),
+        "[Content_Types].xml": withOverrides(override("word/comments.xml", COMMENTS_CT)),
+    });
+
+    // Unprobed: no Word session has shown a package mixing the two
+    // WordprocessingML namespaces — session 63's s63a is uniformly Strict.
+    // The ids are pooled across both namespaces, so a reference satisfied
+    // only by a comment in the other passes; the Transitional direction
+    // drew `comment-marker-missing` before #817 pooled them.
+    it("pools the ids: a Transitional reference satisfied only by a Strict comment passes (unprobed)", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "strict-comment.docx");
+            await writeFile(file, await buildDocx(mixedSpecimen(markedDocument(), strictCommentsPart("0", "0000AAAA"))));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(true);
+            expect(markerMissingFindings(result.issues)).toEqual([]);
+        });
+    });
+
+    it("pools the ids: a Strict reference satisfied only by a Transitional comment passes (unprobed)", async () => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "strict-reference.docx");
+            await writeFile(file, await buildDocx(mixedSpecimen(strictMarkedDocument(), commentsPart("0", "0000AAAA"))));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(true);
+            expect(markerMissingFindings(result.issues)).toEqual([]);
         });
     });
 });
