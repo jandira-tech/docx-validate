@@ -370,6 +370,38 @@ describe("the comment checks read the parts the main document relates (#696)", {
         });
     });
 
+    for (const [name, relationships] of [
+        ["malformed", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships><Relationship Id="rId1"'],
+        ["without an officeDocument target", relsPart()],
+    ] as const) {
+        it.each(["word-valid", "strict"] as const)(
+            `${name} package relationships leave the comment fallback in word/ (#711, %s)`,
+            async (profile) => {
+                await withTempDir(async (dir) => {
+                    // Review specimen 30, with an orphan main marker so the main pair must still be judged.
+                    const file = path.join(dir, "fallback-comments.docx");
+                    const parts: Record<string, string> = {
+                        ...commentPackage({ orphan: true, glossary: true, glossaryComments: true }),
+                        "_rels/.rels": relationships,
+                    };
+                    for (const part of ["word/glossary/document.xml", "word/glossary/comments.xml"]) {
+                        parts[part] = parts[part]!.replace(
+                            `xmlns:w14="${W14_NS}"`,
+                            `xmlns:w14="${W14_NS}" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="w14"`,
+                        );
+                    }
+                    await writeFile(file, await buildDocx(parts));
+                    const result = await validate(file, { profile });
+                    expect(commentFindings(result.issues)).toContainEqual({
+                        code: "comment-thread-count-mismatch",
+                        path: "word/document.xml",
+                    });
+                    expect(result.issues.filter((issue) => issue.path?.startsWith("word/glossary/"))).toEqual([]);
+                });
+            },
+        );
+    }
+
     it.each(PROFILES)("a glossary's own comments are never judged for a main document that relates none (%s)", async (profile) => {
         await withTempDir(async (dir) => {
             const file = path.join(dir, "glossary-only.docx");
