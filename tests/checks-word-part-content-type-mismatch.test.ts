@@ -986,3 +986,93 @@ describe("read header/footer co-reach (#778, session 57)", () => {
         });
     }, 60_000);
 });
+
+// Session 58 (2026-10-26, chunk s58b; Word 16.115, two runs, all readings
+// agree) asked Word about the comments, endnotes and footnotes stories with
+// no eager reach: a used part — its own root, the body's reference matching
+// — typed by its Override with the styles content type gets the recovery
+// offer on all three. The styles part itself, exact styles type, also the
+// target of a comments, endnotes or footnotes relationship nothing
+// references opens clean (s58a/s58b), so the observed shape is the read
+// story typed styles, not the styles part co-reached.
+describe("read story typed styles (#785, session 58)", () => {
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    const TEXT_P = "<w:p><w:r><w:t>x</w:t></w:r></w:p>";
+    /** Each story's own root holding the item the body references, and that reference run. */
+    const STORIES = {
+        comments: {
+            root: `<w:comments xmlns:w="${W}"><w:comment w:id="0" w:author="a">${TEXT_P}</w:comment></w:comments>`,
+            ref: `<w:r><w:commentReference w:id="0"/></w:r>`,
+        },
+        endnotes: {
+            root: `<w:endnotes xmlns:w="${W}"><w:endnote w:id="1">${TEXT_P}</w:endnote></w:endnotes>`,
+            ref: `<w:r><w:endnoteReference w:id="1"/></w:r>`,
+        },
+        footnotes: {
+            root: `<w:footnotes xmlns:w="${W}"><w:footnote w:id="1">${TEXT_P}</w:footnote></w:footnotes>`,
+            ref: `<w:r><w:footnoteReference w:id="1"/></w:r>`,
+        },
+    } as const;
+    type Story = keyof typeof STORIES;
+    /** A used `word/<story>.xml`, its own root holding the referenced item, typed `type` (its own by default). */
+    const usedStoryParts = (story: Story, type: string = storyContentType(story)): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(`xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`).replace(
+            "</w:r></w:p>",
+            `</w:r>${STORIES[story].ref}</w:p>`,
+        ),
+        [`word/${story}.xml`]: STORIES[story].root,
+        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rIdS" Type="${R}/${story}" Target="${story}.xml"/></Relationships>`,
+        ),
+        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+            "</Types>",
+            `<Override PartName="/word/${story}.xml" ContentType="${type}"/></Types>`,
+        ),
+    });
+    /** `word/styles.xml`, exact styles type, also the target of a `story` relationship nothing references. */
+    const stylesCoReachNoReference = (story: Story): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rIdX" Type="${R}/${story}" Target="styles.xml"/></Relationships>`,
+        ),
+    });
+
+    it.each(["comments", "endnotes", "footnotes"] as const)(
+        "rejects a used %s part typed with the styles type, citing session 58",
+        async (story) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "typed-styles.docx");
+                writeFileSync(file, await buildDocx(usedStoryParts(story, storyContentType("styles"))));
+                const result = await validate(file);
+                expect(result.valid, "the full word-valid run fails").toBe(false);
+                const found = result.issues.filter((issue) => issue.code === ID && issue.severity === "error");
+                expect(found).toHaveLength(1);
+                expect(found[0]).toMatchObject({ path: `word/${story}.xml` });
+                expect(found[0]?.message).toContain(`the main document's ${story} relationship`);
+                expect(found[0]?.message).toContain("Word 16.115 offers to recover the package (session 58).");
+                expect(isWordBlockingIssue(found[0]!)).toBe(true);
+                // The own-type twin stays valid; for comments and endnotes it is
+                // session 58's matching-reference calibration, which opened clean (s58a).
+                writeFileSync(file, await buildDocx(usedStoryParts(story)));
+                expect((await validate(file)).valid).toBe(true);
+            });
+        },
+        60_000,
+    );
+
+    it.each(["comments", "endnotes", "footnotes"] as const)(
+        "keeps an exact-typed styles part a %s relationship nothing references also targets valid",
+        async (story) => {
+            await withTempDir(async (dir) => {
+                const file = path.join(dir, "coreach.docx");
+                writeFileSync(file, await buildDocx(stylesCoReachNoReference(story)));
+                expect((await validate(file)).valid).toBe(true);
+            });
+        },
+        60_000,
+    );
+});
