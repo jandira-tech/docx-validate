@@ -319,6 +319,109 @@ it.each(["[CONTENT_TYPES].XML", "[content_types].xml"])("inventories declaration
 });
 
 /*
+ * #745 - the inventory counts styles in the parts the main document and
+ * the reached glossaries relate, found by relationship as the style checks
+ * find them (#688), not in every part named `styles.xml`.
+ */
+describe("style counters read the related styles parts (#745)", () => {
+    const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    const RELS_NS = `xmlns="http://schemas.openxmlformats.org/package/2006/relationships"`;
+    const relationship = (id: string, type: string, target: string): string =>
+        `<Relationship Id="${id}" Type="${R}/${type}" Target="${target}"/>`;
+    const packageRels = (target: string): string =>
+        `<?xml version="1.0"?><Relationships ${RELS_NS}>${relationship("rId1", "officeDocument", target)}</Relationships>`;
+    const docRels = (...relationships: string[]): string =>
+        `<?xml version="1.0"?><Relationships ${RELS_NS}>${relationships.join("")}</Relationships>`;
+    const stylesPart = (...styleIds: string[]): string =>
+        `<?xml version="1.0"?><w:styles ${W_NS}>` +
+        `${styleIds.map((id) => `<w:style w:type="paragraph" w:styleId="${id}"><w:name w:val="${id}"/></w:style>`).join("")}</w:styles>`;
+    const glossaryDoc =
+        `<?xml version="1.0"?><w:glossaryDocument ${W_NS}>` +
+        `<w:docParts><w:docPart><w:docPartBody><w:p/></w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`;
+
+    const writePackage = async (dir: string, parts: Record<string, string>): Promise<void> => {
+        for (const [name, content] of Object.entries(parts)) await writeXml(path.join(dir, name), content);
+    };
+
+    const styleDefinitionCount = (
+        inventory: { counters: ReadonlyMap<string, { category: string; path: string; count: number }> },
+        partPath: string,
+    ): number =>
+        [...inventory.counters.values()]
+            .filter((counter) => counter.category === "style definition" && counter.path === partPath)
+            .reduce((total, counter) => total + counter.count, 0);
+
+    /** The main document relates its styles as `word/sub/s.xml`; no part named `styles.xml` exists. */
+    const RENAMED_STYLES: Record<string, string> = {
+        "_rels/.rels": packageRels("word/document.xml"),
+        "word/document.xml": doc(""),
+        "word/_rels/document.xml.rels": docRels(relationship("rId1", "styles", "sub/s.xml")),
+        "word/sub/s.xml": stylesPart("Heading1", "Renamed"),
+    };
+
+    /** The plain shape: `word/styles.xml`, related by the main document. */
+    const PLAIN_STYLES: Record<string, string> = {
+        ...RENAMED_STYLES,
+        "word/_rels/document.xml.rels": docRels(relationship("rId1", "styles", "styles.xml")),
+        "word/styles.xml": stylesPart("Heading1", "Plain"),
+    };
+    delete PLAIN_STYLES["word/sub/s.xml"];
+
+    it("counts a renamed styles part the main document relates", async () => {
+        await withTempDir(async (dir) => {
+            await writePackage(dir, RENAMED_STYLES);
+            expect(styleDefinitionCount(await collectDocxSemanticInventory(dir), "word/sub/s.xml")).toBe(2);
+        });
+    });
+
+    it("keeps counting the plain word/styles.xml the main document relates", async () => {
+        await withTempDir(async (dir) => {
+            await writePackage(dir, PLAIN_STYLES);
+            expect(styleDefinitionCount(await collectDocxSemanticInventory(dir), "word/styles.xml")).toBe(2);
+        });
+    });
+
+    it("keeps counting word/styles.xml by name when the main document relates no styles part (#699)", async () => {
+        await withTempDir(async (dir) => {
+            await writePackage(dir, { ...PLAIN_STYLES, "word/_rels/document.xml.rels": docRels() });
+            expect(styleDefinitionCount(await collectDocxSemanticInventory(dir), "word/styles.xml")).toBe(2);
+        });
+    });
+
+    it("counts a renamed styles part a reached glossary relates", async () => {
+        await withTempDir(async (dir) => {
+            await writePackage(dir, {
+                ...PLAIN_STYLES,
+                "word/_rels/document.xml.rels": docRels(
+                    relationship("rId1", "styles", "styles.xml"),
+                    relationship("rId9", "glossaryDocument", "zglossary/document.xml"),
+                ),
+                "word/zglossary/document.xml": glossaryDoc,
+                "word/zglossary/_rels/document.xml.rels": docRels(relationship("rId1", "styles", "s.xml")),
+                "word/zglossary/s.xml": stylesPart("Glossary"),
+            });
+            expect(styleDefinitionCount(await collectDocxSemanticInventory(dir), "word/zglossary/s.xml")).toBe(1);
+        });
+    });
+
+    it("does not count a glossary's styles.xml that nothing relates (#699)", async () => {
+        await withTempDir(async (dir) => {
+            await writePackage(dir, {
+                ...PLAIN_STYLES,
+                "word/_rels/document.xml.rels": docRels(
+                    relationship("rId1", "styles", "styles.xml"),
+                    relationship("rId9", "glossaryDocument", "zglossary/document.xml"),
+                ),
+                "word/zglossary/document.xml": glossaryDoc,
+                "word/zglossary/_rels/document.xml.rels": docRels(),
+                "word/zglossary/styles.xml": stylesPart("Unrelated"),
+            });
+            expect(styleDefinitionCount(await collectDocxSemanticInventory(dir), "word/zglossary/styles.xml")).toBe(0);
+        });
+    });
+});
+
+/*
  * #622 — repair plans report the observed before/after outcome. Every code `repairActionForIssue` maps to
  * a manual action is covered below: one specimen per code, validated with
  * `autoRepair`, asserting `repair-plan` only when the finding is gone after

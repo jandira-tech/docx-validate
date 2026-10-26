@@ -1137,8 +1137,10 @@ root, and an `mc:Choice` whose `Requires` prefix is undeclared in
 Hyperlink and toolbar resolution, duplicate counts and the validators' semantic
 relationship checks read the processed view too, still taking direct children
 only, under Word-valid and strict; for the semantic checks that view is
-DOCX/DOCM only (#635, #643, above). Legacy lenient traversal and raw
-repair-inventory collection remain unchanged.
+DOCX/DOCM only (#635, #643, above). Legacy lenient traversal remains
+unchanged, and so does the repair inventory's raw counting — it selects
+which parts count as styles parts through the same relationship walks the
+style checks use (#745), but its counters still read the stored bytes.
 
 Word 16.115 (build 16.115.26100424, macOS, 2026-10-24) offered recovery for all
 three minimal package mutations: a foreign sibling with every relationship
