@@ -64,6 +64,7 @@ import { ctMarkupCompatibilityCheck } from "./ct-markup-compatibility";
 import { wordPartContentTypeMismatchCheck } from "./word-part-content-type-mismatch";
 import { wordPartContentTypeInexactCheck } from "./word-part-content-type-inexact";
 import { wordHeaderFooterRelationshipCheck } from "./word-header-footer";
+import { wordPartContentTypeUnrecognizedCheck } from "./word-part-content-type-unrecognized";
 
 /**
  * Word rules that `DOCXSchemaValidator` runs through the registry under the
@@ -142,6 +143,7 @@ export function createDefaultCheckRegistry(): CheckRegistry {
         wordPartContentTypeGenericCheck,
         wordPartContentTypeInexactCheck,
         wordPartContentTypeMismatchCheck,
+        wordPartContentTypeUnrecognizedCheck,
         commentMarkersCheck,
         commentThreadingCheck,
         ...WORD_RULE_CHECKS,

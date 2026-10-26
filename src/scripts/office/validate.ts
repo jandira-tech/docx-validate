@@ -105,6 +105,7 @@ import { explainWordError } from "./validators/word-error-explanations";
 import { archiveWithoutEntries, loadCentralNamedArchive } from "../../lib/zip-central-names";
 import { WORD_PART_CONTENT_TYPE_MISMATCH } from "./checks/word-part-content-type-mismatch";
 import { WORD_PART_CONTENT_TYPE_INEXACT } from "./checks/word-part-content-type-inexact";
+import { WORD_PART_CONTENT_TYPE_UNRECOGNIZED } from "./checks/word-part-content-type-unrecognized";
 
 const SUPPORTED_SUFFIXES = new Set([".docm", ".docx", ".pptx", ".xlsx"]);
 
@@ -126,6 +127,7 @@ const ADVISORY_CODES: ReadonlySet<string> = new Set([
     WORD_PART_CONTENT_TYPE_GENERIC,
     WORD_PART_CONTENT_TYPE_INEXACT,
     WORD_PART_CONTENT_TYPE_MISMATCH,
+    WORD_PART_CONTENT_TYPE_UNRECOGNIZED,
 ]);
 
 /**

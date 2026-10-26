@@ -41,7 +41,7 @@ const OBSERVED_SWAP_SESSIONS: ReadonlyMap<string, number> = new Map([
     ["glossary\nfooter", 24],
     ["glossary\nheader", 26],
 ]);
-const MAPPED_MEDIA_TYPES: ReadonlySet<string> = new Set([...SPEC_SEGMENTS].flatMap(expectedContentTypesFor).map(asciiLowercase));
+export const MAPPED_MEDIA_TYPES: ReadonlySet<string> = new Set([...SPEC_SEGMENTS].flatMap(expectedContentTypesFor).map(asciiLowercase));
 
 export const wordPartContentTypeMismatchFindings = async (
     ctx: ValidationContext,

@@ -171,6 +171,7 @@ describe("quick mode runs the common-defect preset and discloses its omissions",
             // An inexact Word content type (#550).
             "word-part-content-type-inexact",
             "word-part-content-type-mismatch",
+            "word-part-content-type-unrecognized",
             "word-grid-column-attributes",
             "word-cell-margin-order",
             "word-table-properties-required",

@@ -360,8 +360,9 @@ The complete named check catalogue is below. Each Word check except
 `ct-duplicate-declaration`, `ct-override-partname-invalid`,
 `ct-override-partname-word-refused` and `ct-markup-compatibility` apply to
 every package format; `word-content-type-invalid`,
-`word-part-content-type-generic`, `word-part-content-type-inexact` and
-`word-part-content-type-mismatch` apply to DOCX/DOCM only.
+`word-part-content-type-generic`, `word-part-content-type-inexact`,
+`word-part-content-type-mismatch` and `word-part-content-type-unrecognized`
+apply to DOCX/DOCM only.
 
 `zip-bytes-before-archive` applies to DOCX/DOCM, PPTX, and XLSX package
 selections, including the `package` quick group, and reads the archive bytes
@@ -506,7 +507,7 @@ names and input bytes unchanged.
 | `story`                   | `word-shading-color`, `word-page-margin-attributes`, `word-run-misplaced`, `word-run-properties-misplaced`, `word-underline-misplaced`, `word-paragraph-properties-misplaced`, `word-section-properties-misplaced`, `word-footnote-reference-missing`, `word-numbering-picture-bullet`, `word-sdt-id-empty`, `word-text-contains-paragraph`         |
 | `tables`                  | `word-grid-column-attributes`, `word-cell-margin-order`, `word-table-properties-required`, `word-table-properties-misplaced`, `word-row-without-cell`, `word-cell-ends-with-table`                                                                                                                                                                  |
 | `drawings`                | `word-textbox-content-namespace`, `word-drawing-extent-missing`, `word-drawing-extent-misplaced`, `word-picture-nvpicpr-missing`, `word-picture-sppr-missing`, `word-empty-drawing`, `word-anchor-missing-attribute`, `word-position-offset-and-align`, `word-drawing-scalar-whitespace`, `word-drawing-arc-radius`, `word-drawing-extent-negative` |
-| `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`, `ct-override-partname-invalid`, `ct-override-partname-word-refused`, `ct-markup-compatibility`, `word-part-content-type-generic`, `word-part-content-type-inexact`, `word-part-content-type-mismatch`                                                                                      |
+| `content-types`           | `word-content-type-invalid`, `ct-duplicate-declaration`, `ct-override-partname-invalid`, `ct-override-partname-word-refused`, `ct-markup-compatibility`, `word-part-content-type-generic`, `word-part-content-type-inexact`, `word-part-content-type-mismatch`, `word-part-content-type-unrecognized`                                               |
 | `relationships`           | `word-duplicate-theme-relationship`, `word-duplicate-font-table-relationship`, `word-duplicate-web-settings-relationship`, `word-duplicate-settings-relationship`, `word-hyperlink-relationship`, `word-header-footer-relationship`, `word-main-document-part`, `opc-relationships-structure`                                                       |
 | `tracked-changes`         | `word-textbox-deleted-text`, `word-move-from-deleted-text`                                                                                                                                                                                                                                                                                          |
 | `settings`                | `word-custom-property-filetime-empty`, `word-attached-toolbar-utf8`                                                                                                                                                                                                                                                                                 |
@@ -600,7 +601,8 @@ session 14, `docs/plans/evidence/word-probes-2026-10-24.md`). The check reads
 the raw stored stream, while `ct-duplicate-declaration`,
 `ct-override-partname-invalid`, `ct-override-partname-word-refused`,
 `word-content-type-invalid`, `word-part-content-type-generic`,
-`word-part-content-type-inexact`, `word-part-content-type-mismatch` and content-type
+`word-part-content-type-inexact`, `word-part-content-type-mismatch`,
+`word-part-content-type-unrecognized` and content-type
 resolution all judge the stream after Markup Compatibility processing, as OPC
 [M1.19] requires — so an `Override` in an ignored `mc:Choice` no longer draws
 a `ct-override-partname-invalid` finding, and a bad `mc:Fallback` still does.
@@ -807,6 +809,32 @@ strict, a Default-typed main finding is suppressed only when
 as the generic check's
 ([#535](https://github.com/jandira-tech/docx-validate/issues/535)). Full,
 quick and named runs agree.
+
+`word-part-content-type-unrecognized` reports a part Word reads whose
+resolved media type — trimmed, parameters stripped, compared ASCII
+case-insensitively — is none of the types the package's own relationships
+expect: not its own Word content type, not a generic XML type
+(`word-part-content-type-generic`'s class), and not another mapped Word
+part's type (`word-part-content-type-mismatch`'s class), so the four part
+content-type checks stay disjoint
+([#707](https://github.com/jandira-tech/docx-validate/issues/707)). Session
+46 (chunk s46e in `docs/plans/evidence/word-probes-2026-10-24.md`) observed
+Word 16.115 offer recovery for the main document's `styles` relationship
+naming `word/styles.bin` typed `application/octet-stream` by a Default —
+whether the part held non-XML bytes or well-formed styles XML — while the
+same XML typed as styles opened clean. The main document's `styles` reach is
+the only observed one, so its finding alone carries the Word recovery
+sentence and blocks under word-valid; every other segment the shared typed
+walk reaches — a related settings, fontTable, webSettings, numbering, theme,
+header, footer, footnotes, endnotes, comments or glossaryDocument part, a
+reached glossary's relationships, and the main document itself — cites the
+content type ECMA-376 Part 1 (4th edition), clause 11.3 assigns it (14.2.7
+for theme, 11.3.10 for the Main Document) as an error under strict and a
+warning under word-valid. An empty or undeclared type stays with
+`word-content-type-invalid` and `ct-undeclared-part`; lenient warns. One
+finding is reported per part, and when several relationship types reach it
+the observed reach names the finding whenever it exists. Full, quick and
+named runs agree.
 
 The `schema` group contains structural checks, not an XSD walk. The `comments`
 group runs `comment-markers` (range pairing and references to existing comments)

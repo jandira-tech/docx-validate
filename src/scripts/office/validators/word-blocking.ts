@@ -328,6 +328,15 @@ export const isWordBlockingIssue = (
         // Session 24: a read header/footer declared with the other story's type (#600).
         case "word-part-content-type-mismatch":
             return true;
+        case "word-part-content-type-unrecognized": {
+            // Session 46 (s46e, #707): Word 16.115 offers recovery for the
+            // main document's styles part typed `application/octet-stream` —
+            // non-XML bytes or styles XML alike — and opens the styles-typed
+            // control clean. Only that reach is observed, and its finding
+            // alone carries the recovery sentence; every other segment keeps
+            // its warning.
+            return issue.message.includes("Word 16.115 offers to recover the package");
+        }
         case "rels-id-duplicate": {
             // #615, #617: Word 16.115 offers recovery for duplicate Ids in
             // the package relationships part and in the sidecar of a story

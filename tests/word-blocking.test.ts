@@ -203,6 +203,27 @@ describe("isWordBlockingIssue", () => {
         },
     );
 
+    it("blocks an unrecognized content type only on the observed main-document styles reach (#707)", () => {
+        const blocking = issue("word-part-content-type-unrecognized", {
+            path: "word/styles.bin",
+            message:
+                'word/styles.bin, named by the main document\'s styles relationship, is typed "application/octet-stream" by a Default; it expects "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml". Word 16.115 offers to recover the package (session 46).',
+        });
+        expect(isWordBlockingIssue(blocking)).toBe(true);
+        const unobserved = issue("word-part-content-type-unrecognized", {
+            path: "word/settings.bin",
+            message:
+                'word/settings.bin, named by the main document\'s settings relationship, is typed "application/octet-stream" by a Default; it expects "application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml", the content type ECMA-376 Part 1 (4th edition), clause 11.3 assigns the settings part.',
+        });
+        expect(isWordBlockingIssue(unobserved)).toBe(false);
+        const glossary = issue("word-part-content-type-unrecognized", {
+            path: "word/glossary/styles.bin",
+            message:
+                'word/glossary/styles.bin, named by the glossary\'s styles relationship, is typed "application/octet-stream" by a Default; it expects "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml", the content type ECMA-376 Part 1 (4th edition), clause 11.3 assigns the styles part.',
+        });
+        expect(isWordBlockingIssue(glossary)).toBe(false);
+    });
+
     it.each(["run-content-misplaced", "comment-orphan-start", "rels-unreferenced", "paraid-missing-element", "xsd-error", ""])(
         "tolerates %j",
         (code) => {
