@@ -10,6 +10,8 @@ import { wordContentTypeInvalidCheck } from "../src/scripts/office/checks/word-c
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
 import { contentTypeSpecimens } from "./support/word-content-types-specimens";
 import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
+import { glossaryStylesParts } from "./support/glossary-content-type-specimens";
+import { RELATED_PART_SPECIMENS, relatedContentTypeParts } from "./support/related-content-type-specimens";
 
 it("registers duplicate declarations for all formats, reads the Markup-Compatibility-processed stream and skips absent/unparseable streams (#431, #459)", async () => {
     const check = createDefaultCheckRegistry().get("ct-duplicate-declaration");
@@ -146,8 +148,8 @@ describe("empty main-document Override (#581)", () => {
     it.each([
         ["proper control", MINIMAL_PARTS["[Content_Types].xml"]!],
         [
-            "another part's empty Override",
-            MINIMAL_PARTS["[Content_Types].xml"]!.replace("application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml", ""),
+            "empty Override on an unstored part",
+            MINIMAL_PARTS["[Content_Types].xml"]!.replace("</Types>", '<Override PartName="/word/absent.xml" ContentType=""/></Types>'),
         ],
         ["empty Default", MINIMAL_PARTS["[Content_Types].xml"]!.replace('ContentType="application/xml"', 'ContentType=""')],
         [
@@ -198,5 +200,74 @@ describe("empty main-document Override (#581)", () => {
         const stream = `<Types xmlns="${CT}" xmlns:mc="${MC}" xmlns:f="urn:unobserved"><mc:AlternateContent><mc:Choice Requires="f">${selected ? proper : empty}</mc:Choice><mc:Fallback>${selected ? empty : proper}</mc:Fallback></mc:AlternateContent></Types>`;
         const ctx = ValidationContext.fromEntries({ ...MINIMAL_PARTS, "[Content_Types].xml": stream });
         expect(await wordContentTypeInvalidCheck.run(ctx)).toEqual(selected ? [finding()] : []);
+    });
+});
+
+// Sessions 49 and 50 (2026-10-26): Word 16.115 offered recovery for an empty
+// ContentType on the Override of the styles part the main document relates
+// (s49b) and of a related settings or fontTable part (s50c).
+describe("empty related Override (#720, sessions 49 and 50)", () => {
+    const stylesType = "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml";
+    const stylesEmptyParts = (): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(stylesType, ""),
+    });
+
+    it.each([
+        {
+            label: "the styles part the main document relates",
+            parts: stylesEmptyParts(),
+            part: "word/styles.xml",
+            segment: "styles",
+            session: 49,
+        },
+        {
+            label: "a related settings part",
+            parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[0], ""),
+            part: "word/settings.xml",
+            segment: "settings",
+            session: 50,
+        },
+        {
+            label: "a related fontTable part",
+            parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[1], ""),
+            part: "word/fontTable.xml",
+            segment: "fontTable",
+            session: 50,
+        },
+    ])("reports $label exactly once with its session", async ({ parts, part, segment, session }) => {
+        expect(await wordContentTypeInvalidCheck.run(ValidationContext.fromEntries(parts))).toEqual([
+            {
+                severity: "error",
+                code: "word-content-type-invalid",
+                path: "[Content_Types].xml",
+                message: `Microsoft Word refuses empty content type '' for ${part} (main document ${segment} relationship Override, session ${session})`,
+            },
+        ]);
+        expect(await wordContentTypeInvalidCheck.run(ValidationContext.fromEntries({ ...MINIMAL_PARTS }))).toEqual([]);
+    });
+
+    it("keeps the main document's empty Override and the unshown parts as today", async () => {
+        const mainType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
+        const main = { ...MINIMAL_PARTS, "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(mainType, "") };
+        expect(await wordContentTypeInvalidCheck.run(ValidationContext.fromEntries(main))).toEqual([
+            {
+                severity: "error",
+                code: "word-content-type-invalid",
+                path: "[Content_Types].xml",
+                message: "Microsoft Word refuses empty content type '' for word/document.xml (main document Override)",
+            },
+        ]);
+        // A reached glossary's styles part is not the main document's own
+        // relationship, and a related numbering part was not shown to Word.
+        const glossary = glossaryStylesParts(true);
+        glossary["[Content_Types].xml"] = glossary["[Content_Types].xml"]!.replace(
+            `<Override PartName="/word/glossary/styles.xml" ContentType="${stylesType}"/>`,
+            '<Override PartName="/word/glossary/styles.xml" ContentType=""/>',
+        );
+        expect(await wordContentTypeInvalidCheck.run(ValidationContext.fromEntries(glossary))).toEqual([]);
+        expect(
+            await wordContentTypeInvalidCheck.run(ValidationContext.fromEntries(relatedContentTypeParts(RELATED_PART_SPECIMENS[2], ""))),
+        ).toEqual([]);
     });
 });

@@ -19,10 +19,11 @@ import {
     parseContentTypes,
     resolveContentType,
 } from "../../../lib/content-types";
-import { wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
+import { wordTypedRelationshipTargets, type WordTypedTarget } from "../../../lib/word-read-parts";
 import type { ValidationContext } from "../../../lib/validation-context";
 import type { Profile, ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
+import { REPORTING_SEGMENT_ORDER } from "./word-part-content-type-generic";
 
 const CONTENT_TYPES_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/content-types";
 
@@ -45,33 +46,60 @@ export const ctDuplicateDeclarationCheck: CheckDefinition = {
 };
 
 /**
- * Word 16.115.26100424 offers recovery for an empty ContentType on the main
- * document's Override (session 22 in
- * docs/plans/evidence/word-probes-2026-10-24.md, #581). Other parts, Defaults,
- * missing attributes and whitespace-only values are unobserved and stay out.
- * Resolve the effective stream through the shared table, like the generic
- * and inexact checks; the package officeDocument relationship names the main.
+ * Word 16.115.26100424 offers recovery for an empty ContentType on the
+ * Override of the main document (session 22 in
+ * docs/plans/evidence/word-probes-2026-10-24.md, #581) and of the styles,
+ * settings and fontTable parts the main document's own relationships part
+ * relates (#720; styles session 49, settings and fontTable session 50,
+ * 2026-10-26). Other parts — a reached glossary's included —, Defaults,
+ * missing attributes and whitespace-only values are unobserved and stay
+ * out. Resolve the effective stream through the shared table, like the
+ * generic and inexact checks; the main document and its own relationships
+ * name the judged parts.
  */
-const emptyMainContentTypeFindings = async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> => {
+const EMPTY_OVERRIDE_SESSIONS: ReadonlyMap<string, number> = new Map([
+    ["styles", 49],
+    ["settings", 50],
+    ["fontTable", 50],
+]);
+const emptyContentTypeFindings = async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> => {
     const stream = findContentTypesStream(ctx.partNames);
     if (stream === undefined) return [];
     const parsed = ctx.effectiveXml(stream);
     if (!parsed?.ok) return [];
     const table = parseContentTypes(parsed.document);
     const overrides = getElementsByTagNameNSAll(parsed.document, CONTENT_TYPES_NAMESPACE, "Override");
+    // One finding per part: the shared reporting order names the
+    // relationship, so the order of the relationships part decides neither
+    // the message nor the count (#593).
+    const byPart = new Map<string, WordTypedTarget>();
+    for (const target of await wordTypedRelationshipTargets(ctx, new Set(["officeDocument", ...EMPTY_OVERRIDE_SESSIONS.keys()]), profile)) {
+        const canonical = canonicalPartName(target.part);
+        const incumbent = byPart.get(canonical);
+        if (
+            incumbent === undefined ||
+            REPORTING_SEGMENT_ORDER.indexOf(target.segment) < REPORTING_SEGMENT_ORDER.indexOf(incumbent.segment)
+        ) {
+            byPart.set(canonical, target);
+        }
+    }
     const issues: ValidationIssue[] = [];
-    for (const { part } of await wordTypedRelationshipTargets(ctx, new Set(["officeDocument"]), profile)) {
+    for (const [canonical, { part, segment }] of byPart) {
         const resolved = resolveContentType(table, part);
         if (resolved?.source !== "override" || resolved.contentType !== "") continue;
         // The table represents a missing ContentType as "" too. Only the
         // explicitly empty attribute on the winning declaration was probed.
-        const declaration = overrides.find((elem) => canonicalPartName(elem.getAttribute("PartName") ?? "") === canonicalPartName(part));
+        const declaration = overrides.find((elem) => canonicalPartName(elem.getAttribute("PartName") ?? "") === canonical);
         if (!declaration?.hasAttribute("ContentType")) continue;
+        const session = EMPTY_OVERRIDE_SESSIONS.get(segment);
         issues.push({
             severity: "error",
             code: "word-content-type-invalid",
             path: stream,
-            message: `Microsoft Word refuses empty content type '' for ${part} (main document Override)`,
+            message:
+                session === undefined
+                    ? `Microsoft Word refuses empty content type '' for ${part} (main document Override)`
+                    : `Microsoft Word refuses empty content type '' for ${part} (main document ${segment} relationship Override, session ${session})`,
         });
     }
     return issues;
@@ -79,7 +107,8 @@ const emptyMainContentTypeFindings = async (ctx: ValidationContext, profile?: Pr
 
 export const wordContentTypeInvalidCheck: CheckDefinition = {
     id: "word-content-type-invalid",
-    description: "Word-rejected invalid-* content types and an empty main-document Override are diagnosed.",
+    description:
+        "Word-rejected invalid-* content types and the empty Overrides Word refuses on the main document and the parts it relates are diagnosed.",
     groups: ["content-types"],
     formats: ["docx"],
     requires: ["xml-syntax"],
@@ -126,6 +155,6 @@ export const wordContentTypeInvalidCheck: CheckDefinition = {
             }
         }
 
-        return [...issues, ...(await emptyMainContentTypeFindings(ctx, profile))];
+        return [...issues, ...(await emptyContentTypeFindings(ctx, profile))];
     },
 };

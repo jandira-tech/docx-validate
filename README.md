@@ -515,7 +515,7 @@ names and input bytes unchanged.
 | `comments`                | `comment-markers`, `comment-threading`                                                                                                                                                                                                                                                                                                                                                                           |
 | `schema`                  | `word-unknown-element`, `word-link-without-namespace`                                                                                                                                                                                                                                                                                                                                                            |
 
-`word-content-type-invalid` also reports an explicitly empty `ContentType=""` on the main document's Override, resolved through the package `officeDocument` relationship and the shared content-type table after Markup Compatibility processing ([#581](https://github.com/jandira-tech/docx-validate/issues/581)). Word 16.115.26100424 offers recovery for this specimen (session 22 in [docs/plans/evidence/word-probes-2026-10-24.md](docs/plans/evidence/word-probes-2026-10-24.md)). It is a blocking error under Word-valid and an error under strict. Lenient runs no Word rule, so it reports nothing here beyond the XSD rejection. Full, quick and named Word-valid runs agree. Empty values on other Overrides or on Defaults stay silent under Word-valid; strict continues to reject them through XSD.
+`word-content-type-invalid` also reports an explicitly empty `ContentType=""` on the main document's Override, resolved through the package `officeDocument` relationship and the shared content-type table after Markup Compatibility processing ([#581](https://github.com/jandira-tech/docx-validate/issues/581)). Word 16.115.26100424 offers recovery for this specimen (session 22 in [docs/plans/evidence/word-probes-2026-10-24.md](docs/plans/evidence/word-probes-2026-10-24.md)). Sessions 49 and 50 (2026-10-26) observed the same recovery offer for an empty `ContentType=""` on the Override of the styles part the main document relates (s49b) and of a related settings or fontTable part (s50c), so the finding now covers those Overrides too, each citing its session ([#720](https://github.com/jandira-tech/docx-validate/issues/720)); one finding per part, named by the first relationship in the shared reporting order. It is a blocking error under Word-valid and an error under strict. Lenient runs no Word rule, so it reports nothing here beyond the XSD rejection. Full, quick and named Word-valid runs agree. Empty values on every other Override — a reached glossary's parts included — and on Defaults stay silent under Word-valid until probed; strict continues to reject them through XSD.
 
 `word-content-type-invalid` reports `invalid-*` content types only when they apply to a stored part: an Override must name an existing part under OPC equivalence, and a Default must cover a stored part without its own Override. Word 16.115 opens an Override for a missing part and an unused Default cleanly; an invalid type on an existing part is refused or recovered.
 
@@ -843,8 +843,12 @@ header, footer, footnotes, endnotes, comments or glossaryDocument part, a
 reached glossary's relationships, and the main document itself — cites the
 content type ECMA-376 Part 1 (4th edition), clause 11.3 assigns it (14.2.7
 for theme, 11.3.10 for the Main Document) as an error under strict and a
-warning under word-valid. An empty or undeclared type stays with
-`word-content-type-invalid` and `ct-undeclared-part`; lenient warns. One
+warning under word-valid. An undeclared type stays with `ct-undeclared-part`,
+and an empty one with `word-content-type-invalid` on the main document and
+on the styles, settings and fontTable parts the main document relates
+([#720](https://github.com/jandira-tech/docx-validate/issues/720); sessions
+22, 49 and 50); every other segment's empty Override was not shown to Word
+and stays unreported; lenient warns. One
 finding is reported per part, and when several relationship types reach it
 the observed reach names the finding whenever it exists. Full, quick and
 named runs agree.

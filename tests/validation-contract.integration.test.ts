@@ -38,6 +38,7 @@ import {
     glossaryStoryParts,
 } from "./support/glossary-content-type-specimens";
 import { MISMATCH_STORY_CASES, storyContentType, storyContentTypeParts } from "./support/story-content-type-specimens";
+import { RELATED_PART_SPECIMENS, relatedContentTypeParts } from "./support/related-content-type-specimens";
 import { buildRawZip } from "./support/raw-zip";
 import { DUPLICATE_MAIN_DOCUMENT_PARTS } from "./support/main-document-specimens";
 
@@ -4133,7 +4134,11 @@ describe("validation contract: empty main-document content type (#581, #381)", (
 
     it.each([
         ["proper Override control", stream, true],
-        ["empty styles Override", stream.replace("application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml", ""), false],
+        [
+            "empty Override on an unstored part",
+            stream.replace("</Types>", '<Override PartName="/word/absent.xml" ContentType=""/></Types>'),
+            false,
+        ],
         ["empty xml Default", stream.replace('ContentType="application/xml"', 'ContentType=""'), false],
         [
             "main typed by empty Default",
@@ -4161,6 +4166,35 @@ describe("validation contract: empty main-document content type (#581, #381)", (
         },
         60_000,
     );
+
+    // Sessions 49 and 50 (2026-10-26): Word 16.115 offered recovery for an
+    // empty ContentType on the Override of the parts the main document
+    // relates by styles (s49b), settings or fontTable (s50c).
+    it("blocks the related empty Overrides across full/quick/named word-valid (#720)", async () => {
+        const stylesType = "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml";
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "empty-related.docx");
+            for (const [label, parts] of [
+                ["styles", { ...MINIMAL_PARTS, "[Content_Types].xml": stream.replace(stylesType, "") }],
+                ["settings", relatedContentTypeParts(RELATED_PART_SPECIMENS[0], "")],
+                ["fontTable", relatedContentTypeParts(RELATED_PART_SPECIMENS[1], "")],
+            ] as const) {
+                writeFileSync(file, await buildDocx(parts));
+                const full = await validate(file);
+                expect(full.valid, label).toBe(false);
+                expect(findings(full)).toHaveLength(1);
+                expect(findings(full)[0]).toMatchObject({ severity: "error", path: "[Content_Types].xml" });
+                for (const selection of [{ quick: true }, { checks: ["word-content-type-invalid"] }, { checks: ["content-types"] }]) {
+                    const partial = await validate(file, selection);
+                    expect(partial.valid, label).toBe(false);
+                    expect(findings(partial)).toEqual(findings(full));
+                }
+                const strict = await validate(file, { profile: "strict" });
+                expect(strict.valid, label).toBe(false);
+                expect(findings(strict)).toEqual(findings(full));
+            }
+        });
+    }, 60_000);
 });
 
 // session 20 (s20b) plus an unreferenced second relationship (#593, #381).
