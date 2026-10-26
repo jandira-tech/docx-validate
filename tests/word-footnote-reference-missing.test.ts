@@ -335,6 +335,79 @@ describe("notes defined only through a reached glossary (#828, session 63 s63c)"
     });
 });
 
+describe("notes parts typed application/octet-stream (#829, sessions 63 s63c and 64 s64b)", { timeout: 30000 }, () => {
+    /**
+     * The s64 builder's `footnotesAt`: note 1 stored at `stored`, typed
+     * `type` by its Override and named only by the main document's
+     * `<kind>s` relationship; the body references note 1.
+     */
+    const notesAt = (kind: "footnote" | "endnote", stored: string, type: string, target: string): Promise<Buffer> =>
+        buildDocx({
+            ...MINIMAL_PARTS,
+            "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+                "</w:r></w:p>",
+                `</w:r><w:r><w:${kind}Reference w:id="1"/></w:r></w:p>`,
+            ),
+            [stored]:
+                `<w:${kind}s xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">` +
+                `<w:${kind} w:id="1"><w:p><w:r><w:t>Note</w:t></w:r></w:p></w:${kind}></w:${kind}s>`,
+            "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+                "</Relationships>",
+                `<Relationship Id="rIdN" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/${kind}s" Target="${target}"/></Relationships>`,
+            ),
+            "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+                "</Types>",
+                `<Override PartName="/${stored}" ContentType="${type}"/></Types>`,
+            ),
+        });
+
+    it.each([
+        ["footnote", "word/notes.xml", "notes.xml"],
+        ["footnote", "word/footnotes.xml", "footnotes.xml"],
+        ["footnote", "word/notes.bin", "notes.bin"],
+        ["endnote", "word/endnotes.xml", "endnotes.xml"],
+    ] as const)("rejects the body %s reference whose note sits in %s typed application/octet-stream", async (kind, stored, target) => {
+        await withTempDir(async (dir) => {
+            const code = `word-${kind}-reference-missing`;
+            const file = path.join(dir, "octet-stream-notes.docx");
+            await writeFile(file, await notesAt(kind, stored, "application/octet-stream", target));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            const errors = result.issues.filter((issue) => issue.severity === "error");
+            expect(errors).toEqual([
+                expect.objectContaining({
+                    code,
+                    path: "word/document.xml",
+                    message: expect.stringContaining(`${kind} reference uses id 1`),
+                }),
+            ]);
+            const selected = await validate(file, { profile: "word-valid", checks: [code] });
+            expect(selected.valid).toBe(false);
+            expect(selected.issues.filter((issue) => issue.severity === "error")).toEqual(errors);
+        });
+    });
+
+    it.each([
+        ["footnote", "word/footnotes.xml", "footnotes.xml"],
+        ["endnote", "word/endnotes.xml", "endnotes.xml"],
+    ] as const)("accepts the %s calibration: word/%s typed its own type still defines the note", async (kind, stored, target) => {
+        await withTempDir(async (dir) => {
+            const code = `word-${kind}-reference-missing`;
+            const file = path.join(dir, "octet-stream-calibration.docx");
+            await writeFile(
+                file,
+                await notesAt(kind, stored, `application/vnd.openxmlformats-officedocument.wordprocessingml.${kind}s+xml`, target),
+            );
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(true);
+            expect(result.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+            const selected = await validate(file, { profile: "word-valid", checks: [code] });
+            expect(selected.valid).toBe(true);
+            expect(selected.issues.filter((issue) => issue.severity === "error")).toEqual([]);
+        });
+    });
+});
+
 describe("a main document stored under another name (#800, session 62 s62a)", { timeout: 30000 }, () => {
     /** The #800 builder's `notesXml`: a notes part holding the note `held`, stored under its standard name. */
     const notesXml = (kind: "footnote" | "endnote", held: string): string =>

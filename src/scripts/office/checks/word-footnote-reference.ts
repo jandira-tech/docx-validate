@@ -23,28 +23,38 @@
  * or beside a related part holding note 5 — while the same unrelated part
  * with nothing referencing it opened clean: Word defines notes only from
  * the parts their relationships name, so the former basename reading is
- * gone (#797). The relationship walks are ungated by usage, so a
- * related-but-unused part defines its ids too — this set only adds
- * definitions, never a rejection. A `<kind>s` relationship target that
- * escapes the package resolves by stopping its `..` segments at the
- * package root, as RFC 3986's remove_dot_segments does: session 63 (s63c)
- * opened `word/`'s `../../footnotes.xml` clean with the note at
- * `/footnotes.xml` while word-valid rejected it, and session 64 (s64a)
- * confirmed the reading — the `../../../footnotes.xml` twin and the
- * endnotes twin `../../endnotes.xml` opened clean with their notes at the
- * root, while the same escaping target with the note only in
- * `word/footnotes.xml` got the recovery offer and stays rejected (#830).
- * An External `<kind>s` relationship names no part, so a body reference
- * whose note sits in an unreferenced `word/footnotes.xml` blocks, matching
- * session 63 (s63c)'s recovery offer. Other rules' relationship resolution
- * keeps dropping an escaping target; those readings are unprobed.
- * References read through the main document
+ * gone (#797). But a part the content-types stream types
+ * `application/octet-stream` defines no note, whatever it is called:
+ * session 63 (s63c) offered recovery for a body footnote reference whose
+ * note sat in `word/notes.bin` typed octet-stream by its Override, and
+ * session 64 (s64b) repeated that refusal for the same row and for
+ * `word/notes.xml` and `word/footnotes.xml` alike — the type, not the name,
+ * makes Word refuse the part (#829); its endnotes twin is unprobed. The
+ * media type decides, parameters stripped and ASCII-lowercased as every
+ * content-type judgment resolves it; case and parameter spellings on a
+ * notes part, and every other unrecognised type, are unprobed. The
+ * relationship walks are ungated by usage, so a related-but-unused part
+ * defines its ids too — this set only adds definitions, never a rejection.
+ * A `<kind>s` relationship target that escapes the package resolves by
+ * stopping its `..` segments at the package root, as RFC 3986's
+ * remove_dot_segments does: session 63 (s63c) opened `word/`'s
+ * `../../footnotes.xml` clean with the note at `/footnotes.xml` while
+ * word-valid rejected it, and session 64 (s64a) confirmed the reading — the
+ * `../../../footnotes.xml` twin and the endnotes twin `../../endnotes.xml`
+ * opened clean with their notes at the root, while the same escaping target
+ * with the note only in `word/footnotes.xml` got the recovery offer and
+ * stays rejected (#830). An External `<kind>s` relationship names no part,
+ * so a body reference whose note sits in an unreferenced
+ * `word/footnotes.xml` blocks, matching session 63 (s63c)'s recovery offer.
+ * Other rules' relationship resolution keeps dropping an escaping target;
+ * those readings are unprobed. References read through the main document
  * use only its own relationships' definitions: session 63 (s63c) offered
- * recovery for a body footnote reference whose note only a reached glossary's
- * notes part defines, while the main-related matching calibration opened
- * clean (#828). The endnotes twin is unprobed; it follows #793's shared
- * footnote-to-endnote reading. References read through a reached glossary
- * keep the union of both sets of definitions; that reading is unprobed.
+ * recovery for a body footnote reference whose note only a reached
+ * glossary's notes part defines, while the main-related matching
+ * calibration opened clean (#828). The endnotes twin is unprobed; it
+ * follows #793's shared footnote-to-endnote reading. References read
+ * through a reached glossary keep the union of both sets of definitions;
+ * that reading is unprobed.
  *
  * The references are read from the parts Word reads, as the read model
  * (`wordReadTypedTargets`) resolves them, wherever they are stored: every
@@ -76,7 +86,14 @@
 import path from "node:path";
 
 import type { CheckDefinition } from "../../../lib/check-registry";
-import { canonicalPartName } from "../../../lib/content-types";
+import {
+    canonicalPartName,
+    contentTypeMediaType,
+    findContentTypesStream,
+    parseContentTypes,
+    resolveContentType,
+    type ContentTypeTable,
+} from "../../../lib/content-types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import type { Profile, ValidationIssue } from "../../../lib/types";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
@@ -99,6 +116,15 @@ import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
 const STORY_SEGMENTS: ReadonlySet<string> = new Set(["comments", "footnotes", "endnotes"]);
 
 /**
+ * The media type that makes Word refuse a notes part entirely: session 63
+ * (s63c) and session 64 (s64b) offered recovery for a body footnote
+ * reference whose note sat in a part typed `application/octet-stream` —
+ * `word/notes.bin`, `word/notes.xml` or `word/footnotes.xml` alike — so
+ * such a part defines no note (#829).
+ */
+const OCTET_STREAM_MEDIA_TYPE = "application/octet-stream";
+
+/**
  * A w:id is ST_DecimalNumber (xsd:integer), and Word compares note ids by
  * integer value: session 62 (s62b) opened clean a reference spelled `01` or
  * `+1` against a note spelled `1`, each PDF the size of its matching
@@ -119,8 +145,19 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
     run: async (ctx: ValidationContext, profile?: Profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
 
+        // A notes part the content-types stream types octet-stream defines
+        // no note, whatever it is called (session 63 s63c, session 64 s64b,
+        // #829); a missing or unparseable stream leaves its own findings to
+        // block the run, and every other typing keeps defining its notes.
+        const typesStream = findContentTypesStream(ctx.partNames);
+        const typesDom = typesStream === undefined ? undefined : ctx.effectiveXml(typesStream);
+        const table: ContentTypeTable | undefined = typesDom?.ok ? parseContentTypes(typesDom.document) : undefined;
         const defined = new Set<string | bigint>();
         const collect = (part: string): void => {
+            const resolved = table === undefined ? null : resolveContentType(table, part);
+            if (resolved !== null && contentTypeMediaType(resolved.contentType) === OCTET_STREAM_MEDIA_TYPE) {
+                return;
+            }
             const parsed = ctx.effectiveXml(part);
             if (!parsed?.ok) {
                 return;
