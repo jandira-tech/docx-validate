@@ -1,6 +1,6 @@
 {
     "generatedAt": "2026-10-23T09:03:55.628Z",
-    "totalFixtures": 650,
+    "totalFixtures": 677,
     "entries": [
         {
             "relativePath": "broken/comments.unmatched-comment-marker.docx",
@@ -96,8 +96,10 @@
                 "errorCodes": []
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "8515c035158cbdade8cef3276a4240d7f605e41cf444bd5ebe5d4171ab725be2"
+                "outcome": "open-error",
+                "sha256": "8515c035158cbdade8cef3276a4240d7f605e41cf444bd5ebe5d4171ab725be2",
+                "observedAt": "2026-10-26T01:30:59.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -119,8 +121,10 @@
                 "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "9c0b13c74c82a6fdcb44028fead5c72b7532d257e25e8a7473a2598aa59bafda"
+                "outcome": "open-error",
+                "sha256": "9c0b13c74c82a6fdcb44028fead5c72b7532d257e25e8a7473a2598aa59bafda",
+                "observedAt": "2026-10-26T01:30:59.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -141,8 +145,10 @@
                 "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "b0cf666af937209d4c91305e652eb5216412db6bf83b61aa7c390c59970dc7cb"
+                "outcome": "unreadable-content-warning",
+                "sha256": "b0cf666af937209d4c91305e652eb5216412db6bf83b61aa7c390c59970dc7cb",
+                "observedAt": "2026-10-26T01:30:59.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -156,8 +162,10 @@
                 "errorCodes": ["xsd-error", "xsd-summary"]
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "c63ee16523e32bfaa8d12d5abfc5a33fcfafa0667c203419099633a259261f21"
+                "outcome": "unreadable-content-warning",
+                "sha256": "c63ee16523e32bfaa8d12d5abfc5a33fcfafa0667c203419099633a259261f21",
+                "observedAt": "2026-10-26T01:30:59.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -171,8 +179,10 @@
                 "errorCodes": ["mce-malformed", "xsd-error", "xsd-summary"]
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "a8e728c4107c1487b8c204836e4418d9aad241c452673c6737c3bdfd0ac68920"
+                "outcome": "unreadable-content-warning",
+                "sha256": "a8e728c4107c1487b8c204836e4418d9aad241c452673c6737c3bdfd0ac68920",
+                "observedAt": "2026-10-26T01:33:24.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -186,8 +196,10 @@
                 "errorCodes": ["mce-malformed", "xsd-error", "xsd-summary"]
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "f2bdb740a3021200d616c3bd3171226386442ccc81c34830825addea5d0133a7"
+                "outcome": "unreadable-content-warning",
+                "sha256": "f2bdb740a3021200d616c3bd3171226386442ccc81c34830825addea5d0133a7",
+                "observedAt": "2026-10-26T01:33:24.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -208,8 +220,10 @@
                 "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "de461e33bc71af0bc5a5770b844292b1704ce25467ae498813894c6af61ac39f"
+                "outcome": "open-error",
+                "sha256": "de461e33bc71af0bc5a5770b844292b1704ce25467ae498813894c6af61ac39f",
+                "observedAt": "2026-10-26T01:33:24.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -230,8 +244,10 @@
                 "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "2c44584a5038057a43161b881959a28560ce6da7ad0903d982d3974112ce74fa"
+                "outcome": "open-error",
+                "sha256": "2c44584a5038057a43161b881959a28560ce6da7ad0903d982d3974112ce74fa",
+                "observedAt": "2026-10-26T01:33:24.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -252,8 +268,10 @@
                 "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "4de3548ff70a39aedd5ef6af9c6938c0bea162e1787da0c5c54c2ad4a927fad0"
+                "outcome": "open-error",
+                "sha256": "4de3548ff70a39aedd5ef6af9c6938c0bea162e1787da0c5c54c2ad4a927fad0",
+                "observedAt": "2026-10-26T01:36:14.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -267,8 +285,10 @@
                 "errorCodes": []
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "bfd789dc181637f8bd8007bbab6115d2b949c788cf54f2839c9eb12a80a03324"
+                "outcome": "unreadable-content-warning",
+                "sha256": "bfd789dc181637f8bd8007bbab6115d2b949c788cf54f2839c9eb12a80a03324",
+                "observedAt": "2026-10-26T01:36:14.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -288,8 +308,10 @@
                 "errorCodes": ["rels-id-missing", "rels-unreferenced"]
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "f9ee736e620997bc774eee52ef8efbe28fa0ff8c0fd6234121e1caa941357038"
+                "outcome": "unreadable-content-warning",
+                "sha256": "f9ee736e620997bc774eee52ef8efbe28fa0ff8c0fd6234121e1caa941357038",
+                "observedAt": "2026-10-26T01:36:14.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -303,8 +325,10 @@
                 "errorCodes": ["xsd-error", "xsd-summary"]
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "52b18dea69dafe56f1242778155d03e1dc419395f21dac99436ff06fc3305758"
+                "outcome": "unreadable-content-warning",
+                "sha256": "52b18dea69dafe56f1242778155d03e1dc419395f21dac99436ff06fc3305758",
+                "observedAt": "2026-10-26T01:36:14.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -324,8 +348,10 @@
                 "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "7677b35b052b3b020ed90054122e7f4caefa95c8d747cda2ec33d7c4d7f9d576"
+                "outcome": "unreadable-content-warning",
+                "sha256": "7677b35b052b3b020ed90054122e7f4caefa95c8d747cda2ec33d7c4d7f9d576",
+                "observedAt": "2026-10-26T01:38:40.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -339,8 +365,10 @@
                 "errorCodes": []
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "f6a4a0e2791d944d857f697900a974faa3efb73ddc4bd7df75d21a43e106598b"
+                "outcome": "open-error",
+                "sha256": "f6a4a0e2791d944d857f697900a974faa3efb73ddc4bd7df75d21a43e106598b",
+                "observedAt": "2026-10-26T01:38:40.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -354,8 +382,10 @@
                 "errorCodes": []
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "14a04529bcd71e097591a7b068b4e93ce20dcf6a87bd4a3b08bc7a388f332921"
+                "outcome": "unreadable-content-warning",
+                "sha256": "14a04529bcd71e097591a7b068b4e93ce20dcf6a87bd4a3b08bc7a388f332921",
+                "observedAt": "2026-10-26T01:38:40.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -378,8 +408,10 @@
                 "errorCodes": ["rels-id-missing", "rels-unreferenced", "xsd-error", "xsd-summary"]
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "e22002e4f186a710d0d10084950d7333a892541dffbfca651ae3425dbc299ec3"
+                "outcome": "unreadable-content-warning",
+                "sha256": "e22002e4f186a710d0d10084950d7333a892541dffbfca651ae3425dbc299ec3",
+                "observedAt": "2026-10-26T01:44:57.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -393,8 +425,10 @@
                 "errorCodes": []
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "18d72b31b7f3c6cea734ff5c4f49622a08c7fe04a65c9b0b85ec616297a2d330"
+                "outcome": "unreadable-content-warning",
+                "sha256": "18d72b31b7f3c6cea734ff5c4f49622a08c7fe04a65c9b0b85ec616297a2d330",
+                "observedAt": "2026-10-26T01:44:57.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -408,8 +442,10 @@
                 "errorCodes": []
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "4158815657718767242e2a2d7d7dc4aa6043fccbeddf679de2fd76887bbd062a"
+                "outcome": "unreadable-content-warning",
+                "sha256": "4158815657718767242e2a2d7d7dc4aa6043fccbeddf679de2fd76887bbd062a",
+                "observedAt": "2026-10-26T01:44:57.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -423,8 +459,10 @@
                 "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "27e6f7ace511f4b753863f20b315ea35625be34e03f14e5e66813f7cbd7a79d7"
+                "outcome": "open-error",
+                "sha256": "27e6f7ace511f4b753863f20b315ea35625be34e03f14e5e66813f7cbd7a79d7",
+                "observedAt": "2026-10-26T01:44:57.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -447,8 +485,10 @@
                 "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "6db54e9f4fb3653525c00db038dbefe8c08f4376babb6398ca57c6f6dddf7c5f"
+                "outcome": "open-error",
+                "sha256": "6db54e9f4fb3653525c00db038dbefe8c08f4376babb6398ca57c6f6dddf7c5f",
+                "observedAt": "2026-10-26T01:46:50.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -469,8 +509,10 @@
                 "errorCodes": ["ws-missing-preserve", "xsd-error", "xsd-summary"]
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "f494c423cca2db7e65028c7614b875c36ea82b021327d689ecf43e071a1d0f6e"
+                "outcome": "open-error",
+                "sha256": "f494c423cca2db7e65028c7614b875c36ea82b021327d689ecf43e071a1d0f6e",
+                "observedAt": "2026-10-26T01:46:50.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -484,8 +526,10 @@
                 "errorCodes": []
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "4b0a74cbc918f39b944254ffb360b063bf1a26d77586cd748943cbd0dc5c0918"
+                "outcome": "unreadable-content-warning",
+                "sha256": "4b0a74cbc918f39b944254ffb360b063bf1a26d77586cd748943cbd0dc5c0918",
+                "observedAt": "2026-10-26T01:46:50.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -499,8 +543,10 @@
                 "errorCodes": []
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "9e517b0313071113182173ecee2e0004a15b6dc970d74fdfd3b2efa2bf2ff26f"
+                "outcome": "unreadable-content-warning",
+                "sha256": "9e517b0313071113182173ecee2e0004a15b6dc970d74fdfd3b2efa2bf2ff26f",
+                "observedAt": "2026-10-26T01:50:12.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -519,8 +565,10 @@
                 "errorCodes": ["comment-thread-count-mismatch"]
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "25d4f44a585a61edf22dd820af9bc274888becb159b5edc473d6e283333f878f"
+                "outcome": "unreadable-content-warning",
+                "sha256": "25d4f44a585a61edf22dd820af9bc274888becb159b5edc473d6e283333f878f",
+                "observedAt": "2026-10-26T01:50:12.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -534,8 +582,10 @@
                 "errorCodes": []
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "b71ae90db9278fc469d2f30bd3be74951566aee1f16dc57ebd1422b22b603bb7"
+                "outcome": "unreadable-content-warning",
+                "sha256": "b71ae90db9278fc469d2f30bd3be74951566aee1f16dc57ebd1422b22b603bb7",
+                "observedAt": "2026-10-26T01:50:12.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -556,8 +606,10 @@
                 "errorCodes": ["ct-uncovered-part", "rels-broken", "rels-unreferenced", "xsd-error", "xsd-summary"]
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "cafddc356260ee3c0be45d73252e833f8f2d052189fa1b6051857df10f926730"
+                "outcome": "unreadable-content-warning",
+                "sha256": "cafddc356260ee3c0be45d73252e833f8f2d052189fa1b6051857df10f926730",
+                "observedAt": "2026-10-26T01:50:12.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -571,8 +623,10 @@
                 "errorCodes": []
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "3242542fbdde12549e54e4e721104a297d0293e7a79faf6c2948dfe910ae61d8"
+                "outcome": "unreadable-content-warning",
+                "sha256": "3242542fbdde12549e54e4e721104a297d0293e7a79faf6c2948dfe910ae61d8",
+                "observedAt": "2026-10-26T01:52:16.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -586,8 +640,10 @@
                 "errorCodes": []
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "8ab8b602264794246110ec52c2d37e6789e1c9d002f870fbad8eeccd08fa1645"
+                "outcome": "unreadable-content-warning",
+                "sha256": "8ab8b602264794246110ec52c2d37e6789e1c9d002f870fbad8eeccd08fa1645",
+                "observedAt": "2026-10-26T01:52:16.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -601,8 +657,10 @@
                 "errorCodes": ["package-open-failed"]
             },
             "word": {
-                "outcome": "unknown",
-                "sha256": "51f7d2c2f525146656070173e327fb37aad5b534b3096f4d25dc72e6b22aa692"
+                "outcome": "unreadable-content-warning",
+                "sha256": "51f7d2c2f525146656070173e327fb37aad5b534b3096f4d25dc72e6b22aa692",
+                "observedAt": "2026-10-26T01:52:16.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
@@ -9917,6 +9975,480 @@
             "word": {
                 "outcome": "clean-open",
                 "sha256": "e840d96b17e73800befdfec2d7abcb17e32a84f123fbdde29f2acf804d979016"
+            }
+        },
+        {
+            "relativePath": "working/package.drawing-arc-radius-integer.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "style-default-missing"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "d6faf27e24b0d540d0d3a35dc065f23d2cb98da5ca2312e03780aa7b52b0b5da",
+                "observedAt": "2026-10-26T01:30:59.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-anchor-open-repaired.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "rels-unreferenced", "style-default-missing", "xsd-error", "xsd-summary"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "f38a49e7a7eb4523b1561d855e2929615ae9f0dbb3573d3471083a030cc1b547",
+                "observedAt": "2026-10-26T01:30:59.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-attached-toolbar-utf8-repaired.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "rels-unreferenced", "style-default-missing", "xsd-error", "xsd-summary"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "864227204267541a0ecabc3a72412ec3b19b38b9541d3fd84e6f7916e1dd1c68",
+                "observedAt": "2026-10-26T01:30:59.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-cell-ends-with-table-repaired.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "xsd-error", "xsd-summary"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "f43be4fc8ad3ba0a1f9322601f114c0e65009e381c84c1973758c0a263a54795",
+                "observedAt": "2026-10-26T01:33:24.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-choice-requires-declared.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["xsd-error", "xsd-summary"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "733d1afd84bd7711be767553ad03da5d3319b5fd5e60f7c17c1eb8f9c2d1c38c",
+                "observedAt": "2026-10-26T01:33:24.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-choice-requires-on-ancestor.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["xsd-error", "xsd-summary"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "aa69a3c4b3448b80ced9fb91cdc34985e2199eb441e0d5292e9bf9af6f9e8e04",
+                "observedAt": "2026-10-26T01:33:24.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-drawing-extent-positive.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "rels-unreferenced", "style-default-missing", "xsd-error", "xsd-summary"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "9d143beaf514b30b06a824db4d213dacbec6e35e067276841e3bac68d79ebc2b",
+                "observedAt": "2026-10-26T01:36:14.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-duplicate-font-table-removed.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "c5f6255afe8ce41259862576d6e7670ff1f4613e1fbbda5a3922b271ca6ece77",
+                "observedAt": "2026-10-26T01:36:14.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-duplicate-settings-removed.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "rels-id-missing", "rels-unreferenced", "style-default-missing"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["rels-id-missing", "rels-unreferenced"]
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "97c58c1673774516b0665a034f225575b68548f9b9659aaf7602b3a3e3efdc24",
+                "observedAt": "2026-10-26T01:36:14.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-duplicate-theme-removed.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "xsd-error", "xsd-summary"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "c041b18223a6c3d83d5902294918ffec9f5e2a24eba4e6e2c332c7fa164fdd03",
+                "observedAt": "2026-10-26T01:38:40.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-duplicate-web-settings-removed.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "rels-unreferenced", "xsd-error", "xsd-summary"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "09c5d3aa41689640a111c9f6b519ac5a8e2c5428691daf5fad2fba428f7b8dd3",
+                "observedAt": "2026-10-26T01:38:40.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-empty-drawing-removed.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "12ff28d9e5aad5fe817978e79863e084daa123eea9143b6966dbf553886f7b45",
+                "observedAt": "2026-10-26T01:38:40.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-footnote-reference-present.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "style-default-missing"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "9acfb475b6827c78e1c88af2efb074ce4109c171742011b831db25beecaed8f3",
+                "observedAt": "2026-10-26T01:38:40.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-hyperlink-relationship-repaired.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": [
+                    "paraid-missing-element",
+                    "rels-unreferenced",
+                    "style-default-missing",
+                    "style-reference-undefined",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "4478c5ddcdca6f8839950efdebd2646eb12a6e4e7505088ec24846fcfb4a34c7",
+                "observedAt": "2026-10-26T01:44:57.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-move-from-text.docx",
+            "strict": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "e03de7c960730f8a1321823645963b688e97816c3f9c26f6d502dda887a11e21",
+                "observedAt": "2026-10-26T01:44:57.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-numbering-picture-bullet-removed.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "style-default-missing"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "09dd6ad583d32301032e3b8d3fdc28c7b2764ecb2f868dbfec419844d5e8d951",
+                "observedAt": "2026-10-26T01:44:57.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-row-without-cell-repaired.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "rels-unreferenced", "xsd-error", "xsd-summary"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "4611517d964637bae3e190a889e573f6b38420ae670066a4f2bd6002f9c802da",
+                "observedAt": "2026-10-26T01:46:50.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-sdt-id-empty-repaired.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": [
+                    "paraid-missing-element",
+                    "rels-unreferenced",
+                    "style-default-missing",
+                    "style-reference-undefined",
+                    "textid-missing-element",
+                    "xsd-error",
+                    "xsd-summary"
+                ]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["rels-unreferenced", "xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "57b2598340c97dd6ac4b2132a970625f652680037fee1aa089b37e1893eafc3f",
+                "observedAt": "2026-10-26T01:46:50.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-text-contains-paragraph-lifted.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "style-default-missing", "ws-missing-preserve"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["ws-missing-preserve"]
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "4e6e9576e2afaf61bce31915e4f2a98519d958d18670dc72fffcb089bbb03d04",
+                "observedAt": "2026-10-26T01:46:50.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-textbox-deleted-text-removed.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "style-default-missing"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "43dcec487eecd5458865e53825f815ea6d693ebc7dd6078eca424a7ca9d3adb6",
+                "observedAt": "2026-10-26T01:50:12.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-textbox-deleted-text-shape-repaired.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["comment-thread-count-mismatch", "paraid-missing-element", "style-reference-undefined"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["comment-thread-count-mismatch"]
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "e2442d5e2dbea0bb97daa19bb357fc68f375c5dc790f31cf42eec84e24eb3315",
+                "observedAt": "2026-10-26T01:50:12.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-textbox-fallback-deleted-text.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "style-default-missing"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "13e0bbd7a9dbb62232f8e255562fd67924b0ce2a500676cd75cffb7fd9da7cad",
+                "observedAt": "2026-10-26T01:46:50.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-textbox-inner-deletion.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["comment-thread-count-mismatch", "paraid-missing-element", "style-reference-undefined"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["comment-thread-count-mismatch"]
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "27aebeace127c63f47da20f18b915ec3b15613e28e141a054fcf7d65270d393e",
+                "observedAt": "2026-10-26T01:50:12.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.word-undeclared-part-removed.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "style-default-missing", "xsd-error", "xsd-summary"]
+            },
+            "lenient": {
+                "valid": false,
+                "errorCodes": ["rels-broken", "xsd-error", "xsd-summary"]
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "242448a0186ae5f8d2ac92618a5fdb4cf49c0dc714afd89f5f0bc1e1dec9df70",
+                "observedAt": "2026-10-26T01:52:16.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.zip-concatenated-copy-removed.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "style-default-missing"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "f0e727413740038c4d3c80885aba007cfc26e4b1fb5e98ca2ffa66bfb9177f10",
+                "observedAt": "2026-10-26T01:52:16.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.zip-eocd-comment-declared.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "4ef5194f3cfbd1f0706eeeeede24e6943f86b5d26c6c6a30e12a67485bec1979",
+                "observedAt": "2026-10-26T01:52:16.000Z",
+                "wordVersion": "16.115"
+            }
+        },
+        {
+            "relativePath": "working/package.zip-no-bytes-after-eocd.docx",
+            "strict": {
+                "valid": false,
+                "errorCodes": ["paraid-missing-element", "style-default-missing"]
+            },
+            "lenient": {
+                "valid": true,
+                "errorCodes": []
+            },
+            "word": {
+                "outcome": "clean-open",
+                "sha256": "77d15a55769074cf87248d9277a90411cb5fce557ba6bf3bec9facd749d8d33e",
+                "observedAt": "2026-10-26T01:52:16.000Z",
+                "wordVersion": "16.115"
             }
         },
         {
