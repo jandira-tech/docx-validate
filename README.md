@@ -355,8 +355,8 @@ The complete named check catalogue is below. Each Word check except
 `word-markup-compatibility` uses its id as its finding code. Package checks are
 `zip-bytes-after-eocd`, `zip-bytes-before-archive`, `zip-eocd-comment-overrun`,
 `opc-equivalent-part-names`, `opc-part-name-escaped-unreserved`,
-`opc-part-name-escaped-slash`, and `opc-part-name-word-refused`; `xml-syntax` is the shared
-XML prerequisite. All `word-*` checks apply to DOCX/DOCM only.
+`opc-part-name-escaped-slash`, `opc-part-name-word-refused`, and
+`opc-item-name-refused`; `xml-syntax` is the shared XML prerequisite. All `word-*` checks apply to DOCX/DOCM only.
 `ct-duplicate-declaration`, `ct-override-partname-invalid`,
 `ct-override-partname-word-refused` and `ct-markup-compatibility` apply to
 every package format; `word-content-type-invalid`,
@@ -462,6 +462,19 @@ only defect is its name. Hex is case-insensitive and whole
 triplets are consumed: `%2521` stays clean, as do `%20`, `%26`, `%3A`, `%5B`,
 `%7F`, and a literal `!`. Unreserved escapes keep their existing M1.8 finding.
 
+`opc-item-name-refused` reports one finding per distinct stored file-entry name
+that places no package part: one that starts with `/` or `\`, names a drive
+(`c:`), or has an empty, `.`, `..` or other dot-only segment, read with `\` as
+`/`. The finding's `path` is the stored name and its message is the package
+view's refusal. It reads the same stored names as the checks above, and folder
+entries are not judged. Every such name still refuses the staging, so the
+finding is an error under every profile, and it is Word-blocking: Word 16.115
+offers recovery for a `..` name in the central directory (#411); the
+leading-slash, drive and empty-segment names were not probed. The
+`package-extract-failed` the refusal raises names only the first such name;
+this check names each one
+([#629](https://github.com/jandira-tech/docx-validate/issues/629)).
+
 `ct-override-partname-word-refused` applies the same escaped-mark, high-octet
 and literal non-ASCII rules to every Override PartName, even when no part is
 stored under that name. It reports one finding per declaration at the stored
@@ -486,7 +499,7 @@ names and input bytes unchanged.
 
 | Group                     | Named checks                                                                                                                                                                                                                                                                                                                                        |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `package`                 | `zip-bytes-after-eocd`, `zip-bytes-before-archive`, `zip-eocd-comment-overrun`, `opc-equivalent-part-names`, `opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, `opc-part-name-word-refused`                                                                                                                                        |
+| `package`                 | `zip-bytes-after-eocd`, `zip-bytes-before-archive`, `zip-eocd-comment-overrun`, `opc-equivalent-part-names`, `opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, `opc-part-name-word-refused`, `opc-item-name-refused`                                                                                                               |
 | `math`, `tracked-changes` | `word-math-run-insertion`, `word-math-run-deletion`                                                                                                                                                                                                                                                                                                 |
 | `math`                    | `word-math-parse`, `word-math-spre-body`                                                                                                                                                                                                                                                                                                            |
 | `story`                   | `word-shading-color`, `word-page-margin-attributes`, `word-run-misplaced`, `word-run-properties-misplaced`, `word-underline-misplaced`, `word-paragraph-properties-misplaced`, `word-section-properties-misplaced`, `word-footnote-reference-missing`, `word-numbering-picture-bullet`, `word-sdt-id-empty`, `word-text-contains-paragraph`         |
@@ -1429,8 +1442,8 @@ interface ValidationResult {
 `ValidationMetadata` has optional `profile`, `executedChecks`, `omittedChecks`,
 `schemaCompleted`, and `wordVerification` fields. `executedChecks` reports the
 registry ids a complete run executed (#319): lenient lists `opc-equivalent-part-names`,
-`opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, and
-`opc-part-name-word-refused` first, then `xml-syntax` and the rest; Word-valid
+`opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`,
+`opc-part-name-word-refused`, and `opc-item-name-refused` first, then `xml-syntax` and the rest; Word-valid
 and strict add the ZIP-envelope checks for a packed file and every Word rule whose
 prerequisites passed. A partial run lists the selected checks that ran, so an
 archive-only check is not listed for an unpacked directory. A missing target (`ENOENT` or `ENOTDIR`) throws
@@ -1445,7 +1458,15 @@ the encrypted, corrupted or truncated archive explanation is reserved for JSZip 
 a stored item name that places no part — judged on the central-directory name,
 never the local header's or the unicode-path field's (#445) — or an unreadable
 entry — fails with
-`package-extract-failed`, as the full run's extraction reports it (#413). Directory inputs apply the same stored-name refusal before either full or partial validation: literal backslash names with empty or dot-only segments are refused with the same code and message (#424).
+`package-extract-failed`, as the full run's extraction reports it (#413). Each stored
+item name that places no part is also its own error-severity `opc-item-name-refused`
+finding, and the full run of a packed file still judges the archive's other entries,
+as it does after a failed extraction: it leaves the refused central-directory records
+out, so an entry a refused `..` name hid in the package view is judged by its own bytes.
+It judges nothing more when the remaining names still collide (#413), when the archive
+uses ZIP64, or when bytes sit between the central directory and its end record. A
+directory input judges only its names, and a partial run only what is described below
+([#629](https://github.com/jandira-tech/docx-validate/issues/629)). Directory inputs apply the same stored-name refusal before either full or partial validation: literal backslash names with empty or dot-only segments are refused with the same code and message (#424).
 Direct `DOCXSchemaValidator.validate()` and `PPTXSchemaValidator.validate()` calls also return an error-severity
 `package-extract-failed` for such refused directory names, with the same message as `validate()`; programming errors still propagate
 ([#548](https://github.com/jandira-tech/docx-validate/issues/548)). They also apply the same directory walk refusal
@@ -1455,8 +1476,8 @@ direct validators include the same stored-name findings, in the same order and a
 as `validate()` for the same path string, and list the stored-name checks they ran in `executedChecks`, as `validate()`'s
 `metadata.executedChecks` does ([#572](https://github.com/jandira-tech/docx-validate/issues/572)). Its stored
 entry names and archive bytes are still read. Selected `opc-equivalent-part-names`,
-`opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`, and
-`opc-part-name-word-refused` checks and
+`opc-part-name-escaped-unreserved`, `opc-part-name-escaped-slash`,
+`opc-part-name-word-refused`, and `opc-item-name-refused` checks and
 selected envelope checks (such as `zip-bytes-after-eocd`) run and report what the
 full run reports. Every other selected check needs the package's parts and is
 listed in `omittedChecks`

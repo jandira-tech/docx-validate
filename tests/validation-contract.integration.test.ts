@@ -3827,6 +3827,15 @@ const REFUSED_DIRECTORY_CODES = [
     "opc-part-name-word-refused",
     "package-extract-failed",
 ];
+/** A `..` file name adds its own refusal before the extract failure (#629). */
+const REFUSED_DOTDOT_DIRECTORY_CODES = [
+    "opc-equivalent-part-names",
+    "opc-part-name-escaped-unreserved",
+    "opc-part-name-escaped-slash",
+    "opc-part-name-word-refused",
+    "opc-item-name-refused",
+    "package-extract-failed",
+];
 
 describe.skipIf(process.platform === "win32")("validation contract: direct directory refusals (#548, #572, #381)", () => {
     it.each([
@@ -3844,11 +3853,11 @@ describe.skipIf(process.platform === "win32")("validation contract: direct direc
                 writeFileSync(path.join(root, "word\\a\\..\\x.xml"), "<x/>");
                 const word = await validate(root, { profile: "word-valid" });
                 expect(word.valid).toBe(false);
-                expect(word.issues.map((issue) => issue.code)).toEqual(REFUSED_DIRECTORY_CODES);
+                expect(word.issues.map((issue) => issue.code)).toEqual(REFUSED_DOTDOT_DIRECTORY_CODES);
                 for (const profile of ["word-valid", "strict", "lenient"] as const) {
                     const full = await validate(root, { profile });
                     expect(full.valid).toBe(false);
-                    expect(full.issues.map((issue) => issue.code)).toEqual(REFUSED_DIRECTORY_CODES);
+                    expect(full.issues.map((issue) => issue.code)).toEqual(REFUSED_DOTDOT_DIRECTORY_CODES);
                     if (profile === "strict") {
                         expect([...errorCodes(word.issues)].every((code) => errorCodes(full.issues).has(code))).toBe(true);
                     }

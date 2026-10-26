@@ -279,14 +279,15 @@ const trailingBytes = async (): Promise<Buffer> => Buffer.concat([await buildDoc
 
 describe("a partial run of a refused package view still runs the stored-name checks (#420)", { timeout: 120_000 }, () => {
     // A stored name that places no part refuses the package view (#378), but
-    // the stored-name checks (#351, #408) read only the names — the full run
-    // reports them before extraction, and a partial run that selects them must
-    // report the same findings.
+    // the stored-name checks (#351, #408, #629) read only the names — the full
+    // run reports them before extraction, and a partial run that selects them
+    // must report the same findings.
     const STORED_NAME_CHECKS = [
         "opc-equivalent-part-names",
         "opc-part-name-escaped-unreserved",
         "opc-part-name-escaped-slash",
         "opc-part-name-word-refused",
+        "opc-item-name-refused",
     ] as const;
     const SELECTIONS = [
         { checks: ["opc-equivalent-part-names"] },
@@ -431,7 +432,18 @@ describe("a partial run of a refused package view still runs the stored-name che
                     .map((definition) => definition.id),
             );
             await withTempDir(async (dir) => {
-                const file = await specimen(dir, "flagged.docx", rawPackage([{ name: "word/a/../b.xml", content: "<x/>" }]));
+                // The full run judges the entries a refused name leaves (#629),
+                // so a case collision refuses that remaining view too (#441),
+                // and only the flagged checks and the envelope checks run.
+                const file = await specimen(
+                    dir,
+                    "flagged.docx",
+                    rawPackage([
+                        { name: "word/a/../b.xml", content: "<x/>" },
+                        { name: "word/Extra.xml", content: "<x/>" },
+                        { name: "word/extra.xml", content: "<x/>" },
+                    ]),
+                );
                 const full = await validate(file, { profile });
                 expect(full.issues.some((issue) => issue.code === "package-extract-failed")).toBe(true);
                 expect((full.metadata?.executedChecks ?? []).filter((id) => !envelope.has(id)).sort()).toEqual(
@@ -476,6 +488,7 @@ describe("a partial run applies its profile's policy (#381)", { timeout: 120_000
             "opc-part-name-escaped-unreserved",
             "opc-part-name-escaped-slash",
             "opc-part-name-word-refused",
+            "opc-item-name-refused",
             "xml-syntax",
             "ct-duplicate-declaration",
             // The content-types group's Override PartName grammar (#414).

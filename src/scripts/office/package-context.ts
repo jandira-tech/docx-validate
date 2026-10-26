@@ -15,6 +15,7 @@ import { opcNameIssueSeverity, wordObservedIssueSeverity } from "../../lib/mode-
 import { assertPlaceableNames, ValidationContext, PackageViewError, PackageOpenError } from "../../lib/validation-context";
 import { createDefaultCheckRegistry } from "./checks";
 import { OPC_PART_NAME_WORD_REFUSED } from "./checks/opc-part-name-word-refused";
+import { OPC_ITEM_NAME_REFUSED } from "./checks/opc-item-name-refused";
 import { walkDirectory, walkFiles, type UnreadableEntry } from "./validators/base";
 
 /** Shared stored-name diagnosis before any XML/extraction gate (#572). */
@@ -33,10 +34,14 @@ export async function storedNamesRun(
     return {
         issues: run.issues.map((issue) => ({
             ...issue,
+            // A refused item name fails the staging under every profile,
+            // so naming it is an error under every profile too (#629).
             severity:
-                issue.code === OPC_PART_NAME_WORD_REFUSED
-                    ? wordObservedIssueSeverity(profile, format)
-                    : opcNameIssueSeverity(profile, format),
+                issue.code === OPC_ITEM_NAME_REFUSED
+                    ? "error"
+                    : issue.code === OPC_PART_NAME_WORD_REFUSED
+                      ? wordObservedIssueSeverity(profile, format)
+                      : opcNameIssueSeverity(profile, format),
         })),
         executed: run.executed,
     };

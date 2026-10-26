@@ -68,6 +68,7 @@ import { verifyInWord, WORD_VERIFY_TIMEOUT_MS, type WordVerification } from "../
 import {
     archiveStoredNames,
     assertPlaceableNames,
+    entryNameRefusal,
     indexByPartName,
     normalizePartName,
     ValidationContext,
@@ -101,7 +102,7 @@ import { wordReadParts, wordStoryRootParts } from "../../lib/word-read-parts";
 import { CT_DUPLICATE_DECLARATION } from "../../lib/content-types";
 import { isWordBlockingIssue } from "./validators/word-blocking";
 import { explainWordError } from "./validators/word-error-explanations";
-import { loadCentralNamedArchive } from "../../lib/zip-central-names";
+import { archiveWithoutEntries, loadCentralNamedArchive } from "../../lib/zip-central-names";
 import { WORD_PART_CONTENT_TYPE_MISMATCH } from "./checks/word-part-content-type-mismatch";
 import { WORD_PART_CONTENT_TYPE_INEXACT } from "./checks/word-part-content-type-inexact";
 
@@ -615,7 +616,11 @@ export async function validate(target: string, opts: ValidateOptions = {}): Prom
             // resolved onto a later entry names no part either way (#378).
             assertPlaceableNames(stored);
         } catch (err) {
-            return finish(stagingFailed(named, err));
+            // The package still is not staged, but a refused name no longer
+            // hides the rest of it: opc-item-name-refused named each refused
+            // entry above, and the checks that read the archive directly
+            // judge every other entry, as after a failed extraction (#629).
+            return finish(stagingFailed(named, err, await placeableEntryFindings(buf, format, profile, registry, deadline)));
         }
         // The extraction can fail after the archive opened: the host
         // filesystem cannot hold two parts under one name (#373). The archive
@@ -957,6 +962,25 @@ async function archiveFindings(
         // adds nothing to it, and never throws out of `validate()`.
         return EMPTY_FINDINGS;
     }
+}
+
+/**
+ * The findings {@link archiveFindings} reads from the archive's other entries
+ * when a stored item name places no part (#629). The refused records are
+ * left out of the directory, so an entry a refused `..` name hid in JSZip's
+ * view is judged by its own bytes. An envelope the rewrite cannot honor adds
+ * nothing, and an archive whose remaining view is refused too — a portable
+ * name collision — adds nothing either (#413).
+ */
+async function placeableEntryFindings(
+    bytes: Uint8Array,
+    format: PackageFormat,
+    profile: Profile,
+    registry: CheckRegistry,
+    deadline?: RunDeadline,
+): Promise<{ issues: readonly ValidationIssue[]; executed: readonly string[] }> {
+    const rest = archiveWithoutEntries(bytes, (record) => !record.directory && entryNameRefusal(record.name) !== undefined);
+    return rest === undefined ? EMPTY_FINDINGS : archiveFindings(rest, format, profile, registry, deadline);
 }
 
 /**

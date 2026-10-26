@@ -98,6 +98,7 @@ describe("default check registry", () => {
             "opc-part-name-escaped-unreserved",
             "opc-part-name-escaped-slash",
             "opc-part-name-word-refused",
+            "opc-item-name-refused",
         ]);
         expect(run.issues.map((i) => i.code)).toEqual(["zip-bytes-after-eocd"]);
     });
