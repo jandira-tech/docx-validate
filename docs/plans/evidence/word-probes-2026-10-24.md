@@ -1,6 +1,6 @@
 # Real-Word probes, 2026-10-24
 
-Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), what session 26 settled for the items adversarial review AY suspected (#606, #607, #610), what session 27 settled for the relationship types and placements adversarial review AZ left open (#613), what session 28 settled for a hyperlink's relationship type (#614), what session 29 settled for duplicate relationship Ids and `https:` relationship Types (#615, adversarial review BA), what session 30 settled for duplicate relationship Ids outside the package and main-document `.rels` (#617, adversarial review BB), what session 31 settled for duplicate relationship Ids beside a story root stored without a `.xml` suffix (#618, adversarial review BC), what session 32 settled for a story reference whose `r:id` names no relationship and for a main document stored without a `.xml` suffix (#619, #620, adversarial review BD), and what session 33 settled for story references with an empty, missing or ISO Strict `r:id`, story roots stored as `word/header1.xml`, and markup compatibility in relationships parts (#623, #624, #625, #631, #632, adversarial reviews BE and BG), what session 34 settled for parts reached only through a relationship markup compatibility selects and for markup-compatibility errors in relationships parts (#634, #635, #636, the adversarial review of #632's fix), and what session 35 settled for the adversarial review of layer 130: relationship ids `rels-missing-sidecar` counts that Word never resolves (#638), and story-reference ids outside the body `w:sectPr`; and what session 36 settled for the adversarial reviews of #636 and layer 131: which relationships parts' markup-compatibility errors Word rejects (#644), a chart no drawing references (#645), and a root-wrapped package relationships part (#640, #646); and what session 37 settled for #644's remaining sidecars and #645's boundary shapes (#647); and the package relationships root wrappers #646's fix accepts (session 38); and the chart sources and package-root wrapper combinations layer 133's review found accepted without evidence (#661, #662, session 39); and the paragraph-id repair's output and the External relationship targets #653's and #665's fixes change (session 40); and the Word outcomes of the 56 package fixtures layer 136 pins, each observed in two separate runs and read from both runs' logs (session 41).
+Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), what session 26 settled for the items adversarial review AY suspected (#606, #607, #610), what session 27 settled for the relationship types and placements adversarial review AZ left open (#613), what session 28 settled for a hyperlink's relationship type (#614), what session 29 settled for duplicate relationship Ids and `https:` relationship Types (#615, adversarial review BA), what session 30 settled for duplicate relationship Ids outside the package and main-document `.rels` (#617, adversarial review BB), what session 31 settled for duplicate relationship Ids beside a story root stored without a `.xml` suffix (#618, adversarial review BC), what session 32 settled for a story reference whose `r:id` names no relationship and for a main document stored without a `.xml` suffix (#619, #620, adversarial review BD), and what session 33 settled for story references with an empty, missing or ISO Strict `r:id`, story roots stored as `word/header1.xml`, and markup compatibility in relationships parts (#623, #624, #625, #631, #632, adversarial reviews BE and BG), what session 34 settled for parts reached only through a relationship markup compatibility selects and for markup-compatibility errors in relationships parts (#634, #635, #636, the adversarial review of #632's fix), and what session 35 settled for the adversarial review of layer 130: relationship ids `rels-missing-sidecar` counts that Word never resolves (#638), and story-reference ids outside the body `w:sectPr`; and what session 36 settled for the adversarial reviews of #636 and layer 131: which relationships parts' markup-compatibility errors Word rejects (#644), a chart no drawing references (#645), and a root-wrapped package relationships part (#640, #646); and what session 37 settled for #644's remaining sidecars and #645's boundary shapes (#647); and the package relationships root wrappers #646's fix accepts (session 38); and the chart sources and package-root wrapper combinations layer 133's review found accepted without evidence (#661, #662, session 39); and the paragraph-id repair's output and the External relationship targets #653's and #665's fixes change (session 40); and the Word outcomes of the 56 package fixtures layer 136 pins, each observed in two separate runs and read from both runs' logs (session 41); and Word's verdicts on the stored item names the package view refuses and `opc-item-name-refused` reports (#629, session 42).
 
 - Word: Microsoft Word for Mac 16.115 (build 16.115.26100424), platform `darwin`.
 - Transport, sessions 1 and 2: `verifyInWord` (`src/lib/word-verifier.ts`). It opens each specimen by path, reads Word's window and dialog state, and never saves.
@@ -291,6 +291,14 @@ Session 41 adds:
     - Strict rejects 26 of the twins as well, for reasons other than their pair's defect, mostly `paraid-missing-element` (24), `style-default-missing` (15) and the XSD walk (12). Only `working/package.word-move-from-text.docx` passes strict.
     - The manifest now binds these outcomes to the fixtures' hashes. The 29 broken entries had carried `unknown` because Word had never opened them.
 
+Session 42 adds:
+
+- **#629: Word rejects every kind of stored item name the package view refuses** (`s42a`, `s42b`, two runs each).
+    - Beside a valid package, one unreferenced, well-formed entry stored as `/word/xtra.xml`, `\word\xtra.xml`, `C:/word/xtra.xml`, `c:xtra.xml`, `word/./xtra.xml` or `word/.../xtra.xml` drew the unreadable-content offer in both runs and both readings. So did `word/a/../xtra.xml` with the name in both headers, as session 3 found for a `..` name only in the central directory.
+    - The same entry stored as `word/xtra.xml` opened clean, as did both minimal controls.
+    - `word//xtra.xml` (an empty segment) never opened, but its exact dialog is `unknown`. Three readings show the unreadable-content offer. Run 1's outcome table recorded the open error instead, because the driver could not read the first offer's text and logged only the error that followed it.
+    - b6b80433's word-valid and strict reject all eight with `opc-item-name-refused` and `package-extract-failed`, and word-valid passes the name control and the minimal control. So word-valid agrees with Word on all 11 rows, and the check's Word-blocking classification rests on observation.
+
 ## Not observed
 
 Session 1. Another session began driving Word by 02:28Z: its first log line is at 02:28:14Z, and its map file was written at 02:27:55Z. Its preflight closes every open document, so rows observed from 02:26Z on were not treated as evidence. Session 2 observed all of them again (below).
@@ -386,6 +394,16 @@ Session 41 ran in the foreground: 16 driver runs, two per chunk, between 01:16Z 
 - **Validator columns.**
     - The fixture columns are `validate()` at c0a244f5 on the same bytes, the verdicts layer 136 pins.
     - The control is session 40's minimal control (`b705a9a7…`), recomputed at c0a244f5.
+
+Session 42 ran in the foreground: four driver runs, two per chunk, between 03:40Z and 03:53Z on 2026-10-26. Nothing was set aside. Every rejected row is attributed by an alert naming its staged file, and every clean row by a converted PDF with no alert naming the file.
+
+- **Runs.** `s42a`'s runs started at 03:40Z and 03:43Z, and `s42b`'s at 03:46Z and 03:50Z.
+- **Bytes.** The specimens were built at layer 136 (b6b80433) with the session 42 builder below. The raw-ZIP specimens rebuild byte for byte; the controls are session 40's minimal control (`b705a9a7…`), copied, not rebuilt. `compare.py` checked every file Word was given, in both runs, against the SHA-256 recorded at build time.
+- **Lock and other drivers.** This session held `word.lock` for all four runs. Before the first, no `osascript` executable, no Python process running `word_pdf` or `word_redline`, no `word_watchdog.sh` and no Word process was running; before each later run, no such driver and no watchdog was running, checked by executable. Another session's driver started at 03:53:28Z, 21 s after this session's last run ended (03:53:07Z).
+- **Word processes.** Every run launched its own Word (`word_pid=33335`, `36505`, `39049` and `43683`, `launched_by_us=True`, `open_documents=0`, `started_clean=True`).
+- **Recycles.** The driver restarted Word once in each of three runs (`s42a`'s second and both of `s42b`'s), each after Word opened nothing for one to three documents in a row. `s42a`'s second run had first closed every document once and carried on with the same Word. Every control opened clean.
+- **Crash reports.** `~/Library/Logs/DiagnosticReports` holds no Word report from the session.
+- **Validator columns.** `validate()` at b6b80433 on the same bytes, recorded by the builder.
 
 Sessions 4–6 observed `main-relationship-missing` (#380), the #414 `PartName`s with `application/xml`, an escape in a folder segment (#408), a part-level relationships part (#433) and an unreferenced malformed `customXml/item9.xml` (#437). Still to be observed:
 
@@ -3067,6 +3085,288 @@ out += ["</details>", ""]
 (ROOT / "s41/section.md").write_text("\n".join(out))
 print(len(rows), "rows,", len(raw), "raw records")
 ````
+
+</details>
+
+### Session 42: 03:40Z–03:53Z on 2026-10-26, validator columns at b6b80433
+
+The stored item names `opc-item-name-refused` reports and the package view refuses (#629), for the kinds no earlier session had probed. Each specimen is `MINIMAL_PARTS` plus one unreferenced, well-formed `<x/>` entry, built with `buildRawZip` (the name verbatim in the local header and the central directory), so the specimens differ only in that entry's stored name. `629-name-control` stores the entry as `word/xtra.xml`, which places a part; `629-dotdot-segment` repeats session 3's `..` finding with the name in both headers. Each chunk ends with session 40's minimal control, queued last ([#671](https://github.com/jandira-tech/docx-validate/issues/671)). Every chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. A cell shows both readings when they differ. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; 10 of the 11 rows agree. The two times in Observed are the ends of the first and second runs. Rows are listed in builder order; the driver opens a chunk's files in name order.
+
+| Run    | Observed             | Specimen                   | Stored name          | SHA-256 (first 16) | Word, run 1                            | Word, run 2    | Outcome                    | word-valid at b6b80433                                     | strict at b6b80433                                         |
+| ------ | -------------------- | -------------------------- | -------------------- | ------------------ | -------------------------------------- | -------------- | -------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------- |
+| `s42a` | 03:43:04Z, 03:46:35Z | `629-leading-slash`        | `/word/xtra.xml`     | `4c7f101c6c0fa210` | repair-warning                         | repair-warning | unreadable-content-warning | invalid: `opc-item-name-refused`, `package-extract-failed` | invalid: `opc-item-name-refused`, `package-extract-failed` |
+| `s42a` | 03:43:04Z, 03:46:35Z | `629-leading-backslash`    | `\word\xtra.xml`     | `04885b3168c91c1d` | repair-warning                         | repair-warning | unreadable-content-warning | invalid: `opc-item-name-refused`, `package-extract-failed` | invalid: `opc-item-name-refused`, `package-extract-failed` |
+| `s42a` | 03:43:04Z, 03:46:35Z | `629-drive-absolute`       | `C:/word/xtra.xml`   | `c1be0d88feea86b9` | repair-warning                         | repair-warning | unreadable-content-warning | invalid: `opc-item-name-refused`, `package-extract-failed` | invalid: `opc-item-name-refused`, `package-extract-failed` |
+| `s42a` | 03:43:04Z, 03:46:35Z | `629-drive-relative`       | `c:xtra.xml`         | `7c7522f74ee0fa25` | repair-warning                         | repair-warning | unreadable-content-warning | invalid: `opc-item-name-refused`, `package-extract-failed` | invalid: `opc-item-name-refused`, `package-extract-failed` |
+| `s42a` | 03:43:04Z, 03:46:35Z | `629-name-control`         | `word/xtra.xml`      | `0c9490aa2479572b` | clean-open                             | clean-open     | clean-open                 | valid                                                      | invalid: `rels-unreferenced`, `xsd-summary`, `xsd-error`   |
+| `s42a` | 03:43:04Z, 03:46:35Z | `s42a-control-minimal-end` | none (control)       | `b705a9a7e3509d7e` | clean-open                             | clean-open     | clean-open                 | valid                                                      | valid                                                      |
+| `s42b` | 03:49:53Z, 03:53:04Z | `629-empty-segment`        | `word//xtra.xml`     | `3292bc6f8b7283c9` | log: repair-warning; table: open-error | repair-warning | unknown                    | invalid: `opc-item-name-refused`, `package-extract-failed` | invalid: `opc-item-name-refused`, `package-extract-failed` |
+| `s42b` | 03:49:53Z, 03:53:04Z | `629-dot-segment`          | `word/./xtra.xml`    | `0122205814390852` | repair-warning                         | repair-warning | unreadable-content-warning | invalid: `opc-item-name-refused`, `package-extract-failed` | invalid: `opc-item-name-refused`, `package-extract-failed` |
+| `s42b` | 03:49:53Z, 03:53:04Z | `629-triple-dot-segment`   | `word/.../xtra.xml`  | `86fcea267125659c` | repair-warning                         | repair-warning | unreadable-content-warning | invalid: `opc-item-name-refused`, `package-extract-failed` | invalid: `opc-item-name-refused`, `package-extract-failed` |
+| `s42b` | 03:49:53Z, 03:53:04Z | `629-dotdot-segment`       | `word/a/../xtra.xml` | `4ace2b1f3c7b6dd4` | repair-warning                         | repair-warning | unreadable-content-warning | invalid: `opc-item-name-refused`, `package-extract-failed` | invalid: `opc-item-name-refused`, `package-extract-failed` |
+| `s42b` | 03:49:53Z, 03:53:04Z | `s42b-control-minimal-end` | none (control)       | `b705a9a7e3509d7e` | clean-open                             | clean-open     | clean-open                 | valid                                                      | valid                                                      |
+
+<details><summary>Raw records, session 42</summary>
+
+```jsonl
+{"run": "s42a", "pass": 1, "name": "629-leading-slash", "storedName": "/word/xtra.xml", "sha256": "4c7f101c6c0fa210ec58d617c505c4fe497e1ba76fdb215fcbc3a743c87fa029", "observedAt": "2026-10-26T03:43:04+00:00", "staged": "00003__wfv__629-leading-slash.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-25 23:43:01.873 \"Word found unreadable content in 00003__wfv__629-leading-slash.docx. Do you want to recover the con … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s42a", "pass": 2, "name": "629-leading-slash", "storedName": "/word/xtra.xml", "sha256": "4c7f101c6c0fa210ec58d617c505c4fe497e1ba76fdb215fcbc3a743c87fa029", "observedAt": "2026-10-26T03:46:35+00:00", "staged": "00003__wfv__629-leading-slash.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-25 23:46:11.343 'Word found unreadable content in 00003__wfv__629-leading-slash.docx. Do you want to recover the con … ? If you trust the source of this document, click Yes.'", "2026-10-25 23:46:35.327 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … covery converter. (00003__wfv__629-leading-slash.docx)\""]}
+{"run": "s42a", "pass": 1, "name": "629-leading-backslash", "storedName": "\\word\\xtra.xml", "sha256": "04885b3168c91c1d7159ce37584827896a4908f5f1d05526050d299e665aeaf3", "observedAt": "2026-10-26T03:43:04+00:00", "staged": "00002__wfv__629-leading-backslash.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-25 23:42:07.018 'Word found unreadable content in 00002__wfv__629-leading-backslash.docx. Do you want to recover the … ? If you trust the source of this document, click Yes.'", "2026-10-25 23:42:07.758 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … ry converter. (00002__wfv__629-leading-backslash.docx)\""]}
+{"run": "s42a", "pass": 2, "name": "629-leading-backslash", "storedName": "\\word\\xtra.xml", "sha256": "04885b3168c91c1d7159ce37584827896a4908f5f1d05526050d299e665aeaf3", "observedAt": "2026-10-26T03:46:35+00:00", "staged": "00002__wfv__629-leading-backslash.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-25 23:45:20.396 Microsoft Word, Word found unreadable content in 00002__wfv__629-leading-backslash.docx. Do you want … t? If you trust the source of this document, click Yes."]}
+{"run": "s42a", "pass": 1, "name": "629-drive-absolute", "storedName": "C:/word/xtra.xml", "sha256": "c1be0d88feea86b9c31fbc26522b288d338770d81685b6cd273ed86b2098652c", "observedAt": "2026-10-26T03:43:04+00:00", "staged": "00000__wfv__629-drive-absolute.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-25 23:41:05.350 'Word found unreadable content in 00000__wfv__629-drive-absolute.docx. Do you want to recover the co … ? If you trust the source of this document, click Yes.'", "2026-10-25 23:41:06.071 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … overy converter. (00000__wfv__629-drive-absolute.docx)\""]}
+{"run": "s42a", "pass": 2, "name": "629-drive-absolute", "storedName": "C:/word/xtra.xml", "sha256": "c1be0d88feea86b9c31fbc26522b288d338770d81685b6cd273ed86b2098652c", "observedAt": "2026-10-26T03:46:35+00:00", "staged": "00000__wfv__629-drive-absolute.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-25 23:43:35.783 'Word found unreadable content in 00000__wfv__629-drive-absolute.docx. Do you want to recover the co … ? If you trust the source of this document, click Yes.'", "2026-10-25 23:43:36.413 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … overy converter. (00000__wfv__629-drive-absolute.docx)\""]}
+{"run": "s42a", "pass": 1, "name": "629-drive-relative", "storedName": "c:xtra.xml", "sha256": "7c7522f74ee0fa251691bc312d451caea4b30fce35fee457d0ca9c80b444e75d", "observedAt": "2026-10-26T03:43:04+00:00", "staged": "00001__wfv__629-drive-relative.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-25 23:41:56.881 Microsoft Word, Word found unreadable content in 00001__wfv__629-drive-relative.docx. Do you want to … t? If you trust the source of this document, click Yes.", "2026-10-25 23:42:02.649 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … overy converter. (00001__wfv__629-drive-relative.docx)\""]}
+{"run": "s42a", "pass": 2, "name": "629-drive-relative", "storedName": "c:xtra.xml", "sha256": "7c7522f74ee0fa251691bc312d451caea4b30fce35fee457d0ca9c80b444e75d", "observedAt": "2026-10-26T03:46:35+00:00", "staged": "00001__wfv__629-drive-relative.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-25 23:44:28.533 Microsoft Word, Word found unreadable content in 00001__wfv__629-drive-relative.docx. Do you want to … t? If you trust the source of this document, click Yes.", "2026-10-25 23:44:29.274 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … overy converter. (00001__wfv__629-drive-relative.docx)\""]}
+{"run": "s42a", "pass": 1, "name": "629-name-control", "storedName": "word/xtra.xml", "sha256": "0c9490aa2479572b2c9f942af1885f2f553765b3109e8ed0f0db90c6539300b1", "observedAt": "2026-10-26T03:43:04+00:00", "staged": "00004__wfv__629-name-control.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF 629-name-control_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s42a", "pass": 2, "name": "629-name-control", "storedName": "word/xtra.xml", "sha256": "0c9490aa2479572b2c9f942af1885f2f553765b3109e8ed0f0db90c6539300b1", "observedAt": "2026-10-26T03:46:35+00:00", "staged": "00004__wfv__629-name-control.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF 629-name-control_byword.pdf (13400 bytes), no dialog named the file"]}
+{"run": "s42a", "pass": 1, "name": "s42a-control-minimal-end", "storedName": null, "sha256": "b705a9a7e3509d7e235ef7087c37a80084caf55fcd3e0cf5e8a3888be400acdc", "observedAt": "2026-10-26T03:43:04+00:00", "staged": "00005__wfv__s42a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s42a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s42a", "pass": 2, "name": "s42a-control-minimal-end", "storedName": null, "sha256": "b705a9a7e3509d7e235ef7087c37a80084caf55fcd3e0cf5e8a3888be400acdc", "observedAt": "2026-10-26T03:46:35+00:00", "staged": "00005__wfv__s42a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s42a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s42b", "pass": 1, "name": "629-empty-segment", "storedName": "word//xtra.xml", "sha256": "3292bc6f8b7283c975254007ed4c5ca336e5def45b1af0560e039609570fd2a3", "observedAt": "2026-10-26T03:49:53+00:00", "staged": "00002__wfv__629-empty-segment.docx", "logVerdict": "repair-warning", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-25 23:48:23.265 Microsoft Word, Word experienced an error trying to open the file. Try these suggestions. * Check th … ecovery converter. (00002__wfv__629-empty-segment.docx)", "2026-10-25 23:49:52.987 Microsoft Word, Word found unreadable content in 00002__wfv__629-empty-segment.docx. Do you want to  … t? If you trust the source of this document, click Yes."]}
+{"run": "s42b", "pass": 2, "name": "629-empty-segment", "storedName": "word//xtra.xml", "sha256": "3292bc6f8b7283c975254007ed4c5ca336e5def45b1af0560e039609570fd2a3", "observedAt": "2026-10-26T03:53:04+00:00", "staged": "00002__wfv__629-empty-segment.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-25 23:52:36.040 Microsoft Word, Word found unreadable content in 00002__wfv__629-empty-segment.docx. Do you want to  … t? If you trust the source of this document, click Yes.", "2026-10-25 23:52:36.753 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … covery converter. (00002__wfv__629-empty-segment.docx)\""]}
+{"run": "s42b", "pass": 1, "name": "629-dot-segment", "storedName": "word/./xtra.xml", "sha256": "012220581439085259d09ed3d0e61ddf0793d7a4ae091280e141fc7117cc4960", "observedAt": "2026-10-26T03:49:53+00:00", "staged": "00000__wfv__629-dot-segment.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-25 23:46:59.937 'Word found unreadable content in 00000__wfv__629-dot-segment.docx. Do you want to recover the conte … ? If you trust the source of this document, click Yes.'", "2026-10-25 23:47:00.525 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … Recovery converter. (00000__wfv__629-dot-segment.docx)\""]}
+{"run": "s42b", "pass": 2, "name": "629-dot-segment", "storedName": "word/./xtra.xml", "sha256": "012220581439085259d09ed3d0e61ddf0793d7a4ae091280e141fc7117cc4960", "observedAt": "2026-10-26T03:53:04+00:00", "staged": "00000__wfv__629-dot-segment.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-25 23:50:45.436 'Word found unreadable content in 00000__wfv__629-dot-segment.docx. Do you want to recover the conte … ? If you trust the source of this document, click Yes.'", "2026-10-25 23:50:46.028 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … Recovery converter. (00000__wfv__629-dot-segment.docx)\""]}
+{"run": "s42b", "pass": 1, "name": "629-triple-dot-segment", "storedName": "word/.../xtra.xml", "sha256": "86fcea267125659cf23daf022bf41db6cf74e8efffc3c6591373a3441cde4e75", "observedAt": "2026-10-26T03:49:53+00:00", "staged": "00003__wfv__629-triple-dot-segment.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-25 23:48:46.006 'Word found unreadable content in 00003__wfv__629-triple-dot-segment.docx. Do you want to recover th … ? If you trust the source of this document, click Yes.'", "2026-10-25 23:48:46.575 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … y converter. (00003__wfv__629-triple-dot-segment.docx)\""]}
+{"run": "s42b", "pass": 2, "name": "629-triple-dot-segment", "storedName": "word/.../xtra.xml", "sha256": "86fcea267125659cf23daf022bf41db6cf74e8efffc3c6591373a3441cde4e75", "observedAt": "2026-10-26T03:53:04+00:00", "staged": "00003__wfv__629-triple-dot-segment.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-25 23:52:49.764 'Word found unreadable content in 00003__wfv__629-triple-dot-segment.docx. Do you want to recover th … ? If you trust the source of this document, click Yes.'", "2026-10-25 23:52:50.722 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … y converter. (00003__wfv__629-triple-dot-segment.docx)\""]}
+{"run": "s42b", "pass": 1, "name": "629-dotdot-segment", "storedName": "word/a/../xtra.xml", "sha256": "4ace2b1f3c7b6dd48418349e0b1b30efd684f5ec9601fd163a4a91fece5607a4", "observedAt": "2026-10-26T03:49:53+00:00", "staged": "00001__wfv__629-dotdot-segment.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-25 23:49:02.156 \"Word found unreadable content in 00001__wfv__629-dotdot-segment.docx. Do you want to recover the co … ? If you trust the source of this document, click Yes.\""]}
+{"run": "s42b", "pass": 2, "name": "629-dotdot-segment", "storedName": "word/a/../xtra.xml", "sha256": "4ace2b1f3c7b6dd48418349e0b1b30efd684f5ec9601fd163a4a91fece5607a4", "observedAt": "2026-10-26T03:53:04+00:00", "staged": "00001__wfv__629-dotdot-segment.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-25 23:51:30.019 Microsoft Word, Word found unreadable content in 00001__wfv__629-dotdot-segment.docx. Do you want to … t? If you trust the source of this document, click Yes.", "2026-10-25 23:51:44.403 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … very converter.\\n(00001__wfv__629-dotdot-segment.docx)'"]}
+{"run": "s42b", "pass": 1, "name": "s42b-control-minimal-end", "storedName": null, "sha256": "b705a9a7e3509d7e235ef7087c37a80084caf55fcd3e0cf5e8a3888be400acdc", "observedAt": "2026-10-26T03:49:53+00:00", "staged": "00004__wfv__s42b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s42b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s42b", "pass": 2, "name": "s42b-control-minimal-end", "storedName": null, "sha256": "b705a9a7e3509d7e235ef7087c37a80084caf55fcd3e0cf5e8a3888be400acdc", "observedAt": "2026-10-26T03:53:04+00:00", "staged": "00004__wfv__s42b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s42b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 42 builder, cross-check and section scripts</summary>
+
+Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s42builder.mts`:
+
+```ts
+// Session 42 (2026-10-26): Word's verdict on the stored item names `opc-item-name-refused` (#629) reports and the
+// package view refuses, for the kinds no session probed: a leading `/` or `\`, a drive (`C:/…`, `c:…`), and an empty,
+// `.` or `...` segment. Each specimen is MINIMAL_PARTS plus one unreferenced, well-formed `<x/>` entry, built with
+// buildRawZip (the name verbatim in the local header and the central directory), so the specimens differ only in that
+// entry's stored name. `629-name-control` stores it as `word/xtra.xml`, which places a part (session 3 opened
+// `foo/xtra.xml` clean). `629-dotdot-segment` repeats session 3's `..` finding with the name in both headers, as the
+// known positive. Each chunk ends with the s40a control's exact bytes (MINIMAL_PARTS through JSZip, sha b705a9a7…),
+// which Word opened clean in sessions 40 and 41; rebuilding it would change JSZip's entry dates.
+// Run from the layer 136 worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s42a pnpm exec tsx s42builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { validate } from "./src/scripts/office/validate";
+import { MINIMAL_PARTS } from "./tests/support/minimal-docx";
+import { buildRawZip } from "./tests/support/raw-zip";
+
+const withExtraEntry = (name: string) => async (): Promise<Uint8Array> =>
+    buildRawZip([...Object.entries(MINIMAL_PARTS).map(([part, content]) => ({ name: part, content })), { name, content: "<x/>" }]);
+const S40A_CONTROL = "/Users/arthrod/temp/T/docx-validate/.scratch/word-probes/s40a/src/s40a-control-minimal.docx";
+const control = async (): Promise<Uint8Array> => {
+    const bytes = readFileSync(S40A_CONTROL);
+    const sha = createHash("sha256").update(bytes).digest("hex");
+    if (!sha.startsWith("b705a9a7e3509d7e")) throw new Error(`s40a control changed: ${sha}`);
+    return bytes;
+};
+
+const chunks: Record<string, Array<[string, string, () => Promise<Uint8Array>]>> = {
+    s42a: [
+        ["629-leading-slash", "#629: unreferenced entry stored as `/word/xtra.xml`", withExtraEntry("/word/xtra.xml")],
+        ["629-leading-backslash", "#629: unreferenced entry stored as `\\word\\xtra.xml`", withExtraEntry("\\word\\xtra.xml")],
+        ["629-drive-absolute", "#629: unreferenced entry stored as `C:/word/xtra.xml`", withExtraEntry("C:/word/xtra.xml")],
+        ["629-drive-relative", "#629: unreferenced entry stored as `c:xtra.xml`", withExtraEntry("c:xtra.xml")],
+        ["629-name-control", "#629 control: the same entry stored as `word/xtra.xml`", withExtraEntry("word/xtra.xml")],
+        ["s42a-control-minimal-end", "control", control],
+    ],
+    s42b: [
+        ["629-empty-segment", "#629: unreferenced entry stored as `word//xtra.xml`", withExtraEntry("word//xtra.xml")],
+        ["629-dot-segment", "#629: unreferenced entry stored as `word/./xtra.xml`", withExtraEntry("word/./xtra.xml")],
+        ["629-triple-dot-segment", "#629: unreferenced entry stored as `word/.../xtra.xml`", withExtraEntry("word/.../xtra.xml")],
+        [
+            "629-dotdot-segment",
+            "#629 known positive (#411): unreferenced entry stored as `word/a/../xtra.xml`",
+            withExtraEntry("word/a/../xtra.xml"),
+        ],
+        ["s42b-control-minimal-end", "control", control],
+    ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        control: issue === "control" || name === "629-name-control",
+        wordValid: await verdict("word-valid"),
+        strict: await verdict("strict"),
+    };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-42 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in ("s42a", "s42b"):
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0]) if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": spec["control"],
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s42/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<34} {r['sha256'][:16]} outcome={r['outcome']:<27} readings={','.join(r['readings'])} word-valid={r['wordValid']} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-42 parts of docs/plans/evidence/word-probes-2026-10-24.md into s42/section.md.
+
+Reads each chunk's specimens.jsonl (validator columns at b6b80433, written by the builder), both runs'
+logcheck.jsonl and pdf/manifest.jsonl, and s42/results.json from compare.py.
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+STORED = {
+    "629-leading-slash": "/word/xtra.xml",
+    "629-leading-backslash": "\\word\\xtra.xml",
+    "629-drive-absolute": "C:/word/xtra.xml",
+    "629-drive-relative": "c:xtra.xml",
+    "629-name-control": "word/xtra.xml",
+    "629-empty-segment": "word//xtra.xml",
+    "629-dot-segment": "word/./xtra.xml",
+    "629-triple-dot-segment": "word/.../xtra.xml",
+    "629-dotdot-segment": "word/a/../xtra.xml",
+}
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s42/results.json").read_text())}
+
+
+def cell(v):
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw = [], []
+for label in ("s42a", "s42b"):
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        times = [run_at(r, s["file"]) for r in runs]
+        stored = f"`{STORED[s['name']]}`" if s["name"] in STORED else "none (control)"
+        result = results[(label, s["file"])]
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {stored} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "storedName": STORED.get(s["name"]), "sha256": s["sha256"],
+                                   "observedAt": t.isoformat(), "staged": row["staged"], "logVerdict": row["logVerdict"],
+                                   "tableVerdict": row["outcomesVerdict"], "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+out = [
+    "### Session 42: 03:40Z–03:53Z on 2026-10-26, validator columns at b6b80433",
+    "",
+    "The stored item names `opc-item-name-refused` reports and the package view refuses (#629), for the kinds no earlier session "
+    "had probed. Each specimen is `MINIMAL_PARTS` plus one unreferenced, well-formed `<x/>` entry, built with `buildRawZip` "
+    "(the name verbatim in the local header and the central directory), so the specimens differ only in that entry's stored name. "
+    "`629-name-control` stores the entry as `word/xtra.xml`, which places a part; `629-dotdot-segment` repeats session 3's `..` "
+    "finding with the name in both headers. Each chunk ends with session 40's minimal control, queued last "
+    "([#671](https://github.com/jandira-tech/docx-validate/issues/671)). Every chunk ran twice, as two separate driver runs of "
+    "byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by "
+    "`wordpdf_outcomes.py`. A cell shows both readings when they differ. Outcome is the manifest spelling when both runs and both "
+    "readings agree, and `unknown` otherwise; 10 of the 11 rows agree. The two times in Observed are the ends of the first and "
+    "second runs. Rows are listed in builder order; the driver opens a chunk's files in name order.",
+    "",
+    "| Run | Observed | Specimen | Stored name | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at b6b80433 | strict at b6b80433 |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 42</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 42 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s42builder.mts", ROOT / "s42builder.mts", "ts"), ("compare.py", ROOT / "s42/compare.py", "python"),
+                         ("section.py", ROOT / "s42/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s42/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records")
+`````
 
 </details>
 

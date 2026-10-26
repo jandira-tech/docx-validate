@@ -469,8 +469,10 @@ that places no package part: one that starts with `/` or `\`, names a drive
 view's refusal. It reads the same stored names as the checks above, and folder
 entries are not judged. Every such name still refuses the staging, so the
 finding is an error under every profile, and it is Word-blocking: Word 16.115
-offers recovery for a `..` name in the central directory (#411); the
-leading-slash, drive and empty-segment names were not probed. The
+rejects every kind, even for an unreferenced entry. It offers recovery for a
+leading `/` or `\`, a drive, and a `.`, `..` or `...` segment, and it never
+opened an empty segment, though one of four readings recorded its open error
+instead of the recovery offer (#411; sessions 3 and 42). The
 `package-extract-failed` the refusal raises names only the first such name;
 this check names each one
 ([#629](https://github.com/jandira-tech/docx-validate/issues/629)).

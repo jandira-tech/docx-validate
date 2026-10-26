@@ -11,9 +11,10 @@ export const OPC_ITEM_NAME_REFUSED = "opc-item-name-refused";
  * Every stored item name the package view refuses (#629): a leading slash, a
  * drive, or an empty or dot-only segment (#372, #378). The view still refuses
  * to stage such a package, so `package-extract-failed` stays; this check names
- * each refused entry, where the refusal stops at the first. Word 16.115 offers
- * recovery for a `..` name in the central directory (#411; session 3 in
- * docs/plans/evidence/word-probes-2026-10-24.md).
+ * each refused entry, where the refusal stops at the first. Word 16.115 rejects
+ * every kind, even unreferenced: it offers recovery for a leading `/` or `\`, a
+ * drive, and a `.`, `..` or `...` segment, and never opened an empty segment
+ * (#411; sessions 3 and 42 in docs/plans/evidence/word-probes-2026-10-24.md).
  */
 export const opcItemNameRefusedCheck: CheckDefinition = {
     id: OPC_ITEM_NAME_REFUSED,
