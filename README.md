@@ -833,22 +833,33 @@ content-type checks stay disjoint
 ([#707](https://github.com/jandira-tech/docx-validate/issues/707),
 [#719](https://github.com/jandira-tech/docx-validate/issues/719): an
 `invalid-*` declared value is `word-content-type-invalid`'s class alone).
-Session
-46 (chunk s46e in `docs/plans/evidence/word-probes-2026-10-24.md`) observed
-Word 16.115 offer recovery for the main document's `styles` relationship
-naming `word/styles.bin` typed `application/octet-stream` by a Default —
-whether the part held non-XML bytes or well-formed styles XML — while the
-same XML typed as styles opened clean. The main document's `styles` reach is
-the only observed one, so its finding alone carries the Word recovery
-sentence and blocks under word-valid; every other segment the shared typed
-walk reaches — a related settings, fontTable, webSettings, numbering, theme,
-header, footer, footnotes, endnotes, comments or glossaryDocument part, a
-reached glossary's relationships, and the main document itself — cites the
-content type ECMA-376 Part 1 (4th edition), clause 11.3 assigns it (14.2.7
-for theme, 11.3.10 for the Main Document) as an error under strict and a
-warning under word-valid. An undeclared type stays with `ct-undeclared-part`,
-and an empty one with `word-content-type-invalid` on the main document and
-on the styles, settings and fontTable parts the main document relates
+Sessions 46,
+49 and 50 (chunks s46e, s49a/s49b and s50c/s50d in
+`docs/plans/evidence/word-probes-2026-10-24.md`) observed Word 16.115 offer
+recovery for the main document itself — its Override typed
+`application/octet-stream` (session 49), `APPLICATION/OCTET-STREAM`,
+`application/octet-stream; charset=utf-8`, `image/png` or
+`application/foo+xml` (session 50) — for the main document's `styles` part —
+`word/styles.bin` typed `application/octet-stream` by a Default, whether the
+part held non-XML bytes or well-formed styles XML, while the same XML typed
+as styles opened clean (session 46), and `word/styles.xml` typed by its
+Override with the same five spellings (session 49) — and for the
+`settings`, `fontTable` and `numbering` parts the main document's own
+relationships relate, typed `application/octet-stream` by their Override
+(session 50)
+([#721](https://github.com/jandira-tech/docx-validate/issues/721)). That
+observed reach — the main document and the parts its own relationships part
+relates by `styles`, `settings`, `fontTable` and `numbering` — carries the
+Word recovery sentence and blocks under word-valid; every other segment the
+check's spec-set walk reaches — a related webSettings or theme part, a
+header, footer, footnotes, endnotes, comments or glossaryDocument part, and
+the parts a reached glossary's own relationships relate, its styles
+included — cites the content type ECMA-376 Part 1 (4th edition), clause
+11.3 assigns it (14.2.7 for theme, 11.3.10 for the Main Document) as an
+error under strict and a warning under word-valid. An undeclared type stays
+with `ct-undeclared-part`, and an empty one with `word-content-type-invalid`
+on the main document and on the styles, settings and fontTable parts the
+main document relates
 ([#720](https://github.com/jandira-tech/docx-validate/issues/720); sessions
 22, 49 and 50); every other segment's empty Override was not shown to Word
 and stays unreported. An `invalid-*` declared value stays with

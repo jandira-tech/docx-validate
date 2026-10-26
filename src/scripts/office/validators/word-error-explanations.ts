@@ -37,7 +37,7 @@ export const WORD_ERROR_EXPLANATIONS: Readonly<Record<string, string>> = Object.
     "word-content-type-invalid":
         "A part's content type in [Content_Types].xml is missing or wrong, so Word cannot load that part. Add the correct <Override>/<Default> content-type entry.",
     "word-part-content-type-unrecognized":
-        "A part Word reads has a content type that is neither its own Word type, nor generic XML, nor another Word part's type, so Word cannot load that part. Word 16.115 offered recovery for the main document's styles part typed application/octet-stream (session 46); other parts are unobserved. Give the part the content type its relationship expects.",
+        "A part Word reads has a content type that is neither its own Word type, nor generic XML, nor another Word part's type, so Word cannot load that part. Word 16.115 offered recovery for the main document and the parts its own relationships relate by styles, settings, fontTable and numbering, typed application/octet-stream among other unrecognised spellings (sessions 46, 49 and 50); other reaches are unobserved. Give the part the content type its relationship expects.",
     "ct-uncovered-part":
         "A package part has no content type in [Content_Types].xml. Word offers to recover the file. Remove the part, or add a Default or Override that covers it.",
     "word-drawing-scalar-whitespace":
