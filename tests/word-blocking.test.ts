@@ -8,7 +8,11 @@ import { describe, expect, it } from "vitest";
 import { canonicalPartName } from "../src/lib/content-types";
 import type { ValidationIssue } from "../src/lib/types";
 import { parseXml } from "../src/lib/xml-helpers";
-import { hasWordRelationshipReference, isWordBlockingIssue } from "../src/scripts/office/validators/word-blocking";
+import {
+    hasWordRelationshipReference,
+    isWordBlockingIssue,
+    relationshipAttributeValues,
+} from "../src/scripts/office/validators/word-blocking";
 
 const issue = (code: string, rest: Partial<ValidationIssue> = {}): ValidationIssue => ({ severity: "error", code, message: "", ...rest });
 
@@ -361,7 +365,7 @@ describe("isWordBlockingIssue", () => {
                 {
                     hasEffectiveRelationshipReference: specimen.reference,
                     reachedByUnobservedRelationship: specimen.unobserved,
-                    chartRelationshipReference: specimen.chart,
+                    referenceLoadedReach: specimen.chart,
                 },
             ),
         ).toBe(specimen.blocking);
@@ -512,5 +516,21 @@ describe("hasWordRelationshipReference", () => {
                 parseXml(`<root xmlns:w="${W}" xmlns:r="${R}"><w:name r:id="bad"/><w:hyperlink r:id="good"/></root>`),
             ),
         ).toBe(true);
+    });
+});
+
+describe("relationshipAttributeValues (#647)", () => {
+    // The superset the unobserved referenced shapes are matched on: every
+    // attribute in either relationships namespace, and VML's o:relid, on any
+    // element; nothing else, and no empty value.
+    it("collects every relationships-namespace attribute and o:relid, and nothing else", () => {
+        const document = parseXml(
+            `<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ` +
+                `xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" ` +
+                `xmlns:rs="http://purl.oclc.org/ooxml/officeDocument/relationships" ` +
+                `xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:dgm="http://schemas.openxmlformats.org/drawingml/2006/diagram">` +
+                `<w:body><dgm:relIds r:dm="rId1" r:lo="rId2" r:qs="" rs:cs="rId3"/><w:p o:relid="rId4" o:spid="rId5" w:rsidR="rId6" id="rId7"/></w:body></w:document>`,
+        );
+        expect([...relationshipAttributeValues(document)].sort()).toEqual(["rId1", "rId2", "rId3", "rId4"]);
     });
 });

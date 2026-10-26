@@ -25,13 +25,15 @@ export type WordBlockingFacts = {
     hasEffectiveRelationshipReference?: boolean;
     reachedByUnobservedRelationship?: boolean;
     /**
-     * Defined only when every internal relationship reaching the part is a
-     * `…/relationships/chart`: `"referenced"` when a Word-read part's
-     * effective XML names one of those relationship Ids, `"unreferenced"`
-     * when none does (#645, session 36 — Word never loads the chart then).
-     * `undefined` leaves the part on the reach-based verdict.
+     * Defined only when every internal relationship reaching the part is of a
+     * type Word loads only when referenced (`chart`, `diagramData`,
+     * `oleObject`, `hdphoto`) or of the `image` type, which never loads it:
+     * `"referenced"` when a Word-read part's effective XML names one of the
+     * non-image relationship Ids, `"unreferenced"` when none does (#645,
+     * session 36; #647, session 44 — Word opens clean then). `undefined`
+     * leaves the part on the reach-based verdict.
      */
-    chartRelationshipReference?: "referenced" | "unreferenced";
+    referenceLoadedReach?: "referenced" | "unreferenced";
 };
 
 /**
@@ -72,6 +74,33 @@ export const wordRelationshipReferenceIds = (document: Document): ReadonlySet<st
         }
     }
     return ids;
+};
+
+/**
+ * Every value of an attribute in either relationships namespace, or of VML's
+ * `o:relid`, on any element of `document`. A superset of
+ * {@link wordRelationshipReferenceIds} for the relationship types whose
+ * referenced shape Word was never shown (#647): `dgm:relIds` names the
+ * diagram data through `r:dm`, which that set does not count, so a reference
+ * of any spelling keeps the reach-based blocking verdict.
+ */
+export const relationshipAttributeValues = (document: Document): ReadonlySet<string> => {
+    const values = new Set<string>();
+    for (const element of getElementsByTagNameAll(document)) {
+        for (let i = 0; i < element.attributes.length; i++) {
+            const attribute = element.attributes.item(i);
+            if (
+                attribute !== null &&
+                attribute.value !== "" &&
+                (attribute.namespaceURI === NS.R ||
+                    attribute.namespaceURI === "http://purl.oclc.org/ooxml/officeDocument/relationships" ||
+                    (attribute.namespaceURI === "urn:schemas-microsoft-com:office:office" && attribute.localName === "relid"))
+            ) {
+                values.add(attribute.value);
+            }
+        }
+    }
+    return values;
 };
 
 /**
@@ -323,11 +352,13 @@ export const isWordBlockingIssue = (
             // loads a related-but-unreferenced chart and opens clean. The
             // reference is read in the processed view: a drawing only inside
             // an unselected mc:Choice opened clean, the same drawing in a
-            // selected one got the recovery offer (session 37 s37b). The
-            // basename exemption still answers first for a named header or
-            // footer.
-            if (facts.chartRelationshipReference !== undefined) {
-                return facts.chartRelationshipReference === "referenced" && !/^word\/(?:header|footer)\d*\.xml$/i.test(issue.path ?? "");
+            // selected one got the recovery offer (session 37 s37b). #647,
+            // session 44: an image reach never loads the part, even through a
+            // picture's `a:blip r:embed`, and an unreferenced diagramData,
+            // oleObject or hdphoto reach opened clean too. The basename
+            // exemption still answers first for a named header or footer.
+            if (facts.referenceLoadedReach !== undefined) {
+                return facts.referenceLoadedReach === "referenced" && !/^word\/(?:header|footer)\d*\.xml$/i.test(issue.path ?? "");
             }
             // A part an unobserved Office relationship type names keeps the
             // pre-#638 decision wherever it is stored: Word was never shown

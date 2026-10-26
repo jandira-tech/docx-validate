@@ -55,8 +55,9 @@
  *    not the `styles` type (#519). The `chart` segment stayed in this set —
  *    `wordReadParts` is shared by the XML-syntax consumers — but
  *    `rels-missing-sidecar` alone now judges a chart-only reach by whether a
- *    Word-read part references the relationship (`wordChartRelationshipSources`,
- *    #645, session 36).
+ *    Word-read part references the relationship (`wordReferenceLoadedSources`,
+ *    #645, session 36), and a reach through the `image`, `diagramData`,
+ *    `oleObject` and `hdphoto` types the same way (#647, session 44).
  *
  * A part two relationship types name yields one entry per type in the
  * typed walks and one typed read per type in `wordReadTypedTargets`, so the
@@ -679,38 +680,81 @@ export const wordReadParts = async (context: ValidationContext, profile?: Profil
     return parts;
 };
 
+/** The Microsoft `hdphoto` relationship type (an HD Photo a picture's `a14:imgLayer` embeds). */
+const HDPHOTO_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2007/relationships/hdphoto";
+
 /**
- * One relationship that reaches a part through the `…/relationships/chart`
- * type (Transitional or ISO Strict): the part its relationships part belongs
- * to, and its `Id`. `source` is `undefined` for `_rels/.rels`, which owns no
- * part, and for a relationships part that is not a `_rels` sidecar.
+ * How Word 16.115 loads the part a relationship of `type` reaches, for a part
+ * whose own relationships part is missing (#645, #647):
+ *  - `"chart"`: only when a Word-read part references the relationship — an
+ *    unreferenced chart opened clean, a drawing's `c:chart r:id` got the
+ *    recovery offer (sessions 36, 37 and 39);
+ *  - `"unobserved-reference"`: a `diagramData`, `oleObject` or `hdphoto`
+ *    reach nothing references opened clean, under `word/` and outside it
+ *    (session 44 s44b/s44c); a referenced one was never shown to Word;
+ *  - `"never"`: an `image` reach opened clean even when a picture's
+ *    `a:blip r:embed` names it (session 44 s44a/s44b) — Word reads the bytes
+ *    as an image and never loads the target's relationships;
+ *  - `undefined`: every other type keeps the reach-based rule.
+ * The Office types are read by segment, Transitional or ISO Strict, as #645
+ * read the chart type.
  */
-export type ChartRelationshipSource = {
-    readonly source: string | undefined;
-    readonly id: string;
+const referenceLoad = (type: string): "chart" | "unobserved-reference" | "never" | undefined => {
+    if (type === HDPHOTO_RELATIONSHIP_TYPE) {
+        return "unobserved-reference";
+    }
+    switch (officeRelationshipTypeSegment(type)) {
+        case "chart":
+            return "chart";
+        case "diagramData":
+        case "oleObject":
+            return "unobserved-reference";
+        case "image":
+            return "never";
+        default:
+            return undefined;
+    }
 };
 
 /**
- * The `chart`-type relationships that reach `part`, when every internal
- * relationship that reaches it is of that type — `undefined` otherwise,
- * including when none does (#645). Session 36 (s36b/s36d) observed that Word
- * 16.115 never loads a chart no drawing references: a chart part related from
- * the main document's sidecar but referenced by nothing opened clean, while
- * the same chart an inline drawing's `c:chart r:id` referenced got the
- * recovery offer; session 37 (s37b) saw the same split for a drawing only in
- * an unselected `mc:Choice` (clean) and in a selected one (recovery), so the
- * caller reads the reference in the processed view. A part a chart and an
- * image relationship both reach also opened clean (s37b) but stays on the
- * reach-based rule here (#647). The `chart` segment is the only unobserved
- * type moved off the reach-based rule; the caller drops the finding to a
- * warning when no Word-read part's effective XML names one of the returned
- * Ids, and keeps it when `undefined` leaves the part on the pre-#645 verdict.
+ * One relationship that reaches a part through a type Word loads only when it
+ * is referenced: the part its relationships part belongs to, and its `Id`.
+ * `source` is `undefined` for `_rels/.rels`, which owns no part, and for a
+ * relationships part that is not a `_rels` sidecar. `anyAttribute` is `true`
+ * for the types whose referenced shape Word was never shown (`diagramData`,
+ * `oleObject`, `hdphoto`): their reference shapes (`dgm:relIds r:dm`, …) are
+ * not all `id`/`embed`/`link`, so the caller counts any attribute naming the
+ * Id, and the unobserved referenced shape keeps blocking (#647).
  */
-export const wordChartRelationshipSources = async (
+export type ReferenceLoadedSource = {
+    readonly source: string | undefined;
+    readonly id: string;
+    readonly anyAttribute: boolean;
+};
+
+/**
+ * The relationships that reach `part` through a type Word loads only when
+ * referenced, when every internal relationship that reaches it is of such a
+ * type or of the `image` type — `undefined` otherwise, including when none
+ * does (#645, #647). Session 36 (s36b/s36d) observed that Word 16.115 never
+ * loads a chart no drawing references: a chart part related from the main
+ * document's sidecar but referenced by nothing opened clean, while the same
+ * chart an inline drawing's `c:chart r:id` referenced got the recovery offer;
+ * session 37 (s37b) saw the same split for a drawing only in an unselected
+ * `mc:Choice` (clean) and in a selected one (recovery), so the caller reads
+ * the reference in the processed view. Session 44 opened clean every image
+ * reach, referenced or not, and every unreferenced `diagramData`, `oleObject`
+ * and `hdphoto` reach ({@link referenceLoad}); an image relationship is never
+ * returned, so a part only images reach yields no sources. The caller drops
+ * the finding to a warning when no Word-read part's effective XML names one
+ * of the returned Ids, and keeps it when `undefined` leaves the part on the
+ * pre-#645 verdict.
+ */
+export const wordReferenceLoadedSources = async (
     context: ValidationContext,
     part: string,
     profile?: Profile,
-): Promise<readonly ChartRelationshipSource[] | undefined> => {
+): Promise<readonly ReferenceLoadedSource[] | undefined> => {
     const reach = await packageReach(context, profile);
     if (reach === undefined) {
         return undefined;
@@ -719,9 +763,9 @@ export const wordChartRelationshipSources = async (
     // `part` arrives as a finding's stored spelling; `\` reads as `/` as every
     // resolver here reads it, before the OPC-equivalence key is taken.
     const canonical = canonicalPartName(part.replace(/\\/g, "/"));
-    const sources: ChartRelationshipSource[] = [];
+    const sources: ReferenceLoadedSource[] = [];
     const seen = new Set<string>();
-    let allChart = true;
+    let reached = false;
     for (const name of names) {
         if (!isRelationshipsPartName(name)) {
             continue;
@@ -743,19 +787,23 @@ export const wordChartRelationshipSources = async (
             if (target === undefined || canonicalPartName(target) !== canonical) {
                 continue;
             }
-            if (officeRelationshipTypeSegment(relationship.getAttribute("Type") ?? "") !== "chart") {
-                allChart = false;
+            const load = referenceLoad(relationship.getAttribute("Type") ?? "");
+            if (load === undefined) {
+                return undefined;
+            }
+            reached = true;
+            if (load === "never") {
                 continue;
             }
-            const key = `${source ?? ""}\n${relationship.getAttribute("Id") ?? ""}`;
+            const key = `${source ?? ""}\n${relationship.getAttribute("Id") ?? ""}\n${load}`;
             if (seen.has(key)) {
                 continue;
             }
             seen.add(key);
-            sources.push({ source, id: relationship.getAttribute("Id") ?? "" });
+            sources.push({ source, id: relationship.getAttribute("Id") ?? "", anyAttribute: load === "unobserved-reference" });
         }
     }
-    return allChart && sources.length > 0 ? sources : undefined;
+    return reached ? sources : undefined;
 };
 
 /**

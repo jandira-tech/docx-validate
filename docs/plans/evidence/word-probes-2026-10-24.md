@@ -1,6 +1,6 @@
 # Real-Word probes, 2026-10-24
 
-Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), what session 26 settled for the items adversarial review AY suspected (#606, #607, #610), what session 27 settled for the relationship types and placements adversarial review AZ left open (#613), what session 28 settled for a hyperlink's relationship type (#614), what session 29 settled for duplicate relationship Ids and `https:` relationship Types (#615, adversarial review BA), what session 30 settled for duplicate relationship Ids outside the package and main-document `.rels` (#617, adversarial review BB), what session 31 settled for duplicate relationship Ids beside a story root stored without a `.xml` suffix (#618, adversarial review BC), what session 32 settled for a story reference whose `r:id` names no relationship and for a main document stored without a `.xml` suffix (#619, #620, adversarial review BD), and what session 33 settled for story references with an empty, missing or ISO Strict `r:id`, story roots stored as `word/header1.xml`, and markup compatibility in relationships parts (#623, #624, #625, #631, #632, adversarial reviews BE and BG), what session 34 settled for parts reached only through a relationship markup compatibility selects and for markup-compatibility errors in relationships parts (#634, #635, #636, the adversarial review of #632's fix), and what session 35 settled for the adversarial review of layer 130: relationship ids `rels-missing-sidecar` counts that Word never resolves (#638), and story-reference ids outside the body `w:sectPr`; and what session 36 settled for the adversarial reviews of #636 and layer 131: which relationships parts' markup-compatibility errors Word rejects (#644), a chart no drawing references (#645), and a root-wrapped package relationships part (#640, #646); and what session 37 settled for #644's remaining sidecars and #645's boundary shapes (#647); and the package relationships root wrappers #646's fix accepts (session 38); and the chart sources and package-root wrapper combinations layer 133's review found accepted without evidence (#661, #662, session 39); and the paragraph-id repair's output and the External relationship targets #653's and #665's fixes change (session 40); and the Word outcomes of the 56 package fixtures layer 136 pins, each observed in two separate runs and read from both runs' logs (session 41); and Word's verdicts on the stored item names the package view refuses and `opc-item-name-refused` reports (#629, session 42), and the dialog for the empty segment session 42 left `unknown` (#629, session 43).
+Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), what session 26 settled for the items adversarial review AY suspected (#606, #607, #610), what session 27 settled for the relationship types and placements adversarial review AZ left open (#613), what session 28 settled for a hyperlink's relationship type (#614), what session 29 settled for duplicate relationship Ids and `https:` relationship Types (#615, adversarial review BA), what session 30 settled for duplicate relationship Ids outside the package and main-document `.rels` (#617, adversarial review BB), what session 31 settled for duplicate relationship Ids beside a story root stored without a `.xml` suffix (#618, adversarial review BC), what session 32 settled for a story reference whose `r:id` names no relationship and for a main document stored without a `.xml` suffix (#619, #620, adversarial review BD), and what session 33 settled for story references with an empty, missing or ISO Strict `r:id`, story roots stored as `word/header1.xml`, and markup compatibility in relationships parts (#623, #624, #625, #631, #632, adversarial reviews BE and BG), what session 34 settled for parts reached only through a relationship markup compatibility selects and for markup-compatibility errors in relationships parts (#634, #635, #636, the adversarial review of #632's fix), and what session 35 settled for the adversarial review of layer 130: relationship ids `rels-missing-sidecar` counts that Word never resolves (#638), and story-reference ids outside the body `w:sectPr`; and what session 36 settled for the adversarial reviews of #636 and layer 131: which relationships parts' markup-compatibility errors Word rejects (#644), a chart no drawing references (#645), and a root-wrapped package relationships part (#640, #646); and what session 37 settled for #644's remaining sidecars and #645's boundary shapes (#647); and the package relationships root wrappers #646's fix accepts (session 38); and the chart sources and package-root wrapper combinations layer 133's review found accepted without evidence (#661, #662, session 39); and the paragraph-id repair's output and the External relationship targets #653's and #665's fixes change (session 40); and the Word outcomes of the 56 package fixtures layer 136 pins, each observed in two separate runs and read from both runs' logs (session 41); and Word's verdicts on the stored item names the package view refuses and `opc-item-name-refused` reports (#629, session 42), and the dialog for the empty segment session 42 left `unknown` (#629, session 43), and which relationship types make Word load a part whose own relationships part is missing (#647, session 44).
 
 - Word: Microsoft Word for Mac 16.115 (build 16.115.26100424), platform `darwin`.
 - Transport, sessions 1 and 2: `verifyInWord` (`src/lib/word-verifier.ts`). It opens each specimen by path, reads Word's window and dialog state, and never saves.
@@ -306,6 +306,15 @@ Session 43 adds:
     - The minimal control opened clean in both runs.
     - 6473f54b's word-valid and strict reject the specimen with `opc-item-name-refused` and `package-extract-failed` and pass the control, so word-valid agrees with Word on every stored-name kind the package view refuses.
 
+Session 44 adds:
+
+- **#647: an image relationship never makes Word load its target's relationships** (`s44a`, `s44b`, two runs each).
+    - The bare chart, with no sidecar, opened clean when only an image relationship reaches it, under `word/` and outside it, and when an inline picture's `a:blip r:embed` names that relationship.
+    - Reached by an image and a chart relationship, it opened clean unreferenced (s37b's specimen, again) and when only the picture references it; the drawing whose `c:chart r:id` names the chart relationship drew the open error.
+    - The picture naming a chart part with no `c:externalData` opened clean: Word shows no dialog for a picture whose bytes are not an image.
+- **#647: unreferenced diagramData, oleObject and hdphoto reaches open clean** (`s44b`, `s44c`, two runs each), under `word/` and outside it. Their referenced shapes were not shown to Word.
+- 37a691ce's word-valid rejects all 12 shapes that opened clean with `rels-missing-sidecar`, and agrees with Word only on the referenced chart and the controls. Strict rejects every specimen but the controls: the bare chart fails its schema even without `c:externalData`.
+
 ## Not observed
 
 Session 1. Another session began driving Word by 02:28Z: its first log line is at 02:28:14Z, and its map file was written at 02:27:55Z. Its preflight closes every open document, so rows observed from 02:26Z on were not treated as evidence. Session 2 observed all of them again (below).
@@ -419,6 +428,14 @@ Session 43 ran in the foreground: two driver runs of one chunk, at 06:25:10Z and
 - **Word processes.** Each run launched its own Word (`word_pid=36286` and `36691`, `launched_by_us=True`, `open_documents=0`, `started_clean=True`). Neither run restarted Word.
 - **Crash reports.** `~/Library/Logs/DiagnosticReports` holds no Word report from the session.
 - **Validator columns.** `validate()` at 6473f54b on the same bytes, recorded by the builder.
+
+Session 44 ran in the foreground: six driver runs, two per chunk, between 06:56Z and 07:01Z on 2026-10-26, each over in under 30 s. Nothing was set aside. The rejected row is attributed by alerts naming its staged file, and every clean row by a converted PDF with no alert naming the file.
+
+- **Bytes.** The specimens were built at layer 138 (37a691ce) with the session 44 builder below. `chart-outside-word-mixed-reach-no-sidecar` is s37b's file, which the builder refuses unless its SHA-256 starts `d9fcab69f2cdbbb8`. `compare.py` checked every file, in both runs, against the builder's SHA-256s, and the session 44 rows of `tests/relationship-sidecar.integration.test.ts` rebuild each other probed specimen's parts exactly (13 of 13, compared part by part).
+- **Lock and other drivers.** This session held `word.lock` for every run and, before each, checked by executable that no `word_pdf` or `word_redline` driver and no `word_watchdog.sh` was running. The second `s44a` run was refused once, because another session's `word_pdf.py` was driving Word over its own folder; it started after that driver exited.
+- **Word processes.** Each run launched its own Word (`word_pid` 89934, 94726, 6247, 11980, 19275 and 19459; `launched_by_us=True`, `open_documents=0`, `started_clean=True`). In each `s44a` run the driver restarted Word once (`recovery 1: … Word quit on request`) after the referenced chart opened nothing, retried that file, and failed it after the second pass.
+- **Crash reports.** `~/Library/Logs/DiagnosticReports` holds no Word report.
+- **Validator columns.** `validate()` at 37a691ce on the same bytes, recorded by the builder.
 
 Sessions 4–6 observed `main-relationship-missing` (#380), the #414 `PartName`s with `application/xml`, an escape in a folder segment (#408), a part-level relationships part (#433) and an unreferenced malformed `customXml/item9.xml` (#437). Still to be observed:
 
@@ -10215,5 +10232,456 @@ for (const [name, issue, make] of specimens) {
     );
 }
 ```
+
+</details>
+
+### Session 44: 06:56Z–07:01Z on 2026-10-26, validator columns at 37a691ce
+
+The scope questions of [#647](https://github.com/jandira-tech/docx-validate/issues/647): which relationship types make Word load a part whose own relationships part is missing. Every specimen but the controls holds session 36's bare chart (`c:externalData r:id="rId1"`, no `.rels` beside it, a chart Override) reached from `word/_rels/document.xml.rels`: `s44a` varies the image relationship and the reference, `s44b` and `s44c` the type and the folder. `chart-outside-word-mixed-reach-no-sidecar` is s37b's specimen, copied byte for byte. Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; all 20 rows agree. The two times in Observed are the ends of the first and second runs.
+
+| Run    | Observed             | Specimen                                                       | Chart part               | Reached by                 | Referenced by                                              | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome    | word-valid at 37a691ce          | strict at 37a691ce                                          |
+| ------ | -------------------- | -------------------------------------------------------------- | ------------------------ | -------------------------- | ---------------------------------------------------------- | ------------------ | ----------- | ----------- | ---------- | ------------------------------- | ----------------------------------------------------------- |
+| `s44a` | 06:56:39Z, 06:59:15Z | `s44a-control-minimal`                                         | -                        | none (control)             | -                                                          | `e4dabe1c9658c28b` | clean-open  | clean-open  | clean-open | valid                           | valid                                                       |
+| `s44a` | 06:56:39Z, 06:59:15Z | `chart-outside-word-mixed-reach-no-sidecar`                    | `charts/chart1.xml`      | chart `rId9`, image `rId8` | nothing                                                    | `d9fcab69f2cdbbb8` | clean-open  | clean-open  | clean-open | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `xsd-summary`, `xsd-error` |
+| `s44a` | 06:56:39Z, 06:59:15Z | `chart-outside-word-image-only-reach-no-sidecar`               | `charts/chart1.xml`      | image `rId8`               | nothing                                                    | `8eb087e5355f411d` | clean-open  | clean-open  | clean-open | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `xsd-summary`, `xsd-error` |
+| `s44a` | 06:56:39Z, 06:59:15Z | `chart-outside-word-image-only-blip-reference-no-sidecar`      | `charts/chart1.xml`      | image `rId8`               | `a:blip r:embed="rId8"`                                    | `46943e1a314f70cc` | clean-open  | clean-open  | clean-open | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `xsd-summary`, `xsd-error` |
+| `s44a` | 06:56:39Z, 06:59:15Z | `chart-outside-word-mixed-reach-blip-reference-no-sidecar`     | `charts/chart1.xml`      | image `rId8`, chart `rId9` | `a:blip r:embed="rId8"`                                    | `30a66813b8b05bf6` | clean-open  | clean-open  | clean-open | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `xsd-summary`, `xsd-error` |
+| `s44a` | 06:56:39Z, 06:59:15Z | `chart-outside-word-mixed-reach-chart-reference-no-sidecar`    | `charts/chart1.xml`      | image `rId8`, chart `rId9` | `c:chart r:id="rId9"`                                      | `9e9562b495ce000a` | open-error  | open-error  | open-error | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `xsd-summary`, `xsd-error` |
+| `s44a` | 06:56:39Z, 06:59:15Z | `chart-outside-word-image-only-blip-reference-no-externaldata` | `charts/chart1.xml`      | image `rId8`               | `a:blip r:embed="rId8"`; the chart has no `c:externalData` | `5d7fa3a5a3da824c` | clean-open  | clean-open  | clean-open | valid                           | invalid: `xsd-summary`, `xsd-error`                         |
+| `s44a` | 06:56:39Z, 06:59:15Z | `s44a-control-minimal-end`                                     | -                        | none (control)             | -                                                          | `e4dabe1c9658c28b` | clean-open  | clean-open  | clean-open | valid                           | valid                                                       |
+| `s44b` | 06:59:51Z, 07:00:12Z | `s44b-control-minimal`                                         | -                        | none (control)             | -                                                          | `88d92a30b52cc6ef` | clean-open  | clean-open  | clean-open | valid                           | valid                                                       |
+| `s44b` | 06:59:51Z, 07:00:12Z | `chart-outside-word-diagramdata-reach-no-sidecar`              | `charts/chart1.xml`      | diagramData `rId8`         | nothing                                                    | `d4968e85577d8e63` | clean-open  | clean-open  | clean-open | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `xsd-summary`, `xsd-error` |
+| `s44b` | 06:59:51Z, 07:00:12Z | `chart-outside-word-oleobject-reach-no-sidecar`                | `charts/chart1.xml`      | oleObject `rId8`           | nothing                                                    | `b9507c23854d53db` | clean-open  | clean-open  | clean-open | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `xsd-summary`, `xsd-error` |
+| `s44b` | 06:59:51Z, 07:00:12Z | `chart-outside-word-hdphoto-reach-no-sidecar`                  | `charts/chart1.xml`      | Microsoft hdphoto `rId8`   | nothing                                                    | `505ae2ea618f2910` | clean-open  | clean-open  | clean-open | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `xsd-summary`, `xsd-error` |
+| `s44b` | 06:59:51Z, 07:00:12Z | `chart-word-image-only-reach-no-sidecar`                       | `word/charts/chart1.xml` | image `rId8`               | nothing                                                    | `a38f1e7376f9ab36` | clean-open  | clean-open  | clean-open | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `xsd-summary`, `xsd-error` |
+| `s44b` | 06:59:51Z, 07:00:12Z | `chart-word-image-only-blip-reference-no-sidecar`              | `word/charts/chart1.xml` | image `rId8`               | `a:blip r:embed="rId8"`                                    | `4aa1dbb1b9180477` | clean-open  | clean-open  | clean-open | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `xsd-summary`, `xsd-error` |
+| `s44b` | 06:59:51Z, 07:00:12Z | `s44b-control-minimal-end`                                     | -                        | none (control)             | -                                                          | `88d92a30b52cc6ef` | clean-open  | clean-open  | clean-open | valid                           | valid                                                       |
+| `s44c` | 07:01:09Z, 07:01:20Z | `s44c-control-minimal`                                         | -                        | none (control)             | -                                                          | `dae596edaa80e6b6` | clean-open  | clean-open  | clean-open | valid                           | valid                                                       |
+| `s44c` | 07:01:09Z, 07:01:20Z | `chart-word-diagramdata-reach-no-sidecar`                      | `word/charts/chart1.xml` | diagramData `rId8`         | nothing                                                    | `879f27179e30c59c` | clean-open  | clean-open  | clean-open | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `xsd-summary`, `xsd-error` |
+| `s44c` | 07:01:09Z, 07:01:20Z | `chart-word-oleobject-reach-no-sidecar`                        | `word/charts/chart1.xml` | oleObject `rId8`           | nothing                                                    | `d25cdbd46dad561c` | clean-open  | clean-open  | clean-open | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `xsd-summary`, `xsd-error` |
+| `s44c` | 07:01:09Z, 07:01:20Z | `chart-word-hdphoto-reach-no-sidecar`                          | `word/charts/chart1.xml` | Microsoft hdphoto `rId8`   | nothing                                                    | `e1dd73af234d744c` | clean-open  | clean-open  | clean-open | invalid: `rels-missing-sidecar` | invalid: `rels-missing-sidecar`, `xsd-summary`, `xsd-error` |
+| `s44c` | 07:01:09Z, 07:01:20Z | `s44c-control-minimal-end`                                     | -                        | none (control)             | -                                                          | `9a327ba5c3067a64` | clean-open  | clean-open  | clean-open | valid                           | valid                                                       |
+
+<details><summary>Raw records, session 44</summary>
+
+```jsonl
+{"run": "s44a", "pass": 1, "name": "s44a-control-minimal", "sha256": "e4dabe1c9658c28b94b19b6cbdc4fca5b812f3bae1af8aa039eabedc513dd735", "observedAt": "2026-10-26T06:56:39+00:00", "staged": "00007__wfv__s44a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s44a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44a", "pass": 2, "name": "s44a-control-minimal", "sha256": "e4dabe1c9658c28b94b19b6cbdc4fca5b812f3bae1af8aa039eabedc513dd735", "observedAt": "2026-10-26T06:59:15+00:00", "staged": "00007__wfv__s44a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s44a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44a", "pass": 1, "name": "chart-outside-word-mixed-reach-no-sidecar", "sha256": "d9fcab69f2cdbbb8df4017d185aad23cd7328387506cde9bb2b4a1093867e3b9", "observedAt": "2026-10-26T06:56:39+00:00", "staged": "00005__wfv__chart-outside-word-mixed-reach-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-outside-word-mixed-reach-no-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44a", "pass": 2, "name": "chart-outside-word-mixed-reach-no-sidecar", "sha256": "d9fcab69f2cdbbb8df4017d185aad23cd7328387506cde9bb2b4a1093867e3b9", "observedAt": "2026-10-26T06:59:15+00:00", "staged": "00005__wfv__chart-outside-word-mixed-reach-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-outside-word-mixed-reach-no-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44a", "pass": 1, "name": "chart-outside-word-image-only-reach-no-sidecar", "sha256": "8eb087e5355f411ded565cd06f8b1d2149f12f0271660e1c7d23f113c1bbac9f", "observedAt": "2026-10-26T06:56:39+00:00", "staged": "00002__wfv__chart-outside-word-image-only-reach-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-outside-word-image-only-reach-no-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44a", "pass": 2, "name": "chart-outside-word-image-only-reach-no-sidecar", "sha256": "8eb087e5355f411ded565cd06f8b1d2149f12f0271660e1c7d23f113c1bbac9f", "observedAt": "2026-10-26T06:59:15+00:00", "staged": "00002__wfv__chart-outside-word-image-only-reach-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-outside-word-image-only-reach-no-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44a", "pass": 1, "name": "chart-outside-word-image-only-blip-reference-no-sidecar", "sha256": "46943e1a314f70ccfb5f91ba15254a06e3307b4f7c6f07d62efb5bed40dd54e2", "observedAt": "2026-10-26T06:56:39+00:00", "staged": "00001__wfv__chart-outside-word-image-only-blip-reference-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-outside-word-image-only-blip-reference-no-sidecar_byword.pdf (21332 bytes), no dialog named the file"]}
+{"run": "s44a", "pass": 2, "name": "chart-outside-word-image-only-blip-reference-no-sidecar", "sha256": "46943e1a314f70ccfb5f91ba15254a06e3307b4f7c6f07d62efb5bed40dd54e2", "observedAt": "2026-10-26T06:59:15+00:00", "staged": "00001__wfv__chart-outside-word-image-only-blip-reference-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-outside-word-image-only-blip-reference-no-sidecar_byword.pdf (21332 bytes), no dialog named the file"]}
+{"run": "s44a", "pass": 1, "name": "chart-outside-word-mixed-reach-blip-reference-no-sidecar", "sha256": "30a66813b8b05bf69764bbdf56fcd41d71dc5cb8bdcac697d3c35cefe1be8f39", "observedAt": "2026-10-26T06:56:39+00:00", "staged": "00003__wfv__chart-outside-word-mixed-reach-blip-reference-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-outside-word-mixed-reach-blip-reference-no-sidecar_byword.pdf (21332 bytes), no dialog named the file"]}
+{"run": "s44a", "pass": 2, "name": "chart-outside-word-mixed-reach-blip-reference-no-sidecar", "sha256": "30a66813b8b05bf69764bbdf56fcd41d71dc5cb8bdcac697d3c35cefe1be8f39", "observedAt": "2026-10-26T06:59:15+00:00", "staged": "00003__wfv__chart-outside-word-mixed-reach-blip-reference-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-outside-word-mixed-reach-blip-reference-no-sidecar_byword.pdf (21332 bytes), no dialog named the file"]}
+{"run": "s44a", "pass": 1, "name": "chart-outside-word-mixed-reach-chart-reference-no-sidecar", "sha256": "9e9562b495ce000acf0387fa53486e3fe2056eedc38a52c3195030f8e239e9e4", "observedAt": "2026-10-26T06:56:39+00:00", "staged": "00004__wfv__chart-outside-word-mixed-reach-chart-reference-no-sidecar.docx", "logVerdict": "open-error", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-26 02:56:30.106 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … converter.\\n(00004__wfv__chart-outside-word-mixed-...)'"]}
+{"run": "s44a", "pass": 2, "name": "chart-outside-word-mixed-reach-chart-reference-no-sidecar", "sha256": "9e9562b495ce000acf0387fa53486e3fe2056eedc38a52c3195030f8e239e9e4", "observedAt": "2026-10-26T06:59:15+00:00", "staged": "00004__wfv__chart-outside-word-mixed-reach-chart-reference-no-sidecar.docx", "logVerdict": "open-error", "tableVerdict": "open-error", "pdf": false, "evidence": ["2026-10-26 02:59:02.248 'Word experienced an error trying to open the file.\\nTry these suggestions.\\n* Check the file permis … converter.\\n(00004__wfv__chart-outside-word-mixed-...)'"]}
+{"run": "s44a", "pass": 1, "name": "chart-outside-word-image-only-blip-reference-no-externaldata", "sha256": "5d7fa3a5a3da824c3736e580e9fb80555f12be170929a9c2ffb59db0b34b6cde", "observedAt": "2026-10-26T06:56:39+00:00", "staged": "00000__wfv__chart-outside-word-image-only-blip-reference-no-externaldata.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-outside-word-image-only-blip-reference-no-externaldata_byword.pdf (21332 bytes), no dialog named the file"]}
+{"run": "s44a", "pass": 2, "name": "chart-outside-word-image-only-blip-reference-no-externaldata", "sha256": "5d7fa3a5a3da824c3736e580e9fb80555f12be170929a9c2ffb59db0b34b6cde", "observedAt": "2026-10-26T06:59:15+00:00", "staged": "00000__wfv__chart-outside-word-image-only-blip-reference-no-externaldata.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-outside-word-image-only-blip-reference-no-externaldata_byword.pdf (21332 bytes), no dialog named the file"]}
+{"run": "s44a", "pass": 1, "name": "s44a-control-minimal-end", "sha256": "e4dabe1c9658c28b94b19b6cbdc4fca5b812f3bae1af8aa039eabedc513dd735", "observedAt": "2026-10-26T06:56:39+00:00", "staged": "00006__wfv__s44a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s44a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44a", "pass": 2, "name": "s44a-control-minimal-end", "sha256": "e4dabe1c9658c28b94b19b6cbdc4fca5b812f3bae1af8aa039eabedc513dd735", "observedAt": "2026-10-26T06:59:15+00:00", "staged": "00006__wfv__s44a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s44a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44b", "pass": 1, "name": "s44b-control-minimal", "sha256": "88d92a30b52cc6eff10d919b78e660a484b3ed515bcf4a0b624832490eb0afdc", "observedAt": "2026-10-26T06:59:51+00:00", "staged": "00006__wfv__s44b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s44b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44b", "pass": 2, "name": "s44b-control-minimal", "sha256": "88d92a30b52cc6eff10d919b78e660a484b3ed515bcf4a0b624832490eb0afdc", "observedAt": "2026-10-26T07:00:12+00:00", "staged": "00006__wfv__s44b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s44b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44b", "pass": 1, "name": "chart-outside-word-diagramdata-reach-no-sidecar", "sha256": "d4968e85577d8e639434aada8639c1e514b1a641ddc0868bfeb6bc62e9032326", "observedAt": "2026-10-26T06:59:51+00:00", "staged": "00000__wfv__chart-outside-word-diagramdata-reach-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-outside-word-diagramdata-reach-no-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44b", "pass": 2, "name": "chart-outside-word-diagramdata-reach-no-sidecar", "sha256": "d4968e85577d8e639434aada8639c1e514b1a641ddc0868bfeb6bc62e9032326", "observedAt": "2026-10-26T07:00:12+00:00", "staged": "00000__wfv__chart-outside-word-diagramdata-reach-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-outside-word-diagramdata-reach-no-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44b", "pass": 1, "name": "chart-outside-word-oleobject-reach-no-sidecar", "sha256": "b9507c23854d53dbaf21462212aa4477079e61db623b2a2969c921229dc3d0c1", "observedAt": "2026-10-26T06:59:51+00:00", "staged": "00002__wfv__chart-outside-word-oleobject-reach-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-outside-word-oleobject-reach-no-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44b", "pass": 2, "name": "chart-outside-word-oleobject-reach-no-sidecar", "sha256": "b9507c23854d53dbaf21462212aa4477079e61db623b2a2969c921229dc3d0c1", "observedAt": "2026-10-26T07:00:12+00:00", "staged": "00002__wfv__chart-outside-word-oleobject-reach-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-outside-word-oleobject-reach-no-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44b", "pass": 1, "name": "chart-outside-word-hdphoto-reach-no-sidecar", "sha256": "505ae2ea618f291018de24a45347ea4ab0edf1d261a4c03d3f7fe211a3921a3a", "observedAt": "2026-10-26T06:59:51+00:00", "staged": "00001__wfv__chart-outside-word-hdphoto-reach-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-outside-word-hdphoto-reach-no-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44b", "pass": 2, "name": "chart-outside-word-hdphoto-reach-no-sidecar", "sha256": "505ae2ea618f291018de24a45347ea4ab0edf1d261a4c03d3f7fe211a3921a3a", "observedAt": "2026-10-26T07:00:12+00:00", "staged": "00001__wfv__chart-outside-word-hdphoto-reach-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-outside-word-hdphoto-reach-no-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44b", "pass": 1, "name": "chart-word-image-only-reach-no-sidecar", "sha256": "a38f1e7376f9ab36ee003aeeca2f95b315c301aff9691466d7641a13de347d6d", "observedAt": "2026-10-26T06:59:51+00:00", "staged": "00004__wfv__chart-word-image-only-reach-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-word-image-only-reach-no-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44b", "pass": 2, "name": "chart-word-image-only-reach-no-sidecar", "sha256": "a38f1e7376f9ab36ee003aeeca2f95b315c301aff9691466d7641a13de347d6d", "observedAt": "2026-10-26T07:00:12+00:00", "staged": "00004__wfv__chart-word-image-only-reach-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-word-image-only-reach-no-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44b", "pass": 1, "name": "chart-word-image-only-blip-reference-no-sidecar", "sha256": "4aa1dbb1b9180477ff198d54552be3e159984542d9c53e8e310d2098d01bf4f0", "observedAt": "2026-10-26T06:59:51+00:00", "staged": "00003__wfv__chart-word-image-only-blip-reference-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-word-image-only-blip-reference-no-sidecar_byword.pdf (21332 bytes), no dialog named the file"]}
+{"run": "s44b", "pass": 2, "name": "chart-word-image-only-blip-reference-no-sidecar", "sha256": "4aa1dbb1b9180477ff198d54552be3e159984542d9c53e8e310d2098d01bf4f0", "observedAt": "2026-10-26T07:00:12+00:00", "staged": "00003__wfv__chart-word-image-only-blip-reference-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-word-image-only-blip-reference-no-sidecar_byword.pdf (21332 bytes), no dialog named the file"]}
+{"run": "s44b", "pass": 1, "name": "s44b-control-minimal-end", "sha256": "88d92a30b52cc6eff10d919b78e660a484b3ed515bcf4a0b624832490eb0afdc", "observedAt": "2026-10-26T06:59:51+00:00", "staged": "00005__wfv__s44b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s44b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44b", "pass": 2, "name": "s44b-control-minimal-end", "sha256": "88d92a30b52cc6eff10d919b78e660a484b3ed515bcf4a0b624832490eb0afdc", "observedAt": "2026-10-26T07:00:12+00:00", "staged": "00005__wfv__s44b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s44b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44c", "pass": 1, "name": "s44c-control-minimal", "sha256": "dae596edaa80e6b6fa772c1cbc86158580e0cf6a5ee3122a714776c43ac1ba19", "observedAt": "2026-10-26T07:01:09+00:00", "staged": "00004__wfv__s44c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s44c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44c", "pass": 2, "name": "s44c-control-minimal", "sha256": "dae596edaa80e6b6fa772c1cbc86158580e0cf6a5ee3122a714776c43ac1ba19", "observedAt": "2026-10-26T07:01:20+00:00", "staged": "00004__wfv__s44c-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s44c-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44c", "pass": 1, "name": "chart-word-diagramdata-reach-no-sidecar", "sha256": "879f27179e30c59c7e07ee3377a7eb571a83f9ab24ff57345d023b740a72babd", "observedAt": "2026-10-26T07:01:09+00:00", "staged": "00000__wfv__chart-word-diagramdata-reach-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-word-diagramdata-reach-no-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44c", "pass": 2, "name": "chart-word-diagramdata-reach-no-sidecar", "sha256": "879f27179e30c59c7e07ee3377a7eb571a83f9ab24ff57345d023b740a72babd", "observedAt": "2026-10-26T07:01:20+00:00", "staged": "00000__wfv__chart-word-diagramdata-reach-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-word-diagramdata-reach-no-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44c", "pass": 1, "name": "chart-word-oleobject-reach-no-sidecar", "sha256": "d25cdbd46dad561c9f1526d47dbb5031f9dccf5e9bd46c4f2e0f1afe3c9f4f7a", "observedAt": "2026-10-26T07:01:09+00:00", "staged": "00002__wfv__chart-word-oleobject-reach-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-word-oleobject-reach-no-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44c", "pass": 2, "name": "chart-word-oleobject-reach-no-sidecar", "sha256": "d25cdbd46dad561c9f1526d47dbb5031f9dccf5e9bd46c4f2e0f1afe3c9f4f7a", "observedAt": "2026-10-26T07:01:20+00:00", "staged": "00002__wfv__chart-word-oleobject-reach-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-word-oleobject-reach-no-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44c", "pass": 1, "name": "chart-word-hdphoto-reach-no-sidecar", "sha256": "e1dd73af234d744c83b7c2620caef4eccc5840eb21b0a452014c3ba8e023af2b", "observedAt": "2026-10-26T07:01:09+00:00", "staged": "00001__wfv__chart-word-hdphoto-reach-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-word-hdphoto-reach-no-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44c", "pass": 2, "name": "chart-word-hdphoto-reach-no-sidecar", "sha256": "e1dd73af234d744c83b7c2620caef4eccc5840eb21b0a452014c3ba8e023af2b", "observedAt": "2026-10-26T07:01:20+00:00", "staged": "00001__wfv__chart-word-hdphoto-reach-no-sidecar.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF chart-word-hdphoto-reach-no-sidecar_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44c", "pass": 1, "name": "s44c-control-minimal-end", "sha256": "9a327ba5c3067a640b63c8e65edcdfaac1f3a185ef51b576a87d9c6b248958f9", "observedAt": "2026-10-26T07:01:09+00:00", "staged": "00003__wfv__s44c-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s44c-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s44c", "pass": 2, "name": "s44c-control-minimal-end", "sha256": "9a327ba5c3067a640b63c8e65edcdfaac1f3a185ef51b576a87d9c6b248958f9", "observedAt": "2026-10-26T07:01:20+00:00", "staged": "00003__wfv__s44c-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s44c-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 44 builder, cross-check and section scripts</summary>
+
+Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s44builder.mts`:
+
+```ts
+// Session 44 (2026-10-26): the scope questions of #647. Session 37 (s37b) saw Word open clean a chart part outside
+// word/ (`charts/chart1.xml`, `c:externalData r:id="rId1"`, no sidecar) that a chart and an image relationship both
+// reach and nothing references; word-valid still rejects it with `rels-missing-sidecar`, because #645 moved only a
+// chart-only reach off the reach-based rule.
+// s44a: the image relationship. s37b's mixed-reach specimen again, byte for byte (a second observation); the same chart reached only by an image relationship, unreferenced (question 1); an
+// inline picture whose `a:blip r:embed` names that image relationship, with the image-only reach and with the mixed
+// reach (question 2); the mixed reach referenced through the chart relationship (`c:chart r:id`), which session 36
+// saw get the recovery offer under a chart-only reach; and a control for the blip: the same picture naming a chart part
+// with no `c:externalData`, so no Id dangles.
+// s44b: the other relationship types (question 3). The same unreferenced chart part reached only by a `diagramData`,
+// an `oleObject` or a Microsoft `hdphoto` relationship; and the image-only reach, unreferenced and blip-referenced, of
+// the chart stored under word/ (`word/charts/chart1.xml`), which word-valid judges as a Word-read part.
+// s44c: the diagramData, oleObject and hdphoto reaches of s44b, unreferenced, of the chart stored under word/.
+// Run from the layer 138 worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s44a pnpm exec tsx s44builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+type Parts = Record<string, string>;
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const C = "http://schemas.openxmlformats.org/drawingml/2006/chart";
+const A = "http://schemas.openxmlformats.org/drawingml/2006/main";
+const WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
+const PIC = "http://schemas.openxmlformats.org/drawingml/2006/picture";
+const CT = "[Content_Types].xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+const XML_DECLARATION = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
+const CHART_OUTSIDE = "charts/chart1.xml";
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+
+// Session 36's bare chart, byte for byte as s37b's mixed-reach specimen stored it, and its twin with no external data.
+const chart = (externalData: boolean) =>
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<c:chartSpace xmlns:c="${C}" xmlns:r="${R}"><c:chart><c:plotArea><c:layout/></c:plotArea></c:chart>${externalData ? '<c:externalData r:id="rId1"/>' : ""}</c:chartSpace>`;
+
+const relationship = (id: string, type: string, target: string) => `<Relationship Id="${id}" Type="${type}" Target="${target}"/>`;
+const OFFICE = (segment: string) => `${R}/${segment}`;
+const HDPHOTO = "http://schemas.microsoft.com/office/2007/relationships/hdphoto";
+
+/** The chart part outside word/, its chart Override, and the given relationships from the main document's sidecar. */
+const reachedChart = (externalData: boolean, ...relationships: string[]): Parts => ({
+    ...MINIMAL_PARTS,
+    [CHART_OUTSIDE]: chart(externalData),
+    [SIDECAR]: replaceOnce(MINIMAL_PARTS[SIDECAR]!, "</Relationships>", `${relationships.join("")}</Relationships>`),
+    [CT]: replaceOnce(
+        MINIMAL_PARTS[CT]!,
+        "</Types>",
+        `<Override PartName="/${CHART_OUTSIDE}" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/></Types>`,
+    ),
+});
+const CHART_INSIDE = "word/charts/chart1.xml";
+/** The same chart stored under word/, related only by one relationship of `type` from the main document's sidecar. */
+const reachedChartInside = (type: string): Parts => ({
+    ...MINIMAL_PARTS,
+    [CHART_INSIDE]: chart(true),
+    [SIDECAR]: replaceOnce(
+        MINIMAL_PARTS[SIDECAR]!,
+        "</Relationships>",
+        `${relationship("rId8", type, "charts/chart1.xml")}</Relationships>`,
+    ),
+    [CT]: replaceOnce(
+        MINIMAL_PARTS[CT]!,
+        "</Types>",
+        `<Override PartName="/${CHART_INSIDE}" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/></Types>`,
+    ),
+});
+const IMAGE_REL = relationship("rId8", OFFICE("image"), `../${CHART_OUTSIDE}`);
+const CHART_REL = relationship("rId9", OFFICE("chart"), `../${CHART_OUTSIDE}`);
+
+const PICTURE_DRAWING =
+    '<w:p w14:paraId="00000002" w14:textId="00000002"><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="952500" cy="952500"/>' +
+    '<wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="1" name="Picture 1"/><wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>' +
+    `<a:graphic><a:graphicData uri="${PIC}"><pic:pic><pic:nvPicPr><pic:cNvPr id="0" name="Picture 1"/><pic:cNvPicPr/></pic:nvPicPr>` +
+    '<pic:blipFill><a:blip r:embed="rId8"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>' +
+    '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="952500" cy="952500"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>' +
+    "</pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>";
+// s37b's chart drawing (session 36's referenced chart).
+const CHART_DRAWING =
+    '<w:p w14:paraId="00000002" w14:textId="00000002"><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="5486400" cy="3200400"/>' +
+    '<wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="1" name="Chart 1"/><wp:cNvGraphicFramePr/><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/chart">' +
+    '<c:chart r:id="rId9"/></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>';
+const withDrawing = (parts: Parts, drawing: string): Parts => ({
+    ...parts,
+    "word/document.xml": replaceOnce(
+        replaceOnce(
+            MINIMAL_PARTS["word/document.xml"]!,
+            "<w:document ",
+            `<w:document xmlns:wp="${WP}" xmlns:a="${A}" xmlns:pic="${PIC}" xmlns:c="${C}" xmlns:r="${R}" `,
+        ),
+        "<w:sectPr>",
+        `${drawing}<w:sectPr>`,
+    ),
+});
+const control = () => buildDocx({ ...MINIMAL_PARTS });
+const PROBES = "/Users/arthrod/temp/T/docx-validate/.scratch/word-probes";
+const copyOf = (file: string, shaPrefix: string) => async (): Promise<Uint8Array> => {
+    const bytes = readFileSync(path.join(PROBES, file));
+    const sha = createHash("sha256").update(bytes).digest("hex");
+    if (!sha.startsWith(shaPrefix)) throw new Error(`${file} changed: ${sha}`);
+    return bytes;
+};
+
+const chunks: Record<string, Array<[string, string, () => Promise<Uint8Array>]>> = {
+    s44a: [
+        ["s44a-control-minimal", "control", control],
+        [
+            "chart-outside-word-mixed-reach-no-sidecar",
+            "#647 recheck: s37b's specimen, byte for byte",
+            copyOf("s37b/src/chart-outside-word-mixed-reach-no-sidecar.docx", "d9fcab69f2cdbbb8"),
+        ],
+        [
+            "chart-outside-word-image-only-reach-no-sidecar",
+            "#647 q1: chart reached only by an image relationship, unreferenced",
+            () => buildDocx(reachedChart(true, IMAGE_REL)),
+        ],
+        [
+            "chart-outside-word-image-only-blip-reference-no-sidecar",
+            "#647 q2: image-only reach, a:blip r:embed names it",
+            () => buildDocx(withDrawing(reachedChart(true, IMAGE_REL), PICTURE_DRAWING)),
+        ],
+        [
+            "chart-outside-word-mixed-reach-blip-reference-no-sidecar",
+            "#647 q2: chart and image reach, a:blip r:embed names the image one",
+            () => buildDocx(withDrawing(reachedChart(true, IMAGE_REL, CHART_REL), PICTURE_DRAWING)),
+        ],
+        [
+            "chart-outside-word-mixed-reach-chart-reference-no-sidecar",
+            "#647: chart and image reach, c:chart r:id names the chart one",
+            () => buildDocx(withDrawing(reachedChart(true, IMAGE_REL, CHART_REL), CHART_DRAWING)),
+        ],
+        [
+            "chart-outside-word-image-only-blip-reference-no-externaldata",
+            "#647 control: the blip names a chart part with no dangling Id",
+            () => buildDocx(withDrawing(reachedChart(false, IMAGE_REL), PICTURE_DRAWING)),
+        ],
+        ["s44a-control-minimal-end", "control", control],
+    ],
+    s44b: [
+        ["s44b-control-minimal", "control", control],
+        [
+            "chart-outside-word-diagramdata-reach-no-sidecar",
+            "#647 q3: chart reached only by a diagramData relationship, unreferenced",
+            () => buildDocx(reachedChart(true, relationship("rId8", OFFICE("diagramData"), `../${CHART_OUTSIDE}`))),
+        ],
+        [
+            "chart-outside-word-oleobject-reach-no-sidecar",
+            "#647 q3: chart reached only by an oleObject relationship, unreferenced",
+            () => buildDocx(reachedChart(true, relationship("rId8", OFFICE("oleObject"), `../${CHART_OUTSIDE}`))),
+        ],
+        [
+            "chart-outside-word-hdphoto-reach-no-sidecar",
+            "#647 q3: chart reached only by a Microsoft hdphoto relationship, unreferenced",
+            () => buildDocx(reachedChart(true, relationship("rId8", HDPHOTO, `../${CHART_OUTSIDE}`))),
+        ],
+        [
+            "chart-word-image-only-reach-no-sidecar",
+            "#647: word/charts/chart1.xml reached only by an image relationship, unreferenced",
+            () => buildDocx(reachedChartInside(OFFICE("image"))),
+        ],
+        [
+            "chart-word-image-only-blip-reference-no-sidecar",
+            "#647: word/charts/chart1.xml reached only by an image relationship, a:blip r:embed names it",
+            () => buildDocx(withDrawing(reachedChartInside(OFFICE("image")), PICTURE_DRAWING)),
+        ],
+        ["s44b-control-minimal-end", "control", control],
+    ],
+    s44c: [
+        ["s44c-control-minimal", "control", control],
+        [
+            "chart-word-diagramdata-reach-no-sidecar",
+            "#647 q3: word/charts/chart1.xml reached only by a diagramData relationship, unreferenced",
+            () => buildDocx(reachedChartInside(OFFICE("diagramData"))),
+        ],
+        [
+            "chart-word-oleobject-reach-no-sidecar",
+            "#647 q3: word/charts/chart1.xml reached only by an oleObject relationship, unreferenced",
+            () => buildDocx(reachedChartInside(OFFICE("oleObject"))),
+        ],
+        [
+            "chart-word-hdphoto-reach-no-sidecar",
+            "#647 q3: word/charts/chart1.xml reached only by a Microsoft hdphoto relationship, unreferenced",
+            () => buildDocx(reachedChartInside(HDPHOTO)),
+        ],
+        ["s44c-control-minimal-end", "control", control],
+    ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = { name, issue, file, sha256, calibration: false, wordValid: await verdict("word-valid"), strict: await verdict("strict") };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-44 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in ("s44a", "s44b", "s44c"):
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0]) if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": "control-minimal" in spec["name"],
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s44/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r["file"]:<62} {r['sha256'][:16]} outcome={r['outcome']:<27} readings={','.join(r['readings'])} word-valid={r['wordValid']} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-44 parts of docs/plans/evidence/word-probes-2026-10-24.md into s44/section.md.
+
+Reads each chunk's specimens.jsonl (validator columns at 37a691ce, written by the builder), both runs'
+logcheck.jsonl and pdf/manifest.jsonl, and s44/results.json from compare.py.
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+# Where the bare chart is stored, the relationships from word/_rels/document.xml.rels that reach it, and what references one.
+SHAPE = {
+    "chart-outside-word-mixed-reach-no-sidecar": ("charts/chart1.xml", "chart `rId9`, image `rId8`", "nothing"),
+    "chart-outside-word-image-only-reach-no-sidecar": ("charts/chart1.xml", "image `rId8`", "nothing"),
+    "chart-outside-word-image-only-blip-reference-no-sidecar": ("charts/chart1.xml", "image `rId8`", '`a:blip r:embed="rId8"`'),
+    "chart-outside-word-mixed-reach-blip-reference-no-sidecar": ("charts/chart1.xml", "image `rId8`, chart `rId9`", '`a:blip r:embed="rId8"`'),
+    "chart-outside-word-mixed-reach-chart-reference-no-sidecar": ("charts/chart1.xml", "image `rId8`, chart `rId9`", '`c:chart r:id="rId9"`'),
+    "chart-outside-word-image-only-blip-reference-no-externaldata": ("charts/chart1.xml", "image `rId8`", '`a:blip r:embed="rId8"`; the chart has no `c:externalData`'),
+    "chart-outside-word-diagramdata-reach-no-sidecar": ("charts/chart1.xml", "diagramData `rId8`", "nothing"),
+    "chart-outside-word-oleobject-reach-no-sidecar": ("charts/chart1.xml", "oleObject `rId8`", "nothing"),
+    "chart-outside-word-hdphoto-reach-no-sidecar": ("charts/chart1.xml", "Microsoft hdphoto `rId8`", "nothing"),
+    "chart-word-image-only-reach-no-sidecar": ("word/charts/chart1.xml", "image `rId8`", "nothing"),
+    "chart-word-image-only-blip-reference-no-sidecar": ("word/charts/chart1.xml", "image `rId8`", '`a:blip r:embed="rId8"`'),
+    "chart-word-diagramdata-reach-no-sidecar": ("word/charts/chart1.xml", "diagramData `rId8`", "nothing"),
+    "chart-word-oleobject-reach-no-sidecar": ("word/charts/chart1.xml", "oleObject `rId8`", "nothing"),
+    "chart-word-hdphoto-reach-no-sidecar": ("word/charts/chart1.xml", "Microsoft hdphoto `rId8`", "nothing"),
+}
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s44/results.json").read_text())}
+
+
+def cell(v):
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw = [], []
+for label in ("s44a", "s44b", "s44c"):
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        times = [run_at(r, s["file"]) for r in runs]
+        part, reach, reference = SHAPE.get(s["name"], (None, "none (control)", "-"))
+        stored = "-" if part is None else f"`{part}`"
+        result = results[(label, s["file"])]
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {stored} | {reach} | {reference} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "observedAt": t.isoformat(), "staged": row["staged"], "logVerdict": row["logVerdict"],
+                                   "tableVerdict": row["outcomesVerdict"], "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+out = [
+    "### Session 44: 06:56Z–07:01Z on 2026-10-26, validator columns at 37a691ce",
+    "",
+    "The scope questions of [#647](https://github.com/jandira-tech/docx-validate/issues/647): which relationship types "
+    "make Word load a part whose own relationships part is missing. Every specimen but the controls holds session 36's "
+    "bare chart (`c:externalData r:id=\"rId1\"`, no `.rels` beside it, a chart Override) reached from "
+    "`word/_rels/document.xml.rels`: `s44a` varies the image relationship and the reference, `s44b` and `s44c` the type "
+    "and the folder. `chart-outside-word-mixed-reach-no-sidecar` is s37b's specimen, copied byte for byte. Each chunk "
+    "ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own "
+    "Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both "
+    "runs and both readings agree, and `unknown` otherwise; all 20 rows agree. The two times in Observed are the ends "
+    "of the first and second runs.",
+    "",
+    "| Run | Observed | Specimen | Chart part | Reached by | Referenced by | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at 37a691ce | strict at 37a691ce |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 44</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 44 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s44builder.mts", ROOT / "s44builder.mts", "ts"), ("compare.py", ROOT / "s44/compare.py", "python"),
+                         ("section.py", ROOT / "s44/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s44/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records")
+`````
 
 </details>

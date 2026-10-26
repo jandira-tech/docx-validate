@@ -17,6 +17,8 @@ import {
     CHART_DRAWING,
     equivalentTargetChartSpecimenParts,
     fallbackChartSpecimenParts,
+    PICTURE_DRAWING,
+    reachedChartSpecimenParts,
     referencedChartSpecimenParts,
     storyChartSpecimenParts,
     twoChartRelationshipsSpecimenParts,
@@ -465,13 +467,13 @@ const session36Specimens = [
     },
     // Session 37 (s37b) showed Word both boundary shapes. A reference inside
     // an `mc:Choice` Word never selects cannot load the chart: it opened
-    // clean, and word-valid warns. A chart a second relationship type also
-    // reaches opened clean as well, but keeps the reach-based verdict here:
-    // a known false positive (#647), pinned until its scope is probed.
+    // clean, and word-valid warns. A chart an image relationship also reaches
+    // opened clean as well (s37b, and again in both runs of s44a), and
+    // word-valid warns since #647.
     {
         name: "chart-outside-word-mixed-reach-no-sidecar",
         part: CHART_OUTSIDE,
-        blocking: true,
+        blocking: false,
         parts: () => {
             const parts = chartSpecimenParts(CHART_OUTSIDE, `../${CHART_OUTSIDE}`);
             return {
@@ -645,6 +647,134 @@ describe("chart sources Word was shown in session 39 (#661)", { timeout: 120_000
             const strict = await validate(file, { profile: "strict" });
             expect(strict.valid).toBe(false);
             expect(strict.issues).toContainEqual(missingSidecar("error"));
+            // The legacy missing-sidecar walk is not a registered check, so
+            // partial runs omit it and keep only the #381 one-way contract (#663).
+            for (const selection of [{ quick: true }, { checks: ["relationships"] }]) {
+                const partial = await validate(file, { profile: "word-valid", ...selection });
+                expect(partial.issues.filter((finding) => finding.code === "rels-missing-sidecar")).toEqual([]);
+                expect(errors(full.issues)).toEqual(expect.arrayContaining(errors(partial.issues)));
+                if (full.valid) expect(partial.valid).toBe(true);
+            }
+        });
+    });
+});
+
+// Session 44 (s44a–s44c, #647): which relationship types load a part's own
+// relationships. The bare chart, with no sidecar, is reached from the main
+// document's sidecar by the listed relationships, inside `word/` and outside
+// it. Word 16.115 opened clean, in two runs each, every shape an image
+// relationship reaches, even when a picture's `a:blip r:embed` names it, and
+// every unreferenced diagramData, oleObject or hdphoto reach; it refused the
+// chart a `c:chart r:id` names. The last three rows are unobserved and keep
+// the reach-based verdict: a reference to a diagramData or oleObject
+// relationship, and an image reach beside an unobserved type.
+const DGM = "http://schemas.openxmlformats.org/drawingml/2006/diagram";
+const O = "urn:schemas-microsoft-com:office:office";
+const HDPHOTO = "http://schemas.microsoft.com/office/2007/relationships/hdphoto";
+const reaching = (id: string, segment: string) => ({ id, type: segment === HDPHOTO ? HDPHOTO : `${R}/${segment}` });
+const IMAGE = reaching("rId8", "image");
+const CHART = reaching("rId9", "chart");
+const DIAGRAM_DRAWING =
+    '<w:p w14:paraId="00000002" w14:textId="00000002"><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="952500" cy="952500"/>' +
+    `<wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="1" name="Diagram 1"/><a:graphic><a:graphicData uri="${DGM}">` +
+    `<dgm:relIds xmlns:dgm="${DGM}" r:dm="rId8" r:lo="rId8" r:qs="rId8" r:cs="rId8"/></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
+const OLE_OBJECT =
+    '<w:p w14:paraId="00000002" w14:textId="00000002"><w:r><w:object>' +
+    `<o:OLEObject xmlns:o="${O}" Type="Embed" ProgID="Package" ShapeID="_x0000_i1025" DrawAspect="Icon" ObjectID="_1" r:id="rId8"/></w:object></w:r></w:p>`;
+const session44Specimens = [
+    { name: "chart-outside-word-image-only-reach-no-sidecar", part: CHART_OUTSIDE, reach: [IMAGE], blocking: false },
+    {
+        name: "chart-outside-word-image-only-blip-reference-no-sidecar",
+        part: CHART_OUTSIDE,
+        reach: [IMAGE],
+        drawing: PICTURE_DRAWING,
+        blocking: false,
+    },
+    {
+        name: "chart-outside-word-mixed-reach-blip-reference-no-sidecar",
+        part: CHART_OUTSIDE,
+        reach: [IMAGE, CHART],
+        drawing: PICTURE_DRAWING,
+        blocking: false,
+    },
+    {
+        name: "chart-outside-word-mixed-reach-chart-reference-no-sidecar",
+        part: CHART_OUTSIDE,
+        reach: [IMAGE, CHART],
+        drawing: CHART_DRAWING,
+        blocking: true,
+    },
+    {
+        name: "chart-outside-word-image-only-blip-reference-no-externaldata",
+        part: CHART_OUTSIDE,
+        reach: [IMAGE],
+        drawing: PICTURE_DRAWING,
+        externalData: false,
+        blocking: undefined,
+    },
+    ...(["diagramData", "oleObject", HDPHOTO] as const).flatMap((segment) => {
+        const label = segment === HDPHOTO ? "hdphoto" : segment.toLowerCase();
+        return [
+            {
+                name: `chart-outside-word-${label}-reach-no-sidecar`,
+                part: CHART_OUTSIDE,
+                reach: [reaching("rId8", segment)],
+                blocking: false,
+            },
+            { name: `chart-word-${label}-reach-no-sidecar`, part: CHART_INSIDE, reach: [reaching("rId8", segment)], blocking: false },
+        ];
+    }),
+    { name: "chart-word-image-only-reach-no-sidecar", part: CHART_INSIDE, reach: [IMAGE], blocking: false },
+    {
+        name: "chart-word-image-only-blip-reference-no-sidecar",
+        part: CHART_INSIDE,
+        reach: [IMAGE],
+        drawing: PICTURE_DRAWING,
+        blocking: false,
+    },
+    // Unobserved: keep the reach-based verdict.
+    {
+        name: "chart-word-diagramdata-relids-reference",
+        part: CHART_INSIDE,
+        reach: [reaching("rId8", "diagramData")],
+        drawing: DIAGRAM_DRAWING,
+        blocking: true,
+    },
+    {
+        name: "chart-word-oleobject-reference",
+        part: CHART_INSIDE,
+        reach: [reaching("rId8", "oleObject")],
+        drawing: OLE_OBJECT,
+        blocking: true,
+    },
+    { name: "chart-word-image-and-audio-reach", part: CHART_INSIDE, reach: [IMAGE, reaching("rId7", "audio")], blocking: true },
+];
+
+describe("relationship types Word was shown in session 44 (#647)", { timeout: 120_000 }, () => {
+    it.each(session44Specimens)("$name follows the Word observation", async (specimen) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, `${specimen.name}.docx`);
+            writeFileSync(
+                file,
+                await buildDocx(reachedChartSpecimenParts(specimen.part, specimen.reach, specimen.drawing, specimen.externalData)),
+            );
+            const missingSidecar = (severity: "error" | "warning") => ({
+                code: "rels-missing-sidecar",
+                path: specimen.part,
+                severity,
+                message: `Part '${specimen.part}' uses relationship references but has no .rels sidecar file`,
+            });
+            const full = await validate(file, { profile: "word-valid" });
+            expect.soft(full.valid).toBe(specimen.blocking !== true);
+            expect
+                .soft(full.issues.filter((finding) => finding.code === "rels-missing-sidecar"))
+                .toEqual(specimen.blocking === undefined ? [] : [missingSidecar(specimen.blocking ? "error" : "warning")]);
+            // Strict and lenient keep the finding an error whichever way Word went.
+            for (const profile of ["strict", "lenient"] as const) {
+                const result = await validate(file, { profile });
+                expect(result.valid, profile).toBe(false);
+                if (specimen.blocking !== undefined) expect(result.issues, profile).toContainEqual(missingSidecar("error"));
+            }
             // The legacy missing-sidecar walk is not a registered check, so
             // partial runs omit it and keep only the #381 one-way contract (#663).
             for (const selection of [{ quick: true }, { checks: ["relationships"] }]) {
