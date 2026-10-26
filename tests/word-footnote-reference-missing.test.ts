@@ -593,6 +593,104 @@ describe("note ids spelled 01 or +1 against a note spelled 1 (#801, session 62 s
     });
 });
 
+describe("a package view the read model cannot use (#816)", { timeout: 30000 }, () => {
+    /**
+     * The #816 specimen: the minimal package whose `word/document.xml`
+     * holds a `w:<kind>Reference w:id="1"` run, with no notes part, so the
+     * reference dangles wherever it is read from.
+     */
+    const danglingInBody = (kind: "footnote" | "endnote"): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+            "</w:r></w:p>",
+            `</w:r><w:r><w:${kind}Reference w:id="1"/></w:r></w:p>`,
+        ),
+    });
+
+    /**
+     * The four package-relationship defects of the issue's rows, each
+     * applied to `parts`: the package relationships part missing, truncated
+     * past its start tag so it does not parse, holding no `officeDocument`
+     * relationship, and naming a main document the package does not store.
+     * Each defect leaves `word/document.xml` well formed, and its own
+     * finding — `word-main-document-part`, or `xml-syntax` on `_rels/.rels`
+     * for the truncated row — still blocks the full run, while the read
+     * model and the typed walks return nothing for the notes.
+     */
+    const packageRelsDefects: Readonly<Record<string, (parts: Record<string, string>) => Record<string, string>>> = {
+        missing: (parts) => {
+            const next = { ...parts };
+            delete next["_rels/.rels"];
+            return next;
+        },
+        truncated: (parts) => ({ ...parts, "_rels/.rels": '<?xml version="1.0"?><Relationships' }),
+        "holding no officeDocument relationship": (parts) => ({
+            ...parts,
+            "_rels/.rels":
+                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
+                '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>',
+        }),
+        "naming a missing main document": (parts) => ({
+            ...parts,
+            "_rels/.rels": parts["_rels/.rels"]!.replace('Target="word/document.xml"', 'Target="word/missing.xml"'),
+        }),
+    };
+
+    it.each([
+        ["footnote", "missing"],
+        ["footnote", "truncated"],
+        ["footnote", "holding no officeDocument relationship"],
+        ["footnote", "naming a missing main document"],
+        ["endnote", "missing"],
+        ["endnote", "truncated"],
+        ["endnote", "holding no officeDocument relationship"],
+        ["endnote", "naming a missing main document"],
+    ] as const)("reports the dangling %s reference with _rels/.rels %s", async (kind, defect) => {
+        await withTempDir(async (dir) => {
+            const code = `word-${kind}-reference-missing`;
+            const message = `${kind} reference uses id 1`;
+            const file = path.join(dir, "package-defect.docx");
+            await writeFile(file, await buildDocx(packageRelsDefects[defect]!(danglingInBody(kind))));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            expect(
+                result.issues.some(
+                    (issue) =>
+                        issue.severity === "error" && issue.code === (defect === "truncated" ? "xml-syntax" : "word-main-document-part"),
+                ),
+            ).toBe(true);
+            expect(result.issues.filter((issue) => issue.code === code)).toEqual([
+                expect.objectContaining({ code, path: "word/document.xml", message: expect.stringContaining(message) }),
+            ]);
+            const selected = await validate(file, { profile: "word-valid", checks: [code] });
+            expect(selected.valid).toBe(false);
+            expect(selected.issues.filter((issue) => issue.code === code)).toEqual([
+                expect.objectContaining({ code, path: "word/document.xml", message: expect.stringContaining(message) }),
+            ]);
+        });
+    });
+
+    it.each(["footnote", "endnote"] as const)("keeps a header's dangling %s reference unjudged, as #806 does", async (kind) => {
+        await withTempDir(async (dir) => {
+            const code = `word-${kind}-reference-missing`;
+            const file = path.join(dir, "package-defect-header.docx");
+            const parts = packageRelsDefects.missing!({
+                ...MINIMAL_PARTS,
+                "word/header1.xml":
+                    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
+                    `<w:hdr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:r><w:${kind}Reference w:id="1"/></w:r></w:p></w:hdr>`,
+            });
+            await writeFile(file, await buildDocx(parts));
+            const result = await validate(file, { profile: "word-valid" });
+            expect(result.valid).toBe(false);
+            expect(result.issues.some((issue) => issue.severity === "error" && issue.code === "word-main-document-part")).toBe(true);
+            expect(result.issues.filter((issue) => issue.code === code)).toEqual([]);
+            const selected = await validate(file, { profile: "word-valid", checks: [code] });
+            expect(selected.issues.filter((issue) => issue.code === code)).toEqual([]);
+        });
+    });
+});
+
 describe("word-valid dangling footnote reference", { timeout: 30000 }, () => {
     it("rejects a footnote reference whose id is not a footnote id", async () => {
         const result = await validate(BROKEN, { profile: "word-valid" });

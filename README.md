@@ -996,7 +996,17 @@ Both note checks compare ids by integer value: session 62 (s62b, same
 evidence, two runs, all readings agree) opened clean a footnote or endnote
 reference spelled `01` or `+1` against a note spelled `1`
 ([#801](https://github.com/jandira-tech/docx-validate/issues/801)); any other
-spelling compares as written, unprobed.
+spelling compares as written, unprobed. When the package view cannot be read, or
+its `officeDocument` relationship names no stored main document, the read model
+and the relationship walks return nothing, so both note checks fall back to the
+reading they used before #800 — references from the name-based story list but
+its headers, which are not judged (#806), definitions from the parts named
+`footnotes.xml` / `endnotes.xml` wherever stored — as the comment checks fall
+back to a by-name lookup when no relationship names the main document, and a
+dangling reference still draws its finding beside the package defect's own
+([#816](https://github.com/jandira-tech/docx-validate/issues/816)); no Word
+session has shown a note reference in such a package, so the fallback reading is
+unprobed.
 
 Comment range markers only an unselected `mc:Choice` holds (a range split
 across one, or an unmatched start), and a body footnote reference whose note

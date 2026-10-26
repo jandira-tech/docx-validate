@@ -42,7 +42,20 @@
  * references there (#806). Dangling references in read footers, comments,
  * nested notes (beyond session 16's exclusion) and reached glossaries stay
  * judged but are unprobed.
+ *
+ * When the package view cannot be read, or names no stored main document,
+ * the read model and the relationship walks all return nothing, and a
+ * dangling reference would pass unjudged beside the package defect's own
+ * findings (#816). Both note checks then fall back to the reading they used
+ * before #800 — references from the name-based story list but its headers,
+ * definitions from the parts named `<kind>s.xml` wherever stored — as `comments.ts` falls
+ * back to a by-name lookup when no relationship names the main document.
+ * When the package view can be read, nothing changes. No Word session has
+ * shown a note reference in such a package; the reading is unprobed, and the
+ * package defect's own findings still block the full run.
  */
+
+import path from "node:path";
 
 import type { CheckDefinition } from "../../../lib/check-registry";
 import { canonicalPartName } from "../../../lib/content-types";
@@ -99,6 +112,64 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
                 }
             }
         };
+        // The references one part holds, each judged against `defined`.
+        const judged = (xmlFile: string): void => {
+            const parsed = ctx.effectiveXml(xmlFile);
+            if (!parsed?.ok) {
+                return;
+            }
+            const dom = parsed.document;
+            // Word does not follow endnote references from inside a footnote
+            // (session 16's clean-open calibration); keep that source unjudged.
+            if (kind === "endnote" && dom.documentElement?.localName === "footnotes") {
+                return;
+            }
+            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
+                const refs = getElementsByTagNameNSAll(dom, ns, `${kind}Reference`);
+                for (const entry of refs) {
+                    const id = entry?.getAttributeNS(ns, "id");
+                    if (!id || defined.has(noteIdKey(id))) {
+                        continue;
+                    }
+                    issues.push({
+                        severity: "error",
+                        message:
+                            `${kind === "footnote" ? "A" : "An"} ${kind} reference uses id ${id}, and this package has no w:${kind} with that id. ` +
+                            "Microsoft Word offers to recover the file. " +
+                            `Remove the w:${kind}Reference, or add the matching ${kind}.`,
+                        path: xmlFile,
+                        code: `word-${kind}-reference-missing`,
+                    });
+                }
+            }
+        };
+        // A main-document entry joins the read model whenever the package
+        // view can be read and its `officeDocument` relationship names a
+        // stored part, so its absence means neither holds: every walk below
+        // and the read model itself return nothing, and a dangling reference
+        // would pass unjudged beside the package defect's own findings
+        // (#816). Both note checks then fall back to the reading they used
+        // before #800, as `comments.ts` falls back to a by-name lookup when
+        // no relationship names the main document: definitions from the
+        // parts named `<kind>s.xml` wherever stored, references from the
+        // name-based story list but its headers. No Word session has shown a
+        // note reference in such a package; the reading is unprobed.
+        const readTargets = await wordReadTypedTargets(ctx, profile);
+        if (!readTargets.some((target) => target.segment === "officeDocument")) {
+            for (const part of ctx.partNames) {
+                if (path.posix.basename(part) === `${kind}s.xml`) {
+                    collect(part);
+                }
+            }
+            for (const xmlFile of ctx.storyParts()) {
+                // A header is not judged here either (#806).
+                if (/^header\d*\.xml$/i.test(path.posix.basename(xmlFile))) {
+                    continue;
+                }
+                judged(xmlFile);
+            }
+            return issues;
+        }
         // A note is defined only by the part its relationship names,
         // whatever the part is called, from the main document and from a
         // reached glossary alike (session 60 s60a, #793); a part no
@@ -126,7 +197,7 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
         // judged but are unprobed. Filter before deduping so a header reach
         // does not hide a part read through another judged segment.
         const seen = new Set<string>();
-        for (const target of await wordReadTypedTargets(ctx, profile)) {
+        for (const target of readTargets) {
             if (target.segment !== "officeDocument" && !STORY_SEGMENTS.has(target.segment)) {
                 continue;
             }
@@ -137,35 +208,7 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
                 continue;
             }
             seen.add(canonical);
-            const xmlFile = target.part;
-            const parsed = ctx.effectiveXml(xmlFile);
-            if (!parsed?.ok) {
-                continue;
-            }
-            const dom = parsed.document;
-            // Word does not follow endnote references from inside a footnote
-            // (session 16's clean-open calibration); keep that source unjudged.
-            if (kind === "endnote" && dom.documentElement?.localName === "footnotes") {
-                continue;
-            }
-            for (const ns of WORD_PARAGRAPH_NAMESPACES) {
-                const refs = getElementsByTagNameNSAll(dom, ns, `${kind}Reference`);
-                for (const entry of refs) {
-                    const id = entry?.getAttributeNS(ns, "id");
-                    if (!id || defined.has(noteIdKey(id))) {
-                        continue;
-                    }
-                    issues.push({
-                        severity: "error",
-                        message:
-                            `${kind === "footnote" ? "A" : "An"} ${kind} reference uses id ${id}, and this package has no w:${kind} with that id. ` +
-                            "Microsoft Word offers to recover the file. " +
-                            `Remove the w:${kind}Reference, or add the matching ${kind}.`,
-                        path: xmlFile,
-                        code: `word-${kind}-reference-missing`,
-                    });
-                }
-            }
+            judged(target.part);
         }
 
         return issues;
