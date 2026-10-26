@@ -1,6 +1,6 @@
 # Real-Word probes, 2026-10-24
 
-Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), what session 26 settled for the items adversarial review AY suspected (#606, #607, #610), what session 27 settled for the relationship types and placements adversarial review AZ left open (#613), what session 28 settled for a hyperlink's relationship type (#614), what session 29 settled for duplicate relationship Ids and `https:` relationship Types (#615, adversarial review BA), what session 30 settled for duplicate relationship Ids outside the package and main-document `.rels` (#617, adversarial review BB), what session 31 settled for duplicate relationship Ids beside a story root stored without a `.xml` suffix (#618, adversarial review BC), what session 32 settled for a story reference whose `r:id` names no relationship and for a main document stored without a `.xml` suffix (#619, #620, adversarial review BD), and what session 33 settled for story references with an empty, missing or ISO Strict `r:id`, story roots stored as `word/header1.xml`, and markup compatibility in relationships parts (#623, #624, #625, #631, #632, adversarial reviews BE and BG), what session 34 settled for parts reached only through a relationship markup compatibility selects and for markup-compatibility errors in relationships parts (#634, #635, #636, the adversarial review of #632's fix), and what session 35 settled for the adversarial review of layer 130: relationship ids `rels-missing-sidecar` counts that Word never resolves (#638), and story-reference ids outside the body `w:sectPr`; and what session 36 settled for the adversarial reviews of #636 and layer 131: which relationships parts' markup-compatibility errors Word rejects (#644), a chart no drawing references (#645), and a root-wrapped package relationships part (#640, #646); and what session 37 settled for #644's remaining sidecars and #645's boundary shapes (#647); and the package relationships root wrappers #646's fix accepts (session 38); and the chart sources and package-root wrapper combinations layer 133's review found accepted without evidence (#661, #662, session 39); and the paragraph-id repair's output and the External relationship targets #653's and #665's fixes change (session 40); and the Word outcomes of the 56 package fixtures layer 136 pins, each observed in two separate runs and read from both runs' logs (session 41); and Word's verdicts on the stored item names the package view refuses and `opc-item-name-refused` reports (#629, session 42).
+Observations behind the word-valid policy for #388, #392, #396, #397, #351, #398, #402, #408, #409, #410 and #411, the scope of `word-content-type-invalid` (#401), the defects session 3 found (#380, #414, #431–#437), what sessions 4–6 settled for #380, #408, #409, #411, #414, #433, #437 and #443, what session 7 settled for #414, #450 and #451, what sessions 8–13 settled for #408, #432, #437, #443, #451, #453 and #458, what session 14 settled for #459 and #464, what session 15 settled for review AM's findings on #437 and #432 (#514, #515, #516, #517), what session 16 settled for review AR's suspected items on #516 and #517 and its finding F1 (#535, #539, #540), what session 17 settled for the glossary's reach and for exact content types (#549, #550), what session 18 settled for review AS's question on NFC/NFD-distinct names (#441), what session 19 settled for the glossary's own styles, settings, fontTable, webSettings and numbering parts (#562), and what session 20 settled for the glossary's remaining relationships, a MIME parameter on the remaining Word-read parts and the generic Default on numbering and theme (#549, #569, #570, #571), and what sessions 21 and 22 settled for padded and unused-part content types, the content types of a glossary's own parts, an empty main-document content type and the items adversarial review AU suspected (#570, #579, #581), what session 23 settled for the items adversarial review AW suspected (#595, #596), what session 24 settled for the items adversarial review AX suspected (#595, #600, #601), what session 25 settled for the default-profile drift the Validator Diff Report flagged on #322 (#271), what session 26 settled for the items adversarial review AY suspected (#606, #607, #610), what session 27 settled for the relationship types and placements adversarial review AZ left open (#613), what session 28 settled for a hyperlink's relationship type (#614), what session 29 settled for duplicate relationship Ids and `https:` relationship Types (#615, adversarial review BA), what session 30 settled for duplicate relationship Ids outside the package and main-document `.rels` (#617, adversarial review BB), what session 31 settled for duplicate relationship Ids beside a story root stored without a `.xml` suffix (#618, adversarial review BC), what session 32 settled for a story reference whose `r:id` names no relationship and for a main document stored without a `.xml` suffix (#619, #620, adversarial review BD), and what session 33 settled for story references with an empty, missing or ISO Strict `r:id`, story roots stored as `word/header1.xml`, and markup compatibility in relationships parts (#623, #624, #625, #631, #632, adversarial reviews BE and BG), what session 34 settled for parts reached only through a relationship markup compatibility selects and for markup-compatibility errors in relationships parts (#634, #635, #636, the adversarial review of #632's fix), and what session 35 settled for the adversarial review of layer 130: relationship ids `rels-missing-sidecar` counts that Word never resolves (#638), and story-reference ids outside the body `w:sectPr`; and what session 36 settled for the adversarial reviews of #636 and layer 131: which relationships parts' markup-compatibility errors Word rejects (#644), a chart no drawing references (#645), and a root-wrapped package relationships part (#640, #646); and what session 37 settled for #644's remaining sidecars and #645's boundary shapes (#647); and the package relationships root wrappers #646's fix accepts (session 38); and the chart sources and package-root wrapper combinations layer 133's review found accepted without evidence (#661, #662, session 39); and the paragraph-id repair's output and the External relationship targets #653's and #665's fixes change (session 40); and the Word outcomes of the 56 package fixtures layer 136 pins, each observed in two separate runs and read from both runs' logs (session 41); and Word's verdicts on the stored item names the package view refuses and `opc-item-name-refused` reports (#629, session 42), and the dialog for the empty segment session 42 left `unknown` (#629, session 43).
 
 - Word: Microsoft Word for Mac 16.115 (build 16.115.26100424), platform `darwin`.
 - Transport, sessions 1 and 2: `verifyInWord` (`src/lib/word-verifier.ts`). It opens each specimen by path, reads Word's window and dialog state, and never saves.
@@ -299,6 +299,13 @@ Session 42 adds:
     - `word//xtra.xml` (an empty segment) never opened, but its exact dialog is `unknown`. Three readings show the unreadable-content offer. Run 1's outcome table recorded the open error instead, because the driver could not read the first offer's text and logged only the error that followed it.
     - b6b80433's word-valid and strict reject all eight with `opc-item-name-refused` and `package-extract-failed`, and word-valid passes the name control and the minimal control. So word-valid agrees with Word on all 11 rows, and the check's Word-blocking classification rests on observation.
 
+Session 43 adds:
+
+- **#629: an empty segment draws the same offer** (`s43a`, two runs).
+    - Session 42's `629-empty-segment` (`word//xtra.xml`), copied byte for byte and alone in its chunk, drew the unreadable-content offer in both runs and both readings; declining it brought the open error. Session 42's `unknown` was the reading, not Word: there, run 1's outcome table had recorded only the error that followed the offer.
+    - The minimal control opened clean in both runs.
+    - 6473f54b's word-valid and strict reject the specimen with `opc-item-name-refused` and `package-extract-failed` and pass the control, so word-valid agrees with Word on every stored-name kind the package view refuses.
+
 ## Not observed
 
 Session 1. Another session began driving Word by 02:28Z: its first log line is at 02:28:14Z, and its map file was written at 02:27:55Z. Its preflight closes every open document, so rows observed from 02:26Z on were not treated as evidence. Session 2 observed all of them again (below).
@@ -404,6 +411,14 @@ Session 42 ran in the foreground: four driver runs, two per chunk, between 03:40
 - **Recycles.** The driver restarted Word once in each of three runs (`s42a`'s second and both of `s42b`'s), each after Word opened nothing for one to three documents in a row. `s42a`'s second run had first closed every document once and carried on with the same Word. Every control opened clean.
 - **Crash reports.** `~/Library/Logs/DiagnosticReports` holds no Word report from the session.
 - **Validator columns.** `validate()` at b6b80433 on the same bytes, recorded by the builder.
+
+Session 43 ran in the foreground: two driver runs of one chunk, at 06:25:10Z and 06:25:42Z on 2026-10-26, each over in under 20 s. Nothing was set aside. The rejected row is attributed by alerts naming its staged file, and the clean row by a converted PDF with no alert naming the file.
+
+- **Bytes.** The specimen and the control are copies of session 42's `629-empty-segment` (`3292bc6f…`) and session 40's minimal control (`b705a9a7…`); the session 43 builder below refuses any other bytes. `compare.py` checked both files, in both runs, against those SHA-256s.
+- **Lock and other drivers.** This session held `word.lock` for both runs. Before the first, no `osascript` executable, no Python process running `word_pdf` or `word_redline`, no `word_watchdog.sh` and no Word process was running; before the second, no such driver and no watchdog was running, checked by executable.
+- **Word processes.** Each run launched its own Word (`word_pid=36286` and `36691`, `launched_by_us=True`, `open_documents=0`, `started_clean=True`). Neither run restarted Word.
+- **Crash reports.** `~/Library/Logs/DiagnosticReports` holds no Word report from the session.
+- **Validator columns.** `validate()` at 6473f54b on the same bytes, recorded by the builder.
 
 Sessions 4–6 observed `main-relationship-missing` (#380), the #414 `PartName`s with `application/xml`, an escape in a folder segment (#408), a part-level relationships part (#433) and an unreferenced malformed `customXml/item9.xml` (#437). Still to be observed:
 
@@ -3365,6 +3380,239 @@ for name, path, lang in (("s42builder.mts", ROOT / "s42builder.mts", "ts"), ("co
     out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
 out += ["</details>", ""]
 (ROOT / "s42/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records")
+`````
+
+</details>
+
+### Session 43: 06:25Z on 2026-10-26, validator columns at 6473f54b
+
+Settles the empty segment session 42 left `unknown` (#629). The specimen is session 42's `629-empty-segment` (`word//xtra.xml`), copied byte for byte, alone in its chunk so that no other broken file shares Word's batch. The chunk ends with session 40's minimal control, queued last ([#671](https://github.com/jandira-tech/docx-validate/issues/671)). It ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; both rows agree. The two times in Observed are the ends of the first and second runs.
+
+| Run    | Observed             | Specimen                   | Stored name      | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at 6473f54b                                     | strict at 6473f54b                                         |
+| ------ | -------------------- | -------------------------- | ---------------- | ------------------ | -------------- | -------------- | -------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------- |
+| `s43a` | 06:25:23Z, 06:25:52Z | `629-empty-segment`        | `word//xtra.xml` | `3292bc6f8b7283c9` | repair-warning | repair-warning | unreadable-content-warning | invalid: `opc-item-name-refused`, `package-extract-failed` | invalid: `opc-item-name-refused`, `package-extract-failed` |
+| `s43a` | 06:25:23Z, 06:25:52Z | `s43a-control-minimal-end` | none (control)   | `b705a9a7e3509d7e` | clean-open     | clean-open     | clean-open                 | valid                                                      | valid                                                      |
+
+<details><summary>Raw records, session 43</summary>
+
+```jsonl
+{"run": "s43a", "pass": 1, "name": "629-empty-segment", "storedName": "word//xtra.xml", "sha256": "3292bc6f8b7283c975254007ed4c5ca336e5def45b1af0560e039609570fd2a3", "observedAt": "2026-10-26T06:25:23+00:00", "staged": "00000__wfv__629-empty-segment.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 02:25:21.982 'Word found unreadable content in 00000__wfv__629-empty-segment.docx. Do you want to recover the con … ? If you trust the source of this document, click Yes.'", "2026-10-26 02:25:22.586 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … covery converter. (00000__wfv__629-empty-segment.docx)\""]}
+{"run": "s43a", "pass": 2, "name": "629-empty-segment", "storedName": "word//xtra.xml", "sha256": "3292bc6f8b7283c975254007ed4c5ca336e5def45b1af0560e039609570fd2a3", "observedAt": "2026-10-26T06:25:52+00:00", "staged": "00000__wfv__629-empty-segment.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 02:25:50.927 'Word found unreadable content in 00000__wfv__629-empty-segment.docx. Do you want to recover the con … ? If you trust the source of this document, click Yes.'", "2026-10-26 02:25:51.554 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi … covery converter. (00000__wfv__629-empty-segment.docx)\""]}
+{"run": "s43a", "pass": 1, "name": "s43a-control-minimal-end", "storedName": null, "sha256": "b705a9a7e3509d7e235ef7087c37a80084caf55fcd3e0cf5e8a3888be400acdc", "observedAt": "2026-10-26T06:25:23+00:00", "staged": "00001__wfv__s43a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s43a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s43a", "pass": 2, "name": "s43a-control-minimal-end", "storedName": null, "sha256": "b705a9a7e3509d7e235ef7087c37a80084caf55fcd3e0cf5e8a3888be400acdc", "observedAt": "2026-10-26T06:25:52+00:00", "staged": "00001__wfv__s43a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s43a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 43 builder, cross-check and section scripts</summary>
+
+Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s43builder.mts`:
+
+```ts
+// Session 43 (2026-10-26): settle Word's dialog for the empty segment (`word//xtra.xml`), which session 42 left
+// `unknown` (it never opened, but run 1's outcomes table read the error that followed the recovery offer). The specimen
+// is session 42's exact bytes (sha 3292bc6f…), alone in its chunk so no other broken file shares the batch, and the
+// chunk ends with the s40a control's exact bytes (sha b705a9a7…), named to sort last (#671).
+// Run from the layer 136 worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s43a pnpm exec tsx s43builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { validate } from "./src/scripts/office/validate";
+
+const PROBES = "/Users/arthrod/temp/T/docx-validate/.scratch/word-probes";
+const copyOf = (file: string, shaPrefix: string) => async (): Promise<Uint8Array> => {
+    const bytes = readFileSync(path.join(PROBES, file));
+    const sha = createHash("sha256").update(bytes).digest("hex");
+    if (!sha.startsWith(shaPrefix)) throw new Error(`${file} changed: ${sha}`);
+    return bytes;
+};
+
+const chunks: Record<string, Array<[string, string, () => Promise<Uint8Array>]>> = {
+    s43a: [
+        [
+            "629-empty-segment",
+            "#629: unreferenced entry stored as `word//xtra.xml` (session 42's bytes)",
+            copyOf("s42b/src/629-empty-segment.docx", "3292bc6f8b7283c9"),
+        ],
+        ["s43a-control-minimal-end", "control", copyOf("s40a/src/s40a-control-minimal.docx", "b705a9a7e3509d7e")],
+    ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        control: issue === "control",
+        wordValid: await verdict("word-valid"),
+        strict: await verdict("strict"),
+    };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-43 chunk: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in ("s43a",):
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0]) if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": spec["control"],
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s43/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<34} {r['sha256'][:16]} outcome={r['outcome']:<27} readings={','.join(r['readings'])} word-valid={r['wordValid']} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-43 parts of docs/plans/evidence/word-probes-2026-10-24.md into s43/section.md.
+
+Reads each chunk's specimens.jsonl (validator columns at 6473f54b, written by the builder), both runs'
+logcheck.jsonl and pdf/manifest.jsonl, and s43/results.json from compare.py.
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+STORED = {
+    "629-leading-slash": "/word/xtra.xml",
+    "629-leading-backslash": "\\word\\xtra.xml",
+    "629-drive-absolute": "C:/word/xtra.xml",
+    "629-drive-relative": "c:xtra.xml",
+    "629-name-control": "word/xtra.xml",
+    "629-empty-segment": "word//xtra.xml",
+    "629-dot-segment": "word/./xtra.xml",
+    "629-triple-dot-segment": "word/.../xtra.xml",
+    "629-dotdot-segment": "word/a/../xtra.xml",
+}
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s43/results.json").read_text())}
+
+
+def cell(v):
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw = [], []
+for label in ("s43a",):
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        times = [run_at(r, s["file"]) for r in runs]
+        stored = f"`{STORED[s['name']]}`" if s["name"] in STORED else "none (control)"
+        result = results[(label, s["file"])]
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {stored} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "storedName": STORED.get(s["name"]), "sha256": s["sha256"],
+                                   "observedAt": t.isoformat(), "staged": row["staged"], "logVerdict": row["logVerdict"],
+                                   "tableVerdict": row["outcomesVerdict"], "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+out = [
+    "### Session 43: 06:25Z on 2026-10-26, validator columns at 6473f54b",
+    "",
+    "Settles the empty segment session 42 left `unknown` (#629). The specimen is session 42's `629-empty-segment` "
+    "(`word//xtra.xml`), copied byte for byte, alone in its chunk so that no other broken file shares Word's batch. The "
+    "chunk ends with session 40's minimal control, queued last "
+    "([#671](https://github.com/jandira-tech/docx-validate/issues/671)). It ran twice, as two separate driver runs of "
+    "byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by "
+    "`wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` "
+    "otherwise; both rows agree. The two times in Observed are the ends of the first and second runs.",
+    "",
+    "| Run | Observed | Specimen | Stored name | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at 6473f54b | strict at 6473f54b |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 43</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 43 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s43builder.mts", ROOT / "s43builder.mts", "ts"), ("compare.py", ROOT / "s43/compare.py", "python"),
+                         ("section.py", ROOT / "s43/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s43/section.md").write_text("\n".join(out))
 print(len(rows), "rows,", len(raw), "raw records")
 `````
 
