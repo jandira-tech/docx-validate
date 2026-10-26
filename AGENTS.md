@@ -141,6 +141,15 @@ Coverage-enabled Vitest runs, including failed runs, print `Coverage: N% lines, 
 
 The installed-package smoke is opt-in: `PACKAGE_SMOKE=1 pnpm exec vitest run tests/package-artifact.integration.test.ts --coverage`. It checks consumer imports/validation, bundled Transitional/ISO Strict/Dublin Core schema assets, one packaged CLI help usage, and a silent library entry. The separate real-Word lane is `WORD_VERIFY=1 pnpm exec vitest run tests/word-verifier.word.test.ts --coverage` on macOS with Word and host-terminal Accessibility permission; portable tests do not make fresh Word observations.
 
+## Real-Word probes
+
+- **Always check twice, with logs.** A Word observation goes into `tests/fixtures-all.manifest.json` or `docs/plans/evidence/` only after two separate Word runs of the same bytes. Each run's verdict is read from that run's Word log, not only from a parsed outcome table:
+    - a repair prompt is the dialog `Word found unreadable content in <file>`;
+    - an open error is the dialog `Word experienced an error trying to open the file … (<file>…)`;
+    - a clean open is a converted PDF with no dialog naming the file.
+
+    A verdict counts only when both runs and both logs agree. If they disagree, record `unknown` and report the disagreement. Never pick one run.
+
 ## Tooling preferences
 
 - Frontend tooling preference order: pnpm, biome, elysia (over npm/yarn/eslint/prettier).
