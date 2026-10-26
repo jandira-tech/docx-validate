@@ -296,23 +296,27 @@ export const wordPartContentTypeMismatchFindings = async (
             if (rootIsOwn(stored, entry.segment)) {
                 return exactSpelling ? session : declared.includes(";") ? "session 62" : undefined;
             }
-            // A stored mc:AlternateContent root whose branches hold nothing
-            // but the story's root: session 63 (s63b) refused the comments
-            // part typed styles exactly. The other stories and spellings,
-            // and other stored roots the effective view unwraps to the
-            // story's root, such as an ignorable wrapper that processes its
-            // content, alone or inside a branch, are unprobed (#818, #831).
+            // A stored mc:AlternateContent root whose Choices hold nothing
+            // but the story's root and whose Fallback is empty, so the
+            // selected branch is a Choice holding that root: session 63
+            // (s63b) refused the comments part typed styles exactly. The
+            // other stories and spellings, and other stored roots the
+            // effective view unwraps to the story's root, such as an
+            // ignorable wrapper that processes its content, alone or inside
+            // a branch, or a selected Fallback holding the root, are
+            // unprobed (#818, #831, #837).
             const storedRoot = stored?.ok === true ? stored.document.documentElement : null;
-            const branchesHoldOwnRoot =
+            const choiceHoldsOwnRoot =
                 storedRoot?.localName === "AlternateContent" &&
                 storedRoot.namespaceURI === NS.MC &&
                 childElements(storedRoot).every(
                     (branch) =>
                         branch.namespaceURI === NS.MC &&
-                        (branch.localName === "Choice" || branch.localName === "Fallback") &&
-                        childElements(branch).every((child) => isOwnRoot(child, entry.segment)),
+                        (branch.localName === "Choice"
+                            ? childElements(branch).every((child) => isOwnRoot(child, entry.segment))
+                            : branch.localName === "Fallback" && childElements(branch).length === 0),
                 );
-            return entry.segment === "comments" && exactSpelling && branchesHoldOwnRoot ? "session 63" : undefined;
+            return entry.segment === "comments" && exactSpelling && choiceHoldsOwnRoot ? "session 63" : undefined;
         };
         const isReadStoryCoreach = (entry: (typeof entries)[number]): boolean => storyCoreachSession(entry) !== undefined;
         // The observed set covers the read header/footer swaps, the eagerly

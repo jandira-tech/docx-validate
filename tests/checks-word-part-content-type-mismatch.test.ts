@@ -589,7 +589,8 @@ describe("parameterized styles spelling on the session 58 pairs (#802, session 6
 // opened the same part typed comments clean, so that finding cites session
 // 63. The endnotes and footnotes parts in it, the charset spelling, and the
 // other stored roots that unwrap to the comments root (an ignorable wrapper
-// that processes its content, alone or inside the Choice) are unprobed and
+// that processes its content, alone or inside the Choice, and a selected
+// Fallback holding the root) are unprobed and
 // keep the verdict they had before #785, as the foreign root does (#803):
 // silent under word-valid, the spec-path finding under strict, and no
 // session citation (#818).
@@ -746,11 +747,17 @@ describe("a story part whose stored root is an AlternateContent (#818, session 6
     );
 
     // The effective view also unwraps an ignorable wrapper that processes
-    // its content, so the effective root alone does not show session 63's
-    // stored shape (#831).
+    // its content, and a selected Fallback, so the effective root alone does
+    // not show session 63's stored shape (#831, #837).
     it.each([
         ["an ignorable wrapper", ignorableWrapper(STORIES.comments.root("0"))],
         ["an AlternateContent whose Choice holds an ignorable wrapper", alternateContent(ignorableWrapper(STORIES.comments.root("0")))],
+        [
+            "an AlternateContent whose unselected Choice is empty and whose Fallback holds the root",
+            `<mc:AlternateContent xmlns:mc="${MC}" xmlns:w="${W}" xmlns:u="urn:example:unknown">` +
+                `<mc:Choice Requires="u"/><mc:Fallback>${STORIES.comments.root("0")}</mc:Fallback>` +
+                `</mc:AlternateContent>`,
+        ],
     ])(
         "cites no session for a used comments part typed styles whose stored root is %s",
         async (_shape, stored) => {
