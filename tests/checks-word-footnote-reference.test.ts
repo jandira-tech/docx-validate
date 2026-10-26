@@ -12,6 +12,9 @@ import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
 describe("word-footnote-reference-missing", () => {
     it("reports the Word-rejected shape with unchanged issue details", async () => {
         const ctx = ValidationContext.fromEntries({
+            // #800 reads references from the parts Word reads, so the main
+            // document needs its package relationship to be read at all.
+            "_rels/.rels": rels(relation("rId0", "officeDocument", "", "word/document.xml")),
             "word/document.xml": document('<w:p><w:r><w:footnoteReference w:id="2"/></w:r></w:p>'),
         });
         expect(await wordFootnoteReferenceMissingCheck.run(ctx)).toEqual([
@@ -37,7 +40,11 @@ describe("word-footnote-reference-missing", () => {
         expect(await wordFootnoteReferenceMissingCheck.run(ValidationContext.fromEntries({}))).toEqual([]);
         expect(
             await wordFootnoteReferenceMissingCheck.run(
-                ValidationContext.fromEntries({ "word/document.xml": "<broken", "customXml/item.xml": document("") }),
+                ValidationContext.fromEntries({
+                    "_rels/.rels": rels(relation("rId0", "officeDocument", "", "word/document.xml")),
+                    "word/document.xml": "<broken",
+                    "customXml/item.xml": document(""),
+                }),
             ),
         ).toEqual([]);
     });
@@ -46,6 +53,12 @@ describe("word-footnote-reference-missing", () => {
 describe("endnote references (#784)", () => {
     it.each([W, WS])("ignores an endnote reference inside a footnote under %s (session 16)", async (namespace) => {
         const ctx = ValidationContext.fromEntries({
+            // #800 reads references only from the parts Word reads, so the
+            // footnotes part needs its relationships and a body use to be
+            // a read source the exclusion can skip.
+            "_rels/.rels": rels(relation("rId0", "officeDocument", "", "word/document.xml")),
+            "word/document.xml": document('<w:footnoteReference w:id="1"/>', namespace),
+            "word/_rels/document.xml.rels": rels(relation("rId1", "footnotes", "", "footnotes.xml")),
             "word/footnotes.xml": `<w:footnotes xmlns:w="${namespace}"><w:footnote w:id="1"><w:p><w:r><w:endnoteReference w:id="1"/></w:r></w:p></w:footnote></w:footnotes>`,
         });
         expect(await wordEndnoteReferenceMissingCheck.run(ctx)).toEqual([]);

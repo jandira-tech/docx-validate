@@ -28,14 +28,33 @@
  * definitions, never a rejection. The union over the main document's and
  * reached glossaries' relationships is unprobed for a main-body reference
  * satisfied only by a glossary's notes part.
+ *
+ * The references are read from the parts Word reads, as the read model
+ * (`wordReadTypedTargets`) resolves them, wherever they are stored: every
+ * main document and reached glossary (segment `officeDocument`), plus the
+ * used header, footer, comments, footnotes and endnotes parts their
+ * references make Word read (#800). The name-based story list it replaces
+ * missed a main document stored as `word/main.xml`, whose dangling footnote
+ * and endnote references Word session 62 refused (s62a), and read a
+ * `word/header9.xml` no relationship reaches, whose dangling footnote
+ * reference opened clean (s62d).
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
+import { canonicalPartName } from "../../../lib/content-types";
 import type { ValidationContext } from "../../../lib/validation-context";
 import type { Profile, ValidationIssue } from "../../../lib/types";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
-import { glossaryTypedRelationshipTargets, wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
+import { glossaryTypedRelationshipTargets, wordReadTypedTargets, wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
+
+/**
+ * The story segments whose parts the references this check judges live in
+ * (#800): the used headers, footers, comments, footnotes and endnotes parts.
+ * A story root itself — the main document or a reached glossary, wherever
+ * stored — is typed `officeDocument`.
+ */
+const STORY_SEGMENTS: ReadonlySet<string> = new Set(["header", "footer", "comments", "footnotes", "endnotes"]);
 
 const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinition => ({
     id: `word-${kind}-reference-missing`,
@@ -77,7 +96,26 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
         for (const target of await glossaryTypedRelationshipTargets(ctx, new Set([segment]), profile)) {
             collect(target.part);
         }
-        for (const xmlFile of ctx.storyParts()) {
+        // The references are read from the parts Word reads, as the read
+        // model resolves them, wherever they are stored: every main document
+        // and reached glossary, plus the used story parts their references
+        // make Word read (#800). A story-named part no relationship reaches
+        // is no longer read for references (session 62 s62d opened one
+        // holding a dangling reference clean), and a renamed main document
+        // now is (s62a refused its dangling references).
+        const seen = new Set<string>();
+        for (const target of await wordReadTypedTargets(ctx, profile)) {
+            if (target.segment !== "officeDocument" && !STORY_SEGMENTS.has(target.segment)) {
+                continue;
+            }
+            // A part read through two segments is judged once, through
+            // whichever reached it first.
+            const canonical = canonicalPartName(target.part);
+            if (seen.has(canonical)) {
+                continue;
+            }
+            seen.add(canonical);
+            const xmlFile = target.part;
             const parsed = ctx.effectiveXml(xmlFile);
             if (!parsed?.ok) {
                 continue;

@@ -969,7 +969,15 @@ session 61 (s61a/s61b, same evidence, two runs, all readings agree) offered
 recovery for a body reference whose note sat only in a `word/footnotes.xml` or
 `word/endnotes.xml` no relationship names, while the same part with nothing
 referencing it opened clean
-([#797](https://github.com/jandira-tech/docx-validate/issues/797)).
+([#797](https://github.com/jandira-tech/docx-validate/issues/797)). Both note
+checks read references from the parts Word reads, found by relationship
+wherever stored (the main document, a reached glossary and the stories they
+make Word read), so a story-named part no relationship reaches is judged for
+none ([#800](https://github.com/jandira-tech/docx-validate/issues/800)):
+session 62 (s62a/s62d, same evidence, two runs, all readings agree) offered
+recovery for a dangling footnote or endnote reference in a main document stored
+as `word/main.xml`, and opened clean an unrelated `word/header9.xml` holding
+one.
 
 Named `word-math-parse` runs and full runs that cannot stage the archive retain
 the positioned XML diagnostics without repeating `word-math-parse` for the same
