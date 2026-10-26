@@ -12,24 +12,28 @@
  * Word session 58 (s58a) offers recovery for a reference to endnote 1 when
  * the part holds only endnote 5; the matching-id calibration opens clean.
  *
- * The defined notes are collected from every part named `footnotes.xml`
- * (respectively `endnotes.xml`) and from every part a `footnotes`
+ * The defined notes come only from the parts a `footnotes`
  * (respectively `endnotes`) relationship of the main document, or of a
  * reached glossary, names, whatever the part is called: Word session 60
  * (s60a) opened clean a used notes part stored as `word/notes-foot.xml`
- * and `word/notes-end.xml` and related by its relationship, while the
- * name-only reading judged both references dangling (#793). The
- * relationship walks are ungated by usage, so a related-but-unused part
- * defines its ids too — this set only adds definitions, never a rejection —
- * and the basename reading stays, since no Word session has shown a
- * `word/footnotes.xml` no relationship names.
+ * and `word/notes-end.xml` and related by its relationship, which the
+ * name-only reading rejected (#793), and session 61 (s61a, s61b) offered
+ * recovery for a body reference whose note 1 sat only in a
+ * `word/footnotes.xml` / `word/endnotes.xml` no relationship names — alone
+ * or beside a related part holding note 5 — while the same unrelated part
+ * with nothing referencing it opened clean: Word defines notes only from
+ * the parts their relationships name, so the former basename reading is
+ * gone (#797). The relationship walks are ungated by usage, so a
+ * related-but-unused part defines its ids too — this set only adds
+ * definitions, never a rejection. The union over the main document's and
+ * reached glossaries' relationships is unprobed for a main-body reference
+ * satisfied only by a glossary's notes part.
  */
 
 import type { CheckDefinition } from "../../../lib/check-registry";
 import type { ValidationContext } from "../../../lib/validation-context";
 import type { Profile, ValidationIssue } from "../../../lib/types";
 import { WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
-import path from "node:path";
 import { glossaryTypedRelationshipTargets, wordTypedRelationshipTargets } from "../../../lib/word-read-parts";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
 
@@ -59,17 +63,13 @@ const noteReferenceMissingCheck = (kind: "footnote" | "endnote"): CheckDefinitio
                 }
             }
         };
-        for (const xmlFile of ctx.partNames) {
-            if (path.posix.basename(xmlFile) !== `${kind}s.xml`) {
-                continue;
-            }
-            collect(xmlFile);
-        }
-        // Word reads a notes part through its relationship whatever the
-        // part is called (session 60 s60a, #793), from the main document
-        // and from a reached glossary alike; the ungated typed walks keep a
-        // related-but-unused part defining its ids, as this set only adds
-        // definitions, never a rejection.
+        // A note is defined only by the part its relationship names,
+        // whatever the part is called, from the main document and from a
+        // reached glossary alike (session 60 s60a, #793); a part no
+        // relationship names defines nothing, even under the standard
+        // names (session 61 s61a, s61b, #797). The walks are ungated by
+        // usage, so a related-but-unused part defines its ids too, as this
+        // set only adds definitions, never a rejection.
         const segment = `${kind}s`;
         for (const target of await wordTypedRelationshipTargets(ctx, new Set([segment]), profile)) {
             collect(target.part);

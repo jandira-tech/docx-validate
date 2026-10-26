@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import { ValidationContext } from "../src/lib/validation-context";
-import { document, W, WS } from "./support/word-rule-test-xml";
+import { document, W, WS, rels, relation } from "./support/word-rule-test-xml";
 import { wordFootnoteReferenceMissingCheck, wordEndnoteReferenceMissingCheck } from "../src/scripts/office/checks/word-footnote-reference";
 import { createDefaultCheckRegistry } from "../src/scripts/office/checks";
 
@@ -26,7 +26,9 @@ describe("word-footnote-reference-missing", () => {
     });
     it("accepts the repaired control", async () => {
         const ctx = ValidationContext.fromEntries({
+            "_rels/.rels": rels(relation("rId0", "officeDocument", "", "word/document.xml")),
             "word/document.xml": document(`<w:footnoteReference w:id="2"/><w:footnoteReference/>`),
+            "word/_rels/document.xml.rels": rels(relation("rId1", "footnotes", "", "footnotes.xml")),
             "word/footnotes.xml": document(`<w:footnote w:id="2"/><w:footnote w:id="2"/><w:footnote/>`),
         });
         expect(await wordFootnoteReferenceMissingCheck.run(ctx)).toEqual([]);
@@ -59,10 +61,12 @@ describe("endnote references (#784)", () => {
 
     it.each([W, WS])("checks missing and present ids under %s", async (namespace) => {
         const ctx = ValidationContext.fromEntries({
+            "_rels/.rels": rels(relation("rId0", "officeDocument", "", "word/document.xml")),
             "word/document.xml": document(
                 '<w:p><w:r><w:endnoteReference w:id="1"/><w:endnoteReference w:id="5"/><w:endnoteReference/></w:r></w:p>',
                 namespace,
             ),
+            "word/_rels/document.xml.rels": rels(relation("rId1", "endnotes", "", "endnotes.xml")),
             "word/endnotes.xml": `<w:endnotes xmlns:w="${namespace}"><w:endnote w:id="5"/><w:endnote w:id="5"/><w:endnote/></w:endnotes>`,
         });
         expect(await wordEndnoteReferenceMissingCheck.run(ctx)).toEqual([
@@ -78,7 +82,9 @@ describe("endnote references (#784)", () => {
 
     it("does not let a footnote satisfy an endnote reference and skips malformed parts", async () => {
         const ctx = ValidationContext.fromEntries({
+            "_rels/.rels": rels(relation("rId0", "officeDocument", "", "word/document.xml")),
             "word/document.xml": document('<w:p><w:r><w:endnoteReference w:id="1"/></w:r></w:p>'),
+            "word/_rels/document.xml.rels": rels(relation("rId1", "endnotes", "", "endnotes.xml")),
             "word/footnotes.xml": document('<w:footnote w:id="1"/>'),
             "word/endnotes.xml": "<broken",
         });
