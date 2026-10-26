@@ -7,9 +7,17 @@
 import path from "node:path";
 import type { CheckDefinition } from "../../../lib/check-registry";
 import { findEquivalentPart } from "../../../lib/content-types";
-import type { ValidationIssue } from "../../../lib/types";
+import type { Profile, ValidationIssue } from "../../../lib/types";
 import type { ValidationContext } from "../../../lib/validation-context";
+import {
+    COMMENTS_EXTENDED_RELATIONSHIP_TYPE,
+    COMMENTS_EXTENSIBLE_RELATIONSHIP_TYPE,
+    COMMENTS_IDS_RELATIONSHIP_TYPE,
+    wordExactTypeTargets,
+    wordTypedRelationshipTargets,
+} from "../../../lib/word-read-parts";
 import { getElementsByTagNameNSAll } from "../../../lib/xml-helpers";
+import { xmlPartNames } from "./xml";
 import { WORD_2006_NAMESPACE, WORD_PARAGRAPH_NAMESPACES } from "../word-namespaces";
 
 const W14_NAMESPACE = "http://schemas.microsoft.com/office/word/2010/wordml";
@@ -24,6 +32,97 @@ const commentXml = (ctx: ValidationContext, part: string): Document => {
     return parsed.document;
 };
 
+/**
+ * The main document the comment checks judge (#696): the first part the
+ * package's `officeDocument` relationship names, wherever it is stored, so
+ * a reached glossary's own `document.xml` never stands in for it. When no
+ * relationship names a stored part, or the package view cannot be read,
+ * today's by-name pick, unchanged.
+ */
+const mainDocumentPart = async (ctx: ValidationContext, profile?: Profile): Promise<string | null> => {
+    try {
+        const [first] = await wordTypedRelationshipTargets(ctx, new Set(["officeDocument"]), profile);
+        if (first !== undefined) {
+            return first.part;
+        }
+    } catch {
+        // An unreadable package view is reported by its own checks.
+    }
+    let byName: string | null = null;
+    for (const part of ctx.partNames) {
+        if (path.posix.basename(part) === "document.xml" && part.includes("word")) {
+            byName = part;
+        }
+    }
+    return byName ?? findEquivalentPart(ctx.partNames, "word/document.xml") ?? null;
+};
+
+/**
+ * The comments part the comment checks judge (#696): the first `comments`
+ * target the main document's own relationships name, so a reached
+ * glossary's comments never stand in for the main document's; a target that
+ * is not XML leaves the comments unjudged, as #693 leaves the repair's. When
+ * no relationship names a stored part, or the package view cannot be read,
+ * the last `comments.xml` in the main document's folder, so the fallback
+ * never pairs the main document with another story's comments.
+ */
+const mainCommentsPart = async (
+    ctx: ValidationContext,
+    document: string | null,
+    xmlParts: ReadonlySet<string>,
+    profile?: Profile,
+): Promise<string | null> => {
+    try {
+        const [first] = await wordTypedRelationshipTargets(ctx, new Set(["comments"]), profile);
+        if (first !== undefined) {
+            return xmlParts.has(first.part) ? first.part : null;
+        }
+    } catch {
+        // An unreadable package view is reported by its own checks.
+    }
+    return inFolderByName(ctx, document === null ? "word" : path.posix.dirname(document), "comments.xml");
+};
+
+/** The last part named `name` in `folder`, else the OPC-equivalent spelling of `folder/name`. */
+const inFolderByName = (ctx: ValidationContext, folder: string, name: string): string | null => {
+    let byName: string | null = null;
+    for (const part of ctx.partNames) {
+        if (path.posix.basename(part) === name && path.posix.dirname(part) === folder) {
+            byName = part;
+        }
+    }
+    return byName ?? findEquivalentPart(ctx.partNames, folder === "." ? name : `${folder}/${name}`) ?? null;
+};
+
+/**
+ * The comment-thread part of exact Microsoft relationship `type` the
+ * threading check judges (#696), as #690's repair reads it: the part the
+ * main document's relationship of that Type names (unjudged when it is not
+ * XML), else the last file named `name` in the comments part's folder —
+ * never one from another story root — and absent when that folder holds none.
+ */
+const threadPart = async (
+    ctx: ValidationContext,
+    type: string,
+    name: string,
+    comments: string | null,
+    xmlParts: ReadonlySet<string>,
+    profile?: Profile,
+): Promise<string | null> => {
+    if (comments === null) {
+        return null;
+    }
+    try {
+        const [first] = await wordExactTypeTargets(ctx, type, profile);
+        if (first !== undefined) {
+            return xmlParts.has(first) ? first : null;
+        }
+    } catch {
+        // An unreadable package view is reported by its own checks.
+    }
+    return inFolderByName(ctx, path.posix.dirname(comments), name);
+};
+
 // These checks deliberately have no xml-syntax prerequisite: they report
 // their own parse failures, and threading still judges document-independent
 // metadata when document.xml cannot be parsed.
@@ -33,21 +132,12 @@ export const commentMarkersCheck: CheckDefinition = {
     groups: ["comments"],
     formats: ["docx"],
     reportsParseFailures: true,
-    run: (ctx): ValidationIssue[] => {
+    run: async (ctx, profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
 
-        let documentXml: string | null = null;
-        let commentsXml: string | null = null;
-        for (const xmlFile of ctx.partNames) {
-            const base = path.posix.basename(xmlFile);
-            if (base === "document.xml" && xmlFile.includes("word")) {
-                documentXml = xmlFile;
-            } else if (base === "comments.xml") {
-                commentsXml = xmlFile;
-            }
-        }
-        documentXml ??= findEquivalentPart(ctx.partNames, "word/document.xml") ?? null;
-        commentsXml ??= findEquivalentPart(ctx.partNames, "word/comments.xml") ?? null;
+        const documentXml = await mainDocumentPart(ctx, profile);
+        const xmlParts = xmlPartNames(ctx.partNames, (part) => ctx.bytes(part));
+        const commentsXml = await mainCommentsPart(ctx, documentXml, xmlParts, profile);
 
         if (!documentXml) {
             // Mirrors Python: "no document.xml" is a pass.
@@ -148,33 +238,29 @@ export const commentThreadingCheck: CheckDefinition = {
     groups: ["comments"],
     formats: ["docx"],
     reportsParseFailures: true,
-    run: (ctx): ValidationIssue[] => {
+    run: async (ctx, profile): Promise<ValidationIssue[]> => {
         const issues: ValidationIssue[] = [];
 
-        let documentXml: string | null = null;
-        let commentsXml: string | null = null;
-        let commentsExtendedXml: string | null = null;
-        let commentsIdsXml: string | null = null;
-        let commentsExtensibleXml: string | null = null;
-        for (const xmlFile of ctx.partNames) {
-            const base = path.posix.basename(xmlFile);
-            if (base === "document.xml" && xmlFile.includes("word")) {
-                documentXml = xmlFile;
-            } else if (base === "comments.xml") {
-                commentsXml = xmlFile;
-            } else if (base === "commentsExtended.xml") {
-                commentsExtendedXml = xmlFile;
-            } else if (base === "commentsIds.xml") {
-                commentsIdsXml = xmlFile;
-            } else if (base === "commentsExtensible.xml") {
-                commentsExtensibleXml = xmlFile;
-            }
-        }
-        documentXml ??= findEquivalentPart(ctx.partNames, "word/document.xml") ?? null;
-        commentsXml ??= findEquivalentPart(ctx.partNames, "word/comments.xml") ?? null;
-        commentsExtendedXml ??= findEquivalentPart(ctx.partNames, "word/commentsExtended.xml") ?? null;
-        commentsIdsXml ??= findEquivalentPart(ctx.partNames, "word/commentsIds.xml") ?? null;
-        commentsExtensibleXml ??= findEquivalentPart(ctx.partNames, "word/commentsExtensible.xml") ?? null;
+        const documentXml = await mainDocumentPart(ctx, profile);
+        const xmlParts = xmlPartNames(ctx.partNames, (part) => ctx.bytes(part));
+        const commentsXml = await mainCommentsPart(ctx, documentXml, xmlParts, profile);
+        const commentsExtendedXml = await threadPart(
+            ctx,
+            COMMENTS_EXTENDED_RELATIONSHIP_TYPE,
+            "commentsExtended.xml",
+            commentsXml,
+            xmlParts,
+            profile,
+        );
+        const commentsIdsXml = await threadPart(ctx, COMMENTS_IDS_RELATIONSHIP_TYPE, "commentsIds.xml", commentsXml, xmlParts, profile);
+        const commentsExtensibleXml = await threadPart(
+            ctx,
+            COMMENTS_EXTENSIBLE_RELATIONSHIP_TYPE,
+            "commentsExtensible.xml",
+            commentsXml,
+            xmlParts,
+            profile,
+        );
 
         // No comments.xml → no threading to check.
         if (!commentsXml) return [];

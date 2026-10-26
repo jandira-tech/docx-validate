@@ -16,6 +16,175 @@ const broken = path.join(path.dirname(fileURLToPath(import.meta.url)), "fixtures
 const markerFixture = path.join(broken, "comments.unmatched-comment-marker.docx");
 const commentIssues = (issues: readonly ValidationIssue[]) => issues.filter((issue) => issue.code?.startsWith("comment-"));
 
+const PROFILES = ["word-valid", "lenient", "strict"] as const;
+
+// #696: the comment checks read the parts the main document relates, so a
+// reached glossary's own document and comment parts are never judged for
+// the main document.
+const W14_NS = "http://schemas.microsoft.com/office/word/2010/wordml";
+const W16CID_NS = "http://schemas.microsoft.com/office/word/2016/wordml/cid";
+const REL_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const MS_COMMENTS_IDS_TYPE = "http://schemas.microsoft.com/office/2016/09/relationships/commentsIds";
+const MAIN_DOCUMENT_CT = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
+const COMMENTS_CT = "application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml";
+const COMMENTS_IDS_CT = "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsIds+xml";
+const GLOSSARY_DOCUMENT_CT = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.glossary+xml";
+
+const GLOSSARY_DOCUMENT =
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+    `<w:glossaryDocument xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="${W14_NS}">` +
+    `<w:docParts><w:docPart><w:docPartPr><w:name w:val="x"/><w:category><w:name w:val="General"/><w:gallery w:val="placeholder"/></w:category>` +
+    `<w:guid w:val="{00000000-0000-0000-0000-000000000001}"/></w:docPartPr>` +
+    `<w:docPartBody><w:p w14:paraId="00000009" w14:textId="00000009"><w:r><w:t>x</w:t></w:r></w:p></w:docPartBody></w:docPart></w:docParts></w:glossaryDocument>`;
+
+const commentsPart = (id: string, paraId: string): string =>
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+    `<w:comments xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="${W14_NS}">` +
+    `<w:comment w:id="${id}" w:author="A" w:date="2026-01-01T00:00:00Z" w:initials="A">` +
+    `<w:p w14:paraId="${paraId}" w14:textId="${paraId}"><w:r><w:t>c</w:t></w:r></w:p></w:comment></w:comments>`;
+
+const commentsIdsPart = (paraId: string, durableId: string): string =>
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+    `<w16cid:commentsIds xmlns:w16cid="${W16CID_NS}">` +
+    `<w16cid:commentId w16cid:paraId="${paraId}" w16cid:durableId="${durableId}"/></w16cid:commentsIds>`;
+
+/** The minimal document with a paired marker triple for comment 0, plus `extra` markers. */
+const markedDocument = (extra = ""): string =>
+    MINIMAL_PARTS["word/document.xml"]!.replace(
+        "<w:r><w:t>Hello</w:t></w:r>",
+        `<w:commentRangeStart w:id="0"/><w:r><w:t>Hello</w:t></w:r><w:commentRangeEnd w:id="0"/><w:r><w:commentReference w:id="0"/></w:r>${extra}`,
+    );
+
+const override = (part: string, type: string): string => `<Override PartName="/${part}" ContentType="${type}"/>`;
+const withOverrides = (...overrides: string[]): string =>
+    MINIMAL_PARTS["[Content_Types].xml"]!.replace("</Types>", `${overrides.join("")}</Types>`);
+const rel = (id: string, segment: string, target: string): string =>
+    `<Relationship Id="${id}" Type="${REL_NS}/${segment}" Target="${target}"/>`;
+const typedRel = (id: string, type: string, target: string): string => `<Relationship Id="${id}" Type="${type}" Target="${target}"/>`;
+const relsPart = (...entries: string[]): string =>
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+    `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${entries.join("")}</Relationships>`;
+
+/** The main document beside its comments part, optionally with a reached glossary document and the glossary's own comments. */
+const commentPackage = (
+    options: { readonly orphan?: boolean; readonly glossary?: boolean; readonly glossaryComments?: boolean } = {},
+): Record<string, string> => {
+    const parts: Record<string, string> = {
+        ...MINIMAL_PARTS,
+        "word/document.xml": markedDocument(options.orphan === true ? '<w:commentRangeStart w:id="1"/>' : ""),
+        "word/comments.xml": commentsPart("0", "0000AAAA"),
+    };
+    const types = [override("word/comments.xml", COMMENTS_CT)];
+    const documentRels = [rel("rId1", "styles", "styles.xml"), rel("rId2", "comments", "comments.xml")];
+    if (options.glossary === true || options.glossaryComments === true) {
+        documentRels.push(rel("rId9", "glossaryDocument", "glossary/document.xml"));
+        parts["word/glossary/document.xml"] = GLOSSARY_DOCUMENT;
+        types.push(override("word/glossary/document.xml", GLOSSARY_DOCUMENT_CT));
+    }
+    if (options.glossaryComments === true) {
+        // The glossary's own comments hold a different comment id than the main comments.
+        parts["word/glossary/comments.xml"] = commentsPart("5", "0000BBBB");
+        parts["word/glossary/_rels/document.xml.rels"] = relsPart(rel("rId1", "comments", "comments.xml"));
+        types.push(override("word/glossary/comments.xml", COMMENTS_CT));
+    }
+    parts["word/_rels/document.xml.rels"] = relsPart(...documentRels);
+    parts["[Content_Types].xml"] = withOverrides(...types);
+    return parts;
+};
+
+/** The main document relates its commentsIds by exact type at `word/threads/ids.xml`, beside an agreeing `word/commentsIds.xml` decoy. */
+const RENAMED_COMMENTS_IDS: Record<string, string> = {
+    ...MINIMAL_PARTS,
+    "[Content_Types].xml": withOverrides(
+        override("word/comments.xml", COMMENTS_CT),
+        override("word/threads/ids.xml", COMMENTS_IDS_CT),
+        override("word/commentsIds.xml", COMMENTS_IDS_CT),
+    ),
+    "word/_rels/document.xml.rels": relsPart(
+        rel("rId1", "styles", "styles.xml"),
+        rel("rId2", "comments", "comments.xml"),
+        typedRel("rId3", MS_COMMENTS_IDS_TYPE, "threads/ids.xml"),
+    ),
+    "word/document.xml": markedDocument(),
+    "word/comments.xml": commentsPart("0", "0000AAAA"),
+    "word/threads/ids.xml": commentsIdsPart("0000BBBB", "0000BBBB"),
+    "word/commentsIds.xml": commentsIdsPart("0000AAAA", "0000AAAA"),
+};
+
+/** No comments relationship at all: the by-name parts in `word/` are judged, as before. */
+const UNRELATED_COMMENT_PARTS: Record<string, string> = {
+    ...MINIMAL_PARTS,
+    "[Content_Types].xml": withOverrides(override("word/comments.xml", COMMENTS_CT), override("word/commentsIds.xml", COMMENTS_IDS_CT)),
+    "word/document.xml": markedDocument('<w:commentRangeStart w:id="1"/>'),
+    "word/comments.xml": commentsPart("0", "0000AAAA"),
+    "word/commentsIds.xml": commentsIdsPart("0000BBBB", "0000BBBB"),
+};
+
+/** The main document stored at `main/doc.xml`, with a decoy `word/document.xml` holding an orphan marker. */
+const MOVED_MAIN_DOCUMENT: Record<string, string> = {
+    ...MINIMAL_PARTS,
+    "[Content_Types].xml": withOverrides(override("main/doc.xml", MAIN_DOCUMENT_CT), override("main/comments.xml", COMMENTS_CT)),
+    "_rels/.rels": relsPart(`<Relationship Id="rId1" Type="${REL_NS}/officeDocument" Target="main/doc.xml"/>`),
+    "main/doc.xml": markedDocument(),
+    "main/comments.xml": commentsPart("0", "0000AAAA"),
+    "main/_rels/doc.xml.rels": relsPart(rel("rId1", "styles", "../word/styles.xml"), rel("rId2", "comments", "comments.xml")),
+    "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(
+        "<w:r><w:t>Hello</w:t></w:r>",
+        '<w:commentRangeStart w:id="1"/><w:r><w:t>Hello</w:t></w:r>',
+    ),
+};
+
+const BIN_DEFAULT = '<Default Extension="bin" ContentType="application/octet-stream"/>';
+const ZGLOSSARY_RELATIONSHIP = rel("rId9", "glossaryDocument", "zglossary/document.xml");
+
+/** The glossary at `word/zglossary/` holds the package's only comments, with an agreeing commentsIds; the main document has no markers. */
+const glossaryOnlyComments = (mainRelatesIds: boolean): Record<string, string> => ({
+    ...MINIMAL_PARTS,
+    "[Content_Types].xml": withOverrides(
+        override("word/zglossary/document.xml", GLOSSARY_DOCUMENT_CT),
+        override("word/zglossary/comments.xml", COMMENTS_CT),
+        override("word/zglossary/commentsIds.xml", COMMENTS_IDS_CT),
+        ...(mainRelatesIds ? [override("word/commentsIds.xml", COMMENTS_IDS_CT)] : []),
+    ),
+    "word/_rels/document.xml.rels": relsPart(
+        rel("rId1", "styles", "styles.xml"),
+        ZGLOSSARY_RELATIONSHIP,
+        ...(mainRelatesIds ? [typedRel("rId3", MS_COMMENTS_IDS_TYPE, "commentsIds.xml")] : []),
+    ),
+    ...(mainRelatesIds ? { "word/commentsIds.xml": commentsIdsPart("0000DDDD", "0000DDDD") } : {}),
+    "word/zglossary/document.xml": GLOSSARY_DOCUMENT,
+    "word/zglossary/_rels/document.xml.rels": relsPart(rel("rId1", "comments", "comments.xml")),
+    "word/zglossary/comments.xml": commentsPart("5", "0000BBBB"),
+    "word/zglossary/commentsIds.xml": commentsIdsPart("0000BBBB", "0000BBBB"),
+});
+
+/** The main document relates its comments, and its commentsIds by exact type to `word/ids.bin`, a part that is not XML, beside a disagreeing by-name `word/commentsIds.xml`. */
+const NON_XML_COMMENTS_IDS: Record<string, string> = {
+    ...MINIMAL_PARTS,
+    "[Content_Types].xml": withOverrides(
+        override("word/comments.xml", COMMENTS_CT),
+        override("word/commentsIds.xml", COMMENTS_IDS_CT),
+    ).replace("<Override", `${BIN_DEFAULT}<Override`),
+    "word/_rels/document.xml.rels": relsPart(
+        rel("rId1", "styles", "styles.xml"),
+        rel("rId2", "comments", "comments.xml"),
+        typedRel("rId3", MS_COMMENTS_IDS_TYPE, "ids.bin"),
+    ),
+    "word/document.xml": markedDocument(),
+    "word/comments.xml": commentsPart("0", "0000AAAA"),
+    "word/ids.bin": commentsIdsPart("0000BBBB", "0000BBBB"),
+    "word/commentsIds.xml": commentsIdsPart("0000CCCC", "0000CCCC"),
+};
+
+/** The main document relates its comments to `word/notes.bin`, a part that is not XML, beside a by-name `word/comments.xml` its markers do not match. */
+const NON_XML_COMMENTS: Record<string, string> = {
+    ...MINIMAL_PARTS,
+    "[Content_Types].xml": withOverrides(override("word/comments.xml", COMMENTS_CT)).replace("<Override", `${BIN_DEFAULT}<Override`),
+    "word/_rels/document.xml.rels": relsPart(rel("rId1", "styles", "styles.xml"), rel("rId2", "comments", "notes.bin")),
+    "word/notes.bin": commentsPart("0", "0000AAAA"),
+    "word/comments.xml": commentsPart("7", "0000AAAA"),
+};
+
 describe("named comment validation (#384)", { timeout: 120_000 }, () => {
     it.each(["word-valid", "lenient"] as const)("selects comments with full-run findings under %s", async (profile) => {
         const selected = await validate(markerFixture, { profile, checks: ["comments"] });
@@ -96,6 +265,142 @@ describe("named comment validation (#384)", { timeout: 120_000 }, () => {
                 expect(expected, profile).toContainEqual(expect.objectContaining({ code: "comment-marker-missing" }));
                 expect(findings((await validate(equivalent, { profile })).issues), profile).toEqual(expected);
             }
+        });
+    });
+});
+
+describe("the comment checks read the parts the main document relates (#696)", { timeout: 120_000 }, () => {
+    const commentFindings = (issues: readonly ValidationIssue[]): { code: string; path: string }[] =>
+        commentIssues(issues).map((issue) => ({ code: issue.code ?? "", path: issue.path ?? "" }));
+
+    const writeSpecimens = async (
+        dir: string,
+        specimens: readonly [name: string, parts: Record<string, string>][],
+    ): Promise<Record<string, string>> => {
+        const files: Record<string, string> = {};
+        for (const [name, parts] of specimens) {
+            files[name] = path.join(dir, `${name}.docx`);
+            await writeFile(files[name]!, await buildDocx(parts));
+        }
+        return files;
+    };
+
+    it.each(PROFILES)("a reached glossary at word/glossary/ draws no comment finding (%s)", async (profile) => {
+        await withTempDir(async (dir) => {
+            const files = await writeSpecimens(dir, [
+                ["control", commentPackage()],
+                ["glossary", commentPackage({ glossary: true })],
+            ]);
+            const expected = commentFindings((await validate(files["control"]!, { profile })).issues);
+            expect(expected).toEqual([]);
+            const result = await validate(files["glossary"]!, { profile });
+            expect(commentFindings(result.issues)).toEqual(expected);
+            expect(result.valid).toBe(true);
+        });
+    });
+
+    it("a reached glossary at word/glossary/ draws no comment finding in a selected comments run", async () => {
+        await withTempDir(async (dir) => {
+            const files = await writeSpecimens(dir, [
+                ["control", commentPackage()],
+                ["glossary", commentPackage({ glossary: true })],
+            ]);
+            const expected = commentFindings((await validate(files["control"]!, { checks: ["comments"] })).issues);
+            expect(expected).toEqual([]);
+            expect(commentFindings((await validate(files["glossary"]!, { checks: ["comments"] })).issues)).toEqual(expected);
+        });
+    });
+
+    it.each(PROFILES)("an orphan marker in the main document is reported beside that glossary (%s)", async (profile) => {
+        await withTempDir(async (dir) => {
+            const files = await writeSpecimens(dir, [
+                ["control", commentPackage({ orphan: true })],
+                ["glossary", commentPackage({ orphan: true, glossary: true })],
+            ]);
+            const expected = commentFindings((await validate(files["control"]!, { profile })).issues);
+            expect(expected).toEqual(
+                expect.arrayContaining([
+                    { code: "comment-orphan-start", path: "word/document.xml" },
+                    { code: "comment-marker-missing", path: "word/document.xml" },
+                ]),
+            );
+            expect(commentFindings((await validate(files["glossary"]!, { profile })).issues)).toEqual(expected);
+        });
+    });
+
+    it.each(PROFILES)("the main document's markers are judged against the main comments, not a glossary's (%s)", async (profile) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "glossary-comments.docx");
+            await writeFile(file, await buildDocx(commentPackage({ glossary: true, glossaryComments: true })));
+            // The main markers reference comment 0, which only the main comments hold.
+            const found = commentFindings((await validate(file, { profile })).issues);
+            expect(found.some((finding) => finding.code === "comment-marker-missing")).toBe(false);
+            expect(found).toEqual([]);
+        });
+    });
+
+    it.each(PROFILES)("the commentsIds part the main document relates is judged, not a by-name decoy (%s)", async (profile) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "renamed-ids.docx");
+            await writeFile(file, await buildDocx(RENAMED_COMMENTS_IDS));
+            expect(commentFindings((await validate(file, { profile })).issues)).toEqual([
+                { code: "comment-thread-commentid-paraid-orphan", path: "word/threads/ids.xml" },
+            ]);
+        });
+    });
+
+    it.each(PROFILES)("without a comments relationship, the by-name parts are still judged (%s)", async (profile) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "unrelated.docx");
+            await writeFile(file, await buildDocx(UNRELATED_COMMENT_PARTS));
+            expect(commentFindings((await validate(file, { profile })).issues)).toEqual([
+                { code: "comment-orphan-start", path: "word/document.xml" },
+                { code: "comment-marker-missing", path: "word/document.xml" },
+                { code: "comment-thread-count-mismatch", path: "word/document.xml" },
+                { code: "comment-thread-commentid-paraid-orphan", path: "word/commentsIds.xml" },
+            ]);
+        });
+    });
+
+    it.each(PROFILES)("a main document outside word/ is judged, not a word/document.xml decoy (%s)", async (profile) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "moved-main.docx");
+            await writeFile(file, await buildDocx(MOVED_MAIN_DOCUMENT));
+            expect(commentFindings((await validate(file, { profile })).issues)).toEqual([]);
+        });
+    });
+
+    it.each(PROFILES)("a glossary's own comments are never judged for a main document that relates none (%s)", async (profile) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "glossary-only.docx");
+            await writeFile(file, await buildDocx(glossaryOnlyComments(false)));
+            expect(commentFindings((await validate(file, { profile })).issues)).toEqual([]);
+        });
+    });
+
+    it.each(PROFILES)("the main document's related commentsIds is not paired with a glossary's comments (%s)", async (profile) => {
+        await withTempDir(async (dir) => {
+            // Review of layers 140-142, finding 1: the comments part found by name must not be paired with a
+            // thread part the main document relates by exact type.
+            const file = path.join(dir, "main-ids.docx");
+            await writeFile(file, await buildDocx(glossaryOnlyComments(true)));
+            expect(commentFindings((await validate(file, { profile })).issues)).toEqual([]);
+        });
+    });
+
+    it.each(PROFILES)("a related commentsIds part that is not XML is left unjudged, with no by-name stand-in (%s)", async (profile) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "non-xml-ids.docx");
+            await writeFile(file, await buildDocx(NON_XML_COMMENTS_IDS));
+            expect(commentFindings((await validate(file, { profile })).issues)).toEqual([]);
+        });
+    });
+
+    it.each(PROFILES)("a related comments part that is not XML is left unjudged, with no by-name stand-in (%s)", async (profile) => {
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "non-xml-comments.docx");
+            await writeFile(file, await buildDocx(NON_XML_COMMENTS));
+            expect(commentFindings((await validate(file, { profile })).issues)).toEqual([]);
         });
     });
 });

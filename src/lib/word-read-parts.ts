@@ -374,13 +374,23 @@ export const wordTypedRelationshipTargets = async (
 };
 
 /**
+ * The Microsoft relationship types that pair a comments part with its
+ * extension parts (#690, #696). They live under `schemas.microsoft.com`,
+ * so `wordTypedRelationshipTargets` never reaches their targets and
+ * `wordExactTypeTargets` reads them by exact Type.
+ */
+export const COMMENTS_EXTENDED_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2011/relationships/commentsExtended";
+export const COMMENTS_IDS_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2016/09/relationships/commentsIds";
+export const COMMENTS_EXTENSIBLE_RELATIONSHIP_TYPE = "http://schemas.microsoft.com/office/2018/08/relationships/commentsExtensible";
+
+/**
  * The parts a main-document relationship of exactly `type` names, in
  * traversal order, once each (#690). The Microsoft comment-thread types
- * (`commentsIds`, `commentsExtensible`) carry no Office relationship-type
- * segment, so `wordTypedRelationshipTargets` cannot reach them; this walk
- * reads the same relationships parts the same way (External targets
- * skipped, each target resolved against its main document's folder and
- * taken as the OPC-equivalent stored entry) and compares the Type
+ * (`commentsExtended`, `commentsIds`, `commentsExtensible`) carry no Office
+ * relationship-type segment, so `wordTypedRelationshipTargets` cannot reach
+ * them; this walk reads the same relationships parts the same way (External
+ * targets skipped, each target resolved against its main document's folder
+ * and taken as the OPC-equivalent stored entry) and compares the Type
  * verbatim. A glossary's relationships are never read.
  */
 export const wordExactTypeTargets = async (context: ValidationContext, type: string, profile?: Profile): Promise<readonly string[]> => {
