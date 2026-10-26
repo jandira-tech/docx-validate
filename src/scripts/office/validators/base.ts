@@ -66,6 +66,7 @@ import {
 } from "../../../lib/markup-compatibility";
 import { opcNameIssueSeverity, wordObservedIssueSeverity } from "../../../lib/mode-policy";
 import { withTempDir } from "../../../lib/run-cli";
+import { VALIDATION_DEADLINE, type RunDeadline } from "../../../lib/run-deadline";
 import { indexByPartName, type ValidationContext } from "../../../lib/validation-context";
 import type { PackageFormat, Profile, ValidationIssue, ValidationResult, XsdWalkTrace } from "../../../lib/types";
 import { DEFAULT_PROFILE, NS, OK_RESULT } from "../../../lib/types";
@@ -259,6 +260,14 @@ export interface BaseSchemaValidatorOptions {
      * native addon cannot build against Node 26.
      */
     xsdValidator?: XsdValidator;
+    /**
+     * The wall-clock budget of the run this validator belongs to (#630).
+     * `validate()` asks it before each of its rules, and the schema walk
+     * before each part; a rule or part already running finishes. The steps it
+     * stops are recorded on the deadline, and `validate()` reports them in one
+     * error-severity `validation-deadline` finding. Repairs never consult it.
+     */
+    deadline?: RunDeadline;
 }
 
 /**
@@ -398,6 +407,8 @@ export class BaseSchemaValidator {
     readonly schemasDir: string;
     readonly xmlFiles: string[];
     readonly profile: Profile;
+    /** The run's wall-clock budget, when it has one (#630). */
+    readonly deadline: RunDeadline | undefined;
     /**
      * Engine trace for the most recent `validateAgainstXsd` on this instance.
      * `DOCXSchemaValidator.validate` resets it at entry. `mergeResults` drops
@@ -470,6 +481,39 @@ export class BaseSchemaValidator {
         this.xmlFiles = xmlPackageEntries(this.unpackedDir).map(([, file]) => file);
         this.profile = opts.profile ?? DEFAULT_PROFILE;
         this.xsdValidatorRef = opts.xsdValidator;
+        this.deadline = opts.deadline;
+    }
+
+    /**
+     * How `validate()` starts its rules (#630). Without a deadline each rule
+     * starts as soon as it is asked for, as before. With one, each rule starts
+     * after the previous one settles, and only while the budget lasts: the
+     * rules interleave at their file reads, so asking the deadline when a rule
+     * is merely started would stop nothing. A rule the deadline stopped is
+     * recorded on it as `step` and contributes no finding.
+     */
+    protected ruleScheduler(): (step: string, run: () => Promise<ValidationResult>) => Promise<ValidationResult> {
+        const deadline = this.deadline;
+        if (deadline === undefined) return (_step, run) => run();
+        let previous: Promise<unknown> = Promise.resolve();
+        return (step, run) => {
+            const result = previous.then(() => (deadline.reached(step) ? OK_RESULT : run()));
+            // A rule that rejects still rejects `validate()`, as Promise.all
+            // did; the rules after it keep their turn.
+            previous = result.catch(() => undefined);
+            return result;
+        };
+    }
+
+    /**
+     * `result`, made invalid by the one `validation-deadline` finding when
+     * the deadline stopped any step (#630). Appended after every profile
+     * policy, so no policy can lower it to a warning.
+     */
+    protected withDeadlineFinding(result: ValidationResult): ValidationResult {
+        const issue = this.deadline?.issue();
+        if (issue === undefined) return result;
+        return { ...result, valid: false, issues: [...result.issues.filter((existing) => existing.code !== VALIDATION_DEADLINE), issue] };
     }
 
     /**
@@ -1534,6 +1578,7 @@ export class BaseSchemaValidator {
         this.xsdWalk.started = true;
         this.xsdWalk.parts = [];
         this.xsdWalk.eligible = 0;
+        delete this.xsdWalk.notExamined;
         this.xsdEngineFailures = 0;
         // The main document comes from the processed package relationships,
         // which a repair between walks can change (#657).
@@ -1567,7 +1612,16 @@ export class BaseSchemaValidator {
             return true;
         };
 
-        for (const xmlFile of this.xmlFiles) {
+        for (const [index, xmlFile] of this.xmlFiles.entries()) {
+            // #630: the walk stops between parts once the run's budget is
+            // spent. The parts it never reached are not judged eligible or
+            // not: that would read them.
+            if (this.deadline?.expired()) {
+                const notExamined = this.xmlFiles.length - index;
+                this.xsdWalk.notExamined = notExamined;
+                this.deadline.record(`schema validation of ${notExamined} XML ${notExamined === 1 ? "part" : "parts"} it had not reached`);
+                break;
+            }
             if (!countEligible(xmlFile)) continue;
 
             const outcome = await this.validateFileAgainstXsd(xmlFile);

@@ -38,6 +38,7 @@
 
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
+import { assertDeadlineMs } from "./lib/run-deadline";
 import type { Profile, ValidationResult } from "./lib/types";
 import type { XsdValidator } from "./lib/xsd-validator";
 import { validate as runValidate, type ValidateOptions as PathValidateOptions, type WordVerifier } from "./scripts/office/validate";
@@ -78,6 +79,12 @@ export type ValidateOptions = {
      * supported suffix (e.g. `.pptx`, `.docm`).
      */
     suffix?: string;
+    /**
+     * Wall-clock budget of the whole run, in milliseconds, counted from
+     * `run()`, the write of the bytes to a temporary file included (#630).
+     * See the path entrypoint's `deadlineMs`.
+     */
+    deadlineMs?: number;
 };
 
 /** The subset of {@link ValidateOptions} the path entrypoint consumes. */
@@ -95,13 +102,22 @@ const forwardable = (opts: ValidateOptions): PathValidateOptions => ({
 export class Validate {
     public constructor(private readonly opts: ValidateOptions = {}) {}
 
-    public run(bytes: Uint8Array): Promise<ValidationResult> {
+    public async run(bytes: Uint8Array): Promise<ValidationResult> {
+        const started = Date.now();
+        const budget = this.opts.deadlineMs;
+        if (budget !== undefined) {
+            assertDeadlineMs(budget);
+        }
         const options = forwardable(this.opts);
-        return withTempDir(async (dir) => {
+        return await withTempDir(async (dir) => {
             const suffix = this.opts.suffix ?? ".docx";
             const docxPath = path.join(dir, `input${suffix}`);
             await writeFile(docxPath, bytes);
-            const result = await runValidate(docxPath, options);
+            // The path entrypoint gets what the temporary write left of the budget.
+            const result = await runValidate(
+                docxPath,
+                budget === undefined ? options : { ...options, deadlineMs: Math.max(0, budget - (Date.now() - started)) },
+            );
             // `xsdWalk` and `repairs` stay on the richer path-entrypoint result;
             // this class reports the shared `ValidationResult`, metadata included.
             return { valid: result.valid, issues: result.issues, metadata: result.metadata };

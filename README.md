@@ -275,7 +275,7 @@ const equivalent = await jubarte.validate(bytes, { checks: ["tables"] });
 ```
 
 `Validate` and `jubarte.validate` also forward `profile`, `strict`, `schemasDir`,
-`xsdValidator`, `verifyWord`, and `wordVerifier`. Set `suffix` on byte APIs for
+`xsdValidator`, `verifyWord`, `wordVerifier`, and `deadlineMs`. Set `suffix` on byte APIs for
 formats other than their default `.docx` (for example, `.pptx` or `.docm`).
 
 - `--quick` / `{ quick: true }` selects `QUICK_CHECK_GROUPS`: `package`, `xml`,
@@ -308,12 +308,32 @@ formats other than their default `.docx` (for example, `.pptx` or `.docm`).
   warnings and available locations. Exit status is 0 for valid and 1 for invalid;
   configuration/startup errors go to stderr. The path API also returns `suffix`,
   `repairs`, and `xsdWalk`, which are not included in CLI JSON.
+- `--deadline-ms <ms>` / `{ deadlineMs }` bounds the whole run, counted from the
+  call; the byte APIs count their temporary write too (#630). The bound is
+  cooperative: each step asks the budget before it starts — the package stages,
+  every named check, every rule of the DOCX or PPTX validator, every part of the
+  schema walk, the redlining validation, and Word verification — and a step
+  already running finishes, so a run overruns by at most its longest single step.
+  With a deadline the DOCX validator's rules run one after another rather than
+  all at once, so the budget can stop one between two others. When the budget
+  stopped any step, the run is invalid and reports one error-severity
+  `validation-deadline` finding naming what did not run: a run cut short is never
+  a pass, whatever the steps that ran found (timeout > engine error > invalid >
+  valid). The profile's severity policy still applies to what ran.
+  `metadata.deadline` reports `{ budgetMs, notRun }`. A schema walk the budget
+  stopped leaves `schemaCompleted: false` and counts the parts it never reached
+  in `xsdWalk.notExamined`. Word verification gets what is left of the budget, at
+  most its own 45 seconds; once the budget is spent it does not run and is
+  `unavailable`. The budget is a finite number of milliseconds, 0 or more
+  (`RangeError` otherwise; the CLI exits 1). It cannot be combined with
+  `--auto-repair`: a repair writes, and a deadline could stop it part-way.
 
 ```bash
 docx-validate --list-checks
 docx-validate --quick contract.docx
 docx-validate --checks tables,word-run-misplaced --json contract.docx
 docx-validate --strict contract.docx
+docx-validate --deadline-ms 30000 --json contract.docx
 ```
 
 Full lenient and strict CLI runs first compile a small startup probe schema to

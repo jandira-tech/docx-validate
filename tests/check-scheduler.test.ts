@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 
 import { type CheckDefinition, CheckRegistry, UnknownCheckError } from "../src/lib/check-registry";
 import { runChecks } from "../src/lib/check-scheduler";
+import { RunDeadline } from "../src/lib/run-deadline";
 import type { ValidationIssue } from "../src/lib/types";
 import { ValidationContext } from "../src/lib/validation-context";
 
@@ -326,5 +327,55 @@ describe("runChecks: a prerequisite that gates by part (#307)", () => {
             const run = await runChecks(ValidationContext.fromEntries(parts), new CheckRegistry([gate, reader]), { format: "docx" });
             expect(run.skipped).toEqual(["reader"]);
         }
+    });
+});
+
+describe("runChecks: a run deadline (#630)", () => {
+    it("runs nothing once the budget is spent, and records every check it stopped", async () => {
+        let ran = 0;
+        const counting = (id: string): CheckDefinition =>
+            check(id, {
+                run: () => {
+                    ran += 1;
+                    return [];
+                },
+            });
+        const deadline = new RunDeadline(0, () => 0);
+        const run = await runChecks(ValidationContext.fromEntries({}), new CheckRegistry([counting("a"), counting("b")]), {
+            format: "docx",
+            deadline,
+        });
+        expect(ran).toBe(0);
+        expect(run.executed).toEqual([]);
+        expect(run.skipped).toEqual(["a", "b"]);
+        expect(run.outcomes.map((outcome) => outcome.reason)).toEqual([
+            "the validation deadline was reached",
+            "the validation deadline was reached",
+        ]);
+        expect(deadline.notRun).toEqual(["a", "b"]);
+    });
+
+    it("stops between checks: the check that spends the budget finishes, the next does not start", async () => {
+        let now = 0;
+        const slow = check("slow", {
+            run: () => {
+                now += 50;
+                return [error("found", "word/document.xml")];
+            },
+        });
+        const after = check("after", { run: () => [error("never")] });
+        const deadline = new RunDeadline(30, () => now);
+        const run = await runChecks(ValidationContext.fromEntries({}), new CheckRegistry([slow, after]), { format: "docx", deadline });
+        expect(run.executed).toEqual(["slow"]);
+        expect(run.issues.map((issue) => issue.code)).toEqual(["found"]);
+        expect(run.skipped).toEqual(["after"]);
+        expect(deadline.notRun).toEqual(["after"]);
+    });
+
+    it("leaves a run inside its budget unchanged", async () => {
+        const registry = new CheckRegistry([check("a", { run: () => [error("found")] }), check("b")]);
+        const bounded = await runChecks(ValidationContext.fromEntries({}), registry, { format: "docx", deadline: new RunDeadline(60_000) });
+        const unbounded = await runChecks(ValidationContext.fromEntries({}), registry, { format: "docx" });
+        expect(bounded).toEqual(unbounded);
     });
 });

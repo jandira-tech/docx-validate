@@ -10,6 +10,7 @@ import path from "node:path";
 
 import type { PackageFormat, Profile, ValidationIssue } from "../../lib/types";
 import { runChecks } from "../../lib/check-scheduler";
+import type { RunDeadline } from "../../lib/run-deadline";
 import { opcNameIssueSeverity, wordObservedIssueSeverity } from "../../lib/mode-policy";
 import { assertPlaceableNames, ValidationContext, PackageViewError, PackageOpenError } from "../../lib/validation-context";
 import { createDefaultCheckRegistry } from "./checks";
@@ -21,13 +22,14 @@ export async function storedNamesRun(
     context: ValidationContext,
     format: PackageFormat,
     profile: Profile,
+    deadline?: RunDeadline,
 ): Promise<{ issues: ValidationIssue[]; executed: readonly string[] }> {
     const registry = createDefaultCheckRegistry();
     const select = registry
         .list(format)
         .filter((definition) => definition.storedNamesOnly === true)
         .map((definition) => definition.id);
-    const run = await runChecks(context, registry, { format, select, profile });
+    const run = await runChecks(context, registry, { format, select, profile, deadline });
     return {
         issues: run.issues.map((issue) => ({
             ...issue,
