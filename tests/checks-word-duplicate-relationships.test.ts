@@ -15,6 +15,8 @@ import {
     wordDuplicateFontTableRelationshipCheck,
     wordDuplicateWebSettingsRelationshipCheck,
     wordDuplicateSettingsRelationshipCheck,
+    wordDuplicateStylesRelationshipCheck,
+    wordDuplicateNumberingRelationshipCheck,
 } from "../src/scripts/office/checks/word-duplicate-relationships";
 
 describe("direct relationship duplicate counts (#434)", () => {
@@ -23,6 +25,8 @@ describe("direct relationship duplicate counts (#434)", () => {
         [wordDuplicateFontTableRelationshipCheck, "fontTable"],
         [wordDuplicateWebSettingsRelationshipCheck, "webSettings"],
         [wordDuplicateSettingsRelationshipCheck, "settings"],
+        [wordDuplicateStylesRelationshipCheck, "styles"],
+        [wordDuplicateNumberingRelationshipCheck, "numbering"],
     ] as const)("ignores a nested second %s / %s relationship", async (check, type) => {
         const ctx = ValidationContext.fromEntries({
             "word/_rels/document.xml.rels": rels(relation("direct", type) + `<x:Wrap xmlns:x="urn:x">${relation("nested", type)}</x:Wrap>`),
@@ -185,6 +189,8 @@ describe("OPC-equivalent duplicate relationship checks (#398)", () => {
         ["fontTable", wordDuplicateFontTableRelationshipCheck],
         ["webSettings", wordDuplicateWebSettingsRelationshipCheck],
         ["settings", wordDuplicateSettingsRelationshipCheck],
+        ["styles", wordDuplicateStylesRelationshipCheck],
+        ["numbering", wordDuplicateNumberingRelationshipCheck],
     ] as const)("checks %s relationships under every equivalent spelling", async (type, check) => {
         await withTempDir(async (dir) => {
             const run = async (extension: string) => {

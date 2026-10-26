@@ -12325,3 +12325,390 @@ print(len(rows), "rows,", len(raw), "raw records")
 `````
 
 </details>
+
+### Session 47: 10:04Z–10:06Z on 2026-10-26, validator columns at f2717ba3
+
+Does Word count a relationship whose Type only ends in a single-instance segment ([#708](https://github.com/jandira-tech/docx-validate/issues/708), [#694](https://github.com/jandira-tech/docx-validate/issues/694))? Each chunk ran twice, as two separate driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's `logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, and `unknown` otherwise; all 13 rows agree. The two times in Observed are the ends of the first and second runs. Shape is the builder's description of the specimen.
+
+- Each specimen is the minimal package plus one real relationship of the segment (styles reuses the minimal `rId1`) and one relationship whose Type only ends in the segment: `…/relationships/custom/<segment>` or `http://example.com/<segment>`, to its own part typed with the segment's content type, or for styles also to the real part. Word opens every one clean: it reads `custom/styles`, `custom/numbering`, `custom/settings`, `custom/webSettings`, `custom/fontTable`, `http://example.com/styles` and `http://example.com/settings` as no relationship of the segment, as session 27 found for `header`. Word-valid at f2717ba3 rejects the settings, webSettings and fontTable rows through the suffix-matching duplicate rules (#708, false positives).
+- Calibration: two real settings relationships to two parts (session 45's refused shape) get the recovery offer again.
+
+| Run    | Observed             | Specimen                             | Shape                                                                                              | SHA-256 (first 16) | Word, run 1    | Word, run 2    | Outcome                    | word-valid at f2717ba3                              | strict at f2717ba3                                  |
+| ------ | -------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------- | ------------------ | -------------- | -------------- | -------------------------- | --------------------------------------------------- | --------------------------------------------------- |
+| `s47a` | 10:04:50Z, 10:06:09Z | `s47a-control-minimal`               | control                                                                                            | `5a4910cb77ad15ea` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                               |
+| `s47a` | 10:04:50Z, 10:06:09Z | `styles-custom-styles-own`           | suffix: rId1 styles→styles.xml, rId3 …/relationships/custom/styles→styles2.xml (styles type)       | `55bf333b83b378f0` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                               |
+| `s47a` | 10:04:50Z, 10:06:09Z | `styles-custom-styles-same`          | suffix: rId1 styles→styles.xml, rId3 …/relationships/custom/styles→styles.xml                      | `2ba7eb59ffb7a8ef` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                               |
+| `s47a` | 10:04:50Z, 10:06:09Z | `styles-foreign-styles-own`          | suffix: rId1 styles→styles.xml, rId3 http://example.com/styles→styles2.xml (styles type)           | `0ccb33097c032370` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                               |
+| `s47a` | 10:04:50Z, 10:06:09Z | `numbering-custom-numbering-own`     | suffix: rId2 numbering→numbering.xml, rId3 …/relationships/custom/numbering→numbering2.xml         | `77c2f51ba2810cc6` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                               |
+| `s47a` | 10:04:50Z, 10:06:09Z | `settings-custom-settings-own`       | suffix: rId2 settings→settings.xml, rId3 …/relationships/custom/settings→settings2.xml             | `85d3fa3c44cdf381` | clean-open     | clean-open     | clean-open                 | invalid: `word-duplicate-settings-relationship`     | invalid: `word-duplicate-settings-relationship`     |
+| `s47a` | 10:04:50Z, 10:06:09Z | `settings-foreign-settings-own`      | suffix: rId2 settings→settings.xml, rId3 http://example.com/settings→settings2.xml                 | `64ef766f18a9dd88` | clean-open     | clean-open     | clean-open                 | invalid: `word-duplicate-settings-relationship`     | invalid: `word-duplicate-settings-relationship`     |
+| `s47a` | 10:04:50Z, 10:06:09Z | `s47a-control-minimal-end`           | control                                                                                            | `d60bdb5d94b92954` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                               |
+| `s47b` | 10:05:29Z, 10:06:25Z | `s47b-control-minimal`               | control                                                                                            | `d60bdb5d94b92954` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                               |
+| `s47b` | 10:05:29Z, 10:06:25Z | `websettings-custom-websettings-own` | suffix: rId2 webSettings→webSettings.xml, rId3 …/relationships/custom/webSettings→webSettings2.xml | `ecf8d61e14839ab0` | clean-open     | clean-open     | clean-open                 | invalid: `word-duplicate-web-settings-relationship` | invalid: `word-duplicate-web-settings-relationship` |
+| `s47b` | 10:05:29Z, 10:06:25Z | `fonttable-custom-fonttable-own`     | suffix: rId2 fontTable→fontTable.xml, rId3 …/relationships/custom/fontTable→fontTable2.xml         | `ae042e184aee9d7d` | clean-open     | clean-open     | clean-open                 | invalid: `word-duplicate-font-table-relationship`   | invalid: `word-duplicate-font-table-relationship`   |
+| `s47b` | 10:05:29Z, 10:06:25Z | `settings-dup-calibration`           | calibration (s45f's refused shape): two settings relationships to two parts                        | `586c942eed232613` | repair-warning | repair-warning | unreadable-content-warning | invalid: `word-duplicate-settings-relationship`     | invalid: `word-duplicate-settings-relationship`     |
+| `s47b` | 10:05:29Z, 10:06:25Z | `s47b-control-minimal-end`           | control                                                                                            | `72c3f823e4b3aa1a` | clean-open     | clean-open     | clean-open                 | valid                                               | valid                                               |
+
+<details><summary>Raw records, session 47</summary>
+
+```jsonl
+{"run": "s47a", "pass": 1, "name": "s47a-control-minimal", "sha256": "5a4910cb77ad15eaf9b0ef5f9d4b996e2ee01db518ea2a7b782ac13792fc3587", "observedAt": "2026-10-26T10:04:50+00:00", "staged": "00002__wfv__s47a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s47a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47a", "pass": 2, "name": "s47a-control-minimal", "sha256": "5a4910cb77ad15eaf9b0ef5f9d4b996e2ee01db518ea2a7b782ac13792fc3587", "observedAt": "2026-10-26T10:06:09+00:00", "staged": "00002__wfv__s47a-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s47a-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47a", "pass": 1, "name": "styles-custom-styles-own", "sha256": "55bf333b83b378f0971721ef1b732c1ca9c053b49aeb2729ecdbfd04d1545148", "observedAt": "2026-10-26T10:04:50+00:00", "staged": "00005__wfv__styles-custom-styles-own.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-custom-styles-own_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47a", "pass": 2, "name": "styles-custom-styles-own", "sha256": "55bf333b83b378f0971721ef1b732c1ca9c053b49aeb2729ecdbfd04d1545148", "observedAt": "2026-10-26T10:06:09+00:00", "staged": "00005__wfv__styles-custom-styles-own.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-custom-styles-own_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47a", "pass": 1, "name": "styles-custom-styles-same", "sha256": "2ba7eb59ffb7a8ef388d64e90899b7840f5115b3a14e15cc6c62a463a20dc386", "observedAt": "2026-10-26T10:04:50+00:00", "staged": "00006__wfv__styles-custom-styles-same.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-custom-styles-same_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47a", "pass": 2, "name": "styles-custom-styles-same", "sha256": "2ba7eb59ffb7a8ef388d64e90899b7840f5115b3a14e15cc6c62a463a20dc386", "observedAt": "2026-10-26T10:06:09+00:00", "staged": "00006__wfv__styles-custom-styles-same.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-custom-styles-same_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47a", "pass": 1, "name": "styles-foreign-styles-own", "sha256": "0ccb33097c032370e3c20c43b5309b8f096d80d3d1dd39652bd4ccb992dde435", "observedAt": "2026-10-26T10:04:50+00:00", "staged": "00007__wfv__styles-foreign-styles-own.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-foreign-styles-own_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47a", "pass": 2, "name": "styles-foreign-styles-own", "sha256": "0ccb33097c032370e3c20c43b5309b8f096d80d3d1dd39652bd4ccb992dde435", "observedAt": "2026-10-26T10:06:09+00:00", "staged": "00007__wfv__styles-foreign-styles-own.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF styles-foreign-styles-own_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47a", "pass": 1, "name": "numbering-custom-numbering-own", "sha256": "77c2f51ba2810cc6335f1abc0c3efd364e8311a68d57b7267e65d15ce7b32c17", "observedAt": "2026-10-26T10:04:50+00:00", "staged": "00000__wfv__numbering-custom-numbering-own.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF numbering-custom-numbering-own_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47a", "pass": 2, "name": "numbering-custom-numbering-own", "sha256": "77c2f51ba2810cc6335f1abc0c3efd364e8311a68d57b7267e65d15ce7b32c17", "observedAt": "2026-10-26T10:06:09+00:00", "staged": "00000__wfv__numbering-custom-numbering-own.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF numbering-custom-numbering-own_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47a", "pass": 1, "name": "settings-custom-settings-own", "sha256": "85d3fa3c44cdf381d7ef5b6b1f448670981d58dadf2a88f4c35eb9c27e21c73a", "observedAt": "2026-10-26T10:04:50+00:00", "staged": "00003__wfv__settings-custom-settings-own.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF settings-custom-settings-own_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47a", "pass": 2, "name": "settings-custom-settings-own", "sha256": "85d3fa3c44cdf381d7ef5b6b1f448670981d58dadf2a88f4c35eb9c27e21c73a", "observedAt": "2026-10-26T10:06:09+00:00", "staged": "00003__wfv__settings-custom-settings-own.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF settings-custom-settings-own_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47a", "pass": 1, "name": "settings-foreign-settings-own", "sha256": "64ef766f18a9dd88449a45d24b0ef45b029eb13ad2adfb915b8455627dbd1a81", "observedAt": "2026-10-26T10:04:50+00:00", "staged": "00004__wfv__settings-foreign-settings-own.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF settings-foreign-settings-own_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47a", "pass": 2, "name": "settings-foreign-settings-own", "sha256": "64ef766f18a9dd88449a45d24b0ef45b029eb13ad2adfb915b8455627dbd1a81", "observedAt": "2026-10-26T10:06:09+00:00", "staged": "00004__wfv__settings-foreign-settings-own.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF settings-foreign-settings-own_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47a", "pass": 1, "name": "s47a-control-minimal-end", "sha256": "d60bdb5d94b92954f291ac13ee9e87a694de17dd1bff09c80be4d9a1e67e3897", "observedAt": "2026-10-26T10:04:50+00:00", "staged": "00001__wfv__s47a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s47a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47a", "pass": 2, "name": "s47a-control-minimal-end", "sha256": "d60bdb5d94b92954f291ac13ee9e87a694de17dd1bff09c80be4d9a1e67e3897", "observedAt": "2026-10-26T10:06:09+00:00", "staged": "00001__wfv__s47a-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s47a-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47b", "pass": 1, "name": "s47b-control-minimal", "sha256": "d60bdb5d94b92954f291ac13ee9e87a694de17dd1bff09c80be4d9a1e67e3897", "observedAt": "2026-10-26T10:05:29+00:00", "staged": "00002__wfv__s47b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s47b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47b", "pass": 2, "name": "s47b-control-minimal", "sha256": "d60bdb5d94b92954f291ac13ee9e87a694de17dd1bff09c80be4d9a1e67e3897", "observedAt": "2026-10-26T10:06:25+00:00", "staged": "00002__wfv__s47b-control-minimal.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s47b-control-minimal_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47b", "pass": 1, "name": "websettings-custom-websettings-own", "sha256": "ecf8d61e14839ab0c9abf62c325552d69104dac8f4980f3369a036ac952aa721", "observedAt": "2026-10-26T10:05:29+00:00", "staged": "00004__wfv__websettings-custom-websettings-own.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF websettings-custom-websettings-own_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47b", "pass": 2, "name": "websettings-custom-websettings-own", "sha256": "ecf8d61e14839ab0c9abf62c325552d69104dac8f4980f3369a036ac952aa721", "observedAt": "2026-10-26T10:06:25+00:00", "staged": "00004__wfv__websettings-custom-websettings-own.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF websettings-custom-websettings-own_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47b", "pass": 1, "name": "fonttable-custom-fonttable-own", "sha256": "ae042e184aee9d7d90b5d8fd19269f6cacd2df0e8a74ead3bb237fb734a085f3", "observedAt": "2026-10-26T10:05:29+00:00", "staged": "00000__wfv__fonttable-custom-fonttable-own.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF fonttable-custom-fonttable-own_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47b", "pass": 2, "name": "fonttable-custom-fonttable-own", "sha256": "ae042e184aee9d7d90b5d8fd19269f6cacd2df0e8a74ead3bb237fb734a085f3", "observedAt": "2026-10-26T10:06:25+00:00", "staged": "00000__wfv__fonttable-custom-fonttable-own.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF fonttable-custom-fonttable-own_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47b", "pass": 1, "name": "settings-dup-calibration", "sha256": "586c942eed2326138b44cdceeb2b99b9a2f9d17a973fa9489fab81e332541e25", "observedAt": "2026-10-26T10:05:29+00:00", "staged": "00003__wfv__settings-dup-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:05:12.810 'Word found unreadable content in 00003__wfv__settings-dup-calibration.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 06:05:20.283 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__settings-dup-calibration....)\""]}
+{"run": "s47b", "pass": 2, "name": "settings-dup-calibration", "sha256": "586c942eed2326138b44cdceeb2b99b9a2f9d17a973fa9489fab81e332541e25", "observedAt": "2026-10-26T10:06:25+00:00", "staged": "00003__wfv__settings-dup-calibration.docx", "logVerdict": "repair-warning", "tableVerdict": "repair-warning", "pdf": false, "evidence": ["2026-10-26 06:06:24.352 'Word found unreadable content in 00003__wfv__settings-dup-calibration.docx. Do you want to recover  … ? If you trust the source of this document, click Yes.'", "2026-10-26 06:06:25.089 \"Word experienced an error trying to open the file. Try these suggestions. * Check the file permissi …  converter. (00003__wfv__settings-dup-calibration....)\""]}
+{"run": "s47b", "pass": 1, "name": "s47b-control-minimal-end", "sha256": "72c3f823e4b3aa1a2bc8fc6d1888b09c5d43fc3565e79ce35ee47f08baec36f5", "observedAt": "2026-10-26T10:05:29+00:00", "staged": "00001__wfv__s47b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s47b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+{"run": "s47b", "pass": 2, "name": "s47b-control-minimal-end", "sha256": "72c3f823e4b3aa1a2bc8fc6d1888b09c5d43fc3565e79ce35ee47f08baec36f5", "observedAt": "2026-10-26T10:06:25+00:00", "staged": "00001__wfv__s47b-control-minimal-end.docx", "logVerdict": "clean-open", "tableVerdict": "clean-open", "pdf": true, "evidence": ["PDF s47b-control-minimal-end_byword.pdf (13382 bytes), no dialog named the file"]}
+```
+
+</details>
+
+<details><summary>Session 47 builder, cross-check and section scripts</summary>
+
+Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.
+
+`s47builder.mts`:
+
+```ts
+// Session 47 (2026-10-26): does Word count a relationship whose Type only ENDS in a single-instance segment?
+// The duplicate-relationship rules (theme, fontTable, webSettings, settings; #694's styles and numbering) match
+// `type.endsWith("/<segment>")`, so `…/relationships/custom/styles` and `http://example.com/settings` count as a
+// second styles / settings relationship, while #519 reads a type as an Office segment only when it is the
+// Transitional or Strict namespace plus exactly one segment. Session 45 showed Word refuses two real styles,
+// numbering, settings, fontTable or webSettings relationships; it never saw a real one beside a suffix-only one.
+// Each specimen is the minimal package (one styles relationship rId1) plus one real relationship of the segment
+// (except styles, which already has rId1) and one suffix-only relationship, each to its own part typed with the
+// segment's content type ("own") or to the real relationship's part ("same").
+// Run from a worktree root as a copy: BUILD_DIR=<chunk>/src CHUNK=s47a pnpm exec tsx s47builder.tmp.mts
+import { createHash } from "node:crypto";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { MINIMAL_PARTS, buildDocx } from "./tests/support/minimal-docx";
+import { validate } from "./src/scripts/office/validate";
+
+const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+const CT = "[Content_Types].xml";
+const SIDECAR = "word/_rels/document.xml.rels";
+
+const replaceOnce = (text: string, from: string, to: string) => {
+    if (text.split(from).length !== 2) throw new Error(`expected exactly one ${from}`);
+    return text.replace(from, to);
+};
+const relationship = (id: string, type: string, target: string) => `<Relationship Id="${id}" Type="${type}" Target="${target}"/>`;
+const OFFICE = (segment: string) => `${R}/${segment}`;
+const withOverrides = (...overrides: Array<[string, string]>) =>
+    replaceOnce(
+        MINIMAL_PARTS[CT]!,
+        "</Types>",
+        `${overrides.map(([part, type]) => `<Override PartName="/${part}" ContentType="${type}"/>`).join("")}</Types>`,
+    );
+const control = () => buildDocx({ ...MINIMAL_PARTS });
+
+const SINGLETONS: Record<string, { root: string; ct: string }> = {
+    styles: { root: `<w:styles xmlns:w="${W}"/>`, ct: "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml" },
+    settings: { root: `<w:settings xmlns:w="${W}"/>`, ct: "application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml" },
+    fontTable: { root: `<w:fonts xmlns:w="${W}"/>`, ct: "application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml" },
+    numbering: {
+        root: `<w:numbering xmlns:w="${W}"/>`,
+        ct: "application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml",
+    },
+    webSettings: {
+        root: `<w:webSettings xmlns:w="${W}"/>`,
+        ct: "application/vnd.openxmlformats-officedocument.wordprocessingml.webSettings+xml",
+    },
+};
+const xmlOf = (segment: string) => `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n${SINGLETONS[segment]!.root}`;
+
+/**
+ * The minimal package plus one real `segment` relationship (styles reuses the minimal rId1 → styles.xml) and one
+ * relationship of `suffixType`: to its own part `word/<segment>2.xml` typed with the segment's content type when
+ * `own`, else to the real relationship's part.
+ */
+const suffixSpecimen = (segment: string, suffixType: string, own: boolean) => {
+    const real = `${segment}.xml`;
+    const second = own ? `${segment}2.xml` : real;
+    const parts: Record<string, string> = { ...MINIMAL_PARTS };
+    const relationships: string[] = [];
+    const overrides: Array<[string, string]> = [];
+    if (segment !== "styles") {
+        parts[`word/${real}`] = xmlOf(segment);
+        relationships.push(relationship("rId2", OFFICE(segment), real));
+        overrides.push([`word/${real}`, SINGLETONS[segment]!.ct]);
+    }
+    if (own) {
+        parts[`word/${second}`] = xmlOf(segment);
+        overrides.push([`word/${second}`, SINGLETONS[segment]!.ct]);
+    }
+    relationships.push(relationship("rId3", suffixType, second));
+    parts[SIDECAR] = replaceOnce(MINIMAL_PARTS[SIDECAR]!, "</Relationships>", `${relationships.join("")}</Relationships>`);
+    parts[CT] = withOverrides(...overrides);
+    return buildDocx(parts);
+};
+/** Two real `segment` relationships to two parts: session 45's refused shape, the run's calibration. */
+const realPair = (segment: string) => {
+    const parts: Record<string, string> = { ...MINIMAL_PARTS };
+    const names = [`${segment}.xml`, `${segment}2.xml`];
+    for (const name of names) parts[`word/${name}`] = xmlOf(segment);
+    parts[SIDECAR] = replaceOnce(
+        MINIMAL_PARTS[SIDECAR]!,
+        "</Relationships>",
+        `${names.map((name, index) => relationship(`rId${index + 2}`, OFFICE(segment), name)).join("")}</Relationships>`,
+    );
+    parts[CT] = withOverrides(...names.map((name): [string, string] => [`word/${name}`, SINGLETONS[segment]!.ct]));
+    return buildDocx(parts);
+};
+
+const chunks: Record<string, Array<[string, string, () => Promise<Uint8Array>]>> = {
+    s47a: [
+        ["s47a-control-minimal", "control", control],
+        [
+            "styles-custom-styles-own",
+            "suffix: rId1 styles→styles.xml, rId3 …/relationships/custom/styles→styles2.xml (styles type)",
+            () => suffixSpecimen("styles", OFFICE("custom/styles"), true),
+        ],
+        [
+            "styles-custom-styles-same",
+            "suffix: rId1 styles→styles.xml, rId3 …/relationships/custom/styles→styles.xml",
+            () => suffixSpecimen("styles", OFFICE("custom/styles"), false),
+        ],
+        [
+            "styles-foreign-styles-own",
+            "suffix: rId1 styles→styles.xml, rId3 http://example.com/styles→styles2.xml (styles type)",
+            () => suffixSpecimen("styles", "http://example.com/styles", true),
+        ],
+        [
+            "numbering-custom-numbering-own",
+            "suffix: rId2 numbering→numbering.xml, rId3 …/relationships/custom/numbering→numbering2.xml",
+            () => suffixSpecimen("numbering", OFFICE("custom/numbering"), true),
+        ],
+        [
+            "settings-custom-settings-own",
+            "suffix: rId2 settings→settings.xml, rId3 …/relationships/custom/settings→settings2.xml",
+            () => suffixSpecimen("settings", OFFICE("custom/settings"), true),
+        ],
+        [
+            "settings-foreign-settings-own",
+            "suffix: rId2 settings→settings.xml, rId3 http://example.com/settings→settings2.xml",
+            () => suffixSpecimen("settings", "http://example.com/settings", true),
+        ],
+        ["s47a-control-minimal-end", "control", control],
+    ],
+    s47b: [
+        ["s47b-control-minimal", "control", control],
+        [
+            "websettings-custom-websettings-own",
+            "suffix: rId2 webSettings→webSettings.xml, rId3 …/relationships/custom/webSettings→webSettings2.xml",
+            () => suffixSpecimen("webSettings", OFFICE("custom/webSettings"), true),
+        ],
+        [
+            "fonttable-custom-fonttable-own",
+            "suffix: rId2 fontTable→fontTable.xml, rId3 …/relationships/custom/fontTable→fontTable2.xml",
+            () => suffixSpecimen("fontTable", OFFICE("custom/fontTable"), true),
+        ],
+        [
+            "settings-dup-calibration",
+            "calibration (s45f's refused shape): two settings relationships to two parts",
+            () => realPair("settings"),
+        ],
+        ["s47b-control-minimal-end", "control", control],
+    ],
+};
+
+const chunk = process.env.CHUNK ?? "";
+const specimens = chunks[chunk];
+if (!specimens) throw new Error(`CHUNK must be one of ${Object.keys(chunks).join(", ")}`);
+const dir = process.env.BUILD_DIR;
+if (!dir) throw new Error("BUILD_DIR is required");
+mkdirSync(dir, { recursive: true });
+for (const [name, issue, make] of specimens) {
+    const bytes = await make();
+    const file = `${name}.docx`;
+    writeFileSync(path.join(dir, file), bytes);
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const verdict = async (profile: "word-valid" | "strict") => {
+        try {
+            const r = await validate(path.join(dir, file), { profile });
+            return {
+                valid: r.valid,
+                errors: [...new Set(r.issues.filter((x) => x.severity === "error").map((x) => `${x.code}@${x.path ?? "-"}`))],
+            };
+        } catch (error) {
+            return { valid: null, errors: [`threw:${(error as Error).name}:${(error as Error).message.slice(0, 80)}`] };
+        }
+    };
+    const row = {
+        name,
+        issue,
+        file,
+        sha256,
+        calibration: name.includes("calibration"),
+        wordValid: await verdict("word-valid"),
+        strict: await verdict("strict"),
+    };
+    appendFileSync(path.join(dir, "..", "specimens.jsonl"), JSON.stringify(row) + "\n");
+    console.log(
+        `built ${file} ${sha256.slice(0, 16)} word-valid=${row.wordValid.valid} ${row.wordValid.errors.join(",")} strict=${row.strict.valid} ${row.strict.errors.join(",")}`,
+    );
+}
+```
+
+`compare.py`:
+
+```python
+"""Join both passes of the session-47 chunks: log verdicts, table verdicts, validator verdicts, hashes."""
+import hashlib
+import json
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s47a", "s47b")
+TO_MANIFEST = {"clean-open": "clean-open", "repair-warning": "unreadable-content-warning", "open-error": "open-error"}
+REJECTIONS = {"repair-warning", "open-error"}
+rows = []
+for label in CHUNKS:
+    specs = {json.loads(l)["file"]: json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()}
+    passes = []
+    for run in (ROOT / label, ROOT / label / "pass2"):
+        for name, spec in specs.items():
+            digest = hashlib.sha256((run / "src" / name).read_bytes()).hexdigest()
+            assert digest == spec["sha256"], f"{run}/{name}: {digest} != {spec['sha256']}"
+        passes.append({json.loads(l)["file"]: json.loads(l) for l in (run / "logcheck.jsonl").read_text().splitlines()})
+    assert set(passes[0]) == set(passes[1]) == set(specs), label
+    for name, spec in specs.items():
+        p1, p2 = passes[0][name], passes[1][name]
+        readings = [p1["logVerdict"], p1["outcomesVerdict"], p2["logVerdict"], p2["outcomesVerdict"]]
+        agreed = len(set(readings)) == 1 and not p1["conflict"] and not p2["conflict"]
+        outcome = TO_MANIFEST.get(readings[0]) if agreed else "unknown"
+        all_rejected = all(r in REJECTIONS for r in readings)
+        all_clean = all(r == "clean-open" for r in readings)
+        rows.append({"chunk": label, "file": name, "sha256": spec["sha256"], "readings": readings, "agreed": agreed,
+                     "outcome": outcome, "everyReadingRejects": all_rejected, "everyReadingClean": all_clean,
+                     "wordValid": spec["wordValid"]["valid"], "control": "control-minimal" in spec["name"],
+                     "validatorMatchesWord": (all_rejected and spec["wordValid"]["valid"] is False) or (all_clean and spec["wordValid"]["valid"] is True)})
+(ROOT / "s47/results.json").write_text(json.dumps(rows, indent=2) + "\n")
+for r in rows:
+    print(f"{r['chunk']} {r['file']:<58} {r['sha256'][:16]} outcome={r['outcome']:<27} word-valid={r['wordValid']!s:<5} match={r['validatorMatchesWord']}")
+print("agreed:", sum(r["agreed"] for r in rows), "/", len(rows), "| validator matches Word:", sum(r["validatorMatchesWord"] for r in rows), "/", len(rows))
+```
+
+`section.py`:
+
+`````python
+"""Render the session-47 parts of docs/plans/evidence/word-probes-2026-10-24.md into s47/section.md.
+
+Reads each chunk's specimens.jsonl (validator columns at f2717ba3, written by the builder), both runs'
+logcheck.jsonl and pdf/manifest.jsonl, and s47/results.json from compare.py.
+"""
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path("/Users/arthrod/temp/T/docx-validate/.scratch/word-probes")
+CHUNKS = ("s47a", "s47b")
+results = {(r["chunk"], r["file"]): r for r in json.loads((ROOT / "s47/results.json").read_text())}
+
+
+def cell(v):
+    return "valid" if v["valid"] else "invalid: " + ", ".join(f"`{e.split('@')[0]}`" for e in v["errors"])
+
+
+def run_at(run, file):
+    for line in (run / "pdf/manifest.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        if row["original_filename"] == file:
+            return datetime.fromisoformat(row["run_at"]).astimezone(timezone.utc)
+    raise KeyError(file)
+
+
+def word_cell(check):
+    log, table = check["logVerdict"], check["outcomesVerdict"]
+    return log if log == table else f"log: {log}; table: {table}"
+
+
+rows, raw, starts, ends = [], [], [], []
+for label in CHUNKS:
+    specs = [json.loads(l) for l in (ROOT / label / "specimens.jsonl").read_text().splitlines()]
+    runs = [ROOT / label, ROOT / label / "pass2"]
+    checks = [{json.loads(l)["file"]: json.loads(l) for l in (r / "logcheck.jsonl").read_text().splitlines()} for r in runs]
+    for s in specs:
+        times = [run_at(r, s["file"]) for r in runs]
+        starts.append(times[0])
+        ends.append(times[1])
+        result = results[(label, s["file"])]
+        shape = s["issue"].replace("|", "\\|")
+        rows.append(
+            f"| `{label}` | {times[0]:%H:%M:%S}Z, {times[1]:%H:%M:%S}Z | `{s['name']}` | {shape} | `{s['sha256'][:16]}` | "
+            f"{word_cell(checks[0][s['file']])} | {word_cell(checks[1][s['file']])} | {result['outcome']} | {cell(s['wordValid'])} | {cell(s['strict'])} |"
+        )
+        for n, (r, c, t) in enumerate(zip(runs, checks, times), start=1):
+            row = c[s["file"]]
+            raw.append(json.dumps({"run": label, "pass": n, "name": s["name"], "sha256": s["sha256"],
+                                   "observedAt": t.isoformat(), "staged": row["staged"], "logVerdict": row["logVerdict"],
+                                   "tableVerdict": row["outcomesVerdict"], "pdf": row["pdf"], "evidence": row["evidence"]}, ensure_ascii=False))
+
+out = [
+    f"### Session 47: {min(starts):%H:%M}Z–{max(ends):%H:%M}Z on 2026-10-26, validator columns at f2717ba3",
+    "",
+    "Does Word count a relationship whose Type only ends in a single-instance segment "
+    "([#708](https://github.com/jandira-tech/docx-validate/issues/708), "
+    "[#694](https://github.com/jandira-tech/docx-validate/issues/694))? Each chunk ran twice, as two separate "
+    "driver runs of byte-identical copies, and each run's rows were read twice: from its own Word log (session 41's "
+    "`logcheck.py`) and by `wordpdf_outcomes.py`. Outcome is the manifest spelling when both runs and both readings agree, "
+    "and `unknown` otherwise; all 13 rows agree. The two times in Observed are the ends of the first and second runs. "
+    "Shape is the builder's description of the specimen.",
+    "",
+    "- Each specimen is the minimal package plus one real relationship of the segment (styles reuses the minimal `rId1`) "
+    "and one relationship whose Type only ends in the segment: `…/relationships/custom/<segment>` or "
+    "`http://example.com/<segment>`, to its own part typed with the segment's content type, or for styles also to the "
+    "real part. Word opens every one clean: it reads `custom/styles`, `custom/numbering`, `custom/settings`, "
+    "`custom/webSettings`, `custom/fontTable`, `http://example.com/styles` and `http://example.com/settings` as no "
+    "relationship of the segment, as session 27 found for `header`. Word-valid at f2717ba3 rejects the settings, "
+    "webSettings and fontTable rows through the suffix-matching duplicate rules (#708, false positives).",
+    "- Calibration: two real settings relationships to two parts (session 45's refused shape) get the recovery offer again.",
+    "",
+    "| Run | Observed | Specimen | Shape | SHA-256 (first 16) | Word, run 1 | Word, run 2 | Outcome | word-valid at f2717ba3 | strict at f2717ba3 |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    *rows,
+    "",
+    "<details><summary>Raw records, session 47</summary>",
+    "",
+    "```jsonl",
+    *raw,
+    "```",
+    "",
+    "</details>",
+    "",
+    "<details><summary>Session 47 builder, cross-check and section scripts</summary>",
+    "",
+    "Staging the second runs and reading the logs used session 41's `stage_pass2.py` and `logcheck.py`, above, unchanged.",
+    "",
+]
+for name, path, lang in (("s47builder.mts", ROOT / "s47builder.mts", "ts"), ("compare.py", ROOT / "s47/compare.py", "python"),
+                         ("section.py", ROOT / "s47/section.py", "python")):
+    out += [f"`{name}`:", "", f"````{lang}", path.read_text().rstrip("\n"), "````", ""]
+out += ["</details>", ""]
+(ROOT / "s47/section.md").write_text("\n".join(out))
+print(len(rows), "rows,", len(raw), "raw records")
+`````
+
+</details>

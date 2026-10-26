@@ -270,6 +270,12 @@ export const isWordBlockingIssue = (
         case "word-duplicate-font-table-relationship":
         case "word-duplicate-web-settings-relationship":
         case "word-duplicate-settings-relationship":
+        // Word 16.115 offers recovery for two styles relationships — to two
+        // parts in either order and to the same part — and for two numbering
+        // relationships; two footnotes relationships opened clean (#694;
+        // session 45 in docs/plans/evidence/word-probes-2026-10-24.md).
+        case "word-duplicate-styles-relationship":
+        case "word-duplicate-numbering-relationship":
         case "word-numbering-picture-bullet":
         case "word-footnote-reference-missing":
         // Both root-caused against real Word (minimal-repair + re-probe) and

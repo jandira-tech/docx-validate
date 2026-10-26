@@ -523,9 +523,19 @@ const WORD_RULES: readonly { code: string; specimen: string; control: string }[]
         control: "package.word-duplicate-font-table-removed.docx",
     },
     {
+        code: "word-duplicate-numbering-relationship",
+        specimen: "package.word-duplicate-numbering.docx",
+        control: "package.word-duplicate-numbering-removed.docx",
+    },
+    {
         code: "word-duplicate-settings-relationship",
         specimen: "package.word-duplicate-settings.docx",
         control: "package.word-duplicate-settings-removed.docx",
+    },
+    {
+        code: "word-duplicate-styles-relationship",
+        specimen: "package.word-duplicate-styles.docx",
+        control: "package.word-duplicate-styles-removed.docx",
     },
     {
         code: "word-duplicate-theme-relationship",
@@ -985,8 +995,11 @@ describe("validation contract: a Word-read part typed only by the generic Defaul
             ROOTS[part] === undefined
                 ? {}
                 : { [part]: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<${ROOTS[part]} xmlns:w="${W}"/>` };
+        // The base document rels already name styles.xml through their one
+        // styles relationship, so the styles row keeps them instead of adding
+        // a second (#694).
         const rels =
-            part === "word/document.xml"
+            part === "word/document.xml" || part === "word/styles.xml"
                 ? MINIMAL_PARTS["word/_rels/document.xml.rels"]
                 : MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
                       "</Relationships>",
