@@ -115,9 +115,11 @@ describe("word-attached-toolbar-utf8", () => {
             vi.spyOn(ctx, "partNames", "get").mockReturnValue(counted);
 
             expect(await wordAttachedToolbarUtf8Check.run(ctx)).toEqual([]);
-            // Building one index reads each entry a bounded number of times; a
-            // scan per reference would read them `references` times over.
-            expect(reads).toBeLessThan(5 * names.length);
+            // Building the indexes reads each entry a bounded number of
+            // times — the part-name index, plus the keyMapCustomizations
+            // reach that builds its own (#777) — where a scan per
+            // reference would read them `references` times over.
+            expect(reads).toBeLessThan(8 * names.length);
         },
     );
     it("skips an External relationship, which names no package part (#359)", async () => {

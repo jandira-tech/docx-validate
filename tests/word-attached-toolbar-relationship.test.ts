@@ -198,6 +198,74 @@ describe("session 54 (s54c) spellings (#743)", { timeout: 60000 }, () => {
     });
 });
 
+describe("session 57 (s57d) customizations renames (#777)", { timeout: 60000 }, () => {
+    const UTF8 = "word-attached-toolbar-utf8";
+    const TOOLBAR = [CODE, UTF8];
+
+    /** #777: the fixture with word/customizations.xml renamed to `name`, its relationship Target, sidecar and Override renamed with it. */
+    const customizationsRenamed = async (file: string, name: string): Promise<Uint8Array> => {
+        const zip = await JSZip.loadAsync(await fs.readFile(file));
+        for (const [from, to] of [
+            ["word/customizations.xml", `word/${name}`],
+            [RELS, `word/_rels/${name}.rels`],
+        ] as const) {
+            const entry = zip.file(from);
+            if (!entry) throw new Error(`no ${from}`);
+            zip.file(to, await entry.async("uint8array"));
+            zip.remove(from);
+        }
+        const sidecar = await zip.file("word/_rels/document.xml.rels")!.async("string");
+        zip.file("word/_rels/document.xml.rels", sidecar.replace('Target="customizations.xml"', `Target="${name}"`));
+        const types = await zip.file("[Content_Types].xml")!.async("string");
+        zip.file("[Content_Types].xml", types.replace('PartName="/word/customizations.xml"', `PartName="/word/${name}"`));
+        return zip.generateAsync({ type: "uint8array", compression: "DEFLATE" });
+    };
+    const run = async (dir: string, name: string, bytes: Uint8Array) => {
+        const file = path.join(dir, `${name}.docx`);
+        await fs.writeFile(file, bytes);
+        return {
+            full: await validate(file, { profile: "word-valid" }),
+            selected: await validate(file, { profile: "word-valid", checks: TOOLBAR }),
+        };
+    };
+
+    it.each(["customizations", "customizations.bin"])(
+        "reports the refused bytes through the renamed %s part (s57d: recovery offer)",
+        async (name) => {
+            await withTempDir(async (dir) => {
+                const { full, selected } = await run(
+                    dir,
+                    `toolbar-refused-${name.replace(".", "-")}-rename`,
+                    await customizationsRenamed(BROKEN, name),
+                );
+                for (const result of [full, selected]) {
+                    expect.soft(result.valid).toBe(false);
+                    expect
+                        .soft(result.issues)
+                        .toContainEqual(expect.objectContaining({ severity: "error", code: UTF8, path: "word/attachedToolbars.bin" }));
+                }
+            });
+        },
+    );
+
+    it.each(["customizations", "customizations.bin"])(
+        "keeps the repaired toolbar clean through the renamed %s part (s57d: clean open)",
+        async (name) => {
+            await withTempDir(async (dir) => {
+                const { full, selected } = await run(
+                    dir,
+                    `toolbar-repaired-${name.replace(".", "-")}-rename`,
+                    await customizationsRenamed(CLEAN, name),
+                );
+                for (const result of [full, selected]) {
+                    expect.soft(result.valid).toBe(true);
+                    expect.soft(result.issues.some((issue) => TOOLBAR.includes(issue.code ?? ""))).toBe(false);
+                }
+            });
+        },
+    );
+});
+
 describe("word-attached-toolbar-relationship (#716; session 48)", { timeout: 60000 }, () => {
     const run = async (dir: string, name: string, bytes: Uint8Array) => {
         const file = path.join(dir, `${name}.docx`);
