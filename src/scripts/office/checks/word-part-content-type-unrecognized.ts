@@ -21,10 +21,13 @@
  * as styles opened clean (session 46), and `word/styles.xml` typed by its
  * Override with the same five spellings (session 49) — and the `settings`,
  * `fontTable` and `numbering` parts the main document's own relationships
- * part relates, typed `application/octet-stream` by their Override
- * (session 50). Every other reach — through a glossary, a header or footer,
- * or another segment — is inference from the same resolution, so its
- * finding cites the spec instead of the recovery claim.
+ * part relates, typed `application/octet-stream` by their Override (session
+ * 50) and typed the four other s49a/s50c spellings — `APPLICATION/OCTET-
+ * STREAM`, `application/octet-stream; charset=utf-8`, `image/png` or
+ * `application/foo+xml` — (session 53, s53b–s53d). Every other reach —
+ * through a glossary, a header or footer, or another segment — is inference
+ * from the same resolution, so its finding cites the spec instead of the
+ * recovery claim.
  *
  * The media type — parameters stripped, trimmed, ASCII-lowercased — decides:
  * a generic XML type is `word-part-content-type-generic`'s finding and
@@ -99,14 +102,15 @@ const isObserved = (target: WordTypedTarget): boolean => target.via !== "glossar
  * `application/octet-stream` by a Default (46, s46e) and by an Override with
  * every s49a spelling (49), the main document by Override (49 s49b, 50
  * s50c), and settings, fontTable and numbering typed `application/octet-stream`
- * by their Override (50, s50d).
+ * by their Override (50, s50d) and typed the four other s49a/s50c spellings
+ * (53, s53b–s53d).
  */
 const RECOVERY_SESSIONS: ReadonlyMap<string, string> = new Map([
     ["officeDocument", "sessions 49 and 50"],
     ["styles", "sessions 46 and 49"],
-    ["settings", "session 50"],
-    ["fontTable", "session 50"],
-    ["numbering", "session 50"],
+    ["settings", "sessions 50 and 53"],
+    ["fontTable", "sessions 50 and 53"],
+    ["numbering", "sessions 50 and 53"],
 ]);
 
 /**

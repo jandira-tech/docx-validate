@@ -153,13 +153,13 @@ describe("unrecognized part content type (#707, session 46)", () => {
         }
     });
 
-    it("blocks the related settings reach too: an error with the recovery claim (#721, session 50)", async () => {
+    it("blocks the related settings reach too: an error with the recovery claim (#721, sessions 50 and 53)", async () => {
         const parts = settingsBin();
         const found = await diagnose(parts);
         expect(found).toHaveLength(1);
         expect(found[0]).toMatchObject({ code: ID, severity: "error", path: "word/settings.bin" });
         expect(found[0]?.message).toContain("the main document's settings relationship");
-        expect(found[0]?.message).toContain("Word 16.115 offers to recover the package (session 50)");
+        expect(found[0]?.message).toContain("Word 16.115 offers to recover the package (sessions 50 and 53)");
         expect(isWordBlockingIssue(found[0]!, new Set(), new Set(), new Set(), await observedParts(parts))).toBe(true);
     });
 });
@@ -377,19 +377,19 @@ describe("unrecognized observed reach (#721, sessions 46, 49 and 50)", () => {
             "a related settings part typed application/octet-stream (s50d)",
             relatedTyped("settings", OCTET_STREAM),
             "word/settings.xml",
-            "session 50",
+            "sessions 50 and 53",
         ],
         [
             "a related fontTable part typed application/octet-stream (s50d)",
             relatedTyped("fontTable", OCTET_STREAM),
             "word/fontTable.xml",
-            "session 50",
+            "sessions 50 and 53",
         ],
         [
             "a related numbering part typed application/octet-stream (s50d)",
             relatedTyped("numbering", OCTET_STREAM),
             "word/numbering.xml",
-            "session 50",
+            "sessions 50 and 53",
         ],
     ] as const)(
         "rejects %s under word-valid",

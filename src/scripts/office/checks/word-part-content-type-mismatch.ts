@@ -48,20 +48,24 @@ import {
 } from "./word-part-content-type-inexact";
 
 export const WORD_PART_CONTENT_TYPE_MISMATCH = "word-part-content-type-mismatch";
-// Evidence: word-probes-2026-10-24.md, sessions 24, 26, 49 and 50. The
+// Evidence: word-probes-2026-10-24.md, sessions 24, 26, 49, 50 and 53. The
 // header/footer keys are the swaps Word was shown, judged read; sessions 49
 // and 50 add the eagerly parsed reaches — the main document and the main
 // document's own styles, settings and numbering relationships — typed with
-// another mapped Word type.
-const OBSERVED_SESSIONS: ReadonlyMap<string, number> = new Map([
-    ["main\nfooter", 24],
-    ["main\nheader", 24],
-    ["glossary\nfooter", 24],
-    ["glossary\nheader", 26],
-    ["main\nofficeDocument", 50],
-    ["main\nstyles", 49],
-    ["main\nsettings", 50],
-    ["main\nnumbering", 50],
+// another mapped Word type (one shape each: the settings type on the styles
+// part, the styles type on the main document and a related settings part,
+// the settings type on a related numbering part), and session 53
+// (s53d–s53h) showed every other mapped type on them, so each entry names
+// the sessions that showed its reach's shape.
+const OBSERVED_SESSIONS: ReadonlyMap<string, string> = new Map([
+    ["main\nfooter", "session 24"],
+    ["main\nheader", "session 24"],
+    ["glossary\nfooter", "session 24"],
+    ["glossary\nheader", "session 26"],
+    ["main\nofficeDocument", "sessions 50 and 53"],
+    ["main\nstyles", "sessions 49 and 53"],
+    ["main\nsettings", "sessions 50 and 53"],
+    ["main\nnumbering", "sessions 50 and 53"],
 ]);
 /**
  * Session 53's co-reach (s53a): a footer relationship the body references
@@ -73,7 +77,7 @@ const OBSERVED_SESSIONS: ReadonlyMap<string, number> = new Map([
 const FOOTER_COREACH_TYPES: ReadonlySet<string> = new Set(
     [MAIN_DOCUMENT_CONTENT_TYPES, expectedContentTypesFor("numbering"), expectedContentTypesFor("styles")].flat().map(asciiLowercase),
 );
-const FOOTER_COREACH_SESSION = 53;
+const FOOTER_COREACH_SESSION = "session 53";
 export const MAPPED_MEDIA_TYPES: ReadonlySet<string> = new Set([...SPEC_SEGMENTS].flatMap(expectedContentTypesFor).map(asciiLowercase));
 
 export const wordPartContentTypeMismatchFindings = async (
@@ -191,7 +195,7 @@ export const wordPartContentTypeMismatchFindings = async (
                 : isFooterCoreach(observed)
                   ? FOOTER_COREACH_SESSION
                   : OBSERVED_SESSIONS.get(`${observed.via ?? "main"}\n${observed.segment}`);
-        const recovery = session === undefined ? "" : ` Word 16.115 offers to recover the package (session ${session}).`;
+        const recovery = session === undefined ? "" : ` Word 16.115 offers to recover the package (${session}).`;
         findings.push({
             segment,
             segments: [...new Set(entries.map((entry) => entry.segment))],

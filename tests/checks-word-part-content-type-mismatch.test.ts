@@ -278,16 +278,16 @@ it("strict judges every mapped related type on the main document and glossary", 
                 // document's styles, settings and numbering reaches observed
                 // (#722), so their strict findings keep the Word sentence the
                 // swaps already carry (#610); every other shape stays spec-only.
-                const session =
+                const citation =
                     via === "main" && ["officeDocument", "styles", "settings", "numbering"].includes(segment)
                         ? segment === "styles"
-                            ? 49
-                            : 50
+                            ? "sessions 49 and 53"
+                            : "sessions 50 and 53"
                         : undefined;
-                if (session === undefined) {
+                if (citation === undefined) {
                     expect(found[0]?.message).not.toContain("Word 16.115");
                 } else {
-                    expect(found[0]?.message).toContain(`Word 16.115 offers to recover the package (session ${session}).`);
+                    expect(found[0]?.message).toContain(`Word 16.115 offers to recover the package (${citation}).`);
                 }
             }
         }
@@ -380,7 +380,8 @@ it.each([
 // Sessions 49 and 50 (2026-10-26): Word 16.115 offered recovery for the main
 // styles part typed with the settings type (s49b), and for a related settings
 // part typed with the styles type, a related numbering part typed with the
-// settings type and the main document typed with the styles type (s50d).
+// settings type and the main document typed with the styles type (s50d);
+// session 53 (s53d–s53h) showed every other mapped type on those reaches.
 describe("observed eager mismatches (#722, sessions 49 and 50)", () => {
     const retypedParts = (part: string, own: string, type: string): Record<string, string> => ({
         ...MINIMAL_PARTS,
@@ -395,37 +396,37 @@ describe("observed eager mismatches (#722, sessions 49 and 50)", () => {
             parts: retypedParts("word/styles.xml", storyContentType("styles"), storyContentType("settings")),
             path: "word/styles.xml",
             by: "the main document's styles relationship",
-            session: 49,
+            citation: "sessions 49 and 53",
         },
         {
             label: "a related settings part typed with the styles type",
             parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[0], storyContentType("styles")),
             path: "word/settings.xml",
             by: "the main document's settings relationship",
-            session: 50,
+            citation: "sessions 50 and 53",
         },
         {
             label: "a related numbering part typed with the settings type",
             parts: relatedContentTypeParts(RELATED_PART_SPECIMENS[2], storyContentType("settings")),
             path: "word/numbering.xml",
             by: "the main document's numbering relationship",
-            session: 50,
+            citation: "sessions 50 and 53",
         },
         {
             label: "the main document typed with the styles type",
             parts: retypedParts("word/document.xml", storyContentType("document.main"), storyContentType("styles")),
             path: "word/document.xml",
             by: "the package officeDocument relationship",
-            session: 50,
+            citation: "sessions 50 and 53",
         },
     ] as const;
 
-    it.each(CASES)("rejects $label under word-valid with its session", async ({ parts, path, by, session }) => {
+    it.each(CASES)("rejects $label under word-valid with its sessions", async ({ parts, path, by, citation }) => {
         const found = await diagnose(parts);
         expect(found).toHaveLength(1);
         expect(found[0]).toMatchObject({ code: ID, severity: "error", path });
         expect(found[0]?.message).toContain(by);
-        expect(found[0]?.message).toContain(`Word 16.115 offers to recover the package (session ${session}).`);
+        expect(found[0]?.message).toContain(`Word 16.115 offers to recover the package (${citation}).`);
         expect(isWordBlockingIssue(found[0]!)).toBe(true);
         expect(await diagnose({ ...MINIMAL_PARTS })).toEqual([]);
     });
@@ -504,14 +505,14 @@ describe("observed co-reach (#739, session 53)", () => {
             parts: withReadFooter({ ...MINIMAL_PARTS }, "document.xml"),
             path: "word/document.xml",
             by: "the main document's footer relationship",
-            session: 53,
+            citation: "session 53",
         },
         {
             label: "a read footer targeting the main document typed with the styles type",
             parts: withReadFooter(retypedParts("word/document.xml", MAIN_TYPE, storyContentType("styles")), "document.xml"),
             path: "word/document.xml",
             by: "the package officeDocument relationship",
-            session: 50,
+            citation: "sessions 50 and 53",
         },
         {
             label: "a read footer targeting the related numbering part, typed numbering (calibration)",
@@ -521,51 +522,51 @@ describe("observed co-reach (#739, session 53)", () => {
             ),
             path: "word/numbering.xml",
             by: "the main document's footer relationship",
-            session: 53,
+            citation: "session 53",
         },
         {
             label: "a read footer targeting the related numbering part typed with the settings type",
             parts: withReadFooter(relatedContentTypeParts(RELATED_PART_SPECIMENS[2], storyContentType("settings")), "numbering.xml"),
             path: "word/numbering.xml",
             by: "the main document's numbering relationship",
-            session: 50,
+            citation: "sessions 50 and 53",
         },
         {
             label: "a read footer targeting the styles part, typed styles (calibration)",
             parts: withReadFooter({ ...MINIMAL_PARTS }, "styles.xml"),
             path: "word/styles.xml",
             by: "the main document's footer relationship",
-            session: 53,
+            citation: "session 53",
         },
         {
             label: "a read footer targeting the styles part typed with the settings type",
             parts: withReadFooter(retypedParts("word/styles.xml", storyContentType("styles"), storyContentType("settings")), "styles.xml"),
             path: "word/styles.xml",
             by: "the main document's styles relationship",
-            session: 49,
+            citation: "sessions 49 and 53",
         },
         {
             label: "the styles part also the settings target, typed styles (calibration)",
             parts: stylesSettingsParts(storyContentType("styles")),
             path: "word/styles.xml",
             by: "the main document's settings relationship",
-            session: 50,
+            citation: "sessions 50 and 53",
         },
         {
             label: "the styles part also the settings target, typed settings",
             parts: stylesSettingsParts(storyContentType("settings")),
             path: "word/styles.xml",
             by: "the main document's styles relationship",
-            session: 49,
+            citation: "sessions 49 and 53",
         },
     ] as const;
 
-    it.each(CASES)("rejects $label under word-valid with its session", async ({ parts, path, by, session }) => {
+    it.each(CASES)("rejects $label under word-valid with its session", async ({ parts, path, by, citation }) => {
         const found = await diagnose(parts);
         expect(found).toHaveLength(1);
         expect(found[0]).toMatchObject({ code: ID, severity: "error", path });
         expect(found[0]?.message).toContain(by);
-        expect(found[0]?.message).toContain(`Word 16.115 offers to recover the package (session ${session}).`);
+        expect(found[0]?.message).toContain(`Word 16.115 offers to recover the package (${citation}).`);
         expect(isWordBlockingIssue(found[0]!)).toBe(true);
     });
 
