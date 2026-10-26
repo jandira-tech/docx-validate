@@ -26,15 +26,8 @@ const W15_NAMESPACE = "http://schemas.microsoft.com/office/word/2012/wordml";
 const W16CEX_NAMESPACE = "http://schemas.microsoft.com/office/word/2018/wordml/cex";
 const W16CID_NAMESPACE = "http://schemas.microsoft.com/office/word/2016/wordml/cid";
 
-/** Keep the legacy parse diagnostic rather than replacing it with an XML prerequisite's message. */
-const commentXml = (ctx: ValidationContext, part: string): Document => {
-    const parsed = ctx.xml(part)!;
-    if (!parsed.ok) throw new Error(parsed.message);
-    return parsed.document;
-};
-
 /**
- * The comment-marker check's view of a part (#799): Word rules read
+ * The comment checks' view of a part (#799, #808): Word rules read
  * `ValidationContext.effectiveXml()` after markup compatibility's branch
  * selection, so a marker or definition only an unselected `mc:Choice` holds
  * is judged neither — a reference there names no missing comment, and a
@@ -251,6 +244,14 @@ export const commentMarkersCheck: CheckDefinition = {
     },
 };
 
+/**
+ * Every threading input — the main document, the comments part and the
+ * commentsIds, commentsExtensible and commentsExtended parts — is read
+ * after branch selection, as the marker check reads its parts (#799,
+ * #808), so a marker, comment or thread entry only an unselected
+ * `mc:Choice` holds is counted and matched nowhere. No Word session has
+ * shown these shapes.
+ */
 export const commentThreadingCheck: CheckDefinition = {
     id: "comment-threading",
     description: "Comment threading paragraph and durable ids agree across comment parts.",
@@ -286,7 +287,7 @@ export const commentThreadingCheck: CheckDefinition = {
 
         let commentsDom: Document;
         try {
-            commentsDom = commentXml(ctx, commentsXml);
+            commentsDom = effectiveCommentXml(ctx, commentsXml);
         } catch (err) {
             issues.push({
                 severity: "error",
@@ -339,7 +340,7 @@ export const commentThreadingCheck: CheckDefinition = {
         // ----- rule 4: marker counts ---------------------------------------
         if (documentXml) {
             try {
-                const docDom = commentXml(ctx, documentXml);
+                const docDom = effectiveCommentXml(ctx, documentXml);
                 const counts = (local: string): number => {
                     let total = 0;
                     for (const ns of WORD_PARAGRAPH_NAMESPACES) {
@@ -384,7 +385,7 @@ export const commentThreadingCheck: CheckDefinition = {
         if (commentsIdsXml) {
             let idsDom: Document;
             try {
-                idsDom = commentXml(ctx, commentsIdsXml);
+                idsDom = effectiveCommentXml(ctx, commentsIdsXml);
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -462,7 +463,7 @@ export const commentThreadingCheck: CheckDefinition = {
         if (commentsExtensibleXml) {
             let cexDom: Document;
             try {
-                cexDom = commentXml(ctx, commentsExtensibleXml);
+                cexDom = effectiveCommentXml(ctx, commentsExtensibleXml);
             } catch (err) {
                 issues.push({
                     severity: "error",
@@ -517,7 +518,7 @@ export const commentThreadingCheck: CheckDefinition = {
 
         let extDom: Document;
         try {
-            extDom = commentXml(ctx, commentsExtendedXml);
+            extDom = effectiveCommentXml(ctx, commentsExtendedXml);
         } catch (err) {
             issues.push({
                 severity: "error",
