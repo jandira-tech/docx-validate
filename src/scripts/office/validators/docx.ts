@@ -441,7 +441,8 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * part that is not one of the XML parts: nothing is judged, and no
      * other part stands in for it (#693). Only when no relationship names
      * a stored part, or the package view cannot be read, the last file
-     * named `fallbackName`, as before; `null` when there is none.
+     * named `fallbackName` in the main document's folder (#699), never one
+     * from another story's folder; `null` when there is none.
      */
     private async mainRelatedPath(segment: string, fallbackName: string): Promise<string | null | undefined> {
         try {
@@ -450,11 +451,28 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         } catch {
             // An unreadable package view is reported by its own checks.
         }
+        const folder = await this.mainDocumentFolder();
         let byName: string | null = null;
         for (const xmlFile of this.xmlFiles) {
-            if (baseName(xmlFile) === fallbackName) byName = xmlFile;
+            if (baseName(xmlFile) === fallbackName && path.posix.dirname(this.entryName(xmlFile)) === folder) byName = xmlFile;
         }
         return byName;
+    }
+
+    /**
+     * The folder the by-name fallback reads (#699): the folder of the
+     * first main document `wordTypedRelationshipTargets` names, or `word`
+     * when the package relationships name none or cannot be read, as
+     * `mainCommentsPart` does for the comment checks (#696).
+     */
+    private async mainDocumentFolder(): Promise<string> {
+        try {
+            const [first] = await wordTypedRelationshipTargets(this.context(), new Set(["officeDocument"]), this.profile);
+            if (first !== undefined) return path.posix.dirname(first.part);
+        } catch {
+            // An unreadable package view is reported by its own checks.
+        }
+        return "word";
     }
 
     /** The first of `parts` (stored names) that is one of the XML parts, or `undefined`. */

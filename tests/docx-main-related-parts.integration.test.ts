@@ -3,9 +3,9 @@
  * Licensed under the Apache License, Version 2.0.
  *
  * The font-table check and the comment-thread repair read the parts the
- * main document relates, not whichever twin sorts last by name, so a
- * reached glossary's own parts are never judged or rewritten for the main
- * document (#690).
+ * main document relates, otherwise falling back by name only inside the
+ * main document's folder, so a reached glossary's own parts are never
+ * judged or rewritten for the main document (#690, #699).
  */
 import { promises as fs } from "node:fs";
 import path from "node:path";
@@ -260,6 +260,73 @@ const UNRELATED_COMMENTS: Record<string, string> = {
     "word/commentsIds.xml": commentsIdsXml("0000BBBB", "0000BBBB"),
 };
 
+/** A reached glossary under `word/zglossary/` with an empty `fontTable.xml`; the main document relates no font table. */
+const GLOSSARY_FONT_TABLE_BY_NAME: Record<string, string> = {
+    ...MINIMAL_PARTS,
+    "[Content_Types].xml": withOverrides(
+        override("word/zglossary/document.xml", GLOSSARY_DOCUMENT_TYPE),
+        override("word/zglossary/fontTable.xml", FONT_TABLE_TYPE),
+    ),
+    "word/_rels/document.xml.rels": relationships(
+        relationship("rId1", "styles", "styles.xml"),
+        relationship("rId9", "glossaryDocument", "zglossary/document.xml"),
+    ),
+    "word/zglossary/document.xml": GLOSSARY_DOCUMENT,
+    "word/zglossary/_rels/document.xml.rels": relationships(relationship("rId1", "fontTable", "fontTable.xml")),
+    "word/zglossary/fontTable.xml": EMPTY_FONT_TABLE,
+};
+
+/** A reached glossary under `word/zglossary/` holding its own `comments.xml`/`commentsIds.xml` pair; the main document relates no comments. */
+const GLOSSARY_COMMENTS_PAIR_ONLY: Record<string, string> = {
+    ...MINIMAL_PARTS,
+    "[Content_Types].xml": withOverrides(
+        override("word/zglossary/document.xml", GLOSSARY_DOCUMENT_TYPE),
+        override("word/zglossary/comments.xml", COMMENTS_TYPE),
+        override("word/zglossary/commentsIds.xml", COMMENTS_IDS_TYPE),
+    ),
+    "word/_rels/document.xml.rels": relationships(
+        relationship("rId1", "styles", "styles.xml"),
+        relationship("rId9", "glossaryDocument", "zglossary/document.xml"),
+    ),
+    "word/zglossary/document.xml": GLOSSARY_DOCUMENT,
+    "word/zglossary/_rels/document.xml.rels": relationships(
+        relationship("rId1", "comments", "comments.xml"),
+        typedRelationship("rId2", MS_COMMENTS_IDS_TYPE, "commentsIds.xml"),
+    ),
+    "word/zglossary/comments.xml": commentsXml("0000BBBB"),
+    "word/zglossary/commentsIds.xml": commentsIdsXml("0000CCCC", "0000CCCC"),
+};
+
+/**
+ * Review finding 1: the main document relates `word/commentsIds.xml` by the
+ * Microsoft `commentsIds` Type, while a reached glossary at `word/zglossary/`
+ * holds the package's only `comments.xml`. Its paragraph is stamped, so only
+ * the comment-thread repair can fire in `repair()`.
+ */
+const STAMPED_GLOSSARY_DOCUMENT = GLOSSARY_DOCUMENT.replace("<w:p>", `<w:p w14:paraId="00000002" w14:textId="00000002">`);
+const MAIN_COMMENTS_IDS_WITH_GLOSSARY_COMMENTS: Record<string, string> = {
+    ...MINIMAL_PARTS,
+    "[Content_Types].xml": withOverrides(
+        override("word/commentsIds.xml", COMMENTS_IDS_TYPE),
+        override("word/zglossary/document.xml", GLOSSARY_DOCUMENT_TYPE),
+        override("word/zglossary/comments.xml", COMMENTS_TYPE),
+        override("word/zglossary/commentsIds.xml", COMMENTS_IDS_TYPE),
+    ),
+    "word/_rels/document.xml.rels": relationships(
+        relationship("rId1", "styles", "styles.xml"),
+        typedRelationship("rId3", MS_COMMENTS_IDS_TYPE, "commentsIds.xml"),
+        relationship("rId9", "glossaryDocument", "zglossary/document.xml"),
+    ),
+    "word/commentsIds.xml": commentsIdsXml("0000DDDD", "0000DDDD"),
+    "word/zglossary/document.xml": STAMPED_GLOSSARY_DOCUMENT,
+    "word/zglossary/_rels/document.xml.rels": relationships(
+        relationship("rId1", "comments", "comments.xml"),
+        typedRelationship("rId2", MS_COMMENTS_IDS_TYPE, "commentsIds.xml"),
+    ),
+    "word/zglossary/comments.xml": commentsXml("0000BBBB"),
+    "word/zglossary/commentsIds.xml": commentsIdsXml("0000BBBB", "0000BBBB"),
+};
+
 const validated = async (
     parts: Record<string, string>,
     profile: "strict" | "lenient" | "word-valid",
@@ -382,6 +449,48 @@ describe("a relationship naming a stored non-XML part judges and repairs nothing
             expect(repairs).toBe(0);
             expect(await fs.readFile(decoy, "utf-8")).toBe(before);
             expect(await fs.readFile(path.join(dir, "word", "ids.bin"), "utf-8")).toBe(NON_XML_COMMENTS_IDS["word/ids.bin"]);
+        });
+    });
+});
+
+describe("the by-name fallback judges only the main document's folder (#699)", () => {
+    it.each(PROFILES)("a glossary's fontTable.xml draws no finding when the main document relates no font table (%s)", async (profile) => {
+        const issues = await validated(GLOSSARY_FONT_TABLE_BY_NAME, profile);
+        expect(codesAt(issues, "font-table-empty")).toEqual([]);
+        expect(issues.filter((issue) => issue.path === "word/zglossary/fontTable.xml")).toEqual([]);
+    });
+
+    it("a glossary's commentsIds.xml is not rewritten when the main document relates no comments", async () => {
+        await withTempDir(async (dir) => {
+            await writeParts(dir, GLOSSARY_COMMENTS_PAIR_ONLY);
+            const glossaryIds = path.join(dir, "word", "zglossary", "commentsIds.xml");
+            const before = await fs.readFile(glossaryIds, "utf-8");
+            const repairs = await new DOCXSchemaValidator({ unpackedDir: dir }).repairCommentThreading();
+            expect(repairs).toBe(0);
+            expect(await fs.readFile(glossaryIds, "utf-8")).toBe(before);
+        });
+    });
+
+    it("a glossary's comments never pair with the main document's commentsIds (review finding 1)", async () => {
+        await withTempDir(async (dir) => {
+            await writeParts(dir, MAIN_COMMENTS_IDS_WITH_GLOSSARY_COMMENTS);
+            const mainIds = path.join(dir, "word", "commentsIds.xml");
+            const glossaryIds = path.join(dir, "word", "zglossary", "commentsIds.xml");
+            const glossaryComments = path.join(dir, "word", "zglossary", "comments.xml");
+            const before = await Promise.all([
+                fs.readFile(mainIds, "utf-8"),
+                fs.readFile(glossaryIds, "utf-8"),
+                fs.readFile(glossaryComments, "utf-8"),
+            ]);
+            const repairs = await new DOCXSchemaValidator({ unpackedDir: dir }).repair();
+            expect(repairs).toBe(0);
+            expect(
+                await Promise.all([
+                    fs.readFile(mainIds, "utf-8"),
+                    fs.readFile(glossaryIds, "utf-8"),
+                    fs.readFile(glossaryComments, "utf-8"),
+                ]),
+            ).toEqual(before);
         });
     });
 });
