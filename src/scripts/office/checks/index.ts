@@ -67,6 +67,7 @@ import { wordPartContentTypeMismatchCheck } from "./word-part-content-type-misma
 import { wordPartContentTypeInexactCheck } from "./word-part-content-type-inexact";
 import { wordHeaderFooterRelationshipCheck } from "./word-header-footer";
 import { wordPartContentTypeUnrecognizedCheck } from "./word-part-content-type-unrecognized";
+import { wordPartReferenceRelationshipCheck } from "./word-part-reference";
 
 /**
  * Word rules that `DOCXSchemaValidator` runs through the registry under the
@@ -116,6 +117,7 @@ export const WORD_RULE_CHECKS: readonly CheckDefinition[] = [
     wordDuplicateNumberingRelationshipCheck,
     wordHyperlinkRelationshipCheck,
     wordHeaderFooterRelationshipCheck,
+    wordPartReferenceRelationshipCheck,
     wordTextContainsParagraphCheck,
     wordTextboxDeletedTextCheck,
     wordMoveFromDeletedTextCheck,

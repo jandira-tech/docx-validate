@@ -133,6 +133,10 @@ describe("isWordBlockingIssue", () => {
         "word-hyperlink-relationship",
         // Word 16.115 offers recovery for every story-reference type mismatch probed (#606, session 26).
         "word-header-footer-relationship",
+        // Word 16.115 offers recovery for a c:chart, dgm:relIds r:dm or o:OLEObject
+        // whose r:id names a relationship of another type, or none (#705,
+        // sessions 45 and 46).
+        "word-part-reference-relationship",
         "word-duplicate-theme-relationship",
         "word-duplicate-font-table-relationship",
         "word-duplicate-web-settings-relationship",
