@@ -69,6 +69,12 @@ const withBrokenGlossaryTarget = (target: string): Record<string, string> => ({
     ),
 });
 
+/** The minimal package plus the given `<Relationship>` element in the main document's sidecar. */
+const withRelationship = (relationship: string): Record<string, string> => ({
+    ...MINIMAL_PARTS,
+    [SIDECAR]: MINIMAL_PARTS[SIDECAR]!.replace("</Relationships>", `${relationship}</Relationships>`),
+});
+
 const run = async (parts: Record<string, string>, profile: Profile) =>
     withTempDir(async (dir) => {
         const file = path.join(dir, "specimen.docx");
@@ -144,5 +150,42 @@ describe("the rels-broken word-valid verdict matches Word's session 54 rows (#73
     it("tolerates a reached glossary's customXml relationship to an absent ../customXml/item1.xml", async () => {
         const { broken } = await run(withBrokenGlossaryTarget("../customXml/item1.xml"), "word-valid");
         expect(broken.map((issue) => [issue.path, issue.severity])).toEqual([["word/glossary/_rels/document.xml.rels", "warning"]]);
+    });
+});
+
+describe("the rels-empty-element word-valid verdict reads the registered shape (#735)", () => {
+    const shapes = async (parts: Record<string, string>) =>
+        withTempDir(async (dir) => {
+            const file = path.join(dir, "specimen.docx");
+            await fs.writeFile(file, await buildDocx(parts));
+            const result = await validate(file, { profile: "word-valid" });
+            return {
+                valid: result.valid,
+                empty: result.issues.filter((issue) => issue.code === "rels-empty-element").map((issue) => issue.severity),
+            };
+        });
+
+    it("keeps body content a word-valid warning even when the Id spells the blocking text", async () => {
+        const { valid, empty } = await shapes(
+            withRelationship(
+                `<Relationship Id="missing required attribute" Type="${IMAGE}" Target="media/missing.png">body</Relationship>`,
+            ),
+        );
+        expect(empty).toEqual(["warning"]);
+        expect(valid).toBe(true);
+    });
+
+    it("keeps a genuinely missing attribute word-blocking", async () => {
+        const { valid, empty } = await shapes(withRelationship(`<Relationship Type="${IMAGE}" Target="media/missing.png"/>`));
+        expect(empty).toEqual(["error"]);
+        expect(valid).toBe(false);
+    });
+
+    it("keeps body content with an ordinary Id a word-valid warning", async () => {
+        const { valid, empty } = await shapes(
+            withRelationship(`<Relationship Id="rId9" Type="${IMAGE}" Target="media/missing.png">body</Relationship>`),
+        );
+        expect(empty).toEqual(["warning"]);
+        expect(valid).toBe(true);
     });
 });

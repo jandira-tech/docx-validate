@@ -31,7 +31,7 @@ import {
 } from "../src/scripts/office/validators/base";
 
 import { buildDocx, MINIMAL_PARTS } from "./support/minimal-docx";
-import { relsBrokenTarget } from "../src/scripts/office/rels-finding-facts";
+import { relsBrokenTarget, relsEmptyElementShape } from "../src/scripts/office/rels-finding-facts";
 
 class HarnessValidator extends BaseSchemaValidator {
     schemaMappingKey(part: string): string | null {
@@ -1003,6 +1003,23 @@ describe("BaseSchemaValidator", () => {
     describe("validateRelationshipElements", () => {
         const REL_NS = `xmlns="http://schemas.openxmlformats.org/package/2006/relationships"`;
         const REL_TYPE = `http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles`;
+
+        it("registers the shape of each rels-empty-element finding (#735)", async () => {
+            await withTempDir(async (dir) => {
+                await writeFile(
+                    path.join(dir, "_rels", ".rels"),
+                    `${RELS_HEADER}<Relationships ${REL_NS}>` +
+                        `<Relationship Type="${REL_TYPE}" Target="word/document.xml"/>` +
+                        `<Relationship Id="missing required attribute" Type="${REL_TYPE}" Target="word/document.xml">body</Relationship>` +
+                        `<Relationship Id="rId2" Type="${REL_TYPE}" Target="word/document.xml"/>` +
+                        `</Relationships>`,
+                );
+                const v = new HarnessValidator({ unpackedDir: dir });
+                const result = await v.validateRelationshipElements();
+                expect(result.issues.every((i) => i.code === "rels-empty-element")).toBe(true);
+                expect(result.issues.map((i) => relsEmptyElementShape(i))).toEqual(["missing-attribute", "body-content"]);
+            });
+        });
 
         it("passes a well-formed self-closing <Relationship>", async () => {
             await withTempDir(async (dir) => {

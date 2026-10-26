@@ -14,7 +14,7 @@ import { canonicalPartName, isContentTypesStreamName, PART_NAME_FOLDER_SEGMENT_D
 import { sidecarOf } from "../../../lib/word-read-parts";
 import { NS, type ValidationIssue } from "../../../lib/types";
 import { getElementsByTagNameAll } from "../../../lib/xml-helpers";
-import { relsBrokenTarget } from "../rels-finding-facts";
+import { relsBrokenTarget, relsEmptyElementShape } from "../rels-finding-facts";
 import {
     SCHEMA_DECLARED_ELEMENTS,
     SCHEMA_REFERENCE_ELEMENTS,
@@ -500,7 +500,16 @@ export const isWordBlockingIssue = (
             return part !== undefined && (isOpcRelationshipsPart(part) || canonicalPartName(part).startsWith("customxml/"));
         }
         case "rels-empty-element":
-            return issue.message.includes("missing required attribute");
+            // The shape Word was shown distinguishes the two findings the code
+            // shares: a <Relationship> missing a required attribute is the
+            // blocking one (annotations_import.docx, missing Target, unreadable
+            // content), body content is tolerated
+            // (EmptyRelationshipElement.docx opens clean). The verdict reads the
+            // shape the check registered on the issue (#735), never the message:
+            // the body-content message embeds the raw Id, so an Id spelled
+            // `missing required attribute` flipped the tolerated finding. An
+            // unregistered finding warns.
+            return relsEmptyElementShape(issue) === "missing-attribute";
         case "mce-must-understand":
         case "mce-malformed": {
             // Word 16.115 offered recovery in the package relationships and

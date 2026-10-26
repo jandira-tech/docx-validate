@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
 import { canonicalPartName } from "../src/lib/content-types";
 import type { ValidationIssue } from "../src/lib/types";
 import { parseXml } from "../src/lib/xml-helpers";
-import { registerRelsBrokenTarget } from "../src/scripts/office/rels-finding-facts";
+import { registerRelsBrokenTarget, registerRelsEmptyElementShape } from "../src/scripts/office/rels-finding-facts";
 import {
     hasWordRelationshipReference,
     isWordBlockingIssue,
@@ -460,10 +460,22 @@ describe("isWordBlockingIssue", () => {
     });
 
     it.each([
-        ["Relationship is missing required attribute Target", true],
-        ["Relationship has an empty Id", false],
-    ])("judges rels-empty-element %j as blocking: %s", (message, blocking) => {
-        expect(isWordBlockingIssue(issue("rels-empty-element", { message }))).toBe(blocking);
+        ["missing-attribute", true],
+        ["body-content", false],
+    ] as const)("judges rels-empty-element %s by its registered shape (#735)", (shape, blocking) => {
+        // The body-content message carries the poisoned Id: the shape, not the
+        // text, decides.
+        const found = issue("rels-empty-element", {
+            message: '<Relationship Id="missing required attribute"> must be a self-closing empty element',
+        });
+        registerRelsEmptyElementShape(found, shape);
+        expect(isWordBlockingIssue(found)).toBe(blocking);
+    });
+
+    it("leaves an unregistered rels-empty-element a warning, whatever its message (#735)", () => {
+        expect(isWordBlockingIssue(issue("rels-empty-element", { message: "<Relationship> missing required attribute(s): Id" }))).toBe(
+            false,
+        );
     });
 
     describe("xml-syntax by reachability, not by folder (#437)", () => {
