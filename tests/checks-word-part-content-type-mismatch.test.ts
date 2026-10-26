@@ -59,8 +59,18 @@ describe("story content type mismatch (#600, session 24)", () => {
         expect(await diagnose(storyContentTypeParts(segment, storyContentType(segment).toUpperCase()))).toEqual([]);
     });
 
-    it.each([storyContentType("styles"), "image/png"])("keeps an unobserved footer type %s silent", async (declared) => {
+    it.each(["image/png"] as const)("keeps an unobserved footer type %s silent", async (declared) => {
         expect(await diagnose(storyContentTypeParts("footer", declared))).toEqual([]);
+    });
+
+    it("rejects a read footer typed with the styles type, citing session 53 (#739)", async () => {
+        const found = await diagnose(storyContentTypeParts("footer", storyContentType("styles")));
+        expect(found).toHaveLength(1);
+        expect(found[0]).toMatchObject({ code: ID, severity: "error", path: "word/footer9.xml" });
+        expect(found[0]?.message).toContain("the main document's footer relationship");
+        expect(found[0]?.message).toContain("Word 16.115 offers to recover the package (session 53).");
+        // The unread twin stays silent, as #516 observed for the header.
+        expect(await diagnose(storyContentTypeParts("footer", storyContentType("styles"), "main", false))).toEqual([]);
     });
 
     it.each(["comments", "footnotes", "endnotes"] as const)("keeps %s typed as each other notes/comment part silent", async (segment) => {
@@ -172,7 +182,7 @@ describe("mismatch profile scope (#600, #589)", () => {
     it.each([
         ["footer", storyContentType("header"), false],
         ["header", storyContentType("footer"), false],
-        ["footer", storyContentType("styles"), true],
+        ["footer", storyContentType("styles"), false],
         ["footer", "image/png", true],
     ] as const)(
         "strict judges %s typed %s (read: %s) without an unobserved Word claim",
@@ -450,4 +460,184 @@ describe("observed eager mismatches (#722, sessions 49 and 50)", () => {
         expect(spec[0]?.issue.message).toContain("the glossary's styles relationship");
         expect(spec[0]?.issue.message).not.toContain("Word 16.115");
     });
+});
+
+// Session 53 (2026-10-26, chunks s53a and s53b; Word 16.115, two runs, all
+// readings agree) refused every co-reach shape: an eagerly read part — the
+// main document, a related numbering part or the styles part — that a read
+// footer or a second eager relationship of another kind also reaches,
+// whatever the Override says. The calibrations carry the part's own type.
+describe("observed co-reach (#739, session 53)", () => {
+    const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+    const MAIN_TYPE = storyContentType("document.main");
+    const retypedParts = (part: string, own: string, type: string): Record<string, string> => ({
+        ...MINIMAL_PARTS,
+        "[Content_Types].xml": MINIMAL_PARTS["[Content_Types].xml"]!.replace(
+            `<Override PartName="/${part}" ContentType="${own}"/>`,
+            `<Override PartName="/${part}" ContentType="${type}"/>`,
+        ),
+    });
+    /** `parts` plus a footer relationship (rIdF) to `target`, referenced by the body's section. */
+    const withReadFooter = (parts: Record<string, string>, target: string): Record<string, string> => ({
+        ...parts,
+        "word/document.xml": MINIMAL_PARTS["word/document.xml"]!.replace(`xmlns:w="${W}"`, `xmlns:w="${W}" xmlns:r="${R}"`).replace(
+            "<w:sectPr>",
+            `<w:sectPr><w:footerReference w:type="default" r:id="rIdF"/>`,
+        ),
+        "word/_rels/document.xml.rels": parts["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rIdF" Type="${R}/footer" Target="${target}"/></Relationships>`,
+        ),
+    });
+    /** The styles part also the target of the main document's settings relationship (review S5). */
+    const stylesSettingsParts = (type: string): Record<string, string> => ({
+        ...retypedParts("word/styles.xml", storyContentType("styles"), type),
+        "word/_rels/document.xml.rels": MINIMAL_PARTS["word/_rels/document.xml.rels"]!.replace(
+            "</Relationships>",
+            `<Relationship Id="rId2" Type="${R}/settings" Target="styles.xml"/></Relationships>`,
+        ),
+    });
+    const CASES = [
+        {
+            label: "a read footer targeting the main document, typed main (calibration)",
+            parts: withReadFooter({ ...MINIMAL_PARTS }, "document.xml"),
+            path: "word/document.xml",
+            by: "the main document's footer relationship",
+            session: 53,
+        },
+        {
+            label: "a read footer targeting the main document typed with the styles type",
+            parts: withReadFooter(retypedParts("word/document.xml", MAIN_TYPE, storyContentType("styles")), "document.xml"),
+            path: "word/document.xml",
+            by: "the package officeDocument relationship",
+            session: 50,
+        },
+        {
+            label: "a read footer targeting the related numbering part, typed numbering (calibration)",
+            parts: withReadFooter(
+                relatedContentTypeParts(RELATED_PART_SPECIMENS[2], RELATED_PART_SPECIMENS[2].contentType),
+                "numbering.xml",
+            ),
+            path: "word/numbering.xml",
+            by: "the main document's footer relationship",
+            session: 53,
+        },
+        {
+            label: "a read footer targeting the related numbering part typed with the settings type",
+            parts: withReadFooter(relatedContentTypeParts(RELATED_PART_SPECIMENS[2], storyContentType("settings")), "numbering.xml"),
+            path: "word/numbering.xml",
+            by: "the main document's numbering relationship",
+            session: 50,
+        },
+        {
+            label: "a read footer targeting the styles part, typed styles (calibration)",
+            parts: withReadFooter({ ...MINIMAL_PARTS }, "styles.xml"),
+            path: "word/styles.xml",
+            by: "the main document's footer relationship",
+            session: 53,
+        },
+        {
+            label: "a read footer targeting the styles part typed with the settings type",
+            parts: withReadFooter(retypedParts("word/styles.xml", storyContentType("styles"), storyContentType("settings")), "styles.xml"),
+            path: "word/styles.xml",
+            by: "the main document's styles relationship",
+            session: 49,
+        },
+        {
+            label: "the styles part also the settings target, typed styles (calibration)",
+            parts: stylesSettingsParts(storyContentType("styles")),
+            path: "word/styles.xml",
+            by: "the main document's settings relationship",
+            session: 50,
+        },
+        {
+            label: "the styles part also the settings target, typed settings",
+            parts: stylesSettingsParts(storyContentType("settings")),
+            path: "word/styles.xml",
+            by: "the main document's styles relationship",
+            session: 49,
+        },
+    ] as const;
+
+    it.each(CASES)("rejects $label under word-valid with its session", async ({ parts, path, by, session }) => {
+        const found = await diagnose(parts);
+        expect(found).toHaveLength(1);
+        expect(found[0]).toMatchObject({ code: ID, severity: "error", path });
+        expect(found[0]?.message).toContain(by);
+        expect(found[0]?.message).toContain(`Word 16.115 offers to recover the package (session ${session}).`);
+        expect(isWordBlockingIssue(found[0]!)).toBe(true);
+    });
+
+    // Session 56 (s56a): a footer-typed styles part that a second footer
+    // relationship also targets gets the recovery offer whether no section
+    // references that relationship or the body does; the matching footer
+    // reach no longer exempts the styles reach.
+    it.each([
+        { label: "no section references", read: false },
+        { label: "the body references", read: true },
+    ])("rejects a footer-typed styles part a footer relationship $label also targets (session 56)", async ({ read }) => {
+        const typed = retypedParts("word/styles.xml", storyContentType("styles"), storyContentType("footer"));
+        const parts = read
+            ? withReadFooter(typed, "styles.xml")
+            : {
+                  ...typed,
+                  "word/_rels/document.xml.rels": typed["word/_rels/document.xml.rels"]!.replace(
+                      "</Relationships>",
+                      `<Relationship Id="rIdF" Type="${R}/footer" Target="styles.xml"/></Relationships>`,
+                  ),
+              };
+        const found = await diagnose(parts);
+        expect(found).toHaveLength(1);
+        expect(found[0]).toMatchObject({ code: ID, severity: "error", path: "word/styles.xml" });
+        expect(found[0]?.message).toContain("the main document's styles relationship");
+        expect(isWordBlockingIssue(found[0]!)).toBe(true);
+        await withTempDir(async (dir) => {
+            const file = path.join(dir, "styles-typed-footer.docx");
+            writeFileSync(file, await buildDocx(parts));
+            expect((await validate(file)).valid).toBe(false);
+            expect((await validate(file, { checks: [ID] })).valid).toBe(false);
+        });
+    });
+
+    it("invalidates the full run and a named run on every row, keeping the controls' verdicts", async () => {
+        await withTempDir(async (dir) => {
+            for (const { label, parts } of CASES) {
+                const file = path.join(dir, "coreach.docx");
+                writeFileSync(file, await buildDocx(parts));
+                const result = await validate(file);
+                expect(result.valid, label).toBe(false);
+                expect(result.issues.filter((issue) => issue.code === ID && issue.severity === "error")).toHaveLength(1);
+                const partial = await validate(file, { checks: [ID] });
+                expect(partial.valid, label).toBe(false);
+                expect(partial.issues.filter((issue) => issue.code === ID)).toHaveLength(1);
+            }
+            // The controls: the same rows without the second relationship
+            // keep their current verdicts.
+            const controls: [string, Record<string, string>, boolean][] = [
+                ["the minimal package", { ...MINIMAL_PARTS }, true],
+                ["the styles part typed styles", { ...MINIMAL_PARTS }, true],
+                [
+                    "the main document typed with the styles type",
+                    retypedParts("word/document.xml", MAIN_TYPE, storyContentType("styles")),
+                    false,
+                ],
+                [
+                    "a related numbering part typed with the settings type",
+                    relatedContentTypeParts(RELATED_PART_SPECIMENS[2], storyContentType("settings")),
+                    false,
+                ],
+                [
+                    "the styles part typed with the settings type",
+                    retypedParts("word/styles.xml", storyContentType("styles"), storyContentType("settings")),
+                    false,
+                ],
+            ];
+            for (const [label, parts, valid] of controls) {
+                const file = path.join(dir, "control.docx");
+                writeFileSync(file, await buildDocx(parts));
+                expect((await validate(file)).valid, label).toBe(valid);
+            }
+        });
+    }, 60_000);
 });

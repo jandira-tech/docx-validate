@@ -712,12 +712,17 @@ Generic XML, an inexact spelling of the part's own media type, and unknown
 types such as `image/png` stay outside this check, so the generic, inexact
 and mismatch checks are disjoint. A part read through story references is judged against the segments
 those references use. An unused matching relationship does
-not exempt it; a match through either of two used references still does.
-Unread parts are judged against all reaching segments under strict (#607).
+not exempt it; a match through either of two used references still exempts
+the story reaches. Since [#739](https://github.com/jandira-tech/docx-validate/issues/739)
+a type that matches one reach no longer exempts a mismatch on another
+observed reach: every observed reach is judged over all of the part's
+reaching entries, so a read footer cannot hide an eagerly parsed reach's
+defect behind it. Unread parts are judged against all reaching segments
+under strict (#607).
 
 Word-valid reports the observed shapes only: read header/footer swaps — a
 referenced footer typed `…header+xml`, or a referenced header typed
-`…footer+xml`, from the main document or a reached glossary — and the eager
+`…footer+xml`, from the main document or a reached glossary — the eager
 reaches sessions 49 and 50 (2026-10-26) probed ([#722](https://github.com/jandira-tech/docx-validate/issues/722)):
 the main document typed with another mapped Word type (s50d), and a part
 the main document's own relationships part relates by `styles`, `settings`
@@ -725,7 +730,14 @@ or `numbering` typed with another mapped Word type — the main styles part
 with the settings type (s49b), a related settings part with the styles type
 and a related numbering part with the settings type (s50d); those parts are
 eagerly parsed, so a relationship is enough and no usage lookup gates
-them. Session 24 observed Word 16.115 offer recovery
+them — and session 53's co-reach (s53a/s53b, 2026-10-26,
+[#739](https://github.com/jandira-tech/docx-validate/issues/739)): an
+eagerly read part — the main document, a related numbering part or the
+styles part — that a footer reference the body makes also reaches, typed
+with the main document, numbering or styles type alike, and the styles part
+also targeted by the main document's `settings` relationship, typed styles
+or settings alike. Word refused every co-reach shape whatever the Override
+says, so a matching reach exempts none of them. Session 24 observed Word 16.115 offer recovery
 for the main document's header and footer swaps and the glossary footer swap,
 including `…header+xml; charset=utf-8`; their exact-type controls and the
 minimal package opened clean. Session 26 observed recovery for the glossary
@@ -734,12 +746,13 @@ an unused header relationship to it; the latter's `…footer+xml` control
 opened clean. The recovery sentence cites session 24 for the main header,
 main footer and glossary footer swaps, and session 26 for the glossary
 header swap (#610); session 49 cites the main styles reach and session 50
-the settings, numbering and main-document reaches (#722). The finding names
+the settings, numbering and main-document reaches (#722); session 53 cites
+the footer co-reach (#739). The finding names
 the relationship, declared
 type and expected type, errors and blocks Word-valid; lenient warns. Unread
-stories, a footer typed `…styles+xml`, a related fontTable or webSettings
-part, the glossary's reaches, and comments/footnotes/endnotes typed
-with each other's types stay silent under Word-valid until probed.
+stories, a related fontTable or webSettings part, the glossary's reaches,
+and comments/footnotes/endnotes typed with each other's types stay silent
+under Word-valid until probed.
 
 Strict judges every related part in the shared map, read or unread, citing
 ECMA-376 Part 1 (4th edition), clause 11.3's content-type assignments (theme
@@ -747,9 +760,9 @@ is DrawingML and cites clause 14.2.7). The main document is named the Main
 Document part and cites clause 11.3.10 (#609). Candidate relationships are
 ranked in the same fixed order as the generic check, so relationship entry
 order does not change the reported segment or clause (#608). Only an
-observed finding — a read header/footer swap, the main document, or a
-related styles, settings or numbering part — carries the Word recovery
-sentence; unobserved shapes keep spec wording. Full, quick and named
+observed finding — a read header/footer swap or footer co-reach, the main
+document, or a related styles, settings or numbering part — carries the Word
+recovery sentence; unobserved shapes keep spec wording. Full, quick and named
 selections agree
 (#381).
 
