@@ -443,18 +443,16 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
      * The main document's part reached by the relationship segment
      * `segment` — Transitional or Strict — so a reached glossary's own
      * part is never judged for the main document, wherever it is stored
-     * (#688, #690). When that relationship names no stored part, or the
-     * package view cannot be read, the last file named `fallbackName`, as
-     * before. `mainStylesPath` keeps the style checks' behaviour.
+     * (#688, #690). `undefined` when such a relationship names a stored
+     * part that is not one of the XML parts: nothing is judged, and no
+     * other part stands in for it (#693). Only when no relationship names
+     * a stored part, or the package view cannot be read, the last file
+     * named `fallbackName`, as before; `null` when there is none.
      */
-    private async mainRelatedPath(segment: string, fallbackName: string): Promise<string | null> {
+    private async mainRelatedPath(segment: string, fallbackName: string): Promise<string | null | undefined> {
         try {
             const targets = await wordTypedRelationshipTargets(this.context(), new Set([segment]), this.profile);
-            for (const target of targets) {
-                if (target.via !== undefined) continue;
-                const file = this.xmlFiles.find((xmlFile) => this.entryName(xmlFile) === target.part);
-                if (file !== undefined) return file;
-            }
+            if (targets.length > 0) return this.xmlFileOf(targets.map((target) => target.part));
         } catch {
             // An unreadable package view is reported by its own checks.
         }
@@ -465,27 +463,36 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
         return byName;
     }
 
-    private async mainStylesPath(): Promise<string | null> {
+    /** The first of `parts` (stored names) that is one of the XML parts, or `undefined`. */
+    private xmlFileOf(parts: readonly string[]): string | undefined {
+        for (const part of parts) {
+            const file = this.xmlFiles.find((xmlFile) => this.entryName(xmlFile) === part);
+            if (file !== undefined) return file;
+        }
+        return undefined;
+    }
+
+    private async mainStylesPath(): Promise<string | null | undefined> {
         return this.mainRelatedPath("styles", "styles.xml");
     }
 
     /**
-     * The part the main document's relationship of exactly `type` names
-     * (#690), as `wordExactTypeTargets` reads it: the Microsoft
+     * The comment-thread part the main document's relationship of exactly
+     * `type` names (#690), as `wordExactTypeTargets` reads it: the Microsoft
      * commentsIds/commentsExtensible types carry no Office relationship-type
-     * segment, so `mainRelatedPath` cannot reach them. `null` when no main
-     * relationship of that type names a stored part.
+     * segment, so `mainRelatedPath` cannot reach them. When such a
+     * relationship names a stored part that is not one of the XML parts,
+     * `undefined` (#693); only when none names a stored part, the file
+     * named `name` in the chosen comments part's folder, or `null`.
      */
-    private async mainExactTypePath(type: string): Promise<string | null> {
+    private async mainThreadPath(type: string, commentsXml: string, name: string): Promise<string | null | undefined> {
         try {
-            for (const part of await wordExactTypeTargets(this.context(), type, this.profile)) {
-                const file = this.xmlFiles.find((xmlFile) => this.entryName(xmlFile) === part);
-                if (file !== undefined) return file;
-            }
+            const parts = await wordExactTypeTargets(this.context(), type, this.profile);
+            if (parts.length > 0) return this.xmlFileOf(parts);
         } catch {
             // An unreadable package view is reported by its own checks.
         }
-        return null;
+        return this.sameFolderByName(commentsXml, name);
     }
 
     /**
@@ -1161,8 +1168,10 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
 
         // Find styles.xml; if absent, every reference is dangling — but
         // most documents lacking styles.xml are abnormal in other ways
-        // already detected.
+        // already detected. A related styles part that is not XML defines
+        // what this check cannot read, so nothing is judged (#693).
         const stylesPath = await this.mainStylesPath();
+        if (stylesPath === undefined) return finalize(issues);
         const defined = new Set<string>();
         if (stylesPath) {
             try {
@@ -2315,11 +2324,12 @@ export class DOCXSchemaValidator extends BaseSchemaValidator {
     async repairCommentThreading(): Promise<number> {
         const commentsXml = await this.mainRelatedPath("comments", "comments.xml");
         if (!commentsXml) return 0;
-        const commentsIdsXml =
-            (await this.mainExactTypePath(COMMENTS_IDS_RELATIONSHIP_TYPE)) ?? this.sameFolderByName(commentsXml, "commentsIds.xml");
-        const commentsExtensibleXml =
-            (await this.mainExactTypePath(COMMENTS_EXTENSIBLE_RELATIONSHIP_TYPE)) ??
-            this.sameFolderByName(commentsXml, "commentsExtensible.xml");
+        const commentsIdsXml = await this.mainThreadPath(COMMENTS_IDS_RELATIONSHIP_TYPE, commentsXml, "commentsIds.xml");
+        const commentsExtensibleXml = await this.mainThreadPath(
+            COMMENTS_EXTENSIBLE_RELATIONSHIP_TYPE,
+            commentsXml,
+            "commentsExtensible.xml",
+        );
         if (!commentsIdsXml) return 0;
 
         let commentsDom: Document;
